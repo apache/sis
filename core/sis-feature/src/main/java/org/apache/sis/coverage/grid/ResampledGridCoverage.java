@@ -29,12 +29,10 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.geometry.Envelopes;
-import org.apache.sis.image.Interpolation;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -75,9 +73,10 @@ final class ResampledGridCoverage extends GridCoverage {
     private final MathTransform toSourceCorner, toSourceCenter;
 
     /**
-     * The interpolation method to use for resampling images.
+     * The image processor to use for resampling operations. Its configuration shall not
+     * be modified because this processor may be shared by different grid coverages.
      */
-    private final Interpolation interpolation;
+    private final ImageProcessor imageProcessor;
 
     /**
      * Indices of extent dimensions corresponding to image <var>x</var> and <var>y</var> coordinates.
@@ -93,18 +92,17 @@ final class ResampledGridCoverage extends GridCoverage {
      * @param  domain          the grid extent, CRS and conversion from cell indices to CRS.
      * @param  toSourceCorner  transform from cell corner coordinates in this coverage to source coverage.
      * @param  toSourceCenter  transform from cell center coordinates in this coverage to source coverage.
-     * @param  interpolation   the interpolation method to use for resampling images.
+     * @param  processor       the image processor to use for resampling images.
      */
     private ResampledGridCoverage(final GridCoverage source, final GridGeometry domain,
                                   final MathTransform toSourceCorner,
                                   final MathTransform toSourceCenter,
-                                  final Interpolation interpolation)
+                                  ImageProcessor processor)
     {
         super(source, domain);
         this.source         = source;
         this.toSourceCorner = toSourceCorner;
         this.toSourceCenter = toSourceCenter;
-        this.interpolation  = interpolation;
         final GridExtent extent = domain.getExtent();
         long size1 = 0; int idx1 = 0;
         long size2 = 0; int idx2 = 1;
@@ -125,6 +123,23 @@ final class ResampledGridCoverage extends GridCoverage {
             xDimension = idx2;
             yDimension = idx1;
         }
+        /*
+         * Get fill values from background values declared for each band, if any.
+         * If no background value is declared, default is 0 for integer data or
+         * NaN for floating point values.
+         */
+        final List<SampleDimension> bands = getSampleDimensions();
+        final Number[] fillValues = new Number[bands.size()];
+        for (int i=fillValues.length; --i >= 0;) {
+            final SampleDimension band = bands.get(i);
+            final Optional<Number> bg = band.getBackground();
+            if (bg.isPresent()) {
+                fillValues[i] = bg.get();
+            }
+        }
+        processor = processor.clone();
+        processor.setFillValues(fillValues);
+        imageProcessor = GridCoverageProcessor.unique(processor);
     }
 
     /**
@@ -170,7 +185,7 @@ final class ResampledGridCoverage extends GridCoverage {
      * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
      * @throws TransformException if some coordinates can not be transformed to the specified target.
      */
-    static GridCoverage create(final GridCoverage source, final GridGeometry target, final Interpolation interpolation)
+    static GridCoverage create(final GridCoverage source, final GridGeometry target, final ImageProcessor processor)
             throws FactoryException, TransformException
     {
         final CoordinateReferenceSystem sourceCRS = source.getCoordinateReferenceSystem();
@@ -371,7 +386,7 @@ final class ResampledGridCoverage extends GridCoverage {
         return new ResampledGridCoverage(source, resampled,
                 MathTransforms.concatenate(targetCornerToCRS, sourceCornerToCRS.inverse()),
                 MathTransforms.concatenate(targetCenterToCRS, sourceCenterToCRS.inverse()),
-                interpolation).specialize(isGeometryExplicit);
+                processor).specialize(isGeometryExplicit);
     }
 
     /**
@@ -426,23 +441,6 @@ final class ResampledGridCoverage extends GridCoverage {
                 Math.subtractExact(image.getMinY(), sourceExtent.getLow(yDimension)));
 
         final MathTransform toImage = MathTransforms.concatenate(pixelsToTransform, toSourceCenter, transformToPixels);
-        /*
-         * Get fill values from background values declared for each band, if any.
-         * If no background value is declared, default is 0 for integer data or
-         * NaN for floating point values.
-         */
-        final Number[] fillValues = new Number[ImageUtilities.getNumBands(image)];
-        final List<SampleDimension> bands = getSampleDimensions();
-        for (int i=Math.min(bands.size(), fillValues.length); --i >= 0;) {
-            final SampleDimension band = bands.get(i);
-            final Optional<Number> bg = band.getBackground();
-            if (bg.isPresent()) {
-                fillValues[i] = bg.get();
-            }
-        }
-        final ImageProcessor processor = new ImageProcessor();
-        processor.setInterpolation(interpolation);
-        processor.setFillValues(fillValues);
-        return processor.resample(bounds, toImage, image);
+        return imageProcessor.resample(bounds, toImage, image);
     }
 }

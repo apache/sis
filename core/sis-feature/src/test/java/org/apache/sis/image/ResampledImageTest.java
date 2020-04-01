@@ -91,7 +91,9 @@ public final strictfp class ResampledImageTest extends TestCase {
 
     /**
      * Creates an interpolated image in the simple case where the image is scaled by a factor 2.
-     * The {@link #source} field must be initialized before this method is invoked.
+     * The {@link #source} field must be initialized before this method is invoked. This method
+     * uses processor instead than instantiating {@link ResampledImage} directly for testing the
+     * {@link ImageProcessor#resample(Rectangle, MathTransform, RenderedImage)} method as well.
      *
      * @param  interpolation  the interpolation method to test.
      * @param  minX  minimal X coordinate to give to the resampled image.
@@ -105,7 +107,9 @@ public final strictfp class ResampledImageTest extends TestCase {
         final AffineTransform tr = AffineTransform.getTranslateInstance(source.getMinX(), source.getMinY());
         tr.scale(0.5, 0.5);
         tr.translate(-bounds.x, -bounds.y);
-        target = new ResampledImage(bounds, new AffineTransform2D(tr), source, interpolation, null);
+        final ImageProcessor processor = new ImageProcessor();
+        processor.setInterpolation(interpolation);
+        target = (ResampledImage) processor.resample(bounds, new AffineTransform2D(tr), source);
 
         tr.invert();
         sourceToTarget = tr;

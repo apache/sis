@@ -16,11 +16,14 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Objects;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.system.Modules;
 
 
@@ -38,26 +41,50 @@ import org.apache.sis.internal.system.Modules;
  * @since 1.1
  * @module
  */
-public class GridCoverageProcessor {
+public class GridCoverageProcessor implements Cloneable {
     /**
-     * The interpolation method to use for resampling operations.
+     * Configured {@link ImageProcessor} instances used by {@link GridCoverage}s created by processors.
+     * We use this set for sharing common instances in {@link GridCoverage} instances, which is okay
+     * provided that we do not modify the {@link ImageProcessor} configuration.
      */
-    private Interpolation interpolation;
+    private static final WeakHashSet<ImageProcessor> PROCESSORS = new WeakHashSet<>(ImageProcessor.class);
+
+    /**
+     * Returns an unique instance of the given processor. Both the given and the returned processors
+     * shall be unmodified, because they may be shared by many {@link GridCoverage} instances.
+     */
+    static ImageProcessor unique(final ImageProcessor image) {
+        return PROCESSORS.unique(image);
+    }
+
+    /**
+     * The image processor to use for resampling operations.
+     */
+    private final ImageProcessor imageProcessor;
 
     /**
      * Creates a new set of grid coverage operations with default configuration.
      */
     public GridCoverageProcessor() {
-        interpolation = Interpolation.BILINEAR;
+        imageProcessor = new ImageProcessor();
     }
 
+    /**
+     * Creates a new set of grid coverage operations with the given configuration.
+     *
+     * @param  processor  the processor to use for image operations.
+     */
+    public GridCoverageProcessor(final ImageProcessor processor) {
+        ArgumentChecks.ensureNonNull("processor", processor);
+        imageProcessor = processor;
+    }
     /**
      * Returns the interpolation method to use for resampling operations.
      *
      * @return interpolation method to use in resampling operations.
      */
     public Interpolation getInterpolation() {
-        return interpolation;
+        return imageProcessor.getInterpolation();
     }
 
     /**
@@ -66,8 +93,7 @@ public class GridCoverageProcessor {
      * @param  method  interpolation method to use in resampling operations.
      */
     public void setInterpolation(final Interpolation method) {
-        ArgumentChecks.ensureNonNull("method", method);
-        interpolation = method;
+        imageProcessor.setInterpolation(method);
     }
 
     /**
@@ -113,7 +139,7 @@ public class GridCoverageProcessor {
             source = ((ResampledGridCoverage) source).source;
         }
         try {
-            return ResampledGridCoverage.create(source, target, interpolation);
+            return ResampledGridCoverage.create(source, target, imageProcessor);
         } catch (IllegalGridGeometryException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof TransformException) {
@@ -134,5 +160,45 @@ public class GridCoverageProcessor {
      */
     static void recoverableException(final String caller, final Exception ex) {
         Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridCoverageProcessor.class, caller, ex);
+    }
+
+    /**
+     * Returns {@code true} if the given object is a coverage processor
+     * of the same class with the same configuration.
+     *
+     * @param  object  the other object to compare with this processor.
+     * @return whether the other object is a coverage processor of the same class with the same configuration.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object != null && object.getClass() == getClass()) {
+            final GridCoverageProcessor other = (GridCoverageProcessor) object;
+            return imageProcessor.equals(other.imageProcessor);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this coverage processor based on its current configuration.
+     *
+     * @return a hash code value for this processor.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(getClass(), imageProcessor);
+    }
+
+    /**
+     * Returns a coverage processor with the same configuration than this processor.
+     *
+     * @return a clone of this image processor.
+     */
+    @Override
+    public GridCoverageProcessor clone() {
+        try {
+            return (GridCoverageProcessor) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 }

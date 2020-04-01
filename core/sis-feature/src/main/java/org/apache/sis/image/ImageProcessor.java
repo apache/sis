@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
@@ -57,6 +58,9 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  *     By default errors during calculation are propagated as an {@link ImagingOpException},
  *     in which case no result is available. But errors can also be notified as a {@link LogRecord} instead,
  *     in which case partial results may be available.
+ *   </li><li>
+ *     Interpolation methods to use during resampling operations and fill values to use for pixels that can not
+ *     be computed.
  *   </li>
  * </ul>
  *
@@ -84,7 +88,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @since 1.1
  * @module
  */
-public class ImageProcessor {
+public class ImageProcessor implements Cloneable {
     /**
      * Cache of previously created images. We use this cache only for images of known implementations,
      * especially the ones which may be costly to compute. Reusing an existing instance avoid to repeat
@@ -486,6 +490,8 @@ public class ImageProcessor {
         }
         if (cm != null && !cm.equals(resampled.getColorModel())) {
             resampled = new RecoloredImage(resampled, cm);
+        } else if (!(resampled instanceof ResampledImage)) {
+            return resampled;                                   // Do not cache user-provided image.
         }
         return unique(resampled);
     }
@@ -549,6 +555,49 @@ public class ImageProcessor {
                 }
                 tiles[index] = source;
             }
+        }
+    }
+
+    /**
+     * Returns {@code true} if the given object is an image processor
+     * of the same class with the same configuration.
+     *
+     * @param  object  the other object to compare with this processor.
+     * @return whether the other object is an image processor of the same class with the same configuration.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object != null && object.getClass() == getClass()) {
+            final ImageProcessor other = (ImageProcessor) object;
+            return errorAction.equals(other.errorAction)   &&
+                 executionMode.equals(other.executionMode) &&
+                 interpolation.equals(other.interpolation) &&
+                 Arrays.equals(fillValues, other.fillValues);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this image processor based on its current configuration.
+     *
+     * @return a hash code value for this processor.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(getClass(), errorAction, executionMode, interpolation) + 37*Arrays.hashCode(fillValues);
+    }
+
+    /**
+     * Returns an image processor with the same configuration than this processor.
+     *
+     * @return a clone of this image processor.
+     */
+    @Override
+    public ImageProcessor clone() {
+        try {
+            return (ImageProcessor) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
         }
     }
 }

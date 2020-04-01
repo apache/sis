@@ -19,7 +19,6 @@ package org.apache.sis.coverage.grid;
 import java.util.Random;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.ImmutableEnvelope;
@@ -76,47 +75,55 @@ public final strictfp class ResampledGridCoverageTest {
     }
 
     /**
+     * Returns a resampled coverage using processor with default configuration.
+     * We use processor instead than instantiating {@link ResampledGridCoverage} directly in order
+     * to test {@link GridCoverageProcessor#resample(GridCoverage, GridGeometry)} method as well.
+     */
+    private static GridCoverage resample(final GridCoverage source, final GridGeometry target) throws TransformException {
+        final GridCoverageProcessor processor = new GridCoverageProcessor();
+        processor.setInterpolation(Interpolation.NEAREST);
+        return processor.resample(source, target);
+    }
+
+    /**
      * Tests application of an identity transform from an explicitly specified grid geometry.
      * We expect the source coverage to be returned unchanged.
      *
-     * @throws FactoryException if transformation between CRS can not be computed.
      * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
      */
     @Test
-    public void testExplicitIdentity() throws FactoryException, TransformException {
+    public void testExplicitIdentity() throws TransformException {
         final GridCoverage2D source = createGridCoverage();
         GridGeometry gg = source.getGridGeometry();
         gg = new GridGeometry(null, CELL_CENTER, gg.getGridToCRS(CELL_CENTER), gg.getCoordinateReferenceSystem());
-        final GridCoverage target = ResampledGridCoverage.create(source, gg, Interpolation.NEAREST);
+        final GridCoverage target = resample(source, gg);
         assertSame("Identity transform should result in same coverage.", source, target);
     }
 
     /**
      * Tests application of an identity transform without specifying explicitly the desired grid geometry.
      *
-     * @throws FactoryException if transformation between CRS can not be computed.
      * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
      */
     @Test
-    public void testImplicitIdentity() throws FactoryException, TransformException {
+    public void testImplicitIdentity() throws TransformException {
         final GridCoverage2D source = createGridCoverage();
         GridGeometry gg = source.getGridGeometry();
         gg = new GridGeometry(null, CELL_CENTER, null, gg.getCoordinateReferenceSystem());
-        final GridCoverage target = ResampledGridCoverage.create(source, gg, Interpolation.NEAREST);
+        final GridCoverage target = resample(source, gg);
         assertSame("Identity transform should result in same coverage.", source, target);
     }
 
     /**
      * Tests application of an axis swapping.
      *
-     * @throws FactoryException if transformation between CRS can not be computed.
      * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
      */
     @Test
-    public void testAxisSwap() throws FactoryException, TransformException {
+    public void testAxisSwap() throws TransformException {
         final GridCoverage2D source = createGridCoverage();
         GridGeometry gg = new GridGeometry(null, CELL_CENTER, null, HardCodedCRS.WGS84_φλ);
-        final GridCoverage target = ResampledGridCoverage.create(source, gg, Interpolation.NEAREST);
+        final GridCoverage target = resample(source, gg);
         /*
          * We expect the same image since `ResampledGridCoverage` should have been
          * able to apply the operation with only a change of `gridToCRS` transform.
@@ -147,14 +154,13 @@ public final strictfp class ResampledGridCoverageTest {
     /**
      * Tests resampling of a sub-region.
      *
-     * @throws FactoryException if transformation between CRS can not be computed.
      * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
      */
     @Test
-    public void testSubArea() throws FactoryException, TransformException {
+    public void testSubArea() throws TransformException {
         final GridCoverage2D source = createGridCoverage();           // Envelope2D(20, 15, 60, 62)
         GridGeometry gg = new GridGeometry(null, new Envelope2D(HardCodedCRS.WGS84, 18, 20, 17, 31));
-        final GridCoverage target = ResampledGridCoverage.create(source, gg, Interpolation.NEAREST);
+        final GridCoverage target = resample(source, gg);
         final GridExtent sourceExtent = source.getGridGeometry().getExtent();
         final GridExtent targetExtent = target.getGridGeometry().getExtent();
         assertTrue(sourceExtent.getSize(0) > targetExtent.getSize(0));
@@ -164,14 +170,13 @@ public final strictfp class ResampledGridCoverageTest {
     /**
      * Tests application of a reprojection.
      *
-     * @throws FactoryException if transformation between CRS can not be computed.
      * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
      */
     @Test
-    public void testReprojection() throws FactoryException, TransformException {
+    public void testReprojection() throws TransformException {
         final GridCoverage2D source = createGridCoverage();
         GridGeometry gg = new GridGeometry(null, CELL_CENTER, null, HardCodedConversions.mercator());
-        final GridCoverage target = ResampledGridCoverage.create(source, gg, Interpolation.NEAREST);
+        final GridCoverage target = resample(source, gg);
         assertTrue("GridExtent.startsAtZero", target.getGridGeometry().getExtent().startsAtZero());
         /*
          * Mercator projection does not change pixel width, but change pixel height.
