@@ -47,6 +47,10 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  *
  * <ul class="verbose">
  *   <li>
+ *     {@linkplain #setInterpolation(Interpolation) Interpolation method} to use during resampling operations.
+ *   </li><li>
+ *     {@linkplain #setFillValues(Number...) Fill values} to use for pixels that can not be computed.
+ *   </li><li>
  *     Whether operations can be executed in parallel. By default operations on unknown
  *     {@link RenderedImage} implementations are executed sequentially in the caller thread, for safety reasons.
  *     Some operations can be parallelized, but it should be enabled only if the {@link RenderedImage} is known
@@ -58,9 +62,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  *     By default errors during calculation are propagated as an {@link ImagingOpException},
  *     in which case no result is available. But errors can also be notified as a {@link LogRecord} instead,
  *     in which case partial results may be available.
- *   </li><li>
- *     Interpolation methods to use during resampling operations and fill values to use for pixels that can not
- *     be computed.
  *   </li>
  * </ul>
  *
@@ -211,7 +212,7 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Creates a new set of image operations with default configuration.
+     * Creates a new processor with default configuration.
      * The execution mode is initialized to {@link Mode#DEFAULT} and the error action to {@link ErrorAction#THROW}.
      */
     public ImageProcessor() {
@@ -448,7 +449,7 @@ public class ImageProcessor implements Cloneable {
      *
      * <p>If the given source is an instance of {@link ResampledImage} or {@link AnnotatedImage},
      * then this method will use {@linkplain PlanarImage#getSources() the source} of the given source.
-     * The intent is to avoid resampling a resampled image and try to work on the original data instead.</p>
+     * The intent is to avoid resampling a resampled image; instead this method tries to work on the original data.</p>
      *
      * @param  bounds    domain of pixel coordinates of resampled image.
      * @param  toSource  conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
@@ -499,6 +500,11 @@ public class ImageProcessor implements Cloneable {
     /**
      * Computes all tiles immediately, then return an image will all tiles ready.
      * Computations will use many threads if {@linkplain #getExecutionMode() execution mode} is parallel.
+     *
+     * <div class="note"><b>Note:</b>
+     * current implementation ignores the {@linkplain #getErrorAction() error action} because we do not yet
+     * have a mechanism for specifying which tile to produce in replacement of tiles that can not be computed.
+     * This behavior may be changed in a future version.</div>
      *
      * @param  source  the image to compute immediately (may be {@code null}).
      * @return image with all tiles computed, or {@code null} if the given image was null.

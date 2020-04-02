@@ -41,6 +41,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 
 
 /**
@@ -177,7 +178,64 @@ final class ResampledGridCoverage extends GridCoverage {
     }
 
     /**
+     * Checks if two grid geometries are equal, ignoring unspecified properties. If a geometry
+     * has no extent or no {@code gridToCRS} transform, the missing property is not compared.
+     * Same applies for the grid extent.
+     *
+     * @return {@code true} if the two geometries are equal, ignoring unspecified properties.
+     */
+    static boolean equivalent(final GridGeometry sourceGG, final GridGeometry targetGG) {
+        return (!isDefined(sourceGG, targetGG, GridGeometry.EXTENT)
+                || Utilities.equalsIgnoreMetadata(sourceGG.getExtent(),
+                                                  targetGG.getExtent()))
+            && (!isDefined(sourceGG, targetGG, GridGeometry.CRS)
+                || Utilities.equalsIgnoreMetadata(sourceGG.getCoordinateReferenceSystem(),
+                                                  targetGG.getCoordinateReferenceSystem()))
+            && (!isDefined(sourceGG, targetGG, GridGeometry.GRID_TO_CRS)
+                || Utilities.equalsIgnoreMetadata(sourceGG.getGridToCRS(PixelInCell.CELL_CORNER),
+                                                  targetGG.getGridToCRS(PixelInCell.CELL_CORNER))
+                || Utilities.equalsIgnoreMetadata(sourceGG.getGridToCRS(PixelInCell.CELL_CENTER),   // Its okay if only one is equal.
+                                                  targetGG.getGridToCRS(PixelInCell.CELL_CENTER)))
+            && (!isDefined(sourceGG, targetGG, GridGeometry.ENVELOPE)
+              || isDefined(sourceGG, targetGG, GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS)      // Compare only if not inferred.
+              || sourceGG.equalsApproximately(targetGG.envelope));
+    }
+
+    /**
+     * Returns whether the given property is defined in both grid geometries.
+     *
+     * @param  property  one of {@link GridGeometry} constants.
+     */
+    private static boolean isDefined(final GridGeometry sourceGG, final GridGeometry targetGG, final int property) {
+        return targetGG.isDefined(property) && sourceGG.isDefined(property);
+    }
+
+    /**
      * Implementation of {@link GridCoverageProcessor#resample(GridCoverage, GridGeometry)}.
+     * This method computes the <em>inverse</em> of the transform from <var>Source Grid</var>
+     * to <var>Target Grid</var>. That transform will be computed using the following path:
+     *
+     * <blockquote>Target Grid  ⟶  Target CRS  ⟶  Source CRS  ⟶  Source Grid</blockquote>
+     *
+     * If the target {@link GridGeometry} is incomplete, this method provides default
+     * values for the missing properties. The following cases may occur:
+     *
+     * <ul class="verbose">
+     *   <li>
+     *     User provided no {@link GridExtent}. This method will construct a "grid to CRS" transform
+     *     preserving (at least approximately) axis directions and resolutions at the point of interest.
+     *     Then a grid extent will be created with a size large enough for containing the original grid
+     *     transformed by above <var>Source Grid</var> → <var>Target Grid</var> transform.
+     *   </li><li>
+     *     User provided only a {@link GridExtent}. This method will compute an envelope large enough
+     *     for containing the projected coordinates, then a "grid to CRS" transform will be derived
+     *     from the grid and the georeferenced envelope with an attempt to preserve axis directions
+     *     at least approximately.
+     *   </li><li>
+     *     User provided only a "grid to CRS" transform. This method will transform the projected envelope
+     *     to "grid units" using the specified transform and create a grid extent large enough to hold the
+     *     result.</li>
+     * </ul>
      *
      * @param  source  the grid coverage to resample.
      * @param  target  the desired geometry of returned grid coverage. May be incomplete.
@@ -201,7 +259,7 @@ final class ResampledGridCoverage extends GridCoverage {
         if (sourceGG.isDefined(GridGeometry.ENVELOPE) && target.isDefined(GridGeometry.ENVELOPE)) {
             changeOfCRS = Envelopes.findOperation(sourceGG.getEnvelope(), target.getEnvelope());
         }
-        if (changeOfCRS == null) try {
+        if (changeOfCRS == null && sourceCRS != null && targetCRS != null) try {
             DefaultGeographicBoundingBox areaOfInterest = null;
             if (sourceGG.isDefined(GridGeometry.ENVELOPE)) {
                 areaOfInterest = new DefaultGeographicBoundingBox();

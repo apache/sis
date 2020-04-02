@@ -59,7 +59,7 @@ final class ConvertedGridCoverage extends GridCoverage {
      * The coverage containing source values.
      * Sample values will be converted from that coverage using the {@link #converters}.
      */
-    private final GridCoverage source;
+    final GridCoverage source;
 
     /**
      * Conversions from {@link #source} values to converted values.

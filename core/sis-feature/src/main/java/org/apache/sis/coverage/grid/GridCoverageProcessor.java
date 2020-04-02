@@ -58,26 +58,27 @@ public class GridCoverageProcessor implements Cloneable {
     }
 
     /**
-     * The image processor to use for resampling operations.
+     * The processor to use for operations on two-dimensional slices.
      */
-    private final ImageProcessor imageProcessor;
+    protected final ImageProcessor imageProcessor;
 
     /**
-     * Creates a new set of grid coverage operations with default configuration.
+     * Creates a new processor with default configuration.
      */
     public GridCoverageProcessor() {
         imageProcessor = new ImageProcessor();
     }
 
     /**
-     * Creates a new set of grid coverage operations with the given configuration.
+     * Creates a new processor initialized to the given configuration.
      *
-     * @param  processor  the processor to use for image operations.
+     * @param  processor  the processor to use for operations on two-dimensional slices.
      */
     public GridCoverageProcessor(final ImageProcessor processor) {
         ArgumentChecks.ensureNonNull("processor", processor);
-        imageProcessor = processor;
+        imageProcessor = processor.clone();
     }
+
     /**
      * Returns the interpolation method to use for resampling operations.
      *
@@ -120,6 +121,8 @@ public class GridCoverageProcessor implements Cloneable {
      * </table>
      *
      * The interpolation method can be specified by {@link #setInterpolation(Interpolation)}.
+     * If the grid coverage values are themselves interpolated, this method tries to use the
+     * original data. The intent is to avoid adding interpolations on top of other interpolations.
      *
      * @param  source  the grid coverage to resample.
      * @param  target  the desired geometry of returned grid coverage. May be incomplete.
@@ -131,15 +134,35 @@ public class GridCoverageProcessor implements Cloneable {
     public GridCoverage resample(GridCoverage source, final GridGeometry target) throws TransformException {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
+        final boolean isConverted = source == source.forConvertedValues(true);
         /*
          * If the source coverage is already the result of a previous "resample" operation,
          * use the original data in order to avoid interpolating values that are already interpolated.
          */
-        if (source instanceof ResampledGridCoverage) {
-            source = ((ResampledGridCoverage) source).source;
+        for (;;) {
+            if (ResampledGridCoverage.equivalent(source.getGridGeometry(), target)) {
+                return source;
+            } else if (source instanceof ResampledGridCoverage) {
+                source = ((ResampledGridCoverage) source).source;
+            } else if (source instanceof ConvertedGridCoverage) {
+                source = ((ConvertedGridCoverage) source).source;
+            } else {
+                break;
+            }
         }
+        /*
+         * The projection are usually applied on floating-point values, in order
+         * to gets maximal precision and to handle correctly the special case of
+         * NaN values. However, we can apply the projection on integer values if
+         * the interpolation type is "nearest neighbor" since this is not really
+         * an interpolation.
+         */
+        if (!Interpolation.NEAREST.equals(imageProcessor.getInterpolation())) {
+            source = source.forConvertedValues(true);
+        }
+        final GridCoverage resampled;
         try {
-            return ResampledGridCoverage.create(source, target, imageProcessor);
+            resampled = ResampledGridCoverage.create(source, target, imageProcessor);
         } catch (IllegalGridGeometryException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof TransformException) {
@@ -150,6 +173,7 @@ public class GridCoverageProcessor implements Cloneable {
         } catch (FactoryException e) {
             throw new TransformException(e);
         }
+        return resampled.forConvertedValues(isConverted);
     }
 
     /**

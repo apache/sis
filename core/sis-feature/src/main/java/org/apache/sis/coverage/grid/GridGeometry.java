@@ -1388,7 +1388,6 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @since 1.1
      */
     @Override
-    @SuppressWarnings("fallthrough")
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;
@@ -1407,21 +1406,31 @@ public class GridGeometry implements LenientComparable, Serializable {
                         Utilities.deepEquals(getCoordinateReferenceSystem(envelope),
                                              getCoordinateReferenceSystem(othenv), mode))
                 {
-                    if (envelope != null) {
-                        for (int i=envelope.getDimension(); --i >= 0;) {
-                            final double ε = (resolution != null) ? resolution[i] * Numerics.COMPARISON_THRESHOLD : 0;
-                            if (!MathFunctions.epsilonEqual(envelope.getLower(i), othenv.getLower(i), ε) ||
-                                !MathFunctions.epsilonEqual(envelope.getUpper(i), othenv.getUpper(i), ε))
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                    return true;
+                    return equalsApproximately(othenv);
                 }
             }
         }
         return false;
+    }
+
+    /**
+     * Returns whether the given envelope is equal to this grid geometry envelope with a tolerance threshold
+     * computed from grid resolution. If this grid geometry has no envelope, then this method arbitrarily
+     * returns {@code true} (this unusual behavior is required by {@link #equals(Object, ComparisonMode)}).
+     */
+    final boolean equalsApproximately(final ImmutableEnvelope othenv) {
+        if (envelope != null) {
+            for (int i=envelope.getDimension(); --i >= 0;) {
+                // Arbitrary threshold of ½ pixel.
+                final double ε = (resolution != null) ? resolution[i] * 0.5 : 0;
+                if (!MathFunctions.epsilonEqual(envelope.getLower(i), othenv.getLower(i), ε) ||
+                    !MathFunctions.epsilonEqual(envelope.getUpper(i), othenv.getUpper(i), ε))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
