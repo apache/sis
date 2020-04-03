@@ -191,10 +191,10 @@ final class ResamplingGrid extends AbstractMathTransform2D {
             final int p11 = p10 + DIMENSION;
             final double mx = 1 - x;
             final double my = 1 - y;
-            dstPts[dstOff++] = my * (mx*coordinates[p00  ] + x*coordinates[p01  ])
-                             +  y * (mx*coordinates[p10  ] + x*coordinates[p11  ]);
-            dstPts[dstOff++] = my * (mx*coordinates[p00|1] + x*coordinates[p01|1])
-                             +  y * (mx*coordinates[p10|1] + x*coordinates[p11|1]);
+            dstPts[dstOff++] = my * (mx*coordinates[p00    ] + x*coordinates[p01    ])
+                             +  y * (mx*coordinates[p10    ] + x*coordinates[p11    ]);
+            dstPts[dstOff++] = my * (mx*coordinates[p00 | 1] + x*coordinates[p01 | 1])
+                             +  y * (mx*coordinates[p10 | 1] + x*coordinates[p11 | 1]);
             /*
              * Note: the |1 above is a cheap way to compute +1 when all `p` indices
              * are known to be even. This is true because `DIMENSION` is even.
