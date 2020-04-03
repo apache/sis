@@ -21,10 +21,14 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.ImagingOpException;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.rint;
@@ -33,10 +37,17 @@ import static java.lang.Math.rint;
 /**
  * A grid of precomputed pixel coordinates in source images. This grid is used during
  * image resampling operations for avoiding to project the coordinates of every pixels
- * when a bilinear interpolation between nearby pixels would be sufficient.
+ * when a bilinear interpolation between nearby pixels would be sufficient. Coordinate
+ * conversions applied by this class are from <em>target</em> grid cell <em>centers</em>
+ * to <cite>source</cite> grid cell centers. Despite providing conversions between cell
+ * centers, the constructor expects a {@link MathTransform2D} mapping cell corners.
  *
- * <p>The grid contains transformed coordinated from <cite>target</cite> to <cite>source</cite> grid.
- * Those coordinates map pixel centers.</p>
+ * <p>{@code ResamplingGrid} operates on a delimited space specified by a {@link Rectangle}.
+ * This space is subdivided into "tiles" (not necessarily coincident with image tiles) where
+ * each tile provides its own coefficients for bilinear interpolations.
+ * All coordinates inside the same tile are interpolated using the same coefficients.</p>
+ *
+ * <p>{@code ResamplingGrid} does not support the {@link #inverse()} operation.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Remi Marechal (Geomatys)
@@ -44,15 +55,20 @@ import static java.lang.Math.rint;
  * @since   1.1
  * @module
  */
-final class ResamplingGrid {
+final class ResamplingGrid extends AbstractMathTransform2D {
     /**
-     * The minimal width and height in pixels. If a block width or height is lower than
-     * this threshold, we will abandon the attempt to create a {@link ResamplingGrid}.
+     * Number of dimensions of the grid, which is {@value}.
      */
-    private static final int MIN_SIZE = 4;
+    private static final int DIMENSION = 2;
 
     /**
-     * The maximal error allowed, in units of destination CRS (usually pixels).
+     * The minimal tile width and height in pixels. If a tile width or height is less than this threshold,
+     * then this class abandons the attempt to create a {@link ResamplingGrid} instance.
+     */
+    private static final int MIN_TILE_SIZE = 4;
+
+    /**
+     * The maximal error allowed, in units of destination grid.
      * This is the maximal difference allowed between a coordinate transformed
      * using the original transform and the same coordinate transformed using this grid.
      */
@@ -70,39 +86,120 @@ final class ResamplingGrid {
     static final double EPS = 1.1920929E-7;
 
     /**
-     * The (x,y) coordinate of the upper-left corner in the source grid.
+     * The (x,y) coordinates of the upper-left corner in the source grid.
      */
-    private final int xmin, ymin;
+    private final double xmin, ymin;
 
     /**
-     * Cells size, in number of pixels in the same units than (x,y).
+     * Number of pixels in a tile row or column. A {@link ResamplingGrid} tile is a region inside which
+     * bilinear interpolations can be used with acceptable errors. {@link ResamplingGrid} tiles are not
+     * necessarily coincident with image tiles.
      */
-    private final int xStep, yStep;
+    private final double tileWidth, tileHeight;
 
     /**
-     * Number of cells.
+     * Number of tiles in this grid.
      */
-    private final int xNumCells, yNumCells;
+    private final int numXTiles, numYTiles;
 
     /**
-     * Sequence of (x,y) grid coordinates, in row-major fashion.
+     * Sequence of (x,y) grid coordinates for all tiles in this grid, stored in row-major fashion.
      */
-    private final double[] warpPositions;
+    private final double[] coordinates;
 
     /**
-     * Creates a new instance for the given coordinates.
+     * Creates a new grid of precomputed values using the given transform applied on the specified region.
+     * The region is subdivided into a number of sub-regions. The number of sub-divisions is specified by
+     * the {@code depth} argument. A value of 1 means that the region is splitted in two parts. A value of
+     * 2 means that each part is itself splitted in 2 smaller parts (so the original grid is splitted in 4),
+     * <i>etc.</i> with recursive splits like a QuadTree.
+     *
+     * <p>Determining an optimal value of {@code depth} argument is the most tricky part of this class.
+     * This work is done by {@link #create(MathTransform2D, Rectangle)} which expects the first two arguments
+     * and compute the third one.</p>
+     *
+     * @param  toSource  conversion from target cell corners to source cell corners.
+     * @param  domain    the target coordinates for which to create a grid of source coordinates.
+     * @param  depth     number of recursive divisions by 2.
      */
-    private ResamplingGrid(final int xmin, final int xStep, final int xNumCells,
-                           final int ymin, final int yStep, final int yNumCells,
-                           final double[] warpPositions)
+    ResamplingGrid(MathTransform2D toSource, final Rectangle domain, final Dimension depth) throws TransformException {
+        this.xmin   = domain.x;
+        this.ymin   = domain.y;
+        tileWidth   = Math.scalb(domain.width,  -depth.width);
+        tileHeight  = Math.scalb(domain.height, -depth.height);
+        numXTiles   = 1 << depth.width;
+        numYTiles   = 1 << depth.height;
+        coordinates = new double[(numXTiles+1) * (numYTiles+1) * DIMENSION];
+        int p = 0;
+        for (int y=0; y<=numYTiles; y++) {
+            for (int x=0; x<=numXTiles; x++) {
+                coordinates[p++] = x;
+                coordinates[p++] = y;
+            }
+        }
+        toSource = MathTransforms.concatenate(new AffineTransform2D(tileWidth, 0, 0, tileHeight, xmin + 0.5, ymin + 0.5), toSource);
+        toSource.transform(coordinates, 0, coordinates, 0, p/DIMENSION);
+    }
+
+    /**
+     * Interpolates a single grid coordinate tuple. This method is required by parent class but its implementation
+     * just delegates to {@link #transform(double[], int, double[], int, int)}. Since this method is not invoked by
+     * {@link ResampledImage}, its performance does not matter.
+     */
+    @Override
+    public Matrix transform(final double[] srcPts, final int srcOff,
+                            final double[] dstPts, final int dstOff,
+                            final boolean derivate) throws TransformException
     {
-        this.xmin      = xmin;
-        this.ymin      = ymin;
-        this.xStep     = xStep;
-        this.yStep     = yStep;
-        this.xNumCells = xNumCells;
-        this.yNumCells = yNumCells;
-        this.warpPositions = warpPositions;
+        if (derivate) {
+            throw new TransformException(Errors.format(Errors.Keys.UnsupportedOperation_1, "derivative"));
+        }
+        transform(srcPts, srcOff, dstPts, dstOff, 1);
+        return null;
+    }
+
+    /**
+     * Interpolates a sequence of grid coordinate tuples. Input and output values are pixel coordinates
+     * with integer values located in pixel centers. When this method is invoked by {@link ResampledImage},
+     * input coordinates are always integers but output coordinates are generally fractional.
+     * All input coordinates must be inside the region specified to constructor.
+     *
+     * @throws TransformException if an input coordinate is outside the domain of this transform.
+     */
+    @Override
+    public void transform(final double[] srcPts, int srcOff,
+                          final double[] dstPts, int dstOff, int numPts) throws TransformException
+    {
+        if (srcOff < dstOff && srcPts == dstPts && numPts > 1) {
+            super.transform(srcPts, srcOff, dstPts, dstOff, numPts);
+            return;
+        }
+        final int lineStride = numXTiles + 1;
+        while (--numPts >= 0) {
+            double  x  = (srcPts[srcOff++] - xmin) / tileWidth;
+            double  y  = (srcPts[srcOff++] - ymin) / tileHeight;
+            double txf = Math.floor(x); x -= txf;
+            double tyf = Math.floor(y); y -= tyf;
+            int    tx  = (int) txf;
+            int    ty  = (int) tyf;
+            if (tx < 0 || tx >= numXTiles || ty < 0 || ty >= numYTiles) {
+                throw new TransformException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
+            }
+            final int p00 = (tx + ty * lineStride) * DIMENSION;
+            final int p01 = p00 + DIMENSION;
+            final int p10 = p00 + DIMENSION * lineStride;
+            final int p11 = p10 + DIMENSION;
+            final double mx = 1 - x;
+            final double my = 1 - y;
+            dstPts[dstOff++] = my * (mx*coordinates[p00  ] + x*coordinates[p01  ])
+                             +  y * (mx*coordinates[p10  ] + x*coordinates[p11  ]);
+            dstPts[dstOff++] = my * (mx*coordinates[p00|1] + x*coordinates[p01|1])
+                             +  y * (mx*coordinates[p10|1] + x*coordinates[p11|1]);
+            /*
+             * Note: the |1 above is a cheap way to compute +1 when all `p` indices
+             * are known to be even. This is true because `DIMENSION` is even.
+             */
+        }
     }
 
     /**
@@ -195,24 +292,7 @@ final class ResamplingGrid {
          * Non-affine transform. Create a grid using the cell size computed (indirectly)
          * by the `depth(…)` method.
          */
-        final int xStep     =  domain.width  / (1 << depth.width);
-        final int yStep     =  domain.height / (1 << depth.height);
-        final int xNumCells = (domain.width  + xStep-1) / xStep;
-        final int yNumCells = (domain.height + yStep-1) / yStep;
-        final double[] warpPositions = new double[2 * (xNumCells+1) * (yNumCells+1)];
-        final int xup = domain.x + xNumCells * xStep;
-        final int yup = domain.y + yNumCells * yStep;
-        int p = 0;
-        for (int y=domain.y; y <= yup; y += yStep) {
-            for (int x=domain.x; x <= xup; x += xStep) {
-                warpPositions[p++] = x + 0.5;
-                warpPositions[p++] = y + 0.5;
-            }
-        }
-        transform.transform(warpPositions, 0, warpPositions, 0, p/2);
-        return null;
-//        return new ResamplingGrid(domain.x, xStep, xNumCells,
-//                                  domain.y, yStep, yNumCells, warpPositions);
+        return new ResamplingGrid(transform, domain, depth);
     }
 
     /**
@@ -254,7 +334,7 @@ final class ResamplingGrid {
                                    final Matrix2 lowerLeft, final Matrix2 lowerRight)
             throws TransformException
     {
-        if (!(xmax - xmin >= MIN_SIZE) || !(ymax - ymin >= MIN_SIZE)) {                 // Use ! for catching NaN.
+        if (!(xmax - xmin >= MIN_TILE_SIZE) || !(ymax - ymin >= MIN_TILE_SIZE)) {       // Use ! for catching NaN.
             throw new ImagingOpException(null);
         }
         /*

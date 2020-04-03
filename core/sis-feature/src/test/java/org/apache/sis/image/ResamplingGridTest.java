@@ -16,7 +16,14 @@
  */
 package org.apache.sis.image;
 
+import java.util.Random;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -51,5 +58,32 @@ public final strictfp class ResamplingGridTest extends TestCase {
         ResamplingGrid.roundIfAlmostInteger(test);
         assertFalse("Treshold was smaller than the translation, so the " +
                 "transform should not have been modified.", copy.equals(test));
+    }
+
+    /**
+     * Tests the {@link ResamplingGrid} class using an affine transform.
+     * Because the transform is linear, results should be identical ignoring rounding errors.
+     *
+     * @throws TransformException if an error occurred while transforming a coordinate.
+     */
+    @Test
+    public void compareWithAffine() throws TransformException {
+        final AffineTransform2D reference = new AffineTransform2D(0.25, 0, 0, 2.5, 4, 2);
+        final Rectangle         bounds    = new Rectangle(-7, 3, 12, 8);
+        final ResamplingGrid    grid      = new ResamplingGrid(reference, bounds, new Dimension(4,3));
+        final Random            random    = TestUtilities.createRandomNumberGenerator(-854734760285695284L);
+        final double[]          source    = new double[2];
+        final double[]          actual    = new double[2];
+        final double[]          expected  = new double[2];
+        for (int i=0; i<100; i++) {
+            source[0] = bounds.x + bounds.width  * random.nextDouble();
+            source[1] = bounds.y + bounds.height * random.nextDouble();
+            grid.transform(source, 0, actual, 0, 1);
+
+            source[0] += 0.5;       // Was relative to pixel center, make it relative to pixel corner.
+            source[1] += 0.5;
+            reference.transform(source, 0, expected, 0, 1);
+            assertArrayEquals(expected, actual, Numerics.COMPARISON_THRESHOLD);
+        }
     }
 }
