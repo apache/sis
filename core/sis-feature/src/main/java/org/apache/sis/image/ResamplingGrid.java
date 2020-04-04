@@ -29,6 +29,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.wkt.Formatter;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.rint;
@@ -39,15 +40,17 @@ import static java.lang.Math.rint;
  * image resampling operations for avoiding to project the coordinates of every pixels
  * when a bilinear interpolation between nearby pixels would be sufficient. Coordinate
  * conversions applied by this class are from <em>target</em> grid cell <em>centers</em>
- * to <cite>source</cite> grid cell centers. Despite providing conversions between cell
- * centers, the constructor expects a {@link MathTransform2D} mapping cell corners.
+ * to <cite>source</cite> grid cell centers.
  *
  * <p>{@code ResamplingGrid} operates on a delimited space specified by a {@link Rectangle}.
  * This space is subdivided into "tiles" (not necessarily coincident with image tiles) where
  * each tile provides its own coefficients for bilinear interpolations.
  * All coordinates inside the same tile are interpolated using the same coefficients.</p>
  *
- * <p>{@code ResamplingGrid} does not support the {@link #inverse()} operation.</p>
+ * <p>{@link ResampledImage} implements {@link MathTransform2D} for allowing usage by {@link ResampledImage}
+ * but is not a full featured transform. For example it does not support the {@link #inverse()} operation.
+ * For this reason this class should not be public and instance of this class should not be accessible
+ * outside {@link ResampledImage}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Remi Marechal (Geomatys)
@@ -72,7 +75,7 @@ final class ResamplingGrid extends AbstractMathTransform2D {
      * This is the maximal difference allowed between a coordinate transformed
      * using the original transform and the same coordinate transformed using this grid.
      */
-    private static final double TOLERANCE = 0.25;
+    static final double TOLERANCE = 0.125;
 
     /**
      * A small tolerance factor for comparisons of floating point numbers. We use the smallest
@@ -86,21 +89,23 @@ final class ResamplingGrid extends AbstractMathTransform2D {
     static final double EPS = 1.1920929E-7;
 
     /**
-     * The (x,y) coordinates of the upper-left corner in the source grid.
-     */
-    private final double xmin, ymin;
-
-    /**
-     * Number of pixels in a tile row or column. A {@link ResamplingGrid} tile is a region inside which
+     * Number of tiles in this grid. A {@link ResamplingGrid} tile is a rectangular region inside which
      * bilinear interpolations can be used with acceptable errors. {@link ResamplingGrid} tiles are not
      * necessarily coincident with image tiles.
+     */
+    final int numXTiles, numYTiles;
+
+    /**
+     * Number of pixels in a tile row or column.
+     * Those values are integers, but stored as {@code double} values for avoiding type conversions.
      */
     private final double tileWidth, tileHeight;
 
     /**
-     * Number of tiles in this grid.
+     * The (x,y) coordinates of the pixel in the upper-left corner of the source grid.
+     * Those values are integers, but stored as {@code double} values for avoiding type conversions.
      */
-    private final int numXTiles, numYTiles;
+    private final double xmin, ymin;
 
     /**
      * Sequence of (x,y) grid coordinates for all tiles in this grid, stored in row-major fashion.
@@ -115,18 +120,18 @@ final class ResamplingGrid extends AbstractMathTransform2D {
      * <i>etc.</i> with recursive splits like a QuadTree.
      *
      * <p>Determining an optimal value of {@code depth} argument is the most tricky part of this class.
-     * This work is done by {@link #create(MathTransform2D, Rectangle)} which expects the first two arguments
-     * and compute the third one.</p>
+     * This work is done by {@link #create(MathTransform2D, MathTransform2D, Rectangle)} which expects
+     * the {@code toSourceCenter} and {@code domain} arguments and compute the {@code depth} one.</p>
      *
-     * @param  toSource  conversion from target cell corners to source cell corners.
-     * @param  domain    the target coordinates for which to create a grid of source coordinates.
-     * @param  depth     number of recursive divisions by 2.
+     * @param  toSourceCenter  conversion from target cell centers to source cell centers.
+     * @param  bounds  pixel coordinates of target images for which to create a grid of source coordinates.
+     * @param  depth   number of recursive divisions by 2.
      */
-    ResamplingGrid(MathTransform2D toSource, final Rectangle domain, final Dimension depth) throws TransformException {
-        this.xmin   = domain.x;
-        this.ymin   = domain.y;
-        tileWidth   = Math.scalb(domain.width,  -depth.width);
-        tileHeight  = Math.scalb(domain.height, -depth.height);
+    ResamplingGrid(MathTransform2D toSourceCenter, final Rectangle bounds, final Dimension depth) throws TransformException {
+        this.xmin   = bounds.x;
+        this.ymin   = bounds.y;
+        tileWidth   = Math.scalb(bounds.width,  -depth.width);
+        tileHeight  = Math.scalb(bounds.height, -depth.height);
         numXTiles   = 1 << depth.width;
         numYTiles   = 1 << depth.height;
         coordinates = new double[(numXTiles+1) * (numYTiles+1) * DIMENSION];
@@ -137,8 +142,8 @@ final class ResamplingGrid extends AbstractMathTransform2D {
                 coordinates[p++] = y;
             }
         }
-        toSource = MathTransforms.concatenate(new AffineTransform2D(tileWidth, 0, 0, tileHeight, xmin + 0.5, ymin + 0.5), toSource);
-        toSource.transform(coordinates, 0, coordinates, 0, p/DIMENSION);
+        toSourceCenter = MathTransforms.concatenate(new AffineTransform2D(tileWidth, 0, 0, tileHeight, xmin, ymin), toSourceCenter);
+        toSourceCenter.transform(coordinates, 0, coordinates, 0, p/DIMENSION);
     }
 
     /**
@@ -205,23 +210,27 @@ final class ResamplingGrid extends AbstractMathTransform2D {
     /**
      * Creates a grid for the given domain of validity.
      *
-     * @param  transform  transform from target grid corner to source grid corner.
-     * @param  domain     the domain of validity in source coordinates.
+     * @param  toSourceCenter  transform from target grid center to source grid center.
+     * @param  toSourceCorner  transform from target grid corner to source grid corner.
+     * @param  bounds          the domain of validity in source coordinates.
      * @return a precomputed grid for the given transform.
      * @throws TransformException if a derivative can not be computed or a point can not be transformed.
      * @throws ImagingOpException if the grid would be too big for being useful.
      */
-    static MathTransform2D create(final MathTransform2D transform, final Rectangle domain) throws TransformException {
-        final double xmin = domain.getMinX();
-        final double xmax = domain.getMaxX();
-        final double ymin = domain.getMinY();
-        final double ymax = domain.getMaxY();
+    static MathTransform2D create(final MathTransform2D toSourceCenter,
+                                  final MathTransform2D toSourceCorner,
+                                  final Rectangle bounds) throws TransformException
+    {
+        final double xmin = bounds.getMinX();
+        final double xmax = bounds.getMaxX();
+        final double ymin = bounds.getMinY();
+        final double ymax = bounds.getMaxY();
         final Point2D.Double point = new Point2D.Double();              // Multi-purpose buffer.
         final Matrix2 upperLeft, upperRight, lowerLeft, lowerRight;
-        point.x = xmin; point.y = ymax; upperLeft  = derivative(transform, point);
-        point.x = xmax; point.y = ymax; upperRight = derivative(transform, point);
-        point.x = xmin; point.y = ymin; lowerLeft  = derivative(transform, point);
-        point.x = xmax; point.y = ymin; lowerRight = derivative(transform, point);
+        point.x = xmin; point.y = ymax; upperLeft  = derivative(toSourceCorner, point);
+        point.x = xmax; point.y = ymax; upperRight = derivative(toSourceCorner, point);
+        point.x = xmin; point.y = ymin; lowerLeft  = derivative(toSourceCorner, point);
+        point.x = xmax; point.y = ymin; lowerRight = derivative(toSourceCorner, point);
         /*
          * The tolerance factor is scaled as below. This comment describes a one-dimensional
          * case, but the two dimensional case works on the same principle.
@@ -258,7 +267,7 @@ final class ResamplingGrid extends AbstractMathTransform2D {
          * The (m₃ − m₁) value is the maximal difference to be accepted
          * in the coefficients of the derivative matrix to be compared.
          */
-        final Dimension depth = depth(transform, point,
+        final Dimension depth = depth(toSourceCorner, point,
                 new Point2D.Double(2 * TOLERANCE / (xmax - xmin),
                                    2 * TOLERANCE / (ymax - ymin)),
                 xmin, xmax, ymin, ymax, upperLeft, upperRight, lowerLeft, lowerRight);
@@ -270,17 +279,17 @@ final class ResamplingGrid extends AbstractMathTransform2D {
              * and some map projection implementations use approximation derived from spherical formulas.
              * The difference is big enough for causing test failure.
              */
-            final double xcnt = domain.getCenterX();
-            final double ycnt = domain.getCenterY();
+            final double xcnt = bounds.getCenterX();
+            final double ycnt = bounds.getCenterY();
             double m00, m10, m01, m11;
             Point2D p;
-            point.x=xmax; point.y=ycnt; p=transform.transform(point, point); m00  = p.getX(); m10  = p.getY();
-            point.x=xmin; point.y=ycnt; p=transform.transform(point, point); m00 -= p.getX(); m10 -= p.getY();
-            point.x=xcnt; point.y=ymax; p=transform.transform(point, point); m01  = p.getX(); m11  = p.getY();
-            point.x=xcnt; point.y=ymin; p=transform.transform(point, point); m01 -= p.getX(); m11 -= p.getY();
-            point.x=xcnt; point.y=ycnt; p=transform.transform(point, point);
-            final double width  = domain.getWidth();
-            final double height = domain.getHeight();
+            point.x=xmax; point.y=ycnt; p=toSourceCenter.transform(point, point); m00  = p.getX(); m10  = p.getY();
+            point.x=xmin; point.y=ycnt; p=toSourceCenter.transform(point, point); m00 -= p.getX(); m10 -= p.getY();
+            point.x=xcnt; point.y=ymax; p=toSourceCenter.transform(point, point); m01  = p.getX(); m11  = p.getY();
+            point.x=xcnt; point.y=ymin; p=toSourceCenter.transform(point, point); m01 -= p.getX(); m11 -= p.getY();
+            point.x=xcnt; point.y=ycnt; p=toSourceCenter.transform(point, point);
+            final double width  = bounds.getWidth();
+            final double height = bounds.getHeight();
             final AffineTransform tr = new AffineTransform(m00 / width,  m10 / width,
                                                            m01 / height, m11 / height,
                                                            p.getX(),     p.getY());
@@ -292,7 +301,7 @@ final class ResamplingGrid extends AbstractMathTransform2D {
          * Non-affine transform. Create a grid using the cell size computed (indirectly)
          * by the `depth(…)` method.
          */
-        return new ResamplingGrid(transform, domain, depth);
+        return new ResamplingGrid(toSourceCenter, bounds, depth);
     }
 
     /**
@@ -307,25 +316,25 @@ final class ResamplingGrid extends AbstractMathTransform2D {
      *   <li><i>etc.</i></li>
      * </ul>
      *
-     * @param  transform   the transform for which to compute the depth.
-     * @param  point       any {@code Point2D.Double} instance, to be written by this method.
-     *                     This is provided in argument only for reducing object allocations.
-     * @param  tolerance   the tolerance value to use in comparisons of matrix coefficients,
-     *                     along the X axis and along the Y axis. The distance between the location
-     *                     of the matrix being compared is half the size of the region of interest.
-     * @param  xmin        the minimal <var>x</var> ordinate.
-     * @param  xmax        the maximal <var>x</var> ordinate.
-     * @param  ymin        the minimal <var>y</var> ordinate.
-     * @param  ymax        the maximal <var>y</var> ordinate.
-     * @param  upperLeft   the transform derivative at {@code (xmin,ymax)}.
-     * @param  upperRight  the transform derivative at {@code (xmax,ymax)}.
-     * @param  lowerLeft   the transform derivative at {@code (xmin,ymin)}.
-     * @param  lowerRight  the transform derivative at {@code (xmax,ymin)}.
+     * @param  toSourceCorner  the transform for which to compute the depth.
+     * @param  point           any {@code Point2D.Double} instance, to be written by this method.
+     *                         This is provided in argument only for reducing object allocations.
+     * @param  tolerance       the tolerance value to use in comparisons of matrix coefficients,
+     *                         along the X axis and along the Y axis. The distance between the location
+     *                         of the matrix being compared is half the size of the region of interest.
+     * @param  xmin            the minimal <var>x</var> ordinate.
+     * @param  xmax            the maximal <var>x</var> ordinate.
+     * @param  ymin            the minimal <var>y</var> ordinate.
+     * @param  ymax            the maximal <var>y</var> ordinate.
+     * @param  upperLeft       the transform derivative at {@code (xmin,ymax)}.
+     * @param  upperRight      the transform derivative at {@code (xmax,ymax)}.
+     * @param  lowerLeft       the transform derivative at {@code (xmin,ymin)}.
+     * @param  lowerRight      the transform derivative at {@code (xmax,ymin)}.
      * @return the number of subdivision along each axis.
      * @throws TransformException if a derivative can not be computed.
      * @throws ImagingOpException if the grid would be too big for being useful.
      */
-    private static Dimension depth(final MathTransform2D transform,
+    private static Dimension depth(final MathTransform2D toSourceCorner,
                                    final Point2D.Double  point,
                                    final Point2D.Double  tolerance,
                                    final double xmin,       final double xmax,
@@ -349,11 +358,11 @@ final class ResamplingGrid extends AbstractMathTransform2D {
         tolerance.y *= 2;
         final double centerX = point.x = 0.5 * (xmin + xmax);
         final double centerY = point.y = 0.5 * (ymin + ymax);
-        final Matrix2 center = Matrix2.castOrCopy(transform.derivative(point));
-        point.x = xmin;    point.y = centerY; final Matrix2 centerLeft  = derivative(transform, point);
-        point.x = xmax;    point.y = centerY; final Matrix2 centerRight = derivative(transform, point);
-        point.x = centerX; point.y = ymin;    final Matrix2 centerLower = derivative(transform, point);
-        point.x = centerX; point.y = ymax;    final Matrix2 centerUpper = derivative(transform, point);
+        final Matrix2 center = Matrix2.castOrCopy(toSourceCorner.derivative(point));
+        point.x = xmin;    point.y = centerY; final Matrix2 centerLeft  = derivative(toSourceCorner, point);
+        point.x = xmax;    point.y = centerY; final Matrix2 centerRight = derivative(toSourceCorner, point);
+        point.x = centerX; point.y = ymin;    final Matrix2 centerLower = derivative(toSourceCorner, point);
+        point.x = centerX; point.y = ymax;    final Matrix2 centerUpper = derivative(toSourceCorner, point);
         final boolean cl = equals(center, centerLeft,  tolerance);
         final boolean cr = equals(center, centerRight, tolerance);
         final boolean cb = equals(center, centerLower, tolerance);
@@ -365,7 +374,7 @@ final class ResamplingGrid extends AbstractMathTransform2D {
          *   centerLeft ├──────┼─ center
          */
         if (!((cl & cu) && equals(center, upperLeft, tolerance))) {
-            final Dimension depth = depth(transform, point, tolerance, xmin, centerX, centerY, ymax,
+            final Dimension depth = depth(toSourceCorner, point, tolerance, xmin, centerX, centerY, ymax,
                                           upperLeft, centerUpper, centerLeft, center);
             incrementNonAffineDimension(cl, cu, depth);
             nx = depth.width;
@@ -377,7 +386,7 @@ final class ResamplingGrid extends AbstractMathTransform2D {
          *   center      ─┼──────┤ centerRight
          */
         if (!((cr & cu) && equals(center, upperRight, tolerance))) {
-            final Dimension depth = depth(transform, point, tolerance, centerX, xmax, centerY, ymax,
+            final Dimension depth = depth(toSourceCorner, point, tolerance, centerX, xmax, centerY, ymax,
                                           centerUpper, upperRight, center, centerRight);
             incrementNonAffineDimension(cr, cu, depth);
             nx = Math.max(nx, depth.width);
@@ -389,7 +398,7 @@ final class ResamplingGrid extends AbstractMathTransform2D {
          *   lowerLeft  └──────┴─ centerLower
          */
         if (!((cl & cb) && equals(center, lowerLeft, tolerance))) {
-            final Dimension depth = depth(transform, point, tolerance, xmin, centerX, ymin, centerY,
+            final Dimension depth = depth(toSourceCorner, point, tolerance, xmin, centerX, ymin, centerY,
                                           centerLeft, center, lowerLeft, centerLower);
             incrementNonAffineDimension(cl, cb, depth);
             nx = Math.max(nx, depth.width);
@@ -401,7 +410,7 @@ final class ResamplingGrid extends AbstractMathTransform2D {
          *   centerLower ─┴──────┘ lowerRight
          */
         if (!((cr & cb) && equals(center, lowerRight, tolerance))) {
-            final Dimension depth = depth(transform, point, tolerance, centerX, xmax, ymin, centerY,
+            final Dimension depth = depth(toSourceCorner, point, tolerance, centerX, xmax, ymin, centerY,
                                           center, centerRight, centerLower, lowerRight);
             incrementNonAffineDimension(cr, cb, depth);
             nx = Math.max(nx, depth.width);
@@ -457,13 +466,13 @@ final class ResamplingGrid extends AbstractMathTransform2D {
      * <p>In Apache SIS implementations, matrices returned by {@code derivative(Point2D)} methods are already
      * instances of {@link Matrix2}. Consequently in most cases this method will just cast the result.</p>
      *
-     * @param  transform  the transform for which to compute the derivative.
-     * @param  point      the location where to compute the derivative.
+     * @param  toSourceCenter  the transform for which to compute the derivative.
+     * @param  point           the location where to compute the derivative.
      * @return the derivative at the given location as a 2×2 matrix.
      * @throws TransformException if the derivative can not be computed.
      */
-    private static Matrix2 derivative(final MathTransform2D transform, final Point2D point) throws TransformException {
-        return Matrix2.castOrCopy(transform.derivative(point));
+    private static Matrix2 derivative(final MathTransform2D toSourceCenter, final Point2D point) throws TransformException {
+        return Matrix2.castOrCopy(toSourceCenter.derivative(point));
     }
 
     /**
@@ -504,5 +513,16 @@ final class ResamplingGrid extends AbstractMathTransform2D {
                 tr.setTransform(m00, m10, m01, m11, m02, m12);
             }
         }
+    }
+
+    /**
+     * Formats a pseudo-WKT representation of this transform for debugging purpose.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        formatter.append(numXTiles);
+        formatter.append(numYTiles);
+        formatter.setInvalidWKT(ResamplingGrid.class, null);
+        return "ResamplingGrid";
     }
 }

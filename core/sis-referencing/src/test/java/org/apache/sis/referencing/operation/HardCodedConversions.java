@@ -18,10 +18,12 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.Collections;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
+import org.apache.sis.internal.referencing.provider.LambertConformal1SP;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -45,6 +47,19 @@ public final strictfp class HardCodedConversions {
         final OperationMethod method = new Mercator1SP();
         MERCATOR = new DefaultConversion(Collections.singletonMap(OperationMethod.NAME_KEY, "Mercator"),
                 method, null, method.getParameters().createValue());
+    }
+
+    /**
+     * A defining conversion for a <cite>Lambert Conic Conformal (1SP)</cite> projection
+     * with a Latitude of natural origin arbitrarily set to 40.
+     */
+    public static final DefaultConversion LAMBERT;
+    static {
+        final OperationMethod method = new LambertConformal1SP();
+        final ParameterValueGroup pg = method.getParameters().createValue();
+        pg.parameter("Latitude of natural origin").setValue(40);
+        LAMBERT = new DefaultConversion(Collections.singletonMap(OperationMethod.NAME_KEY, "Lambert Conic Conformal"),
+                method, null, pg);
     }
 
     /**
@@ -92,6 +107,19 @@ public final strictfp class HardCodedConversions {
     public static DefaultProjectedCRS mercator(final GeographicCRS baseCRS) {
         return new DefaultProjectedCRS(name("Mercator (other)"), baseCRS, HardCodedConversions.MERCATOR,
                 baseCRS.getCoordinateSystem().getDimension() == 3 ? HardCodedCS.PROJECTED_3D : HardCodedCS.PROJECTED);
+    }
+
+    /**
+     * A two-dimensional Lambert Conic Conformal (1SP) projection using the WGS84 datum.
+     * This CRS uses (<var>easting</var>, <var>northing</var>) coordinates in metres.
+     * The base CRS uses (<var>longitude</var>, <var>latitude</var>) axes
+     * and the prime meridian is Greenwich.
+     *
+     * @return two-dimensional Lambert Conic Conformal (1SP) projection.
+     */
+    public static DefaultProjectedCRS lambert() {
+        return new DefaultProjectedCRS(name("Lambert Conic Conformal"),
+                HardCodedCRS.WGS84, HardCodedConversions.LAMBERT, HardCodedCS.PROJECTED);
     }
 
     /**
