@@ -18,6 +18,7 @@ package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Arrays;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
@@ -177,15 +178,13 @@ public class ImageLayout {
      * <p>This method also checks whether the color model supports transparency. If not, then this
      * method will not return a size that may result in the creation of partially empty tiles.</p>
      *
-     * @param  image  the image for which to derive a tile size, or {@code null}.
+     * @param  image   the image for which to derive a tile size, or {@code null}.
+     * @param  bounds  the bounds of the image to create, or {@code null} is same as {@code image}.
      * @return suggested tile size for the given image.
      */
-    public Dimension suggestTileSize(final RenderedImage image) {
-        if (image == null) {
-            return new Dimension(preferredTileWidth, preferredTileHeight);
-        }
+    public Dimension suggestTileSize(final RenderedImage image, final Rectangle bounds) {
         boolean pt = allowPartialTiles;
-        if (pt) {
+        if (pt && image != null) {
             final ColorModel cm = image.getColorModel();
             if (pt = (cm != null)) {
                 if (cm instanceof IndexColorModel) {
@@ -201,10 +200,21 @@ public class ImageLayout {
          * operations may assume that a call to `source.getTile(…)` will return a tile covering fully the
          * tile to compute.
          */
-        final boolean singleXTile = image.getNumXTiles() <= 1;
-        final boolean singleYTile = image.getNumYTiles() <= 1;
-        int width  =  singleXTile ? image.getWidth()  : image.getTileWidth();
-        int height =  singleYTile ? image.getHeight() : image.getTileHeight();
+        final boolean singleXTile, singleYTile;
+        final int width, height;
+        if (bounds != null) {
+            singleXTile = true;
+            singleYTile = true;
+            width  = bounds.width;
+            height = bounds.height;
+        } else if (image != null) {
+            singleXTile = image.getNumXTiles() <= 1;
+            singleYTile = image.getNumYTiles() <= 1;
+            width  = singleXTile ? image.getWidth()  : image.getTileWidth();
+            height = singleYTile ? image.getHeight() : image.getTileHeight();
+        } else {
+            return new Dimension(preferredTileWidth, preferredTileHeight);
+        }
         return new Dimension(toTileSize(width,  preferredTileWidth,  pt & singleXTile),
                              toTileSize(height, preferredTileHeight, pt & singleYTile));
     }
@@ -215,14 +225,15 @@ public class ImageLayout {
      * for determining the {@code sampleModel} argument of {@link ComputedImage}
      * constructor.
      *
-     * @param  image  the image form which to get a sample model.
+     * @param  image   the image form which to get a sample model.
+     * @param  bounds  the bounds of the image to create, or {@code null} is same as {@code image}.
      * @return image sample model with preferred tile size.
      *
      * @see ComputedImage#ComputedImage(SampleModel, RenderedImage...)
      */
-    public SampleModel createCompatibleSampleModel(final RenderedImage image) {
+    public SampleModel createCompatibleSampleModel(final RenderedImage image, final Rectangle bounds) {
         ArgumentChecks.ensureNonNull("image", image);
-        final Dimension tile = suggestTileSize(image);
+        final Dimension tile = suggestTileSize(image, bounds);
         SampleModel sm = image.getSampleModel();
         if (sm.getWidth() != tile.width || sm.getHeight() != tile.height) {
             sm = sm.createCompatibleSampleModel(tile.width, tile.height);

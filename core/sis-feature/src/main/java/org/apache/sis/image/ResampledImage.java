@@ -132,7 +132,7 @@ public class ResampledImage extends ComputedImage {
     protected ResampledImage(final Rectangle bounds, final MathTransform toSource, final RenderedImage source,
                              final Interpolation interpolation, final Number[] fillValues)
     {
-        super(ImageLayout.DEFAULT.createCompatibleSampleModel(source), source);
+        super(ImageLayout.DEFAULT.createCompatibleSampleModel(source, bounds), source);
         ArgumentChecks.ensureNonNull("interpolation", interpolation);
         ArgumentChecks.ensureStrictlyPositive("width",  width  = bounds.width);
         ArgumentChecks.ensureStrictlyPositive("height", height = bounds.height);

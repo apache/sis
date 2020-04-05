@@ -23,11 +23,15 @@ import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferFloat;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.BandedSampleModel;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
+import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
@@ -49,7 +53,7 @@ public final strictfp class ResampledImageTest extends TestCase {
      * The source image. This is initialized to arbitrary values in two bands.
      * Location and number of tiles are random.
      */
-    private PlanarImage source;
+    private RenderedImage source;
 
     /**
      * The result of resampling {@link #source} image.
@@ -63,11 +67,11 @@ public final strictfp class ResampledImageTest extends TestCase {
     private AffineTransform sourceToTarget;
 
     /**
-     * Creates a rendered image with arbitrary tiles.
+     * Creates a rendered image with arbitrary tiles and some random values.
      *
      * @param  dataType  {@link DataBuffer#TYPE_SHORT} or {@link DataBuffer#TYPE_FLOAT}.
      */
-    private static PlanarImage createImage(final int dataType) {
+    private static PlanarImage createRandomImage(final int dataType) {
         final Random random  = TestUtilities.createRandomNumberGenerator();
         final int tileWidth  = random.nextInt(8) + 3;
         final int tileHeight = random.nextInt(8) + 3;
@@ -189,7 +193,7 @@ public final strictfp class ResampledImageTest extends TestCase {
      */
     @Test
     public void testNearestOnFloats() throws NoninvertibleTransformException {
-        source = createImage(DataBuffer.TYPE_FLOAT);
+        source = createRandomImage(DataBuffer.TYPE_FLOAT);
         createScaledByTwo(Interpolation.BILINEAR, -30, 12);
         verifyAtIntegerPositions();
     }
@@ -201,7 +205,7 @@ public final strictfp class ResampledImageTest extends TestCase {
      */
     @Test
     public void testNearestOnIntegers() throws NoninvertibleTransformException {
-        source = createImage(DataBuffer.TYPE_SHORT);
+        source = createRandomImage(DataBuffer.TYPE_SHORT);
         createScaledByTwo(Interpolation.BILINEAR, 18, 20);
         verifyAtIntegerPositions();
     }
@@ -213,7 +217,7 @@ public final strictfp class ResampledImageTest extends TestCase {
      */
     @Test
     public void testBilinearOnFloats() throws NoninvertibleTransformException {
-        source = createImage(DataBuffer.TYPE_FLOAT);
+        source = createRandomImage(DataBuffer.TYPE_FLOAT);
         createScaledByTwo(Interpolation.BILINEAR, -40, 50);
         verifyAtIntegerPositions();
         verifyAtMiddlePositions(1E-12);
@@ -226,7 +230,7 @@ public final strictfp class ResampledImageTest extends TestCase {
      */
     @Test
     public void testBilinearOnIntegers() throws NoninvertibleTransformException {
-        source = createImage(DataBuffer.TYPE_SHORT);
+        source = createRandomImage(DataBuffer.TYPE_SHORT);
         createScaledByTwo(Interpolation.BILINEAR, 40, -50);
         verifyAtIntegerPositions();
         verifyAtMiddlePositions(0.5);
@@ -249,7 +253,7 @@ public final strictfp class ResampledImageTest extends TestCase {
             }
         }
         source = new TiledImage(null, 3, 3, 0, 0, raster);
-        assertNull(source.verify());
+        assertNull(((TiledImage) source).verify());
         createScaledByTwo(Interpolation.BILINEAR, -2, -2);
         final PixelIterator pt = PixelIterator.create(target);
         assertResultEquals(pt, -0.5f, -1.0f,  0.5f);
@@ -269,8 +273,95 @@ public final strictfp class ResampledImageTest extends TestCase {
         assertResultEquals(pt,  1.5f,  1.5f, 10.0f);            // Lower right corner
     }
 
+    /**
+     * Verifies that a pixel value in the image created by {@link #createScaledByTwo(Interpolation, int, int)}
+     * is equals to the expected value.
+     *
+     * @param pt        a pixel iterator over the resampled image. Its position will be modified.
+     * @param x         <var>x</var> coordinate in the source image.
+     * @param y         <var>y</var> coordinate in the source image.
+     * @param expected  the expected value.
+     */
     private static void assertResultEquals(final PixelIterator pt, float x, float y, float expected) {
+        // Multiplication by 2 is for converting source coordinates to target coordinates.
         pt.moveTo((int) (x*2), (int) (y*2));
         assertEquals(expected, pt.getSampleFloat(0), 1E-9f);
+    }
+
+    /**
+     * Resamples a single-tiled and single-banded image with values 1 everywhere except in center.
+     * The {@linkplain #source} is a 3×3 image with the following values:
+     *
+     * <blockquote><pre>
+     *   1 1 1
+     *   1 2 1
+     *   1 1 1
+     * </pre></blockquote>
+     *
+     * The {@linkplain #target} is a 9×9 image computed using the given interpolation method.
+     * It is caller's responsibility to verify the result.
+     *
+     * @param  interpolation  the interpolation method to test.
+     * @return the resampled raster values.
+     */
+    private float[] resampleSimpleImage(final Interpolation interpolation) throws NoninvertibleTransformException {
+        source = RasterFactory.createGrayScaleImage(DataBuffer.TYPE_FLOAT, 3, 3, 1, 0, 0, 2);
+        final WritableRaster raster = ((BufferedImage) source).getRaster();
+
+        raster.setSample(0, 0, 0, 1);    raster.setSample(1, 0, 0, 1);    raster.setSample(2, 0, 0, 1);
+        raster.setSample(0, 1, 0, 1);    raster.setSample(1, 1, 0, 2);    raster.setSample(2, 1, 0, 1);
+        raster.setSample(0, 2, 0, 1);    raster.setSample(1, 2, 0, 1);    raster.setSample(2, 2, 0, 1);
+
+        sourceToTarget = AffineTransform.getTranslateInstance(-0.5, -0.5);
+        sourceToTarget.scale(3, 3);
+        sourceToTarget.translate(0.5, 0.5);
+        target = new ResampledImage(new Rectangle(9, 9),
+                new AffineTransform2D(sourceToTarget.createInverse()), source, interpolation, null);
+
+        assertEquals("numXTiles", 1, target.getNumXTiles());
+        assertEquals("numYTiles", 1, target.getNumYTiles());
+        final DataBufferFloat data = (DataBufferFloat) target.getTile(0,0).getDataBuffer();
+        assertEquals("numBanks", 1, data.getNumBanks());
+        return data.getData();
+    }
+
+    /**
+     * Checks all values of a nearest-neighbor interpolation on a simple image.
+     *
+     * @throws NoninvertibleTransformException if the test did not setup the transform correctly.
+     */
+    @Test
+    public void verifyNearestResults() throws NoninvertibleTransformException {
+        assertArrayEquals(new float[] {
+            1,1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,1,
+            1,1,1,2,2,2,1,1,1,
+            1,1,1,2,2,2,1,1,1,
+            1,1,1,2,2,2,1,1,1,
+            1,1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,1
+        }, resampleSimpleImage(Interpolation.NEAREST), (float) STRICT);
+    }
+
+    /**
+     * Checks all values of a bilinear interpolation on a simple image.
+     *
+     * @throws NoninvertibleTransformException if the test did not setup the transform correctly.
+     */
+    @Test
+    public void verifyBilinearResults() throws NoninvertibleTransformException {
+        assertArrayEquals(new float[] {
+            1.111111111f, 1f, 0.888888888f, 0.777777777f, 0.666666666f, 0.777777777f, 0.888888888f, 1f, 1.111111111f,
+            1.000000000f, 1f, 1.000000000f, 1.000000000f, 1.000000000f, 1.000000000f, 1.000000000f, 1f, 1.000000000f,
+            0.888888888f, 1f, 1.111111111f, 1.222222222f, 1.333333333f, 1.222222222f, 1.111111111f, 1f, 0.888888888f,
+            0.777777777f, 1f, 1.222222222f, 1.444444444f, 1.666666666f, 1.444444444f, 1.222222222f, 1f, 0.777777777f,
+            0.666666666f, 1f, 1.333333333f, 1.666666666f,      2f,      1.666666666f, 1.333333333f, 1f, 0.666666666f,
+            0.777777777f, 1f, 1.222222222f, 1.444444444f, 1.666666666f, 1.444444444f, 1.222222222f, 1f, 0.777777777f,
+            0.888888888f, 1f, 1.111111111f, 1.222222222f, 1.333333333f, 1.222222222f, 1.111111111f, 1f, 0.888888888f,
+            1.000000000f, 1f, 1.000000000f, 1.000000000f, 1.000000000f, 1.000000000f, 1.000000000f, 1f, 1.000000000f,
+            1.111111111f, 1f, 0.888888888f, 0.777777777f, 0.666666666f, 0.777777777f, 0.888888888f, 1f, 1.111111111f
+        }, resampleSimpleImage(Interpolation.BILINEAR), (float) STRICT);
     }
 }
