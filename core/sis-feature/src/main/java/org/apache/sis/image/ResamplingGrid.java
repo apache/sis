@@ -32,7 +32,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.rint;
 
 
 /**
@@ -78,17 +77,6 @@ final class ResamplingGrid extends AbstractMathTransform2D {
      * the error is slightly higher.
      */
     static final double TOLERANCE = 0.125;
-
-    /**
-     * A small tolerance factor for comparisons of floating point numbers. We use the smallest
-     * accuracy possible for the {@code float} type for integer numbers different than zero,
-     * as computed by:
-     *
-     * {@preformat java
-     *     Math.nextUp(1f) - 1f;
-     * }
-     */
-    static final double EPS = 1.1920929E-7;
 
     /**
      * Number of tiles in this grid. A {@link ResamplingGrid} tile is a rectangular region inside which
@@ -303,7 +291,6 @@ affine: if (depth.width == 0 && depth.height == 0) {
                                                            m01 / height, m11 / height,
                                                            p.getX(),     p.getY());
             tr.translate(-xcnt, -ycnt);
-            roundIfAlmostInteger(tr);
             /*
              * Since the affine transform that we built is a kind of average computed from bounds center,
              * we need to compare with the four corners for making sure that its precision is sufficient.
@@ -508,34 +495,6 @@ affine: if (depth.width == 0 && depth.height == 0) {
     private static boolean equals(final Matrix2 center, final Matrix2 corner, final Point2D.Double tolerance) {
         return abs(center.m00 - corner.m00) + abs(center.m01 - corner.m01) <= tolerance.x &&
                abs(center.m10 - corner.m10) + abs(center.m11 - corner.m11) <= tolerance.y;
-    }
-
-    /**
-     * If scale and shear coefficients are close to integers, replaces their current values by their rounded values.
-     * The scale and shear coefficients are handled in a "all or nothing" way; either all of them or none are rounded.
-     * The translation terms are handled separately, provided that the scale and shear coefficients have been rounded.
-     *
-     * @param  tr  the transform to round. Rounding will be applied in place.
-     */
-    static void roundIfAlmostInteger(final AffineTransform tr) {
-        double r;
-        final double m00, m01, m10, m11;
-        if (abs((m00 = rint(r=tr.getScaleX())) - r) <= EPS &&
-            abs((m01 = rint(r=tr.getShearX())) - r) <= EPS &&
-            abs((m11 = rint(r=tr.getScaleY())) - r) <= EPS &&
-            abs((m10 = rint(r=tr.getShearY())) - r) <= EPS)
-        {
-            /*
-             * At this point the scale and shear coefficients can been rounded to integers.
-             * Continue only if this rounding does not make the transform non-invertible.
-             */
-            if ((m00!=0 || m01!=0) && (m10!=0 || m11!=0)) {
-                double m02, m12;
-                if (abs((r = rint(m02=tr.getTranslateX())) - m02) <= EPS) m02=r;
-                if (abs((r = rint(m12=tr.getTranslateY())) - m12) <= EPS) m12=r;
-                tr.setTransform(m00, m10, m01, m11, m02, m12);
-            }
-        }
     }
 
     /**

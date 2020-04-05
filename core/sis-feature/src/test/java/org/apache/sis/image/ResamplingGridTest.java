@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Random;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import org.apache.sis.geometry.Shapes2D;
 import org.opengis.referencing.operation.MathTransform;
@@ -48,27 +47,6 @@ import static org.opengis.test.Assert.*;
  * @module
  */
 public final strictfp class ResamplingGridTest extends TestCase {
-    /**
-     * Tests the {@link ResamplingGrid#roundIfAlmostInteger(AffineTransform)} method.
-     */
-    @Test
-    public void testRoundIfAlmostInteger() {
-        final AffineTransform test = new AffineTransform(4, 0, 0, 4, -400, -1186);
-        final AffineTransform copy = new AffineTransform(test);
-        ResamplingGrid.roundIfAlmostInteger(test);
-        assertEquals("Translation terms were already integers, so the " +
-                "transform should not have been modified.", copy, test);
-
-        test.translate(ResamplingGrid.EPS/8, -ResamplingGrid.EPS/8);
-        ResamplingGrid.roundIfAlmostInteger(test);
-        assertEquals("Translation terms should have been rounded.", copy, test);
-
-        test.translate(ResamplingGrid.EPS*2, -ResamplingGrid.EPS*2);
-        ResamplingGrid.roundIfAlmostInteger(test);
-        assertFalse("Treshold was smaller than the translation, so the " +
-                "transform should not have been modified.", copy.equals(test));
-    }
-
     /**
      * Tests {@link ResamplingGrid#create(MathTransform2D, MathTransform2D, Rectangle)} with an affine transform.
      * The method should detect the affine case and return an equal transform (not necessarily the same instance).
