@@ -138,7 +138,7 @@ public final strictfp class ResamplingGridTest extends TestCase {
     private static MathTransform2D compare(final String title, final MathTransform projection, final Rectangle2D domain)
             throws TransformException
     {
-        final Rectangle bounds = new Rectangle(10, 20, 800, 600);
+        final Rectangle bounds = new Rectangle(10, 20, 400, 150);
         final MathTransform2D reference = (MathTransform2D) MathTransforms.concatenate(
                 affine(bounds, domain), projection,
                 affine(Shapes2D.transform((MathTransform2D) projection, domain, null), bounds));
@@ -164,7 +164,8 @@ public final strictfp class ResamplingGridTest extends TestCase {
                 if (!(dx <= ResamplingGrid.TOLERANCE && dy <= ResamplingGrid.TOLERANCE)) {
                     fail("Error at (" + x + ',' + y + "): expected " +
                             Arrays.toString(expected) + " but got " +
-                            Arrays.toString(actual) + ". Error is (" + dx + ", " + dy + ')');
+                            Arrays.toString(actual) + ". Error is (" + dx + ", " + dy + ")." +
+                            " Transform is:\n" + grid);
                 }
                 sx.accept(dx);
                 sy.accept(dy);
@@ -194,7 +195,7 @@ public final strictfp class ResamplingGridTest extends TestCase {
         assertInstanceOf("Expected a non-linear transform.", ResamplingGrid.class, tr);
         final ResamplingGrid grid = (ResamplingGrid) tr;
         assertEquals("The x dimension should be affine.",   1, grid.numXTiles);
-        assertEquals("The y dimension can not be affine.", 32, grid.numYTiles);     // Empirical value.
+        assertEquals("The y dimension can not be affine.", 16, grid.numYTiles);     // Empirical value.
     }
 
     /**
@@ -236,7 +237,7 @@ public final strictfp class ResamplingGridTest extends TestCase {
     @Test
     public void testLambertOnSmallArea() throws TransformException {
         final MathTransform projection = HardCodedConversions.lambert().getConversionFromBase().getMathTransform();
-        final Rectangle2D domain = new Rectangle2D.Double(-20, 50, 0.025, 0.05);
+        final Rectangle2D domain = new Rectangle2D.Double(-20, 50, 0.025, 0.025);
         final MathTransform2D tr = compare("Lambert (small area)", projection, domain);
         assertInstanceOf("Expected a linear transform.", AffineTransform2D.class, tr);
     }

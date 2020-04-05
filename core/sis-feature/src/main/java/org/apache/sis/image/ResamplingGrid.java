@@ -74,6 +74,8 @@ final class ResamplingGrid extends AbstractMathTransform2D {
      * The maximal error allowed, in pixel units.
      * This is the maximal difference allowed between a coordinate transformed
      * using the original transform and the same coordinate transformed using this grid.
+     * This maximum is honored on a best-effort basis; it may happen that for some pixels
+     * the error is slightly higher.
      */
     static final double TOLERANCE = 0.125;
 
@@ -209,6 +211,9 @@ final class ResamplingGrid extends AbstractMathTransform2D {
 
     /**
      * Creates a grid for the given domain of validity.
+     * The {@code toSourceCenter} argument is the transform used for computing the coordinate values in the grid.
+     * The {@code toSourceCorner} argument is the transform used for computing derivatives (Jacobian matrices)
+     * in order to determine when the grid as enough tiles.
      *
      * @param  toSourceCenter  transform from target grid center to source grid center.
      * @param  toSourceCorner  transform from target grid corner to source grid corner.
@@ -260,7 +265,7 @@ final class ResamplingGrid extends AbstractMathTransform2D {
          * Given f₁(x) = y₁ + (x − x₁)⋅m₁
          *   and f₃(x) = y₁ + (x − x₁)⋅m₃
          *
-         * then the error ε = f₃(x) − f₁(x) at location x−x₂ is (x₂−x₁)⋅(m₃−m₁).
+         * then the error ε = f₃(x) − f₁(x) at location x=x₂ is (x₂−x₁)⋅(m₃−m₁).
          * Given x₂ = (x₁+x₃)/2, we get ε = (x₃−x₁)/2 ⋅ (m₃−m₁).
          *
          * If we rearange the terms, we get:  (m₃−m₁) = 2⋅ε / (x₃−x₁).
@@ -271,7 +276,11 @@ final class ResamplingGrid extends AbstractMathTransform2D {
                 new Point2D.Double(2 * TOLERANCE / (xmax - xmin),
                                    2 * TOLERANCE / (ymax - ymin)),
                 xmin, xmax, ymin, ymax, upperLeft, upperRight, lowerLeft, lowerRight);
-        if (depth.width == 0 && depth.height == 0) {
+        /*
+         * At this point we got the `depth` argument we need for instantiating `ResamplingGrid`.
+         * The remaining code in this method is only a check for potential optimization.
+         */
+affine: if (depth.width == 0 && depth.height == 0) {
             /*
              * The transform is approximately affine. Compute the matrix coefficients using the points projected
              * on the four borders of the domain, in order to get a kind of average coefficient values. We don't
@@ -295,6 +304,22 @@ final class ResamplingGrid extends AbstractMathTransform2D {
                                                            p.getX(),     p.getY());
             tr.translate(-xcnt, -ycnt);
             roundIfAlmostInteger(tr);
+            /*
+             * Since the affine transform that we built is a kind of average computed from bounds center,
+             * we need to compare with the four corners for making sure that its precision is sufficient.
+             */
+            p = null;
+            for (int i=0; i<4; i++) {
+                point.x = (i & 1) == 0 ? xmin : xmax;
+                point.y = (i & 2) == 0 ? ymin : ymax;
+                p = tr.transform(point, p);
+                final Point2D expected = toSourceCenter.transform(point, point);
+                if (!(abs(p.getX() - expected.getX()) <= TOLERANCE &&
+                      abs(p.getY() - expected.getY()) <= TOLERANCE))
+                {
+                    break affine;
+                }
+            }
             return new AffineTransform2D(tr);
         }
         /*
@@ -481,10 +506,8 @@ final class ResamplingGrid extends AbstractMathTransform2D {
      * (resulting in smaller grids) inside the {@link #depth depth(…)} method.
      */
     private static boolean equals(final Matrix2 center, final Matrix2 corner, final Point2D.Double tolerance) {
-        return abs(center.m00 - corner.m00) <= tolerance.x &&
-               abs(center.m01 - corner.m01) <= tolerance.x &&
-               abs(center.m10 - corner.m10) <= tolerance.y &&
-               abs(center.m11 - corner.m11) <= tolerance.y;
+        return abs(center.m00 - corner.m00) + abs(center.m01 - corner.m01) <= tolerance.x &&
+               abs(center.m10 - corner.m10) + abs(center.m11 - corner.m11) <= tolerance.y;
     }
 
     /**
