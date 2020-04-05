@@ -71,7 +71,7 @@ final class ResamplingGrid extends AbstractMathTransform2D {
     private static final int MIN_TILE_SIZE = 4;
 
     /**
-     * The maximal error allowed, in units of destination grid.
+     * The maximal error allowed, in pixel units.
      * This is the maximal difference allowed between a coordinate transformed
      * using the original transform and the same coordinate transformed using this grid.
      */

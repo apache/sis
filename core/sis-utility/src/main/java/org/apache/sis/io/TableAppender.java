@@ -256,7 +256,7 @@ public class TableAppender extends Appender implements Flushable {
          * Following methods use Character.isWhitespace(…) instead of Character.isSpaceChar(…).
          * This has the effect of removing some ISO control characters (line feeds, tabulation,
          * etc.) from the border. If this policy is changed, search for other occurrences of
-         * 'isWhitespace' in this class for ensuring consistency. Note however that the same
+         * `isWhitespace` in this class for ensuring consistency. Note however that the same
          * policy is not necessarily applied everywhere.
          */
         final int length = separator.length();
@@ -518,7 +518,7 @@ public class TableAppender extends Appender implements Flushable {
         } catch (IOException e) {
             /*
              * Should never happen, because appendSurrogate(…) delegates to append(char)
-             * which is overriden without 'throws IOException' clause in this class.
+             * which is overriden without `throws IOException` clause in this class.
              */
             throw new UncheckedIOException(e);
         }
@@ -544,7 +544,7 @@ public class TableAppender extends Appender implements Flushable {
                 skipLF = (cp == '\r'); // Check the last character.
             } else {
                 /*
-                 * The call to 'toCodePoint' is for forcing the initialization of
+                 * The call to `toCodePoint` is for forcing the initialization of
                  * super.highSurrogate field value. Even if we fall in the middle
                  * of a surrogate pair, it should not hurt because in this context,
                  * toCodePoint should either returns -1 or its argument unchanged.
@@ -713,8 +713,8 @@ public class TableAppender extends Appender implements Flushable {
         final int          cellCount = cells.size();
         for (int cellIndex=0; cellIndex<cellCount; cellIndex++) {
             /*
-             * Copies in 'currentLine' every cells to write in the current table row.
-             * Those elements exclude the last null sentinal value. The 'currentLine'
+             * Copies in `currentLine` every cells to write in the current table row.
+             * Those elements exclude the last null sentinel value. The `currentLine`
              * array initially contains no null element, but some element will be set
              * to null as we progress in the writing process.
              */
@@ -762,7 +762,7 @@ public class TableAppender extends Appender implements Flushable {
                         if (isLineOrParagraphSeparator(c)) {
                             /*
                              * If a EOL character has been found, write only the first line in the cell.
-                             * The 'currentLine[j]' element will be modified in order to contain only
+                             * The `currentLine[j]` element will be modified in order to contain only
                              * the remaining lines, which will be written in next loop iterations.
                              */
                             if (c == '\r' && (next < textLength) && cellText.charAt(next) == '\n') {

@@ -175,7 +175,7 @@ public final strictfp class TestUtilities extends Static {
     public static Random createRandomNumberGenerator() {
         long seed;
         do seed = StrictMath.round(StrictMath.random() * (1L << 48));
-        while (seed == 0); // 0 is a sentinal value for "no generator".
+        while (seed == 0); // 0 is a sentinel value for "no generator".
         TestCase.randomSeed = seed;
         return new Random(seed);
     }

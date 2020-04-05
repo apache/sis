@@ -30,8 +30,8 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -135,7 +135,9 @@ public final strictfp class ResamplingGridTest extends TestCase {
      * @return the {@link ResamplingGrid} created by this method.
      * @throws TransformException if an error occurred while transforming a coordinate.
      */
-    private static MathTransform2D compare(final MathTransform projection, final Rectangle2D domain) throws TransformException {
+    private static MathTransform2D compare(final String title, final MathTransform projection, final Rectangle2D domain)
+            throws TransformException
+    {
         final Rectangle bounds = new Rectangle(10, 20, 800, 600);
         final MathTransform2D reference = (MathTransform2D) MathTransforms.concatenate(
                 affine(bounds, domain), projection,
@@ -170,16 +172,11 @@ public final strictfp class ResamplingGridTest extends TestCase {
         }
         if (VERBOSE) {
             // Print a summary of errors.
-            final TableAppender table = new TableAppender();
-            table.setMultiLinesCells(true);
-            table.appendHorizontalSeparator();
-            table.append(sx.toString());
-            table.nextColumn();
-            table.append(sy.toString());
-            table.nextLine();
-            table.appendHorizontalSeparator();
-            out.println(table);
+            final StatisticsFormat f = StatisticsFormat.getInstance();
+            f.setBorderWidth(1);
             out.println();
+            out.println(title);
+            out.println(f.format(new Statistics[] {sx, sy}));
         }
         return grid;
     }
@@ -193,7 +190,7 @@ public final strictfp class ResamplingGridTest extends TestCase {
     public void testMercator() throws TransformException {
         final MathTransform projection = HardCodedConversions.mercator().getConversionFromBase().getMathTransform();
         final Rectangle domain = new Rectangle(-20, -40, 40, 80);
-        final MathTransform2D tr = compare(projection, domain);
+        final MathTransform2D tr = compare("Mercator", projection, domain);
         assertInstanceOf("Expected a non-linear transform.", ResamplingGrid.class, tr);
         final ResamplingGrid grid = (ResamplingGrid) tr;
         assertEquals("The x dimension should be affine.",   1, grid.numXTiles);
@@ -210,7 +207,7 @@ public final strictfp class ResamplingGridTest extends TestCase {
     public void testMercatorOnSmallArea() throws TransformException {
         final MathTransform projection = HardCodedConversions.mercator().getConversionFromBase().getMathTransform();
         final Rectangle2D domain = new Rectangle2D.Double(-20, 20, 0.25, 0.25);
-        final MathTransform2D tr = compare(projection, domain);
+        final MathTransform2D tr = compare("Mercator (small area)", projection, domain);
         assertInstanceOf("Expected a linear transform.", AffineTransform2D.class, tr);
     }
 
@@ -223,7 +220,7 @@ public final strictfp class ResamplingGridTest extends TestCase {
     public void testLambert() throws TransformException {
         final MathTransform projection = HardCodedConversions.lambert().getConversionFromBase().getMathTransform();
         final Rectangle domain = new Rectangle(-20, 30, 40, 20);
-        final MathTransform2D tr = compare(projection, domain);
+        final MathTransform2D tr = compare("Lambert", projection, domain);
         assertInstanceOf("Expected a non-linear transform.", ResamplingGrid.class, tr);
         final ResamplingGrid grid = (ResamplingGrid) tr;
         assertEquals("The x dimension can not be affine.", 32, grid.numXTiles);     // Empirical value.
@@ -240,7 +237,7 @@ public final strictfp class ResamplingGridTest extends TestCase {
     public void testLambertOnSmallArea() throws TransformException {
         final MathTransform projection = HardCodedConversions.lambert().getConversionFromBase().getMathTransform();
         final Rectangle2D domain = new Rectangle2D.Double(-20, 50, 0.025, 0.05);
-        final MathTransform2D tr = compare(projection, domain);
+        final MathTransform2D tr = compare("Lambert (small area)", projection, domain);
         assertInstanceOf("Expected a linear transform.", AffineTransform2D.class, tr);
     }
 }
