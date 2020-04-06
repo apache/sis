@@ -147,7 +147,7 @@ public class GridCoverage2D extends GridCoverage {
     {
         super(source.gridGeometry, range);
         final int dataType = ConvertedGridCoverage.getDataType(range, isConverted);
-        final ColorModel colorModel = createColorModel(ImageUtilities.getVisibleBand(source.data), dataType);
+        final ColorModel colorModel = createColorModel(Math.max(0, ImageUtilities.getVisibleBand(source.data)), dataType);
         data           = BandedSampleConverter.create(source.data, null, dataType, colorModel, getRanges(), converters);
         gridToImageX   = source.gridToImageX;
         gridToImageY   = source.gridToImageY;

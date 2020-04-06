@@ -212,7 +212,7 @@ final class ConvertedGridCoverage extends GridCoverage {
          * That image should never be null. But if an implementation wants to do so, respect that.
          */
         if (image != null) {
-            final ColorModel colorModel = createColorModel(ImageUtilities.getVisibleBand(image), dataType);
+            final ColorModel colorModel = createColorModel(Math.max(0, ImageUtilities.getVisibleBand(image)), dataType);
             image = BandedSampleConverter.create(image, null, dataType, colorModel, getRanges(), converters);
         }
         return image;
