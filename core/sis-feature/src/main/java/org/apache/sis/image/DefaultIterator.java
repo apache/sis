@@ -431,6 +431,20 @@ class DefaultIterator extends WritablePixelIterator {
         }
 
         /**
+         * Returns the iterator that created this window.
+         */
+        abstract DefaultIterator owner();
+
+        /**
+         * Returns the width and height of this window in pixels.
+         */
+        @Override
+        public final Dimension getSize() {
+            final DefaultIterator it = owner();
+            return new Dimension(it.windowWidth, it.windowHeight);
+        }
+
+        /**
          * Returns an array containing all samples for a rectangle of pixels in the given raster, one sample
          * per array element. Subclasses shall delegate to one of the {@code Raster#getPixels(…)} methods
          * depending on the buffer data type.
@@ -464,6 +478,14 @@ class DefaultIterator extends WritablePixelIterator {
             super(IntBuffer.wrap(data).asReadOnlyBuffer());
             this.data = data;
             this.transfer = transfer;
+        }
+
+        /**
+         * Returns the iterator that created this window.
+         */
+        @Override
+        final DefaultIterator owner() {
+            return DefaultIterator.this;
         }
 
         /**
@@ -505,6 +527,14 @@ class DefaultIterator extends WritablePixelIterator {
         }
 
         /**
+         * Returns the iterator that created this window.
+         */
+        @Override
+        final DefaultIterator owner() {
+            return DefaultIterator.this;
+        }
+
+        /**
          * Performs the transfer between the underlying raster and this window.
          */
         @Override
@@ -540,6 +570,14 @@ class DefaultIterator extends WritablePixelIterator {
             super(DoubleBuffer.wrap(data).asReadOnlyBuffer());
             this.data = data;
             this.transfer = transfer;
+        }
+
+        /**
+         * Returns the iterator that created this window.
+         */
+        @Override
+        final DefaultIterator owner() {
+            return DefaultIterator.this;
         }
 
         /**

@@ -213,7 +213,7 @@ public class ResampledImage extends ComputedImage {
      *
      * @see #toSourceSupport
      */
-    private static double interpolationSupportOffset(final int span) {
+    static double interpolationSupportOffset(final int span) {
         return -Math.max(0, (span - 1) / 2);        // Round toward 0.
     }
 

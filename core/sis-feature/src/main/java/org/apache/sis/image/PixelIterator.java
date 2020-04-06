@@ -723,7 +723,7 @@ public abstract class PixelIterator {
      * The buffer content is replaced ever time {@link #update()} is invoked.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.8
+     * @version 1.1
      *
      * @param  <T>  the type of buffer which can be used for transferring data.
      *
@@ -752,6 +752,15 @@ public abstract class PixelIterator {
         Window(final T buffer) {
             values = buffer;
         }
+
+        /**
+         * Returns the width and height of this window in pixels.
+         *
+         * @return the window size in pixels.
+         *
+         * @since 1.1
+         */
+        public abstract Dimension getSize();
 
         /**
          * Updates this window with the sample values in the region starting at current iterator position.
