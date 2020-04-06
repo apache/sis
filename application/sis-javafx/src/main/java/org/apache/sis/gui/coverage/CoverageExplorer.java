@@ -240,7 +240,7 @@ public class CoverageExplorer {
      * @param  source  the coverage or resource to load, or {@code null} if none.
      */
     private void startLoading(final ImageRequest source) {
-        final GridView main = (GridView) views[0].view();
+        final GridView main = (GridView) views[TABLE_VIEW].view();
         main.setImage(source);
     }
 
