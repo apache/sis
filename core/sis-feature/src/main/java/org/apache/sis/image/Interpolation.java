@@ -164,6 +164,27 @@ public interface Interpolation {
     };
 
     /**
+     * Bicubic interpolation.
+     * The bicubic convolution algorithm uses a kernel with coefficients computed as below:
+     *
+     * {@preformat text
+     *   W(x)  =  (a+2)|x|³ − (a+3)|x|²         + 1       for 0 ≤ |x| ≤ 1
+     *   W(x)  =      a|x|³ −    5a|x|² + 8a|x| − 4a      for 1 < |x| < 2
+     *   W(x)  =  0                                       otherwise
+     * }
+     *
+     * The <var>a</var> value is typically −0.5, −0.75 or −1.
+     * This interpolation instance uses <var>a</var> = −0.5.
+     *
+     * <div class="note"><b>Reference:</b>
+     * Digital Image Warping, George Wolberg, 1990, pp 129-131, IEEE Computer Society Press, ISBN 0-8186-8944-7.
+     * </div>
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Bicubic_interpolation">Bicubic interpolation on Wikipedia</a>
+     */
+    Interpolation BICUBIC = new BicubicInterpolation();
+
+    /**
      * Lanczos interpolation for photographic images.
      * This interpolation is not recommended for images that may contain NaN values.
      * The Lanczos reconstruction kernel is:

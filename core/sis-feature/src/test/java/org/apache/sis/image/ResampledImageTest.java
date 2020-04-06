@@ -235,6 +235,28 @@ public final strictfp class ResampledImageTest extends TestCase {
     }
 
     /**
+     * Tests {@link Interpolation#BICUBIC} on floating point values.
+     */
+    @Test
+    public void testBicubicOnFloats() {
+        source = createRandomImage(DataBuffer.TYPE_FLOAT);
+        interpolation = Interpolation.BICUBIC;
+        createScaledByTwo(-15, -12);
+        verifyAtIntegerPositions();
+    }
+
+    /**
+     * Tests {@link Interpolation#BICUBIC} on integer values.
+     */
+    @Test
+    public void testBicubicOnIntegers() {
+        source = createRandomImage(DataBuffer.TYPE_SHORT);
+        interpolation = Interpolation.BICUBIC;
+        createScaledByTwo(12, 7);
+        verifyAtIntegerPositions();
+    }
+
+    /**
      * Resamples a single-tiled and single-banded image with values 1 everywhere except in center.
      * The {@linkplain #source} is a 3×3 or 4×4 image with the following values:
      *
@@ -315,5 +337,27 @@ public final strictfp class ResampledImageTest extends TestCase {
             1.000000000f, 1f, 1.000000000f, 1.000000000f, 1.000000000f, 1.000000000f, 1.000000000f, 1f, 1.000000000f,
             1.111111111f, 1f, 0.888888888f, 0.777777777f, 0.666666666f, 0.777777777f, 0.888888888f, 1f, 1.111111111f
         }, resampleSimpleImage(3), (float) STRICT);
+    }
+
+    /**
+     * Checks all values of a bicubic interpolation on a simple image.
+     */
+    @Test
+    public void verifyBicubicResults() {
+        interpolation = Interpolation.BICUBIC;
+        assertArrayEquals(new float[] {
+            0f, 0f, 0f,                0f,                0f,                0f,                0f,                0f,                0f,                0f,                  0f, 0f,
+            0f, 1f, 1f,                1f,                1f,                1f,                1f,                1f,                1f,                1f,                  1f, 0f,
+            0f, 1f, 1.19753086419753f, 1.34567901234568f, 1.44444444444444f, 1.49382716049383f, 1.49382716049383f, 1.44444444444444f, 1.34567901234568f, 1.19753086419753f,   1f, 0f,
+            0f, 1f, 1.34567901234568f, 1.60493827160494f, 1.77777777777777f, 1.86419753086420f, 1.86419753086420f, 1.77777777777777f, 1.60493827160494f, 1.34567901234568f,   1f, 0f,
+            0f, 1f, 1.44444444444444f, 1.77777777777777f, 2f,                2.11111111111111f, 2.11111111111111f, 2f,                1.77777777777777f, 1.44444444444444f,   1f, 0f,
+            0f, 1f, 1.49382716049383f, 1.86419753086420f, 2.11111111111111f, 2.23456790123457f, 2.23456790123457f, 2.11111111111111f, 1.86419753086420f, 1.49382716049382f,   1f, 0f,
+            0f, 1f, 1.49382716049383f, 1.86419753086420f, 2.11111111111111f, 2.23456790123457f, 2.23456790123457f, 2.11111111111111f, 1.86419753086420f, 1.49382716049382f,   1f, 0f,
+            0f, 1f, 1.44444444444444f, 1.77777777777777f, 2f,                2.11111111111111f, 2.11111111111111f, 2f,                1.77777777777777f, 1.44444444444444f,   1f, 0f,
+            0f, 1f, 1.34567901234568f, 1.60493827160494f, 1.77777777777777f, 1.86419753086420f, 1.86419753086420f, 1.77777777777777f, 1.60493827160494f, 1.34567901234568f,   1f, 0f,
+            0f, 1f, 1.19753086419753f, 1.34567901234568f, 1.44444444444444f, 1.49382716049383f, 1.49382716049383f, 1.44444444444444f, 1.34567901234568f, 1.19753086419753f,   1f, 0f,
+            0f, 1f, 1f,                1f,                1f,                1f,                1f,                1f,                1f,                1f,                  1f, 0f,
+            0f, 0f, 0f,                0f,                0f,                0f,                0f,                0f,                0f,                0f,                  0f, 0f
+        }, resampleSimpleImage(4), (float) STRICT);
     }
 }
