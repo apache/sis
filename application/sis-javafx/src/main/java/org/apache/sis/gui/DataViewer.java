@@ -32,6 +32,7 @@ import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.apache.sis.gui.dataset.ResourceExplorer;
 import org.apache.sis.internal.gui.BackgroundThreads;
@@ -140,6 +141,8 @@ public class DataViewer extends Application {
         pane.setTop(menus);
         pane.setCenter(content.getView());
         window.setTitle("Apache Spatial Information System");
+        window.getIcons().addAll(new Image(DataViewer.class.getResourceAsStream("SIS_64px.png")),
+                                 new Image(DataViewer.class.getResourceAsStream("SIS_128px.png")));
         window.setScene(new Scene(pane));
         window.setWidth(1000);
         window.setHeight(800);
