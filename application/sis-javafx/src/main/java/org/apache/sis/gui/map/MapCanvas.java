@@ -30,6 +30,12 @@ import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Affine;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.Cursor;
+import javafx.event.EventType;
 import javafx.beans.Observable;
 import javafx.concurrent.Task;
 import javafx.util.Callback;
@@ -61,6 +67,14 @@ import org.apache.sis.internal.map.RenderException;
  * @module
  */
 public abstract class MapCanvas extends PlanarCanvas {
+    /**
+     * A factor for converting deltas from scroll wheel into zoom factor.
+     * For positive deltas, the zoom in factor will be {@code delta/MOUSE_WHEEL_ZOOM + 1}.
+     * For a typical value {@code delta} = 40, a {@code MOUSE_WHEEL_ZOOM} value of 400
+     * results in a zoom factor of 10%.
+     */
+    private static final double MOUSE_WHEEL_ZOOM = 400;
+
     /**
      * A buffer where to draw the content of the map for the region to be displayed.
      * This buffer uses ARGB color model, contrarily to the {@link RenderedImage} of
@@ -152,12 +166,28 @@ public abstract class MapCanvas extends PlanarCanvas {
     private boolean invalidObjectiveToDisplay;
 
     /**
+     * The zoom, translation or rotation to apply on the content. This is the identity transform except during
+     * the short time between a gesture (zoom, pan, <i>etc.</i>) and the completion of new {@link #repaint()}.
+     * This is used for giving immediate feedback to the user while waiting for the new image to be ready.
+     */
+    private final Affine transform;
+
+    /**
+     * Previous cursor position during a pan event. This is used for computing the translation to apply
+     * on the image during drag events.
+     *
+     * @see #onDrag(MouseEvent)
+     */
+    private double lastXPan, lastYPan;
+
+    /**
      * Creates a new canvas for JavaFX application.
      *
      * @param  locale  the locale to use for labels and some messages, or {@code null} for default.
      */
     public MapCanvas(final Locale locale) {
         super(locale);
+        transform = new Affine();
         view = new Pane() {
             @Override protected void layoutChildren() {
                 super.layoutChildren();
@@ -168,6 +198,11 @@ public abstract class MapCanvas extends PlanarCanvas {
         };
         image = new ImageView();
         image.setPreserveRatio(true);
+        image.getTransforms().add(transform);
+        image.setOnScroll(this::onScroll);          // Depends on cursor location (must be on image).
+        view.setOnMousePressed(this::onDrag);       // We want it to be insensitive to image transform.
+        view.setOnMouseDragged(this::onDrag);
+        view.setOnMouseReleased(this::onDrag);
         view.getChildren().add(image);
         /*
          * Do not set a preferred size, otherwise `repaint()` is invoked twice: once with the preferred size
@@ -177,6 +212,8 @@ public abstract class MapCanvas extends PlanarCanvas {
          */
         view.widthProperty() .addListener(this::onSizeChanged);
         view.heightProperty().addListener(this::onSizeChanged);
+        view.setClip(new Rectangle(view.getWidth(), view.getHeight()));
+        view.setCursor(Cursor.CROSSHAIR);
     }
 
     /**
@@ -184,9 +221,51 @@ public abstract class MapCanvas extends PlanarCanvas {
      * This method requests a new repaint.
      */
     private void onSizeChanged(final Observable property) {
+        final Rectangle clip = (Rectangle) view.getClip();
+        clip.setWidth (view.getWidth());
+        clip.setHeight(view.getHeight());
         contentChangeCount++;
         sizeChanged = true;
         repaint();
+    }
+
+    /**
+     * Invoked when the user presses the button, drags the map and releases the button.
+     * This is interpreted as a translation applied in pixel units on the map.
+     */
+    private void onDrag(final MouseEvent event) {
+        event.consume();
+        final double x = event.getX();
+        final double y = event.getY();
+        final EventType<? extends MouseEvent> type = event.getEventType();
+        if (type == MouseEvent.MOUSE_PRESSED) {
+            view.setCursor(Cursor.CLOSED_HAND);
+        } else {
+            if (type != MouseEvent.MOUSE_DRAGGED) {
+                view.setCursor(Cursor.CROSSHAIR);
+            }
+            transform.prependTranslation(x - lastXPan, y - lastYPan);
+        }
+        lastXPan = x;
+        lastYPan = y;
+    }
+
+    /**
+     * Invoked when the user rotates the mouse wheel.
+     * This method performs a zoom-in or zoom-out event.
+     */
+    private void onScroll(final ScrollEvent event) {
+        if (event.getTouchCount() != 0) {
+            // Do not interpret scroll events on touch pad as a zoom.
+            return;
+        }
+        event.consume();
+        final double delta = event.getDeltaY();
+        double zoom = Math.abs(delta) / MOUSE_WHEEL_ZOOM + 1;
+        if (delta < 0) {
+            zoom = 1/zoom;
+        }
+        transform.appendScale(zoom, zoom, event.getX(), event.getY());
     }
 
     /**
@@ -239,7 +318,10 @@ public abstract class MapCanvas extends PlanarCanvas {
      * specific to the rendering process before to delegate to the overrideable method.
      */
     private void executeRendering(final Task<?> task) {
-        task.runningProperty().addListener((p,o,n) -> isRendering = n);
+        task.runningProperty().addListener((p,o,n) -> {
+            view.setCursor(n ? Cursor.WAIT : Cursor.CROSSHAIR);
+            isRendering = n;
+        });
         execute(task);
     }
 
@@ -573,6 +655,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         bufferWrapper       = null;
         doubleBuffer        = null;
         bufferConfiguration = null;
+        transform.setToIdentity();
     }
 
     /**
