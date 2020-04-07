@@ -96,6 +96,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotReadFile_1 = 5;
 
         /**
+         * A resource contained in the file can not be read. The cause is given below.
+         */
+        public static final short CanNotReadResource = 55;
+
+        /**
          * Cell geometry:
          */
         public static final short CellGeometry = 15;
@@ -159,6 +164,11 @@ public final class Resources extends IndexedResourceBundle {
          * Error during data access
          */
         public static final short ErrorDataAccess = 40;
+
+        /**
+         * Details about error
+         */
+        public static final short ErrorDetails = 56;
 
         /**
          * Error exporting data

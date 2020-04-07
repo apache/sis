@@ -472,6 +472,16 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
                 }
             }
             /*
+             * If at least one `sourceDimensions` is undefined, the variable is maybe not a grid.
+             * It happens for example if the variable is a trajectory, in which case we have two
+             * CRS dimensions (e.g. latitude and longitude) but only one variable dimension;
+             * the first CRS dimension has been associated to that variable and the other CRS
+             * dimension is orphan.
+             */
+            for (final int s : sourceDimensions) {
+                if (s < 0) return null;
+            }
+            /*
              * Final transform, as the concatenation of the non-linear transforms followed by the affine transform.
              * We concatenate the affine transform last because it may change axis order.
              */

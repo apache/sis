@@ -30,6 +30,7 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -441,15 +442,27 @@ public class ResourceTree extends TreeView<Resource> {
             super.updateItem(resource, empty);          // Mandatory according JavaFX documentation.
             Color color = Styles.NORMAL_TEXT;
             String text = null;
+            Button more = null;
             if (!empty) {
                 if (resource == PseudoResource.LOADING) {
                     color = Styles.LOADING_TEXT;
-                    if (tree != null) text = tree.localized.getString(Resources.Keys.Loading);
+                    if (tree != null) {
+                        text = tree.localized.getString(Resources.Keys.Loading);
+                    }
                 } else if (resource instanceof Unloadable) {
                     color = Styles.ERROR_TEXT;
-                    if (tree != null) text = tree.string(((Unloadable) resource).failure);
+                    if (tree != null) {
+                        final Throwable failure = ((Unloadable) resource).failure;
+                        text = tree.string(failure);
+                        more = new Button(Styles.ERROR_DETAILS);
+                        more.setOnAction((e) -> ExceptionReporter.show(
+                                tree.localized.getString(Resources.Keys.ErrorDetails),
+                                tree.localized.getString(Resources.Keys.CanNotReadResource), failure));
+                    }
                 } else {
-                    if (tree != null) text = tree.getTitle(resource, true);
+                    if (tree != null) {
+                        text = tree.getTitle(resource, true);
+                    }
                 }
             }
             setTextFill(isSelected() ? Styles.SELECTED_TEXT : color);
@@ -461,6 +474,7 @@ public class ResourceTree extends TreeView<Resource> {
              */
             if (tree != null) {
                 setText(text);
+                setGraphic(more);
                 ContextMenu menu = null;
                 if (tree.findOrRemove(resource, false)) {
                     menu = getContextMenu();

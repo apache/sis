@@ -720,35 +720,37 @@ public abstract class Variable extends Node {
                  * needs to be applied.
                  */
                 GridGeometry grid = info.getGridGeometry(decoder);
-                if (grid.isDefined(GridGeometry.EXTENT)) {
-                    GridExtent extent = grid.getExtent();
-                    final long[] sizes = new long[extent.getDimension()];
-                    boolean needsResize = false;
-                    for (int i=sizes.length; --i >= 0;) {
-                        final int d = (sizes.length - 1) - i;               // Convert "natural order" index into netCDF index.
-                        sizes[i] = dimensions.get(d).length();
-                        if (!needsResize) {
-                            needsResize = (sizes[i] != extent.getSize(i));
+                if (grid != null) {
+                    if (grid.isDefined(GridGeometry.EXTENT)) {
+                        GridExtent extent = grid.getExtent();
+                        final long[] sizes = new long[extent.getDimension()];
+                        boolean needsResize = false;
+                        for (int i=sizes.length; --i >= 0;) {
+                            final int d = (sizes.length - 1) - i;               // Convert "natural order" index into netCDF index.
+                            sizes[i] = dimensions.get(d).length();
+                            if (!needsResize) {
+                                needsResize = (sizes[i] != extent.getSize(i));
+                            }
+                        }
+                        if (needsResize) {
+                            final double[] dataToGridIndices = adjustment.dataToGridIndices();
+                            if (dataToGridIndices == null || dataToGridIndices.length < sizes.length) {
+                                warning(Variable.class, "getGridGeometry", Resources.Keys.ResamplingIntervalNotFound_2, getFilename(), getName());
+                                return null;
+                            }
+                            extent = extent.resize(sizes);
+                            grid = grid.derive().resize(extent, dataToGridIndices).build();
                         }
                     }
-                    if (needsResize) {
-                        final double[] dataToGridIndices = adjustment.dataToGridIndices();
-                        if (dataToGridIndices == null || dataToGridIndices.length < sizes.length) {
-                            warning(Variable.class, "getGridGeometry", Resources.Keys.ResamplingIntervalNotFound_2, getFilename(), getName());
-                            return null;
-                        }
-                        extent = extent.resize(sizes);
-                        grid = grid.derive().resize(extent, dataToGridIndices).build();
+                    /*
+                     * At this point we finished to build a grid geometry from the information provided by axes.
+                     * If there is grid mapping attributes (e.g. "EPSG_code", "ESRI_pe_string", "GeoTransform",
+                     * "spatial_ref", etc.), substitute some parts of the grid geometry by the parts built from
+                     * those attributes.
+                     */
+                    if (gridMapping != null) {
+                        grid = gridMapping.adaptGridCRS(this, grid, info.getAnchor());
                     }
-                }
-                /*
-                 * At this point we finished to build a grid geometry from the information provided by axes.
-                 * If there is grid mapping attributes (e.g. "EPSG_code", "ESRI_pe_string", "GeoTransform",
-                 * "spatial_ref", etc.), substitute some parts of the grid geometry by the parts built from
-                 * those attributes.
-                 */
-                if (gridMapping != null) {
-                    grid = gridMapping.adaptGridCRS(this, grid, info.getAnchor());
                 }
                 gridGeometry = grid;
             } else if (gridMapping != null) {

@@ -101,6 +101,11 @@ public final class Styles {
             new Background(new BackgroundFill(Color.LIGHTPINK, null, null));
 
     /**
+     * The Unicode character to put in a button for requesting more information about an error.
+     */
+    public static final String ERROR_DETAILS = "ℹ";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Styles() {
