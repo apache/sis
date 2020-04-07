@@ -135,6 +135,8 @@ import org.apache.sis.coverage.grid.GridExtent;
  *
  * <h2>Multi-threading</h2>
  * {@code Canvas} is not thread-safe. Synchronization, if desired, must be done by the caller.
+ * Another common strategy is to interact with {@code Canvas} from a single thread,
+ * for example the Swing or JavaFX event queue.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

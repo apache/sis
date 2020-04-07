@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.nio.IntBuffer;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.RenderedImage;
@@ -32,11 +33,13 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Affine;
+import javafx.scene.transform.Transform;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.Cursor;
 import javafx.event.EventType;
 import javafx.beans.Observable;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.util.Callback;
 import org.opengis.geometry.Envelope;
@@ -150,7 +153,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Whether a rendering task is in progress. Used for avoiding to send too many {@link #repaint()} requests;
      * we will wait for current repaint event to finish before to send another one.
      *
-     * @see #executeRendering(Task)
+     * @see #executeRendering(Affine, Task)
      */
     private boolean isRendering;
 
@@ -166,11 +169,12 @@ public abstract class MapCanvas extends PlanarCanvas {
     private boolean invalidObjectiveToDisplay;
 
     /**
-     * The zoom, translation or rotation to apply on the content. This is the identity transform except during
-     * the short time between a gesture (zoom, pan, <i>etc.</i>) and the completion of new {@link #repaint()}.
-     * This is used for giving immediate feedback to the user while waiting for the new image to be ready.
+     * Whether a zoom, pan or rotation has been added to {@link #view} since last time the image has been painted.
+     * If {@code true}, then the last element in {@link Pane#getTransforms()} list contains transformation applied
+     * by JavaFX while we are waiting for the {@link #repaint()} to complete. After the repaint event completed,
+     * the new image replaces the JavaFX transformation.
      */
-    private final Affine transform;
+    private boolean isViewTransformed;
 
     /**
      * Previous cursor position during a pan event. This is used for computing the translation to apply
@@ -187,7 +191,6 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     public MapCanvas(final Locale locale) {
         super(locale);
-        transform = new Affine();
         view = new Pane() {
             @Override protected void layoutChildren() {
                 super.layoutChildren();
@@ -198,9 +201,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         };
         image = new ImageView();
         image.setPreserveRatio(true);
-        image.getTransforms().add(transform);
-        image.setOnScroll(this::onScroll);          // Depends on cursor location (must be on image).
-        view.setOnMousePressed(this::onDrag);       // We want it to be insensitive to image transform.
+        view.setOnScroll(this::onScroll);
+        view.setOnMousePressed(this::onDrag);
         view.setOnMouseDragged(this::onDrag);
         view.setOnMouseReleased(this::onDrag);
         view.getChildren().add(image);
@@ -240,14 +242,15 @@ public abstract class MapCanvas extends PlanarCanvas {
         final EventType<? extends MouseEvent> type = event.getEventType();
         if (type == MouseEvent.MOUSE_PRESSED) {
             view.setCursor(Cursor.CLOSED_HAND);
+            lastXPan = x;
+            lastYPan = y;
         } else {
             if (type != MouseEvent.MOUSE_DRAGGED) {
-                view.setCursor(Cursor.CROSSHAIR);
+                view.setCursor(isRendering ? Cursor.WAIT : Cursor.CROSSHAIR);
             }
-            transform.prependTranslation(x - lastXPan, y - lastYPan);
+            getTransform(true).appendTranslation(x - lastXPan, y - lastYPan);
+            requestRepaint();
         }
-        lastXPan = x;
-        lastYPan = y;
     }
 
     /**
@@ -265,7 +268,34 @@ public abstract class MapCanvas extends PlanarCanvas {
         if (delta < 0) {
             zoom = 1/zoom;
         }
-        transform.appendScale(zoom, zoom, event.getX(), event.getY());
+        getTransform(true).appendScale(zoom, zoom, event.getX(), event.getY());
+        requestRepaint();
+    }
+
+    /**
+     * The zoom, translation or rotation to apply on the content. This is the identity transform except during
+     * the short time between a gesture (zoom, pan, <i>etc.</i>) and the completion of new {@link #repaint()}.
+     * This is used for giving immediate feedback to the user while waiting for the new image to be ready.
+     *
+     * @param  create  whether to create the transform if not present.
+     * @return the transform, or {@code null} if none and {@code create} is {@code false}.
+     */
+    private Affine getTransform(final boolean create) {
+        /*
+         * This list may have more than one element if user continues zooming
+         * or panning while a repaint event is working in background thread.
+         */
+        final ObservableList<Transform> transforms = view.getTransforms();
+        final Affine at;
+        if (isViewTransformed) {
+            at = (Affine) transforms.get(transforms.size() - 1);
+        } else if (create) {
+            at = new Affine();
+            isViewTransformed = transforms.add(at);
+        } else {
+            at = null;
+        }
+        return at;
     }
 
     /**
@@ -316,11 +346,17 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Executes a rendering task in a background thread. This method applies configurations
      * specific to the rendering process before to delegate to the overrideable method.
+     *
+     * @param  transform  The JavaFX transform at the time the repaint event is trigged. This transform
+     *                    will be removed from {@link #view} transform list after the image is rendered.
+     *                    May be {@code null} if no zoom or pan have been applied since last rendering.
      */
-    private void executeRendering(final Task<?> task) {
+    private void executeRendering(final Affine transform, final Task<?> task) {
         task.runningProperty().addListener((p,o,n) -> {
-            view.setCursor(n ? Cursor.WAIT : Cursor.CROSSHAIR);
-            isRendering = n;
+            final boolean b = n;            // Unboxing
+            isRendering = b;
+            view.setCursor(b ? Cursor.WAIT : Cursor.CROSSHAIR);
+            if (!b) view.getTransforms().remove(transform);
         });
         execute(task);
     }
@@ -462,10 +498,24 @@ public abstract class MapCanvas extends PlanarCanvas {
                     tr = MathTransforms.identity(BIDIMENSIONAL);
                 }
                 setObjectiveToDisplay(tr);
+                view.getTransforms().clear();
             }
         } catch (RenderException ex) {
             errorOccurred(ex);
             return;
+        }
+        /*
+         * If a temporary zoom, rotation or translation has been applied using JavaFX transform API,
+         * replaced that temporary transform by a "permanent" adjustment of the `objectiveToDisplay`
+         * transform. It allows SIS to get new data for the new visible area and resolution.
+         */
+        final Affine transform = getTransform(false);
+        if (transform != null) {
+            isViewTransformed = false;
+            transformDisplayCoordinates(new AffineTransform(
+                    transform.getMxx(), transform.getMyx(),
+                    transform.getMxy(), transform.getMyy(),
+                    transform.getTx(),  transform.getTy()));
         }
         /*
          * Invoke `createRenderer()` only after we finished above configuration, because that method may take
@@ -494,7 +544,7 @@ public abstract class MapCanvas extends PlanarCanvas {
             doubleBuffer        = null;
             bufferWrapper       = null;
             bufferConfiguration = null;
-            executeRendering(new Task<WritableImage>() {
+            executeRendering(transform, new Task<WritableImage>() {
                 /**
                  * The Java2D image where to do the rendering. This image will be created in a background thread
                  * and assigned to the {@link MapCanvas#buffer} field in JavaFX thread if rendering succeed.
@@ -641,7 +691,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                     return null;
                 }
             }
-            executeRendering(new Updater());
+            executeRendering(transform, new Updater());
         }
     }
 
@@ -655,7 +705,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         bufferWrapper       = null;
         doubleBuffer        = null;
         bufferConfiguration = null;
-        transform.setToIdentity();
+        view.getTransforms().clear();
     }
 
     /**

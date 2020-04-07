@@ -42,6 +42,11 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * A canvas for two-dimensional display device using a Cartesian coordinate system.
  * Data are reduced to a two-dimensional slice before to be displayed.
  *
+ * <h2>Multi-threading</h2>
+ * {@code PlanarCanvas} is not thread-safe. Synchronization, if desired, must be done by the caller.
+ * Another common strategy is to interact with {@code PlanarCanvas} from a single thread,
+ * for example the Swing or JavaFX event queue.
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
