@@ -871,7 +871,7 @@ public class TileOpExecutor {
             final Cursor<RenderedImage,A> cursor = executor.new Cursor<>(source, collector, errorHandler == null);
             final Future<?>[] workers = new Future<?>[cursor.getNumWorkers()];
             for (int i=0; i<workers.length; i++) {
-                workers[i] = CommonExecutor.INSTANCE.submit(new ReadWork<>(cursor, collector));
+                workers[i] = CommonExecutor.instance().submit(new ReadWork<>(cursor, collector));
             }
             final ReadWork<A> worker = new ReadWork<>(cursor, collector);
             worker.run();
@@ -928,7 +928,7 @@ public class TileOpExecutor {
             final Cursor<WritableRenderedImage,A> cursor = executor.new Cursor<>(target, collector, false);
             final Future<?>[] workers = new Future<?>[cursor.getNumWorkers()];
             for (int i=0; i<workers.length; i++) {
-                workers[i] = CommonExecutor.INSTANCE.submit(new WriteWork<>(cursor, collector));
+                workers[i] = CommonExecutor.instance().submit(new WriteWork<>(cursor, collector));
             }
             final WriteWork<A> worker = new WriteWork<>(cursor, collector);
             worker.run();

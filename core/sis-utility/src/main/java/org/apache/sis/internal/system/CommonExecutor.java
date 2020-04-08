@@ -67,13 +67,22 @@ public final class CommonExecutor extends AtomicInteger implements ThreadFactory
      * or for JavaFX/Swing thread. In addition the caller will often do part of the work in its own thread.
      * Threads are disposed after two minutes of inactivity.
      */
-    public static final ExecutorService INSTANCE;
+    private static final ThreadPoolExecutor INSTANCE;
     static {
         final ThreadPoolExecutor executor = new ThreadPoolExecutor(PARALLELISM, PARALLELISM, 2, TimeUnit.MINUTES,
-            new LinkedBlockingQueue<>(1000000),             // Arbitrary limit against excessive queue expansion.
-            new CommonExecutor());
+                new LinkedBlockingQueue<>(1000000),         // Arbitrary limit against excessive queue expansion.
+                new CommonExecutor());
         executor.allowCoreThreadTimeOut(true);
         INSTANCE = executor;
+    }
+
+    /**
+     * Returns the executor service shared by SIS modules for most costly calculations.
+     *
+     * @return the executor service for SIS tasks to run in background.
+     */
+    public static ExecutorService instance() {
+        return INSTANCE;
     }
 
     /**
@@ -93,7 +102,7 @@ public final class CommonExecutor extends AtomicInteger implements ThreadFactory
      */
     public static boolean unschedule(final Object task) {
         if (task instanceof Runnable) {
-            return ((ThreadPoolExecutor) INSTANCE).remove((Runnable) task);
+            return INSTANCE.remove((Runnable) task);
         }
         return false;
     }
