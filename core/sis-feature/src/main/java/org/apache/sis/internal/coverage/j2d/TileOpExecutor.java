@@ -33,10 +33,12 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.ImagingOpException;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.CommonExecutor;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -596,6 +598,7 @@ public class TileOpExecutor {
          *
          * @param  <R>           the final type of the result. This is often the same type than <var>A</var>.
          * @param  workers       handlers of all worker threads other than the current threads.
+         *                       Content of this array may be modified by this method.
          * @param  collector     provides the finisher to use for computing final result of type <var>R</var>.
          * @param  errorHandler  where to report exceptions, or {@code null} for throwing them.
          * @return the final result computed by finisher (may be {@code null}).
@@ -604,8 +607,18 @@ public class TileOpExecutor {
          * @throws RuntimeException if an exception occurred elsewhere (for example in the combiner or finisher).
          */
         final <R> R finish(final Future<?>[] workers, final Collector<?,A,R> collector, final Consumer<LogRecord> errorHandler) {
+            /*
+             * Before to wait for other threads to complete their work, we need to remove from executor queue all
+             * workers that did not yet started their run. Those threads may be waiting for an executor thread to
+             * become available, which may never happen if all threads are waiting for a non-running task.
+             */
+            for (int i=0; i<workers.length; i++) {
+                if (CommonExecutor.unschedule(workers[i])) {
+                    workers[i] = null;
+                }
+            }
             for (final Future<?> task : workers) try {
-                task.get();
+                if (task != null) task.get();
             } catch (ExecutionException ex) {
                 /*
                  * This is not an exception that occurred in Worker.executeOnCurrentTile(), RenderedImage.getTile(…)
@@ -671,6 +684,26 @@ public class TileOpExecutor {
                     errors.getThrown().addSuppressed(ex);
                 }
             }
+        }
+
+        /**
+         * Returns a string representation of this cursor for debugging purposes.
+         */
+        @Override
+        public String toString() {
+            final int index = get();
+            String tile = "done";
+            if (index >= 0) {
+                final int tx = Math.addExact(minTileX, index % numXTiles);
+                final int ty = Math.addExact(minTileY, index / numXTiles);
+                if (ty <= maxTileY) {
+                    tile = "(" + tx + ", " + ty + ')';
+                }
+            }
+            return Strings.toString(getClass(),
+                    "image",      Classes.getShortClassName(image),
+                    "numWorkers", getNumWorkers(),
+                    "tile",       tile);
         }
     }
 

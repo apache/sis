@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.system;
 
+import java.util.concurrent.Future;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -73,6 +74,28 @@ public final class CommonExecutor extends AtomicInteger implements ThreadFactory
             new CommonExecutor());
         executor.allowCoreThreadTimeOut(true);
         INSTANCE = executor;
+    }
+
+    /**
+     * If the given task has been scheduled for execution but its execution did not yet started,
+     * removes it from the scheduled list. Otherwise does nothing. The given task should be one
+     * of the following values:
+     *
+     * <ul>
+     *   <li>The {@link Runnable} value given to {@link ExecutorService#execute(Runnable)}.</li>
+     *   <li>The {@link Future} value returned by {@link ExecutorService#submit(Runnable)}.
+     *       In that case, the {@code Future} wrapper created by {@link ThreadPoolExecutor}
+     *       is actually an instance of {@link java.util.concurrent.RunnableFuture}.</li>
+     * </ul>
+     *
+     * @param  task  the task to remove from the list of tasks to execute.
+     * @return whether the given task has been removed.
+     */
+    public static boolean unschedule(final Object task) {
+        if (task instanceof Runnable) {
+            return ((ThreadPoolExecutor) INSTANCE).remove((Runnable) task);
+        }
+        return false;
     }
 
     /**
