@@ -25,6 +25,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.RenderedImage;
 import java.awt.image.VolatileImage;
+import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelBuffer;
@@ -152,8 +153,6 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Whether a rendering task is in progress. Used for avoiding to send too many {@link #repaint()} requests;
      * we will wait for current repaint event to finish before to send another one.
-     *
-     * @see #executeRendering(Affine, Task)
      */
     private boolean isRendering;
 
@@ -177,12 +176,12 @@ public abstract class MapCanvas extends PlanarCanvas {
     private boolean isViewTransformed;
 
     /**
-     * Previous cursor position during a pan event. This is used for computing the translation to apply
-     * on the image during drag events.
+     * Cursor position at the time pan event started.
+     * This is used for computing the {@linkplain #view} translation to apply during drag events.
      *
      * @see #onDrag(MouseEvent)
      */
-    private double lastXPan, lastYPan;
+    private double xPanStart, yPanStart;
 
     /**
      * Creates a new canvas for JavaFX application.
@@ -242,14 +241,15 @@ public abstract class MapCanvas extends PlanarCanvas {
         final EventType<? extends MouseEvent> type = event.getEventType();
         if (type == MouseEvent.MOUSE_PRESSED) {
             view.setCursor(Cursor.CLOSED_HAND);
-            lastXPan = x;
-            lastYPan = y;
+            xPanStart = x;
+            yPanStart = y;
         } else {
             if (type != MouseEvent.MOUSE_DRAGGED) {
                 view.setCursor(isRendering ? Cursor.WAIT : Cursor.CROSSHAIR);
             }
-            getTransform(true).appendTranslation(x - lastXPan, y - lastYPan);
-            requestRepaint();
+            final Affine transform = getTransform(true);
+            transform.appendTranslation(x - xPanStart, y - yPanStart);
+            repaintIfMoved(transform);
         }
     }
 
@@ -268,8 +268,9 @@ public abstract class MapCanvas extends PlanarCanvas {
         if (delta < 0) {
             zoom = 1/zoom;
         }
-        getTransform(true).appendScale(zoom, zoom, event.getX(), event.getY());
-        requestRepaint();
+        final Affine transform = getTransform(true);
+        transform.appendScale(zoom, zoom, event.getX(), event.getY());
+        repaintIfMoved(transform);
     }
 
     /**
@@ -296,6 +297,16 @@ public abstract class MapCanvas extends PlanarCanvas {
             at = null;
         }
         return at;
+    }
+
+    /**
+     * Repaints the view if the given transform is not identity.
+     */
+    private void repaintIfMoved(final Affine transform) {
+        if (!transform.isIdentity()) {
+            contentChangeCount++;
+            repaint();
+        }
     }
 
     /**
@@ -341,24 +352,6 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     protected void execute(final Task<?> task) {
         BackgroundThreads.execute(task);
-    }
-
-    /**
-     * Executes a rendering task in a background thread. This method applies configurations
-     * specific to the rendering process before to delegate to the overrideable method.
-     *
-     * @param  transform  The JavaFX transform at the time the repaint event is trigged. This transform
-     *                    will be removed from {@link #view} transform list after the image is rendered.
-     *                    May be {@code null} if no zoom or pan have been applied since last rendering.
-     */
-    private void executeRendering(final Affine transform, final Task<?> task) {
-        task.runningProperty().addListener((p,o,n) -> {
-            final boolean b = n;            // Unboxing
-            isRendering = b;
-            view.setCursor(b ? Cursor.WAIT : Cursor.CROSSHAIR);
-            if (!b) view.getTransforms().remove(transform);
-        });
-        execute(task);
     }
 
     /**
@@ -511,11 +504,11 @@ public abstract class MapCanvas extends PlanarCanvas {
          */
         final Affine transform = getTransform(false);
         if (transform != null) {
-            isViewTransformed = false;
             transformDisplayCoordinates(new AffineTransform(
                     transform.getMxx(), transform.getMyx(),
                     transform.getMxy(), transform.getMyy(),
                     transform.getTx(),  transform.getTy()));
+            isViewTransformed = false;
         }
         /*
          * Invoke `createRenderer()` only after we finished above configuration, because that method may take
@@ -539,12 +532,13 @@ public abstract class MapCanvas extends PlanarCanvas {
          * In both cases we need to be careful to not use directly any `MapCanvas` field from the `call()` method.
          * Information needed by `call()` must be copied first.
          */
+        final Task<?> worker;
         if (!context.isValid(buffer)) {
             buffer              = null;
             doubleBuffer        = null;
             bufferWrapper       = null;
             bufferConfiguration = null;
-            executeRendering(transform, new Task<WritableImage>() {
+            worker = new Task<WritableImage>() {
                 /**
                  * The Java2D image where to do the rendering. This image will be created in a background thread
                  * and assigned to the {@link MapCanvas#buffer} field in JavaFX thread if rendering succeed.
@@ -602,11 +596,15 @@ public abstract class MapCanvas extends PlanarCanvas {
                     buffer              = drawTo;
                     bufferWrapper       = wrapper;
                     bufferConfiguration = configuration;
+                    imageUpdated(transform);
                     if (contentsChanged()) {
                         repaint();
                     }
                 }
-            });
+
+                @Override protected void failed()    {imageUpdated(transform); super.failed();}
+                @Override protected void cancelled() {imageUpdated(transform); super.cancelled();}
+            };
         } else {
             /*
              * This is the second case described in the block comment at the beginning of this method:
@@ -617,6 +615,11 @@ public abstract class MapCanvas extends PlanarCanvas {
             final VolatileImage         previousBuffer = doubleBuffer;
             final GraphicsConfiguration configuration  = bufferConfiguration;
             final class Updater extends Task<VolatileImage> implements Callback<PixelBuffer<IntBuffer>, Rectangle2D> {
+                /**
+                 * Whether {@link VolatileImage} content became invalid and needs to be recreated.
+                 */
+                private boolean contentsLost;
+
                 /**
                  * Invoked in background thread for rendering the image (may be slow).
                  * Any {@link MapCanvas} field needed by this method shall be copied before the
@@ -661,6 +664,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                  */
                 @Override
                 protected void succeeded() {
+                    super.succeeded();
                     final VolatileImage drawTo = getValue();
                     doubleBuffer = drawTo;
                     try {
@@ -668,8 +672,14 @@ public abstract class MapCanvas extends PlanarCanvas {
                     } finally {
                         drawTo.flush();
                     }
-                    super.succeeded();
+                    imageUpdated(transform);
+                    if (contentsLost || contentsChanged()) {
+                        repaint();
+                    }
                 }
+
+                @Override protected void failed()    {imageUpdated(transform); super.failed();}
+                @Override protected void cancelled() {imageUpdated(transform); super.cancelled();}
 
                 /**
                  * Invoked by {@link PixelBuffer#updateBuffer(Callback)} for updating the {@link #buffer} content.
@@ -678,20 +688,37 @@ public abstract class MapCanvas extends PlanarCanvas {
                 public Rectangle2D call(final PixelBuffer<IntBuffer> wrapper) {
                     final VolatileImage drawTo = doubleBuffer;
                     final Graphics2D gr = buffer.createGraphics();
-                    final boolean contentsLost;
                     try {
                         gr.drawImage(drawTo, 0, 0, null);
                         contentsLost = drawTo.contentsLost();
                     } finally {
                         gr.dispose();
                     }
-                    if (contentsLost || contentsChanged()) {
-                        repaint();
-                    }
                     return null;
                 }
             }
-            executeRendering(transform, new Updater());
+            worker = new Updater();
+        }
+        view.setCursor(Cursor.WAIT);
+        execute(worker);
+        isRendering = true;                 // Set last after we know that the task has been scheduled.
+    }
+
+    /**
+     * Invoked after the background thread created by {@link #repaint()} finished to update image content.
+     * The {@code applied} argument is the JavaFX transform at the time the repaint event was trigged and
+     * which is now integrated in the image. That transform will be removed from {@link #view} transforms.
+     * It may be {@code null} if no zoom, rotation or pan gesture has been applied since last rendering.
+     *
+     * @param  applied  the JavaFX transform which has been applied on the updated image, or {@code null}.
+     */
+    private void imageUpdated(final Affine applied) {
+        isRendering = false;
+        view.setCursor(Cursor.CROSSHAIR);
+        if (view.getTransforms().remove(applied)) {
+            final Point2D p = applied.transform(xPanStart, yPanStart);
+            xPanStart = p.getX();
+            yPanStart = p.getY();
         }
     }
 

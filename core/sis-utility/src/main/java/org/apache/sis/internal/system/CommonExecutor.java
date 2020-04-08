@@ -100,7 +100,7 @@ public final class CommonExecutor extends AtomicInteger implements ThreadFactory
      * @param  task  the task to remove from the list of tasks to execute.
      * @return whether the given task has been removed.
      */
-    public static boolean unschedule(final Object task) {
+    public static boolean unschedule(final Future<?> task) {
         if (task instanceof Runnable) {
             return INSTANCE.remove((Runnable) task);
         }
