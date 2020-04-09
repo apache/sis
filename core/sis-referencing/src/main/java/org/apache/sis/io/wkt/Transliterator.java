@@ -69,8 +69,8 @@ import org.apache.sis.util.Characters;
  * </ul>
  *
  * <div class="note"><b>Note:</b> at least two conventions exist about the meaning of (<var>r</var>, θ, φ) in a
- * spherical coordinate system (see <a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">Wikipedia</a>
- * or <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">MathWorld</a> for more information).
+ * spherical coordinate system (see <a href="https://en.wikipedia.org/wiki/Spherical_coordinate_system">Wikipedia</a>
+ * or <a href="https://mathworld.wolfram.com/SphericalCoordinates.html">MathWorld</a> for more information).
  * When using the <em>mathematics</em> convention, θ is the azimuthal angle in the
  * equatorial plane (roughly equivalent to longitude λ) while φ is an angle measured from a pole (also known as
  * colatitude). But when using the <em>physics</em> convention, the meaning of θ and φ are interchanged.
@@ -321,7 +321,7 @@ public abstract class Transliterator implements Serializable {
      *       {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal CS}.</li>
      *   <li>φ or φ′ or φ<sub>c</sub> or Ω → <var>U</var> if used in a
      *       {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}, regardless of whether the
-     *       coordinate system follows <a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">physics,
+     *       coordinate system follows <a href="https://en.wikipedia.org/wiki/Spherical_coordinate_system">physics,
      *       mathematics or other conventions</a>.</li>
      *   <li>θ → <var>V</var> if used in a {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS} (regardless of above-cited coordinate system convention).</li>
      *   <li>θ → <var>U</var> if used in a polar CS.</li>

@@ -48,7 +48,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Lambert_conformal_conic_projection">Lambert Conformal Conic projection on Wikipedia</a></li>
- *   <li><a href="http://mathworld.wolfram.com/LambertConformalConicProjection.html">Lambert Conformal Conic projection on MathWorld</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/LambertConformalConicProjection.html">Lambert Conformal Conic projection on MathWorld</a></li>
  * </ul>
  *
  * <h2>Description</h2>

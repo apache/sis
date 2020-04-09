@@ -33,13 +33,36 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  * This projection method has no EPSG code.
  * See the following references for an overview:
  * <ul>
- *   <li><a href="https://en.wikipedia.org/wiki/Azimuthal_equidistant_projection">Azimuthal equidistant projection</a></li>
- *   <li><a href="https://mathworld.wolfram.com/AzimuthalEquidistantProjection.html">Azimuthal Equidistant Projection</a></li>
+ *   <li><a href="https://en.wikipedia.org/wiki/Azimuthal_equidistant_projection">Azimuthal equidistant projection on Wikipedia</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/AzimuthalEquidistantProjection.html">Azimuthal Equidistant Projection on MathWorld</a></li>
  * </ul>
  *
  * Current implementation supports only the spherical case.
- * For ellipsoidal formulas, the {@link ModifiedAzimuthalEquidistant} provides an approximation
+ * For ellipsoidal formulas, the {@link ModifiedAzimuthalEquidistant} class provides an approximation
  * valid under 800 kilometres of the projection centre.
+ *
+ * <div class="note"><b>Note of projection variants:</b>
+ * formulas for this map projection have been published by Snyder (1987) in the following forms:
+ * <ul>
+ *   <li><cite>Azimuthal Equidistant projection for the sphere.</cite>
+ *     This form has no EPSG code. It is implemented in Apache SIS as "Azimuthal Equidistant (Spherical)".</li>
+ *   <li><cite>Polar aspect of ellipsoidal Azimuthal Equidistant.</cite>
+ *     This form has no EPSG code. It is not yet implemented in Apache SIS.</li>
+ *   <li><cite>Oblique and equatorial aspects of ellipsoidal Azimuthal Equidistant:</cite>
+ *     <ul>
+ *       <li><cite>Nearly rigorous sets of formulas.</cite>
+ *         The EPSG name is "Modified Azimuthal Equidistant" (EPSG:9832).
+ *         This projection is implemented by {@link ModifiedAzimuthalEquidistant}.</li>
+ *       <li><cite>Approximate sets of formulas.</cite>
+ *         The EPSG name is "Guam projection" (EPSG:9831).
+ *         This projection is not yet implemented in Apache SIS.</li>
+ *     </ul>
+ *   </li>
+ * </ul>
+ *
+ * This base class is aimed to provide the general case valid for all distances;
+ * the fact that current version uses spherical formulas should be considered as an implementation limitation
+ * that may change in future version. Subclasses are specialization for more restricted areas.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

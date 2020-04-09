@@ -257,7 +257,7 @@ public enum AxesConvention implements AxisFilter {
      * </table></div>
      *
      * @see org.apache.sis.referencing.cs.CoordinateSystems#angle(AxisDirection, AxisDirection)
-     * @see <a href="http://en.wikipedia.org/wiki/Right_hand_rule">Right-hand rule on Wikipedia</a>
+     * @see <a href="https://en.wikipedia.org/wiki/Right_hand_rule">Right-hand rule on Wikipedia</a>
      */
     RIGHT_HANDED,
 

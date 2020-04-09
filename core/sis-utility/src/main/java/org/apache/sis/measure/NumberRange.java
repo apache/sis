@@ -57,7 +57,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  *
  * <h2>Relationship with standards</h2>
  * {@code NumberRange} is the SIS class closest to the
- * <a href="http://en.wikipedia.org/wiki/Interval_%28mathematics%29">mathematical definition of interval</a>.
+ * <a href="https://en.wikipedia.org/wiki/Interval_%28mathematics%29">mathematical definition of interval</a>.
  * It is closely related, while not identical, to the ISO 19123 (<cite>Coverage geometry and functions</cite>)
  * definition of "ranges". At the difference of the parent {@link Range} class, which can be used only with
  * {@linkplain org.opengis.coverage.DiscreteCoverage discrete coverages}, the {@code NumberRange} class can
@@ -85,7 +85,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  *
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet
- * @see <a href="http://en.wikipedia.org/wiki/Interval_%28mathematics%29">Wikipedia: Interval</a>
+ * @see <a href="https://en.wikipedia.org/wiki/Interval_%28mathematics%29">Wikipedia: Interval</a>
  *
  * @since 0.3
  * @module

@@ -129,7 +129,7 @@ import static java.lang.Math.*;
  * @version 1.1
  *
  * @see ContextualParameters
- * @see <a href="http://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
+ * @see <a href="https://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
  *
  * @since 0.6
  * @module

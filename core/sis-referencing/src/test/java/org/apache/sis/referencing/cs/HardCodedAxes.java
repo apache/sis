@@ -217,8 +217,8 @@ public final strictfp class HardCodedAxes {
      * @see #GEODETIC_LONGITUDE
      * @see #SPHERICAL_LATITUDE
      *
-     * @see <a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
-     * @see <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">Spherical coordinate system on MathWorld</a>
+     * @see <a href="https://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
+     * @see <a href="https://mathworld.wolfram.com/SphericalCoordinates.html">Spherical coordinate system on MathWorld</a>
      */
     public static final DefaultCoordinateSystemAxis SPHERICAL_LONGITUDE = create(AxisNames.SPHERICAL_LONGITUDE, "θ",
             AxisDirection.EAST, Units.DEGREE, -180, 180, RangeMeaning.WRAPAROUND);

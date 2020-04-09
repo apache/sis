@@ -250,7 +250,7 @@ public final strictfp class CommonCRSTest extends TestCase {
     /**
      * Verifies the epoch values of temporal enumeration compared to the Julian epoch.
      *
-     * @see <a href="http://en.wikipedia.org/wiki/Julian_day">Wikipedia: Julian day</a>
+     * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Wikipedia: Julian day</a>
      */
     @Test
     public void testTemporal() {

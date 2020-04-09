@@ -37,7 +37,7 @@ import static org.apache.sis.internal.referencing.provider.Orthographic.*;
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Orthographic_projection_in_cartography">Orthographic projection on Wikipedia</a></li>
- *   <li><a href="http://mathworld.wolfram.com/OrthographicProjection.html">Orthographic projection on MathWorld</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/OrthographicProjection.html">Orthographic projection on MathWorld</a></li>
  * </ul>
  *
  * <h2>Description</h2>
@@ -126,7 +126,7 @@ public class Orthographic extends NormalizedProjection {
 
     /**
      * Converts the specified (λ,φ) coordinate and stores the (<var>x</var>,<var>y</var>) result in {@code dstPts}.
-     * The units of measurement are implementation-specific (see subclass javadoc).
+     * The units of measurement are implementation-specific (see super-class javadoc).
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.

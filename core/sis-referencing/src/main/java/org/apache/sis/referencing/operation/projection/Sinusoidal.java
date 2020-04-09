@@ -37,7 +37,7 @@ import static org.apache.sis.internal.referencing.provider.Sinusoidal.*;
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Sinusoidal_projection">Sinusoidal projection on Wikipedia</a></li>
- *   <li><a href="http://mathworld.wolfram.com/SinusoidalProjection.html">Sinusoidal projection on MathWorld</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/SinusoidalProjection.html">Sinusoidal projection on MathWorld</a></li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -45,7 +45,7 @@ import org.apache.sis.internal.util.Numerics;
 
 /**
  * Parses and formats {@link Range} instances according the given locale.
- * This class complies to the format described in the <a href="http://en.wikipedia.org/wiki/ISO_31-11">ISO 31-11</a>
+ * This class complies to the format described in the <a href="https://en.wikipedia.org/wiki/ISO_31-11">ISO 31-11</a>
  * standard, except that the minimal and maximal values are separated by the "{@code …}" character
  * instead than coma. More specifically, the format is defined as below:
  *
@@ -97,7 +97,7 @@ import org.apache.sis.internal.util.Numerics;
  * @version 1.0
  *
  * @see Range#toString()
- * @see <a href="http://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
+ * @see <a href="https://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
  *
  * @since 0.3
  * @module

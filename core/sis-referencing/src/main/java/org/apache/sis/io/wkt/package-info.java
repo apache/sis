@@ -63,7 +63,7 @@
  * <h2>Geometry WKT</h2>
  * The {@link org.apache.sis.geometry.GeneralEnvelope} and {@link org.apache.sis.geometry.GeneralDirectPosition} classes
  * provide their own, limited, WKT parsing and formatting services for the {@code BOX} and {@code POINT} elements.
- * A description for this WKT format can be found on <a href="http://en.wikipedia.org/wiki/Well-known_text">Wikipedia</a>.
+ * A description for this WKT format can be found on <a href="https://en.wikipedia.org/wiki/Well-known_text">Wikipedia</a>.
  *
  * <h2>Where to find WKT examples</h2>
  * An excellent source of well-formed WKT is the online <cite>EPSG Geodetic Parameter Registry</cite>.

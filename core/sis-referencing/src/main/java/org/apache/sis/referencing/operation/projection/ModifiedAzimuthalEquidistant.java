@@ -31,15 +31,8 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
 
 /**
  * <cite>Modified Azimuthal Equidistant</cite> projection (EPSG:9832).
- * See the following references for an overview:
- * <ul>
- *   <li><a href="https://en.wikipedia.org/wiki/Azimuthal_equidistant_projection">Azimuthal equidistant projection</a></li>
- *   <li><a href="https://mathworld.wolfram.com/AzimuthalEquidistantProjection.html">Azimuthal Equidistant Projection</a></li>
- * </ul>
- *
- * <h2>Description</h2>
- * An approximation of the oblique form of the <cite>Azimuthal Equidistant</cite> projection.
- * For relatively short distances (e.g. under 800 kilometres) this modification introduces no significant error.
+ * This is an approximation of the oblique form of the <cite>Azimuthal Equidistant</cite> projection.
+ * For distances under 800 kilometres this modification introduces no significant error.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

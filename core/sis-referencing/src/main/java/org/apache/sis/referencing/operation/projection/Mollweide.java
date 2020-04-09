@@ -39,7 +39,7 @@ import static org.apache.sis.internal.referencing.provider.Mollweide.*;
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Mollweide_projection">Mollweide projection on Wikipedia</a></li>
- *   <li><a href="http://mathworld.wolfram.com/MollweideProjection.html">Mollweide projection on MathWorld</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/MollweideProjection.html">Mollweide projection on MathWorld</a></li>
  * </ul>
  *
  * @todo This projection is not {@link org.apache.sis.math.FunctionProperty#SURJECTIVE surjective}.
@@ -95,7 +95,7 @@ public class Mollweide extends NormalizedProjection {
 
     /**
      * Converts the specified (λ,φ) coordinate and stores the (<var>x</var>,<var>y</var>) result in {@code dstPts}.
-     * The units of measurement are implementation-specific (see subclass javadoc).
+     * The units of measurement are implementation-specific (see super-class javadoc).
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.

@@ -126,7 +126,7 @@ import java.util.Objects;
  * @version 0.7
  *
  * @see DefaultGeodeticDatum#getBursaWolfParameters()
- * @see <a href="http://en.wikipedia.org/wiki/Helmert_transformation">Wikipedia: Helmert transformation</a>
+ * @see <a href="https://en.wikipedia.org/wiki/Helmert_transformation">Wikipedia: Helmert transformation</a>
  *
  * @since 0.4
  * @module
@@ -514,7 +514,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * <ul>
      *   <li>The matrix shall be {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#isAffine() affine}.</li>
      *   <li>The sub-matrix defined by {@code matrix} without the last row and last column shall be
-     *       <a href="http://en.wikipedia.org/wiki/Skew-symmetric_matrix">skew-symmetric</a> (a.k.a. antisymmetric).</li>
+     *       <a href="https://en.wikipedia.org/wiki/Skew-symmetric_matrix">skew-symmetric</a> (a.k.a. antisymmetric).</li>
      * </ul>
      *
      * @param  matrix     the matrix from which to get Bursa-Wolf parameters.

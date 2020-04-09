@@ -47,7 +47,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Mercator_projection">Mercator projection on Wikipedia</a></li>
- *   <li><a href="http://mathworld.wolfram.com/MercatorProjection.html">Mercator projection on MathWorld</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/MercatorProjection.html">Mercator projection on MathWorld</a></li>
  * </ul>
  *
  * <h2>Description</h2>

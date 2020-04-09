@@ -53,7 +53,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  *
- * @see <a href="http://en.wikipedia.org/wiki/Geohash">Geohash on Wikipedia</a>
+ * @see <a href="https://en.wikipedia.org/wiki/Geohash">Geohash on Wikipedia</a>
  *
  * @since 0.8
  * @module

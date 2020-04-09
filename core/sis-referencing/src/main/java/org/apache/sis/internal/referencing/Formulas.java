@@ -80,7 +80,7 @@ public final class Formulas extends Static {
      * From Wikipedia, <cite>"In astronomy, a Julian year (symbol: <b>a</b>) is a unit of measurement of time
      * defined as exactly 365.25 days of 86,400 SI seconds each."</cite>.
      *
-     * @see <a href="http://en.wikipedia.org/wiki/Julian_year_%28astronomy%29">Wikipedia: Julian year (astronomy)</a>
+     * @see <a href="https://en.wikipedia.org/wiki/Julian_year_%28astronomy%29">Wikipedia: Julian year (astronomy)</a>
      */
     public static final long JULIAN_YEAR_LENGTH = 31557600000L;
 
