@@ -34,7 +34,6 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Affine;
-import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.Cursor;
@@ -49,9 +48,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
@@ -171,8 +168,10 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * The zooms, pans and rotations applied on {@link #view} since last time the image has been painted.
      * This is the identity transform except during the short time between a gesture (zoom, pan, <i>etc.</i>)
-     * and the completion of new {@link #repaint()}. This is used for giving immediate feedbacks to the user
-     * while waiting for the new image to be ready.
+     * and the completion of latest {@link #repaint()} event.
+     * This is used for giving immediate feedback to the user while waiting for the new image to be ready.
+     * Since this transform is on the view {@linkplain Pane#getTransforms() transform list}, changes in this
+     * transform are immediately visible to the user.
      */
     private final Affine transform;
 
@@ -182,6 +181,12 @@ public abstract class MapCanvas extends PlanarCanvas {
      * After the image has been updated, this transform is reset to identity.
      */
     private final Affine changeInProgress;
+
+    /**
+     * The value to assign to {@link #transform} after the {@linkplain #image} has been replaced
+     * or updated with a new content.
+     */
+    private final Affine transformOnNewImage;
 
     /**
      * Cursor position at the time pan event started.
@@ -198,8 +203,9 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     public MapCanvas(final Locale locale) {
         super(locale);
-        transform = new Affine();
-        changeInProgress = new Affine();
+        transform           = new Affine();
+        changeInProgress    = new Affine();
+        transformOnNewImage = new Affine();
         view = new Pane() {
             @Override protected void layoutChildren() {
                 super.layoutChildren();
@@ -246,8 +252,8 @@ public abstract class MapCanvas extends PlanarCanvas {
      * This is interpreted as a translation applied in pixel units on the map.
      */
     private void onDrag(final MouseEvent event) {
-        final double x = event.getX();
-        final double y = event.getY();
+        double x = event.getX();
+        double y = event.getY();
         final EventType<? extends MouseEvent> type = event.getEventType();
         if (type == MouseEvent.MOUSE_PRESSED) {
             view.setCursor(Cursor.CLOSED_HAND);
@@ -257,7 +263,9 @@ public abstract class MapCanvas extends PlanarCanvas {
             if (type != MouseEvent.MOUSE_DRAGGED) {
                 view.setCursor(isRendering ? Cursor.WAIT : Cursor.CROSSHAIR);
             }
-            transform.appendTranslation(x - xPanStart, y - yPanStart);
+            transform.appendTranslation(x -= xPanStart, y -= yPanStart);
+            final Point2D p = changeInProgress.deltaTransform(x, y);
+            transformOnNewImage.appendTranslation(p.getX(), p.getY());
             repaintIfMoved();
         }
         event.consume();
@@ -277,7 +285,11 @@ public abstract class MapCanvas extends PlanarCanvas {
         if (delta < 0) {
             zoom = 1/zoom;
         }
-        transform.appendScale(zoom, zoom, event.getX(), event.getY());
+        final double x = event.getX();
+        final double y = event.getY();
+        transform.appendScale(zoom, zoom, x, y);
+        final Point2D p = changeInProgress.transform(x, y);
+        transformOnNewImage.appendScale(zoom, zoom, p.getX(), p.getY());
         repaintIfMoved();
         event.consume();
     }
@@ -487,6 +499,7 @@ public abstract class MapCanvas extends PlanarCanvas {
          */
         assert changeInProgress.isIdentity() : changeInProgress;
         changeInProgress.setToTransform(transform);
+        transformOnNewImage.setToIdentity();
         if (!transform.isIdentity()) {
             transformDisplayCoordinates(new AffineTransform(
                     transform.getMxx(), transform.getMyx(),
@@ -696,20 +709,11 @@ public abstract class MapCanvas extends PlanarCanvas {
     private void imageUpdated() {
         isRendering = false;
         view.setCursor(Cursor.CROSSHAIR);
-        if (!changeInProgress.isIdentity()) {
-            final Point2D p = changeInProgress.transform(xPanStart, yPanStart);
-            xPanStart = p.getX();
-            yPanStart = p.getY();
-            try {
-                changeInProgress.invert();
-                transform.prepend(changeInProgress);
-            } catch (NonInvertibleTransformException e) {
-                // Should not happen. If happens anyway, discard the gestures that happenned after `repaint()` call.
-                Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), MapCanvas.class, "imageUpdated", e);
-                transform.setToIdentity();
-            }
-            changeInProgress.setToIdentity();
-        }
+        final Point2D p = changeInProgress.transform(xPanStart, yPanStart);
+        xPanStart = p.getX();
+        yPanStart = p.getY();
+        changeInProgress.setToIdentity();
+        transform.setToTransform(transformOnNewImage);
     }
 
     /**
