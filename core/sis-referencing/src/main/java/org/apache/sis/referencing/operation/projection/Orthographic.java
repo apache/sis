@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
-import org.apache.sis.internal.util.Numerics;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.ParameterDescriptor;
@@ -25,7 +24,6 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
@@ -122,6 +120,28 @@ public class Orthographic extends NormalizedProjection {
             final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
             denormalize.convertBefore(1, null, eccentricitySquared * ν0 * (sinφ0 * cosφ0));
         }
+    }
+
+    /**
+     * Returns the names of additional internal parameters which need to be taken in account when
+     * comparing two {@code Orthographic} projections or formatting them in debug mode.
+     *
+     * <p>We could report any of the internal parameters. But since they are all derived from φ₀ and
+     * the {@linkplain #eccentricity eccentricity} and since the eccentricity is already reported by
+     * the super-class, we report only φ₀ as a representative of the internal parameters.</p>
+     */
+    @Override
+    final String[] getInternalParameterNames() {
+        return new String[] {"φ₀"};
+    }
+
+    /**
+     * Returns the values of additional internal parameters which need to be taken in account when
+     * comparing two {@code Orthographic} projections or formatting them in debug mode.
+     */
+    @Override
+    final double[] getInternalParameterValues() {
+        return new double[] {(cosφ0 < PI/4) ? acos(cosφ0) : asin(sinφ0)};
     }
 
     /**
@@ -244,18 +264,5 @@ public class Orthographic extends NormalizedProjection {
             j.inverseTransform(this, x, y, dstPts, dstOff);
             dstPts[dstOff] = IEEEremainder(dstPts[dstOff], PI);
         }
-    }
-
-    /**
-     * Compares the given object with this transform for equivalence.
-     */
-    @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (super.equals(object, mode)) {
-            final Orthographic that = (Orthographic) object;
-            return Numerics.epsilonEqual(sinφ0, that.sinφ0, mode) &&
-                   Numerics.epsilonEqual(cosφ0, that.cosφ0, mode);
-        }
-        return false;
     }
 }

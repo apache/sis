@@ -226,6 +226,27 @@ public class SatelliteTracking extends NormalizedProjection {
     }
 
     /**
+     * Returns the names of additional internal parameters which need to be taken in account when
+     * comparing two {@code SatelliteTracking} projections or formatting them in debug mode.
+     */
+    @Override
+    final String[] getInternalParameterNames() {
+        return new String[] {"i", "P₂∕P₁"};
+    }
+
+    /**
+     * Returns the values of additional internal parameters which need to be taken in account when
+     * comparing two {@code SatelliteTracking} projections or formatting them in debug mode.
+     */
+    @Override
+    final double[] getInternalParameterValues() {
+        return new double[] {
+            (cos_i < PI/4) ? acos(cos_i) : asin(sin_i),
+            p2_on_p1
+        };
+    }
+
+    /**
      * Computes the F₁ or F₂ coefficient using Snyder equation 28-9. Note that this is the same equation
      * than F₁′ in above cylindrical case, but with the addition of arc-tangent. This value is constant
      * after construction time.

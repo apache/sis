@@ -125,6 +125,28 @@ public class AzimuthalEquidistant extends NormalizedProjection {
     }
 
     /**
+     * Returns the names of additional internal parameters which need to be taken in account when
+     * comparing two {@code AzimuthalEquidistant} projections or formatting them in debug mode.
+     *
+     * <p>We could report any of the internal parameters. But since they are all derived from φ₀ and
+     * the {@linkplain #eccentricity eccentricity} and since the eccentricity is already reported by
+     * the super-class, we report only φ₀ as a representative of the internal parameters.</p>
+     */
+    @Override
+    final String[] getInternalParameterNames() {
+        return new String[] {"φ₀"};
+    }
+
+    /**
+     * Returns the values of additional internal parameters which need to be taken in account when
+     * comparing two {@code AzimuthalEquidistant} projections or formatting them in debug mode.
+     */
+    @Override
+    final double[] getInternalParameterValues() {
+        return new double[] {(cosφ0 < PI/4) ? acos(cosφ0) : asin(sinφ0)};
+    }
+
+    /**
      * Converts the specified (λ,φ) coordinate and stores the (<var>x</var>,<var>y</var>) result in {@code dstPts}.
      *
      * @param  srcPts    source point coordinate, as (<var>longitude</var>, <var>latitude</var>) in radians.
@@ -199,27 +221,5 @@ public class AzimuthalEquidistant extends NormalizedProjection {
         final double cosD = cos(D);
         dstPts[dstOff  ]  = atan2(x*sinD, (cosφ0*cosD*D - sinφ0*sinD*y));
         dstPts[dstOff+1]  = asin(cosD*sinφ0 + sinD*cosφ0*y/D);
-    }
-
-    /**
-     * Returns the names of additional internal parameters which need to be taken in account when
-     * comparing two {@code AzimuthalEquidistant} projections or formatting them in debug mode.
-     *
-     * <p>We could report any of the internal parameters. But since they are all derived from φ₀ and
-     * the {@linkplain #eccentricity eccentricity} and since the eccentricity is already reported by
-     * the super-class, we report only φ₀ as a representative of the internal parameters.</p>
-     */
-    @Override
-    final String[] getInternalParameterNames() {
-        return new String[] {"φ₀"};
-    }
-
-    /**
-     * Returns the values of additional internal parameters which need to be taken in account when
-     * comparing two {@code ObliqueStereographic} projections or formatting them in debug mode.
-     */
-    @Override
-    final double[] getInternalParameterValues() {
-        return new double[] {(cosφ0 < PI/4) ? acos(cosφ0) : asin(sinφ0)};
     }
 }

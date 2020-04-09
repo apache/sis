@@ -124,13 +124,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     private static final long serialVersionUID = -1149451543954764081L;
 
     /**
-     * Tolerance threshold for comparing floating point numbers.
-     *
-     * @see Numerics#COMPARISON_THRESHOLD
-     */
-    private static final double COMPARISON_THRESHOLD = 1E-10;
-
-    /**
      * The equatorial radius. This field should be considered as final.
      * It is modified only by JAXB at unmarshalling time.
      *
