@@ -34,13 +34,12 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Affine;
-import javafx.scene.transform.Transform;
+import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.Cursor;
 import javafx.event.EventType;
 import javafx.beans.Observable;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.util.Callback;
 import org.opengis.geometry.Envelope;
@@ -50,7 +49,9 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
@@ -168,12 +169,19 @@ public abstract class MapCanvas extends PlanarCanvas {
     private boolean invalidObjectiveToDisplay;
 
     /**
-     * Whether a zoom, pan or rotation has been added to {@link #view} since last time the image has been painted.
-     * If {@code true}, then the last element in {@link Pane#getTransforms()} list contains transformation applied
-     * by JavaFX while we are waiting for the {@link #repaint()} to complete. After the repaint event completed,
-     * the new image replaces the JavaFX transformation.
+     * The zooms, pans and rotations applied on {@link #view} since last time the image has been painted.
+     * This is the identity transform except during the short time between a gesture (zoom, pan, <i>etc.</i>)
+     * and the completion of new {@link #repaint()}. This is used for giving immediate feedbacks to the user
+     * while waiting for the new image to be ready.
      */
-    private boolean isViewTransformed;
+    private final Affine transform;
+
+    /**
+     * The {@link #transform} values at the time the {@link #repaint()} method has been invoked.
+     * This is a change applied on {@link #objectiveToDisplay} but not yet visible in the image.
+     * After the image has been updated, this transform is reset to identity.
+     */
+    private final Affine changeInProgress;
 
     /**
      * Cursor position at the time pan event started.
@@ -190,6 +198,8 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     public MapCanvas(final Locale locale) {
         super(locale);
+        transform = new Affine();
+        changeInProgress = new Affine();
         view = new Pane() {
             @Override protected void layoutChildren() {
                 super.layoutChildren();
@@ -200,11 +210,12 @@ public abstract class MapCanvas extends PlanarCanvas {
         };
         image = new ImageView();
         image.setPreserveRatio(true);
+        view.getChildren().add(image);
+        view.getTransforms().add(transform);
         view.setOnScroll(this::onScroll);
         view.setOnMousePressed(this::onDrag);
         view.setOnMouseDragged(this::onDrag);
         view.setOnMouseReleased(this::onDrag);
-        view.getChildren().add(image);
         /*
          * Do not set a preferred size, otherwise `repaint()` is invoked twice: once with the preferred size
          * and once with the actual size of the parent window. Actually the `repaint()` method appears to be
@@ -235,7 +246,6 @@ public abstract class MapCanvas extends PlanarCanvas {
      * This is interpreted as a translation applied in pixel units on the map.
      */
     private void onDrag(final MouseEvent event) {
-        event.consume();
         final double x = event.getX();
         final double y = event.getY();
         final EventType<? extends MouseEvent> type = event.getEventType();
@@ -247,10 +257,10 @@ public abstract class MapCanvas extends PlanarCanvas {
             if (type != MouseEvent.MOUSE_DRAGGED) {
                 view.setCursor(isRendering ? Cursor.WAIT : Cursor.CROSSHAIR);
             }
-            final Affine transform = getTransform(true);
             transform.appendTranslation(x - xPanStart, y - yPanStart);
-            repaintIfMoved(transform);
+            repaintIfMoved();
         }
+        event.consume();
     }
 
     /**
@@ -262,47 +272,20 @@ public abstract class MapCanvas extends PlanarCanvas {
             // Do not interpret scroll events on touch pad as a zoom.
             return;
         }
-        event.consume();
         final double delta = event.getDeltaY();
         double zoom = Math.abs(delta) / MOUSE_WHEEL_ZOOM + 1;
         if (delta < 0) {
             zoom = 1/zoom;
         }
-        final Affine transform = getTransform(true);
         transform.appendScale(zoom, zoom, event.getX(), event.getY());
-        repaintIfMoved(transform);
-    }
-
-    /**
-     * The zoom, translation or rotation to apply on the content. This is the identity transform except during
-     * the short time between a gesture (zoom, pan, <i>etc.</i>) and the completion of new {@link #repaint()}.
-     * This is used for giving immediate feedback to the user while waiting for the new image to be ready.
-     *
-     * @param  create  whether to create the transform if not present.
-     * @return the transform, or {@code null} if none and {@code create} is {@code false}.
-     */
-    private Affine getTransform(final boolean create) {
-        /*
-         * This list may have more than one element if user continues zooming
-         * or panning while a repaint event is working in background thread.
-         */
-        final ObservableList<Transform> transforms = view.getTransforms();
-        final Affine at;
-        if (isViewTransformed) {
-            at = (Affine) transforms.get(transforms.size() - 1);
-        } else if (create) {
-            at = new Affine();
-            isViewTransformed = transforms.add(at);
-        } else {
-            at = null;
-        }
-        return at;
+        repaintIfMoved();
+        event.consume();
     }
 
     /**
      * Repaints the view if the given transform is not identity.
      */
-    private void repaintIfMoved(final Affine transform) {
+    private void repaintIfMoved() {
         if (!transform.isIdentity()) {
             contentChangeCount++;
             repaint();
@@ -491,7 +474,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                     tr = MathTransforms.identity(BIDIMENSIONAL);
                 }
                 setObjectiveToDisplay(tr);
-                view.getTransforms().clear();
+                transform.setToIdentity();
             }
         } catch (RenderException ex) {
             errorOccurred(ex);
@@ -502,17 +485,17 @@ public abstract class MapCanvas extends PlanarCanvas {
          * replaced that temporary transform by a "permanent" adjustment of the `objectiveToDisplay`
          * transform. It allows SIS to get new data for the new visible area and resolution.
          */
-        final Affine transform = getTransform(false);
-        if (transform != null) {
+        assert changeInProgress.isIdentity() : changeInProgress;
+        changeInProgress.setToTransform(transform);
+        if (!transform.isIdentity()) {
             transformDisplayCoordinates(new AffineTransform(
                     transform.getMxx(), transform.getMyx(),
                     transform.getMxy(), transform.getMyy(),
                     transform.getTx(),  transform.getTy()));
-            isViewTransformed = false;
         }
         /*
-         * Invoke `createRenderer()` only after we finished above configuration, because that method may take
-         * a snapshot of current canvas state in preparation for use in background threads.
+         * Invoke `createRenderer()` only after we finished above configuration, because that method
+         * may take a snapshot of current canvas state in preparation for use in background threads.
          */
         final Renderer context = createRenderer();
         if (context == null || !context.initialize(view)) {
@@ -596,14 +579,14 @@ public abstract class MapCanvas extends PlanarCanvas {
                     buffer              = drawTo;
                     bufferWrapper       = wrapper;
                     bufferConfiguration = configuration;
-                    imageUpdated(transform);
+                    imageUpdated();
                     if (contentsChanged()) {
                         repaint();
                     }
                 }
 
-                @Override protected void failed()    {imageUpdated(transform); super.failed();}
-                @Override protected void cancelled() {imageUpdated(transform); super.cancelled();}
+                @Override protected void failed()    {super.failed();    imageUpdated();}
+                @Override protected void cancelled() {super.cancelled(); imageUpdated();}
             };
         } else {
             /*
@@ -672,14 +655,14 @@ public abstract class MapCanvas extends PlanarCanvas {
                     } finally {
                         drawTo.flush();
                     }
-                    imageUpdated(transform);
+                    imageUpdated();
                     if (contentsLost || contentsChanged()) {
                         repaint();
                     }
                 }
 
-                @Override protected void failed()    {imageUpdated(transform); super.failed();}
-                @Override protected void cancelled() {imageUpdated(transform); super.cancelled();}
+                @Override protected void failed()    {super.failed();    imageUpdated();}
+                @Override protected void cancelled() {super.cancelled(); imageUpdated();}
 
                 /**
                  * Invoked by {@link PixelBuffer#updateBuffer(Callback)} for updating the {@link #buffer} content.
@@ -706,19 +689,26 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Invoked after the background thread created by {@link #repaint()} finished to update image content.
-     * The {@code applied} argument is the JavaFX transform at the time the repaint event was trigged and
+     * The {@link #changeInProgress} is the JavaFX transform at the time the repaint event was trigged and
      * which is now integrated in the image. That transform will be removed from {@link #view} transforms.
-     * It may be {@code null} if no zoom, rotation or pan gesture has been applied since last rendering.
-     *
-     * @param  applied  the JavaFX transform which has been applied on the updated image, or {@code null}.
+     * It may be identity if no zoom, rotation or pan gesture has been applied since last rendering.
      */
-    private void imageUpdated(final Affine applied) {
+    private void imageUpdated() {
         isRendering = false;
         view.setCursor(Cursor.CROSSHAIR);
-        if (view.getTransforms().remove(applied)) {
-            final Point2D p = applied.transform(xPanStart, yPanStart);
+        if (!changeInProgress.isIdentity()) {
+            final Point2D p = changeInProgress.transform(xPanStart, yPanStart);
             xPanStart = p.getX();
             yPanStart = p.getY();
+            try {
+                changeInProgress.invert();
+                transform.prepend(changeInProgress);
+            } catch (NonInvertibleTransformException e) {
+                // Should not happen. If happens anyway, discard the gestures that happenned after `repaint()` call.
+                Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), MapCanvas.class, "imageUpdated", e);
+                transform.setToIdentity();
+            }
+            changeInProgress.setToIdentity();
         }
     }
 
@@ -732,7 +722,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         bufferWrapper       = null;
         doubleBuffer        = null;
         bufferConfiguration = null;
-        view.getTransforms().clear();
+        transform.setToIdentity();
+        changeInProgress.setToIdentity();
     }
 
     /**
