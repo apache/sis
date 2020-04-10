@@ -74,6 +74,7 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
 
     /**
      * Executes the given task in a background thread.
+     * This method can be invoked from any thread.
      *
      * @param  task  the task to execute.
      */

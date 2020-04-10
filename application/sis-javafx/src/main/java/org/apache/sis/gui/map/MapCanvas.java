@@ -19,6 +19,7 @@ package org.apache.sis.gui.map;
 import java.util.Locale;
 import java.nio.IntBuffer;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.GraphicsConfiguration;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -78,6 +79,23 @@ public abstract class MapCanvas extends PlanarCanvas {
     private static final double MOUSE_WHEEL_ZOOM = 400;
 
     /**
+     * Number of milliseconds to wait before to repaint the {@linkplain #view} during gesture events
+     * (zooms, rotations, pans). This delay allows to collect more events before to run a potentially
+     * costly {@link #repaint()}. It does not apply to the immediate feedback that the user gets from
+     * JavaFX (an image with lower quality used until the higher quality image become ready).
+     */
+    private static final long REPAINT_DELAY = 500;
+
+    /**
+     * Whether to try to get native acceleration in the {@link VolatileImage} used for painting the map.
+     * Native acceleration is of limited interested here because even if painting occurs in video card
+     * memory, it is copied to Java heap before to be transferred to JavaFX image, which may itself copy
+     * back to video card memory. I'm not aware of a way to perform direct transfer from AWT to JavaFX.
+     * Consequently before to enable this acceleration, we should benchmark to see if it is worth.
+     */
+    private static final boolean NATIVE_ACCELERATION = true;
+
+    /**
      * A buffer where to draw the content of the map for the region to be displayed.
      * This buffer uses ARGB color model, contrarily to the {@link RenderedImage} of
      * {@link org.apache.sis.coverage.grid.GridCoverage} which may have any color model.
@@ -100,6 +118,9 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * The graphic configuration at the time {@link #buffer} has been rendered.
      * This will be used for creating compatible {@link VolatileImage} for updating.
+     * This configuration determines whether native acceleration will be enabled or not.
+     *
+     * @see #NATIVE_ACCELERATION
      */
     private GraphicsConfiguration bufferConfiguration;
 
@@ -149,10 +170,10 @@ public abstract class MapCanvas extends PlanarCanvas {
     private int renderedContentStamp;
 
     /**
-     * Whether a rendering task is in progress. Used for avoiding to send too many {@link #repaint()} requests;
-     * we will wait for current repaint event to finish before to send another one.
+     * Non-null if a rendering task is in progress. Used for avoiding to send too many {@link #repaint()}
+     * requests; we will wait for current repaint event to finish before to send another painting request.
      */
-    private boolean isRendering;
+    private Task<?> renderingInProgress;
 
     /**
      * Whether the size of this canvas changed.
@@ -236,15 +257,14 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Invoked when the size of the {@linkplain #view} has changed.
-     * This method requests a new repaint.
+     * This method requests a new repaint after a short wait, in order to collect more resize events.
      */
     private void onSizeChanged(final Observable property) {
         final Rectangle clip = (Rectangle) view.getClip();
         clip.setWidth (view.getWidth());
         clip.setHeight(view.getHeight());
-        contentChangeCount++;
         sizeChanged = true;
-        repaint();
+        repaintLater();
     }
 
     /**
@@ -261,12 +281,22 @@ public abstract class MapCanvas extends PlanarCanvas {
             yPanStart = y;
         } else {
             if (type != MouseEvent.MOUSE_DRAGGED) {
-                view.setCursor(isRendering ? Cursor.WAIT : Cursor.CROSSHAIR);
+                view.setCursor(renderingInProgress != null ? Cursor.WAIT : Cursor.CROSSHAIR);
             }
-            transform.appendTranslation(x -= xPanStart, y -= yPanStart);
-            final Point2D p = changeInProgress.deltaTransform(x, y);
-            transformOnNewImage.appendTranslation(p.getX(), p.getY());
-            repaintIfMoved();
+            final boolean isFinished = (type == MouseEvent.MOUSE_RELEASED);
+            x -= xPanStart;
+            y -= yPanStart;
+            if (x != 0 || y != 0) {
+                transform.appendTranslation(x, y);
+                final Point2D p = changeInProgress.deltaTransform(x, y);
+                transformOnNewImage.appendTranslation(p.getX(), p.getY());
+                if (!isFinished) {
+                    repaintLater();
+                }
+            }
+            if (isFinished) {
+                repaint();
+            }
         }
         event.consume();
     }
@@ -285,23 +315,15 @@ public abstract class MapCanvas extends PlanarCanvas {
         if (delta < 0) {
             zoom = 1/zoom;
         }
-        final double x = event.getX();
-        final double y = event.getY();
-        transform.appendScale(zoom, zoom, x, y);
-        final Point2D p = changeInProgress.transform(x, y);
-        transformOnNewImage.appendScale(zoom, zoom, p.getX(), p.getY());
-        repaintIfMoved();
-        event.consume();
-    }
-
-    /**
-     * Repaints the view if the given transform is not identity.
-     */
-    private void repaintIfMoved() {
-        if (!transform.isIdentity()) {
-            contentChangeCount++;
-            repaint();
+        if (zoom != 1) {
+            final double x = event.getX();
+            final double y = event.getY();
+            transform.appendScale(zoom, zoom, x, y);
+            final Point2D p = changeInProgress.transform(x, y);
+            transformOnNewImage.appendScale(zoom, zoom, p.getX(), p.getY());
+            repaintLater();
         }
+        event.consume();
     }
 
     /**
@@ -439,9 +461,31 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
+     * Invokes {@link #repaint()} after a short delay. This method is used when the
+     * repaint event is caused by some gesture like pan, zoom or resizing the window.
+     */
+    private void repaintLater() {
+        contentChangeCount++;
+        if (renderingInProgress == null) {
+            executeRendering(new Delayed());
+        }
+    }
+
+    /**
+     * Executes a rendering task in a background thread. This method applies configurations
+     * specific to the rendering process before and after delegating to the overrideable method.
+     */
+    private void executeRendering(final Task<?> worker) {
+        assert renderingInProgress == null;
+        view.setCursor(Cursor.WAIT);
+        execute(worker);
+        renderingInProgress = worker;       // Set last after we know that the task has been scheduled.
+    }
+
+    /**
      * Invoked when the map content needs to be rendered again into the {@link #image}.
      * It may be because the map has new content, or because the viewed region moved or
-     * have been zoomed.
+     * has been zoomed.
      *
      * @see #requestRepaint()
      */
@@ -451,16 +495,21 @@ public abstract class MapCanvas extends PlanarCanvas {
          * Wait for current rendering to finish; a new one will be automatically
          * requested if content changes are detected after the rendering.
          */
-        if (isRendering) {
-            contentChangeCount++;
-            return;
+        if (renderingInProgress != null) {
+            if (renderingInProgress instanceof Delayed) {
+                renderingInProgress.cancel(true);
+                renderingInProgress = null;
+            } else {
+                contentChangeCount++;
+                return;
+            }
         }
         renderedContentStamp = contentChangeCount;
+        /*
+         * If a new canvas size is known, inform the parent `PlanarCanvas` about that.
+         * It may cause a recomputation of the "objective to display" transform.
+         */
         try {
-            /*
-             * If a new canvas size is known, inform the parent `PlanarCanvas` about that.
-             * It may cause a recomputation of the "objective to display" transform.
-             */
             if (sizeChanged) {
                 sizeChanged = false;
                 Envelope2D bounds = new Envelope2D(null, view.getLayoutX(), view.getLayoutY(), view.getWidth(), view.getHeight());
@@ -534,170 +583,219 @@ public abstract class MapCanvas extends PlanarCanvas {
             doubleBuffer        = null;
             bufferWrapper       = null;
             bufferConfiguration = null;
-            worker = new Task<WritableImage>() {
-                /**
-                 * The Java2D image where to do the rendering. This image will be created in a background thread
-                 * and assigned to the {@link MapCanvas#buffer} field in JavaFX thread if rendering succeed.
-                 */
-                private BufferedImage drawTo;
-
-                /**
-                 * Wrapper around {@link #buffer} internal array for interoperability between Java2D and JavaFX.
-                 * Created only if {@link #drawTo} have been successfully painted.
-                 */
-                private PixelBuffer<IntBuffer> wrapper;
-
-                /**
-                 * The graphic configuration at the time {@link #drawTo} has been rendered.
-                 * This will be used for creating {@link VolatileImage} when updating the image.
-                 */
-                private GraphicsConfiguration configuration;
-
-                /**
-                 * Invoked in background thread for creating and rendering the image (may be slow).
-                 * Any {@link MapCanvas} property needed by this method shall be copied before the
-                 * background thread is executed; no direct reference to {@link MapCanvas} here.
-                 */
-                @Override
-                protected WritableImage call() {
-                    final int width  = context.getWidth();
-                    final int height = context.getHeight();
-                    drawTo = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
-                    final Graphics2D gr = drawTo.createGraphics();
-                    configuration = gr.getDeviceConfiguration();
-                    try {
-                        context.paint(gr);
-                    } finally {
-                        gr.dispose();
-                    }
-                    /*
-                     * The call to `array.getData()` below should be after we finished drawing in the new
-                     * BufferedImage, because this direct access to data array disables GPU accelerations.
-                     */
-                    final DataBufferInt array = (DataBufferInt) drawTo.getRaster().getDataBuffer();
-                    IntBuffer ib = IntBuffer.wrap(array.getData(), array.getOffset(), array.getSize());
-                    wrapper = new PixelBuffer<>(width, height, ib, PixelFormat.getIntArgbPreInstance());
-                    return new WritableImage(wrapper);
-                }
-
-                /**
-                 * Invoked in JavaFX thread on success. The JavaFX image is set to the result, then intermediate
-                 * buffers created by this task are saved in {@link MapCanvas} fields for reuse next time that
-                 * an image of the same size will be rendered again.
-                 */
-                @Override
-                protected void succeeded() {
-                    super.succeeded();
-                    image.setImage(getValue());
-                    buffer              = drawTo;
-                    bufferWrapper       = wrapper;
-                    bufferConfiguration = configuration;
-                    imageUpdated();
-                    if (contentsChanged()) {
-                        repaint();
-                    }
-                }
-
-                @Override protected void failed()    {super.failed();    imageUpdated();}
-                @Override protected void cancelled() {super.cancelled(); imageUpdated();}
-            };
+            worker = new Creator(context);
         } else {
-            /*
-             * This is the second case described in the block comment at the beginning of this method:
-             * The existing resources (JavaFX image and Java2D volatile/buffered image) can be reused.
-             * The Java2D volatile image will be rendered in background thread, then its content will
-             * be transferred to JavaFX image (through BufferedImage shared array) in JavaFX thread.
-             */
-            final VolatileImage         previousBuffer = doubleBuffer;
-            final GraphicsConfiguration configuration  = bufferConfiguration;
-            final class Updater extends Task<VolatileImage> implements Callback<PixelBuffer<IntBuffer>, Rectangle2D> {
-                /**
-                 * Whether {@link VolatileImage} content became invalid and needs to be recreated.
-                 */
-                private boolean contentsLost;
+            worker = new Updater(context);
+        }
+        executeRendering(worker);
+    }
 
-                /**
-                 * Invoked in background thread for rendering the image (may be slow).
-                 * Any {@link MapCanvas} field needed by this method shall be copied before the
-                 * background thread is executed; no direct reference to {@link MapCanvas} here.
-                 */
-                @Override
-                protected VolatileImage call() {
-                    final int width  = context.getWidth();
-                    final int height = context.getHeight();
-                    VolatileImage drawTo = previousBuffer;
-                    if (drawTo == null) {
-                        drawTo = configuration.createCompatibleVolatileImage(width, height);
-                    }
-                    boolean invalid = true;
-                    try {
-                        do {
-                            if (drawTo.validate(configuration) == VolatileImage.IMAGE_INCOMPATIBLE) {
-                                drawTo = configuration.createCompatibleVolatileImage(width, height);
-                            }
-                            final Graphics2D gr = drawTo.createGraphics();
-                            try {
-                                gr.setBackground(ColorModelFactory.TRANSPARENT);
-                                gr.clearRect(0, 0, drawTo.getWidth(), drawTo.getHeight());
-                                context.paint(gr);
-                            } finally {
-                                gr.dispose();
-                            }
-                            invalid = drawTo.contentsLost();
-                        } while (invalid && !isCancelled());
-                    } finally {
-                        if (invalid) {
-                            drawTo.flush();         // Release native resources.
-                        }
-                    }
-                    return drawTo;
-                }
+    /**
+     * Background tasks for creating a new {@link BufferedImage}. This task is invoked when there is no
+     * previous resources that we can recycle, either because they have never been created yet or because
+     * they are not suitable anymore (for example because the image size changed).
+     */
+    private final class Creator extends Task<WritableImage> {
+        /**
+         * The user-provided object which will perform the actual rendering.
+         * Its {@link Renderer#paint(Graphics2D)} method will be invoked.
+         */
+        private final Renderer renderer;
 
-                /**
-                 * Invoked in JavaFX thread on success. The JavaFX image is set to the result, then the
-                 * double buffer created by this task is saved in {@link MapCanvas} fields for reuse
-                 * next time that an image of the same size will be rendered again.
-                 */
-                @Override
-                protected void succeeded() {
-                    super.succeeded();
-                    final VolatileImage drawTo = getValue();
-                    doubleBuffer = drawTo;
-                    try {
-                        bufferWrapper.updateBuffer(this);       // This will invoke the `call(…)` method below.
-                    } finally {
-                        drawTo.flush();
-                    }
-                    imageUpdated();
-                    if (contentsLost || contentsChanged()) {
-                        repaint();
-                    }
-                }
+        /**
+         * The Java2D image where to do the rendering. This image will be created in a background thread
+         * and assigned to the {@link MapCanvas#buffer} field in JavaFX thread if rendering succeed.
+         */
+        private BufferedImage drawTo;
 
-                @Override protected void failed()    {super.failed();    imageUpdated();}
-                @Override protected void cancelled() {super.cancelled(); imageUpdated();}
+        /**
+         * Wrapper around {@link #buffer} internal array for interoperability between Java2D and JavaFX.
+         * Created only if {@link #drawTo} have been successfully painted.
+         */
+        private PixelBuffer<IntBuffer> wrapper;
 
-                /**
-                 * Invoked by {@link PixelBuffer#updateBuffer(Callback)} for updating the {@link #buffer} content.
-                 */
-                @Override
-                public Rectangle2D call(final PixelBuffer<IntBuffer> wrapper) {
-                    final VolatileImage drawTo = doubleBuffer;
-                    final Graphics2D gr = buffer.createGraphics();
-                    try {
-                        gr.drawImage(drawTo, 0, 0, null);
-                        contentsLost = drawTo.contentsLost();
-                    } finally {
-                        gr.dispose();
-                    }
-                    return null;
+        /**
+         * The graphic configuration at the time {@link #drawTo} has been rendered.
+         * This will be used for creating {@link VolatileImage} when updating the image.
+         */
+        private GraphicsConfiguration configuration;
+
+        /**
+         * Creates a new task for painting without resource recycling.
+         */
+        Creator(final Renderer context) {
+            renderer = context;
+        }
+
+        /**
+         * Invoked in background thread for creating and rendering the image (may be slow).
+         * Any {@link MapCanvas} property needed by this method shall be copied before the
+         * background thread is executed; no direct reference to {@link MapCanvas} here.
+         */
+        @Override
+        protected WritableImage call() {
+            final int width  = renderer.getWidth();
+            final int height = renderer.getHeight();
+            drawTo = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
+            final Graphics2D gr = drawTo.createGraphics();
+            try {
+                configuration = gr.getDeviceConfiguration();
+                renderer.paint(gr);
+            } finally {
+                gr.dispose();
+            }
+            if (NATIVE_ACCELERATION) {
+                if (!configuration.getImageCapabilities().isAccelerated()) {
+                    configuration = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                                    .getDefaultScreenDevice().getDefaultConfiguration();
                 }
             }
-            worker = new Updater();
+            /*
+             * The call to `array.getData()` below should be after we finished drawing in the new
+             * BufferedImage, because this direct access to data array disables GPU accelerations.
+             */
+            final DataBufferInt array = (DataBufferInt) drawTo.getRaster().getDataBuffer();
+            IntBuffer ib = IntBuffer.wrap(array.getData(), array.getOffset(), array.getSize());
+            wrapper = new PixelBuffer<>(width, height, ib, PixelFormat.getIntArgbPreInstance());
+            return new WritableImage(wrapper);
         }
-        view.setCursor(Cursor.WAIT);
-        execute(worker);
-        isRendering = true;                 // Set last after we know that the task has been scheduled.
+
+        /**
+         * Invoked in JavaFX thread on success. The JavaFX image is set to the result, then intermediate
+         * buffers created by this task are saved in {@link MapCanvas} fields for reuse next time that
+         * an image of the same size will be rendered again.
+         */
+        @Override
+        protected void succeeded() {
+            image.setImage(getValue());
+            buffer              = drawTo;
+            bufferWrapper       = wrapper;
+            bufferConfiguration = configuration;
+            imageUpdated();
+            if (contentsChanged()) {
+                repaint();
+            }
+        }
+
+        @Override protected void failed()    {imageUpdated();}
+        @Override protected void cancelled() {imageUpdated();}
+    }
+
+    /**
+     * Background tasks for painting in an existing {@link BufferedImage}. This task is invoked
+     * when previous resources (JavaFX image and Java2D volatile/buffered image) can be reused.
+     * The Java2D volatile image will be rendered in background thread, then its content will be
+     * transferred to JavaFX image (through {@link BufferedImage} shared array) in JavaFX thread.
+     */
+    private final class Updater extends Task<VolatileImage> implements Callback<PixelBuffer<IntBuffer>, Rectangle2D> {
+        /**
+         * The user-provided object which will perform the actual rendering.
+         * Its {@link Renderer#paint(Graphics2D)} method will be invoked.
+         */
+        private final Renderer renderer;
+
+        /**
+         * The buffer during last paint operation. This buffer will be reused if possible,
+         * but may become invalid and in need to be recreated. May be {@code null}.
+         */
+        private VolatileImage previousBuffer;
+
+        /**
+         * The configuration to use for creating a new {@link VolatileImage}
+         * if {@link #previousBuffer} is invalid.
+         */
+        private final GraphicsConfiguration configuration;
+
+        /**
+         * Whether {@link VolatileImage} content became invalid and needs to be recreated.
+         */
+        private boolean contentsLost;
+
+        /**
+         * Creates a new task for painting with resource recycling.
+         */
+        Updater(final Renderer context) {
+            renderer       = context;
+            previousBuffer = doubleBuffer;
+            configuration  = bufferConfiguration;
+        }
+
+        /**
+         * Invoked in background thread for rendering the image (may be slow).
+         * Any {@link MapCanvas} field needed by this method shall be copied before the
+         * background thread is executed; no direct reference to {@link MapCanvas} here.
+         */
+        @Override
+        protected VolatileImage call() {
+            final int width  = renderer.getWidth();
+            final int height = renderer.getHeight();
+            VolatileImage drawTo = previousBuffer;
+            previousBuffer = null;                      // For letting GC do its work.
+            if (drawTo == null) {
+                drawTo = configuration.createCompatibleVolatileImage(width, height);
+            }
+            boolean invalid = true;
+            try {
+                do {
+                    if (drawTo.validate(configuration) == VolatileImage.IMAGE_INCOMPATIBLE) {
+                        drawTo = configuration.createCompatibleVolatileImage(width, height);
+                    }
+                    final Graphics2D gr = drawTo.createGraphics();
+                    try {
+                        gr.setBackground(ColorModelFactory.TRANSPARENT);
+                        gr.clearRect(0, 0, drawTo.getWidth(), drawTo.getHeight());
+                        renderer.paint(gr);
+                    } finally {
+                        gr.dispose();
+                    }
+                    invalid = drawTo.contentsLost();
+                } while (invalid && !isCancelled());
+            } finally {
+                if (invalid) {
+                    drawTo.flush();         // Release native resources.
+                }
+            }
+            return drawTo;
+        }
+
+        /**
+         * Invoked by {@link PixelBuffer#updateBuffer(Callback)} for updating the {@link #buffer} content.
+         */
+        @Override
+        public Rectangle2D call(final PixelBuffer<IntBuffer> wrapper) {
+            final VolatileImage drawTo = doubleBuffer;
+            final Graphics2D gr = buffer.createGraphics();
+            try {
+                gr.drawImage(drawTo, 0, 0, null);
+                contentsLost = drawTo.contentsLost();
+            } finally {
+                gr.dispose();
+            }
+            return null;
+        }
+
+        /**
+         * Invoked in JavaFX thread on success. The JavaFX image is set to the result, then the double buffer
+         * created by this task is saved in {@link MapCanvas} fields for reuse next time that an image of the
+         * same size will be rendered again.
+         */
+        @Override
+        protected void succeeded() {
+            final VolatileImage drawTo = getValue();
+            doubleBuffer = drawTo;
+            try {
+                bufferWrapper.updateBuffer(this);   // This will invoke the `call(PixelBuffer)` method above.
+            } finally {
+                drawTo.flush();
+            }
+            imageUpdated();
+            if (contentsLost || contentsChanged()) {
+                repaint();
+            }
+        }
+
+        @Override protected void failed()    {imageUpdated();}
+        @Override protected void cancelled() {imageUpdated();}
     }
 
     /**
@@ -707,13 +805,50 @@ public abstract class MapCanvas extends PlanarCanvas {
      * It may be identity if no zoom, rotation or pan gesture has been applied since last rendering.
      */
     private void imageUpdated() {
-        isRendering = false;
+        renderingInProgress = null;
         view.setCursor(Cursor.CROSSHAIR);
         final Point2D p = changeInProgress.transform(xPanStart, yPanStart);
         xPanStart = p.getX();
         yPanStart = p.getY();
         changeInProgress.setToIdentity();
         transform.setToTransform(transformOnNewImage);
+    }
+
+    /**
+     * A pseudo-rendering task which wait for some delay before to perform the real repaint.
+     * The intent is to collect some more gesture events (pans, zooms, <i>etc.</i>) before consuming CPU time.
+     * This is especially useful when the first gesture event is a tiny change because the user just started
+     * panning or zooming.
+     *
+     * <div class="note"><b>Design note:</b>
+     * using a thread for waiting seems a waste of resources, but a thread (likely this one) is going to be used
+     * for real after the waiting time is elapsed. That thread usually exists anyway in {@link BackgroundThreads}
+     * as an idle thread, and it is unlikely that other parts of this JavaFX application need that thread in same
+     * time (if it happens, other threads will be created).</div>
+     *
+     * @see #repaintLater()
+     */
+    private final class Delayed extends Task<Void> {
+        @Override protected Void call() {
+            try {
+                Thread.sleep(REPAINT_DELAY);
+            } catch (InterruptedException e) {
+                // Task.cancel(true) has been invoked: do nothing and terminate now.
+            }
+            return null;
+        }
+
+        @Override protected void succeeded() {paintAfterDelay();}
+        @Override protected void failed()    {paintAfterDelay();}
+        // Do not override `cancelled()` because a repaint is already in progress.
+    }
+
+    /**
+     * Invoked after {@link #REPAINT_DELAY} has been elapsed for performing the real repaint request.
+     */
+    private void paintAfterDelay() {
+        renderingInProgress = null;
+        repaint();
     }
 
     /**
