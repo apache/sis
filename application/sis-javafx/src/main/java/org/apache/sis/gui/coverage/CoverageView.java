@@ -256,7 +256,6 @@ final class CoverageView extends MapCanvas {
 
                 /** Invoked in JavaFX thread on success. */
                 @Override protected void succeeded() {
-                    super.succeeded();
                     if (coverage.equals(getCoverage()) && Objects.equals(sliceExtent, getSliceExtent())) {
                         setImage(getValue(), coverage.getGridGeometry(), sliceExtent);
                     }
@@ -290,7 +289,6 @@ final class CoverageView extends MapCanvas {
 
                     /** Invoked in JavaFX thread on success. */
                     @Override protected void succeeded() {
-                        super.succeeded();
                         if (source.equals(getSourceData())) {
                             setImage(rangeType, getValue());
                         }

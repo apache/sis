@@ -161,19 +161,16 @@ final class WKTPane extends StringConverter<Convention> implements ChangeListene
 
             /** Invoked in JavaFX thread on success. */
             @Override protected void succeeded() {
-                super.succeeded();
                 setContent(getValue());
             }
 
             /** Invoked in JavaFX thread on cancellation. */
             @Override protected void cancelled() {
-                super.cancelled();
                 text.setText(null);
             }
 
             /** Invoked in JavaFX thread on failure. */
             @Override protected void failed() {
-                super.failed();
                 text.setDisable(false);
                 text.setEditable(false);
                 text.setText(Exceptions.getLocalizedMessage(getException(), source.locale));

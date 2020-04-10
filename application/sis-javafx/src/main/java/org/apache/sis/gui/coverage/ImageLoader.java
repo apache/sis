@@ -147,7 +147,6 @@ final class ImageLoader extends Task<RenderedImage> {
      */
     @Override
     protected void failed() {
-        super.failed();
         fireFinished(null);
         final GridCoverageResource resource = request.resource;
         if (resource instanceof StoreListeners) {
@@ -162,7 +161,6 @@ final class ImageLoader extends Task<RenderedImage> {
      */
     @Override
     protected void cancelled() {
-        super.cancelled();
         fireFinished(null);
     }
 

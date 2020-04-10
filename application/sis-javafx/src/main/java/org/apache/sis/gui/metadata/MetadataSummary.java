@@ -218,7 +218,6 @@ public class MetadataSummary {
 
                 /** Shows the result in JavaFX thread. */
                 @Override protected void succeeded() {
-                    super.succeeded();
                     setMetadata(getValue());
                     for (final MetadataTree view : nativeMetadataViews) {
                         view.setContent(nativeMetadata);
@@ -227,7 +226,6 @@ public class MetadataSummary {
 
                 /** Invoked in JavaFX thread if metadata loading failed. */
                 @Override protected void failed() {
-                    super.failed();
                     setError(getException());
                 }
             }

@@ -224,7 +224,6 @@ final class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
      */
     @Override
     protected void succeeded() {
-        super.succeeded();
         final FeatureList addTo = table.getFeatureList();
         if (addTo.isCurrentLoader(this)) {
             final boolean hasMore = getValue();
@@ -257,7 +256,6 @@ final class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
      */
     @Override
     protected void cancelled() {
-        super.cancelled();
         stop("cancelled");
     }
 
@@ -266,7 +264,6 @@ final class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
      */
     @Override
     protected void failed() {
-        super.failed();
         stop("failed");
     }
 

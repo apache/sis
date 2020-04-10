@@ -401,7 +401,6 @@ final class AuthorityCodes extends ObservableListBase<Code>
         @Override
         @SuppressWarnings("unchecked")
         protected void succeeded() {
-            super.succeeded();
             Object[] newCodes = null;
             Map<Code,String> updated = null;
             final Object result = getValue();
@@ -424,7 +423,6 @@ final class AuthorityCodes extends ObservableListBase<Code>
          */
         @Override
         protected void failed() {
-            super.failed();
             final Throwable e = getException();
             if (error == null) {
                 final Code code = new Code(Vocabulary.getResources(locale).getString(Vocabulary.Keys.Errors));

@@ -161,7 +161,6 @@ final class GridTile {
                  * (if the image has changed) we ignore the result.
                  */
                 @Override protected void succeeded() {
-                    super.succeeded();
                     clear();
                     if (view.getImage() == image) {
                         tile = getValue();
@@ -174,7 +173,6 @@ final class GridTile {
                  * if {@link GridView} is still showing the image for which we failed to load a tile.
                  */
                 @Override protected void failed() {
-                    super.failed();
                     clear();
                     if (view.getImage() == image) {
                         error = new GridError(view, GridTile.this, getException());
@@ -188,7 +186,6 @@ final class GridTile {
                  * process, but we currently have no API for that.
                  */
                 @Override protected void cancelled() {
-                    super.cancelled();
                     clear();
                 }
             });
