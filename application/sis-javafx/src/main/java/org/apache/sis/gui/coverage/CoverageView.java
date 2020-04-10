@@ -134,13 +134,13 @@ final class CoverageView extends MapCanvas {
         dataAlternatives       = new EnumMap<>(RangeType.class);
         currentDataAlternative = RangeType.DECLARED;
         statusBar              = new StatusBar(this::toImageCoordinates);
-        imageAndStatus         = new BorderPane(view);
+        imageAndStatus         = new BorderPane(fixedPane);
         imageAndStatus.setBottom(statusBar);
         coverageProperty   .addListener(this::onImageSpecified);
         sliceExtentProperty.addListener(this::onImageSpecified);
-        view.setOnMouseMoved(this::onMouveMoved);
-        view.setOnMouseEntered(statusBar);
-        view.setOnMouseExited (statusBar);
+        floatingPane.setOnMouseMoved(this::onMouveMoved);
+        floatingPane.setOnMouseEntered(statusBar);
+        floatingPane.setOnMouseExited (statusBar);
     }
 
     /**
@@ -212,10 +212,10 @@ final class CoverageView extends MapCanvas {
     }
 
     /**
-     * Sets the background, as a color for now but more patterns my be allowed in a future version.
+     * Sets the background, as a color for now but more patterns may be allowed in a future version.
      */
     final void setBackground(final Color color) {
-        view.setBackground(new Background(new BackgroundFill(color, null, null)));
+        fixedPane.setBackground(new Background(new BackgroundFill(color, null, null)));
     }
 
     /**

@@ -33,6 +33,7 @@ import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Affine;
 import javafx.scene.input.MouseEvent;
@@ -79,7 +80,7 @@ public abstract class MapCanvas extends PlanarCanvas {
     private static final double MOUSE_WHEEL_ZOOM = 400;
 
     /**
-     * Number of milliseconds to wait before to repaint the {@linkplain #view} during gesture events
+     * Number of milliseconds to wait before to repaint the {@linkplain #image} during gesture events
      * (zooms, rotations, pans). This delay allows to collect more events before to run a potentially
      * costly {@link #repaint()}. It does not apply to the immediate feedback that the user gets from
      * JavaFX (an image with lower quality used until the higher quality image become ready).
@@ -93,7 +94,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * back to video card memory. I'm not aware of a way to perform direct transfer from AWT to JavaFX.
      * Consequently before to enable this acceleration, we should benchmark to see if it is worth.
      */
-    private static final boolean NATIVE_ACCELERATION = true;
+    private static final boolean NATIVE_ACCELERATION = false;
 
     /**
      * A buffer where to draw the content of the map for the region to be displayed.
@@ -132,16 +133,34 @@ public abstract class MapCanvas extends PlanarCanvas {
     private PixelBuffer<IntBuffer> bufferWrapper;
 
     /**
-     * The node where the rendered map will be shown.
+     * The node where the rendered map will be shown. Its content is prepared in a background thread
+     * by {@link Renderer#paint(Graphics2D)}. Subclasses should not set the image content directly.
      */
     protected final ImageView image;
 
     /**
-     * The pane where to put children. This pane uses absolute layout. It contains at least the
-     * JavaFX {@linkplain #image} of the map, but can also contain additional nodes for geometric
-     * shapes, texts, <i>etc</i>.
+     * The pane showing the map and any other JavaFX nodes to scale and translate together with the map.
+     * This pane contains at least the JavaFX {@linkplain #image} of the map, but more children (shapes,
+     * texts, controls, <i>etc.</i>) can be added by subclasses into the {@link Pane#getChildren()} list.
+     * All children must specify their coordinates in units relative to the pane (absolute layout).
+     * Those coordinates can be computed from real world coordinates by {@link #objectiveToDisplay}.
+     *
+     * <p>This pane contains an {@link Affine} transform which is updated by user gestures such as pans,
+     * zooms or rotations. Visual positions of all children move together is response to user's gesture,
+     * thus giving an appearance of pane floating around. Changes in {@code floatingPane} affine transform
+     * are temporary; they are applied for producing immediate visual feedback while the map {@linkplain #image}
+     * is recomputed in a background thread. Once calculation is completed and {@linkplain #image} content replaced,
+     * the {@code floatingPane} {@link Affine} transform is reset to identity.</p>
      */
-    protected final Pane view;
+    protected final Pane floatingPane;
+
+    /**
+     * The pane showing the map and other JavaFX nodes to keep at fixed position regardless pans, zooms or rotations
+     * applied on the map. This pane contains at least the {@linkplain #floatingPane} (which itself contains the map
+     * {@linkplain #image}), but more children (shapes, texts, controls, <i>etc.</i>) can be added by subclasses into
+     * the {@link StackPane#getChildren()} list.
+     */
+    protected final StackPane fixedPane;
 
     /**
      * The data bounds to use for computing the initial value of {@link #objectiveToDisplay}.
@@ -187,12 +206,12 @@ public abstract class MapCanvas extends PlanarCanvas {
     private boolean invalidObjectiveToDisplay;
 
     /**
-     * The zooms, pans and rotations applied on {@link #view} since last time the image has been painted.
-     * This is the identity transform except during the short time between a gesture (zoom, pan, <i>etc.</i>)
-     * and the completion of latest {@link #repaint()} event.
+     * The zooms, pans and rotations applied on {@link #floatingPane} since last time the {@linkplain #image}
+     * has been painted. This is the identity transform except during the short time between a gesture (zoom,
+     * pan, <i>etc.</i>) and the completion of latest {@link #repaint()} event.
      * This is used for giving immediate feedback to the user while waiting for the new image to be ready.
-     * Since this transform is on the view {@linkplain Pane#getTransforms() transform list}, changes in this
-     * transform are immediately visible to the user.
+     * Since this transform is a member of the floating pane {@linkplain Pane#getTransforms() transform list},
+     * changes in this transform are immediately visible to the user.
      */
     private final Affine transform;
 
@@ -211,7 +230,7 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Cursor position at the time pan event started.
-     * This is used for computing the {@linkplain #view} translation to apply during drag events.
+     * This is used for computing the {@linkplain #floatingPane} translation to apply during drag events.
      *
      * @see #onDrag(MouseEvent)
      */
@@ -224,10 +243,12 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     public MapCanvas(final Locale locale) {
         super(locale);
+        image = new ImageView();
+        image.setPreserveRatio(true);
         transform           = new Affine();
         changeInProgress    = new Affine();
         transformOnNewImage = new Affine();
-        view = new Pane() {
+        final Pane view = new Pane(image) {
             @Override protected void layoutChildren() {
                 super.layoutChildren();
                 if (contentsChanged()) {
@@ -235,9 +256,6 @@ public abstract class MapCanvas extends PlanarCanvas {
                 }
             }
         };
-        image = new ImageView();
-        image.setPreserveRatio(true);
-        view.getChildren().add(image);
         view.getTransforms().add(transform);
         view.setOnScroll(this::onScroll);
         view.setOnMousePressed(this::onDrag);
@@ -249,20 +267,21 @@ public abstract class MapCanvas extends PlanarCanvas {
          * invoked twice anyway, but without preferred size the width appears to be 0, in which case nothing
          * is repainted.
          */
-        view.widthProperty() .addListener(this::onSizeChanged);
-        view.heightProperty().addListener(this::onSizeChanged);
-        view.setClip(new Rectangle(view.getWidth(), view.getHeight()));
+        view.layoutBoundsProperty().addListener(this::onSizeChanged);
         view.setCursor(Cursor.CROSSHAIR);
+        floatingPane = view;
+        fixedPane = new StackPane(view);
+        final Rectangle clip = new Rectangle();
+        clip.widthProperty() .bind(fixedPane.widthProperty());
+        clip.heightProperty().bind(fixedPane.heightProperty());
+        fixedPane.setClip(clip);
     }
 
     /**
-     * Invoked when the size of the {@linkplain #view} has changed.
+     * Invoked when the size of the {@linkplain #floatingPane} has changed.
      * This method requests a new repaint after a short wait, in order to collect more resize events.
      */
     private void onSizeChanged(final Observable property) {
-        final Rectangle clip = (Rectangle) view.getClip();
-        clip.setWidth (view.getWidth());
-        clip.setHeight(view.getHeight());
         sizeChanged = true;
         repaintLater();
     }
@@ -276,12 +295,12 @@ public abstract class MapCanvas extends PlanarCanvas {
         double y = event.getY();
         final EventType<? extends MouseEvent> type = event.getEventType();
         if (type == MouseEvent.MOUSE_PRESSED) {
-            view.setCursor(Cursor.CLOSED_HAND);
+            floatingPane.setCursor(Cursor.CLOSED_HAND);
             xPanStart = x;
             yPanStart = y;
         } else {
             if (type != MouseEvent.MOUSE_DRAGGED) {
-                view.setCursor(renderingInProgress != null ? Cursor.WAIT : Cursor.CROSSHAIR);
+                floatingPane.setCursor(renderingInProgress != null ? Cursor.WAIT : Cursor.CROSSHAIR);
             }
             final boolean isFinished = (type == MouseEvent.MOUSE_RELEASED);
             x -= xPanStart;
@@ -336,7 +355,7 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Sets the data bounds to use for computing the initial value of {@link #objectiveToDisplay}.
      * This method should be invoked only when new data have been loaded, or when the caller wants
-     * to discard any zoom or translation and reset the view of the given bounds.
+     * to discard any zoom or translation and reset the view to the given bounds.
      *
      * @param  visibleArea  bounding box in objective CRS of the initial area to show,
      *         or {@code null} if unknown (in which case an identity transform will be set).
@@ -457,7 +476,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     protected void requestRepaint() {
         contentChangeCount++;
-        view.requestLayout();
+        floatingPane.requestLayout();
     }
 
     /**
@@ -477,7 +496,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     private void executeRendering(final Task<?> worker) {
         assert renderingInProgress == null;
-        view.setCursor(Cursor.WAIT);
+        floatingPane.setCursor(Cursor.WAIT);
         execute(worker);
         renderingInProgress = worker;       // Set last after we know that the task has been scheduled.
     }
@@ -512,6 +531,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         try {
             if (sizeChanged) {
                 sizeChanged = false;
+                final Pane view = floatingPane;
                 Envelope2D bounds = new Envelope2D(null, view.getLayoutX(), view.getLayoutY(), view.getWidth(), view.getHeight());
                 if (bounds.isEmpty()) return;
                 setDisplayBounds(bounds);
@@ -560,7 +580,7 @@ public abstract class MapCanvas extends PlanarCanvas {
          * may take a snapshot of current canvas state in preparation for use in background threads.
          */
         final Renderer context = createRenderer();
-        if (context == null || !context.initialize(view)) {
+        if (context == null || !context.initialize(floatingPane)) {
             return;
         }
         /*
@@ -801,12 +821,12 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Invoked after the background thread created by {@link #repaint()} finished to update image content.
      * The {@link #changeInProgress} is the JavaFX transform at the time the repaint event was trigged and
-     * which is now integrated in the image. That transform will be removed from {@link #view} transforms.
+     * which is now integrated in the image. That transform will be removed from {@link #floatingPane} transforms.
      * It may be identity if no zoom, rotation or pan gesture has been applied since last rendering.
      */
     private void imageUpdated() {
         renderingInProgress = null;
-        view.setCursor(Cursor.CROSSHAIR);
+        floatingPane.setCursor(Cursor.CROSSHAIR);
         final Point2D p = changeInProgress.transform(xPanStart, yPanStart);
         xPanStart = p.getX();
         yPanStart = p.getY();
