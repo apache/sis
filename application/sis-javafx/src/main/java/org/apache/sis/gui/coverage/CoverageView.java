@@ -40,10 +40,10 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.gui.ImageRenderings;
-import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.gui.map.MapCanvasAWT;
 
 
 /**
@@ -54,7 +54,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @since   1.1
  * @module
  */
-final class CoverageView extends MapCanvas {
+final class CoverageView extends MapCanvasAWT {
     /**
      * The data shown in this view. Note that setting this property to a non-null value may not
      * modify the view content immediately. Instead, a background process will request the tiles.

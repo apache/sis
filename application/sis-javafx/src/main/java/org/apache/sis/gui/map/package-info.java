@@ -17,7 +17,9 @@
 
 /**
  * Widgets for showing a map in a JavaFX application.
- * This package is a first draft to be completed in future Apache SIS versions.
+ * {@link org.apache.sis.gui.map.MapCanvas} is the base class for painting a map using arbitrary
+ * JavaFX nodes such as {@link javafx.scene.image.ImageView} or {@link javafx.scene.canvas.Canvas}.
+ * {@link org.apache.sis.gui.map.MapCanvasAWT} is a specialization for painting the map using Java2D.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
