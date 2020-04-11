@@ -17,7 +17,10 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.parameter.Parameters;
@@ -121,6 +124,27 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(0, ν0, null);
         denormalize.convertBefore(1, ν0, null);
+    }
+
+    /**
+     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
+     * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     *
+     * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
+     * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
+     *
+     * @param  factory  the factory to use for creating the transform.
+     * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
+     */
+    @Override
+    public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+        AzimuthalEquidistant kernel = this;
+        if (eccentricity == 0) {
+            kernel = new AzimuthalEquidistant(this);
+        }
+        return context.completeTransform(factory, kernel);
     }
 
     /**

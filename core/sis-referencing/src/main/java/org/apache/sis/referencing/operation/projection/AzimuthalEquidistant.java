@@ -125,6 +125,15 @@ public class AzimuthalEquidistant extends NormalizedProjection {
     }
 
     /**
+     * Creates a new projection initialized to the same parameters than the given one.
+     */
+    AzimuthalEquidistant(final AzimuthalEquidistant other) {
+        super(other);
+        cosφ0 = other.cosφ0;
+        sinφ0 = other.sinφ0;
+    }
+
+    /**
      * Returns the names of additional internal parameters which need to be taken in account when
      * comparing two {@code AzimuthalEquidistant} projections or formatting them in debug mode.
      *
