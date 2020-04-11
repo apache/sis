@@ -26,6 +26,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.RenderedImage;
 import java.awt.image.VolatileImage;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.ImageView;
@@ -36,8 +37,12 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Affine;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.ZoomEvent;
+import javafx.scene.input.RotateEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.input.GestureEvent;
 import javafx.scene.Cursor;
 import javafx.event.EventType;
 import javafx.beans.Observable;
@@ -49,6 +54,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
@@ -72,12 +78,21 @@ import org.apache.sis.internal.map.RenderException;
  */
 public abstract class MapCanvas extends PlanarCanvas {
     /**
-     * A factor for converting deltas from scroll wheel into zoom factor.
-     * For positive deltas, the zoom in factor will be {@code delta/MOUSE_WHEEL_ZOOM + 1}.
-     * For a typical value {@code delta} = 40, a {@code MOUSE_WHEEL_ZOOM} value of 400
-     * results in a zoom factor of 10%.
+     * Size in pixels of a scroll or translation event. This value should be close to the
+     * {@linkplain ScrollEvent#getDeltaY() delta of a scroll event done with mouse wheel}.
      */
-    private static final double MOUSE_WHEEL_ZOOM = 400;
+    private static final double SCROLL_EVENT_SIZE = 40;
+
+    /**
+     * The zoom factor to apply on scroll event. A value of 0.1 means that a zoom of 10%
+     * is applied.
+     */
+    private static final double ZOOM_FACTOR = 0.1;
+
+    /**
+     * Division factor to apply on translations and zooms when the control key is down.
+     */
+    private static final double CONTROL_KEY_FACTOR = 10;
 
     /**
      * Number of milliseconds to wait before to repaint the {@linkplain #image} during gesture events
@@ -164,7 +179,6 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * The data bounds to use for computing the initial value of {@link #objectiveToDisplay}.
-     * This is reset to {@code null} after the transform has been computed.
      * We differ this recomputation until all parameters are known.
      *
      * @see #setObjectiveBounds(Envelope)
@@ -202,6 +216,8 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Whether {@link #objectiveToDisplay} needs to be recomputed.
      * We differ this recomputation until all parameters are known.
+     *
+     * @see #objectiveBounds
      */
     private boolean invalidObjectiveToDisplay;
 
@@ -257,10 +273,14 @@ public abstract class MapCanvas extends PlanarCanvas {
             }
         };
         view.getTransforms().add(transform);
+        view.setOnZoom(this::onZoom);
+        view.setOnRotate(this::onRotate);
         view.setOnScroll(this::onScroll);
         view.setOnMousePressed(this::onDrag);
         view.setOnMouseDragged(this::onDrag);
         view.setOnMouseReleased(this::onDrag);
+        view.setFocusTraversable(true);
+        view.addEventFilter(KeyEvent.KEY_PRESSED, this::onKeyTyped);
         /*
          * Do not set a preferred size, otherwise `repaint()` is invoked twice: once with the preferred size
          * and once with the actual size of the parent window. Actually the `repaint()` method appears to be
@@ -291,33 +311,45 @@ public abstract class MapCanvas extends PlanarCanvas {
      * This is interpreted as a translation applied in pixel units on the map.
      */
     private void onDrag(final MouseEvent event) {
-        double x = event.getX();
-        double y = event.getY();
+        final double x = event.getX();
+        final double y = event.getY();
         final EventType<? extends MouseEvent> type = event.getEventType();
         if (type == MouseEvent.MOUSE_PRESSED) {
             floatingPane.setCursor(Cursor.CLOSED_HAND);
+            floatingPane.requestFocus();
             xPanStart = x;
             yPanStart = y;
         } else {
             if (type != MouseEvent.MOUSE_DRAGGED) {
                 floatingPane.setCursor(renderingInProgress != null ? Cursor.WAIT : Cursor.CROSSHAIR);
             }
-            final boolean isFinished = (type == MouseEvent.MOUSE_RELEASED);
-            x -= xPanStart;
-            y -= yPanStart;
-            if (x != 0 || y != 0) {
-                transform.appendTranslation(x, y);
-                final Point2D p = changeInProgress.deltaTransform(x, y);
-                transformOnNewImage.appendTranslation(p.getX(), p.getY());
-                if (!isFinished) {
-                    repaintLater();
-                }
-            }
-            if (isFinished) {
-                repaint();
-            }
+            applyTranslation(x - xPanStart, y - yPanStart, type == MouseEvent.MOUSE_RELEASED);
         }
         event.consume();
+    }
+
+    /**
+     * Translates the map in response to user event (keyboard, mouse, track pad, touch screen).
+     *
+     * @param  tx       horizontal translation in pixel units.
+     * @param  ty       vertical translation in pixel units.
+     * @param  isFinal  {@code false} if more translations are expected soon, or
+     *                  {@code true} if this is the last translation for now.
+     *
+     * @see #applyZoomOrRotate(GestureEvent, double, double)
+     */
+    private void applyTranslation(final double tx, final double ty, final boolean isFinal) {
+        if (tx != 0 || ty != 0) {
+            transform.appendTranslation(tx, ty);
+            final Point2D p = changeInProgress.deltaTransform(tx, ty);
+            transformOnNewImage.appendTranslation(p.getX(), p.getY());
+            if (!isFinal) {
+                repaintLater();
+            }
+        }
+        if (isFinal && !transform.isIdentity()) {
+            repaint();
+        }
     }
 
     /**
@@ -330,19 +362,109 @@ public abstract class MapCanvas extends PlanarCanvas {
             return;
         }
         final double delta = event.getDeltaY();
-        double zoom = Math.abs(delta) / MOUSE_WHEEL_ZOOM + 1;
+        double zoom = Math.abs(delta) / SCROLL_EVENT_SIZE * ZOOM_FACTOR;
+        if (event.isControlDown()) {
+            zoom /= CONTROL_KEY_FACTOR;
+        }
+        zoom++;
         if (delta < 0) {
             zoom = 1/zoom;
         }
-        if (zoom != 1) {
-            final double x = event.getX();
-            final double y = event.getY();
-            transform.appendScale(zoom, zoom, x, y);
+        applyZoomOrRotate(event, zoom, 0);
+    }
+
+    /**
+     * Invoked when the user performs a zoom on track pad or touch screen.
+     */
+    private void onZoom(final ZoomEvent event) {
+        applyZoomOrRotate(event, event.getZoomFactor(), 0);
+    }
+
+    /**
+     * Invoked when the user performs a rotation on track pad or touch screen.
+     */
+    private void onRotate(final RotateEvent event) {
+        applyZoomOrRotate(event, 1, event.getAngle());
+    }
+
+    /**
+     * Zooms or rotates the map in response to user event (keyboard, mouse, track pad, touch screen).
+     * If the given event is non-null, it will be consumed.
+     *
+     * @param  event  the mouse, track pad or touch screen event, or {@code null} if the event was a keyboard event.
+     * @param  zoom   the zoom factor to apply, or 1 if none.
+     * @param  angle  the rotation angle in degrees, or 0 if nine.
+     *
+     * @see #applyTranslation(double, double, boolean)
+     */
+    private void applyZoomOrRotate(final GestureEvent event, final double zoom, final double angle) {
+        if (zoom != 1 || angle != 0) {
+            final double x, y;
+            if (event != null) {
+                x = event.getX();
+                y = event.getY();
+            } else {
+                final Bounds bounds = floatingPane.getLayoutBounds();
+                x = bounds.getCenterX();
+                y = bounds.getCenterY();
+            }
             final Point2D p = changeInProgress.transform(x, y);
-            transformOnNewImage.appendScale(zoom, zoom, p.getX(), p.getY());
+            if (zoom != 1) {
+                transform.appendScale(zoom, zoom, x, y);
+                transformOnNewImage.appendScale(zoom, zoom, p.getX(), p.getY());
+            }
+            if (angle != 0) {
+                transform.appendRotation(angle, x, y);
+                transformOnNewImage.appendRotation(angle, p.getX(), p.getY());
+            }
             repaintLater();
         }
+        if (event != null) {
+            event.consume();
+        }
+    }
+
+    /**
+     * Invoked when the user presses a key. This handler provides navigation in the direction of arrow keys,
+     * or zoom-in / zoom-out with page-down / page-up keys. If the control key is down, navigation is finer.
+     */
+    private void onKeyTyped(final KeyEvent event) {
+        double tx = 0, ty = 0, zoom = 1, angle = 0;
+        if (event.isAltDown()) {
+            switch (event.getCode()) {
+                case RIGHT: case KP_RIGHT: angle = +15; break;
+                case LEFT:  case KP_LEFT:  angle = -15; break;
+                default:                   return;
+            }
+        } else {
+            switch (event.getCode()) {
+                case RIGHT: case KP_RIGHT: tx   = -SCROLL_EVENT_SIZE;  break;
+                case LEFT:  case KP_LEFT:  tx   = +SCROLL_EVENT_SIZE;  break;
+                case DOWN:  case KP_DOWN:  ty   = -SCROLL_EVENT_SIZE;  break;
+                case UP:    case KP_UP:    ty   = +SCROLL_EVENT_SIZE;  break;
+                case PAGE_UP:              zoom = 1/(1 + ZOOM_FACTOR); break;
+                case PAGE_DOWN:            zoom =   (1 + ZOOM_FACTOR); break;
+                case HOME:                 reset(); break;
+                default:                   return;
+            }
+        }
+        if (event.isControlDown()) {
+            tx    /= CONTROL_KEY_FACTOR;
+            ty    /= CONTROL_KEY_FACTOR;
+            angle /= CONTROL_KEY_FACTOR;
+            zoom   = (zoom - 1) / CONTROL_KEY_FACTOR + 1;
+        }
+        applyZoomOrRotate(null, zoom, angle);
+        applyTranslation(tx, ty, false);
         event.consume();
+    }
+
+    /**
+     * Resets the map view to its default zoom level and default position with no rotation.
+     */
+    public void reset() {
+        invalidObjectiveToDisplay = true;
+        requestRepaint();
     }
 
     /**
@@ -364,7 +486,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     protected void setObjectiveBounds(final Envelope visibleArea) {
         ArgumentChecks.ensureDimensionMatches("bounds", BIDIMENSIONAL, visibleArea);
-        objectiveBounds = visibleArea;
+        objectiveBounds = ImmutableEnvelope.castOrCopy(visibleArea);
         invalidObjectiveToDisplay = true;
     }
 
@@ -544,11 +666,9 @@ public abstract class MapCanvas extends PlanarCanvas {
             if (invalidObjectiveToDisplay) {
                 invalidObjectiveToDisplay = false;
                 LinearTransform tr;
-                final Envelope source = objectiveBounds;
                 if (objectiveBounds != null) {
-                    objectiveBounds = null;
                     final Envelope2D target = getDisplayBounds();
-                    final MatrixSIS m = Matrices.createTransform(source, target);
+                    final MatrixSIS m = Matrices.createTransform(objectiveBounds, target);
                     Matrices.forceUniformScale(m, 0, new double[] {target.width / 2, target.height / 2});
                     tr = MathTransforms.linear(m);
                 } else {
