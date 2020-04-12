@@ -21,12 +21,12 @@ import java.util.ArrayList;
 import javafx.collections.ObservableList;
 import javafx.stage.Stage;
 import javafx.event.ActionEvent;
-import javafx.scene.layout.Region;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanPropertyBase;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.gui.Widget;
 
 
 /**
@@ -37,7 +37,7 @@ import org.apache.sis.internal.gui.Resources;
  * @since   1.1
  * @module
  */
-abstract class WindowManager {
+abstract class WindowManager extends Widget {
     /**
      * The contextual menu items for creating a new window showing selected data.
      * All menus in this list will be enabled or disabled depending on whether there is data to show.
@@ -92,11 +92,6 @@ abstract class WindowManager {
      * but we currently ask to subclass because it has this information anyway.
      */
     abstract Resources localized();
-
-    /**
-     * Returns the control shown in the main window.
-     */
-    abstract Region getView();
 
     /**
      * Creates a menu item for creating new windows for the currently selected resource.

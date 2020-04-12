@@ -31,6 +31,7 @@ import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.ToolbarButton;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.gui.Widget;
 
 
 /**
@@ -42,7 +43,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @since   1.1
  * @module
  */
-public class CoverageExplorer {
+public class CoverageExplorer extends Widget {
     /**
      * Index in the {@link #views} array for the {@link GridView} (tabular data)
      * or the {@link CoverageView} (image).
@@ -149,6 +150,7 @@ public class CoverageExplorer {
      *
      * @return the region to show.
      */
+    @Override
     public final Region getView() {
         return content;
     }

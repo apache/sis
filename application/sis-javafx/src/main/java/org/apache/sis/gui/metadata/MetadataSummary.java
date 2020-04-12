@@ -49,6 +49,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.gui.Widget;
 
 
 /**
@@ -61,7 +62,7 @@ import org.apache.sis.util.iso.Types;
  * @module
  */
 @DefaultProperty("metadata")
-public class MetadataSummary {
+public class MetadataSummary extends Widget {
     /**
      * Titles panes for different metadata sections (identification info, spatial information, <i>etc</i>).
      * This is similar to {@link javafx.scene.control.Accordion} except that we allow an arbitrary amount
@@ -165,6 +166,7 @@ public class MetadataSummary {
      *
      * @return the region to show.
      */
+    @Override
     public final Region getView() {
         return content;
     }
