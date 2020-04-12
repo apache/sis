@@ -22,8 +22,6 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.transform.Affine;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ZoomEvent;
 import javafx.scene.input.RotateEvent;
@@ -34,6 +32,9 @@ import javafx.scene.Cursor;
 import javafx.event.EventType;
 import javafx.beans.Observable;
 import javafx.concurrent.Task;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Affine;
+import javafx.scene.transform.NonInvertibleTransformException;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -42,11 +43,13 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.map.PlanarCanvas;
 import org.apache.sis.internal.map.RenderException;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
@@ -358,7 +361,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     private void applyZoomOrRotate(final GestureEvent event, final double zoom, final double angle) {
         if (zoom != 1 || angle != 0) {
-            final double x, y;
+            double x, y;
             if (event != null) {
                 x = event.getX();
                 y = event.getY();
@@ -366,6 +369,18 @@ public abstract class MapCanvas extends PlanarCanvas {
                 final Bounds bounds = floatingPane.getLayoutBounds();
                 x = bounds.getCenterX();
                 y = bounds.getCenterY();
+                try {
+                    final Point2D p = transform.inverseTransform(x, y);
+                    x = p.getX();
+                    y = p.getY();
+                } catch (NonInvertibleTransformException e) {
+                    /*
+                     * `event` is null only when this method is invoked from `onKeyTyped(…)`.
+                     * Keep old coordinates. The map may appear shifted, but its location will
+                     * be fixed when `repaint()` completes its work.
+                     */
+                    unexpectedException("onKeyTyped", e);
+                }
             }
             final Point2D p = changeInProgress.transform(x, y);
             if (zoom != 1) {
@@ -412,6 +427,17 @@ public abstract class MapCanvas extends PlanarCanvas {
             ty    /= CONTROL_KEY_FACTOR;
             angle /= CONTROL_KEY_FACTOR;
             zoom   = (zoom - 1) / CONTROL_KEY_FACTOR + 1;
+        }
+        try {
+            final Point2D p = transform.inverseDeltaTransform(tx, ty);
+            tx = p.getX();
+            ty = p.getY();
+        } catch (NonInvertibleTransformException e) {
+            /*
+             * Should never happen. If happen anyway, keep old coordinates. The map may appear
+             * shifted, but its location will be fixed when `repaint()` completes its work.
+             */
+            unexpectedException("onKeyTyped", e);
         }
         applyZoomOrRotate(null, zoom, angle);
         applyTranslation(tx, ty, false);
@@ -763,6 +789,13 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     protected void errorOccurred(final Throwable ex) {
         ExceptionReporter.show(null, null, ex);
+    }
+
+    /**
+     * Invoked when an unexpected exception occurred but it is okay to continue despite it.
+     */
+    private static void unexpectedException(final String method, final NonInvertibleTransformException e) {
+        Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), MapCanvas.class, method, e);
     }
 
     /**
