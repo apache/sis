@@ -49,7 +49,7 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.internal.map.RenderException;
+import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Classes;

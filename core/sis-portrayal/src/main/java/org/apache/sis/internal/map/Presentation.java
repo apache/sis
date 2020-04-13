@@ -19,6 +19,7 @@ package org.apache.sis.internal.map;
 import org.opengis.feature.Feature;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.portrayal.MapLayer;
 
 
 /**

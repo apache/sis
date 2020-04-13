@@ -18,10 +18,7 @@
 
 /**
  * Symbology and map representations, together with a rendering engine for display.
- *
- * <p><b>WARNING:</b> this package is work in progress and is not yet part of public API.
- * Some classes in this package will move to public API after we gained enough confidence
- * about their stability.</p>
+ * The {@linkplain org.apache.sis.portrayal.MapItem map item} is the root node of a map.
  *
  * <h2>Synchronization</h2>
  * Unless otherwise specified, classes in this package are not thread-safe.
@@ -32,4 +29,4 @@
  * @since   1.1
  * @module
  */
-package org.apache.sis.internal.map;
+package org.apache.sis.portrayal;

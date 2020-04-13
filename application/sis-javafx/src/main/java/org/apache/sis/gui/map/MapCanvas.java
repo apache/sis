@@ -52,8 +52,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.map.PlanarCanvas;
-import org.apache.sis.internal.map.RenderException;
+import org.apache.sis.portrayal.PlanarCanvas;
+import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.internal.system.Modules;
 
 

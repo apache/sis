@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.map;
+package org.apache.sis.portrayal;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -25,7 +25,7 @@ import org.opengis.util.InternationalString;
 
 /**
  * Base class of map layer or group of map layers. This base class does not represent graphical elements.
- * Instead it contains information (data and style) for creating a tree of {@link Presentation} objects.
+ * Instead it contains information (data and style) for creating a tree of portrayal objects.
  * A {@code MapItem} contains the following properties:
  *
  * <ul>

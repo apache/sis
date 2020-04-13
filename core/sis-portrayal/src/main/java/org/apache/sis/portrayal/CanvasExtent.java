@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.map;
+package org.apache.sis.portrayal;
 
 import java.util.List;
 import org.opengis.geometry.DirectPosition;
