@@ -25,6 +25,8 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.gui.map.StatusBar;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
 /**
@@ -254,6 +256,19 @@ public class ImageRequest {
      */
     final void configure(final StatusBar bar) {
         final GridCoverage cv = coverage;
-        bar.setCoordinateConversion(cv != null ? cv.getGridGeometry() : null, sliceExtent);
+        final GridExtent request = sliceExtent;
+        bar.applyCanvasGeometry(cv != null ? cv.getGridGeometry() : null);
+        /*
+         * By `GridCoverage.render(GridExtent)` contract, the `RenderedImage` pixel coordinates are relative
+         * to the requested `GridExtent`. Consequently we need to translate the image coordinates so that it
+         * become the coordinates of the original `GridGeometry` before to apply `gridToCRS`.
+         */
+        if (request != null) {
+            final double[] origin = new double[request.getDimension()];
+            for (int i=0; i<origin.length; i++) {
+                origin[i] = request.getLow(i);
+            }
+            bar.setLocalToCRS(MathTransforms.concatenate(MathTransforms.translation(origin), bar.getLocalToCRS()));
+        }
     }
 }

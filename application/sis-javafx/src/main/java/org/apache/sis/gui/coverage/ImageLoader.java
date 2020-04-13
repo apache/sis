@@ -43,7 +43,7 @@ final class ImageLoader extends Task<RenderedImage> {
     /**
      * The {@value} value, for identifying code that assume two-dimensional objects.
      */
-    public static final int BIDIMENSIONAL = 2;
+    private static final int BIDIMENSIONAL = 2;
 
     /**
      * The image source together with optional parameters for reading only a subset.

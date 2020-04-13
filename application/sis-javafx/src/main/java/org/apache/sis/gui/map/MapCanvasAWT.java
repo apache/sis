@@ -315,14 +315,14 @@ public abstract class MapCanvasAWT extends MapCanvas {
             bufferWrapper       = wrapper;
             bufferConfiguration = configuration;
             final boolean done  = renderer.commit();
-            renderingCompleted();
+            renderingCompleted(this);
             if (!done || contentsChanged()) {
                 repaint();
             }
         }
 
-        @Override protected void failed()    {renderingCompleted();}
-        @Override protected void cancelled() {renderingCompleted();}
+        @Override protected void failed()    {renderingCompleted(this);}
+        @Override protected void cancelled() {renderingCompleted(this);}
     }
 
     /**
@@ -434,14 +434,14 @@ public abstract class MapCanvasAWT extends MapCanvas {
                 drawTo.flush();                     // Release native resources.
             }
             final boolean done = renderer.commit();
-            renderingCompleted();
+            renderingCompleted(this);
             if (!done || contentsLost || contentsChanged()) {
                 repaint();
             }
         }
 
-        @Override protected void failed()    {renderingCompleted();}
-        @Override protected void cancelled() {renderingCompleted();}
+        @Override protected void failed()    {renderingCompleted(this);}
+        @Override protected void cancelled() {renderingCompleted(this);}
     }
 
     /**

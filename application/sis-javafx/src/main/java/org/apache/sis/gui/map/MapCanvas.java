@@ -17,6 +17,7 @@
 package org.apache.sis.gui.map;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.awt.geom.AffineTransform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -31,11 +32,16 @@ import javafx.scene.input.GestureEvent;
 import javafx.scene.Cursor;
 import javafx.event.EventType;
 import javafx.beans.Observable;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.concurrent.Task;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -46,7 +52,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.map.PlanarCanvas;
 import org.apache.sis.internal.map.RenderException;
 import org.apache.sis.internal.system.Modules;
@@ -217,6 +222,23 @@ public abstract class MapCanvas extends PlanarCanvas {
     private double xPanStart, yPanStart;
 
     /**
+     * Whether a rendering is in progress. This property is set to {@code true} when {@code MapCanvas}
+     * is about to start a background thread for performing a rendering, and is reset to {@code false}
+     * after the {@code MapCanvas} has been updated with new rendering result.
+     *
+     * @see #renderingProperty()
+     */
+    private final ReadOnlyBooleanWrapper isRendering;
+
+    /**
+     * The exception or error that occurred during last rendering operation.
+     * This is reset to {@code null} when a rendering operation completes successfully.
+     *
+     * @see #errorProperty()
+     */
+    private final ReadOnlyObjectWrapper<Throwable> error;
+
+    /**
      * Creates a new canvas for JavaFX application.
      *
      * @param  locale  the locale to use for labels and some messages, or {@code null} for default.
@@ -257,6 +279,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         clip.widthProperty() .bind(fixedPane.widthProperty());
         clip.heightProperty().bind(fixedPane.heightProperty());
         fixedPane.setClip(clip);
+        isRendering = new ReadOnlyBooleanWrapper(this, "isRendering");
+        error = new ReadOnlyObjectWrapper<>(this, "exception");
     }
 
     /**
@@ -446,6 +470,7 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Resets the map view to its default zoom level and default position with no rotation.
+     * Contrarily to {@link #clear()}, this method does not remove the map content.
      */
     public void reset() {
         invalidObjectiveToDisplay = true;
@@ -638,14 +663,18 @@ public abstract class MapCanvas extends PlanarCanvas {
             if (invalidObjectiveToDisplay) {
                 invalidObjectiveToDisplay = false;
                 LinearTransform tr;
+                final CoordinateReferenceSystem crs;
                 if (objectiveBounds != null) {
+                    crs = objectiveBounds.getCoordinateReferenceSystem();
                     final Envelope2D target = getDisplayBounds();
                     final MatrixSIS m = Matrices.createTransform(objectiveBounds, target);
                     Matrices.forceUniformScale(m, 0, new double[] {target.width / 2, target.height / 2});
                     tr = MathTransforms.linear(m);
                 } else {
                     tr = MathTransforms.identity(BIDIMENSIONAL);
+                    crs = null;
                 }
+                setObjectiveCRS(crs);
                 setObjectiveToDisplay(tr);
                 transform.setToIdentity();
             }
@@ -661,6 +690,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         assert changeInProgress.isIdentity() : changeInProgress;
         changeInProgress.setToTransform(transform);
         transformOnNewImage.setToIdentity();
+        isRendering.set(true);
         if (!transform.isIdentity()) {
             transformDisplayCoordinates(new AffineTransform(
                     transform.getMxx(), transform.getMyx(),
@@ -674,13 +704,16 @@ public abstract class MapCanvas extends PlanarCanvas {
         final Renderer context = createRenderer();
         if (context != null && context.initialize(floatingPane)) {
             executeRendering(createWorker(context));
+        } else {
+            error.set(null);
+            isRendering.set(false);
         }
     }
 
     /**
      * Creates the background task which will invoke {@link Renderer#render()} in a background thread.
-     * The tasks must invoke {@link #renderingCompleted()} in JavaFX thread after completion, either
-     * successful or not.
+     * The tasks must invoke {@link #renderingCompleted(Task)} in JavaFX thread after completion,
+     * either successful or not.
      */
     Task<?> createWorker(final Renderer renderer) {
         return new Task<Void>() {
@@ -693,15 +726,15 @@ public abstract class MapCanvas extends PlanarCanvas {
             /** Invoked in JavaFX thread on success. */
             @Override protected void succeeded() {
                 final boolean done = renderer.commit();
-                renderingCompleted();
+                renderingCompleted(this);
                 if (!done || contentsChanged()) {
                     repaint();
                 }
             }
 
             /** Invoked in JavaFX thread on failure. */
-            @Override protected void failed()    {renderingCompleted();}
-            @Override protected void cancelled() {renderingCompleted();}
+            @Override protected void failed()    {renderingCompleted(this);}
+            @Override protected void cancelled() {renderingCompleted(this);}
         };
     }
 
@@ -711,7 +744,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * which is now integrated in the map. That transform will be removed from {@link #floatingPane} transforms.
      * It may be identity if no zoom, rotation or pan gesture has been applied since last rendering.
      */
-    final void renderingCompleted() {
+    final void renderingCompleted(final Task<?> task) {
         renderingInProgress = null;
         floatingPane.setCursor(Cursor.CROSSHAIR);
         final Point2D p = changeInProgress.transform(xPanStart, yPanStart);
@@ -719,6 +752,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         yPanStart = p.getY();
         changeInProgress.setToIdentity();
         transform.setToTransform(transformOnNewImage);
+        error.set(task.getException());
+        isRendering.set(false);
     }
 
     /**
@@ -782,13 +817,35 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Invoked when an error occurred. The default implementation popups a dialog box.
-     * Subclasses may override. For example the error messages could be written in a status bar instead.
+     * Returns a property telling whether a rendering is in progress. This property become {@code true}
+     * when this {@code MapCanvas} is about to start a background thread for performing a rendering, and
+     * is reset to {@code false} after this {@code MapCanvas} has been updated with new rendering result.
      *
-     * @param  ex  the exception that occurred.
+     * @return a property telling whether a rendering is in progress.
+     */
+    public final ReadOnlyBooleanProperty renderingProperty() {
+        return isRendering.getReadOnlyProperty();
+    }
+
+    /**
+     * Returns a property giving the exception or error that occurred during last rendering operation.
+     * The property value is reset to {@code null} when a rendering operation completed successfully.
+     *
+     * @return a property giving the exception or error that occurred during last rendering operation.
+     */
+    public final ReadOnlyObjectProperty<Throwable> errorProperty() {
+        return error.getReadOnlyProperty();
+    }
+
+    /**
+     * Sets the error property to the given value. This method is provided for subclasses that perform
+     * processing outside the {@link Renderer}. It does not need to be invoked if the error occurred
+     * during the rendering process.
+     *
+     * @param  ex  the exception that occurred (can not be null).
      */
     protected void errorOccurred(final Throwable ex) {
-        ExceptionReporter.show(null, null, ex);
+        error.set(Objects.requireNonNull(ex));
     }
 
     /**
@@ -799,8 +856,7 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Clears the map.
-     * Invoking this method may help to release memory when the map is no longer shown.
+     * Removes map content and clears all properties of this canvas.
      *
      * @see #reset()
      */
@@ -808,5 +864,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         transform.setToIdentity();
         changeInProgress.setToIdentity();
         invalidObjectiveToDisplay = true;
+        objectiveBounds = null;
+        error.set(null);
+        isRendering.set(false);
     }
 }

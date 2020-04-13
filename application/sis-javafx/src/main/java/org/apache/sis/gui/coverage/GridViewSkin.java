@@ -33,6 +33,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Font;
 import javafx.scene.input.MouseEvent;
 import javafx.event.EventHandler;
+import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.internal.gui.Styles;
 
 
@@ -55,11 +56,6 @@ import org.apache.sis.internal.gui.Styles;
  * @module
  */
 final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> implements EventHandler<MouseEvent> {
-    /**
-     * Approximate size of vertical scroll bar.
-     */
-    static final int SCROLLBAR_WIDTH = 20;
-
     /**
      * The cells that we put in the header row on the top of the view. The children list is initially empty;
      * new elements are added or removed when first needed and when the view size changed.
@@ -183,13 +179,14 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
          * The status bar where to show coordinates of selected cell.
          * Mouse exit event is handled by `hideSelection(…)`.
          */
-        statusBar = new StatusBar(view::toImageCoordinates);
+        statusBar = new StatusBar();
         flow.setOnMouseEntered(statusBar);
         /*
          * The list of children is initially empty. We need to
          * add the virtual flow, otherwise nothing will appear.
          */
-        getChildren().addAll(topBackground, leftBackground, selectedColumn, selectedRow, headerRow, selection, statusBar, flow);
+        getChildren().addAll(topBackground, leftBackground, selectedColumn, selectedRow,
+                             headerRow, selection, statusBar.getView(), flow);
     }
 
     /**
@@ -216,13 +213,18 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
                     selection.relocate(x, y);
                     selectedRow.setY(y);
                     selectedColumn.setX(x);
-                    statusBar.setCoordinates(((int) visibleColumn) + firstVisibleColumn, row.getIndex());
+                    final GridView view = getSkinnable();
+                    statusBar.setLocalCoordinates(view.getImageMinX() + ((int) visibleColumn) + firstVisibleColumn,
+                                                  view.getImageMinY() + row.getIndex());
                 }
             }
         }
         selection     .setVisible(visible);
         selectedRow   .setVisible(visible);
         selectedColumn.setVisible(visible);
+        if (!visible) {
+            statusBar.handle(null);
+        }
     }
 
     /**
@@ -440,7 +442,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         final Flow   flow         = (Flow) getVirtualFlow();
         final double cellHeight   = flow.getFixedCellSize();
         final double headerHeight = cellHeight + 2*cellSpacing;
-        final double statusHeight = statusBar.getHeight();
+        final double statusHeight = statusBar.getView().getHeight();
         final double dataY        = y + headerHeight;
         final double dataHeight   = height - headerHeight - statusHeight;
         layoutAll |= (flow.getWidth() != width) || (flow.getHeight() != dataHeight);
@@ -487,8 +489,10 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
          * may need to be added or removed).
          */
         if (layoutAll || oldPos != leftPosition) {
-            layoutInArea(headerRow, x, y, width, headerHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.LEFT, VPos.TOP);
-            layoutInArea(statusBar, x, height - statusHeight, width, statusHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.RIGHT, VPos.BOTTOM);
+            layoutInArea(headerRow, x, y, width, headerHeight,
+                         Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.LEFT, VPos.TOP);
+            layoutInArea(statusBar.getView(), x, height - statusHeight, width, statusHeight,
+                         Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.RIGHT, VPos.BOTTOM);
             final ObservableList<Node> children = headerRow.getChildren();
             final int count   = children.size();
             final int missing = (int) Math.ceil((width - headerWidth) / cellWidth) - count;

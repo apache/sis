@@ -40,6 +40,7 @@ import javafx.scene.paint.Paint;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.Styles;
 
 
 /**
@@ -387,7 +388,7 @@ public class GridView extends Control {
          * we take a value close to the vertical scrollbar width as a safety.
          */
         final double w = getSizeValue(cellWidth);
-        return width * w + getSizeValue(headerWidth) + Math.max(w, GridViewSkin.SCROLLBAR_WIDTH);
+        return width * w + getSizeValue(headerWidth) + Math.max(w, Styles.SCROLLBAR_WIDTH);
     }
 
     /**
@@ -409,6 +410,14 @@ public class GridView extends Control {
     final int getImageHeight() {
         return height;
     }
+
+    /**
+     * Returns the offset to add for converting cell indices to pixel indices. They are often the same indices,
+     * but may differ if the {@link RenderedImage} uses a coordinate system where coordinates of the upper-left
+     * corner is not (0,0).
+     */
+    final int getImageMinX() {return minX;}
+    final int getImageMinY() {return minY;}
 
     /**
      * Returns the bounds of a single tile in the image. This method is invoked only
@@ -512,17 +521,6 @@ public class GridView extends Control {
      */
     public final Optional<StringProperty> cellFormatPattern() {
         return cellFormat.hasPattern() ? Optional.of(cellFormat) : Optional.empty();
-    }
-
-    /**
-     * Converts cell indices to pixel indices. They are often the same indices, but may differ if the
-     * {@link RenderedImage} uses a coordinate system where the coordinates of the upper-left corner
-     * is not (0,0).
-     */
-    final boolean toImageCoordinates(final double[] indices) {
-        indices[0] += minX;
-        indices[1] += minY;
-        return true;
     }
 
     /**

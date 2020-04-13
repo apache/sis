@@ -50,6 +50,11 @@ public final class Styles {
     public static final double INITIAL_SPLIT = 200;
 
     /**
+     * Approximate size of vertical scroll bar.
+     */
+    public static final int SCROLLBAR_WIDTH = 20;
+
+    /**
      * "Standard" height of table rows. Can be approximate.
      */
     public static final double ROW_HEIGHT = 30;

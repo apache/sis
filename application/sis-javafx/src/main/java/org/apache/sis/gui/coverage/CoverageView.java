@@ -21,7 +21,6 @@ import java.util.EnumMap;
 import java.util.Objects;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.NoninvertibleTransformException;
 import java.awt.image.RenderedImage;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Region;
@@ -32,7 +31,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
-import javafx.scene.input.MouseEvent;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.TransformException;
@@ -40,14 +38,14 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.gui.ImageRenderings;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.gui.map.MapCanvasAWT;
+import org.apache.sis.gui.map.StatusBar;
 
 
 /**
- * Shows a {@link RenderedImage} produced by a {@link GridCoverage}.
+ * A canvas for {@link RenderedImage} produced by a {@link GridCoverage}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -56,8 +54,8 @@ import org.apache.sis.gui.map.MapCanvasAWT;
  */
 final class CoverageView extends MapCanvasAWT {
     /**
-     * The data shown in this view. Note that setting this property to a non-null value may not
-     * modify the view content immediately. Instead, a background process will request the tiles.
+     * The data shown in this canvas. Note that setting this property to a non-null value may not
+     * modify the canvas content immediately. Instead, a background process will request the tiles.
      *
      * <p>Current implementation is restricted to {@link GridCoverage} instances, but a future
      * implementation may generalize to {@link org.opengis.coverage.Coverage} instances.</p>
@@ -69,7 +67,7 @@ final class CoverageView extends MapCanvasAWT {
 
     /**
      * A subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
-     * May be {@code null} if this grid coverage has only two dimensions with a size greater than 1 cell.
+     * May be {@code null} if the grid coverage has only two dimensions with a size greater than 1 cell.
      *
      * @see #getSliceExtent()
      * @see #setSliceExtent(GridExtent)
@@ -92,10 +90,10 @@ final class CoverageView extends MapCanvasAWT {
     private RangeType currentDataAlternative;
 
     /**
-     * The data to shown, or {@code null} if not yet specified. This image may be tiled,
+     * The data to show, or {@code null} if not yet specified. This image may be tiled,
      * and fetching tiles may require computations to be performed in background thread.
-     * The size of this image is not necessarily {@link #buffer} or {@link #image} size.
-     * In particular this image way cover a larger area.
+     * The size of this {@code RenderedImage} is not necessarily the {@link #image} size.
+     * In particular {@code data} way cover a larger area.
      */
     private RenderedImage data;
 
@@ -105,24 +103,10 @@ final class CoverageView extends MapCanvasAWT {
      */
     private AffineTransform gridToCRS;
 
-    /*
-     * The transform from {@link #data} pixel coordinates to pixel coordinates in the widget.
-     * This is the concatenation of {@link #gridToCRS} followed by {@link #objectiveToDisplay}.
-     * This transform is replaced when the zoom changes or when the viewed area is translated.
-     * We create a new transform each time (we do not modify the existing instance) because it
-     * may be used by a background thread.
-     */
-    private AffineTransform gridToDisplay;
-
     /**
      * The image together with the status bar.
      */
     private final BorderPane imageAndStatus;
-
-    /**
-     * The bar where to format the coordinates below mouse cursor.
-     */
-    private final StatusBar statusBar;
 
     /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
@@ -133,14 +117,12 @@ final class CoverageView extends MapCanvasAWT {
         sliceExtentProperty    = new SimpleObjectProperty<>(this, "sliceExtent");
         dataAlternatives       = new EnumMap<>(RangeType.class);
         currentDataAlternative = RangeType.DECLARED;
-        statusBar              = new StatusBar(this::toImageCoordinates);
         imageAndStatus         = new BorderPane(fixedPane);
-        imageAndStatus.setBottom(statusBar);
         coverageProperty   .addListener(this::onImageSpecified);
         sliceExtentProperty.addListener(this::onImageSpecified);
-        floatingPane.setOnMouseMoved(this::onMouveMoved);
-        floatingPane.setOnMouseEntered(statusBar);
-        floatingPane.setOnMouseExited (statusBar);
+        final StatusBar statusBar = new StatusBar();
+        statusBar.setCanvas(this);
+        imageAndStatus.setBottom(statusBar.getView());
     }
 
     /**
@@ -216,21 +198,6 @@ final class CoverageView extends MapCanvasAWT {
      */
     final void setBackground(final Color color) {
         fixedPane.setBackground(new Background(new BackgroundFill(color, null, null)));
-    }
-
-    /**
-     * Starts a background task for loading data, computing slice or rendering the data in a {@link CoverageView}.
-     *
-     * <p>Tasks need to be careful to not use any {@link CoverageView} field in their {@link Task#call()}
-     * method (needed fields shall be copied in the JavaFX thread before the background thread is started).
-     * But {@link Task#succeeded()} and similar methods can read and write those fields.</p>
-     */
-    @Override
-    protected final void execute(final Task<?> task) {
-        statusBar.setErrorMessage(null);
-        task.runningProperty().addListener(statusBar::setRunningState);
-        task.setOnFailed((e) -> errorOccurred(e.getSource().getException()));
-        super.execute(task);
     }
 
     /**
@@ -326,12 +293,11 @@ final class CoverageView extends MapCanvasAWT {
      *
      * @param  image        the image to load.
      * @param  geometry     the grid geometry of the coverage that produced the image.
-     * @param  sliceExtent  the extent that were requested.
+     * @param  sliceExtent  the extent that was requested.
      */
     private void setImage(final RenderedImage image, final GridGeometry geometry, final GridExtent sliceExtent) {
         setImage(RangeType.DECLARED, image);
         setRangeType(currentDataAlternative);
-        statusBar.setCoordinateConversion(geometry, sliceExtent);
         try {
             gridToCRS = AffineTransforms2D.castOrCopy(geometry.getGridToCRS(PixelInCell.CELL_CENTER));
         } catch (RuntimeException e) {                      // Conversion not defined or not affine.
@@ -357,7 +323,7 @@ final class CoverageView extends MapCanvasAWT {
      * The rendering will be done later by a call to {@link Renderer#paint(Graphics2D)}.
      */
     @Override
-    protected Renderer createRenderer(){
+    protected Renderer createRenderer() {
         final RenderedImage data = this.data;       // Need to copy this reference here before background tasks.
         if (data == null) {
             return null;
@@ -368,52 +334,14 @@ final class CoverageView extends MapCanvasAWT {
          * vary at any time, and also because we need a new `AffineTransform` instance anyway (we can not reuse
          * an existing instance, because it needs to be stable for use by the background thread).
          */
-        final AffineTransform tr = new AffineTransform(objectiveToDisplay);
+        final AffineTransform gridToDisplay = new AffineTransform(objectiveToDisplay);
         if (gridToCRS != null) {
-            tr.concatenate(gridToCRS);
+            gridToDisplay.concatenate(gridToCRS);
         }
-        gridToDisplay = tr;
         return new Renderer() {
             @Override protected void paint(final Graphics2D gr) {
-                gr.drawRenderedImage(data, tr);
+                gr.drawRenderedImage(data, gridToDisplay);
             }
         };
-    }
-
-    /**
-     * Invoked when an error occurred.
-     *
-     * @param  ex  the exception that occurred.
-     *
-     * @todo Should provide a button for getting more details.
-     */
-    @Override
-    protected void errorOccurred(final Throwable ex) {
-        String message = ex.getMessage();
-        if (message == null) {
-            message = ex.toString();
-        }
-        statusBar.setErrorMessage(message);
-    }
-
-    /**
-     * Invoked when the mouse moved. This method update the coordinates below mouse cursor.
-     */
-    private void onMouveMoved(final MouseEvent event) {
-        statusBar.setCoordinates((int) Math.round(event.getX()),
-                                 (int) Math.round(event.getY()));
-    }
-
-    /**
-     * Converts pixel indices in the window to pixel indices in the image.
-     */
-    private boolean toImageCoordinates(final double[] indices) {
-        if (gridToDisplay != null) try {
-            gridToDisplay.inverseTransform(indices, 0, indices, 0, 1);
-            return true;
-        } catch (NoninvertibleTransformException e) {
-            throw new BackingStoreException(e);         // Will be unwrapped by the caller
-        }
-        return false;
     }
 }
