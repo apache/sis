@@ -35,18 +35,22 @@ import org.apache.sis.gui.Widget;
 
 
 /**
- * A view of {@link GridCoverage} numerical values together with controls for band selection
- * and other operations. This class manages a {@link GridView} for showing the numerical values.
+ * An image or tabular view of {@link GridCoverage} together with controls for band selection and other operations.
+ * This class manages a {@link CoverageCanvas} and a {@link GridView} for showing the visual and the numerical values.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @see CoverageCanvas
+ * @see GridView
+ *
+ * @since 1.1
  * @module
  */
 public class CoverageExplorer extends Widget {
     /**
      * Index in the {@link #views} array for the {@link GridView} (tabular data)
-     * or the {@link CoverageView} (image).
+     * or the {@link CoverageCanvas} (image).
      */
     private static final int TABLE_VIEW = 0, IMAGE_VIEW = 1;
 

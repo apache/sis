@@ -55,7 +55,10 @@ import org.apache.sis.internal.gui.Styles;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @see CoverageExplorer
+ *
+ * @since 1.1
  * @module
  *
  * @todo Allow users to specify a {@link NumberFormat} pattern for writing sample values.

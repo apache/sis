@@ -507,18 +507,17 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      */
     @Override
     public void handle(final MouseEvent event) {
-        boolean visible = (event != null);
-        if (visible) {
+        if (event != null) {
             final EventType<? extends MouseEvent> type = event.getEventType();
-            final boolean enter = (type == MouseEvent.MOUSE_ENTERED);
-            final boolean moved = (type == MouseEvent.MOUSE_MOVED);
-            if (enter | moved) {
+            if (type == MouseEvent.MOUSE_MOVED || type == MouseEvent.MOUSE_ENTERED) {
                 setLocalCoordinates(event.getX(), event.getY());
-                if (moved) return;
+                return;
             }
-            if (!enter && type != MouseEvent.MOUSE_EXITED) return;
+            if (type != MouseEvent.MOUSE_EXITED) {
+                return;
+            }
         }
-        coordinates.setVisible(visible);
+        coordinates.setVisible(false);
     }
 
     /**

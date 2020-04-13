@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * A {@link GridView} or {@link CoverageView} together with the controls
+ * A {@link GridView} or {@link CoverageCanvas} together with the controls
  * to show in a {@link CoverageExplorer}.
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -21,17 +21,19 @@ import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.paint.Color;
+import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * A {@link CoverageView} with associated controls to show in a {@link CoverageExplorer}.
+ * A {@link CoverageCanvas} with associated controls to show in a {@link CoverageExplorer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -42,12 +44,17 @@ final class CoverageControls extends Controls {
     /**
      * The component for showing sample values.
      */
-    private final CoverageView view;
+    private final CoverageCanvas view;
 
     /**
      * The controls for changing {@link #view}.
      */
     private final Accordion controls;
+
+    /**
+     * The image together with the status bar.
+     */
+    private final BorderPane imageAndStatus;
 
     /**
      * Creates a new set of coverage controls.
@@ -57,8 +64,12 @@ final class CoverageControls extends Controls {
      */
     CoverageControls(final Vocabulary vocabulary, final ObjectProperty<GridCoverage> coverage) {
         final Color background = Color.BLACK;
-        view = new CoverageView();
+        view = new CoverageCanvas();
         view.setBackground(background);
+        final StatusBar statusBar = new StatusBar();
+        statusBar.setCanvas(view);
+        imageAndStatus = new BorderPane(view.getView());
+        imageAndStatus.setBottom(statusBar.getView());
         /*
          * "Display" section with the following controls:
          *    - Background color
@@ -111,7 +122,7 @@ final class CoverageControls extends Controls {
      */
     @Override
     final Region view() {
-        return view.getView();
+        return imageAndStatus;
     }
 
     /**

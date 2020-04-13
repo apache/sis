@@ -24,7 +24,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.beans.value.ObservableValue;
@@ -41,18 +40,20 @@ import org.apache.sis.internal.gui.ImageRenderings;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.gui.map.MapCanvasAWT;
-import org.apache.sis.gui.map.StatusBar;
 
 
 /**
- * A canvas for {@link RenderedImage} produced by a {@link GridCoverage}.
+ * A canvas for {@link RenderedImage} provided by a {@link GridCoverage}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @see CoverageExplorer
+ *
+ * @since 1.1
  * @module
  */
-final class CoverageView extends MapCanvasAWT {
+public class CoverageCanvas extends MapCanvasAWT {
     /**
      * The data shown in this canvas. Note that setting this property to a non-null value may not
      * modify the canvas content immediately. Instead, a background process will request the tiles.
@@ -104,25 +105,16 @@ final class CoverageView extends MapCanvasAWT {
     private AffineTransform gridToCRS;
 
     /**
-     * The image together with the status bar.
-     */
-    private final BorderPane imageAndStatus;
-
-    /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
      */
-    public CoverageView() {
+    public CoverageCanvas() {
         super(Locale.getDefault());
         coverageProperty       = new SimpleObjectProperty<>(this, "coverage");
         sliceExtentProperty    = new SimpleObjectProperty<>(this, "sliceExtent");
         dataAlternatives       = new EnumMap<>(RangeType.class);
         currentDataAlternative = RangeType.DECLARED;
-        imageAndStatus         = new BorderPane(fixedPane);
         coverageProperty   .addListener(this::onImageSpecified);
         sliceExtentProperty.addListener(this::onImageSpecified);
-        final StatusBar statusBar = new StatusBar();
-        statusBar.setCanvas(this);
-        imageAndStatus.setBottom(statusBar.getView());
     }
 
     /**
@@ -139,8 +131,8 @@ final class CoverageView extends MapCanvasAWT {
      *
      * @return the region to show.
      */
-    public final Region getView() {
-        return imageAndStatus;
+    final Region getView() {
+        return fixedPane;
     }
 
     /**
@@ -324,7 +316,7 @@ final class CoverageView extends MapCanvasAWT {
      */
     @Override
     protected Renderer createRenderer() {
-        final RenderedImage data = this.data;       // Need to copy this reference here before background tasks.
+        final RenderedImage data = this.data;       // Need to copy this reference here before background task.
         if (data == null) {
             return null;
         }
