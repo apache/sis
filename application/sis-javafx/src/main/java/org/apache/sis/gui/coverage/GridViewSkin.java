@@ -33,7 +33,6 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Font;
 import javafx.scene.input.MouseEvent;
 import javafx.event.EventHandler;
-import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.internal.gui.Styles;
 
 
@@ -133,11 +132,6 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
     private final Rectangle selection, selectedRow, selectedColumn;
 
     /**
-     * The status bar where to show coordinates of selected cell.
-     */
-    final StatusBar statusBar;
-
-    /**
      * Creates a new skin for the specified view.
      */
     GridViewSkin(final GridView view) {
@@ -179,14 +173,13 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
          * The status bar where to show coordinates of selected cell.
          * Mouse exit event is handled by `hideSelection(…)`.
          */
-        statusBar = new StatusBar();
-        flow.setOnMouseEntered(statusBar);
+        flow.setOnMouseEntered(view.statusBar);
         /*
          * The list of children is initially empty. We need to
          * add the virtual flow, otherwise nothing will appear.
          */
         getChildren().addAll(topBackground, leftBackground, selectedColumn, selectedRow,
-                             headerRow, selection, statusBar.getView(), flow);
+                             headerRow, selection, view.statusBar.getView(), flow);
     }
 
     /**
@@ -213,9 +206,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
                     selection.relocate(x, y);
                     selectedRow.setY(y);
                     selectedColumn.setX(x);
-                    final GridView view = getSkinnable();
-                    statusBar.setLocalCoordinates(view.getImageMinX() + ((int) visibleColumn) + firstVisibleColumn,
-                                                  view.getImageMinY() + row.getIndex());
+                    getSkinnable().formatCoordinates(((int) visibleColumn) + firstVisibleColumn, row.getIndex());
                 }
             }
         }
@@ -223,7 +214,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         selectedRow   .setVisible(visible);
         selectedColumn.setVisible(visible);
         if (!visible) {
-            statusBar.handle(null);
+            getSkinnable().statusBar.handle(null);
         }
     }
 
@@ -234,7 +225,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         selection     .setVisible(false);
         selectedRow   .setVisible(false);
         selectedColumn.setVisible(false);
-        statusBar     .handle    (null);        // Hide the coordinates.
+        getSkinnable().statusBar.handle(null);      // Hide the coordinates.
     }
 
     /**
@@ -442,7 +433,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         final Flow   flow         = (Flow) getVirtualFlow();
         final double cellHeight   = flow.getFixedCellSize();
         final double headerHeight = cellHeight + 2*cellSpacing;
-        final double statusHeight = statusBar.getView().getHeight();
+        final double statusHeight = view.statusBar.getView().getHeight();
         final double dataY        = y + headerHeight;
         final double dataHeight   = height - headerHeight - statusHeight;
         layoutAll |= (flow.getWidth() != width) || (flow.getHeight() != dataHeight);
@@ -491,7 +482,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         if (layoutAll || oldPos != leftPosition) {
             layoutInArea(headerRow, x, y, width, headerHeight,
                          Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.LEFT, VPos.TOP);
-            layoutInArea(statusBar.getView(), x, height - statusHeight, width, statusHeight,
+            layoutInArea(view.statusBar.getView(), x, height - statusHeight, width, statusHeight,
                          Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.RIGHT, VPos.BOTTOM);
             final ObservableList<Node> children = headerRow.getChildren();
             final int count   = children.size();

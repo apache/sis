@@ -18,6 +18,7 @@ package org.apache.sis.gui.coverage;
 
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Border;
@@ -57,6 +58,12 @@ abstract class Controls {
      */
     private static final Border GROUP_BORDER = new Border(new BorderStroke(
             Styles.GROUP_BORDER, BorderStrokeStyle.SOLID, null, null));
+
+    /**
+     * The toolbar button for selecting this view.
+     * This is initialized after construction.
+     */
+    ButtonBase selector;
 
     /**
      * Creates a new control.

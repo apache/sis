@@ -113,7 +113,7 @@ public class ResourceExplorer extends WindowManager {
 
         final Resources localized = localized();
         dataTab = new Tab(localized.getString(Resources.Keys.Data));
-        dataTab.setContextMenu(new ContextMenu(createNewWindowMenu()));
+        dataTab.setContextMenu(new ContextMenu(SelectedData.setTabularView(createNewWindowMenu())));
 
         final String nativeTabText = Vocabulary.getResources(localized.getLocale()).getString(Vocabulary.Keys.Format);
         final MetadataTree nativeMetadata = new MetadataTree(metadata);

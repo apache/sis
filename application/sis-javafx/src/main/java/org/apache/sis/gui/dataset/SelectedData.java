@@ -16,7 +16,9 @@
  */
 package org.apache.sis.gui.dataset;
 
+import java.util.EventObject;
 import javafx.scene.layout.Region;
+import javafx.scene.control.MenuItem;
 import org.apache.sis.gui.coverage.CoverageExplorer;
 import org.apache.sis.gui.coverage.ImageRequest;
 import org.apache.sis.internal.gui.Resources;
@@ -41,6 +43,12 @@ import org.apache.sis.internal.gui.Resources;
  * @module
  */
 final class SelectedData {
+    /**
+     * Key of a property for storing {@link CoverageExplorer.View} value
+     * specifying the initial view of new windows.
+     */
+    private static final String COVERAGE_VIEW_KEY = "org.apache.sis.gui.CoverageView";
+
     /**
      * A title to use for windows and menu items.
      */
@@ -74,14 +82,40 @@ final class SelectedData {
     }
 
     /**
-     * Creates the view for selected data.
+     * Specifies that the given menu item should create a window initialized to tabular data
+     * instead than the image.
      */
-    final Region createView() {
+    static MenuItem setTabularView(final MenuItem item) {
+        item.getProperties().put(COVERAGE_VIEW_KEY, CoverageExplorer.View.TABLE);
+        return item;
+    }
+
+    /**
+     * Creates the view for selected data.
+     *
+     * @param  event  the event (e.g. mouse action) requesting a new window, or {@code null} if unknown.
+     */
+    final Region createView(final EventObject event) {
         if (features != null) {
             return new FeatureTable(features);
         } else {
+            CoverageExplorer.View view = CoverageExplorer.View.IMAGE;
+            if (event != null) {
+                final Object source = event.getSource();
+                if (source instanceof MenuItem) {
+                    final Object value = ((MenuItem) source).getProperties().get(COVERAGE_VIEW_KEY);
+                    if (value instanceof CoverageExplorer.View) {
+                        view = (CoverageExplorer.View) value;
+                    }
+                }
+            }
             final CoverageExplorer ce = new CoverageExplorer();
             ce.setCoverage(coverage);
+            /*
+             * TODO: following line is disabled for now because it causes
+             *       the vertical scroll bar of `GridView` to disappear.
+             */
+//          ce.setViewType(view);
             return ce.getView();
         }
     }

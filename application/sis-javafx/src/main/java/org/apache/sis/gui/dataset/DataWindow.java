@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.dataset;
 
+import java.util.EventObject;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -55,11 +56,12 @@ final class DataWindow extends Stage {
      * Creates a new window for the given data selected in the explorer or determined by the active tab.
      * The new window will be positioned in the screen center but not yet shown.
      *
-     * @param  home  the window containing the main explorer, to be the target of "home" button.
-     * @param  data  the data selected by user, to show in a new window.
+     * @param  event  the event (e.g. mouse action) requesting a new window, or {@code null} if unknown.
+     * @param  home   the window containing the main explorer, to be the target of "home" button.
+     * @param  data   the data selected by user, to show in a new window.
      */
-    DataWindow(final Stage home, final SelectedData data) {
-        final Region content = data.createView();
+    DataWindow(final EventObject event, final Stage home, final SelectedData data) {
+        final Region content = data.createView(event);
         /*
          * Build the tools bar. This bar will be hidden in full screen mode. Note that above
          * method assumes that the "home" button created below is the first one in the toolbar.
@@ -70,7 +72,7 @@ final class DataWindow extends Stage {
 
         final Button fullScreen = new Button("\u21F1\uFE0F");               // ⇱ — North West Arrow to Corner
         fullScreen.setTooltip(new Tooltip(data.localized.getString(Resources.Keys.FullScreen)));
-        fullScreen.setOnAction((event) -> setFullScreen(true));
+        fullScreen.setOnAction((e) -> setFullScreen(true));
         fullScreenProperty().addListener((source, oldValue, newValue) -> onFullScreen(newValue));
 
         tools = new ToolBar(mainWindow, fullScreen);

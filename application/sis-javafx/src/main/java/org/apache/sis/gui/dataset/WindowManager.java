@@ -154,7 +154,7 @@ abstract class WindowManager extends Widget {
     private void newDataWindow(final ActionEvent event) {
         final SelectedData selection = getSelectedData();
         if (selection != null) {
-            final DataWindow window = new DataWindow((Stage) getView().getScene().getWindow(), selection);
+            final DataWindow window = new DataWindow(event, (Stage) getView().getScene().getWindow(), selection);
             window.setTitle(selection.title + " — Apache SIS");
             window.show();
             if (showWindowMenus != null) {

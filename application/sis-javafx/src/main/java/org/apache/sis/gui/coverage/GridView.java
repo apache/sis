@@ -41,6 +41,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.gui.map.StatusBar;
 
 
 /**
@@ -198,6 +199,11 @@ public class GridView extends Control {
     final CellFormat cellFormat;
 
     /**
+     * The status bar where to show coordinates of selected cell.
+     */
+    final StatusBar statusBar;
+
+    /**
      * Creates an initially empty grid view. The content can be set after
      * construction by a call to {@link #setImage(RenderedImage)}.
      */
@@ -211,6 +217,7 @@ public class GridView extends Control {
         headerBackground = new SimpleObjectProperty<>(this, "headerBackground", Color.GAINSBORO);
         headerFormat     = NumberFormat.getIntegerInstance();
         cellFormat       = new CellFormat(this);
+        statusBar        = new StatusBar();
         tileWidth        = 1;
         tileHeight       = 1;       // For avoiding division by zero.
 
@@ -304,7 +311,7 @@ public class GridView extends Control {
         loader = null;
         final ImageLoader result = (ImageLoader) event.getSource();
         setImage(result.getValue());
-        result.request.configure(((GridViewSkin) getSkin()).statusBar);
+        result.request.configure(statusBar);
     }
 
     /**
@@ -415,14 +422,6 @@ public class GridView extends Control {
     }
 
     /**
-     * Returns the offset to add for converting cell indices to pixel indices. They are often the same indices,
-     * but may differ if the {@link RenderedImage} uses a coordinate system where coordinates of the upper-left
-     * corner is not (0,0).
-     */
-    final int getImageMinX() {return minX;}
-    final int getImageMinY() {return minY;}
-
-    /**
      * Returns the bounds of a single tile in the image. This method is invoked only
      * if an error occurred during {@link RenderedImage#getTile(int, int)} invocation.
      * The returned bounds are zero-based (may not be the bounds in image coordinates).
@@ -524,6 +523,16 @@ public class GridView extends Control {
      */
     public final Optional<StringProperty> cellFormatPattern() {
         return cellFormat.hasPattern() ? Optional.of(cellFormat) : Optional.empty();
+    }
+
+    /**
+     * Converts and formats the given cell coordinates. An offset is added to the coordinate values for converting
+     * cell indices to pixel indices. Those two kind of indices often have the same values, but may differ if the
+     * {@link RenderedImage} uses a coordinate system where coordinates of the upper-left corner is not (0,0).
+     * Then the pixel coordinates are converted to "real world" coordinates and formatted.
+     */
+    final void formatCoordinates(final int x, final int y) {
+        statusBar.setLocalCoordinates(minX + x, minY + y);
     }
 
     /**

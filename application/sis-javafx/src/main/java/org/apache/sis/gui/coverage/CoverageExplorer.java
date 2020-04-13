@@ -16,13 +16,13 @@
  */
 package org.apache.sis.gui.coverage;
 
+import javafx.scene.control.Control;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Toggle;
 import javafx.scene.layout.Region;
 import javafx.event.ActionEvent;
-import javafx.collections.ObservableList;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -30,6 +30,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.ToolbarButton;
+import org.apache.sis.internal.gui.NonNullObjectProperty;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.Widget;
 
@@ -49,13 +50,42 @@ import org.apache.sis.gui.Widget;
  */
 public class CoverageExplorer extends Widget {
     /**
-     * Index in the {@link #views} array for the {@link GridView} (tabular data)
-     * or the {@link CoverageCanvas} (image).
+     * Type of view shown in the explorer.
+     * It may be either an image or a table of numerical values.
      */
-    private static final int TABLE_VIEW = 0, IMAGE_VIEW = 1;
+    public enum View {
+        /**
+         * Shows the coverage numerical value in a table. This view uses {@link GridView}.
+         * This is the default value of newly constructed {@link CoverageExplorer}.
+         */
+        TABLE("\uD83D\uDD22\uFE0F", Resources.Keys.Visualize),      // 🔢 — Input symbol for numbers.
+
+        /**
+         * Shows the coverage visual as an image. This view uses {@link CoverageCanvas}.
+         */
+        IMAGE("\uD83D\uDDFA\uFE0F", Resources.Keys.TabularData);    // 🗺 — World map.
+
+        /**
+         * The Unicode characters to use as icon.
+         */
+        final String icon;
+
+        /**
+         * Key from {@link Resources} bundle for the localized text to use as tooltip.
+         */
+        final short tooltip;
+
+        /**
+         * Creates a new enumeration value.
+         */
+        private View(final String icon, short tooltip) {
+            this.icon = icon;
+            this.tooltip = tooltip;
+        }
+    }
 
     /**
-     * The coverage shown in this view. Note that setting this property to a non-null value may not
+     * The coverage shown in this explorer. Note that setting this property to a non-null value may not
      * modify the view content immediately. Instead, a background process will request the tiles.
      *
      * <p>Current implementation is restricted to {@link GridCoverage} instances, but a future
@@ -65,6 +95,20 @@ public class CoverageExplorer extends Widget {
      * @see #setCoverage(GridCoverage)
      */
     public final ObjectProperty<GridCoverage> coverageProperty;
+
+    /**
+     * The type of view (image or tabular data) shown in this explorer.
+     * The default value is {@link View#TABLE}.
+     *
+     * <div class="note"><b>API note:</b>
+     * the reason for setting default value to tabular data is because it requires loading much less data with
+     * {@link java.awt.image.RenderedImage}s supporting deferred tile loading. By contrast {@link View#IMAGE}
+     * may require loading the full image.</div>
+     *
+     * @see #getViewType()
+     * @see #setViewType(View)
+     */
+    public final ObjectProperty<View> viewTypeProperty;
 
     /**
      * Whether the {@link #coverageProperty} is in process of being set, in which case some
@@ -91,56 +135,62 @@ public class CoverageExplorer extends Widget {
      */
     public CoverageExplorer() {
         coverageProperty = new SimpleObjectProperty<>(this, "coverage");
+        viewTypeProperty = new NonNullObjectProperty<>(this, "viewType", View.TABLE);
         coverageProperty.addListener(this::onCoverageSpecified);
+        viewTypeProperty.addListener(this::onViewTypeSpecified);
+        /*
+         * Prepare buttons to add on the toolbar. Those buttons are not managed by this class;
+         * they are managed by org.apache.sis.gui.dataset.DataWindow. We only declare here the
+         * text and action for each button.
+         */
+        final View[]  viewTypes = View.values();
+        final ToggleGroup group = new ToggleGroup();
+        final Control[] buttons = new Control[viewTypes.length + 1];
+        buttons[0] = new Separator();
         /*
          * The coverage property may be shown in various ways (tabular data, image).
          * Each visualization way is an entry in the `views` array.
          */
         final Resources  localized  = Resources.forLocale(null);
         final Vocabulary vocabulary = Vocabulary.getResources(localized.getLocale());
-        views = new Controls[2];
-        views[TABLE_VIEW] = new GridControls(vocabulary);
-        views[IMAGE_VIEW] = new CoverageControls(vocabulary, coverageProperty);
-        for (final Controls c : views) {
+        views = new Controls[viewTypes.length];
+        for (final View type : viewTypes) {
+            final Controls c;
+            switch (type) {
+                case TABLE: c = new GridControls(vocabulary); break;
+                case IMAGE: c = new CoverageControls(vocabulary, coverageProperty); break;
+                default: throw new AssertionError(type);
+            }
             SplitPane.setResizableWithParent(c.controls(), Boolean.FALSE);
             SplitPane.setResizableWithParent(c.view(),     Boolean.TRUE);
+            c.selector = new Selector(type).createButton(group, type.icon, localized, type.tooltip);
+            buttons[buttons.length - type.ordinal() - 1] = c.selector;  // Buttons in reverse order.
+            views[type.ordinal()] = c;
         }
-        final Controls c = views[TABLE_VIEW];
+        final Controls c = views[0];                            // First View enumeration is default value.
+        group.selectToggle(group.getToggles().get(0));
         content = new SplitPane(c.controls(), c.view());
         content.setDividerPosition(0, Styles.INITIAL_SPLIT);
-        /*
-         * Prepare buttons to add on the toolbar. Those buttons are not managed by this class;
-         * they are managed by org.apache.sis.gui.dataset.DataWindow. We only declare here the
-         * text and action for each button.
-         */
-        final ToggleGroup group = new ToggleGroup();
-        ToolbarButton.insert(content,
-            new Separator(),
-            new Selector(IMAGE_VIEW).createButton(group, "\uD83D\uDDFA\uFE0F", localized, Resources.Keys.Visualize),    // 🗺 — World map.
-            new Selector(TABLE_VIEW).createButton(group, "\uD83D\uDD22\uFE0F", localized, Resources.Keys.TabularData)   // 🔢 — Input symbol for numbers.
-        );
-        final ObservableList<Toggle> toggles = group.getToggles();
-        group.selectToggle(toggles.get(toggles.size() - 1));
+        ToolbarButton.insert(content, buttons);
     }
 
     /**
      * The action to execute when the user selects a view.
      */
     private final class Selector extends ToolbarButton {
-        /** {@link #TABLE_VIEW} or {@link #IMAGE_VIEW}. */
-        private final int index;
+        /** The view to select when the button is pressed. */
+        private final View view;
 
         /** Creates a new action which will show the view at the given index. */
-        Selector(final int index) {
-            this.index = index;
+        Selector(final View view) {
+            this.view = view;
         }
 
         /** Invoked when the user selects another view to show (tabular data or the image). */
         @Override public void handle(final ActionEvent event) {
             final Toggle button = (Toggle) event.getSource();
             if (button.isSelected()) {
-                final Controls c = views[index];
-                content.getItems().setAll(c.controls(), c.view());
+                setViewType(view);
             } else {
                 button.setSelected(true);       // Prevent situation where all buttons are unselected.
             }
@@ -246,7 +296,7 @@ public class CoverageExplorer extends Widget {
      * @param  source  the coverage or resource to load, or {@code null} if none.
      */
     private void startLoading(final ImageRequest source) {
-        final GridView main = (GridView) views[TABLE_VIEW].view();
+        final GridView main = (GridView) views[View.TABLE.ordinal()].view();
         main.setImage(source);
     }
 
@@ -260,5 +310,43 @@ public class CoverageExplorer extends Widget {
         for (final Controls c : views) {
             c.updateBandTable(data);
         }
+    }
+
+    /**
+     * Returns the type of view (image or tabular data) shown in this explorer.
+     * The default value is {@link View#TABLE}.
+     *
+     * @return the type of view shown in this explorer.
+     *
+     * @see #viewTypeProperty
+     */
+    public final View getViewType() {
+        return viewTypeProperty.get();
+    }
+
+    /**
+     * Sets the type of view to show in this explorer.
+     *
+     * @param  coverage  the type of view to show in this explorer.
+     *
+     * @see #viewTypeProperty
+     */
+    public final void setViewType(final View coverage) {
+        viewTypeProperty.set(coverage);
+    }
+
+    /**
+     * Invoked when a new view type has been specified.
+     *
+     * @param  property  the {@link #viewTypeProperty} (ignored).
+     * @param  previous  ignored.
+     * @param  view      the new view type.
+     */
+    private void onViewTypeSpecified(final ObservableValue<? extends View> property,
+                                     final View previous, final View view)
+    {
+        final Controls c = views[view.ordinal()];
+        content.getItems().setAll(c.controls(), c.view());
+        ((Toggle) c.selector).setSelected(true);
     }
 }
