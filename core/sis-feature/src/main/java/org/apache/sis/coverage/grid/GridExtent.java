@@ -850,7 +850,13 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     public GeneralEnvelope toEnvelope(final MathTransform cornerToCRS) throws TransformException {
         ArgumentChecks.ensureNonNull("cornerToCRS", cornerToCRS);
-        return toCRS(cornerToCRS, cornerToCRS, null);
+        final GeneralEnvelope envelope = toCRS(cornerToCRS, cornerToCRS, null);
+        if (cornerToCRS.isIdentity()) try {
+            envelope.setCoordinateReferenceSystem(GridExtentCRS.build(getDimension(), types, null));
+        } catch (FactoryException e) {
+            throw new TransformException(e);
+        }
+        return envelope;
     }
 
     /**
