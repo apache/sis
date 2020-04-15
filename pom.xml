@@ -610,7 +610,6 @@
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <trimStackTrace>false</trimStackTrace>
               <environmentVariables>
                 <SIS_DATA>${session.executionRootDirectory}/target</SIS_DATA>
               </environmentVariables>
@@ -691,6 +690,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.0.0-M4</version>
         <configuration>
+          <trimStackTrace>false</trimStackTrace>
           <includes>
             <include>**/*TestSuite.java</include>
           </includes>
