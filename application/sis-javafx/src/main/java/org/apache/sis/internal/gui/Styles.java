@@ -19,23 +19,29 @@ package org.apache.sis.internal.gui;
 import java.util.Arrays;
 import java.io.IOException;
 import java.io.InputStream;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 
 
 /**
- * A central place where to store all colors used by SIS application.
- * This provides a single place to revisit if we learn more about how
- * to make those color more dynamic with JavaFX styling.
+ * A central place where to store some appearance choices such as colors used by SIS application.
+ * This provides a single place to revisit if we learn more about how to make those choices more
+ * configurable with JavaFX styling.
  *
- * <p>This class also opportunistically provides a few utility methods
- * related to appearance.</p>
+ * <p>This class also opportunistically provides a few utility methods related to appearance.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -43,12 +49,6 @@ import org.apache.sis.internal.system.Modules;
  * @module
  */
 public final class Styles {
-    /**
-     * Initial position of divider in split panes. This is used in data windows,
-     * but not necessarily in the main window (the resource explorer).
-     */
-    public static final double INITIAL_SPLIT = 200;
-
     /**
      * Approximate size of vertical scroll bar.
      */
@@ -107,8 +107,15 @@ public final class Styles {
 
     /**
      * The Unicode character to put in a button for requesting more information about an error.
+     * The symbol is {@value}.
      */
-    public static final String ERROR_DETAILS = "ℹ";
+    public static final String ERROR_DETAILS_ICON = "\u2139\uFE0F";     // ℹ
+
+    /**
+     * The Unicode character to put in a label for representing a warning.
+     * The symbol is {@value}.
+     */
+    public static final String WARNING_ICON = "\u26A0\uFE0F";           // ⚠
 
     /**
      * Do not allow instantiation of this class.
@@ -139,6 +146,60 @@ public final class Styles {
             Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), caller, method, error);
         }
         return image;
+    }
+
+    /**
+     * Space between a group of controls and the border encompassing the group.
+     */
+    private static final Insets FORM_INSETS = new Insets(12);
+
+    /**
+     * Creates a grid pane of two columns and an arbitrary number of rows.
+     * Each row contains a (label, control) pair, with all growths and shrinks applied on the second column.
+     * The controls must be associated to the given labels by {@link Label#getLabelFor()}.
+     * If a label is {@code null}, then no row is created for that label.
+     *
+     * @param  controls  (label, control) pairs to layout in rows.
+     * @return a pane with each (label, control) pair on a row.
+     */
+    public static GridPane createControlGrid(final Label... controls) {
+        final GridPane gp = new GridPane();
+        final ColumnConstraints labelColumn   = new ColumnConstraints();
+        final ColumnConstraints controlColumn = new ColumnConstraints();
+        labelColumn  .setHgrow(Priority.NEVER);
+        controlColumn.setHgrow(Priority.ALWAYS);
+        /*
+         * I'm not aware of a way to specify that the first column should be always wide enough
+         * for showing fully the labels. As a workaround, we set the minimum width to the width
+         * of the widest label.
+         */
+        final ChangeListener<Number> widthFixer = new ChangeListener<>() {
+            @Override public void changed(final ObservableValue<? extends Number> e, final Number o, final Number n) {
+                final double v = n.doubleValue();
+                if (v > o.doubleValue()) {
+                    if (v > labelColumn.getMinWidth()) {
+                        labelColumn.setMinWidth(v);
+                    }
+                    e.removeListener(this);
+                }
+            }
+        };
+        gp.getColumnConstraints().setAll(labelColumn, controlColumn);
+        gp.setPadding(FORM_INSETS);
+        gp.setVgap(9);
+        gp.setHgap(9);
+        int row = 0;
+        for (final Label label : controls) {
+            if (label != null) {
+                final Node control = label.getLabelFor();
+                GridPane.setConstraints(label,   0, row);
+                GridPane.setConstraints(control, 1, row);
+                gp.getChildren().addAll(label, control);
+                label.widthProperty().addListener(widthFixer);
+                row++;
+            }
+        }
+        return gp;
     }
 
     /**

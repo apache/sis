@@ -550,7 +550,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 }
             }
             final String alert = text;
-            more = new Button(Styles.ERROR_DETAILS);
+            more = new Button(Styles.ERROR_DETAILS_ICON);
             more.setOnAction((e) -> ExceptionReporter.show(
                     Resources.forLocale(locale).getString(Resources.Keys.ErrorDetails), alert, details));
         }

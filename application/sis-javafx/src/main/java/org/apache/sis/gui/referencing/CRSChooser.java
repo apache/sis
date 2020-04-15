@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.Optional;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -33,23 +34,51 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Window;
-import org.apache.sis.internal.gui.ExceptionReporter;
+import javafx.util.Duration;
+import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.TemporalCRS;
+import org.opengis.referencing.crs.CompoundCRS;
+import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.IdentityValueFactory;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 
 
 /**
  * A list of Coordinate Reference Systems (CRS) from which the user can select.
+ * The CRS choices is built in a background thread from a specified {@link CRSAuthorityFactory}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -88,18 +117,51 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
     private final TableView<Code> table;
 
     /**
+     * A panel showing the type and domain of validity of selected CRS.
+     */
+    private final GridPane summary;
+
+    /**
+     * The label where to write the CRS type and domain of validity.
+     */
+    private final Label type, domain;
+
+    /**
+     * The area of interest, or {@code null} if none.
+     * Axis order is (<var>longitude</var>, <var>latitude</var>).
+     */
+    private final ImmutableEnvelope areaOfInterest;
+
+    /**
      * The pane showing the CRS in Well Known Text format.
      * Created when first needed.
      */
     private WKTPane wktPane;
 
     /**
+     * Creates a chooser proposing all coordinate reference systems from the default factory.
+     */
+    public CRSChooser() {
+        this(null, null);
+    }
+
+    /**
      * Creates a chooser proposing all coordinate reference systems from the given factory.
      *
-     * @param  factory  the factory to use for creating coordinate reference systems, or {@code null}
-     *                  for the {@linkplain CRS#getAuthorityFactory(String) Apache SIS default factory}.
+     * @param  factory         the factory to use for creating coordinate reference systems, or {@code null}
+     *                         for the {@linkplain CRS#getAuthorityFactory(String) Apache SIS default factory}.
+     * @param  areaOfInterest  geographic area for which to choose a CRS, or {@code null} if no restriction.
      */
-    public CRSChooser(final CRSAuthorityFactory factory) {
+    public CRSChooser(final CRSAuthorityFactory factory, Envelope areaOfInterest) {
+        if (areaOfInterest == null) {
+            this.areaOfInterest = null;
+        } else try {
+            final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox();
+            bbox.setBounds(areaOfInterest);
+            this.areaOfInterest = new ImmutableEnvelope(bbox);
+        } catch (TransformException e) {
+            throw new IllegalArgumentException(e);
+        }
         final Locale         locale     = Locale.getDefault();
         final Resources      i18n       = Resources.forLocale(locale);
         final Vocabulary     vocabulary = Vocabulary.getResources(locale);
@@ -124,34 +186,61 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         clock.setFont(Font.font(30));
         table.setPlaceholder(clock);
         /*
-         * Text field for filtering the list of CRS codes using keywords.
-         * The filtering is applied when the "Enter" key is pressed in that field.
+         * Controls on the top of CRS list. This is either a filter or a combox box
+         * giving WKT format choices, depending on what is currently shown.
          */
-        searchField = new TextField();
-        searchField.setOnAction((ActionEvent event) -> {
-            CodeFilter.apply(table, searchField.getText());
-        });
-        HBox.setHgrow(searchField, Priority.ALWAYS);
-        final Label label = new Label(i18n.getString(Resources.Keys.Filter));
-        label.setLabelFor(searchField);
+        {// block for keeping variable locales.
+            /*
+             * Text field for filtering the list of CRS codes using keywords.
+             * The filtering is applied when the "Enter" key is pressed in that field.
+             */
+            searchField = new TextField();
+            searchField.setOnAction((ActionEvent event) -> {
+                CodeFilter.apply(table, searchField.getText());
+            });
+            HBox.setHgrow(searchField, Priority.ALWAYS);
+            final Label label = new Label(i18n.getString(Resources.Keys.Filter));
+            label.setLabelFor(searchField);
+            /*
+             * Button for showing the CRS description in Well Known Text (WKT) format.
+             * The button is enabled only if a row in the table is selected.
+             */
+            final ToggleButton infoButton = new ToggleButton("\uD83D\uDDB9");   // Unicode U+1F5B9: Document With Text.
+            table.getSelectionModel().selectedItemProperty().addListener((e,o,n) -> {
+                infoButton.setDisable(n == null);
+                updateSummary(n);
+            });
+            infoButton.setOnAction((ActionEvent event) -> {
+                setTools(infoButton.isSelected());
+            });
+            infoButton.setDisable(true);
+            /*
+             * Creates the tools bar to show above the table of codes.
+             * The tools bar contains the search field and the button for showing the WKT.
+             */
+            tools = new HBox(label, searchField, infoButton);
+            tools.setSpacing(9);
+            tools.setAlignment(Pos.BASELINE_LEFT);
+            BorderPane.setMargin(tools, new Insets(0, 0, 9, 0));
+        }
         /*
-         * Button for showing the CRS description in Well Known Text (WKT) format.
-         * The button is enabled only if a row in the table is selected.
+         * Details about the selected items. This is a form with the following lines:
+         *   - Type (e.g. "Projected — Transverse Mercator").
+         *   - Domain of validity.
          */
-        final ToggleButton info = new ToggleButton("\uD83D\uDDB9"); // Unicode U+1F5B9: Document With Text.
-        table.getSelectionModel().selectedItemProperty().addListener((e,o,n) -> info.setDisable(n == null));
-        info.setOnAction((ActionEvent event) -> {
-            setTools(info.isSelected());
-        });
-        info.setDisable(true);
-        /*
-         * Creates the tools bar to show above the table of codes.
-         * The tools bar contains the search field and the button for showing the WKT.
-         */
-        tools = new HBox(label, searchField, info);
-        tools.setSpacing(9);
-        tools.setAlignment(Pos.BASELINE_LEFT);
-        BorderPane.setMargin(tools, new Insets(0, 0, 9, 0));
+        {// block for keeping variable locales.
+            final Label lt = new Label(vocabulary.getLabel(Vocabulary.Keys.Type));
+            final Label ld = new Label(vocabulary.getLabel(Vocabulary.Keys.Domain));
+            lt.setLabelFor(type   = new Label());
+            ld.setLabelFor(domain = new Label());
+            summary = Styles.createControlGrid(lt, ld);
+            final Tooltip tp = new Tooltip();
+            tp.setShowDelay(Duration.seconds(0.5));
+            tp.setShowDuration(Duration.minutes(1));
+            tp.maxWidthProperty().bind(summary.widthProperty());
+            tp.setWrapText(true);
+            domain.setTooltip(tp);
+        }
         /*
          * Layout table and tools bar inside the dialog content.
          * Configure the dialog buttons.
@@ -160,6 +249,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         content = new BorderPane();
         content.setCenter(table);
         content.setTop(tools);
+        content.setBottom(summary);
         pane.setContent(content);
         pane.getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
         setTitle(i18n.getString(Resources.Keys.SelectCRS));
@@ -168,15 +258,16 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
     }
 
     /**
-     * Sets the tools bar and content to controls for the given mode.
+     * Sets the tools bar and its content to controls for the given mode.
      * If {@code wkt} is {@code true}, then this method set the controls for showing the WKT.
      * If {@code wkt} is {@code false} (the default), then this method set the controls to the table of CRS codes.
      */
     private void setTools(final boolean wkt) {
         final Locale locale = getAuthorityCodes().locale;
         final short labelText;
-        final Control control;
-        final Control main;
+        final Control  control;
+        final Control  main;
+        final GridPane info;
         if (wkt) {
             if (wktPane == null) {
                 wktPane = new WKTPane(locale);
@@ -185,10 +276,12 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
             labelText = Resources.Keys.Format;
             control   = wktPane.convention;
             main      = wktPane.text;
+            info      = null;
         } else {
             labelText = Resources.Keys.Filter;
             control   = searchField;
             main      = table;
+            info      = summary;
         }
         final ObservableList<Node> children = tools.getChildren();
         final Label label = (Label) children.get(0);
@@ -197,6 +290,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         label.setLabelFor(control);
         children.set(1, control);
         content.setCenter(main);
+        content.setBottom(info);
     }
 
     /**
@@ -209,6 +303,108 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
             items = ((FilteredList<?>) items).getSource();
         }
         return (AuthorityCodes) items;
+    }
+
+    /**
+     * Invoked when a new CRS is selected in the table. This method updates
+     * the {@link #type} and {@link #domain} fields with CRS information.
+     */
+    private void updateSummary(final Code selected) {
+        final AuthorityCodes source = getAuthorityCodes();
+        final String code = selected.code;
+        BackgroundThreads.execute(new Task<CoordinateReferenceSystem>() {
+            /** Invoked in background thread for fetching the CRS from an authority code. */
+            @Override protected CoordinateReferenceSystem call() throws FactoryException {
+                return source.getFactory().createCoordinateReferenceSystem(code);
+            }
+
+            /** Invoked in JavaFX thread on success. */
+            @Override protected void succeeded() {
+                final CoordinateReferenceSystem crs = getValue();
+                type.setTextFill(Styles.NORMAL_TEXT);
+                type.setText(typeOf(crs, source.locale));
+                setDomainOfValidity(crs.getDomainOfValidity(), source.locale);
+            }
+
+            /** Invoked in JavaFX thread on cancellation. */
+            @Override protected void cancelled() {
+                type.setText(null);
+                domain.setText(null);
+            }
+
+            /** Invoked in JavaFX thread on failure. */
+            @Override protected void failed() {
+                cancelled();
+                type.setTextFill(Styles.ERROR_TEXT);
+                type.setText(Exceptions.getLocalizedMessage(getException(), source.locale));
+            }
+        });
+    }
+
+    /**
+     * Sets the text that describes the domain of validity.
+     */
+    private void setDomainOfValidity(final Extent domainOfValidity, final Locale locale) {
+        String text  = Extents.getDescription(domainOfValidity, locale);
+        String tip   = text;
+        Color  color = Styles.NORMAL_TEXT;
+        if (areaOfInterest != null) {
+            final GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(domainOfValidity);
+            if (bbox != null && !areaOfInterest.intersects(new ImmutableEnvelope(bbox))) {
+                tip   = Resources.forLocale(locale).getString(Resources.Keys.DoesNotCoverAOI);
+                text  = Styles.WARNING_ICON + " " + (text != null ? text : tip);
+                color = Styles.ERROR_TEXT;
+            }
+        }
+        domain.setTextFill(color);
+        domain.setText(text);
+        domain.getTooltip().setText(tip);
+    }
+
+    /**
+     * Returns the text to show of right of the "type" label.
+     */
+    private static String typeOf(CoordinateReferenceSystem crs, final Locale locale) {
+        while (crs instanceof CompoundCRS) {
+            crs = ((CompoundCRS) crs).getComponents().get(0);
+        }
+        final short key;
+        final int expected;
+             if (crs instanceof GeographicCRS)  {key = Vocabulary.Keys.Geographic;  expected = 2;}
+        else if (crs instanceof GeocentricCRS)  {key = Vocabulary.Keys.Geocentric;  expected = 3;}
+        else if (crs instanceof GeodeticCRS)    {key = Vocabulary.Keys.Geodetic;    expected = 0;}
+        else if (crs instanceof VerticalCRS)    {key = Vocabulary.Keys.Vertical;    expected = 1;}
+        else if (crs instanceof TemporalCRS)    {key = Vocabulary.Keys.Temporal;    expected = 1;}
+        else if (crs instanceof ProjectedCRS)   {key = Vocabulary.Keys.Projected;   expected = 2;}
+        else if (crs instanceof EngineeringCRS) {key = Vocabulary.Keys.Engineering; expected = 0;}
+        else {
+            key = Vocabulary.Keys.Unknown;
+            expected = 0;
+        }
+        String text = Vocabulary.getResources(locale).getString(key);
+        final int     dimension = ReferencingUtilities.getDimension(crs);
+        final boolean addDimension = (dimension != expected && expected != 0);
+        final boolean isProjection = (crs instanceof GeneralDerivedCRS);
+        if (addDimension | isProjection) {
+            final StringBuilder buffer = new StringBuilder(text);
+            if (addDimension) {
+                buffer.append(" (").append(dimension).append("D)");
+            }
+            if (isProjection) {
+                final Conversion conversion = ((GeneralDerivedCRS) crs).getConversionFromBase();
+                if (conversion != null) {
+                    final OperationMethod method = conversion.getMethod();
+                    if (method != null) {
+                        final String name = IdentifiedObjects.getDisplayName(method, locale);
+                        if (name != null) {
+                            buffer.append(" — ").append(name);
+                        }
+                    }
+                }
+            }
+            text = buffer.toString();
+        }
+        return text;
     }
 
     /**

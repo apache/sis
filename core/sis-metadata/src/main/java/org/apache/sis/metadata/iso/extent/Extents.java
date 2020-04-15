@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso.extent;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Locale;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -44,6 +45,7 @@ import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Range;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -70,7 +72,7 @@ import org.opengis.geometry.Geometry;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see org.apache.sis.geometry.Envelopes
  *
@@ -412,6 +414,19 @@ public final class Extents extends Static {
         if (max == null) return min;
         final long startTime = min.getTime();
         return new Date(Math.addExact(startTime, Math.round((max.getTime() - startTime) * location)));
+    }
+
+    /**
+     * Returns the description of the given extent, or {@code null} if none.
+     *
+     * @param  extent  the extent from which to get a description, or {@code null}.
+     * @param  locale  desired locale, or {@code null} for default.
+     * @return description of the given extent, or {@code null} if none.
+     *
+     * @since 1.1
+     */
+    public static String getDescription(final Extent extent, final Locale locale) {
+        return (extent != null) ? Types.toString(extent.getDescription(), locale) : null;
     }
 
     /**

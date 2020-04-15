@@ -59,7 +59,7 @@ final class CoverageControls extends Controls {
     /**
      * Creates a new set of coverage controls.
      *
-     * @param  vocabulary  localized set of words, provided in argument before often known by the caller.
+     * @param  vocabulary  localized set of words, provided in argument because often known by the caller.
      * @param  coverage    property containing the coverage to show.
      */
     CoverageControls(final Vocabulary vocabulary, final ObjectProperty<GridCoverage> coverage) {
@@ -89,7 +89,7 @@ final class CoverageControls extends Controls {
          * Put all sections together and have the first one expanded by default.
          */
         controls = new Accordion(
-            new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),  displayPane)
+            new TitledPane(vocabulary.getString(Vocabulary.Keys.Display), displayPane)
             // TODO: more controls to be added in a future version.
         );
         controls.setExpandedPane(controls.getPanes().get(0));
@@ -109,7 +109,7 @@ final class CoverageControls extends Controls {
 
     /**
      * Invoked after {@link CoverageExplorer#setCoverage(ImageRequest)} for updating the table of
-     * sample dimensions with information become available. This method is invoked in JavaFX thread.
+     * sample dimensions when information become available. This method is invoked in JavaFX thread.
      *
      * @param  data  the new coverage, or {@code null} if none.
      */

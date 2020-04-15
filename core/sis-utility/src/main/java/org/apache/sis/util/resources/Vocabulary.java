@@ -400,6 +400,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short EndPoint = 59;
 
         /**
+         * Engineering
+         */
+        public static final short Engineering = 205;
+
+        /**
          * {0} entr{0,choice,0#y|2#ies}
          */
         public static final short EntryCount_1 = 60;
@@ -445,9 +450,19 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short GeodesicDistance = 67;
 
         /**
+         * Geodetic
+         */
+        public static final short Geodetic = 202;
+
+        /**
          * Geodetic dataset
          */
         public static final short GeodeticDataset = 68;
+
+        /**
+         * Geographic
+         */
+        public static final short Geographic = 203;
 
         /**
          * Geographic extent
@@ -778,6 +793,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Preprocessing
          */
         public static final short Preprocessing = 125;
+
+        /**
+         * Projected
+         */
+        public static final short Projected = 204;
 
         /**
          * “{0}”

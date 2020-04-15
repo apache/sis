@@ -151,6 +151,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Display = 41;
 
         /**
+         * Does not cover the area of interest.
+         */
+        public static final short DoesNotCoverAOI = 57;
+
+        /**
          * Error closing file
          */
         public static final short ErrorClosingFile = 13;

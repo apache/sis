@@ -454,7 +454,7 @@ public class ResourceTree extends TreeView<Resource> {
                     if (tree != null) {
                         final Throwable failure = ((Unloadable) resource).failure;
                         text = tree.string(failure);
-                        more = new Button(Styles.ERROR_DETAILS);
+                        more = new Button(Styles.ERROR_DETAILS_ICON);
                         more.setOnAction((e) -> ExceptionReporter.show(
                                 tree.localized.getString(Resources.Keys.ErrorDetails),
                                 tree.localized.getString(Resources.Keys.CanNotReadResource), failure));

@@ -17,16 +17,13 @@
 package org.apache.sis.gui.coverage;
 
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.gui.Styles;
@@ -47,11 +44,6 @@ abstract class Controls {
      * Margin to keep around captions on top of tables or lists.
      */
     static final Insets CAPTION_MARGIN = new Insets(12, 0, 9, 0);
-
-    /**
-     * Space between a group of controls and the border encompassing the group.
-     */
-    private static final Insets GROUP_INSETS = new Insets(12);
 
     /**
      * The border to use for grouping some controls together.
@@ -80,25 +72,9 @@ abstract class Controls {
      * @return a pane with each (label, control) pair on a row.
      */
     static GridPane createControlGrid(final Label... controls) {
-        final GridPane gp = new GridPane();
-        final ColumnConstraints controlColumn = new ColumnConstraints();
-        controlColumn.setHgrow(Priority.ALWAYS);
-        gp.getColumnConstraints().setAll(new ColumnConstraints(), controlColumn);
-        gp.setPadding(GROUP_INSETS);
-        gp.setBorder(GROUP_BORDER);
-        gp.setVgap(9);
-        gp.setHgap(9);
-        int row = 0;
-        for (final Label label : controls) {
-            if (label != null) {
-                final Node control = label.getLabelFor();
-                GridPane.setConstraints(label,   0, row);
-                GridPane.setConstraints(control, 1, row);
-                gp.getChildren().addAll(label, control);
-                row++;
-            }
-        }
+        final GridPane gp = Styles.createControlGrid(controls);
         Styles.setAllRowToSameHeight(gp);
+        gp.setBorder(GROUP_BORDER);
         return gp;
     }
 
@@ -135,7 +111,7 @@ abstract class Controls {
 
     /**
      * Invoked after {@link CoverageExplorer#setCoverage(ImageRequest)} for updating the table of
-     * sample dimensions with information become available. This method is invoked in JavaFX thread.
+     * sample dimensions when information become available. This method is invoked in JavaFX thread.
      *
      * @param  data  the new coverage, or {@code null} if none.
      */

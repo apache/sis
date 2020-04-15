@@ -28,7 +28,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.ToolbarButton;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
 import org.apache.sis.util.resources.Vocabulary;
@@ -49,6 +48,11 @@ import org.apache.sis.gui.Widget;
  * @module
  */
 public class CoverageExplorer extends Widget {
+    /**
+     * Initial position of divider in split panes.
+     */
+    private static final double INITIAL_SPLIT = 200;
+
     /**
      * Type of view shown in the explorer.
      * It may be either an image or a table of numerical values.
@@ -170,7 +174,7 @@ public class CoverageExplorer extends Widget {
         final Controls c = views[0];                            // First View enumeration is default value.
         group.selectToggle(group.getToggles().get(0));
         content = new SplitPane(c.controls(), c.view());
-        content.setDividerPosition(0, Styles.INITIAL_SPLIT);
+        content.setDividerPosition(0, INITIAL_SPLIT);
         ToolbarButton.insert(content, buttons);
     }
 
