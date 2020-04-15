@@ -27,18 +27,24 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.EngineeringDatum;
+import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
+import org.apache.sis.util.Characters;
 
 
 /**
- * Builds the coordinate reference system of a {@link GridExtent}.
- * This is used only in the rare case where we need to represent an extent as an envelope.
+ * Builds the engineering coordinate reference system of a {@link GridExtent}.
+ * This is used only in the rare cases where we need to represent an extent as an envelope.
+ * This class converts {@link DimensionNameType} codes into axis names, abbreviations and directions.
+ * It is the converse of {@link GridExtent#typeFromAxes(CoordinateReferenceSystem, int)}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
@@ -74,53 +80,113 @@ final class GridExtentCRS {
     }
 
     /**
-     * Builds a coordinate reference system of the given number of dimensions for the given axis types.
+     * Returns a default axis abbreviation for the given dimension.
      */
-    static EngineeringCRS build(final int dimension, final DimensionNameType[] types, final Locale locale)
+    private static String abbreviation(final int dimension) {
+        final StringBuilder b = new StringBuilder(4).append('x').append(dimension);
+        for (int i=b.length(); --i >= 1;) {
+            b.setCharAt(i, Characters.toSuperScript(b.charAt(i)));
+        }
+        return b.toString();
+    }
+
+    /**
+     * Builds a coordinate reference system for the given axis types.
+     *
+     * @param  gridToCRS  matrix of the transform used for converting grid cell indices to envelope coordinates.
+     *         It does not matter whether it maps pixel center or corner (translation coefficients are ignored).
+     * @param  types   the value of {@link GridExtent#types} or a default value (shall not be {@code null}).
+     * @param  locale  locale to use for axis names, or {@code null} for default.
+     * @return CRS for the grid, or {@code null}.
+     *
+     * @see GridExtent#typeFromAxes(CoordinateReferenceSystem, int)
+     */
+    static EngineeringCRS build(final Matrix gridToCRS, final DimensionNameType[] types, final Locale locale)
             throws FactoryException
     {
+        final int tgtDim = gridToCRS.getNumRow() - 1;
+        final int srcDim = Math.min(gridToCRS.getNumCol() - 1, types.length);
+        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[tgtDim];
         final CSFactory csFactory = DefaultFactories.forBuildin(CSFactory.class);
-        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[dimension];
-        if (types != null) {
-skip:       for (int i=0; i<dimension; i++) {
-                final DimensionNameType type = types[i];
-                if (type != null) {
-                    final String abbreviation;
-                    final AxisDirection direction;
-                    if (type == DimensionNameType.ROW || type == DimensionNameType.LINE) {
-                        abbreviation = "y"; direction = AxisDirection.ROW_POSITIVE;
-                    } else if (type == DimensionNameType.COLUMN || type == DimensionNameType.SAMPLE) {
-                        abbreviation = "x"; direction = AxisDirection.COLUMN_POSITIVE;
-                    } else if (type == DimensionNameType.VERTICAL) {
-                        abbreviation = "z"; direction = AxisDirection.UP;
-                    } else if (type == DimensionNameType.TIME) {
-                        abbreviation = "t"; direction = AxisDirection.FUTURE;
-                    } else {
-                        abbreviation = "d" + dimension;
-                        direction = AxisDirection.OTHER;
+        for (int i=0; i<srcDim; i++) {
+            final DimensionNameType type = types[i];
+            if (type != null) {
+                /*
+                 * Try to locate the CRS dimension corresponding to grid dimension j.
+                 * We expect a one-to-one matching; if it is not the case, return null.
+                 * Current version does not accept scale factors, but we could revisit
+                 * in a future version if there is a need for it.
+                 */
+                int target = -1;
+                double scale = 0;
+                for (int j=0; j<tgtDim; j++) {
+                    final double m = gridToCRS.getElement(j, i);
+                    if (m != 0) {
+                        if (target >= 0 || axes[j] != null || Math.abs(m) != 1) {
+                            return null;
+                        }
+                        target = j;
+                        scale  = m;
                     }
-                    // Verify that no other axis has the same direction.
-                    for (int j=i; --j >= 0;) {
-                        final CoordinateSystemAxis previous = axes[j];
-                        if (previous != null && direction.equals(previous.getDirection())) {
-                            continue skip;
+                }
+                if (target < 0) {
+                    return null;
+                }
+                /*
+                 * This hard-coded set of axis directions is the converse of
+                 * GridExtent.AXIS_DIRECTIONS map.
+                 */
+                String abbreviation;
+                AxisDirection direction;
+                if (type == DimensionNameType.COLUMN || type == DimensionNameType.SAMPLE) {
+                    abbreviation = "x"; direction = AxisDirection.COLUMN_POSITIVE;
+                } else if (type == DimensionNameType.ROW || type == DimensionNameType.LINE) {
+                    abbreviation = "y"; direction = AxisDirection.ROW_POSITIVE;
+                } else if (type == DimensionNameType.VERTICAL) {
+                    abbreviation = "z"; direction = AxisDirection.UP;
+                } else if (type == DimensionNameType.TIME) {
+                    abbreviation = "t"; direction = AxisDirection.FUTURE;
+                } else {
+                    abbreviation = abbreviation(target);
+                    direction = AxisDirection.OTHER;
+                }
+                /*
+                 * Verify that no other axis has the same direction and abbreviation. If duplicated
+                 * values are found, keep only the first occurrence in grid axis order (may not be
+                 * the CRS axis order).
+                 */
+                for (int k = tgtDim; --k >= 0;) {
+                    final CoordinateSystemAxis previous = axes[k];
+                    if (previous != null) {
+                        if (direction.equals(AxisDirections.absolute(previous.getDirection()))) {
+                            direction = AxisDirection.OTHER;
+                        }
+                        if (abbreviation.equals(previous.getAbbreviation())) {
+                            abbreviation = abbreviation(target);
                         }
                     }
-                    final String name = Types.toString(Types.getCodeTitle(type), locale);
-                    axes[i] = axis(csFactory, name, abbreviation, direction);
                 }
+                if (scale < 0) {
+                    direction = AxisDirections.opposite(direction);
+                }
+                final String name = Types.toString(Types.getCodeTitle(type), locale);
+                axes[target] = axis(csFactory, name, abbreviation, direction);
             }
         }
-        for (int i=0; i<dimension; i++) {
-            if (axes[i] == null) {
-                final String name = Vocabulary.getResources(locale).getString(Vocabulary.Keys.Dimension_1, i);
-                final String abbreviation = "d" + dimension;
-                axes[i] = axis(csFactory, name, abbreviation, AxisDirection.OTHER);
+        /*
+         * Search for axes that have not been created in above loop.
+         * It happens when some axes have no associated `DimensionNameType` code.
+         */
+        for (int j=0; j<tgtDim; j++) {
+            if (axes[j] == null) {
+                final String name = Vocabulary.getResources(locale).getString(Vocabulary.Keys.Dimension_1, j);
+                final String abbreviation = abbreviation(j);
+                axes[j] = axis(csFactory, name, abbreviation, AxisDirection.OTHER);
             }
         }
         final Map<String,?> properties = properties("Grid extent");
         final CoordinateSystem cs;
-        switch (dimension) {
+        switch (tgtDim) {
             case 2:  cs = csFactory.createAffineCS(properties, axes[0], axes[1]); break;
             case 3:  cs = csFactory.createAffineCS(properties, axes[0], axes[1], axes[2]); break;
             default: cs = new AbstractCS(properties, axes); break;

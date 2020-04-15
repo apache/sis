@@ -96,6 +96,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * This map contains only the "positive" axis directions.
      *
      * @todo Verify if there is more directions to add as of ISO 19111:2018.
+     *
+     * @see #typeFromAxes(CoordinateReferenceSystem, int)
      */
     private static final Map<AxisDirection,DimensionNameType> AXIS_DIRECTIONS;
     static {
@@ -317,6 +319,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Infers the axis types from the given coordinate reference system.
+     * This method is the converse of {@link GridExtentCRS}.
      *
      * @param  crs        the coordinate reference system, or {@code null}.
      * @param  dimension  number of name type to infer. Shall not be greater than the CRS dimension.
@@ -851,8 +854,9 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     public GeneralEnvelope toEnvelope(final MathTransform cornerToCRS) throws TransformException {
         ArgumentChecks.ensureNonNull("cornerToCRS", cornerToCRS);
         final GeneralEnvelope envelope = toCRS(cornerToCRS, cornerToCRS, null);
-        if (cornerToCRS.isIdentity()) try {
-            envelope.setCoordinateReferenceSystem(GridExtentCRS.build(getDimension(), types, null));
+        final Matrix gridToCRS = MathTransforms.getMatrix(cornerToCRS);
+        if (gridToCRS != null && Matrices.isAffine(gridToCRS)) try {
+            envelope.setCoordinateReferenceSystem(GridExtentCRS.build(gridToCRS, (types != null) ? types : DEFAULT_TYPES, null));
         } catch (FactoryException e) {
             throw new TransformException(e);
         }

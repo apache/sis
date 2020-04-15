@@ -22,17 +22,22 @@ import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.coverage.PointOutsideCoverageException;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
@@ -260,6 +265,38 @@ public final strictfp class GridExtentTest extends TestCase {
                 0.5,  0,   50,
                 0,    2,   40,
                 0,    0,    1), extent.cornerToCRS(aoi), STRICT);
+    }
+
+    /**
+     * Tests {@link GridExtent#toEnvelope(MathTransform)}.
+     *
+     * @throws TransformException if an error occurred while transforming to an envelope.
+     */
+    @Test
+    public void testToEnvelope() throws TransformException {
+        final GridExtent extent = new GridExtent(new DimensionNameType[] {
+            DimensionNameType.ROW,
+            DimensionNameType.TIME,
+            DimensionNameType.COLUMN,
+            DimensionNameType.VERTICAL
+        }, new long[] {100, 5, 200, 40}, new long[] {500, 7, 800, 50}, false);
+        final GeneralEnvelope envelope = extent.toEnvelope(MathTransforms.linear(Matrices.create(5, 5, new double[] {
+            0,  0,  1,  0,  0,
+           -1,  0,  0,  0,  0,
+            0,  0,  0, -1,  0,
+            0,  1,  0,  0,  0,
+            0,  0,  0,  0,  1})));
+
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] {200, -500, -50, 5},
+                new double[] {800, -100, -40, 7}), envelope);
+
+        final CoordinateSystem cs = envelope.getCoordinateReferenceSystem().getCoordinateSystem();
+        assertAxisDirectionsEqual("toEnvelope", cs,
+                AxisDirection.COLUMN_POSITIVE,
+                AxisDirection.ROW_NEGATIVE,
+                AxisDirection.DOWN,
+                AxisDirection.FUTURE);
     }
 
     /**
