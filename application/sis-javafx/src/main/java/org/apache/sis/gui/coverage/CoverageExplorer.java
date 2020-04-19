@@ -326,7 +326,7 @@ public class CoverageExplorer extends Widget {
     private void notifyCoverageChange(final GridCoverage data) {
         if (data != null) {
             final GridGeometry gg = data.getGridGeometry();
-//          referenceSystems.areaOfInterest.set(gg.isDefined(GridGeometry.ENVELOPE) ? gg.getEnvelope() : null);
+            referenceSystems.areaOfInterest.set(gg.isDefined(GridGeometry.ENVELOPE) ? gg.getEnvelope() : null);
             if (gg.isDefined(GridGeometry.CRS)) {
                 referenceSystems.setPreferred(true, gg.getCoordinateReferenceSystem());
             }

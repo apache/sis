@@ -18,7 +18,6 @@ package org.apache.sis.gui.referencing;
 
 import java.util.List;
 import java.util.ArrayList;
-import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -117,6 +116,11 @@ public class RecentReferenceSystems {
     public final ObjectProperty<Envelope> areaOfInterest;
 
     /**
+     * Area of interest converted to geographic coordinates, or {@code null} if none.
+     */
+    private ImmutableEnvelope geographicAOI;
+
+    /**
      * The comparison criterion for considering two reference systems as a duplication.
      * The default value is {@link ComparisonMode#ALLOW_VARIANT}, i.e. axis orders are ignored.
      */
@@ -192,9 +196,11 @@ public class RecentReferenceSystems {
         areaOfInterest       = new SimpleObjectProperty<>(this, "areaOfInterest");
         duplicationCriterion = new NonNullObjectProperty<>(this, "duplicationCriterion", ComparisonMode.ALLOW_VARIANT);
         controlValues        = new ArrayList<>();
-        final InvalidationListener pl = (e) -> modified();
-        areaOfInterest.addListener(pl);
-        duplicationCriterion.addListener(pl);
+        duplicationCriterion.addListener((e) -> modified());
+        areaOfInterest.addListener((e,o,n) -> {
+            geographicAOI = Utils.toGeographic(RecentReferenceSystems.class, "areaOfInterest", n);
+            modified();
+        });
     }
 
     /**
@@ -463,7 +469,7 @@ public class RecentReferenceSystems {
             systemsOrCodes.addAll(Math.min(systemsOrCodes.size(), NUM_CORE_SYSTEMS), referenceSystems);
             // Duplicated values will be filtered by the background task below.
             isModified = true;
-            final ImmutableEnvelope domain = ImmutableEnvelope.castOrCopy(areaOfInterest.get());
+            final ImmutableEnvelope domain = geographicAOI;
             final ComparisonMode mode = duplicationCriterion.get();
             BackgroundThreads.execute(new Task<List<ReferenceSystem>>() {
                 /** Filters the {@link ReferenceSystem}s in a background thread. */
@@ -553,7 +559,7 @@ public class RecentReferenceSystems {
                 return;
             }
             if (newValue == OTHER) {
-                final CRSChooser chooser = new CRSChooser(factory, areaOfInterest.get());
+                final CRSChooser chooser = new CRSChooser(factory, geographicAOI);
                 newValue = chooser.showDialog(GUIUtilities.getWindow(property)).orElse(null);
                 if (newValue == null) {
                     newValue = oldValue;

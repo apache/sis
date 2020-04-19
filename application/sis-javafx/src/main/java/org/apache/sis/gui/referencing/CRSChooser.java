@@ -46,7 +46,6 @@ import javafx.util.Duration;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
@@ -60,7 +59,6 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
@@ -68,7 +66,6 @@ import org.apache.sis.internal.gui.IdentityValueFactory;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Exceptions;
@@ -152,16 +149,8 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
      *                         for the {@linkplain CRS#getAuthorityFactory(String) Apache SIS default factory}.
      * @param  areaOfInterest  geographic area for which to choose a CRS, or {@code null} if no restriction.
      */
-    public CRSChooser(final CRSAuthorityFactory factory, Envelope areaOfInterest) {
-        if (areaOfInterest == null) {
-            this.areaOfInterest = null;
-        } else try {
-            final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox();
-            bbox.setBounds(areaOfInterest);
-            this.areaOfInterest = new ImmutableEnvelope(bbox);
-        } catch (TransformException e) {
-            throw new IllegalArgumentException(e);
-        }
+    public CRSChooser(final CRSAuthorityFactory factory, final Envelope areaOfInterest) {
+        this.areaOfInterest = Utils.toGeographic(CRSChooser.class, "<init>", areaOfInterest);
         final Locale         locale     = Locale.getDefault();
         final Resources      i18n       = Resources.forLocale(locale);
         final Vocabulary     vocabulary = Vocabulary.getResources(locale);
@@ -348,13 +337,10 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         String text  = Extents.getDescription(domainOfValidity, locale);
         String tip   = text;
         Color  color = Styles.NORMAL_TEXT;
-        if (areaOfInterest != null) {
-            final GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(domainOfValidity);
-            if (bbox != null && !areaOfInterest.intersects(new ImmutableEnvelope(bbox))) {
-                tip   = Resources.forLocale(locale).getString(Resources.Keys.DoesNotCoverAOI);
-                text  = Styles.WARNING_ICON + " " + (text != null ? text : tip);
-                color = Styles.ERROR_TEXT;
-            }
+        if (!Utils.intersects(areaOfInterest, domainOfValidity)) {
+            tip   = Resources.forLocale(locale).getString(Resources.Keys.DoesNotCoverAOI);
+            text  = Styles.WARNING_ICON + " " + (text != null ? text : tip);
+            color = Styles.ERROR_TEXT;
         }
         domain.setTextFill(color);
         domain.setText(text);
