@@ -229,6 +229,7 @@ public class DataViewer extends Application {
     @Override
     public void stop() throws Exception {
         BackgroundThreads.stop();
+        RecentChoices.saveReferenceSystems();
         super.stop();
     }
 }

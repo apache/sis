@@ -632,7 +632,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  text       the text to split, or {@code null}.
      * @param  separator  the delimiting character (typically the coma).
      * @return the array of subsequences computed by splitting the given text around the given
-     *         character, or an empty array if {@code toSplit} was null.
+     *         character, or an empty array if {@code text} was null.
      *
      * @see String#split(String)
      */

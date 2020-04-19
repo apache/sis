@@ -427,7 +427,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
     /**
      * Shows a dialog to select a {@link CoordinateReferenceSystem}.
      *
-     * @param  parent  parent frame of dialog.
+     * @param  parent  parent frame of dialog, or {@code null} for an unowned dialog.
      * @return the selected {@link CoordinateReferenceSystem}, or empty if none.
      */
     public Optional<CoordinateReferenceSystem> showDialog(final Window parent) {

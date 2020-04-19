@@ -18,9 +18,12 @@ package org.apache.sis.internal.gui;
 
 import java.io.File;
 import java.util.List;
+import java.util.Arrays;
 import java.util.prefs.Preferences;
 import javafx.scene.control.ComboBox;
 import javafx.collections.ObservableList;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.collection.FrequencySortedSet;
 
 
 /**
@@ -33,6 +36,15 @@ import javafx.collections.ObservableList;
  */
 public final class RecentChoices {
     /**
+     * Maximum number of reference systems to save in the preferences. Note that this is not necessarily
+     * the maximum number of reference systems shown in the GUI (that maximum is lower), because the GUI
+     * will filter out the reference systems that are valid outside the domain of interest.
+     *
+     * @see #useReferenceSystem(String)
+     */
+    public static final int MAXIMUM_REFERENCE_SYSTEMS = 20;
+
+    /**
      * The nodes where to store user information (for example last directory opened).
      * We want node for the {@code "org.apache.sis.gui"} package, which is the public one.
      */
@@ -42,6 +54,17 @@ public final class RecentChoices {
      * The node where to store the directory containing last data loaded.
      */
     private static final String OPEN = "Open";
+
+    /**
+     * The node where to store authority (usually EPSG) codes of most recently used coordinate reference systems.
+     */
+    private static final String CRS = "ReferenceSystems";
+
+    /**
+     * The coordinate reference systems used in current JVM run, with most frequently used systems first.
+     * The CRS are stored by their authority codes. Access to this set must be synchronized.
+     */
+    private static final FrequencySortedSet<String> CRS_THIS_RUN = new FrequencySortedSet<>(true);
 
     /**
      * Do not allow instantiation of this class.
@@ -67,6 +90,70 @@ public final class RecentChoices {
     public static void setOpenDirectory(final List<File> files) {
         final File parent = getCommonParent(files);
         NODE.put(OPEN, parent != null ? parent.getAbsolutePath() : null);
+    }
+
+    /**
+     * Returns the authority codes of most recently used reference systems.
+     *
+     * @return authority codes, or an empty array if none.
+     */
+    public static String[] getReferenceSystems() {
+        final String[] codes;
+        synchronized (CRS_THIS_RUN) {
+            final int n = CRS_THIS_RUN.size();
+            if (n != 0) {
+                codes = CRS_THIS_RUN.toArray(new String[n]);
+            } else {
+                final String value = NODE.get(CRS, null);
+                codes = (String[]) CharSequences.split(value, ',');
+                CRS_THIS_RUN.addAll(Arrays.asList(codes));
+            }
+        }
+        return codes;
+    }
+
+    /**
+     * Notifies the preferences that the CRS identified by the given code has been selected.
+     * If the given value is {@code null}, then it is ignored.
+     *
+     * @param  code  code of the CRS selected by user, or {@code null}.
+     */
+    public static void useReferenceSystem(final String code) {
+        if (code != null) {
+            final String[] codes;
+            synchronized (CRS_THIS_RUN) {
+                if (!CRS_THIS_RUN.add(code.trim())) {
+                    return;
+                }
+                codes = CRS_THIS_RUN.toArray(new String[CRS_THIS_RUN.size()]);
+            }
+            saveReferenceSystems(codes);
+        }
+    }
+
+    /**
+     * Saves the authority codes of most recently used reference systems.
+     * This method should be invoked when the application shutdowns.
+     */
+    public static void saveReferenceSystems() {
+        final String[] codes;
+        synchronized (CRS_THIS_RUN) {
+            codes = CRS_THIS_RUN.toArray(new String[CRS_THIS_RUN.size()]);
+        }
+        saveReferenceSystems(codes);
+    }
+
+    /**
+     * Saves the given list of authority codes.
+     * Only the first {@value #MAXIMUM_REFERENCE_SYSTEMS} codes are saved.
+     */
+    private static void saveReferenceSystems(String[] codes) {
+        if (codes.length != 0) {
+            if (codes.length > MAXIMUM_REFERENCE_SYSTEMS) {
+                codes = Arrays.copyOf(codes, MAXIMUM_REFERENCE_SYSTEMS);
+            }
+            NODE.put(CRS, String.join(",", codes));
+        }
     }
 
     /**

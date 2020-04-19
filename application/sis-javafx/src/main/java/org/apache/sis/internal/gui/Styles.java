@@ -34,6 +34,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.Static;
 
 
 /**
@@ -48,7 +49,7 @@ import org.apache.sis.internal.system.Modules;
  * @since   1.1
  * @module
  */
-public final class Styles {
+public final class Styles extends Static {
     /**
      * Approximate size of vertical scroll bar.
      */

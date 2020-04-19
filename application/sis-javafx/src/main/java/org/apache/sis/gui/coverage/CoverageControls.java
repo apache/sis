@@ -26,9 +26,14 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.paint.Color;
-import org.apache.sis.gui.map.StatusBar;
+import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.gui.referencing.RecentReferenceSystems;
+import org.apache.sis.gui.map.StatusBar;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -57,12 +62,20 @@ final class CoverageControls extends Controls {
     private final BorderPane imageAndStatus;
 
     /**
+     * The coordinate reference system selected in the {@link ChoiceBox}.
+     */
+    private final ObjectProperty<ReferenceSystem> referenceSystem;
+
+    /**
      * Creates a new set of coverage controls.
      *
+     * @param  localized   localized GUI resources, provided in argument because often known by the caller.
      * @param  vocabulary  localized set of words, provided in argument because often known by the caller.
      * @param  coverage    property containing the coverage to show.
      */
-    CoverageControls(final Vocabulary vocabulary, final ObjectProperty<GridCoverage> coverage) {
+    CoverageControls(final Resources localized, final Vocabulary vocabulary,
+            final ObjectProperty<GridCoverage> coverage, final RecentReferenceSystems referenceSystems)
+    {
         final Color background = Color.BLACK;
         view = new CoverageCanvas();
         view.setBackground(background);
@@ -72,18 +85,25 @@ final class CoverageControls extends Controls {
         imageAndStatus.setBottom(statusBar.getView());
         /*
          * "Display" section with the following controls:
+         *    - Coordinate reference system
          *    - Background color
          */
         final VBox displayPane;
         {   // Block for making variables locale to this scope.
+            final ChoiceBox<ReferenceSystem> systems = referenceSystems.createChoiceBox(this::onReferenceSystemSelected);
+            systems.setMaxWidth(Double.POSITIVE_INFINITY);
+            referenceSystem = systems.valueProperty();
+            final Label systemLabel = new Label(localized.getString(Resources.Keys.ReferenceSystem));
+            systemLabel.setPadding(CAPTION_MARGIN);
+            systemLabel.setLabelFor(systems);
             final GridPane gp = createControlGrid(
                 label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton(background)),
                 label(vocabulary, Vocabulary.Keys.ValueRange, RangeType.createButton((p,o,n) -> view.setRangeType(n)))
             );
             final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Image));
-            label.setPadding(CAPTION_MARGIN);
+            label.setPadding(NEXT_CAPTION_MARGIN);
             label.setLabelFor(gp);
-            displayPane = new VBox(label, gp);
+            displayPane = new VBox(systemLabel, systems, label, gp);
         }
         /*
          * Put all sections together and have the first one expanded by default.
@@ -108,13 +128,25 @@ final class CoverageControls extends Controls {
     }
 
     /**
-     * Invoked after {@link CoverageExplorer#setCoverage(ImageRequest)} for updating the table of
-     * sample dimensions when information become available. This method is invoked in JavaFX thread.
+     * Invoked in JavaFX thread after {@link CoverageExplorer#setCoverage(ImageRequest)} completed.
+     * This method updates the GUI with new information available, in particular
+     * the coordinate reference system and the list of sample dimensions.
      *
      * @param  data  the new coverage, or {@code null} if none.
      */
     @Override
-    final void updateBandTable(final GridCoverage data) {
+    final void coverageChanged(final GridCoverage data) {
+        if (data != null) {
+            referenceSystem.set(data.getCoordinateReferenceSystem());
+        }
+    }
+
+    /**
+     * Invoked when a new coordinate reference system is selected.
+     */
+    private void onReferenceSystemSelected(final ObservableValue<? extends ReferenceSystem> property,
+                                           final ReferenceSystem oldValue, ReferenceSystem newValue)
+    {
     }
 
     /**

@@ -135,7 +135,7 @@ final class GridControls extends Controls {
      * @param  data  the new coverage, or {@code null} if none.
      */
     @Override
-    final void updateBandTable(final GridCoverage data) {
+    final void coverageChanged(final GridCoverage data) {
         final ObservableList<SampleDimension> items = sampleDimensions.getItems();
         if (data != null) {
             items.setAll(data.getSampleDimensions());

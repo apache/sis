@@ -18,6 +18,7 @@ package org.apache.sis.internal.gui;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
@@ -209,6 +210,15 @@ public final class ExceptionReporter {
         pane.setExpandableContent(new ExceptionReporter(exception).trace);
         pane.setPrefWidth(650);
         alert.show();
+    }
+
+    /**
+     * Constructs and shows the exception reporter for the given task.
+     *
+     * @param  task  the task that failed.
+     */
+    public static void show(final Task<?> task) {
+        show(task.getTitle(), null, task.getException());
     }
 
     /**

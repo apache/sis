@@ -179,7 +179,7 @@ final class WKTPane extends StringConverter<Convention> implements ChangeListene
     }
 
     /**
-     * Sets the content to the given coordianate reference system.
+     * Sets the content to the given coordinate reference system.
      */
     private void setContent(final CoordinateReferenceSystem newCRS) {
         text.setEditable(false);     // TODO: make editable if we allow WKT parsing in a future version.

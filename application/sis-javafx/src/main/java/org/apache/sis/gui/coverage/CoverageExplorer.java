@@ -27,10 +27,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.ToolbarButton;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.Widget;
 
 
@@ -135,6 +137,11 @@ public class CoverageExplorer extends Widget {
     private final Controls[] views;
 
     /**
+     * Handles the {@link javafx.scene.control.ChoiceBox} and menu items for selecting a CRS.
+     */
+    private final RecentReferenceSystems referenceSystems;
+
+    /**
      * Creates an initially empty explorer.
      */
     public CoverageExplorer() {
@@ -142,6 +149,9 @@ public class CoverageExplorer extends Widget {
         viewTypeProperty = new NonNullObjectProperty<>(this, "viewType", View.TABLE);
         coverageProperty.addListener(this::onCoverageSpecified);
         viewTypeProperty.addListener(this::onViewTypeSpecified);
+        referenceSystems = new RecentReferenceSystems();
+        referenceSystems.addUserPreferences();
+        referenceSystems.addAlternatives("EPSG:3395");           // WGS 84 / World Mercator
         /*
          * Prepare buttons to add on the toolbar. Those buttons are not managed by this class;
          * they are managed by org.apache.sis.gui.dataset.DataWindow. We only declare here the
@@ -162,7 +172,7 @@ public class CoverageExplorer extends Widget {
             final Controls c;
             switch (type) {
                 case TABLE: c = new GridControls(vocabulary); break;
-                case IMAGE: c = new CoverageControls(vocabulary, coverageProperty); break;
+                case IMAGE: c = new CoverageControls(localized, vocabulary, coverageProperty, referenceSystems); break;
                 default: throw new AssertionError(type);
             }
             SplitPane.setResizableWithParent(c.controls(), Boolean.FALSE);
@@ -257,7 +267,9 @@ public class CoverageExplorer extends Widget {
     }
 
     /**
-     * Invoked when a new coverage has been specified.
+     * Invoked when a new coverage has been set on the {@link #coverageProperty}.
+     * This method notifies the GUI controls about the change then starts loading
+     * data in a background thread.
      *
      * @param  property  the {@link #coverageProperty} (ignored).
      * @param  previous  ignored.
@@ -268,7 +280,7 @@ public class CoverageExplorer extends Widget {
     {
         if (!isCoverageAdjusting) {
             startLoading(null);                                         // Clear data.
-            updateBandTable(coverage);
+            notifyCoverageChange(coverage);
             if (coverage != null) {
                 startLoading(new ImageRequest(coverage, null));         // Start a background thread.
             }
@@ -284,7 +296,7 @@ public class CoverageExplorer extends Widget {
      * @param  coverage  the new coverage, or {@code null} if loading failed.
      */
     final void onCoverageLoaded(final GridCoverage coverage) {
-        updateBandTable(coverage);
+        notifyCoverageChange(coverage);
         isCoverageAdjusting = true;
         try {
             setCoverage(coverage);
@@ -305,14 +317,22 @@ public class CoverageExplorer extends Widget {
     }
 
     /**
-     * Invoked after {@link #setCoverage(ImageRequest)} for updating the table of sample dimensions
-     * with information become available. This method is invoked in JavaFX thread.
+     * Invoked in JavaFX thread after {@link #setCoverage(ImageRequest)} completion for notifying controls
+     * about the coverage change. Controls should update the GUI with new information available,
+     * in particular the coordinate reference system and the list of sample dimensions.
      *
      * @param  data  the new coverage, or {@code null} if none.
      */
-    private void updateBandTable(final GridCoverage data) {
+    private void notifyCoverageChange(final GridCoverage data) {
+        if (data != null) {
+            final GridGeometry gg = data.getGridGeometry();
+//          referenceSystems.areaOfInterest.set(gg.isDefined(GridGeometry.ENVELOPE) ? gg.getEnvelope() : null);
+            if (gg.isDefined(GridGeometry.CRS)) {
+                referenceSystems.setPreferred(true, gg.getCoordinateReferenceSystem());
+            }
+        }
         for (final Controls c : views) {
-            c.updateBandTable(data);
+            c.coverageChanged(data);
         }
     }
 

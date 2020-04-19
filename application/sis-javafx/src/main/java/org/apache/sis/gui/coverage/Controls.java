@@ -46,6 +46,11 @@ abstract class Controls {
     static final Insets CAPTION_MARGIN = new Insets(12, 0, 9, 0);
 
     /**
+     * Margin to keep around captions after the first one.
+     */
+    static final Insets NEXT_CAPTION_MARGIN = new Insets(30, 0, 9, 0);
+
+    /**
      * The border to use for grouping some controls together.
      */
     private static final Border GROUP_BORDER = new Border(new BorderStroke(
@@ -110,10 +115,11 @@ abstract class Controls {
     abstract Control controls();
 
     /**
-     * Invoked after {@link CoverageExplorer#setCoverage(ImageRequest)} for updating the table of
-     * sample dimensions when information become available. This method is invoked in JavaFX thread.
+     * Invoked in JavaFX thread after {@link CoverageExplorer#setCoverage(ImageRequest)} completed.
+     * Implementation should update the GUI with new information available, in particular
+     * the coordinate reference system and the list of sample dimensions.
      *
      * @param  data  the new coverage, or {@code null} if none.
      */
-    abstract void updateBandTable(GridCoverage data);
+    abstract void coverageChanged(GridCoverage data);
 }

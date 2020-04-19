@@ -46,6 +46,7 @@
                 <root id="src.c.gdal.dir" name="GDAL/Proj4 JNI"/>
             </source-roots>
             <test-roots>
+                <root id="test.javafx.dir" name="Test JavaFX application"/>
                 <root id="test.webapp.dir" name="Test web application"/>
                 <root id="test.console.dir" name="Test Console"/>
                 <root id="test.portrayal.dir" name="Test Portrayal"/>
@@ -89,6 +90,7 @@
             <word>classname</word>
             <word>classnames</word>
             <word>classpath</word>
+            <word>complexify</word>
             <word>deserialization</word>
             <word>deserialized</word>
             <word>endianness</word>
