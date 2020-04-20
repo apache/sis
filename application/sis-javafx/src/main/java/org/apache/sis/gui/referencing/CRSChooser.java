@@ -300,6 +300,10 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
      * the {@link #type} and {@link #domain} fields with CRS information.
      */
     private void updateSummary(final Code selected) {
+        if (selected == null) {
+            clearSummary();
+            return;
+        }
         final AuthorityCodes source = getAuthorityCodes();
         final String code = selected.code;
         BackgroundThreads.execute(new Task<CoordinateReferenceSystem>() {
@@ -318,8 +322,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
 
             /** Invoked in JavaFX thread on cancellation. */
             @Override protected void cancelled() {
-                type.setText(null);
-                domain.setText(null);
+                clearSummary();
             }
 
             /** Invoked in JavaFX thread on failure. */
@@ -329,6 +332,14 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
                 type.setText(Exceptions.getLocalizedMessage(getException(), source.locale));
             }
         });
+    }
+
+    /**
+     * Clears the {@link #type} and {@link #domain} fields.
+     */
+    private void clearSummary() {
+        type.setText(null);
+        domain.setText(null);
     }
 
     /**
