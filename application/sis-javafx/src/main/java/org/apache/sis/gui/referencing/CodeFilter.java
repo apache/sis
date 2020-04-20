@@ -95,13 +95,11 @@ final class CodeFilter implements Predicate<Code> {
      */
     @Override
     public boolean test(final Code code) {
+        final String id = code.code.toLowerCase(allCodes.locale);
         String name = allCodes.getName(code).getValue();
-        if (name == null) {
-            return false;
-        }
-        name = name.toLowerCase(allCodes.locale);
+        name = (name != null) ? name.toLowerCase(allCodes.locale) : "";
         for (final String token : tokens) {
-            if (!name.contains(token)) {
+            if (!name.contains(token) && !id.equals(token)) {
                 return false;
             }
         }

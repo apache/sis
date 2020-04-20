@@ -69,7 +69,6 @@ import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Exceptions;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 
 
@@ -144,9 +143,11 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
 
     /**
      * Creates a chooser proposing all coordinate reference systems from the given factory.
+     * If the given factory is {@code null}, then a
+     * {@linkplain org.apache.sis.referencing.CRS#getAuthorityFactory(String) default factory}
+     * capable to handle at least some EPSG codes will be used.
      *
-     * @param  factory         the factory to use for creating coordinate reference systems, or {@code null}
-     *                         for the {@linkplain CRS#getAuthorityFactory(String) Apache SIS default factory}.
+     * @param  factory         the factory to use for creating coordinate reference systems, or {@code null} for default.
      * @param  areaOfInterest  geographic area for which to choose a CRS, or {@code null} if no restriction.
      */
     public CRSChooser(final CRSAuthorityFactory factory, final Envelope areaOfInterest) {

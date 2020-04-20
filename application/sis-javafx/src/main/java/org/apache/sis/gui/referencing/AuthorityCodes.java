@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import javafx.application.Platform;
@@ -36,23 +37,25 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
-import org.apache.sis.referencing.CRS;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.gui.ExceptionReporter;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
  * A list of authority codes (usually for CRS) which fetch code values in a background thread
- * and descriptions only when needed.
+ * and CRS names only when needed.
  *
  * @todo {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess} internally uses a {@link java.util.Map}
  *       from codes to descriptions. We could open an access to this map for a little bit more efficiency.
- *       It will be necessary if we want to use {@link AuthorityCodes} for other kinds of objects than CRS.
+ *       It will be necessary if we want to use {@link AuthorityCodes} for other kinds of objects than CRS
+ *       (see {@link #type} field).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -65,7 +68,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
     /**
      * Delay in nanoseconds before to refresh the list with new content.
      * Data will be transferred from background threads to JavaFX threads every time this delay is elapsed.
-     * Delay value is a compromise between fast user experience and giving enough time for allowing a few
+     * The delay value is a compromise between fast user experience and giving enough time for doing a few
      * large data transfers instead than many small data transfers.
      */
     private static final long REFRESH_DELAY = StandardDateFormat.NANOS_PER_SECOND / 10;
@@ -87,12 +90,13 @@ final class AuthorityCodes extends ObservableListBase<Code>
      * The authority codes obtained from the factory. The list elements are provided by a background thread.
      * Elements are initially {@link String} instances and can be replaced later by {@link Code} instances.
      */
-    private Object[] codes;
+    private final List<Object> codes;
 
     /**
      * Count of the number of {@linkplain #codes} for which we completed the {@link Code#name} information.
      * This is used for notifying the {@linkplain #owner} when we do not expect more information to be loaded.
-     * This notification is only indicative and may not be fully accurate. Effect should be only visual.
+     * This notification is only indicative and may not be fully accurate. Its effect should be only visual
+     * (removing the hour glass icon).
      */
     private int describedCount;
 
@@ -102,36 +106,55 @@ final class AuthorityCodes extends ObservableListBase<Code>
     final Locale locale;
 
     /**
+     * The factory to use for creating coordinate reference systems,
+     * or {@code null} if not yet determined.
+     *
+     * @see #getFactory()
+     */
+    private CRSAuthorityFactory factory;
+
+    /**
      * The task where to send requests for CRS descriptions (never {@code null}).
+     * The task is not necessarily running; it may have been created and not yet scheduled,
+     * in which case the task is waiting in {@link Task.State#READY} state for work to arrive.
      */
     private Loader loader;
 
     /**
-     * Non-null if an error occurred while fetching CRS codes.
+     * {@code true} if an error occurred. This is used for reporting only one error
+     * for avoiding to flood the logger.
      *
-     * @todo Provide a button for showing this error in an {@link ExceptionReporter}.
+     * @see #errorOccurred(Throwable)
      */
-    private Throwable error;
+    private volatile boolean hasError;
 
     /**
      * Creates a new deferred list and starts a background process for loading CRS codes.
+     * If the given factory is {@code null}, then a
+     * {@linkplain org.apache.sis.referencing.CRS#getAuthorityFactory(String) default factory}
+     * capable to handle at least some EPSG codes will be used.
      *
      * @param  factory  the authority factory, or {@code null} for default factory.
      * @param  locale   the preferred locale of CRS descriptions.
      */
     AuthorityCodes(final CRSAuthorityFactory factory, final Locale locale) {
-        this.locale = locale;
-        codes  = new Object[0];
-        loader = new Loader(factory);
-        BackgroundThreads.execute(loader);
+        this.locale  = locale;
+        this.factory = factory;
+        this.codes   = new ArrayList<>();
+        this.loader  = new Loader();
+        loader.start();
     }
 
     /**
-     * Returns the authority factory. If no explicit factory has been given at construction time,
-     * the {@linkplain CRS#getAuthorityFactory(String) Apache SIS default factory} is returned.
+     * Returns the authority factory. This method may be invoked from any thread.
+     * The factory is not fetched at construction time for giving {@link Loader}
+     * a chance to fetch it in a background thread.
      */
-    final CRSAuthorityFactory getFactory() throws FactoryException {
-        return loader.getFactory();
+    final synchronized CRSAuthorityFactory getFactory() throws FactoryException {
+        if (factory == null) {
+            factory = Utils.getDefaultFactory();
+        }
+        return factory;
     }
 
     /**
@@ -140,7 +163,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
      */
     @Override
     public int size() {
-        return codes.length;
+        return codes.size();
     }
 
     /**
@@ -148,25 +171,24 @@ final class AuthorityCodes extends ObservableListBase<Code>
      */
     @Override
     public Code get(final int index) {
-        final Object value = codes[index];
+        final Object value = codes.get(index);
         if (value instanceof Code) {
             return (Code) value;
         }
         // Wraps the String only when first needed.
         final Code c = new Code((String) value);
-        codes[index] = c;
+        codes.set(index, c);
         return c;
     }
 
     /**
-     * Adds a single code. This method should never be invoked except of an error occurred
+     * Adds a single code. This method should never be invoked except if an error occurred
      * while loading codes, in which case we add a single pseudo-code with error message.
      */
     @Override
     public boolean add(final Code code) {
-        final int i = codes.length;
-        codes = Arrays.copyOf(codes, i + 1);
-        codes[i] = code;
+        final int i = codes.size();
+        codes.add(code);
         beginChange();
         nextAdd(i, i+1);
         endChange();
@@ -176,7 +198,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
     /**
      * Invoked when the name or description of an authority code is requested.
      * If the name is not available, then this method sends to the background thread a
-     * request for fetching that name and update this property when name become known.
+     * request for fetching that name and update cell property when name become known.
      */
     @Override
     public ObservableValue<String> call(final TableColumn.CellDataFeatures<Code,String> cell) {
@@ -185,8 +207,8 @@ final class AuthorityCodes extends ObservableListBase<Code>
 
     /**
      * Returns the name (or description) for the given code.
-     * If the name is not available, then this method sends to the background thread a
-     * request for fetching that name and update this property when name become known.
+     * If the name is not available, then this method sends to the background thread a request
+     * for fetching that name and will update the returned property when the name become known.
      */
     final ReadOnlyStringWrapper getName(final Code code) {
         final ReadOnlyStringWrapper p = code.name();
@@ -202,32 +224,36 @@ final class AuthorityCodes extends ObservableListBase<Code>
      * This method is invoked after the background thread has loaded new codes,
      * and/or after that thread has fetched names (descriptions) of some codes.
      * We combine those two tasks in a single method in order to send a single event.
-     *
-     * @param newCodes  new codes as {@link String} instances, or {@code null} if none.
-     * @param updated   {@link Code} instances to update with new names, or {@code null} if none.
+     * This method must be invoked in JavaFX thread.
      */
-    private void update(final Object[] newCodes, final Map<Code,String> updated) {
-        final int s = codes.length;
-        int n = s;
-        if (newCodes != null) {
-            codes = Arrays.copyOf(codes, n += newCodes.length);
-            System.arraycopy(newCodes, 0, codes, s, newCodes.length);
+    private void update(final PartialResult result) {
+        assert Platform.isFxApplicationThread();
+        final int s = codes.size();
+        if (result.codes != null) {
+            codes.addAll(Arrays.asList(result.codes));
         }
         beginChange();
-        if (updated != null) {
-            for (int i=0; i<s; i++) {                           // Update names first for having increasing indices.
-                final Object value = codes[i];
-                final String name = updated.remove(value);
+        nextAdd(s, codes.size());
+        if (result.names != null) {
+            final ListIterator<Object> it = codes.listIterator();
+            while (it.hasNext()) {
+                final Object value = it.next();
+                final String name = result.names.remove(value);
                 if (name != null) {
-                    ((Code) value).name().set(name);            // The name needs to be set in JavaFX thread.
-                    describedCount++;
-                    nextUpdate(i);
+                    final int i = it.previousIndex();
+                    if (name.isEmpty()) {
+                        it.remove();                        // Remove code that we can not resolve.
+                        nextRemove(i, (Code) value);        // ClassCastException should never happen here.
+                    } else {
+                        ((Code) value).name().set(name);    // ClassCastException should never happen here.
+                        describedCount++;
+                        nextUpdate(i);
+                    }
                 }
             }
         }
-        nextAdd(s, n);
         endChange();
-        if (describedCount >= n) {
+        if (describedCount >= codes.size()) {
             removeHourglass();
         }
     }
@@ -236,7 +262,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
      * Removes the hourglass icon which was shown in the table during initial data loading phase.
      * Removing this icon restores the JavaFX default behavior, which is to show "no data" when the
      * list is empty. We want this default behavior when we think that there is no more data to load.
-     * This is especially important when the user apply a filter which produces an empty result.
+     * This is especially important when the user applies a filter which produces an empty result.
      * Since the effect is only visual, its okay if the criterion for invoking this method is approximate.
      */
     private void removeHourglass() {
@@ -247,18 +273,36 @@ final class AuthorityCodes extends ObservableListBase<Code>
     }
 
     /**
-     * Loads a {@link AuthorityCodes} codes in background thread. This background thread may send tasks
-     * to be executed in JavaFX thread before the final result. The final result contains only the codes
-     * that have not been processed by above-cited tasks or the codes for which names need to be updated
-     * (see {@link #call()} for more information).
+     * The result of fetching authority codes and/or fetching CRS names in a background thread.
      */
-    private final class Loader extends Task<Object> {
+    private static final class PartialResult {
         /**
-         * The factory to use for creating coordinate reference systems,
-         * or {@code null} if not yet determined.
+         * New CRS authority codes, or {@code null} if none.
          */
-        private CRSAuthorityFactory factory;
+        final Object[] codes;
 
+        /**
+         * Names for some CRS codes as a modifiable map, or {@code null} if none.
+         * Empty values mean that the code should be removed (because it has an error).
+         */
+        final Map<Code,String> names;
+
+        /**
+         * Creates a new partial result.
+         */
+        PartialResult(final Object[] codes, final Map<Code,String> names) {
+            this.codes = codes;
+            this.names = names;
+        }
+    }
+
+    /**
+     * Loads CRS authority codes in background thread. The background thread may send tasks to be executed
+     * in JavaFX thread before the final result. The final result returned by {@link #getValue()} contains
+     * only codes that have not been fetched by previous {@code Loader} task executions, or the codes for
+     * which names need to be updated (see {@link #call()} for more information).
+     */
+    private final class Loader extends Task<PartialResult> {
         /**
          * The items for which {@link Code#name} has been requested.
          * Completing those items have priority over completing {@link AuthorityCodes} because
@@ -275,13 +319,21 @@ final class AuthorityCodes extends ObservableListBase<Code>
         private final boolean loadCodes;
 
         /**
-         * Creates a new loader using the given factory. If the given factory is null, then the
-         * {@linkplain CRS#getAuthorityFactory(String) Apache SIS default factory} will be used.
+         * Wether this task has been scheduled for execution or is already executing.
+         * This flag shall be read and updated in JavaFX thread only. We can not rely
+         * on {@link #isRunning()} because that method does not return {@code true}
+         * immediately after {@link BackgroundThreads#execute(Runnable)} invocation.
+         *
+         * @see #start()
          */
-        Loader(final CRSAuthorityFactory factory) {
-            this.factory = factory;
-            toDescribe   = new ArrayList<>();
-            loadCodes    = true;
+        private boolean isRunning;
+
+        /**
+         * Creates a new loader.
+         */
+        Loader() {
+            toDescribe = new ArrayList<>();
+            loadCodes  = true;
         }
 
         /**
@@ -289,43 +341,50 @@ final class AuthorityCodes extends ObservableListBase<Code>
          * for loading names (descriptions) for authority codes listed in {@link #toDescribe}.
          */
         private Loader(final Loader previous) {
-            factory    = previous.factory;
             toDescribe = previous.toDescribe;
             loadCodes  = false;
         }
 
         /**
-         * Returns the authority factory. This method is normally invoked from the background thread,
-         * but we nevertheless synchronize it in case {@link AuthorityCodes#getFactory()} is invoked
-         * concurrently.
+         * Schedule for execution in a background thread.
+         * This method shall be invoked in JavaFX thread.
          */
-        final synchronized CRSAuthorityFactory getFactory() throws FactoryException {
-            if (factory == null) {
-                factory = CRS.getAuthorityFactory(Constants.EPSG);
-            }
-            return factory;
+        final void start() {
+            isRunning = true;
+            BackgroundThreads.execute(this);
         }
 
         /**
          * Sends to this background thread a request for fetching the name (description) of given code.
          * The {@link AuthorityCodes} list will receive an update event after the name has been fetched.
-         * This method is invoked from JavaFX thread.
+         * This method must be invoked from JavaFX thread.
+         *
+         * @param  code  the CRS authority code for which to fetch the name in background thread.
          */
         final void requestName(final Code code) {
+            assert Platform.isFxApplicationThread();
             synchronized (toDescribe) {
                 toDescribe.add(code);
             }
-            if (!isRunning()) {                         // Include "scheduled" state.
-                BackgroundThreads.execute(this);
+            /*
+             * This task may be created and ready but not yet started. It happens if `scheduleNewLoader()`
+             * found no code to process in the `toDescribe` list at the time that method has been invoked.
+             */
+            if (!isRunning) {
+                start();
             }
         }
 
         /**
          * Fetches the names of all objects in the {@link #toDescribe} array and clears that array.
-         * The names are returned as a map with {@link Code} as keys and names (descriptions) as values.
-         * This method is invoked from background thread and returned value will be consumed in JavaFX thread.
+         * The names are returned as a map with {@link Code} as keys and names (or descriptions) as values.
+         * This method is invoked from a background thread and the returned value will be consumed in JavaFX thread.
+         * Some entries in the returned map be empty strings if the corresponding code should be removed.
+         *
+         * @param  factory  value of {@link #getFactory()}.
+         * @return the names of CRS authority codes submitted to {@link #requestName(Code)}, or {@code null} if none.
          */
-        private Map<Code,String> processNameRequests() throws FactoryException {
+        private Map<Code,String> processNameRequests(final CRSAuthorityFactory factory) {
             final Code[] snapshot;
             synchronized (toDescribe) {
                 final int size = toDescribe.size();
@@ -333,11 +392,19 @@ final class AuthorityCodes extends ObservableListBase<Code>
                 snapshot = toDescribe.toArray(new Code[size]);
                 toDescribe.clear();
             }
-            final CRSAuthorityFactory factory = getFactory();
             final Map<Code,String> updated = new IdentityHashMap<>(snapshot.length);
             for (final Code code : snapshot) {
-                // Do not update code in this thread; it will be updated in JavaFX thread.
-                updated.put(code, factory.getDescriptionText(code.code).toString(locale));
+                String text;
+                try {
+                    text = Strings.trimOrNull(Types.toString(factory.getDescriptionText(code.code), locale));
+                    if (text == null) {
+                        text = Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed);
+                    }
+                } catch (FactoryException e) {
+                    errorOccurred(e);
+                    text = "";              // Tells `AuthorityCodes.update(PartialResult)` to remove this code.
+                }
+                updated.put(code, text);    // Do not update code in this thread; it will be updated in JavaFX thread.
             }
             return updated;
         }
@@ -345,12 +412,12 @@ final class AuthorityCodes extends ObservableListBase<Code>
         /**
          * Invoked in background thread for reading authority codes. Intermediate results are sent
          * to the JavaFX thread every {@value #REFRESH_DELAY} nanoseconds. Requests for code names
-         * are also handled in priority since they are typically for visible cells.
+         * are also handled in priority since they are typically required for visible cells.
          *
-         * @return one of the followings:
+         * @return one or both of the followings:
          *   <ul>
-         *     <li>A {@code List<String>} which contains the remaining codes that need to be
-         *         sent to {@link AuthorityCodes} list.</li>
+         *     <li>An array of {@code String}s which contains the remaining codes that need
+         *         to be sent to {@link AuthorityCodes} list.</li>
          *     <li>A {@code Map<Code,String>} which contains the codes for which the names
          *         or descriptions have been updated.</li>
          *   </ul>
@@ -358,7 +425,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
          * @throws Exception if an error occurred while fetching the codes or the names/descriptions.
          */
         @Override
-        protected Object call() throws Exception {
+        protected PartialResult call() throws Exception {
             long lastTime = System.nanoTime();
             List<String> codes = Collections.emptyList();
             final CRSAuthorityFactory factory = getFactory();
@@ -369,10 +436,9 @@ final class AuthorityCodes extends ObservableListBase<Code>
                     while (it.hasNext()) {
                         codes.add(it.next());
                         if (System.nanoTime() - lastTime > REFRESH_DELAY) {
-                            final Object[] newCodes = codes.toArray();                // Snapshot of current content.
+                            final PartialResult p = new PartialResult(codes.toArray(), processNameRequests(factory));
                             codes.clear();
-                            final Map<Code,String> updated = processNameRequests();   // Must be outside lambda expression.
-                            Platform.runLater(() -> update(newCodes, updated));
+                            Platform.runLater(() -> update(p));
                             lastTime = System.nanoTime();
                         }
                     }
@@ -385,12 +451,12 @@ final class AuthorityCodes extends ObservableListBase<Code>
                  */
                 if (codes.isEmpty()) {
                     Thread.sleep(REFRESH_DELAY / StandardDateFormat.NANOS_PER_MILLISECOND);
-                    return processNameRequests();
+                    return new PartialResult(null, processNameRequests(factory));
                 }
             } catch (BackingStoreException e) {
                 throw e.unwrapOrRethrow(Exception.class);
             }
-            return codes;
+            return new PartialResult(codes.toArray(), null);
         }
 
         /**
@@ -401,19 +467,8 @@ final class AuthorityCodes extends ObservableListBase<Code>
         @Override
         @SuppressWarnings("unchecked")
         protected void succeeded() {
-            Object[] newCodes = null;
-            Map<Code,String> updated = null;
-            final Object result = getValue();
-            if (result instanceof List<?>){
-                final List<?> codes = (List<?>) result;
-                if (!codes.isEmpty()) {
-                    newCodes = codes.toArray();
-                }
-            } else {
-                updated = (Map<Code,String>) result;
-            }
-            update(newCodes, updated);
-            scheduleNewLoader();
+            update(getValue());
+            prepareNewLoader();
         }
 
         /**
@@ -424,7 +479,8 @@ final class AuthorityCodes extends ObservableListBase<Code>
         @Override
         protected void failed() {
             final Throwable e = getException();
-            if (error == null) {
+            errorOccurred(e);
+            if (loadCodes) {
                 final Code code = new Code(Vocabulary.getResources(locale).getString(Vocabulary.Keys.Errors));
                 String message = Exceptions.getLocalizedMessage(e, locale);
                 if (message == null) {
@@ -433,9 +489,8 @@ final class AuthorityCodes extends ObservableListBase<Code>
                 code.name().set(message);
                 add(code);
             }
-            error = e;
             removeHourglass();
-            scheduleNewLoader();
+            prepareNewLoader();
         }
 
         /**
@@ -443,15 +498,28 @@ final class AuthorityCodes extends ObservableListBase<Code>
          * between the end of {@link #call()} execution and the start of the {@link #succeeded()} or
          * {@link #failed()} execution, starts the new task immediately.
          */
-        private void scheduleNewLoader() {
+        private void prepareNewLoader() {
+            assert Platform.isFxApplicationThread();
+            isRunning = false;
             loader = new Loader(this);
             final boolean isEmpty;
             synchronized (toDescribe) {
                 isEmpty = toDescribe.isEmpty();
             }
             if (!isEmpty) {
-                BackgroundThreads.execute(loader);
+                loader.start();
             }
+        }
+    }
+
+    /**
+     * Invoked when an error occurred. This method may be invoked from any thread.
+     * Current implementation logs the first error.
+     */
+    private void errorOccurred(final Throwable e) {
+        if (!hasError) {
+            hasError = true;    // Not a big problem if we have race condition; error will just be logged twice.
+            Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), AuthorityCodes.class, "get", e);
         }
     }
 }

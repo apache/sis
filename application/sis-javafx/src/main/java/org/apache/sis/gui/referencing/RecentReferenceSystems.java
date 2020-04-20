@@ -34,10 +34,7 @@ import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
@@ -74,27 +71,21 @@ import org.apache.sis.internal.util.Strings;
  */
 public class RecentReferenceSystems {
     /**
-     * The authority of the {@link #factory} (for example "EPSG"),
-     * or {@code null} for all authorities known to SIS.
-     */
-    private static final String AUTHORITY = null;
-
-    /**
      * Number of reference systems to always show before all other reference systems.
      * They are the native of preferred reference system for the visualized data.
      */
-    private static final int NUM_CORE_SYSTEMS = 1;
+    private static final int NUM_CORE_ITEMS = 1;
 
     /**
      * Number of reference systems to shown in {@link ChoiceBox} or {@link MenuItem}s.
-     * The {@value #NUM_CORE_SYSTEMS} core systems are included but not {@link #OTHER}.
+     * The {@value #NUM_CORE_ITEMS} core systems are included but not {@link #OTHER}.
      */
-    private static final int NUM_SHOWN_SYSTEMS = 9;
+    private static final int NUM_SHOWN_ITEMS = 9;
 
     /**
      * Number of reference systems to keep at the end of the list.
      */
-    private static final int NUM_OTHER_SYSTEMS = 1;
+    private static final int NUM_OTHER_ITEMS = 1;
 
     /**
      * A pseudo-reference system for the "Other…" choice. We use a null value because {@link ChoiceBox}
@@ -104,8 +95,7 @@ public class RecentReferenceSystems {
 
     /**
      * The factory to use for creating a Coordinate Reference System from an authority code.
-     * If {@code null}, then the {@linkplain CRS#getAuthorityFactory(String) default factory}
-     * will be fetched when first needed.
+     * If {@code null}, then a default factory will be fetched when first needed.
      */
     private volatile CRSAuthorityFactory factory;
 
@@ -189,7 +179,8 @@ public class RecentReferenceSystems {
     private boolean isAdjusting;
 
     /**
-     * Creates a builder which will use the {@linkplain CRS#getAuthorityFactory(String) default authority factory}.
+     * Creates a builder which will use a default authority factory.
+     * The factory will be capable to handle at least some EPSG codes.
      */
     public RecentReferenceSystems() {
         systemsOrCodes       = new ArrayList<>();
@@ -208,7 +199,7 @@ public class RecentReferenceSystems {
      *
      * @param  factory  the factory to use for building CRS from authority codes.
      *
-     * @see CRS#getAuthorityFactory(String)
+     * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
      */
     public RecentReferenceSystems(final CRSAuthorityFactory factory) {
         this();
@@ -358,7 +349,7 @@ public class RecentReferenceSystems {
                      */
                     if (!noFactoryFound) {
                         if (factory == null) {
-                            factory = CRS.getAuthorityFactory(AUTHORITY);
+                            factory = Utils.getDefaultFactory();
                         }
                         systemsOrCodes.set(i, factory.createCoordinateReferenceSystem((String) item));
                     } else {
@@ -376,7 +367,7 @@ public class RecentReferenceSystems {
                         if (factory instanceof GeodeticAuthorityFactory) {
                             finder = ((GeodeticAuthorityFactory) factory).newIdentifiedObjectFinder();
                         } else {
-                            finder = IdentifiedObjects.newFinder(AUTHORITY);
+                            finder = IdentifiedObjects.newFinder(null);
                         }
                         finder.setIgnoringAxes(true);
                     }
@@ -420,17 +411,14 @@ public class RecentReferenceSystems {
              * because they would become valid later if the area of interest changes.
              */
             final int n = systemsOrCodes.size();
-            systems = new ArrayList<>(Math.min(NUM_SHOWN_SYSTEMS, n) + NUM_OTHER_SYSTEMS);
+            systems = new ArrayList<>(Math.min(NUM_SHOWN_ITEMS, n) + NUM_OTHER_ITEMS);
             for (int i=0; i<n; i++) {
                 final ReferenceSystem system = (ReferenceSystem) systemsOrCodes.get(i);
-                if (i >= NUM_CORE_SYSTEMS && domain != null) {
-                    final GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(system.getDomainOfValidity());
-                    if (bbox != null && !domain.intersects(new ImmutableEnvelope(bbox))) {
-                        continue;
-                    }
+                if (i >= NUM_CORE_ITEMS && !Utils.intersects(domain, system.getDomainOfValidity())) {
+                    continue;
                 }
                 systems.add(system);
-                if (systems.size() >= NUM_SHOWN_SYSTEMS) break;
+                if (systems.size() >= NUM_SHOWN_ITEMS) break;
             }
             systems.add(OTHER);
             isModified   = false;
@@ -466,7 +454,7 @@ public class RecentReferenceSystems {
             referenceSystems = FXCollections.observableArrayList();
         }
         synchronized (systemsOrCodes) {
-            systemsOrCodes.addAll(Math.min(systemsOrCodes.size(), NUM_CORE_SYSTEMS), referenceSystems);
+            systemsOrCodes.addAll(Math.min(systemsOrCodes.size(), NUM_CORE_ITEMS), referenceSystems);
             // Duplicated values will be filtered by the background task below.
             isModified = true;
             final ImmutableEnvelope domain = geographicAOI;
@@ -566,11 +554,11 @@ public class RecentReferenceSystems {
                 } else {
                     final ObservableList<ReferenceSystem> items = referenceSystems;
                     final ComparisonMode mode = duplicationCriterion.get();
-                    final int count = items.size() - NUM_OTHER_SYSTEMS;
+                    final int count = items.size() - NUM_OTHER_ITEMS;
                     boolean found = false;
                     for (int i=0; i<count; i++) {
                         if (Utilities.deepEquals(newValue, items.get(i), mode)) {
-                            if (i >= NUM_CORE_SYSTEMS) {
+                            if (i >= NUM_CORE_ITEMS) {
                                 items.set(i, newValue);
                             }
                             found = true;
@@ -578,10 +566,10 @@ public class RecentReferenceSystems {
                         }
                     }
                     if (!found) {
-                        if (count >= NUM_SHOWN_SYSTEMS) {
+                        if (count >= NUM_SHOWN_ITEMS) {
                             items.remove(count - 1);        // Remove the last item before `OTHER`.
                         }
-                        items.add(Math.min(count, NUM_CORE_SYSTEMS), newValue);
+                        items.add(Math.min(count, NUM_CORE_ITEMS), newValue);
                     }
                 }
                 /*
@@ -603,19 +591,19 @@ public class RecentReferenceSystems {
                  * to confuse the list.
                  */
                 final ObservableList<ReferenceSystem> items = referenceSystems;
-                final int count = items.size() - NUM_OTHER_SYSTEMS;
-                for (int i=Math.min(count, NUM_CORE_SYSTEMS + 1); --i >= 0;) {
+                final int count = items.size() - NUM_OTHER_ITEMS;
+                for (int i=Math.min(count, NUM_CORE_ITEMS + 1); --i >= 0;) {
                     if (items.get(i) == newValue) {
                         return;
                     }
                 }
-                for (int i=count; --i >= NUM_CORE_SYSTEMS;) {
+                for (int i=count; --i >= NUM_CORE_ITEMS;) {
                     if (items.get(i) == newValue) {
                         items.remove(i);
                         break;
                     }
                 }
-                items.add(Math.max(0, Math.min(count, NUM_CORE_SYSTEMS)), newValue);
+                items.add(Math.max(0, Math.min(count, NUM_CORE_ITEMS)), newValue);
             }
         }
     }

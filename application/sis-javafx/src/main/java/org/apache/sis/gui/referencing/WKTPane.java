@@ -145,23 +145,34 @@ final class WKTPane extends StringConverter<Convention> implements ChangeListene
     @Override
     public void changed(ObservableValue<? extends Convention> observable, Convention oldValue, Convention newValue) {
         format.setConvention(newValue);
-        refresh();
+        if (crs != null) {
+            text.setText(format.format(crs));
+        }
     }
 
     /**
      * Sets the CRS to show in this pane. The CRS is constructed in a background thread.
+     * The execution will usually be very quick because {@link CRSChooser} already started
+     * a background thread for fetching the selected CRS, and WKT formatting is fast.
      */
     final void setContent(final AuthorityCodes source, final String code) {
         text.setDisable(true);
         BackgroundThreads.execute(new Task<CoordinateReferenceSystem>() {
+            /** The WKT text formatted in background thread. */
+            private String wkt;
+
             /** Invoked in background thread for fetching the CRS from an authority code. */
             @Override protected CoordinateReferenceSystem call() throws FactoryException {
-                return source.getFactory().createCoordinateReferenceSystem(code);
+                final CoordinateReferenceSystem crs = source.getFactory().createCoordinateReferenceSystem(code);
+                if (crs != null) {
+                    wkt = format.format(crs);
+                }
+                return crs;
             }
 
             /** Invoked in JavaFX thread on success. */
             @Override protected void succeeded() {
-                setContent(getValue());
+                setContent(getValue(), wkt);
             }
 
             /** Invoked in JavaFX thread on cancellation. */
@@ -181,21 +192,12 @@ final class WKTPane extends StringConverter<Convention> implements ChangeListene
     /**
      * Sets the content to the given coordinate reference system.
      */
-    private void setContent(final CoordinateReferenceSystem newCRS) {
+    private void setContent(final CoordinateReferenceSystem newCRS, final String wkt) {
         text.setEditable(false);     // TODO: make editable if we allow WKT parsing in a future version.
         text.setDisable(false);
         if (newCRS != crs) {
             crs = newCRS;
-            refresh();
-        }
-    }
-
-    /**
-     * Rewrites the WKT using current conventions.
-     */
-    private void refresh() {
-        if (crs != null) {
-            text.setText(format.format(crs));
+            text.setText(wkt);
         }
     }
 }
