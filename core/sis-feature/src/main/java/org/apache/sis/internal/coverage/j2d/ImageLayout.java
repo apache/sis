@@ -77,7 +77,7 @@ public class ImageLayout {
      * @param  preferredTileSize  the preferred tile size, or {@code null} for the default size.
      * @param  allowPartialTiles  whether this instance allows tiles that are only partially filled.
      */
-    protected ImageLayout(final Dimension preferredTileSize, final boolean allowPartialTiles) {
+    public ImageLayout(final Dimension preferredTileSize, final boolean allowPartialTiles) {
         if (preferredTileSize != null) {
             preferredTileWidth  = preferredTileSize.width;
             preferredTileHeight = preferredTileSize.height;
