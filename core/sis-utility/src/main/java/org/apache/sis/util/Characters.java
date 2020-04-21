@@ -17,6 +17,7 @@
 package org.apache.sis.util;
 
 import org.opengis.metadata.citation.Citation;  // For javadoc.
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 
@@ -28,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
  * symbols. For those symbols, constants are declared in this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -321,7 +322,7 @@ public final class Characters extends Static {
      * left are {@linkplain #LETTERS_AND_DIGITS letters and digits}.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
+     * @version 1.1
      *
      * @see java.lang.Character.Subset
      * @see Character#getType(int)
@@ -413,9 +414,14 @@ public final class Characters extends Static {
          * @return {@code true} if this subset contains the characters of the given type.
          *
          * @see Character#getType(int)
+         *
+         * @deprecated to be removed because not used (only {@link #contains(int)} is used in practice)
+         *             and consistency with {@link #contains(int)} is not guaranteed between different
+         *             Java versions.
          */
+        @Deprecated
         public final boolean containsType(final int type) {
-            return (type >= 0) && (type < Long.SIZE) && (types & (1L << type)) != 0;
+            return (types & Numerics.bitmask(type)) != 0;
         }
 
         /**

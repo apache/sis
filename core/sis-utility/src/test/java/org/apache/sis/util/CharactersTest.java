@@ -28,7 +28,7 @@ import static org.apache.sis.util.Characters.*;
  * Tests the {@link Characters} utility methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -160,30 +160,5 @@ public final strictfp class CharactersTest extends TestCase {
         assertTrue (filter.contains('0'));
         assertTrue (filter.contains(' '));
         assertFalse(filter.contains('A'));
-    }
-
-    /**
-     * Scans the full {@code char} range in order to check for
-     * {@link org.apache.sis.util.Characters.Filter} consistency.
-     */
-    @Test
-    public void scanCharacterRange() {
-        for (int c=Character.MIN_VALUE; c<=Character.MAX_VALUE; c++) {
-            final int type = Character.getType(c);
-predefined: for (int i=0; ; i++) {
-                final Characters.Filter filter;
-                switch (i) {
-                    case 0:  filter = Filter.UNICODE_IDENTIFIER; break;
-                    case 1:  filter = Filter.LETTERS_AND_DIGITS; break;
-                    default: break predefined;
-                }
-                final boolean cc = filter.contains(c);
-                final boolean ct = filter.containsType(type);
-                if (cc != ct) {
-                    fail(filter + ".contains('" + (char) c + "') == " + cc + " but "
-                            + filter + ".containsType(" + type + ") == " + ct);
-                }
-            }
-        }
     }
 }
