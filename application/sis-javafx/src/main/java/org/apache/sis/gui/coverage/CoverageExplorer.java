@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.Locale;
 import javafx.scene.control.Control;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Separator;
@@ -165,13 +166,14 @@ public class CoverageExplorer extends Widget {
          * The coverage property may be shown in various ways (tabular data, image).
          * Each visualization way is an entry in the `views` array.
          */
-        final Resources  localized  = Resources.forLocale(null);
-        final Vocabulary vocabulary = Vocabulary.getResources(localized.getLocale());
+        final Locale     locale     = null;
+        final Resources  localized  = Resources.forLocale(locale);
+        final Vocabulary vocabulary = Vocabulary.getResources(locale);
         views = new Controls[viewTypes.length];
         for (final View type : viewTypes) {
             final Controls c;
             switch (type) {
-                case TABLE: c = new GridControls(vocabulary); break;
+                case TABLE: c = new GridControls(referenceSystems, vocabulary); break;
                 case IMAGE: c = new CoverageControls(localized, vocabulary, coverageProperty, referenceSystems); break;
                 default: throw new AssertionError(type);
             }

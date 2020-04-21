@@ -244,7 +244,7 @@ abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> 
         if (value == null) {
             return;
         }
-        final String labelText = owner.localized.getString(label);
+        final String labelText = owner.localized.getLabel(label);
         final Label labelCtrl, valueCtrl;
         final ObservableList<Node> children = getChildren();
         if (linesEndIndex < children.size()) {

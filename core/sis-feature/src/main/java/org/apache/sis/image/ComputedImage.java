@@ -34,6 +34,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
 import org.apache.sis.internal.feature.Resources;
@@ -116,7 +117,7 @@ import org.apache.sis.internal.feature.Resources;
  * @since   1.1
  * @module
  */
-public abstract class ComputedImage extends PlanarImage {
+public abstract class ComputedImage extends PlanarImage implements Disposable {
     /**
      * The property for declaring the amount of additional source pixels needed on each side of a destination pixel.
      * This property can be used for calculations that require only a fixed rectangular source region around a source
@@ -617,6 +618,7 @@ public abstract class ComputedImage extends PlanarImage {
      * <p><b>Note:</b> keep in mind that this image may be referenced as a source of other images.
      * In case of doubt, it may be safer to rely on the garbage collector instead than invoking this method.</p>
      */
+    @Override
     public void dispose() {
         reference.dispose();
     }

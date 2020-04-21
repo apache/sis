@@ -56,7 +56,7 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
-         * Abstract:
+         * Abstract
          */
         public static final short Abstract = 14;
 
@@ -101,7 +101,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotReadResource = 55;
 
         /**
-         * Cell geometry:
+         * Cell geometry
          */
         public static final short CellGeometry = 15;
 
@@ -121,12 +121,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CopyAs = 46;
 
         /**
-         * Creation date:
+         * Creation date
          */
         public static final short CreationDate = 16;
 
         /**
-         * Credit:
+         * Credit
          */
         public static final short Credit = 17;
 
@@ -136,12 +136,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Data = 32;
 
         /**
-         * Date:
+         * Date
          */
         public static final short Date = 18;
 
         /**
-         * Dimensions:
+         * Dimensions
          */
         public static final short Dimensions = 19;
 
@@ -191,7 +191,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Exit = 9;
 
         /**
-         * Extent:
+         * Extent
          */
         public static final short Extent = 20;
 
@@ -201,12 +201,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short File = 10;
 
         /**
-         * Filter:
+         * Filter
          */
         public static final short Filter = 34;
 
         /**
-         * Format:
+         * Format
          */
         public static final short Format = 38;
 
@@ -226,7 +226,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short GeospatialFiles = 4;
 
         /**
-         * Identifiers:
+         * Identifiers
          */
         public static final short Identifiers = 54;
 
@@ -256,7 +256,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NoFeatureTypeInfo = 33;
 
         /**
-         * Number of dimensions:
+         * Number of dimensions
          */
         public static final short NumberOfDimensions = 27;
 
@@ -271,17 +271,17 @@ public final class Resources extends IndexedResourceBundle {
         public static final short OpenDataFile = 2;
 
         /**
-         * Publication date:
+         * Publication date
          */
         public static final short PublicationDate = 21;
 
         /**
-         * Purpose:
+         * Purpose
          */
         public static final short Purpose = 28;
 
         /**
-         * Reference system:
+         * Reference system
          */
         public static final short ReferenceSystem = 22;
 
@@ -321,12 +321,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short TabularData = 51;
 
         /**
-         * Topic category:
+         * Topic category
          */
         public static final short TopicCategory = 25;
 
         /**
-         * Type of resource:
+         * Type of resource
          */
         public static final short TypeOfResource = 26;
 

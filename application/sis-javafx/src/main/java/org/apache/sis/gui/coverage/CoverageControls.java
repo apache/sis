@@ -79,7 +79,7 @@ final class CoverageControls extends Controls {
         final Color background = Color.BLACK;
         view = new CoverageCanvas();
         view.setBackground(background);
-        final StatusBar statusBar = new StatusBar();
+        final StatusBar statusBar = new StatusBar(referenceSystems);
         statusBar.setCanvas(view);
         imageAndStatus = new BorderPane(view.getView());
         imageAndStatus.setBottom(statusBar.getView());
@@ -93,7 +93,7 @@ final class CoverageControls extends Controls {
             final ChoiceBox<ReferenceSystem> systems = referenceSystems.createChoiceBox(this::onReferenceSystemSelected);
             systems.setMaxWidth(Double.POSITIVE_INFINITY);
             referenceSystem = systems.valueProperty();
-            final Label systemLabel = new Label(localized.getString(Resources.Keys.ReferenceSystem));
+            final Label systemLabel = new Label(localized.getLabel(Resources.Keys.ReferenceSystem));
             systemLabel.setPadding(CAPTION_MARGIN);
             systemLabel.setLabelFor(systems);
             final GridPane gp = createControlGrid(

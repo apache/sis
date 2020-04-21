@@ -73,7 +73,7 @@ public final strictfp class CRSChooserApp extends Application {
         final GeneralEnvelope bbox = new GeneralEnvelope(CommonCRS.defaultGeographic());
         bbox.setRange(0, -140.99778, -52.6480987209);
         bbox.setRange(1, 41.6751050889, 83.23324);              // Canada
-        final CRSChooser chooser = new CRSChooser(null, bbox);
+        final CRSChooser chooser = new CRSChooser(null, bbox, null);
         final Optional<CoordinateReferenceSystem> crs = chooser.showDialog(window);
 
         System.out.println("The selected CRS is: " + crs);

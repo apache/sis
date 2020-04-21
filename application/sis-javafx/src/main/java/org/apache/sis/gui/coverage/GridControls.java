@@ -30,6 +30,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -60,10 +61,11 @@ final class GridControls extends Controls {
     /**
      * Creates a new set of grid controls.
      *
-     * @param  vocabulary  localized set of words, provided in argument because often known by the caller.
+     * @param  referenceSystems  the manager of reference systems chosen by the user, or {@code null} if none.
+     * @param  vocabulary        localized set of words, provided in argument because often known by the caller.
      */
-    GridControls(final Vocabulary vocabulary) {
-        view = new GridView();
+    GridControls(final RecentReferenceSystems referenceSystems, final Vocabulary vocabulary) {
+        view = new GridView(referenceSystems);
         sampleDimensions = new CategoryCellFactory(view.cellFormat).createSampleDimensionTable(vocabulary);
         sampleDimensions.getSelectionModel().selectedIndexProperty().addListener(new BandSelectionListener(view.bandProperty));
         view.bandProperty.addListener(this::onBandSpecified);

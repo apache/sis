@@ -138,7 +138,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
      * Creates a chooser proposing all coordinate reference systems from the default factory.
      */
     public CRSChooser() {
-        this(null, null);
+        this(null, null, null);
     }
 
     /**
@@ -149,10 +149,11 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
      *
      * @param  factory         the factory to use for creating coordinate reference systems, or {@code null} for default.
      * @param  areaOfInterest  geographic area for which to choose a CRS, or {@code null} if no restriction.
+     * @param  locale          the preferred locale for displaying object name, or {@code null} for the default locale.
      */
-    public CRSChooser(final CRSAuthorityFactory factory, final Envelope areaOfInterest) {
+    public CRSChooser(final CRSAuthorityFactory factory, final Envelope areaOfInterest, Locale locale) {
         this.areaOfInterest = Utils.toGeographic(CRSChooser.class, "<init>", areaOfInterest);
-        final Locale         locale     = Locale.getDefault();
+        if (locale == null)  locale     = Locale.getDefault();
         final Resources      i18n       = Resources.forLocale(locale);
         final Vocabulary     vocabulary = Vocabulary.getResources(locale);
         final AuthorityCodes codeList   = new AuthorityCodes(factory, locale);
@@ -276,7 +277,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         final ObservableList<Node> children = tools.getChildren();
         final Label label = (Label) children.get(0);
         final Resources i18n = Resources.forLocale(locale);
-        label.setText(i18n.getString(labelText));
+        label.setText(i18n.getLabel(labelText));
         label.setLabelFor(control);
         children.set(1, control);
         content.setCenter(main);

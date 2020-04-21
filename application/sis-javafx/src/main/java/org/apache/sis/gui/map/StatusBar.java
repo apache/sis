@@ -27,8 +27,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.Priority;
 import javafx.scene.control.Label;
 import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.input.MouseEvent;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
@@ -37,6 +37,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
@@ -44,7 +45,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -57,6 +57,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.gui.Widget;
+import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
@@ -190,8 +191,10 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * Creates a new status bar.
+     *
+     * @param  referenceSystems  the manager of reference systems chosen by the user, or {@code null} if none.
      */
-    public StatusBar() {
+    public StatusBar(final RecentReferenceSystems referenceSystems) {
         localToCRS        = MathTransforms.identity(BIDIMENSIONAL);
         targetCoordinates = new GeneralDirectPosition(BIDIMENSIONAL);
         sourceCoordinates = targetCoordinates.coordinates;
@@ -208,6 +211,16 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         view.setPadding(PADDING);
         canvasProperty = new SimpleObjectProperty<>(this, "canvas");
         canvasProperty.addListener(this::onCanvasSpecified);
+        if (referenceSystems != null) {
+            final ContextMenu menu = new ContextMenu(referenceSystems.createMenuItems((e,o,n) -> setDisplayCRS(n)));
+            view.setOnMousePressed((MouseEvent event) -> {
+                if (event.isSecondaryButtonDown()) {
+                    menu.show((HBox) event.getSource(), event.getScreenX(), event.getScreenY());
+                } else {
+                    menu.hide();
+                }
+            });
+        }
     }
 
     /**
@@ -357,20 +370,22 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             targetCoordinates = new GeneralDirectPosition(BIDIMENSIONAL);
             sourceCoordinates = targetCoordinates.coordinates;      // Okay to share array if same dimension.
         }
-        format.setDefaultCRS(crs);
+        setDisplayCRS(crs);
         format.setPrecision(resolution, unit);
-        final String text = IdentifiedObjects.getDisplayName(crs, format.getLocale(Locale.Category.DISPLAY));
-        Tooltip tp = null;
-        if (text != null) {
-            tp = coordinates.getTooltip();
-            if (tp == null) {
-                tp = new Tooltip(text);
-            } else {
-                tp.setText(text);
-            }
-        }
-        coordinates.setTooltip(tp);
         lastX = lastY = Double.NaN;
+    }
+
+    /**
+     * Sets the coordinate reference systems to use for representing coordinates in status bar.
+     *
+     * @param  crs  the coordinate reference system to use for coordinates in the status bar.
+     */
+    private void setDisplayCRS(final ReferenceSystem crs) {
+        if (crs instanceof CoordinateReferenceSystem) {
+            format.setDefaultCRS((CoordinateReferenceSystem) crs);
+        } else {
+            format.setDefaultCRS(null);
+        }
     }
 
     /**

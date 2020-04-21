@@ -42,6 +42,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.gui.map.StatusBar;
+import org.apache.sis.gui.referencing.RecentReferenceSystems;
 
 
 /**
@@ -208,6 +209,16 @@ public class GridView extends Control {
      * construction by a call to {@link #setImage(RenderedImage)}.
      */
     public GridView() {
+        this(null);
+    }
+
+    /**
+     * Creates an initially empty grid view. The content can be set after
+     * construction by a call to {@link #setImage(RenderedImage)}.
+     *
+     * @param  referenceSystems  the manager of reference systems chosen by the user, or {@code null} if none.
+     */
+    GridView(final RecentReferenceSystems referenceSystems) {
         imageProperty    = new SimpleObjectProperty<>(this, "image");
         bandProperty     = new SimpleIntegerProperty (this, "band");
         headerWidth      = new SimpleDoubleProperty  (this, "headerWidth", 60);
@@ -217,7 +228,7 @@ public class GridView extends Control {
         headerBackground = new SimpleObjectProperty<>(this, "headerBackground", Color.GAINSBORO);
         headerFormat     = NumberFormat.getIntegerInstance();
         cellFormat       = new CellFormat(this);
-        statusBar        = new StatusBar();
+        statusBar        = new StatusBar(referenceSystems);
         tileWidth        = 1;
         tileHeight       = 1;       // For avoiding division by zero.
 

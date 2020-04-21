@@ -18,6 +18,7 @@ package org.apache.sis.gui.referencing;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Locale;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -27,6 +28,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Menu;
 import javafx.concurrent.Task;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
@@ -47,6 +49,7 @@ import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
 import org.apache.sis.internal.gui.RecentChoices;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
 
@@ -122,7 +125,12 @@ public class RecentReferenceSystems {
      * if we removed the selected item from the list. We use {@code controlValues} for saving currently selected
      * values before to modify the item list, and restore selections after we finished to modify the list.
      */
-    private final List<ObjectProperty<ReferenceSystem>> controlValues;
+    private final List<WritableValue<ReferenceSystem>> controlValues;
+
+    /**
+     * The preferred locale for displaying object name, or {@code null} for the default locale.
+     */
+    final Locale locale;
 
     /**
      * Wrapper for a {@link ReferenceSystem} which has not yet been compared with authoritative definitions.
@@ -149,8 +157,8 @@ public class RecentReferenceSystems {
      * The {@link #OTHER} reference system is <em>not</em> included in this list.
      *
      * <p>The list content is specified by calls to {@code setPreferred(…)} and {@code addAlternatives(…)} methods,
-     * then is filtered by {@link #filterSystems(ImmutableEnvelope, ComparisonMode)} for resolving authority codes
-     * and removing duplicated elements.</p>
+     * then is filtered by {@link #filterReferenceSystems(ImmutableEnvelope, ComparisonMode)} for resolving authority
+     * codes and removing duplicated elements.</p>
      *
      * <p>All accesses to this field and to {@link #isModified} field shall be done in a block synchronized
      * on {@code systemsOrCodes}.</p>
@@ -183,6 +191,20 @@ public class RecentReferenceSystems {
      * The factory will be capable to handle at least some EPSG codes.
      */
     public RecentReferenceSystems() {
+        this(null, null);
+    }
+
+    /**
+     * Creates a builder which will use the specified authority factory.
+     *
+     * @param  factory  the factory to use for building CRS from authority codes, or {@code null} for the default.
+     * @param  locale   the preferred locale for displaying object name, or {@code null} for the default locale.
+     *
+     * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
+     */
+    public RecentReferenceSystems(final CRSAuthorityFactory factory, final Locale locale) {
+        this.factory         = factory;
+        this.locale          = locale;
         systemsOrCodes       = new ArrayList<>();
         areaOfInterest       = new SimpleObjectProperty<>(this, "areaOfInterest");
         duplicationCriterion = new NonNullObjectProperty<>(this, "duplicationCriterion", ComparisonMode.ALLOW_VARIANT);
@@ -192,19 +214,6 @@ public class RecentReferenceSystems {
             geographicAOI = Utils.toGeographic(RecentReferenceSystems.class, "areaOfInterest", n);
             modified();
         });
-    }
-
-    /**
-     * Creates a builder which will use the specified authority factory.
-     *
-     * @param  factory  the factory to use for building CRS from authority codes.
-     *
-     * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
-     */
-    public RecentReferenceSystems(final CRSAuthorityFactory factory) {
-        this();
-        ArgumentChecks.ensureNonNull("factory", factory);
-        this.factory = factory;
     }
 
     /**
@@ -273,7 +282,7 @@ public class RecentReferenceSystems {
             }
             modified();
         }
-        // Check for duplication will be done in `filterSystems()` method.
+        // Check for duplication will be done in `filterReferenceSystems()` method.
     }
 
     /**
@@ -302,7 +311,7 @@ public class RecentReferenceSystems {
             }
             modified();
         }
-        // Parsing will be done in `filterSystems()` method.
+        // Parsing will be done in `filterReferenceSystems()` method.
     }
 
     /**
@@ -326,7 +335,7 @@ public class RecentReferenceSystems {
      * @param  mode    the {@link #duplicationCriterion} value read from JavaFX thread.
      * @return the filtered reference systems, or {@code null} if already filtered.
      */
-    private List<ReferenceSystem> filterSystems(final ImmutableEnvelope domain, final ComparisonMode mode) {
+    private List<ReferenceSystem> filterReferenceSystems(final ImmutableEnvelope domain, final ComparisonMode mode) {
         final List<ReferenceSystem> systems;
         synchronized (systemsOrCodes) {
             CRSAuthorityFactory factory = this.factory;         // Hide volatile field by local field.
@@ -454,15 +463,33 @@ public class RecentReferenceSystems {
             referenceSystems = FXCollections.observableArrayList();
         }
         synchronized (systemsOrCodes) {
-            systemsOrCodes.addAll(Math.min(systemsOrCodes.size(), NUM_CORE_ITEMS), referenceSystems);
-            // Duplicated values will be filtered by the background task below.
+            /*
+             * Prepare a temporary list as the concatenation of all items that are currently visible in JavaFX
+             * controls with all items that were specified by `setPreferred(…)` or `addAlternatives(…)` methods.
+             * This concatenation creates a lot of duplicated values, but those duplications will be filtered by
+             * `filterReferenceSystems(…)` method. The intent is to preserve following order:
+             *
+             *   - NUM_CORE_ITEMS preferred reference systems first.
+             *   - All reference systems that are currently selected by JavaFX controls.
+             *   - All reference systems offered as choice in JavaFX controls.
+             *   - All reference systems specified by `addAlternatives(…)`.
+             *   - NUM_OTHER_ITEMS systems (will be handled in a special way by `filterReferenceSystems(…)`).
+             *
+             * The list will be truncated to NUM_SHOWN_ITEMS after duplications are removed and before OTHER
+             * is added. The first occurrence of duplicated values is kept, which will result in above-cited
+             * order as the priority order where to insert the CRS.
+             */
             isModified = true;
+            final int insertAt = Math.min(systemsOrCodes.size(), NUM_CORE_ITEMS);
+            final List<ReferenceSystem> selected = getSelectedItems();
+            systemsOrCodes.addAll(insertAt, selected);
+            systemsOrCodes.addAll(insertAt + selected.size(), referenceSystems);
             final ImmutableEnvelope domain = geographicAOI;
             final ComparisonMode mode = duplicationCriterion.get();
             BackgroundThreads.execute(new Task<List<ReferenceSystem>>() {
                 /** Filters the {@link ReferenceSystem}s in a background thread. */
                 @Override protected List<ReferenceSystem> call() {
-                    return filterSystems(domain, mode);
+                    return filterReferenceSystems(domain, mode);
                 }
 
                 /** Should never happen. */
@@ -495,10 +522,12 @@ public class RecentReferenceSystems {
              * in the `referenceSystems` list is temporarily removed (before to be inserted elsewhere).
              * Save the values before to modify the list.
              */
-            final ReferenceSystem[] values = controlValues.stream().map(ObjectProperty::get).toArray(ReferenceSystem[]::new);
+            final ReferenceSystem[] values = controlValues.stream().map(WritableValue::getValue).toArray(ReferenceSystem[]::new);
             try {
                 isAdjusting = true;
-                GUIUtilities.copyAsDiff(systems, referenceSystems);
+                if (GUIUtilities.copyAsDiff(systems, referenceSystems)) {
+                    notifyChanges();
+                }
             } finally {
                 isAdjusting = false;
             }
@@ -519,7 +548,7 @@ public class RecentReferenceSystems {
                         break;
                     }
                 }
-                controlValues.get(j).set(system);
+                controlValues.get(j).setValue(system);
             }
         }
     }
@@ -547,11 +576,18 @@ public class RecentReferenceSystems {
                 return;
             }
             if (newValue == OTHER) {
-                final CRSChooser chooser = new CRSChooser(factory, geographicAOI);
+                final CRSChooser chooser = new CRSChooser(factory, geographicAOI, locale);
                 newValue = chooser.showDialog(GUIUtilities.getWindow(property)).orElse(null);
                 if (newValue == null) {
                     newValue = oldValue;
                 } else {
+                    /*
+                     * If user selected a CRS in the CRSChooser list, verify if her/his selection is a CRS
+                     * already presents in the `referenceSystems` list. We ignore axis order (by default)
+                     * because the previous CRS in the list may be a CRS given by `setPreferred(…)` method,
+                     * which typically come from a DataStore. That previous CRS will be replaced by the CRS
+                     * given by CRSChooser, which is more conform to authoritative definition.
+                     */
                     final ObservableList<ReferenceSystem> items = referenceSystems;
                     final ComparisonMode mode = duplicationCriterion.get();
                     final int count = items.size() - NUM_OTHER_ITEMS;
@@ -565,16 +601,23 @@ public class RecentReferenceSystems {
                             break;
                         }
                     }
+                    /*
+                     * If the selected CRS was not present in the list, we may need to remove the last item
+                     * for making room for the new one. New item must be added before `property.setValue(…)`
+                     * is invoked, otherwise ChoiceBox may add a new item by itself.
+                     */
                     if (!found) {
                         if (count >= NUM_SHOWN_ITEMS) {
                             items.remove(count - 1);        // Remove the last item before `OTHER`.
                         }
-                        items.add(Math.min(count, NUM_CORE_ITEMS), newValue);
+                        items.add(Math.min(items.size(), NUM_CORE_ITEMS), newValue);
+                        notifyChanges();
                     }
                 }
                 /*
                  * Following cast is safe because this listener is registered only on ObjectProperty
                  * instances, and the ObjectProperty class implements WritableValue.
+                 * The effect of this method call is to set the selected value.
                  */
                 ((WritableValue<ReferenceSystem>) property).setValue(newValue);
             }
@@ -586,9 +629,9 @@ public class RecentReferenceSystems {
                 action.changed(property, oldValue, newValue);
                 RecentChoices.useReferenceSystem(IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(newValue, null)));
                 /*
-                 * Move the selected reference system as the first choice after the core systems.
-                 * We need to remove the old value before to add the new one, otherwise it seems
-                 * to confuse the list.
+                 * If the selected CRS is already at the beginning of the list, do nothing. The beginning is
+                 * either one of the core items (specified by `setPreferred(…)`) or the first item after the
+                 * core items.
                  */
                 final ObservableList<ReferenceSystem> items = referenceSystems;
                 final int count = items.size() - NUM_OTHER_ITEMS;
@@ -597,15 +640,92 @@ public class RecentReferenceSystems {
                         return;
                     }
                 }
+                /*
+                 * Move the selected reference system as the first choice after the core systems.
+                 * We need to remove the old value before to add the new one, otherwise it seems
+                 * to confuse the list.
+                 */
                 for (int i=count; --i >= NUM_CORE_ITEMS;) {
                     if (items.get(i) == newValue) {
                         items.remove(i);
                         break;
                     }
                 }
-                items.add(Math.max(0, Math.min(count, NUM_CORE_ITEMS)), newValue);
+                items.add(Math.min(items.size(), NUM_CORE_ITEMS), newValue);
+                notifyChanges();
             }
         }
+    }
+
+    /**
+     * Notifies all {@link MenuSync} that the list of reference systems changed. We send a notification manually
+     * instead than relying on {@code ListChangeListener} in order to process only one event after we have done
+     * a bunch of changes instead than an event after each individual add or remove operation.
+     */
+    private void notifyChanges() {
+        for (final WritableValue<ReferenceSystem> value : controlValues) {
+            if (value instanceof MenuSync) {
+                ((MenuSync) value).notifyChanges(referenceSystems);
+            }
+        }
+    }
+
+    /**
+     * Returns all currently selected reference systems in the order they appear in JavaFX controls.
+     * This method collects selected values of all controls created by a {@code createXXX(…)} method.
+     * The returned list does not contain duplicated values.
+     *
+     * @return currently selected values of all controls, without duplicated values and in the order
+     *         they appear in choice lists.
+     */
+    public List<ReferenceSystem> getSelectedItems() {
+        /*
+         * Build an array of selected reference systems. This array may contain duplicated elements if two
+         * or more JavaFX controls have the same selected value. Those duplications will be resolved later.
+         * Conceptually we will use this array as a java.util.Set, except that its length is so small
+         * (usually no more than 3 elements) that it is not worth to use HashSet.
+         */
+        int count = 0;
+        final ReferenceSystem[] selected = new ReferenceSystem[controlValues.size()];
+        for (final WritableValue<ReferenceSystem> value : controlValues) {
+            final ReferenceSystem system = value.getValue();
+            if (system != null) selected[count++] = system;
+        }
+        /*
+         * Now filter the `referenceSystems` list, retaining only elements that are present in `selected`.
+         * We do that way for having selected elements in the same order as they appear in JavaFX controls.
+         */
+        final List<ReferenceSystem> ordered = new ArrayList<>(count);
+        if (count != 0) {
+            // (count > 0) implies (referenceSystems != null).
+            for (final ReferenceSystem system : referenceSystems) {
+                if (system != OTHER) {
+                    for (int i=0; i<count; i++) {
+                        if (selected[i] == system) {
+                            ordered.add(system);
+                            if (--count == 0) return ordered;
+                            System.arraycopy(selected, i+1, selected, i, count - i);
+                            break;
+                        }
+                    }
+                }
+            }
+            /*
+             * If some selected elements were not found in the `referenceSystems` list, add them last.
+             * It should not happen, unless those remaining elements are duplicated values (i.e. two
+             * or more controls having the same selection).
+             */
+next:       for (int i=0; i<count; i++) {
+                final ReferenceSystem system = selected[i];
+                for (int j=ordered.size(); --j >= 0;) {
+                    if (ordered.get(j) == system) {
+                        continue next;                  // Skip duplicated value.
+                    }
+                }
+                ordered.add(system);
+            }
+        }
+        return ordered;
     }
 
     /**
@@ -620,14 +740,25 @@ public class RecentReferenceSystems {
     public ChoiceBox<ReferenceSystem> createChoiceBox(final ChangeListener<ReferenceSystem> action) {
         ArgumentChecks.ensureNonNull("action", action);
         final ChoiceBox<ReferenceSystem> choices = new ChoiceBox<>(updateItems());
-        choices.setConverter(new ObjectStringConverter<>(choices.getItems(), null));
+        choices.setConverter(new ObjectStringConverter<>(choices.getItems(), locale));
         choices.valueProperty().addListener(new Listener(action));
         controlValues.add(choices.valueProperty());
         return choices;
     }
 
-    public MenuItem[] createMenuItems() {
-        return null;
+    /**
+     * Creates menu items offering choices among the reference systems specified to this {@code ShortChoiceList}.
+     * The items will be inserted in the {@linkplain Menu#getItems() menu list}. The content of that list will
+     * change at any time after this method returned: items will be added or removed as a result of user actions.
+     *
+     * @param  action  the action to execute when a reference system is selected.
+     * @return the menu containing items for reference systems.
+     */
+    public Menu createMenuItems(final ChangeListener<ReferenceSystem> action) {
+        ArgumentChecks.ensureNonNull("action", action);
+        final Menu menu = new Menu(Resources.forLocale(locale).getString(Resources.Keys.ReferenceSystem));
+        controlValues.add(new MenuSync(this, updateItems(), menu, new Listener(action)));
+        return menu;
     }
 
     /**
