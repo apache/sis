@@ -175,7 +175,7 @@ public class GridCoverageBuilder {
      * @return {@code this} for method invocation chaining.
      */
     public GridCoverageBuilder setDomain(final GridGeometry grid) {
-        domain = grid;
+        domain = (grid != GridGeometry.UNDEFINED) ? grid : null;
         return this;
     }
 

@@ -209,4 +209,18 @@ public final strictfp class GridCoverageBuilderTest extends TestCase {
             assertEquals(new AffineTransform2D(10, 0, 0, -10, -175, 85), gridToCRS);
         }
     }
+
+    /**
+     * Tests constructions of a grid coverage with {@link GridGeometry#UNDEFINED} domain.
+     */
+    @Test
+    public void testUndefinedDomain() {
+        final GridCoverageBuilder builder = new GridCoverageBuilder();
+        assertSame(builder, builder.setDomain(GridGeometry.UNDEFINED));
+        assertSame(builder, builder.setValues(new BufferedImage(3, 4, BufferedImage.TYPE_BYTE_GRAY)));
+        final GridCoverage coverage = builder.build();
+        final GridExtent extent = coverage.getGridGeometry().getExtent();
+        GridExtentTest.assertExtentEquals(extent, 0, 0, 2);
+        GridExtentTest.assertExtentEquals(extent, 1, 0, 3);
+    }
 }

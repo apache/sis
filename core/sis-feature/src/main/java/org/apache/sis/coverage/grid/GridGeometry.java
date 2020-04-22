@@ -797,13 +797,16 @@ public class GridGeometry implements LenientComparable, Serializable {
             return extent.getDimension();       // Most reliable source since that method is final.
         } else if (gridToCRS != null) {
             return gridToCRS.getSourceDimensions();
-        } else {
+        } else if (envelope != null) {
             /*
              * Last resort only since we have no guarantee that the envelope dimension is the same
              * than the grid dimension (see above javadoc). The envelope should never be null at
-             * this point since the constructor verified that at least one argument was non-null.
+             * this point since the constructor verified that at least one argument was non-null,
+             * except if this method is invoked on UNDEFINED.
              */
             return envelope.getDimension();
+        } else {
+            throw incomplete(EXTENT, Resources.Keys.UnspecifiedGridExtent);
         }
     }
 
