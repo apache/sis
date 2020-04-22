@@ -105,6 +105,10 @@ public class RecentReferenceSystems {
     /**
      * The area of interest, or {@code null} if none. This is used for filtering the reference systems added by
      * {@code addAlternatives(…)} and for providing some guidance to user when {@link CRSChooser} is shown.
+     *
+     * <div class="note"><b>API note:</b>
+     * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
      */
     public final ObjectProperty<Envelope> areaOfInterest;
 
@@ -116,6 +120,10 @@ public class RecentReferenceSystems {
     /**
      * The comparison criterion for considering two reference systems as a duplication.
      * The default value is {@link ComparisonMode#ALLOW_VARIANT}, i.e. axis orders are ignored.
+     *
+     * <div class="note"><b>API note:</b>
+     * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
      */
     public final ObjectProperty<ComparisonMode> duplicationCriterion;
 
@@ -182,7 +190,7 @@ public class RecentReferenceSystems {
 
     /**
      * {@code true} if {@code RecentReferenceSystems} is in the process of modifying {@link #referenceSystems} list.
-     * In such we want to temporarily disable the {@link Listener}. This field is read and updated in JavaFX thread.
+     * In such case we want to temporarily disable the {@link Listener}. This field is read and updated in JavaFX thread.
      */
     private boolean isAdjusting;
 

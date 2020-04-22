@@ -81,6 +81,11 @@ public final class Styles extends Static {
     public static final Color CODE_TEXT = Color.LIGHTSLATEGREY;
 
     /**
+     * Color of text used for outdated information while a background thread is refreshing data.
+     */
+    public static final Color OUTDATED_TEXT = Color.GRAY;
+
+    /**
      * Color of text shown in place of data that we failed to load.
      */
     public static final Color ERROR_TEXT = Color.RED;

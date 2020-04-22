@@ -319,6 +319,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @param  crs  the default coordinate reference system, or {@code null} if none.
      */
     public void setDefaultCRS(final CoordinateReferenceSystem crs) {
+        isPrecisionApplied &= (crs == defaultCRS);
         defaultCRS = crs;
     }
 

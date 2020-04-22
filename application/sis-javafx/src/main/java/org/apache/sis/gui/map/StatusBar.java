@@ -36,15 +36,20 @@ import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.concurrent.Task;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -56,12 +61,16 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
+import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.referencing.CRS;
 
 
 /**
@@ -126,10 +135,44 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private double lastX, lastY;
 
     /**
-     * Conversion from local coordinates to geographic or projected coordinates.
-     * This conversion shall never be null but may be the identity transform.
+     * The area of interest, or {@code null} if none. This is a reference to the
+     * {@link RecentReferenceSystems#areaOfInterest} property. We do not make this
+     * property public because it does not belong to this object.
      */
-    private MathTransform localToCRS;
+    private final ObjectProperty<Envelope> areaOfInterest;
+
+    /**
+     * The reference system used for rendering the data for which this status bar is providing cursor coordinates.
+     * This is the "{@linkplain RecentReferenceSystems#setPreferred(boolean, ReferenceSystem) preferred}" or native
+     * data CRS. It may not be the same than the CRS of coordinates actually shown in the status bar.
+     *
+     * @see #getObjectiveCRS()
+     * @see MapCanvas#getObjectiveCRS()
+     */
+    private CoordinateReferenceSystem objectiveCRS;
+
+    /**
+     * Conversion from local coordinates to geographic or projected coordinates of rendered data.
+     * This is not necessarily the conversion to the coordinates shown in this status bar.
+     * This conversion shall never be null but may be the identity transform.
+     * It should have no {@linkplain CoordinateOperation#getCoordinateOperationAccuracy() inaccuracy}
+     * (ignoring rounding error). This transform is usually (but not necessarily) affine.
+     *
+     * @see #getLocalToObjectiveCRS()
+     * @see MapCanvas#getObjectiveToDisplay()
+     */
+    private MathTransform localToObjectiveCRS;
+
+    /**
+     * Conversion from local coordinates to geographic or projected coordinates shown in this status bar.
+     * This is the concatenation of {@link #localToObjectiveCRS} with the transform from {@link #objectiveCRS}
+     * to the user-selected CRS for displaying in the status bar. This conversion shall never be null but may be
+     * the identity transform. It is usually non-affine if the display CRS is not the same than the objective CRS.
+     * This transform may have a {@linkplain CoordinateOperation#getCoordinateOperationAccuracy() limited accuracy}.
+     *
+     * <p>The target CRS can be obtained by {@link CoordinateFormat#getDefaultCRS()}.</p>
+     */
+    private MathTransform localToTargetCRS;
 
     /**
      * The source local indices before conversion to geospatial coordinates.
@@ -147,7 +190,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * The desired precisions for each dimension in the {@link #targetCoordinates} to format.
-     * It may vary for each position if the {@link #localToCRS} transform is non-linear.
+     * It may vary for each position if the {@link #localToTargetCRS} transform is non-linear.
      * This array is initially {@code null} and created when first needed.
      */
     private double[] precisions;
@@ -196,24 +239,29 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @param  referenceSystems  the manager of reference systems chosen by the user, or {@code null} if none.
      */
     public StatusBar(final RecentReferenceSystems referenceSystems) {
-        localToCRS        = MathTransforms.identity(BIDIMENSIONAL);
-        targetCoordinates = new GeneralDirectPosition(BIDIMENSIONAL);
-        sourceCoordinates = targetCoordinates.coordinates;
-        lastX = lastY     = Double.NaN;
-        format            = new CoordinateFormat();
-        coordinates       = new Label();
-        message           = new Label();
-        progress          = new ProgressBar();
+        localToObjectiveCRS = MathTransforms.identity(BIDIMENSIONAL);
+        localToTargetCRS    = localToObjectiveCRS;
+        targetCoordinates   = new GeneralDirectPosition(BIDIMENSIONAL);
+        sourceCoordinates   = targetCoordinates.coordinates;
+        lastX = lastY       = Double.NaN;
+        format              = new CoordinateFormat();
+        coordinates         = new Label();
+        message             = new Label();
+        progress            = new ProgressBar();
         progress.setVisible(false);
-        message.setTextFill(Color.RED);
+        message.setTextFill(Styles.ERROR_TEXT);
         message.setMaxWidth(Double.POSITIVE_INFINITY);
         HBox.setHgrow(message, Priority.ALWAYS);
+        coordinates.minWidthProperty().bind(coordinates.widthProperty());
         view = new HBox(12, progress, message, coordinates);
         view.setPadding(PADDING);
         canvasProperty = new SimpleObjectProperty<>(this, "canvas");
         canvasProperty.addListener(this::onCanvasSpecified);
-        if (referenceSystems != null) {
-            final ContextMenu menu = new ContextMenu(referenceSystems.createMenuItems((e,o,n) -> setDisplayCRS(n)));
+        if (referenceSystems == null) {
+            areaOfInterest = null;
+        } else {
+            areaOfInterest = referenceSystems.areaOfInterest;
+            final ContextMenu menu = new ContextMenu(referenceSystems.createMenuItems(this::onSelectCRS));
             view.setOnMousePressed((MouseEvent event) -> {
                 if (event.isSecondaryButtonDown()) {
                     menu.show((HBox) event.getSource(), event.getScreenX(), event.getScreenY());
@@ -245,8 +293,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * Sets the canvas that this status bar is tracking.
-     * This method register all necessary listeners.
-     * A value of {@code null} unregister all listeners.
+     * This method registers all necessary listeners.
+     * A value of {@code null} unregisters all listeners.
      *
      * @param  canvas  the canvas to track, or {@code null} if none.
      *
@@ -278,9 +326,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
-     * Listener notified when {@link MapCanvas} completed its rendering.
-     * This listener set {@link StatusBar#localToCRS} to the inverse of
-     * {@link MapCanvas#objectiveToDisplay}.
+     * Listener notified when {@link MapCanvas} completed its rendering. This listener sets
+     * {@link StatusBar#localToObjectiveCRS} to the inverse of {@link MapCanvas#objectiveToDisplay}.
      */
     private final class RenderingListener implements ChangeListener<Boolean> {
         @Override public void changed(final ObservableValue<? extends Boolean> property,
@@ -303,32 +350,35 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *   <li>{@link GridGeometry#getCoordinateReferenceSystem()} defines the CRS of the coordinates to format.</li>
      *   <li>{@link GridGeometry#getGridToCRS(PixelInCell) GridGeometry.getGridToCRS(PixelInCell.CELL_CENTER)}
      *       defines the conversion from coordinate values locale to the canvas to coordinate values in the CRS
-     *       (the {@linkplain #getLocalToCRS() local to CRS} conversion).</li>
+     *       (the {@linkplain #getLocalToObjectiveCRS() local to objective CRS} conversion).</li>
      *   <li>{@link GridGeometry#getExtent()} provides the view size in pixels, used for estimating a resolution.</li>
      *   <li>{@link GridGeometry#getResolution(boolean)} is also used for estimating a resolution.</li>
      * </ul>
      *
-     * All above properties are optional.
-     * The "local to CRS" conversion can be updated after this method call with {@link #setLocalToCRS(MathTransform)}.
+     * All above properties are optional. The "local to objective CRS" conversion can be updated
+     * after this method call with {@link #setLocalToObjectiveCRS(MathTransform)}.
      *
      * @param  geometry  geometry of the coverage shown in {@link MapCanvas}, or {@code null}.
      */
     public void applyCanvasGeometry(final GridGeometry geometry) {
-        localToCRS = null;
-        precisions = null;
-        inflatePrecisions = null;
+        /*
+         * Compute values in local variables without modifying `StatusBar` fields for now.
+         * The fields will be updated only after we know that this operation is successful.
+         */
+        MathTransform localToCRS = null;
         CoordinateReferenceSystem crs = null;
         double resolution = 1;
+        double[] inflate = null;
         Unit<?> unit = Units.PIXEL;
         if (geometry != null) {
+            if (geometry.isDefined(GridGeometry.CRS)) {
+                crs = geometry.getCoordinateReferenceSystem();
+            }
             if (geometry.isDefined(GridGeometry.GRID_TO_CRS)) {
                 localToCRS = geometry.getGridToCRS(PixelInCell.CELL_CENTER);
-                if (geometry.isDefined(GridGeometry.CRS)) {
-                    crs = geometry.getCoordinateReferenceSystem();
-                }
             }
             /*
-             * Computes the precision of coordinates to format. We use the finest resolution,
+             * Compute the precision of coordinates to format. We use the finest resolution,
              * looking only at axes having the same units of measurement than the first axis.
              * This will be used as a fallback if we can not compute the precision specific
              * to a coordinate, for example if we can not compute the derivative.
@@ -353,13 +403,14 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             if (geometry.isDefined(GridGeometry.EXTENT)) {
                 final GridExtent extent = geometry.getExtent();
                 final int n = extent.getDimension();
-                inflatePrecisions = new double[n];
+                inflate = new double[n];
                 for (int i=0; i<n; i++) {
-                    inflatePrecisions[i] = (0.5 / extent.getSize(i)) + 1;
+                    inflate[i] = (0.5 / extent.getSize(i)) + 1;
                 }
             }
         }
         /*
+         * Remaining code should not fail, so we can modify `StatusBar` fields.
          * Prepare objects to be reused for each coordinate transformation.
          * Configure the `CoordinateFormat` with the CRS.
          */
@@ -371,53 +422,163 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             targetCoordinates = new GeneralDirectPosition(BIDIMENSIONAL);
             sourceCoordinates = targetCoordinates.coordinates;      // Okay to share array if same dimension.
         }
-        setDisplayCRS(crs);
+        objectiveCRS        = crs;
+        localToObjectiveCRS = localToTargetCRS = localToCRS;
+        inflatePrecisions   = inflate;
+        precisions          = null;
+        format.setDefaultCRS(crs);
         format.setGroundPrecision(Quantities.create(resolution, unit));
-        lastX = lastY = Double.NaN;
+        refresh();
     }
 
     /**
-     * Sets the coordinate reference systems to use for representing coordinates in status bar.
+     * Invoked when the user selects a new reference system for the coordinates to show in status bar.
      *
-     * @param  crs  the coordinate reference system to use for coordinates in the status bar.
+     * @param  property  the {@link org.apache.sis.gui.referencing.MenuSync} property.
+     * @param  oldValue  the old reference system, or {@code null} if none.
+     * @param  newValue  the CRS to use for formatting coordinates in this status bar.
      */
-    private void setDisplayCRS(final ReferenceSystem crs) {
-        if (crs instanceof CoordinateReferenceSystem) {
-            format.setDefaultCRS((CoordinateReferenceSystem) crs);
+    private void onSelectCRS(ObservableValue<? extends ReferenceSystem> property,
+                             ReferenceSystem oldValue, ReferenceSystem newValue)
+    {
+        setTargetCRS(newValue instanceof CoordinateReferenceSystem ? (CoordinateReferenceSystem) newValue : null);
+    }
+
+    /**
+     * Sets the coordinate reference system of the coordinates shown in this status bar.
+     * The change may not appear immediately after method return; this method may use a
+     * background thread for computing the coordinate operation.
+     */
+    private void setTargetCRS(final CoordinateReferenceSystem crs) {
+        if (objectiveCRS != null && objectiveCRS != crs) {
+            coordinates.setTextFill(Styles.OUTDATED_TEXT);
+            final Envelope aoi = (areaOfInterest != null) ? areaOfInterest.get() : null;
+            BackgroundThreads.execute(new Task<MathTransform>() {
+                /**
+                 * The operation used for computing the transform to target CRS.
+                 * This is used for configuring format with positional accuracy.
+                 */
+                private CoordinateOperation operation;
+
+                /**
+                 * Invoked in a background thread for fetching transformation to target CRS.
+                 * This operation may be long the first time that it is executed, but should
+                 * be fast on subsequent invocations.
+                 */
+                @Override protected MathTransform call() throws FactoryException {
+                    DefaultGeographicBoundingBox bbox = null;
+                    if (aoi != null) try {
+                        bbox = new DefaultGeographicBoundingBox();
+                        bbox.setBounds(aoi);
+                    } catch (TransformException e) {
+                        bbox = null;
+                        Logging.recoverableException(Logging.getLogger(Modules.APPLICATION),
+                                                     StatusBar.class, "setTargetCRS", e);
+                    }
+                    operation = CRS.findOperation(objectiveCRS, crs, bbox);
+                    return MathTransforms.concatenate(localToObjectiveCRS, operation.getMathTransform());
+                }
+
+                /**
+                 * Invoked in JavaFX thread on success. The {@link StatusBar#localToTargetCRS} transform
+                 * is set to the transform that we computed in background and the {@link CoordinateFormat}
+                 * is configured with auxiliary information such as positional accuracy.
+                 */
+                @Override protected void succeeded() {
+                    final CoordinateReferenceSystem targetCRS = operation.getTargetCRS();
+                    format.setDefaultCRS(targetCRS != null ? targetCRS : crs);
+                    localToTargetCRS = getValue();
+//                  TODO: CRS.getLinearAccuracy(op);
+                    coordinates.setTextFill(Styles.NORMAL_TEXT);
+                    refresh();
+                }
+
+                /**
+                 * Invoked in JavaFX thread on failure. The previous CRS is keep unchanged but
+                 * the coordinates will appear in red for telling user that there is a problem.
+                 */
+                @Override protected void failed() {
+                    setErrorMessage(null, getException());
+                    resetTargetCRS(Styles.ERROR_TEXT);
+                }
+            });
         } else {
-            format.setDefaultCRS(null);
+            resetTargetCRS(Styles.NORMAL_TEXT);
         }
     }
 
     /**
-     * Returns the conversion from local coordinates to geographic or projected coordinates.
-     * The local coordinates are the coordinates of the view, as given for example in {@link MouseEvent}.
-     * This is initially an identity transform and can be computed by {@link #applyCanvasGeometry(GridGeometry)}.
-     *
-     * @return conversion from local coordinates to "real world" coordinates.
+     * Resets {@link #localToTargetCRS} to its default value. This is invoked either when the specified
+     * target CRS is {@link #objectiveCRS}, or when an attempt to use another CRS failed.
      */
-    public final MathTransform getLocalToCRS() {
-        return localToCRS;
+    private void resetTargetCRS(final Color textFill) {
+        localToTargetCRS = localToObjectiveCRS;
+        format.setDefaultCRS(objectiveCRS);
+        coordinates.setTextFill(textFill);
     }
 
     /**
-     * Sets the conversion from local coordinates to geographic or projected coordinates.
-     * The given value must have the same number of source and target dimensions than the
-     * previous value. If a change in the number of dimension is desired,
-     * use {@link #applyCanvasGeometry(GridGeometry)} instead.
+     * Returns the reference systems used by the coordinates shown in this status bar.
+     * This is initially the same value than {@link #getObjectiveCRS()}, but may become
+     * different if the user selects another reference system through contextual menu.
      *
-     * @param  conversion  the new conversion from local coordinates to "real world" coordinates.
+     * @return reference systems used by the coordinates shown in this status bar.
+     */
+    public final Optional<ReferenceSystem> getFormatReferenceSystem() {
+        return Optional.ofNullable(format.getDefaultCRS());
+    }
+
+    /**
+     * Returns the reference system used for rendering the data for which this status bar is providing cursor coordinates.
+     * This is the "{@linkplain RecentReferenceSystems#setPreferred(boolean, ReferenceSystem) preferred}" or native
+     * data CRS. It may not be the same than the CRS of coordinates actually shown in the status bar.
+     *
+     * @return the reference system used for rendering the data for which this status bar
+     *         is providing cursor coordinates, or {@code null} if unknown.
+     *
+     * @see MapCanvas#getObjectiveCRS()
+     */
+    public final Optional<CoordinateReferenceSystem> getObjectiveCRS() {
+        return Optional.ofNullable(objectiveCRS);
+    }
+
+    /**
+     * Returns the conversion from local coordinates to geographic or projected coordinates of rendered data.
+     * The local coordinates are the coordinates of the JavaFX view, as given for example in {@link MouseEvent}.
+     * This is initially an identity transform and can be computed by {@link #applyCanvasGeometry(GridGeometry)}.
+     * This transform ignores all CRS changes resulting from user selecting a different CRS in the contextual menu.
+     * This transform is usually (but not necessarily) affine.
+     *
+     * @return conversion from local coordinates to "real world" coordinates of rendered data.
+     *         This is not necessarily the conversion to coordinates shown in the status bar.
+     *
+     * @see MapCanvas#getObjectiveToDisplay()
+     */
+    public final MathTransform getLocalToObjectiveCRS() {
+        return localToObjectiveCRS;
+    }
+
+    /**
+     * Sets the conversion from local coordinates to geographic or projected coordinates of rendered data.
+     * The given transform must have the same number of source and target dimensions than the previous value
+     * (if a change in the number of dimension is desired, use {@link #applyCanvasGeometry(GridGeometry)} instead).
+     * The conversion should have no {@linkplain CoordinateOperation#getCoordinateOperationAccuracy() inaccuracy}
+     * (ignoring rounding error). The status bar is updated as if the new conversion was applied <em>before</em>
+     * any CRS changes resulting from user selecting a different CRS in the contextual menu.
+     *
+     * @param  conversion  the new conversion from local coordinates to "real world" coordinates of rendered data.
      * @throws MismatchedDimensionException if the number of dimensions is not the same than previous conversion.
      */
-    public final void setLocalToCRS(final MathTransform conversion) {
+    public final void setLocalToObjectiveCRS(final MathTransform conversion) {
         ArgumentChecks.ensureNonNull("conversion", conversion);
-        int expected = localToCRS.getSourceDimensions();
+        int expected = localToObjectiveCRS.getSourceDimensions();
         int actual   = conversion.getSourceDimensions();
         if (expected == actual) {
-            expected = localToCRS.getTargetDimensions();
+            expected = localToObjectiveCRS.getTargetDimensions();
             actual   = conversion.getTargetDimensions();
             if (expected == actual) {
-                localToCRS = conversion;
+                localToObjectiveCRS = conversion;
+                setTargetCRS(format.getDefaultCRS());                           // Recompute `localToTargetCRS`.
                 return;
             }
         }
@@ -439,6 +600,18 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
+     * Rewrites the coordinates. This method is invoked after a change of coordinate reference system.
+     */
+    private void refresh() {
+        final double x = lastX;
+        final double y = lastY;
+        lastX = lastY = Double.NaN;
+        if (!Double.isNaN(x) && !Double.isNaN(y)) {
+            setLocalCoordinates(x, y);
+        }
+    }
+
+    /**
      * Converts and formats the given pixel coordinates. Those coordinates will be automatically
      * converted to geographic or projected coordinates if a "local to CRS" conversion is available.
      *
@@ -455,7 +628,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             try {
                 Matrix derivative;
                 try {
-                    derivative = MathTransforms.derivativeAndTransform(localToCRS,
+                    derivative = MathTransforms.derivativeAndTransform(localToTargetCRS,
                             sourceCoordinates, 0, targetCoordinates.coordinates, 0);
                 } catch (TransformException ignore) {
                     /*
@@ -463,7 +636,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                      * derivative calculation. Try again without derivative (the precision will be set
                      * to the default resolution computed in `setCanvasGeometry(…)`).
                      */
-                    localToCRS.transform(sourceCoordinates, 0, targetCoordinates.coordinates, 0, 1);
+                    localToTargetCRS.transform(sourceCoordinates, 0, targetCoordinates.coordinates, 0, 1);
                     derivative = null;
                 }
                 if (derivative == null) {

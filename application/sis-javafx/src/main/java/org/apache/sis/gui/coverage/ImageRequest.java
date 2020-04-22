@@ -268,7 +268,8 @@ public class ImageRequest {
             for (int i=0; i<origin.length; i++) {
                 origin[i] = request.getLow(i);
             }
-            bar.setLocalToCRS(MathTransforms.concatenate(MathTransforms.translation(origin), bar.getLocalToCRS()));
+            bar.setLocalToObjectiveCRS(MathTransforms.concatenate(
+                    MathTransforms.translation(origin), bar.getLocalToObjectiveCRS()));
         }
     }
 }

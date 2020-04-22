@@ -142,8 +142,9 @@ public class GridView extends Control {
      * This size includes the {@linkplain #cellSpacing cell spacing}.
      * It shall be a number strictly greater than zero.
      *
-     * <p>We do not define getter/setter for this property; use {@link DoubleProperty#set(double)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</p>
+     * <div class="note"><b>API note:</b>
+     * We do not provide getter/setter for this property; use {@link DoubleProperty#set(double)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
      */
     public final DoubleProperty headerWidth;
 
@@ -152,8 +153,9 @@ public class GridView extends Control {
      * This size includes the {@linkplain #cellSpacing cell spacing}.
      * It shall be a number strictly greater than zero.
      *
-     * <p>We do not define getter/setter for this property; use {@link DoubleProperty#set(double)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</p>
+     * <div class="note"><b>API note:</b>
+     * We do not provide getter/setter for this property; use {@link DoubleProperty#set(double)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
      */
     public final DoubleProperty cellWidth;
 
@@ -161,8 +163,9 @@ public class GridView extends Control {
      * Height of all rows in the grid.
      * It shall be a number strictly greater than zero.
      *
-     * <p>We do not define getter/setter for this property; use {@link DoubleProperty#set(double)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</p>
+     * <div class="note"><b>API note:</b>
+     * We do not provide getter/setter for this property; use {@link DoubleProperty#set(double)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
      */
     public final DoubleProperty cellHeight;
 
@@ -171,16 +174,18 @@ public class GridView extends Control {
      * There is no property for vertical cell spacing because increasing the
      * {@linkplain #cellHeight cell height} should be sufficient.
      *
-     * <p>We do not define getter/setter for this property; use {@link DoubleProperty#set(double)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</p>
+     * <div class="note"><b>API note:</b>
+     * We do not provide getter/setter for this property; use {@link DoubleProperty#set(double)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
      */
     public final DoubleProperty cellSpacing;
 
     /**
      * The background color of row and column headers.
      *
-     * <p>We do not define getter/setter for this property; use {@link ObjectProperty#set(Object)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</p>
+     * <div class="note"><b>API note:</b>
+     * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
      */
     public final ObjectProperty<Paint> headerBackground;
 
