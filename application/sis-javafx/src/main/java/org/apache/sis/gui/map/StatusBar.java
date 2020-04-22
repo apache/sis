@@ -51,6 +51,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
@@ -371,7 +372,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             sourceCoordinates = targetCoordinates.coordinates;      // Okay to share array if same dimension.
         }
         setDisplayCRS(crs);
-        format.setPrecision(resolution, unit);
+        format.setGroundPrecision(Quantities.create(resolution, unit));
         lastX = lastY = Double.NaN;
     }
 

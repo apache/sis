@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.io.IOException;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Angle;
+import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.mock.VerticalCRSMock;
@@ -257,16 +258,16 @@ public final strictfp class CoordinateFormatTest extends TestCase {
     }
 
     /**
-     * Tests {@link CoordinateFormat#setPrecision(double, Unit)}.
+     * Tests {@link CoordinateFormat#setGroundPrecision(Quantity)}.
      */
     @Test
-    public void testSetPrecision() {
+    public void testSetGroundPrecision() {
         final CoordinateFormat format = new CoordinateFormat(Locale.FRANCE, null);
         final DirectPosition2D pos = new DirectPosition2D(40.123456789, 9.87654321);
         format.setDefaultCRS(HardCodedCRS.WGS84_φλ);
-        format.setPrecision(0.01, Units.GRAD);
+        format.setGroundPrecision(Quantities.create(0.01, Units.GRAD));
         assertEquals("40°07,4′N 9°52,6′E", format.format(pos));
-        format.setPrecision(0.01, Units.METRE);
+        format.setGroundPrecision(Quantities.create(0.01, Units.METRE));
         assertEquals("40°07′24,4444″N 9°52′35,5556″E", format.format(pos));
     }
 

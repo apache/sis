@@ -590,7 +590,7 @@ public class RecentReferenceSystems {
                      */
                     final ObservableList<ReferenceSystem> items = referenceSystems;
                     final ComparisonMode mode = duplicationCriterion.get();
-                    final int count = items.size() - NUM_OTHER_ITEMS;
+                    int count = items.size() - NUM_OTHER_ITEMS;
                     boolean found = false;
                     for (int i=0; i<count; i++) {
                         if (Utilities.deepEquals(newValue, items.get(i), mode)) {
@@ -608,7 +608,13 @@ public class RecentReferenceSystems {
                      */
                     if (!found) {
                         if (count >= NUM_SHOWN_ITEMS) {
-                            items.remove(count - 1);        // Remove the last item before `OTHER`.
+                            final List<ReferenceSystem> selected = getSelectedItems();
+                            for (int i=count; --i >= NUM_CORE_ITEMS;) {
+                                if (!selected.contains(items.get(i))) {         // Do not remove selected items.
+                                    items.remove(i);                            // Remove an item before `OTHER`.
+                                    if (--count < NUM_SHOWN_ITEMS) break;
+                                }
+                            }
                         }
                         items.add(Math.min(items.size(), NUM_CORE_ITEMS), newValue);
                         notifyChanges();

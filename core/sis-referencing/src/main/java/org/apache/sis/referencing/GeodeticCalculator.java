@@ -36,6 +36,7 @@ import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
+import org.apache.sis.measure.Quantities;
 import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.internal.referencing.PositionTransformer;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -1109,7 +1110,7 @@ public class GeodeticCalculator {
                 final CoordinateFormat pointFormat = new CoordinateFormat(locale, null);
                 pointFormat.setSeparator("\t");      // For distributing coordinate values on different columns.
                 pointFormat.setDefaultCRS(crs);
-                pointFormat.setPrecision(Formulas.LINEAR_TOLERANCE, Units.METRE);
+                pointFormat.setGroundPrecision(Quantities.create(Formulas.LINEAR_TOLERANCE, Units.METRE));
                 final TableAppender table = new TableAppender(buffer, " │ ");
                 table.setCellAlignment(TableAppender.ALIGN_CENTER);
                 table.appendHorizontalSeparator();
