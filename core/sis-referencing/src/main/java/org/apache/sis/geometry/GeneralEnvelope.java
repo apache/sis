@@ -469,6 +469,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * floating point values using {@link org.apache.sis.referencing.crs.DefaultTemporalCRS},
      * then delegates to {@link #setRange(int, double, double)}.
      *
+     * Beware that any unspecified time will be convered to {@link Double#NaN} value, therefore invalidating the time
+     * range.
+     *
      * @param  startTime  the lower temporal value, or {@code null} if unspecified.
      * @param  endTime    the upper temporal value, or {@code null} if unspecified.
      * @return whether the temporal component has been set.
