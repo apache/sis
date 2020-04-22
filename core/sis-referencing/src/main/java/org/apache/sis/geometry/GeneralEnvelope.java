@@ -469,19 +469,28 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * floating point values using {@link org.apache.sis.referencing.crs.DefaultTemporalCRS},
      * then delegates to {@link #setRange(int, double, double)}.
      *
-     * Beware that any unspecified time will be convered to {@link Double#NaN} value, therefore invalidating the time
-     * range.
+     * <p>Null value means no time limit. More specifically
+     * null {@code startTime} is mapped to {@linkplain Double#NEGATIVE_INFINITY −∞} and
+     * null {@code endTime}   is mapped to {@linkplain Double#POSITIVE_INFINITY +∞}.
+     * This rule makes easy to create <cite>is before</cite> or <cite>is after</cite> temporal filters,
+     * which can be combined with other envelopes using {@linkplain #intersect(Envelope) intersection}
+     * for logical AND, or {@linkplain #add(Envelope) union} for logical OR operations.</p>
      *
-     * @param  startTime  the lower temporal value, or {@code null} if unspecified.
-     * @param  endTime    the upper temporal value, or {@code null} if unspecified.
-     * @return whether the temporal component has been set.
+     * @param  startTime  the lower temporal value, or {@code null} if unbounded.
+     * @param  endTime    the upper temporal value, or {@code null} if unbounded.
+     * @return whether the temporal component has been set, or {@code false}
+     *         if no temporal dimension has been found in this envelope.
      *
      * @since 1.0
      */
     public boolean setTimeRange(final Instant startTime, final Instant endTime) {
         final TemporalAccessor t = TemporalAccessor.of(crs, 0);
         if (t != null) {
-            setRange(t.dimension, t.timeCRS.toValue(startTime), t.timeCRS.toValue(endTime));
+            double lower = t.timeCRS.toValue(startTime);
+            double upper = t.timeCRS.toValue(endTime);
+            if (Double.isNaN(lower)) lower = Double.NEGATIVE_INFINITY;
+            if (Double.isNaN(upper)) upper = Double.POSITIVE_INFINITY;
+            setRange(t.dimension, lower, upper);
             return true;
         } else {
             return false;

@@ -60,6 +60,8 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
     /**
      * The frequency of occurrence for each element. We must use a linked hash map instead of an ordinary
      * hash map because we want to preserve insertion order for elements that occur at the same frequency.
+     * Values are positives if this set sorts by increasing frequencies, or negatives if this set sorts by
+     * decreasing frequencies.
      */
     private final Map<E,Integer> count;
 
@@ -153,6 +155,7 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
             sorted = null;
             occurrence ^= order;
             return count.merge(element, occurrence, (old, n) -> Math.addExact(old, n) - order) == occurrence;
+            // Note: the subtraction by `order` can not overflow.
         }
         return false;
     }
