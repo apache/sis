@@ -149,7 +149,7 @@ public final class PolarStereographicA extends AbstractStereographic {
 
     /**
      * False Easting and false Northing value used in Universal Polar Stereographic (UPS) projections.
-     * Represented as an integer for the convenience of Military Reference Grid System (MGRS) or other
+     * Represented as an integer for the convenience of Military Grid Reference System (MGRS) or other
      * grid systems.
      */
     public static final int UPS_SHIFT = 2000000;

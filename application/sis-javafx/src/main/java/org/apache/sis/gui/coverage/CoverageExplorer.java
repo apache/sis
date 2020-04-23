@@ -152,7 +152,7 @@ public class CoverageExplorer extends Widget {
         viewTypeProperty.addListener(this::onViewTypeSpecified);
         referenceSystems = new RecentReferenceSystems();
         referenceSystems.addUserPreferences();
-        referenceSystems.addAlternatives("EPSG:3395");           // WGS 84 / World Mercator
+        referenceSystems.addAlternatives("EPSG:4326", "EPSG:3395");         // WGS 84 / World Mercator
         /*
          * Prepare buttons to add on the toolbar. Those buttons are not managed by this class;
          * they are managed by org.apache.sis.gui.dataset.DataWindow. We only declare here the

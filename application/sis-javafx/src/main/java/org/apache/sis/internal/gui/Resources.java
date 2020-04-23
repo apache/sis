@@ -101,6 +101,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotReadResource = 55;
 
         /**
+         * Can not use the “{0}” reference system.
+         */
+        public static final short CanNotUseRefSys_1 = 58;
+
+        /**
          * Cell geometry
          */
         public static final short CellGeometry = 15;

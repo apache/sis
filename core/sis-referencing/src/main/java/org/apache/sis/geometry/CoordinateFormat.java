@@ -681,6 +681,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      *
      * @see DecimalFormat#setMaximumFractionDigits(int)
      * @see AngleFormat#setPrecision(double, boolean)
+     * @see Quantities#create(double, Unit)
      *
      * @since 1.1
      */
