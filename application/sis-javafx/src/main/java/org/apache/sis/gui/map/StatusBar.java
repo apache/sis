@@ -28,6 +28,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.Priority;
 import javafx.scene.control.Label;
 import javafx.scene.control.Button;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.text.TextAlignment;
@@ -44,6 +45,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -237,6 +239,14 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private final Label position;
 
     /**
+     * The {@link #position} text to show when the mouse is outside the canvas area.
+     * This text is set to the axis abbreviations, for example "(φ, λ)".
+     *
+     * @see #setFormatCRS(CoordinateReferenceSystem)
+     */
+    private String outsideText;
+
+    /**
      * The canvas that this status bar is tracking.
      * The property value is {@code null} if there is none.
      *
@@ -354,7 +364,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         if (value != null) {
             value.renderingProperty().addListener(renderingListener = new RenderingListener());
         }
-        position.setVisible(false);
+        position.setText(null);
         registerMouseListeners(value);
         try {
             apply(value != null ? value.getGridGeometry() : null);
@@ -425,7 +435,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @see MapCanvas#getGridGeometry()
      */
     public void applyCanvasGeometry(final GridGeometry geometry) {
-        position.setVisible(false);
+        position.setText(null);
         apply(geometry);
     }
 
@@ -521,11 +531,11 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         } else {
             objectiveToFormatCRS = null;
             restore = format.getDefaultCRS();           // CRS to restore in a background thread.
-            format.setDefaultCRS(crs);                  // Should be invoked before to set precision.
+            setFormatCRS(crs);                          // Should be invoked before to set precision.
         }
         format.setGroundPrecision(Quantities.create(resolution, unit));
         if (ReferencingUtilities.getDimension(restore) == localToFormatCRS.getTargetDimensions()) {
-            setFormatCRS(restore);
+            findFormatOperation(restore);               // Not executed if `restore` is null.
         }
         /*
          * If this is the first time that this method is invoked after `setCanvas(MapCanvas)`,
@@ -546,7 +556,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *
      * @param  crs  the new CRS, or {@code null} for {@link #objectiveCRS}.
      */
-    private void setFormatCRS(final CoordinateReferenceSystem crs) {
+    private void findFormatOperation(final CoordinateReferenceSystem crs) {
         if (crs != null && objectiveCRS != null && objectiveCRS != crs) {
             position.setTextFill(Styles.OUTDATED_TEXT);
             final Envelope aoi = (areaOfInterest != null) ? areaOfInterest.get() : null;
@@ -569,7 +579,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                     } catch (TransformException e) {
                         bbox = null;
                         Logging.recoverableException(Logging.getLogger(Modules.APPLICATION),
-                                                     StatusBar.class, "setFormatCRS", e);
+                                StatusBar.class, "findFormatOperation", e);
                     }
                     operation = CRS.findOperation(objectiveCRS, crs, bbox);
                     return MathTransforms.concatenate(localToObjectiveCRS, operation.getMathTransform());
@@ -582,7 +592,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                  */
                 @Override protected void succeeded() {
                     final CoordinateReferenceSystem targetCRS = operation.getTargetCRS();
-                    applyFormatCRS(targetCRS != null ? targetCRS : crs, operation, getValue());
+                    setFormatCRS(targetCRS != null ? targetCRS : crs, operation, getValue());
                 }
 
                 /**
@@ -612,10 +622,10 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @param  operation  the new value to assign to {@link #objectiveToFormatCRS}
      * @param  complete   the concatenation of {@link #localToObjectiveCRS} with {@code operation}.
      */
-    private void applyFormatCRS(final CoordinateReferenceSystem crs,
+    private void setFormatCRS(final CoordinateReferenceSystem crs,
             final CoordinateOperation operation, final MathTransform complete)
     {
-        format.setDefaultCRS(crs);
+        setFormatCRS(crs);
         objectiveToFormatCRS = operation;
         localToFormatCRS = complete;
 //      TODO: CRS.getLinearAccuracy(op);
@@ -626,13 +636,67 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
+     * Sets the {@link CoordinateFormat} default CRS together with the tool tip text.
+     * Caller is responsible to setup transforms ({@link #localToFormatCRS}, <i>etc</i>).
+     *
+     * @param  crs  the new {@link #format} reference system.
+     *
+     * @see #getFormatReferenceSystem()
+     */
+    private void setFormatCRS(final CoordinateReferenceSystem crs) {
+        format.setDefaultCRS(crs);
+        String text = IdentifiedObjects.getDisplayName(crs, format.getLocale(Locale.Category.DISPLAY));
+        Tooltip tp = null;
+        if (text != null) {
+            tp = position.getTooltip();
+            if (tp == null) {
+                tp = new Tooltip(text);
+            } else {
+                tp.setText(text);
+            }
+        }
+        position.setTooltip(tp);
+        /*
+         * Prepare the text to show when the moust is outside the canvas area.
+         * We will write axis abbreviations, for example "(φ, λ)".
+         */
+        text = null;
+        if (crs != null) {
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            if (cs != null) {                                               // Paranoiac check (should never be null).
+                final int dimension = cs.getDimension();
+                if (dimension > 0) {                                        // Paranoiac check (should never be zero).
+                    final StringBuilder b = new StringBuilder().append('(');
+                    for (int i=0; i<dimension; i++) {
+                        if (i != 0) b.append(", ");
+                        final CoordinateSystemAxis axis = cs.getAxis(i);
+                        if (axis != null) {                                 // Paranoiac check (should never be null).
+                            final String abbr = Strings.trimOrNull(axis.getAbbreviation());
+                            if (abbr != null) {
+                                b.append(abbr);
+                                continue;
+                            }
+                        }
+                        b.append('?');
+                    }
+                    text = b.append(')').toString();
+                }
+            }
+        }
+        if (position.getText() == outsideText) {          // Identity comparison is okay for this value.
+            position.setText(text);
+        }
+        outsideText = text;
+    }
+
+    /**
      * Reformats the coordinates shown in {@link #position} using current {@link #lastX} and {@link #lastY} values.
      * This method should be invoked only when the caller knows that those values are still valid. Note that those
      * values may be invalid if {@link javafx.scene.Node#getTransforms()} changed even if {@link #objectiveCRS} is
      * the same.
      */
     private void reformat() {
-        if (position.isVisible()) {
+        if (isPositionVisible()) {
             final double x = lastX;
             final double y = lastY;
             lastX = lastY = Double.NaN;
@@ -649,7 +713,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private void resetFormatCRS(final Color textFill) {
         objectiveToFormatCRS = null;
         localToFormatCRS = localToObjectiveCRS;
-        format.setDefaultCRS(objectiveCRS);
+        setFormatCRS(objectiveCRS);
         position.setTextFill(textFill);
     }
 
@@ -714,7 +778,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             actual   = conversion.getTargetDimensions();
             if (expected == actual) {
                 localToObjectiveCRS = conversion;
-                setFormatCRS(format.getDefaultCRS());                           // Recompute `localToFormatCRS`.
+                findFormatOperation(format.getDefaultCRS());                    // Recompute `localToFormatCRS`.
                 return;
             }
         }
@@ -729,7 +793,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @return the local coordinates currently shown in the status bar.
      */
     public Optional<Point2D> getLocalCoordinates() {
-        if (position.isVisible() && !Double.isNaN(lastX) && !Double.isNaN(lastY)) {
+        if (isPositionVisible() && !Double.isNaN(lastX) && !Double.isNaN(lastY)) {
             return Optional.of(new Point2D(lastX, lastY));
         }
         return Optional.empty();
@@ -801,7 +865,6 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 }
             }
             position.setText(text);
-            position.setVisible(true);
             /*
              * Make sure that there is enough space for keeping the coordinates always visible.
              * This is the needed if there is an error message on the left which may be long.
@@ -838,7 +901,22 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 return;
             }
         }
-        position.setVisible(false);
+        /*
+         * Do not use `position.setVisible(false)` because
+         * we want the Tooltip to continue to be available.
+         */
+        position.setText(outsideText);
+    }
+
+    /**
+     * Returns {@code true} if the position contains a valid coordinates.
+     */
+    private boolean isPositionVisible() {
+        if (position.isVisible()) {
+            final String text = position.getText();
+            return text != null && text != outsideText;           // Identity comparison is okay for that value.
+        }
+        return false;
     }
 
     /**
@@ -851,7 +929,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private void onSelectCRS(ObservableValue<? extends ReferenceSystem> property,
                              ReferenceSystem oldValue, ReferenceSystem newValue)
     {
-        setFormatCRS(newValue instanceof CoordinateReferenceSystem ? (CoordinateReferenceSystem) newValue : null);
+        findFormatOperation(newValue instanceof CoordinateReferenceSystem ? (CoordinateReferenceSystem) newValue : null);
     }
 
     /**
