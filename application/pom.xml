@@ -120,17 +120,6 @@
     <module>sis-console</module>
     <module>sis-webapp</module>
     <module>sis-openoffice</module>
+    <module>sis-javafx</module>
   </modules>
-  <profiles>
-    <profile>
-      <activation>
-        <property>
-          <name>env.PATH_TO_FX</name>
-        </property>
-      </activation>
-      <modules>
-        <module>sis-javafx</module>
-      </modules>
-    </profile>
-  </profiles>
 </project>

@@ -92,11 +92,8 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <release>13</release>
-          <compilerArgs>
-            <arg>--module-path</arg> <arg>${env.PATH_TO_FX}</arg>
-            <arg>--add-modules</arg> <arg>javafx.graphics,javafx.controls</arg>
-          </compilerArgs>
+			<!-- 11 is the minimum supported by javafx 13.0.2 -->
+          <release>11</release>
         </configuration>
       </plugin>
 
@@ -166,6 +163,32 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-graphics</artifactId>
+	<version>13.0.2</version>
+	</dependency>
+	<dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-controls</artifactId>
+	<version>13.0.2</version>
+	</dependency>
+	<dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-swing</artifactId>
+	<version>13.0.2</version>
+	</dependency>
+	<dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-fxml</artifactId>
+	<version>13.0.2</version>
+	</dependency>
+	<dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-web</artifactId>
+      <version>13.0.2</version>
+    </dependency>
+
   </dependencies>
 
 </project>
