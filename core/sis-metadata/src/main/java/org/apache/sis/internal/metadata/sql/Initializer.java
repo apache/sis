@@ -32,6 +32,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.naming.NameNotFoundException;
+import javax.naming.NoInitialContextException;
 import javax.naming.spi.NamingManager;
 import javax.naming.event.EventContext;
 import javax.naming.event.NamingEvent;
@@ -294,7 +295,7 @@ public abstract class Initializer {
                      * is cleaned by the listener.
                      */
                 }
-            } catch (NameNotFoundException e) {
+            } catch (NoInitialContextException | NameNotFoundException e) {
                 final LogRecord record = Messages.getResources(null).getLogRecord(
                         Level.CONFIG, Messages.Keys.JNDINotSpecified_1, JNDI);
                 record.setLoggerName(Loggers.SQL);
