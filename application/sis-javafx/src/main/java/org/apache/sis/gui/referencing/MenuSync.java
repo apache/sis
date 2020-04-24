@@ -19,7 +19,6 @@ package org.apache.sis.gui.referencing;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -86,8 +85,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      * @param  bean     the menu to keep synchronized with the list of reference systems.
      * @param  action   the user-specified action to execute when a reference system is selected.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")      // `this` is last and this class is final.
-    MenuSync(final RecentReferenceSystems owner, final List<ReferenceSystem> systems,
+    MenuSync(final RecentReferenceSystems owner, final ObservableList<ReferenceSystem> systems,
              final Menu bean, final ChangeListener<ReferenceSystem> action)
     {
         super(bean, "value");
@@ -95,11 +93,31 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
         this.menus  = bean.getItems();
         this.group  = new ToggleGroup();
         this.action = action;
+        /*
+         * We do not register listener for `systems` list.
+         * Instead `notifyChanges(…)` will be invoked directly by RecentReferenceSystems.
+         */
         final MenuItem[] items = new MenuItem[systems.size()];
         for (int i=0; i<items.length; i++) {
             items[i] = createItem(systems.get(i));
         }
         menus.setAll(items);
+        initialize(systems);
+    }
+
+    /**
+     * Sets the initial value to the first item in the {@code systems} list, if any.
+     * This method is invoked in JavaFX thread at construction time or, if it didn't
+     * work at some later time when the systems list may contain an element.
+     * This method should not be invoked anymore after initialization succeeded.
+     */
+    private void initialize(final ObservableList<? extends ReferenceSystem> systems) {
+        for (final ReferenceSystem system : systems) {
+            if (system != RecentReferenceSystems.OTHER) {
+                set(system);
+                break;
+            }
+        }
     }
 
     /**
@@ -176,6 +194,12 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
             dispose(recycle.next());
         }
         GUIUtilities.copyAsDiff(Arrays.asList(items), menus);
+        /*
+         * If we had no previously selected item, selects it now.
+         */
+        if (get() == null) {
+            initialize(systems);
+        }
     }
 
     /**
@@ -191,7 +215,6 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
         // ClassCastException should not happen because this listener is registered only on MenuItem.
         final Object value = ((MenuItem) event.getSource()).getProperties().get(REFERENCE_SYSTEM_KEY);
         ReferenceSystem crs = (value == CHOOSER) ? RecentReferenceSystems.OTHER : (ReferenceSystem) value;
-        action.changed(this, get(), crs);
         if (crs != RecentReferenceSystems.OTHER) {
             set(crs);
         }
@@ -203,13 +226,18 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      */
     @Override
     public void set(final ReferenceSystem system) {
-        super.set(system);
-        for (final MenuItem item : menus) {
-            if (item instanceof RadioMenuItem && item.getProperties().get(REFERENCE_SYSTEM_KEY) == system) {
-                ((RadioMenuItem) item).setSelected(true);
-                return;
+        final ReferenceSystem old = get();
+        if (old != system) {
+            super.set(system);
+            for (final MenuItem item : menus) {
+                if (item instanceof RadioMenuItem && item.getProperties().get(REFERENCE_SYSTEM_KEY) == system) {
+                    ((RadioMenuItem) item).setSelected(true);
+                    action.changed(this, old, system);
+                    return;
+                }
             }
+            group.selectToggle(null);
+            action.changed(this, old, null);
         }
-        group.selectToggle(null);
     }
 }

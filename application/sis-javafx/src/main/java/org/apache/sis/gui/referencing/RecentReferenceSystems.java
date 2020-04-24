@@ -524,20 +524,19 @@ public class RecentReferenceSystems {
      *                  {@code systems} list has been computed.
      */
     private void setReferenceSystems(final List<ReferenceSystem> systems, final ComparisonMode mode) {
-        if (systems != null) {
+        if (systems != null) try {
+            isAdjusting = true;
             /*
-             * The call to `copyAsDiff(…)` may cause `ChoiceBox` values to be lost if the corresponding item
-             * in the `referenceSystems` list is temporarily removed (before to be inserted elsewhere).
-             * Save the values before to modify the list.
+             * The call to `copyAsDiff(…)` may cause some ChoiceBox values to be lost if the corresponding
+             * item in the `referenceSystems` list is temporarily removed before to be inserted elsewhere.
+             * Save the values before to modify the list. Note that if `referenceSystems` was empty before
+             * the copy, `controlValues` should be null before the copy but may become non-null after the
+             * copy because listeners will have initialized them to the first `ReferenceSystem` available.
+             * Those non-null values will not be reflected in the `values` array, so we should ignore them.
              */
             final ReferenceSystem[] values = controlValues.stream().map(WritableValue::getValue).toArray(ReferenceSystem[]::new);
-            try {
-                isAdjusting = true;
-                if (GUIUtilities.copyAsDiff(systems, referenceSystems)) {
-                    notifyChanges();
-                }
-            } finally {
-                isAdjusting = false;
+            if (GUIUtilities.copyAsDiff(systems, referenceSystems)) {
+                notifyChanges();
             }
             /*
              * Restore the previous selections. This code also serves another purpose: the previous selection
@@ -549,15 +548,19 @@ public class RecentReferenceSystems {
             final int n = referenceSystems.size();
             for (int j=0; j<values.length; j++) {
                 ReferenceSystem system = values[j];
-                for (int i=0; i<n; i++) {
-                    final ReferenceSystem candidate = referenceSystems.get(i);
-                    if (Utilities.deepEquals(candidate, system, mode)) {
-                        system = candidate;
-                        break;
+                if (system != null) {                   // See comment about empty `referenceSystems` list.
+                    for (int i=0; i<n; i++) {
+                        final ReferenceSystem candidate = referenceSystems.get(i);
+                        if (Utilities.deepEquals(candidate, system, mode)) {
+                            system = candidate;
+                            break;
+                        }
                     }
+                    controlValues.get(j).setValue(system);
                 }
-                controlValues.get(j).setValue(system);
             }
+        } finally {
+            isAdjusting = false;
         }
     }
 
@@ -581,6 +584,7 @@ public class RecentReferenceSystems {
                                       final ReferenceSystem oldValue, ReferenceSystem newValue)
         {
             if (isAdjusting) {
+                action.changed(property, oldValue, newValue);
                 return;
             }
             if (newValue == OTHER) {

@@ -29,6 +29,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.control.Label;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.Menu;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.text.TextAlignment;
@@ -275,9 +276,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * If the {@code choices} argument is non-null, user will be able to select different CRS
      * using the contextual menu on the status bar.
      *
-     * @param  choices  the manager of reference systems chosen by user, or {@code null} if none.
+     * @param  systemChooser  the manager of reference systems chosen by user, or {@code null} if none.
      */
-    public StatusBar(final RecentReferenceSystems choices) {
+    public StatusBar(final RecentReferenceSystems systemChooser) {
         localToObjectiveCRS = MathTransforms.identity(BIDIMENSIONAL);
         localToFormatCRS    = localToObjectiveCRS;
         targetCoordinates   = new GeneralDirectPosition(BIDIMENSIONAL);
@@ -297,12 +298,15 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         position.setTextAlignment(TextAlignment.RIGHT);
         canvasProperty = new SimpleObjectProperty<>(this, "canvas");
         canvasProperty.addListener(this::onCanvasSpecified);
-        if (choices == null) {
+        if (systemChooser == null) {
             areaOfInterest = null;
         } else {
-            areaOfInterest = choices.areaOfInterest;
-            final ContextMenu menu = new ContextMenu(choices.createMenuItems(this::onSelectCRS));
-            view.setOnMousePressed((MouseEvent event) -> {
+            areaOfInterest = systemChooser.areaOfInterest;
+            final Menu choices = systemChooser.createMenuItems((property, oldValue, newValue) -> {
+                findFormatOperation(newValue instanceof CoordinateReferenceSystem ? (CoordinateReferenceSystem) newValue : null);
+            });
+            final ContextMenu menu = new ContextMenu(choices);
+            view.setOnMousePressed((event) -> {
                 if (event.isSecondaryButtonDown()) {
                     menu.show((HBox) event.getSource(), event.getScreenX(), event.getScreenY());
                 } else {
@@ -607,6 +611,19 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 }
             });
         } else {
+            /*
+             * If the requested CRS is the objective CRS, avoid above costly operation.
+             * The work that we need to do is to cancel the effect of `localToFormatCRS`.
+             * As a special case if `objectiveCRS` was unknown before this method call,
+             * set it to the given value. This is needed for initializing the format CRS
+             * to the first reference system listed in `RecentReferenceSystems` choices.
+             * We could not do this work at construction time because the CRS choices may
+             * be computed in a background thread, in which case it became known only a
+             * little bit later and given to `StatusBar` through listeners.
+             */
+            if (objectiveCRS == null) {
+                objectiveCRS = crs;
+            }
             position.setMinWidth(0);
             resetFormatCRS(Styles.NORMAL_TEXT);
         }
@@ -917,19 +934,6 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             return text != null && text != outsideText;           // Identity comparison is okay for that value.
         }
         return false;
-    }
-
-    /**
-     * Invoked when the user selects a new reference system for the coordinates to show in status bar.
-     *
-     * @param  property  the {@link org.apache.sis.gui.referencing.MenuSync} property.
-     * @param  oldValue  the old reference system, or {@code null} if none.
-     * @param  newValue  the CRS to use for formatting coordinates in this status bar.
-     */
-    private void onSelectCRS(ObservableValue<? extends ReferenceSystem> property,
-                             ReferenceSystem oldValue, ReferenceSystem newValue)
-    {
-        findFormatOperation(newValue instanceof CoordinateReferenceSystem ? (CoordinateReferenceSystem) newValue : null);
     }
 
     /**
