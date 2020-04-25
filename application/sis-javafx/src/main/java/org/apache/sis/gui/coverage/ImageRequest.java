@@ -251,7 +251,7 @@ public class ImageRequest {
 
     /**
      * Configures the given status bar with the geometry of the grid coverage we have just read.
-     * This method is invoked by{@link GridView#onImageLoaded(WorkerStateEvent)} in JavaFX thread
+     * This method is invoked by {@link GridView#onImageLoaded(WorkerStateEvent)} in JavaFX thread
      * after {@link ImageLoader} successfully loaded in background thread a new image.
      */
     final void configure(final StatusBar bar) {
@@ -261,15 +261,16 @@ public class ImageRequest {
         /*
          * By `GridCoverage.render(GridExtent)` contract, the `RenderedImage` pixel coordinates are relative
          * to the requested `GridExtent`. Consequently we need to translate the image coordinates so that it
-         * become the coordinates of the original `GridGeometry` before to apply `gridToCRS`.
+         * become the coordinates of the original `GridGeometry` before to apply `gridToCRS`. It is okay to
+         * modify `StatusBar.localToObjectiveCRS` because we do not associate it to a `MapCanvas`.
          */
         if (request != null) {
             final double[] origin = new double[request.getDimension()];
             for (int i=0; i<origin.length; i++) {
                 origin[i] = request.getLow(i);
             }
-            bar.setLocalToObjectiveCRS(MathTransforms.concatenate(
-                    MathTransforms.translation(origin), bar.getLocalToObjectiveCRS()));
+            bar.localToObjectiveCRS.set(MathTransforms.concatenate(
+                    MathTransforms.translation(origin), bar.localToObjectiveCRS.get()));
         }
     }
 }

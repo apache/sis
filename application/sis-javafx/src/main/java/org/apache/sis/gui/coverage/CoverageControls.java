@@ -80,7 +80,7 @@ final class CoverageControls extends Controls {
         view = new CoverageCanvas();
         view.setBackground(background);
         final StatusBar statusBar = new StatusBar(referenceSystems);
-        statusBar.setCanvas(view);
+        statusBar.canvas.set(view);
         imageAndStatus = new BorderPane(view.getView());
         imageAndStatus.setBottom(statusBar.getView());
         /*
