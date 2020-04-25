@@ -214,15 +214,19 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     public void handle(final ActionEvent event) {
         // ClassCastException should not happen because this listener is registered only on MenuItem.
         final Object value = ((MenuItem) event.getSource()).getProperties().get(REFERENCE_SYSTEM_KEY);
-        ReferenceSystem crs = (value == CHOOSER) ? RecentReferenceSystems.OTHER : (ReferenceSystem) value;
-        if (crs != RecentReferenceSystems.OTHER) {
-            set(crs);
+        if (value == CHOOSER) {
+            action.changed(this, get(), RecentReferenceSystems.OTHER);
+        } else {
+            set((ReferenceSystem) value);
         }
     }
 
     /**
-     * Selects the specified reference system. This method is invoked by {@link RecentReferenceSystems}
-     * when the selected CRS changed, either programmatically or by user action.
+     * Selects the specified reference system. This method is invoked by {@link RecentReferenceSystems} when the
+     * selected CRS changed, either programmatically or by user action. User-specified {@link #action} is invoked,
+     * which will typically start a background thread for transforming data. This method does nothing if the given
+     * reference system is same as current one; this is important both for avoiding infinite loop and for avoiding
+     * to invoke the potentially costly {@link #action}.
      */
     @Override
     public void set(final ReferenceSystem system) {

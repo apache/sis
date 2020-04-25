@@ -19,6 +19,7 @@ package org.apache.sis.gui.referencing;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Objects;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -26,6 +27,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Menu;
@@ -91,8 +93,18 @@ public class RecentReferenceSystems {
     private static final int NUM_OTHER_ITEMS = 1;
 
     /**
+     * Key for use with the {@linkplain Menu#getProperties() property map} for storing the selected item.
+     * Used for providing the functionality of {@link javafx.scene.control.CheckBox#selectedProperty()}
+     * on controls that do not have an explicit selected property.
+     */
+    private static final String SELECTED_ITEM_KEY = "SelectedItem";
+
+    /**
      * A pseudo-reference system for the "Other…" choice. We use a null value because {@link ChoiceBox}
      * seems to insist for inserting a null value in the items list when we remove the selected item.
+     *
+     * <div class="note"><b>Maintenance note:</b> if this field is changed to a non-null value,
+     * search also for usages of {@code Object::nonNull} predicate.</div>
      */
     static final ReferenceSystem OTHER = null;
 
@@ -177,8 +189,17 @@ public class RecentReferenceSystems {
      * The {@link #systemsOrCodes} elements with all codes or wrappers replaced by {@link ReferenceSystem}
      * instances and duplicated values removed. This is the list given to JavaFX controls that we build.
      * This list includes {@link #OTHER} as its last item.
+     *
+     * @see #updateItems()
      */
     private ObservableList<ReferenceSystem> referenceSystems;
+
+    /**
+     * A filtered view of {@link #referenceSystems} without the {@link #OTHER} item.
+     *
+     * @see #getItems()
+     */
+    private ObservableList<ReferenceSystem> filteredSystems;
 
     /**
      * {@code true} if the {@link #referenceSystems} list needs to be rebuilt from {@link #systemsOrCodes} content.
@@ -689,6 +710,21 @@ public class RecentReferenceSystems {
     }
 
     /**
+     * Returns all reference systems in the order they appear in JavaFX controls. The first element
+     * is the {@link #setPreferred(boolean, ReferenceSystem) preferred} (or native) reference system.
+     * All other elements are {@linkplain #addAlternatives(boolean, ReferenceSystem...) alternatives}.
+     *
+     * @return all reference systems in the order they appear in JavaFX controls.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public ObservableList<ReferenceSystem> getItems() {
+        if (filteredSystems == null) {
+            filteredSystems = new FilteredList<>(updateItems(), Objects::nonNull);
+        }
+        return filteredSystems;
+    }
+
+    /**
      * Returns all currently selected reference systems in the order they appear in JavaFX controls.
      * This method collects selected values of all controls created by a {@code createXXX(…)} method.
      * The returned list does not contain duplicated values.
@@ -775,8 +811,26 @@ next:       for (int i=0; i<count; i++) {
     public Menu createMenuItems(final ChangeListener<ReferenceSystem> action) {
         ArgumentChecks.ensureNonNull("action", action);
         final Menu menu = new Menu(Resources.forLocale(locale).getString(Resources.Keys.ReferenceSystem));
-        controlValues.add(new MenuSync(this, updateItems(), menu, new Listener(action)));
+        final MenuSync property = new MenuSync(this, updateItems(), menu, new Listener(action));
+        menu.getProperties().put(SELECTED_ITEM_KEY, property);
+        controlValues.add(property);
         return menu;
+    }
+
+    /**
+     * Returns the property for the selected value in a menu created by {@link #createMenuItems(ChangeListener)}.
+     *
+     * @param  menu  the menu, or {@code null} if none.
+     * @return the property for the selected value, or {@code null} if none.
+     */
+    public static ObjectProperty<ReferenceSystem> getSelectedProperty(final Menu menu) {
+        if (menu != null) {
+            final Object property = menu.getProperties().get(SELECTED_ITEM_KEY);
+            if (property instanceof MenuSync) {
+                return (MenuSync) property;
+            }
+        }
+        return null;
     }
 
     /**

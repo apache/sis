@@ -39,6 +39,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.collections.ListChangeListener;
 import javafx.concurrent.Task;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -66,11 +67,11 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Resources;
@@ -137,11 +138,16 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private double lastX, lastY;
 
     /**
-     * The area of interest, or {@code null} if none. Used for computing {@link #objectiveToFormatCRS}.
-     * This field is a reference to the {@link RecentReferenceSystems#areaOfInterest} property.
-     * We do not make this property public because it does not belong to this object.
+     * The manager of reference systems chosen by user, or {@code null} if none.
+     * The {@link RecentReferenceSystems#areaOfInterest} property is used for
+     * computing {@link #objectiveToFormatCRS}.
      */
-    private final ObjectProperty<Envelope> areaOfInterest;
+    private final RecentReferenceSystems systemChooser;
+
+    /**
+     * The selected reference system, or {@code null} if there is no such property.
+     */
+    private final ObjectProperty<ReferenceSystem> selectedSystem;
 
     /**
      * The reference system used for rendering the data for which this status bar is providing cursor coordinates.
@@ -206,6 +212,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *
      * @see #sourceCoordinates
      * @see #position
+     * @see #setTargetCRS(CoordinateReferenceSystem)
      */
     private GeneralDirectPosition targetCoordinates;
 
@@ -298,13 +305,37 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         position.setTextAlignment(TextAlignment.RIGHT);
         canvasProperty = new SimpleObjectProperty<>(this, "canvas");
         canvasProperty.addListener(this::onCanvasSpecified);
+        this.systemChooser = systemChooser;
         if (systemChooser == null) {
-            areaOfInterest = null;
+            selectedSystem = null;
         } else {
-            areaOfInterest = systemChooser.areaOfInterest;
-            final Menu choices = systemChooser.createMenuItems((property, oldValue, newValue) -> {
-                findFormatOperation(newValue instanceof CoordinateReferenceSystem ? (CoordinateReferenceSystem) newValue : null);
+            /*
+             * Ensure (as much as possible) that the CRS of coordinates formatted in this status bar is one
+             * of the CRSs in the list of choices offered to the user.  It happens often that the CRS given
+             * to `applyCanvasGeometry(GridGeometry)` has (λ,φ) axis order but the CRS offered to user have
+             * (φ,λ) axis order (because we try to comply with definitions following geographers practice).
+             * In such case we will replace (λ,φ) by (φ,λ). Since we use the list of choices as the source
+             * of desired CRS, we have to listen to new elements added to that list. This is necessary since
+             * the list of often empty at construction time and filled later after a background thread task.
+             */
+            systemChooser.getItems().addListener((ListChangeListener.Change<? extends ReferenceSystem> change) -> {
+                while (change.next()) {
+                    if (change.wasAdded() || change.wasReplaced()) {
+                        setReplaceableTargetCRS(format.getDefaultCRS());
+                        break;
+                    }
+                }
             });
+            /*
+             * Create a contextual menu offering to user a choice of CRS in which to display the coordinates.
+             * The CRS choices are controlled by `RecentReferenceSystems`. Selection of a new CRS causes the
+             * `setTargetCRS(…)` method to be invoked. Contextual menu can be invoked anywhere on the HBox;
+             * we do not register this menu to `position` only because it is a relatively small area.
+             */
+            final Menu choices = systemChooser.createMenuItems((property, oldValue, newValue) -> {
+                setTargetCRS(newValue instanceof CoordinateReferenceSystem ? (CoordinateReferenceSystem) newValue : null);
+            });
+            selectedSystem = RecentReferenceSystems.getSelectedProperty(choices);
             final ContextMenu menu = new ContextMenu(choices);
             view.setOnMousePressed((event) -> {
                 if (event.isSecondaryButtonDown()) {
@@ -411,7 +442,10 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         {
             if (!value) try {
                 apply(getCanvas().getGridGeometry());
-                reformat();
+                /*
+                 * Do not hide `position` since we assume that "real world" coordinates are still valid.
+                 * Do not try to rewrite position neither since `lastX` and `lastY` are not valid anymore.
+                 */
             } catch (RenderException e) {
                 setErrorMessage(null, e);
             }
@@ -526,21 +560,15 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         inflatePrecisions   = inflate;
         precisions          = null;
         lastX = lastY       = Double.NaN;                           // Not valid anymove — see above block comment.
-        CoordinateReferenceSystem restore = null;
         if (sameCRS) {
-            if (objectiveToFormatCRS != null) {
-                localToFormatCRS = MathTransforms.concatenate(localToCRS, objectiveToFormatCRS.getMathTransform());
-            }
+            updateLocalToFormatCRS();
             // Keep the format CRS unchanged since we made `localToFormatCRS` consistent with its value.
         } else {
             objectiveToFormatCRS = null;
-            restore = format.getDefaultCRS();           // CRS to restore in a background thread.
-            setFormatCRS(crs);                          // Should be invoked before to set precision.
+            setFormatCRS(crs);                                      // Should be invoked before to set precision.
+            crs = setReplaceableTargetCRS(crs);                     // May invoke later setFormatCRS(…) again.
         }
         format.setGroundPrecision(Quantities.create(resolution, unit));
-        if (ReferencingUtilities.getDimension(restore) == localToFormatCRS.getTargetDimensions()) {
-            findFormatOperation(restore);               // Not executed if `restore` is null.
-        }
         /*
          * If this is the first time that this method is invoked after `setCanvas(MapCanvas)`,
          * the listeners are not yet registered and should be added now. Listeners registration
@@ -550,20 +578,67 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         if (geometry != null && !isMouseListenerRegistered) {
             registerMouseListeners(canvasProperty.getValue());
         }
+        /*
+         * If the CRS changed, we may need to update the selected menu item. It happens when this method
+         * is invoked because new data have been loaded, as opposed to this method being invoked after a
+         * gesture event (zoom, pan, rotation).
+         */
+        if (!sameCRS && selectedSystem != null) {
+            selectedSystem.set(crs);
+        }
     }
 
     /**
-     * Sets the coordinate reference system of the coordinates shown in this status bar.
+     * Computes {@link #localToFormatCRS} after a change of {@link #localToObjectiveCRS}.
+     * Other properties, in particular {@link #objectiveToFormatCRS}, must be valid.
+     */
+    private void updateLocalToFormatCRS() {
+        if (objectiveToFormatCRS != null) {
+            localToFormatCRS = MathTransforms.concatenate(localToObjectiveCRS, objectiveToFormatCRS.getMathTransform());
+        }
+    }
+
+    /**
+     * Sets the CRS of the position shown in this status bar after replacement by one of the available CRS
+     * if a match is found. This method compares the given CRS with the list of choices before to delegate
+     * to {@link #setTargetCRS(CoordinateReferenceSystem)} possibly with different axis order. The typical
+     * scenario is {@link #apply(GridGeometry)} invoked with (<var>longitude</var>, <var>latitude</var>)
+     * axis order, and this method swapping axes to standard (<var>latitude</var>, <var>longitude</var>)
+     * axis order for coordinates display purpose.
+     *
+     * @param  crs  the new CRS (ignoring axis order), or {@code null} for {@link #objectiveCRS}.
+     * @return the reference system actually used for formatting coordinates. It may have different axis order
+     *         and units than the specified CRS. This is the CRS that {@link CoordinateFormat#getDefaultCRS()}
+     *         will return a little bit later (pending completion of a background task).
+     */
+    private CoordinateReferenceSystem setReplaceableTargetCRS(CoordinateReferenceSystem crs) {
+        if (crs != null) {
+            final ComparisonMode mode = systemChooser.duplicationCriterion.get();
+            for (final ReferenceSystem system : systemChooser.getItems()) {
+                if (Utilities.deepEquals(crs, system, mode)) {
+                    crs = (CoordinateReferenceSystem) system;       // Same CRS but possibly different axis order.
+                    break;
+                }
+            }
+        }
+        if (crs != format.getDefaultCRS()) {
+            setTargetCRS(crs);
+        }
+        return crs;
+    }
+
+    /**
+     * Sets the coordinate reference system of the position shown in this status bar.
      * The change may not appear immediately after method return; this method may use a
      * background thread for computing the coordinate operation.  That task may be long
      * the first time that it is executed, but should be fast on subsequent invocations.
      *
      * @param  crs  the new CRS, or {@code null} for {@link #objectiveCRS}.
      */
-    private void findFormatOperation(final CoordinateReferenceSystem crs) {
+    private void setTargetCRS(final CoordinateReferenceSystem crs) {
         if (crs != null && objectiveCRS != null && objectiveCRS != crs) {
             position.setTextFill(Styles.OUTDATED_TEXT);
-            final Envelope aoi = (areaOfInterest != null) ? areaOfInterest.get() : null;
+            final Envelope aoi = (systemChooser != null) ? systemChooser.areaOfInterest.get() : null;
             BackgroundThreads.execute(new Task<MathTransform>() {
                 /**
                  * The new {@link StatusBar#objectiveToFormatCRS} value if successful.
@@ -583,7 +658,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                     } catch (TransformException e) {
                         bbox = null;
                         Logging.recoverableException(Logging.getLogger(Modules.APPLICATION),
-                                StatusBar.class, "findFormatOperation", e);
+                                StatusBar.class, "setTargetCRS", e);
                     }
                     operation = CRS.findOperation(objectiveCRS, crs, bbox);
                     return MathTransforms.concatenate(localToObjectiveCRS, operation.getMathTransform());
@@ -649,7 +724,14 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         position.setTextFill(Styles.NORMAL_TEXT);
         position.setMinWidth(0);
         setErrorMessage(null, null);
-        reformat();
+        if (isPositionVisible()) {
+            final double x = lastX;
+            final double y = lastY;
+            lastX = lastY = Double.NaN;
+            if (!Double.isNaN(x) && !Double.isNaN(y)) {
+                setLocalCoordinates(x, y);
+            }
+        }
     }
 
     /**
@@ -704,23 +786,6 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             position.setText(text);
         }
         outsideText = text;
-    }
-
-    /**
-     * Reformats the coordinates shown in {@link #position} using current {@link #lastX} and {@link #lastY} values.
-     * This method should be invoked only when the caller knows that those values are still valid. Note that those
-     * values may be invalid if {@link javafx.scene.Node#getTransforms()} changed even if {@link #objectiveCRS} is
-     * the same.
-     */
-    private void reformat() {
-        if (isPositionVisible()) {
-            final double x = lastX;
-            final double y = lastY;
-            lastX = lastY = Double.NaN;
-            if (!Double.isNaN(x) && !Double.isNaN(y)) {
-                setLocalCoordinates(x, y);
-            }
-        }
     }
 
     /**
@@ -795,7 +860,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             actual   = conversion.getTargetDimensions();
             if (expected == actual) {
                 localToObjectiveCRS = conversion;
-                findFormatOperation(format.getDefaultCRS());                    // Recompute `localToFormatCRS`.
+                updateLocalToFormatCRS();
                 return;
             }
         }
