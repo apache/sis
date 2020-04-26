@@ -890,7 +890,7 @@ appPow: if (unit == null) {
      *
      * @param  unit        the unit to format.
      * @param  toAppendTo  where to format the unit.
-     * @param  pos         where to store the position of a formatted field.
+     * @param  pos         where to store the position of a formatted field, or {@code null} if none.
      * @return the given {@code toAppendTo} argument, for method calls chaining.
      */
     @Override

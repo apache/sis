@@ -32,7 +32,7 @@ import org.apache.sis.internal.util.Numerics;
  * Instances of this class are unmodifiable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @param <Q>  the concrete subtype.
  *
@@ -344,7 +344,7 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
         StringBuilders.trimFractionalPart(buffer);
         final String symbol = getUnit().toString();
         if (symbol != null && !symbol.isEmpty()) {
-            buffer.append(' ').append(symbol);
+            buffer.append(QuantityFormat.SEPARATOR).append(symbol);
         }
         return buffer.toString();
     }

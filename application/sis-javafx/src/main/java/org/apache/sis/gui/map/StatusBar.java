@@ -44,6 +44,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.concurrent.Task;
+import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.util.FactoryException;
@@ -75,6 +76,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Resources;
@@ -304,7 +306,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * The {@link #position} text to show when the mouse is outside the canvas area.
      * This text is set to the axis abbreviations, for example "(φ, λ)".
      *
-     * @see #setFormatCRS(CoordinateReferenceSystem)
+     * @see #setFormatCRS(CoordinateReferenceSystem, Length)
      */
     private String outsideText;
 
@@ -585,7 +587,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             // Keep the format CRS unchanged since we made `localToPositionCRS` consistent with its value.
         } else {
             objectiveToPositionCRS = null;
-            setFormatCRS(crs);                                      // Should be invoked before to set precision.
+            setFormatCRS(crs, null);                                // Should be invoked before to set precision.
             crs = setReplaceablePositionCRS(crs);                   // May invoke later setFormatCRS(…) again.
         }
         format.setGroundPrecision(Quantities.create(resolution, unit));
@@ -729,10 +731,19 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @param  operation  the new value to assign to {@link #objectiveToPositionCRS}
      */
     private void setPositionCRS(final CoordinateReferenceSystem crs, final CoordinateOperation operation) {
-        setFormatCRS(crs);
+        Length accuracy = null;
+        double a = CRS.getLinearAccuracy(operation);
+        if (a > 0) {
+            final Unit<Length> unit;
+            if      (a < 1)    unit = Units.CENTIMETRE;
+            else if (a < 1000) unit = Units.METRE;
+            else               unit = Units.KILOMETRE;
+            a = Units.METRE.getConverterTo(unit).convert(Math.max(a, Formulas.LINEAR_TOLERANCE));
+            accuracy = Quantities.create(a, unit);
+        }
+        setFormatCRS(crs, accuracy);
         objectiveToPositionCRS = operation;
         updateLocalToPositionCRS();
-//      TODO: CRS.getLinearAccuracy(op);
         position.setTextFill(Styles.NORMAL_TEXT);
         position.setMinWidth(0);
         setErrorMessage(null, null);
@@ -752,12 +763,14 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * For the method that apply required changes on transforms before to set the format CRS,
      * see {@link #setPositionCRS(CoordinateReferenceSystem)}.
      *
-     * @param  crs  the new {@link #format} reference system.
+     * @param  crs       the new {@link #format} reference system.
+     * @param  accuracy  positional accuracy in the given CRS, or {@code null} if none.
      *
      * @see #positionReferenceSystem
      */
-    private void setFormatCRS(final CoordinateReferenceSystem crs) {
+    private void setFormatCRS(final CoordinateReferenceSystem crs, final Length accuracy) {
         format.setDefaultCRS(crs);
+        format.setGroundAccuracy(accuracy);
         String text = IdentifiedObjects.getDisplayName(crs, format.getLocale(Locale.Category.DISPLAY));
         Tooltip tp = null;
         if (text != null) {
@@ -792,7 +805,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                         }
                         b.append('?');
                     }
-                    text = b.append(')').toString();
+                    b.append(')');
+                    format.getGroundAccuracyText().ifPresent(b::append);
+                    text = b.toString();
                 }
             }
         }
@@ -820,7 +835,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private void resetPositionCRS(final Color textFill) {
         objectiveToPositionCRS = null;
         localToPositionCRS = localToObjectiveCRS.get();
-        setFormatCRS(objectiveCRS);
+        setFormatCRS(objectiveCRS, null);
         position.setTextFill(textFill);
     }
 

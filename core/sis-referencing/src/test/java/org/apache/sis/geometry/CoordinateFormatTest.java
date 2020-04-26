@@ -26,6 +26,7 @@ import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.mock.VerticalCRSMock;
 import org.apache.sis.test.DependsOnMethod;
@@ -57,13 +58,13 @@ public final strictfp class CoordinateFormatTest extends TestCase {
     public void testFormatUnknownCRS() {
         final CoordinateFormat format = new CoordinateFormat(null, null);
         GeneralDirectPosition position = new GeneralDirectPosition(23.78, -12.74, 127.9, 3.25);
-        assertEquals("23.78 -12.74 127.9 3.25", format.format(position));
+        assertEquals("23.78 -12.74 127.9 3.25", format.format(position));
         /*
          * Try another point having a different number of position
          * for verifying that no cached values are causing problem.
          */
         position = new GeneralDirectPosition(4.64, 10.25, -3.12);
-        assertEquals("4.64 10.25 -3.12", format.format(position));
+        assertEquals("4.64 10.25 -3.12", format.format(position));
         /*
          * Try again with a different separator.
          */
@@ -116,13 +117,25 @@ public final strictfp class CoordinateFormatTest extends TestCase {
         final CoordinateFormat format = new CoordinateFormat(Locale.US, null);
         format.setDefaultCRS(VerticalCRSMock.HEIGHT);
         DirectPosition1D position = new DirectPosition1D(100);
-        assertEquals("100 m", format.format(position));
+        assertEquals("100 m", format.format(position));
 
         position.setCoordinateReferenceSystem(VerticalCRSMock.HEIGHT_ft);
-        assertEquals("100 ft", format.format(position));
+        assertEquals("100 ft", format.format(position));
 
         position.setCoordinateReferenceSystem(VerticalCRSMock.DEPTH);
-        assertEquals("100 m", format.format(position));
+        assertEquals("100 m", format.format(position));
+    }
+
+    /**
+     * Tests formatting a 2-dimensional projected coordinate.
+     */
+    @Test
+    @DependsOnMethod("testFormatUnknownCRS")
+    public void testFormatProjected() {
+        final CoordinateFormat format = new CoordinateFormat(Locale.US, null);
+        format.setDefaultCRS(HardCodedConversions.mercator());
+        DirectPosition2D position = new DirectPosition2D(-100, 300);
+        assertEquals("-100 m E 300 m N", format.format(position));
     }
 
     /**
@@ -145,14 +158,14 @@ public final strictfp class CoordinateFormatTest extends TestCase {
         assertEquals("getPattern(Date)",   datePattern, format.getPattern(Date .class));
         final GeneralDirectPosition position = new GeneralDirectPosition(23.78, -12.74, 127.9, 54000.25);
         position.setCoordinateReferenceSystem(HardCodedCRS.GEOID_4D);
-        assertEquals("23°46,8′E 12°44,4′S 127,9 m 22-09-2006 07:00", format.format(position));
+        assertEquals("23°46,8′E 12°44,4′S 127,9 m 22-09-2006 07:00", format.format(position));
         /*
          * Try a null CRS. Should format everything as numbers.
          */
         position.setCoordinateReferenceSystem(null);
         assertEquals("getPattern(Angle)", anglePattern, format.getPattern(Angle.class));
         assertEquals("getPattern(Date)",   datePattern, format.getPattern(Date .class));
-        assertEquals("23,78 -12,74 127,9 54 000,25",    format.format(position));
+        assertEquals("23,78 -12,74 127,9 54 000,25",    format.format(position));
         /*
          * Try again with the original CRS, but different separator.
          */
@@ -161,7 +174,7 @@ public final strictfp class CoordinateFormatTest extends TestCase {
         position.setCoordinateReferenceSystem(HardCodedCRS.GEOID_4D);
         assertEquals("getPattern(Angle)", anglePattern, format.getPattern(Angle.class));
         assertEquals("getPattern(Date)",   datePattern, format.getPattern(Date .class));
-        assertEquals("23°46,8′E; 12°44,4′S; 127,9 m; 22-09-2006 07:00", format.format(position));
+        assertEquals("23°46,8′E; 12°44,4′S; 127,9 m; 22-09-2006 07:00", format.format(position));
     }
 
     /**
@@ -266,9 +279,9 @@ public final strictfp class CoordinateFormatTest extends TestCase {
         final DirectPosition2D pos = new DirectPosition2D(40.123456789, 9.87654321);
         format.setDefaultCRS(HardCodedCRS.WGS84_φλ);
         format.setGroundPrecision(Quantities.create(0.01, Units.GRAD));
-        assertEquals("40°07,4′N 9°52,6′E", format.format(pos));
+        assertEquals("40°07,4′N 9°52,6′E", format.format(pos));
         format.setGroundPrecision(Quantities.create(0.01, Units.METRE));
-        assertEquals("40°07′24,4444″N 9°52′35,5556″E", format.format(pos));
+        assertEquals("40°07′24,4444″N 9°52′35,5556″E", format.format(pos));
     }
 
     /**
@@ -281,11 +294,11 @@ public final strictfp class CoordinateFormatTest extends TestCase {
         final DirectPosition2D pos = new DirectPosition2D(40.123456789, 9.87654321);
         format.setDefaultCRS(HardCodedCRS.WGS84_φλ);
         format.setPrecisions(0.05, 0.0001);
-        assertEquals("40°07′N 9°52′35,6″E", format.format(pos));
+        assertEquals("40°07′N 9°52′35,6″E", format.format(pos));
         assertArrayEquals("precisions", new double[] {1.0/60, 0.1/3600}, format.getPrecisions(), 1E-15);
 
         format.setPrecisions(0.0005, 0.01);
-        assertEquals("40°07′24″N 9°52,6′E", format.format(pos));
+        assertEquals("40°07′24″N 9°52,6′E", format.format(pos));
         assertArrayEquals("precisions", new double[] {1.0/3600, 0.1/60}, format.getPrecisions(), 1E-15);
     }
 

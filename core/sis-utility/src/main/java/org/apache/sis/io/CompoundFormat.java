@@ -30,6 +30,7 @@ import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import javax.measure.Quantity;
 import javax.measure.Unit;
 
 import org.opengis.referencing.IdentifiedObject;
@@ -39,6 +40,7 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.UnitFormat;
+import org.apache.sis.measure.QuantityFormat;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Localized;
@@ -94,7 +96,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * in case of error.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @param <T>  the base type of objects parsed and formatted by this class.
  *
@@ -439,6 +441,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *   <tr><td>{@link Date}</td>            <td>{@link DateFormat}</td></tr>
      *   <tr><td>{@link Number}</td>          <td>{@link NumberFormat}</td></tr>
      *   <tr><td>{@link Unit}</td>            <td>{@link UnitFormat}</td></tr>
+     *   <tr><td>{@link Quantity}</td>        <td>{@link QuantityFormat}</td></tr>
      *   <tr><td>{@link Range}</td>           <td>{@link RangeFormat}</td></tr>
      *   <tr><td>{@link Class}</td>           <td>(internal)</td></tr>
      * </table>
@@ -483,6 +486,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             return AngleFormat.getInstance(locale);
         } else if (valueType == Unit.class) {
             return new UnitFormat(locale);
+        } else if (valueType == Quantity.class) {
+            return new QuantityFormat(locale);
         } else if (valueType == Range.class) {
             return new RangeFormat(locale);
         } else if (valueType == DirectPosition.class) {

@@ -24,16 +24,19 @@ import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.util.Optional;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.UncheckedIOException;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.Quantity;
 import javax.measure.quantity.Time;
+import javax.measure.quantity.Length;
 import javax.measure.IncommensurableException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.AxisDirection;
@@ -43,6 +46,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.LocalizedParseException;
@@ -60,8 +64,10 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Quantities;
-import org.apache.sis.referencing.CRS;
+import org.apache.sis.measure.QuantityFormat;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.referencing.CRS;
 
 
 /**
@@ -105,7 +111,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     /**
      * Serial number for cross-version compatibility.
      */
-    private static final long serialVersionUID = 8324486673169133932L;
+//    private static final long serialVersionUID = -6813397580614005734L;
 
     /**
      * Maximal number of characters to convert to {@link String} if the text to parse is not a string instance.
@@ -122,7 +128,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
 
     /**
      * The separator between each coordinate values to be formatted.
-     * The default value is a space.
+     * The default value is a EM space space (U+2003).
      *
      * @see #getSeparator()
      * @see #setSeparator(String)
@@ -130,16 +136,59 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     private String separator;
 
     /**
-     * The separator without spaces, used at parsing time.
+     * The separator without spaces, or an empty string if the separator contains only white spaces.
+     * This is used at parsing time only.
      */
-    private String parseSeparator;
+    private transient String parseSeparator;
 
     /**
      * The desired ground precision, or {@code null} if unspecified.
+     * This precision may not apply to all axes. The "ground axes" dimensions
+     * are identified by the bits set in the {@link #groundDimensions} bitmask.
      *
+     * @see #groundDimensions
      * @see #setGroundPrecision(Quantity)
      */
     private Quantity<?> groundPrecision;
+
+    /**
+     * The declared accuracy on ground, or {@code null} if unspecified. The accuracy applies to the same axes
+     * than {@link #groundPrecision}. But contrarily to {@code groundPrecision}, the accuracy does not change
+     * the number of fraction digits used by {@link NumberFormat}. Instead it causes a text such as "± 30 m"
+     * to be appended after the coordinates.
+     *
+     * @see #accuracyText
+     * @see #groundDimensions
+     * @see #accuracyThreshold
+     * @see #setGroundAccuracy(Quantity)
+     */
+    private Quantity<?> groundAccuracy;
+
+    /**
+     * Value of {@link #desiredPrecisions} which cause {@link #accuracyText} to be shown.
+     * For each dimension identified by {@link #groundDimensions}, if the corresponding
+     * value in {@link #desiredPrecisions} is equals or smaller to this threshold, then
+     * {@link #accuracyText} will be appended after the formatted coordinates.
+     *
+     * @see #desiredPrecisions
+     * @see #isAccuracyVisible
+     */
+    private transient double accuracyThreshold;
+
+    /**
+     * The dimensions on which {@link #groundPrecision} applies, specified as a bitmask.
+     * This bitmask is computed by {@link #applyGroundPrecision(CoordinateReferenceSystem)}
+     * when first needed. The current heuristic rules are:
+     * <ul>
+     *   <li>All axes having a {@link AxisDirections#isCompass(AxisDirection) compass direction}
+     *       if at least one of those axes uses an unit of measurement compatible with the unit
+     *       of {@link #groundPrecision} (possibly after conversion between linear and angular
+     *       units on a sphere).</li>
+     *   <li>Otherwise all axes using compatible units, regardless their direction and without
+     *       conversion between linear and angular units.</li>
+     * </ul>
+     */
+    private transient long groundDimensions;
 
     /**
      * The desired precisions for each coordinate, or {@code null} if unspecified.
@@ -156,15 +205,30 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     private double[] desiredPrecisions;
 
     /**
-     * Whether the {@link Format} instances have been configured for the precision specified by
-     * {@link #groundPrecision} and {@link #desiredPrecisions}. We use a field separated from
-     * {@link #lastCRS} because precision needs to be set only for formatting, not for parsing.
+     * Whether this {@code CoordinateFormat} instance has been configured for the precision and accuracy
+     * specified by {@link #groundPrecision}, {@link #desiredPrecisions} and {@link #groundAccuracy}.
+     * We use a field separated from {@link #lastCRS} because precision and accuracy threshold need
+     * to be set only for formatting, not for parsing.
      *
      * @see #setPrecisions(double...)
      * @see #setGroundPrecision(Quantity)
+     * @see #setGroundAccuracy(Quantity)
      * @see #configure(CoordinateReferenceSystem)
      */
     private transient boolean isPrecisionApplied;
+
+    /**
+     * Whether to append the accuracy after coordinate values. This flag is {@code true}
+     * if {@link #accuracyText} is non-null and one of the following conditions is true:
+     *
+     * <ul>
+     *   <li>{@link #desiredPrecisions} is null, in which case the accuracy is unconditionally shown.</li>
+     *   <li>At least one {@link #desiredPrecisions} value is below {@link #accuracyThreshold}.</li>
+     * </ul>
+     *
+     * This flag is valid only if {@link #isPrecisionApplied} is {@code true}.
+     */
+    private transient boolean isAccuracyVisible;
 
     /**
      * The coordinate reference system to assume if no CRS is attached to the position to format.
@@ -190,6 +254,9 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     /**
      * The type for each value in the {@code formats} array, or {@code null} if not yet computed.
      * Types are: 0=number, 1=longitude, 2=latitude, 3=other angle, 4=date, 5=elapsed time.
+     *
+     * <p>This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
+     * parsing or formatting in a different CRS than last operation, and stay unmodified after creation.</p>
      *
      * @see #createFormats(CoordinateReferenceSystem)
      */
@@ -217,20 +284,43 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     /**
      * The units for each dimension to be formatted as number.
      * We do not store this information for dimensions to be formatted as angle or date.
+     *
+     * <p>This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
+     * parsing or formatting in a different CRS than last operation, and stay unmodified after creation.</p>
      */
     private transient Unit<?>[] units;
 
     /**
      * Conversions from arbitrary units to the unit used by formatter, or {@code null} if none.
      * For example in the case of dates, this is the conversions from temporal axis units to milliseconds.
+     *
+     * <p>This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
+     * parsing or formatting in a different CRS than last operation, and stay unmodified after creation.</p>
      */
     private transient UnitConverter[] toFormatUnit;
 
     /**
-     * Units symbols. Used only for coordinate to be formatted as ordinary numbers.
-     * Non-null only if at least one coordinate is to be formatted that way.
+     * Units symbols to append after coordinate values for each dimension, including leading space.
+     * This is used only for coordinates to be formatted as ordinary numbers with {@link NumberFormat}.
+     * This array is non-null only if at least one dimension needs to format its coordinates that way.
+     * The unit symbol may be followed by axis direction symbol used for axes on the ground
+     * ("E", "N", "SW", <i>etc.</i>) so the complete symbol may be for example "km E".
+     *
+     * <p>This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
+     * parsing or formatting in a different CRS than last operation, and stay unmodified after creation.</p>
      */
     private transient String[] unitSymbols;
+
+    /**
+     * Text to append to the coordinate values for giving an indication about accuracy, or {@code null} if none.
+     * Example: " ± 1 m" (note the leading space). This is determined by the {@link #groundAccuracy} value.
+     * If {@link #desiredPrecisions} array is non-null, then accuracy is shown only if a precision is smaller.
+     *
+     * @see #groundAccuracy
+     * @see #accuracyThreshold
+     * @see #setGroundAccuracy(Quantity)
+     */
+    private transient String accuracyText;
 
     /**
      * Flags the coordinate values that need to be inverted before to be formatted.
@@ -243,6 +333,9 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
 
     /**
      * The time epochs. Non-null only if the at least on coordinate is to be formatted as a date.
+     *
+     * <p>This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
+     * parsing or formatting in a different CRS than last operation, and stay unmodified after creation.</p>
      */
     private transient long[] epochs;
 
@@ -272,7 +365,8 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      */
     public CoordinateFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
-        parseSeparator = separator = " ";
+        separator = "\u2003";       // EM space.
+        parseSeparator = "";
     }
 
     /**
@@ -295,9 +389,6 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
         ArgumentChecks.ensureNonEmpty("separator", separator);
         this.separator = separator;
         parseSeparator = CharSequences.trimWhitespaces(separator);
-        if (parseSeparator.isEmpty()) {
-            parseSeparator = separator;
-        }
     }
 
     /**
@@ -348,6 +439,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
         /*
          * If no CRS were specified, we will format everything as numbers. Working with null CRS
          * is sometime useful because null CRS are allowed in DirectPosition according ISO 19107.
+         * Note that the caller may have replaced `crs` by `defaultCRS` if the CRS was null.
          */
         if (crs == null) {
             return;
@@ -358,6 +450,14 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
         }
         /*
          * Otherwise (if a CRS is given), infer the format subclasses from the axes.
+         * Prepare also related information such as the unit of measurement and the
+         * axis direction ("E", "N", etc.) that may need to be formatted.
+         * The loop handles the following cases:
+         *
+         *    - case 0: no axis         — use default NumberFormat
+         *    - case 1: angular unit    — use AngleFormat
+         *    - case 2: temporal unit   — use DateFormat unless no TemporalCRS is found
+         *    - case 3: all other unit  — use NumberFormat + UnitFormat + [axis direction]
          */
         final int      dimension = cs.getDimension();
         final byte[]   types     = new byte  [dimension];
@@ -368,25 +468,25 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 formats[i] = getDefaultFormat();
                 continue;
             }
+            final AxisDirection direction = axis.getDirection();
             final Unit<?> unit = axis.getUnit();
             /*
-             * Formatter for angular units. Target unit is DEGREE_ANGLE.
+             * CASE 1: Formatter for angular units. Target unit is DEGREE_ANGLE.
              * Type is LONGITUDE, LATITUDE or ANGLE depending on axis direction.
              */
             if (Units.isAngular(unit)) {
                 byte type = ANGLE;
-                final AxisDirection dir = axis.getDirection();
-                if      (AxisDirection.NORTH.equals(dir)) {type = LATITUDE;}
-                else if (AxisDirection.EAST .equals(dir)) {type = LONGITUDE;}
-                else if (AxisDirection.SOUTH.equals(dir)) {type = LATITUDE;  negate(i);}
-                else if (AxisDirection.WEST .equals(dir)) {type = LONGITUDE; negate(i);}
+                if      (AxisDirection.NORTH.equals(direction)) {type = LATITUDE;}
+                else if (AxisDirection.EAST .equals(direction)) {type = LONGITUDE;}
+                else if (AxisDirection.SOUTH.equals(direction)) {type = LATITUDE;  negate(i);}
+                else if (AxisDirection.WEST .equals(direction)) {type = LONGITUDE; negate(i);}
                 types  [i] = type;
                 formats[i] = getFormat(Angle.class);
                 setConverter(dimension, i, unit.asType(javax.measure.quantity.Angle.class).getConverterTo(Units.DEGREE));
                 continue;
             }
             /*
-             * Formatter for temporal units. Target unit is MILLISECONDS.
+             * CASE 2: Formatter for temporal units. Target unit is MILLISECONDS.
              * Type is DATE.
              */
             if (Units.isTemporal(unit)) {
@@ -399,36 +499,45 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                     formats[i] = getFormat(Date.class);
                     epochs [i] = ((TemporalCRS) t).getDatum().getOrigin().getTime();
                     setConverter(dimension, i, unit.asType(Time.class).getConverterTo(Units.MILLISECOND));
-                    if (AxisDirection.PAST.equals(axis.getDirection())) {
+                    if (AxisDirection.PAST.equals(direction)) {
                         negate(i);
                     }
                     continue;
                 }
                 types[i] = TIME;
-                // Fallthrough: formatted as number.
+                // Fallthrough: format as number (can not compute epoch because no TemporalCRS found).
             }
             /*
-             * Formatter for all other units. Do NOT set types[i] since it may have been set
-             * to a non-zero value by previous case. If not, the default value (zero) is the
-             * one we want.
+             * CASE 3: Formatter for all other units. Do NOT set types[i] since it may have been set to
+             * a non-zero value by previous case. If not, the default value (zero) is the one we want.
              */
             formats[i] = getFormat(Number.class);
+            StringBuilder symbol = null;
             if (unit != null) {
                 if (units == null) {
                     units = new Unit<?>[dimension];
                 }
                 units[i] = unit;
-                final String symbol = getFormat(Unit.class).format(unit);
-                if (!symbol.isEmpty()) {
-                    if (unitSymbols == null) {
-                        unitSymbols = new String[dimension];
-                    }
-                    unitSymbols[i] = symbol;
+                final String s = getFormat(Unit.class).format(unit);
+                if (!s.isEmpty()) {
+                    symbol = new StringBuilder().append(QuantityFormat.SEPARATOR).append(s);
                 }
             }
+            if (AxisDirections.isCompass(direction)) {
+                if (symbol == null) {
+                    symbol = new StringBuilder();
+                }
+                symbol.append(Characters.NO_BREAK_SPACE).append(CharSequences.camelCaseToAcronym(direction.identifier()));
+            }
+            if (symbol != null) {
+                if (unitSymbols == null) {
+                    unitSymbols = new String[dimension];
+                }
+                unitSymbols[i] = symbol.toString();
+            }
         }
-        this.types    = types;          // Assign only on success.
-        this.formats  = formats;
+        this.types    = types;
+        this.formats  = formats;        // Assign only on success because no element can be null.
         sharedFormats = formats;        // `getFormatClone(int)` will separate arrays later if needed.
     }
 
@@ -582,6 +691,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 }
             }
         }
+        updateAccuracyVisibility();
     }
 
     /**
@@ -621,7 +731,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      */
     private void configure(final CoordinateReferenceSystem crs) {
         if (lastCRS != crs) {
-            createFormats(crs);             // This method sets the `lastCRS` field.
+            createFormats(crs);                 // This method sets the `lastCRS` field.
         }
         if (!isPrecisionApplied) {
             if (groundPrecision != null) {
@@ -638,6 +748,8 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                     applyPrecision(i);          // Will clone Format instances if needed.
                 }
             }
+            applyGroundAccuracy(crs);
+            updateAccuracyVisibility();
             isPrecisionApplied = true;
         }
     }
@@ -685,7 +797,6 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      *
      * @since 1.1
      */
-    @SuppressWarnings("null")
     public void setGroundPrecision(final Quantity<?> precision) {
         ArgumentChecks.ensureNonNull("precision", precision);
         groundPrecision = precision;
@@ -695,66 +806,175 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     }
 
     /**
+     * Specifies an uncertainty to append as "± <var>accuracy</var>" after the coordinate values.
+     * If no {@linkplain #setPrecisions(double...) precisions} have been specified, the accuracy
+     * will be always shown. But if precisions have been specified, then the accuracy will be
+     * shown only if equals or greater than the precision.
+     *
+     * @param  accuracy  the accuracy to append after the coordinate values, or {@code null} if none.
+     *
+     * @see #getGroundAccuracy()
+     * @see #getGroundAccuracyText()
+     * @see Quantities#create(double, Unit)
+     *
+     * @since 1.1
+     */
+    public void setGroundAccuracy(final Quantity<?> accuracy) {
+        accuracyText = null;
+        groundAccuracy = accuracy;
+        if (accuracy != null) {
+            final NumberFormat nf = NumberFormat.getInstance(getLocale(Locale.Category.FORMAT));
+            final QuantityFormat f = new QuantityFormat(nf, (UnitFormat) getFormat(Unit.class));
+            if (buffer == null) buffer = new StringBuffer();
+            buffer.setLength(0);
+            accuracyText = f.format(accuracy, buffer.append("\u2003\u00B1\u00A0"), dummy).toString();
+        }
+        if (isPrecisionApplied) {
+            applyGroundAccuracy(lastCRS);
+            updateAccuracyVisibility();
+        }
+    }
+
+    /**
      * Configures the formats for {@link #groundPrecision} value. Contrarily to {@link #applyPrecision(int)},
      * this method modifies the default formats provided by {@link #getFormat(Class)}. They are the formats
      * stored in the {@link #sharedFormats} array. Those formats are used as fallback when the {@link #formats}
      * array does not provide more specific format.
      *
+     * <p>It is caller responsibility to ensure that {@link #groundPrecision} is non-null before to invoke this
+     * method.</p>
+     *
      * @param  crs  the target CRS in the conversion from ground units to CRS units.
      */
+    @SuppressWarnings("null")
     private void applyGroundPrecision(final CoordinateReferenceSystem crs) {
-        final double resolution = Math.abs(groundPrecision.getValue().doubleValue());
-        final Unit<?> unit = groundPrecision.getUnit();
-        if (Units.isTemporal(unit)) {
-            return;                                 // Setting temporal resolution is not yet implemented.
-        }
         /*
          * If the given resolution is linear (for example in metres), compute an equivalent resolution in degrees
          * assuming a sphere of radius computed from the CRS.  Conversely if the resolution is angular (typically
          * in degrees), computes an equivalent linear resolution. For all other kind of units, do nothing.
          */
-        Resolution specified = new Resolution(resolution, unit, Units.isAngular(unit));
-        Resolution related   = null;
-        IncommensurableException error = null;
-        if (specified.isAngular || Units.isLinear(unit)) try {
-            related = specified.related(ReferencingUtilities.getEllipsoid(crs));
-        } catch (IncommensurableException e) {
-            error = e;
+        final Resolution specified = new Resolution(groundPrecision);
+        Resolution derived;
+        IncommensurableException error;
+        try {
+            derived = specified.derived(crs);
+            error   = null;
+        } catch (IncommensurableException e) {      // Should not happen. If happen anyway, use `specified` only.
+            derived = null;
+            error   = e;
         }
         /*
-         * We now have the requested resolution in both linear and angular units, if equivalence has been established.
-         * Convert those resolutions to the units actually used by the CRS. If some axes use different units, keep the
-         * units which result in the finest resolution.
+         * We now have the requested resolution in both linear and angular units. Convert those resolutions
+         * to the unit actually used by CRS axes.  If the units are not the same for all axes, use the unit
+         * which result in the smallest resolution value after conversion. Current implementation considers
+         * only compass directions (East, North, South-East, etc.) but we may revisit in the future.
          */
-        boolean relatedUsed = false;
-        if (crs != null) {
-            final CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs != null) {                                                   // Paranoiac check (should never be null).
-                final int dimension = cs.getDimension();
+        groundDimensions     = 0L;
+        boolean useSpecified = false;
+        boolean useDerived   = false;
+        final CoordinateSystem cs;
+        if (crs != null && (cs = crs.getCoordinateSystem()) != null) {
+            final int dimension = cs.getDimension();
+            /*
+             * The following loop will be executed exactly one or two times. The first execution checks
+             * only axes having compass direction (East, North, South-East, etc.) and compatible units.
+             * If no such axis is found, second execution checks all axes regardless their direction.
+             */
+            for (boolean useAllAxes = false; ; useAllAxes = true) {
                 for (int i=0; i<dimension; i++) {
                     final CoordinateSystemAxis axis = cs.getAxis(i);
-                    if (axis != null) {                                         // Paranoiac check.
+                    if (axis == null) continue;                         // Paranoiac check (should never be null).
+                    final AxisDirection direction = axis.getDirection();
+                    if (useAllAxes || AxisDirections.isCompass(direction)) {
+                        specified.findMaxValue(axis);
                         final Unit<?> axisUnit = axis.getUnit();
                         if (axisUnit != null) try {
-                            final double maxValue = Math.max(Math.abs(axis.getMinimumValue()),
-                                                             Math.abs(axis.getMaximumValue()));
-                            if (!specified.forAxis(maxValue, axisUnit) && related != null) {
-                                relatedUsed |= related.forAxis(maxValue, axisUnit);
+                            boolean done;
+                            useSpecified |= (done = specified.findMinResolution(axisUnit, useSpecified));
+                            if (!done && derived != null) {
+                                useDerived |= (done = derived.findMinResolution(axisUnit, useDerived));
+                            }
+                            if (done) {
+                                groundDimensions |= Numerics.bitmask(i);
                             }
                         } catch (IncommensurableException e) {
-                            if (error == null) error = e;
+                            if (error == null) error = e;       // Should not happen. If happen anyway, skip axis.
                             else error.addSuppressed(e);
                         }
                     }
                 }
+                if (useSpecified | useDerived) {
+                    break;
+                }
+                if (useAllAxes) {
+                    useSpecified = true;
+                    derived      = null;
+                    break;
+                }
             }
         }
+        if (useSpecified) specified.setPrecision(this);
+        if (useDerived)   derived  .setPrecision(this);
         if (error != null) {
-            Logging.unexpectedException(Logging.getLogger(Loggers.MEASURE), CoordinateFormat.class, "setGroundPrecision", error);
+            unexpectedException("setGroundPrecision", error);
         }
-        specified.setPrecision(this);
-        if (relatedUsed) {
-            related.setPrecision(this);
+    }
+
+    /**
+     * Updates the {@link #accuracyThreshold} for the current {@link #groundAccuracy} value
+     * (which may be null) and the given coordinate reference system.
+     */
+    private void applyGroundAccuracy(final CoordinateReferenceSystem crs) {
+        long dimensions = groundDimensions;
+abort:  if (dimensions != 0 && groundAccuracy != null) try {
+            final Resolution specified = new Resolution(groundAccuracy);
+            final Resolution derived   = specified.derived(crs);            // May be null.
+            final CoordinateSystem cs  = crs.getCoordinateSystem();
+            accuracyThreshold = 0;
+            do {
+                final int i = Long.numberOfTrailingZeros(dimensions);
+                final Unit<?> unit = cs.getAxis(i).getUnit();
+                final double accuracy;
+                if (unit.isCompatible(specified.unit)) {
+                    accuracy = specified.resolution(unit);
+                } else if (derived != null && unit.isCompatible(derived.unit)) {
+                    accuracy = derived.resolution(unit);
+                } else {
+                    break abort;
+                }
+                if (accuracy > accuracyThreshold) {
+                    accuracyThreshold = accuracy;
+                }
+                dimensions &= ~(1L << i);
+            } while (dimensions != 0);
+            return;
+        } catch (IncommensurableException e) {
+            // Should not happen because `groundDimensions` bits were set only on successful axes.
+            unexpectedException("setGroundAccuracy", e);
+        }
+        accuracyThreshold = Double.POSITIVE_INFINITY;
+    }
+
+    /**
+     * Updates the {@link #isAccuracyVisible} flag according current values of {@link #accuracyText},
+     * {@link #accuracyThreshold} and {@link #desiredPrecisions}.
+     */
+    private void updateAccuracyVisibility() {
+        isAccuracyVisible = (accuracyText != null);
+        if (isAccuracyVisible && desiredPrecisions != null) {
+            long dimensions = groundDimensions;
+            if (dimensions != 0) {
+                isAccuracyVisible = false;
+                do {
+                    final int i = Long.numberOfTrailingZeros(dimensions);
+                    final double precision = desiredPrecisions[i];
+                    if (precision > 0 && precision <= accuracyThreshold) {
+                        isAccuracyVisible = true;
+                        break;
+                    }
+                    dimensions &= ~(1L << i);
+                } while (dimensions != 0);
+            }
         }
     }
 
@@ -765,23 +985,48 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * and another one for the resolution in degrees.
      */
     private static final class Resolution {
+        /** Maximal absolute value that we may format, regardless unit of measurement. */
+        private double magnitude;
+
         /** The desired resolution in the unit of measurement given by {@link #unit}. */
         private double resolution;
 
-        /** Maximal absolute value that we may format in unit of measurement given by {@link #unit}. */
-        private double magnitude;
-
-        /** Unit of measurement of {@link #resolution} or {@link #magnitude}. */
+        /** Unit of measurement of {@link #resolution}. */
         private Unit<?> unit;
 
         /** Whether {@link #unit} is an angular unit. */
         final boolean isAngular;
 
-        /** Creates a new instance initialized to the given resolution. */
-        Resolution(final double resolution, final Unit<?> unit, final boolean isAngular) {
-            this.resolution = resolution;
-            this.unit       = unit;
-            this.isAngular  = isAngular;
+        /** Creates a new instance initialized to the given precision. */
+        Resolution(final Quantity<?> groundPrecision) {
+            resolution = Math.abs(groundPrecision.getValue().doubleValue());
+            unit       = groundPrecision.getUnit();
+            isAngular  = Units.isAngular(unit);
+        }
+
+        /**
+         * Creates a new instance derived from the given angular or linear resolution.
+         * This constructor computes an angular resolution from a linear one, or conversely.
+         * If is caller responsibility to ensure that the specified resolution is either linear or angular.
+         *
+         * @param  specified  the linear or angular resolution specified by the user.
+         * @param  radius     authalic radius of CRS ellipsoid.
+         * @param  axisUnit   {@code radius} unit of measurement, which is also ellipsoid axes unit.
+         * @throws IncommensurableException should not happen if {@code specified} is either linear or angular.
+         */
+        private Resolution(final Resolution specified, final double radius, final Unit<Length> axisUnit)
+                throws IncommensurableException
+        {
+            isAngular = !specified.isAngular;
+            if (isAngular) {
+                // Angular resolution in radians  =  linear resolution  /  radius
+                resolution = Math.toDegrees(specified.resolution(axisUnit) / radius);
+                unit       = Units.DEGREE;
+            } else {
+                // Linear resolution  =  angular resolution in radians  ×  radius.
+                resolution = specified.resolution(Units.RADIAN) * radius;
+                unit       = axisUnit;
+            }
         }
 
         /**
@@ -789,53 +1034,65 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
          * is in degrees, returns an equivalent resolution in metres. Other linear and angular units are accepted too;
          * they will be converted as needed.
          *
-         * @param  ellipsoid  the ellipsoid, or {@code null} if none.
-         * @return the related resolution, or {@code null} if none.
+         * @param  crs  the CRS for which to derive an equivalent resolution, or {@code null} if none.
+         * @return the derived resolution, or {@code null} if none.
+         * @throws IncommensurableException should never happen since this method verifies unit compatibility.
          */
-        Resolution related(final Ellipsoid ellipsoid) throws IncommensurableException {
-            final double radius = Formulas.getAuthalicRadius(ellipsoid);
-            if (radius > 0) {                                       // Indirectly filter null ellipsoid.
-                Unit<?> relatedUnit = ellipsoid.getAxisUnit();      // Angular if `unit` is linear, or linear if `unit` is angular.
-                if (relatedUnit != null) {                          // Paranoiac check (should never be null).
-                    double related;
-                    if (isAngular) {
-                        // Linear resolution  =  angular resolution in radians  ×  radius.
-                        related = unit.getConverterToAny(Units.RADIAN).convert(resolution) * radius;
-                    } else {
-                        // Angular resolution in radians  =  linear resolution  /  radius
-                        related = Math.toDegrees(unit.getConverterToAny(relatedUnit).convert(resolution) / radius);
-                        relatedUnit = Units.DEGREE;
+        Resolution derived(final CoordinateReferenceSystem crs) throws IncommensurableException {
+            if (isAngular || Units.isLinear(unit)) {
+                final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(crs);
+                final double radius = Formulas.getAuthalicRadius(ellipsoid);
+                if (radius > 0) {                                       // Indirectly filter null ellipsoid.
+                    Unit<Length> axisUnit = ellipsoid.getAxisUnit();
+                    if (axisUnit != null) {                             // Paranoiac check (should never be null).
+                        return new Resolution(this, radius, axisUnit);
                     }
-                    return new Resolution(related, relatedUnit, !isAngular);
                 }
             }
             return null;
         }
 
         /**
+         * Returns the resolution converted to the specified unit as an absolute value.
+         *
+         * @throws IncommensurableException if the specified unit is not compatible with {@link #unit}.
+         */
+        private double resolution(final Unit<?> target) throws IncommensurableException {
+            return Math.abs(unit.getConverterToAny(target).convert(resolution));
+        }
+
+        /**
          * Adjusts the resolution units for the given coordinate system axis. This methods select the units which
          * result in the smallest absolute value of {@link #resolution}.
          *
-         * @param  maxValue  the maximal absolute value that a coordinate on the axis may have.
-         * @param  axisUnit  {@link CoordinateSystemAxis#getUnit()}.
+         * @param  axisUnit     {@link CoordinateSystemAxis#getUnit()}.
+         * @param  hasPrevious  whether this method has been successfully applied on another axis before.
          * @return whether the given axis unit is compatible with the expected unit.
+         * @throws IncommensurableException should never happen since this method verifies unit compatibility.
          */
-        boolean forAxis(double maxValue, final Unit<?> axisUnit) throws IncommensurableException {
+        boolean findMinResolution(final Unit<?> axisUnit, final boolean hasPrevious) throws IncommensurableException {
             if (!axisUnit.isCompatible(unit)) {
                 return false;
             }
-            final UnitConverter c = unit.getConverterToAny(axisUnit);
-            final double r = Math.abs(c.convert(resolution));
-            if (r < resolution) {
-                resolution = r;                                         // To units producing the smallest value.
+            final double r = resolution(axisUnit);
+            if (!hasPrevious || r < resolution) {
+                resolution = r;                         // To units producing the smallest value.
                 unit = axisUnit;
-            } else {
-                maxValue = Math.abs(c.inverse().convert(maxValue));     // From axis units to selected units.
             }
+            return true;
+        }
+
+        /**
+         * Adjusts the maximal magnitude value, ignoring unit conversion. We do not apply unit conversion because
+         * the axis minimum and maximum values are already in the units of the coordinates that will be formatted.
+         * Even if different axes use different units, we want the largest value that {@link NumberFormat} may see.
+         */
+        final void findMaxValue(final CoordinateSystemAxis axis) {
+            final double maxValue = Math.max(Math.abs(axis.getMinimumValue()),
+                                             Math.abs(axis.getMaximumValue()));
             if (maxValue > magnitude) {
                 magnitude = maxValue;
             }
-            return true;
         }
 
         /**
@@ -844,6 +1101,9 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
          * {@link #getFormat(Class)}. They are the formats stored in the {@link #sharedFormats} array.
          */
         void setPrecision(final CoordinateFormat owner) {
+            if (Units.isTemporal(unit)) {
+                return;                         // Setting temporal resolution is not yet implemented.
+            }
             final Format format = owner.getFormat(isAngular ? Angle.class : Number.class);
             if (format instanceof DecimalFormat) {
                 /*
@@ -860,6 +1120,30 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 ((AngleFormat) format).setPrecision(resolution, true);
             }
         }
+    }
+
+    /**
+     * Returns the current ground accuracy value, or {@code null} if none.
+     * This is the value given to the last call to {@link #setGroundAccuracy(Quantity)}.
+     *
+     * @return the current ground accuracy value, or {@code null} if none.
+     *
+     * @see #setGroundAccuracy(Quantity)
+     */
+    public Quantity<?> getGroundAccuracy() {
+        return groundAccuracy;
+    }
+
+    /**
+     * Returns the textual representation of the current ground accuracy.
+     * Example: " ± 3 m" (note the leading space).
+     *
+     * @return textual representation of current ground accuracy.
+     *
+     * @see #setGroundAccuracy(Quantity)
+     */
+    public Optional<String> getGroundAccuracyText() {
+        return Optional.ofNullable(accuracyText);
     }
 
     /**
@@ -1057,9 +1341,16 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             if (unitSymbols != null && i < unitSymbols.length) {
                 final String symbol = unitSymbols[i];
                 if (symbol != null) {
-                    toAppendTo.append(Characters.NO_BREAK_SPACE).append(symbol);
+                    toAppendTo.append(symbol);
                 }
             }
+        }
+        /*
+         * Finished to format the all coordinate values. Appends the accuracy if
+         * there is one and if the precision is at least as small as the accuracy.
+         */
+        if (isAccuracyVisible) {
+            toAppendTo.append(accuracyText);
         }
     }
 
@@ -1124,27 +1415,49 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
          * end ahead of time. We currently allow that only for coordinate without CRS.
          */
         for (int i=0; i < coordinates.length; i++) {
-            if (i != 0) {
-                final int end = subPos.getIndex();
+skipSep:    if (i != 0) {
+                final int end = subPos.getIndex();          // End of previous coordinate.
                 int index = offset + end;
-                while (!CharSequences.regionMatches(text, index, parseSeparator)) {
-                    if (index < length) {
-                        final int c = Character.codePointAt(text, index);
-                        if (Character.isSpaceChar(c)) {
-                            index += Character.charCount(c);
-                            continue;
+                while (index < length) {
+                    if (parseSeparator.isEmpty()) {
+                        final int next = CharSequences.skipLeadingWhitespaces(text, index, length);
+                        if (next > index) {
+                            subPos.setIndex(next - offset);
+                            break skipSep;
+                        }
+                    } else {
+                        if (CharSequences.regionMatches(text, index, parseSeparator)) {
+                            subPos.setIndex(index + parseSeparator.length() - offset);
+                            break skipSep;
                         }
                     }
-                    if (formats == null) {
-                        pos.setIndex(index);
-                        return new GeneralDirectPosition(Arrays.copyOf(coordinates, i));
-                    }
-                    pos.setIndex(start);
-                    pos.setErrorIndex(index);
-                    throw new LocalizedParseException(getLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
-                            new CharSequence[] {text.subSequence(start, end), CharSequences.token(text, index)}, index);
+                    final int c = Character.codePointAt(text, index);
+                    if (!Character.isSpaceChar(c)) break;
+                    index += Character.charCount(c);
                 }
-                subPos.setIndex(index + parseSeparator.length() - offset);
+                /*
+                 * No separator found. If no CRS was specified (in which case we don't know how many coordinates
+                 * were expected), then stop parsing and return whatever amount of coordinates we got. Otherwise
+                 * (another coordinate was expected) consider we have a too short string or unexpected characters.
+                 */
+                if (formats == null) {
+                    pos.setIndex(index);
+                    return new GeneralDirectPosition(Arrays.copyOf(coordinates, i));
+                }
+                pos.setIndex(start);
+                pos.setErrorIndex(index);
+                final CharSequence previous = text.subSequence(start, end);
+                final CharSequence found = CharSequences.token(text, index);
+                final short key;
+                final CharSequence[] args;
+                if (found.length() != 0) {
+                    key = Errors.Keys.UnexpectedCharactersAfter_2;
+                    args = new CharSequence[] {previous, found};
+                } else {
+                    key = Errors.Keys.UnexpectedEndOfString_1;
+                    args = new CharSequence[] {previous};
+                }
+                throw new LocalizedParseException(getLocale(), key, args, index);
             }
             /*
              * At this point 'subPos' is set to the beginning of the next coordinate to parse in 'asString'.
@@ -1242,6 +1555,16 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     }
 
     /**
+     * Invoked when an expected error occurred but continuation is still possible.
+     *
+     * @param  method  the public method to report as the source of the log record.
+     * @param  error   the error that occurred.
+     */
+    private static void unexpectedException(final String method, final Exception error) {
+        Logging.unexpectedException(Logging.getLogger(Loggers.MEASURE), CoordinateFormat.class, method, error);
+    }
+
+    /**
      * Returns a clone of this format.
      *
      * @return a clone of this format.
@@ -1256,5 +1579,16 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             clone.desiredPrecisions = desiredPrecisions.clone();
         }
         return clone;
+    }
+
+    /**
+     * Invoked on deserialization for restoring some transient fields.
+     *
+     * @param  in  the input stream from which to deserialize a coordinate format
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        parseSeparator = CharSequences.trimWhitespaces(separator);
     }
 }
