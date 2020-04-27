@@ -310,6 +310,7 @@ public class GridDerivation {
     public GridDerivation resize(GridExtent extent, double... scales) {
         ArgumentChecks.ensureNonNull("scales", scales);
         ensureSubgridNotSet();
+        base.getGridToCRS(PixelInCell.CELL_CENTER);             // For making sure that the transform exist.
         subGridSetter = "resize";
         final int n = base.getDimension();
         if (extent != null) {
