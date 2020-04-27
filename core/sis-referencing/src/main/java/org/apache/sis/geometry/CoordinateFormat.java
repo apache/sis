@@ -111,7 +111,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     /**
      * Serial number for cross-version compatibility.
      */
-//    private static final long serialVersionUID = -6813397580614005734L;
+    private static final long serialVersionUID = 6633388113040644304L;
 
     /**
      * Maximal number of characters to convert to {@link String} if the text to parse is not a string instance.
