@@ -44,6 +44,7 @@ org.apache.sis.internal.referencing.provider.LambertCylindricalEqualAreaSpherica
 org.apache.sis.internal.referencing.provider.AlbersEqualArea
 org.apache.sis.internal.referencing.provider.TransverseMercator
 org.apache.sis.internal.referencing.provider.TransverseMercatorSouth
+org.apache.sis.internal.referencing.provider.CassiniSoldner
 org.apache.sis.internal.referencing.provider.PolarStereographicA
 org.apache.sis.internal.referencing.provider.PolarStereographicB
 org.apache.sis.internal.referencing.provider.PolarStereographicC
