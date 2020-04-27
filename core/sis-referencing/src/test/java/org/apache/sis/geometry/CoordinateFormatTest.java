@@ -127,19 +127,36 @@ public final strictfp class CoordinateFormatTest extends TestCase {
     }
 
     /**
-     * Tests formatting a 2-dimensional projected coordinate.
+     * Tests formatting 2-dimensional projected coordinates.
      */
     @Test
     @DependsOnMethod("testFormatUnknownCRS")
     public void testFormatProjected() {
         final CoordinateFormat format = new CoordinateFormat(Locale.US, null);
         format.setDefaultCRS(HardCodedConversions.mercator());
-        DirectPosition2D position = new DirectPosition2D(-100, 300);
-        assertEquals("-100 m E 300 m N", format.format(position));
+        assertEquals("100 m W 300 m N", format.format(new DirectPosition2D(-100, 300)));
+        assertEquals("200 m E 100 m S", format.format(new DirectPosition2D(200, -100)));
     }
 
     /**
-     * Tests formatting a 4-dimensional geographic coordinate.
+     * Tests parsing 2-dimensional projected coordinates.
+     * This method is the converse of {@link #testFormatProjected()}.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testParseUnknownCRS")
+    public void testParseProjected() throws ParseException {
+        final CoordinateFormat format = new CoordinateFormat(Locale.US, null);
+        format.setDefaultCRS(HardCodedConversions.mercator());
+        DirectPosition pos = format.parse("100 m W 300 m N", new ParsePosition(0));
+        assertArrayEquals(new double[] {-100, 300}, pos.getCoordinate(), STRICT);
+        pos = format.parse("200 m E 100 m S", new ParsePosition(0));
+        assertArrayEquals(new double[] {200, -100}, pos.getCoordinate(), STRICT);
+    }
+
+    /**
+     * Tests formatting 4-dimensional geographic coordinates.
      */
     @Test
     @DependsOnMethod("testFormatUnknownCRS")
@@ -178,7 +195,7 @@ public final strictfp class CoordinateFormatTest extends TestCase {
     }
 
     /**
-     * Tests parsing a 4-dimensional geographic coordinate.
+     * Tests parsing 4-dimensional geographic coordinates.
      * This method is the converse of {@link #testFormatGeographic4D()}.
      *
      * @throws ParseException if the parsing failed.
@@ -300,6 +317,24 @@ public final strictfp class CoordinateFormatTest extends TestCase {
         format.setPrecisions(0.0005, 0.01);
         assertEquals("40°07′24″N 9°52,6′E", format.format(pos));
         assertArrayEquals("precisions", new double[] {1.0/3600, 0.1/60}, format.getPrecisions(), 1E-15);
+    }
+
+    /**
+     * Tests {@link CoordinateFormat#setGroundAccuracy(Quantity)}.
+     *
+     * @throws ParseException if parsing failed.
+     */
+    @Test
+    public void testSetGroundAccuracy() throws ParseException {
+        final CoordinateFormat format = new CoordinateFormat(Locale.FRANCE, null);
+        final DirectPosition2D pos = new DirectPosition2D(40.123456789, 9.87654321);
+        format.setDefaultCRS(HardCodedCRS.WGS84_φλ);
+        format.setPrecisions(0.05, 0.0001);
+        format.setGroundAccuracy(Quantities.create(3, Units.KILOMETRE));
+        assertEquals("40°07′N 9°52′35,6″E ± 3 km", format.format(pos));
+
+        final DirectPosition p = format.parseObject("40°07′N 9°52′35,6″E ± 3 km");
+        assertArrayEquals(new double[] {40.1166, 9.8765}, p.getCoordinate(), 0.0001);
     }
 
     /**

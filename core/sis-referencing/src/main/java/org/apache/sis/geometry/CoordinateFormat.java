@@ -303,13 +303,32 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * Units symbols to append after coordinate values for each dimension, including leading space.
      * This is used only for coordinates to be formatted as ordinary numbers with {@link NumberFormat}.
      * This array is non-null only if at least one dimension needs to format its coordinates that way.
-     * The unit symbol may be followed by axis direction symbol used for axes on the ground
-     * ("E", "N", "SW", <i>etc.</i>) so the complete symbol may be for example "km E".
+     *
+     * <p>Units symbols may be followed by axis {@linkplain #directionSymbols direction symbols} used
+     * for axes on the ground ("E", "N", "SW", <i>etc.</i>) so the complete symbol may be for example
+     * "km E". Those direction symbols are stored in a separated array; they are not part of elements
+     * of this {@code unitSymbols} array.</p>
      *
      * <p>This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
      * parsing or formatting in a different CRS than last operation, and stay unmodified after creation.</p>
      */
     private transient String[] unitSymbols;
+
+    /**
+     * Directions symbols ("E", "N", "SW", <i>etc.</i>) to append after coordinate values for some dimensions,
+     * including leading space. This is used only for some coordinates formatted with {@link NumberFormat}.
+     * This array is non-null only if at least one dimension needs to format its coordinates that way.
+     * The length of this array is twice the number of dimensions. The array contains this tuple:
+     *
+     * <ol>
+     *   <li>Symbol of axis direction (at even indices)</li>
+     *   <li>Symbol in the direction opposite to axis direction (at odd indices)</li>
+     * </ol>
+     *
+     * <p>This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
+     * parsing or formatting in a different CRS than last operation, and stay unmodified after creation.</p>
+     */
+    private transient String[] directionSymbols;
 
     /**
      * Text to append to the coordinate values for giving an indication about accuracy, or {@code null} if none.
@@ -432,6 +451,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
         units              = null;
         toFormatUnit       = null;
         unitSymbols        = null;
+        directionSymbols   = null;
         epochs             = null;
         negate             = 0L;
         lastCRS            = crs;
@@ -512,33 +532,39 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
              * a non-zero value by previous case. If not, the default value (zero) is the one we want.
              */
             formats[i] = getFormat(Number.class);
-            StringBuilder symbol = null;
             if (unit != null) {
                 if (units == null) {
                     units = new Unit<?>[dimension];
                 }
                 units[i] = unit;
-                final String s = getFormat(Unit.class).format(unit);
-                if (!s.isEmpty()) {
-                    symbol = new StringBuilder().append(QuantityFormat.SEPARATOR).append(s);
+                final String symbol = getFormat(Unit.class).format(unit);
+                if (!symbol.isEmpty()) {
+                    if (unitSymbols == null) {
+                        unitSymbols = new String[dimension];
+                    }
+                    unitSymbols[i] = QuantityFormat.SEPARATOR + symbol;
                 }
             }
             if (AxisDirections.isCompass(direction)) {
-                if (symbol == null) {
-                    symbol = new StringBuilder();
+                if (directionSymbols == null) {
+                    directionSymbols = new String[dimension * 2];
                 }
-                symbol.append(Characters.NO_BREAK_SPACE).append(CharSequences.camelCaseToAcronym(direction.identifier()));
-            }
-            if (symbol != null) {
-                if (unitSymbols == null) {
-                    unitSymbols = new String[dimension];
-                }
-                unitSymbols[i] = symbol.toString();
+                directionSymbols[i*2]     = symbol(direction);
+                directionSymbols[i*2 + 1] = symbol(AxisDirections.opposite(direction));
             }
         }
         this.types    = types;
         this.formats  = formats;        // Assign only on success because no element can be null.
         sharedFormats = formats;        // `getFormatClone(int)` will separate arrays later if needed.
+    }
+
+    /**
+     * Returns the symbol ("E", "N", "SW", <i>etc.</i>) for given axis direction.
+     */
+    private static String symbol(final AxisDirection direction) {
+        // Following cast uses or knowledge of `camelCaseToAcronym` implementation.
+        return ((StringBuilder) CharSequences.camelCaseToAcronym(direction.identifier()))
+                .insert(0, Characters.NO_BREAK_SPACE).toString();
     }
 
     /**
@@ -685,7 +711,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 if (!(p < Double.POSITIVE_INFINITY)) p = 0;                 // Use ! for replacing NaN.
                 if (desiredPrecisions[i] != (desiredPrecisions[i] = p)) {
                     // Precision changed. Keep format up to date.
-                    if (isPrecisionApplied && i < formats.length) {
+                    if (isPrecisionApplied) {
                         applyPrecision(i);
                     }
                 }
@@ -1296,18 +1322,27 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
         }
         /*
          * The format to use for each coordinate has been computed by `configure`. The format array length
-         * should match the number of dimensions in the given position if the DirectPosition is consistent
-         * with its CRS, but we will nevertheless verify has a paranoiac check.  If there is no CRS, or if
-         * the DirectPosition dimension is (illegally) greater than the CRS dimension, then we will format
-         * the coordinate as a number.
+         * should match the number of dimensions in the given position assuming that the DirectPosition is
+         * consistent with its CRS. If there is no CRS, or if the DirectPosition dimension is (illegally)
+         * greater than the CRS dimension, then we will format the coordinate as a plain number.
          */
         final int dimension = position.getDimension();
         for (int i=0; i < dimension; i++) {
             double value = position.getOrdinate(i);
-            final Object object;
+            final Object valueObject;
+            final String unit, direction;
             final Format f;
-            if (formats != null && i < formats.length) {
+            if (formats != null && i < formats.length) {    // The < check is a safety against illegal DirectPosition.
                 f = formats[i];
+                unit = (unitSymbols != null) ? unitSymbols[i] : null;
+                if (directionSymbols == null) {
+                    direction = null;
+                } else if (value < 0) {
+                    value = -value;
+                    direction = directionSymbols[i*2 + 1];
+                } else {
+                    direction = directionSymbols[i*2];
+                }
                 if (isNegative(i)) {
                     value = -value;
                 }
@@ -1318,15 +1353,16 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
                     }
                 }
                 switch (types[i]) {
-                    default:        object = Double.valueOf(value); break;
-                    case LONGITUDE: object = new Longitude (value); break;
-                    case LATITUDE:  object = new Latitude  (value); break;
-                    case ANGLE:     object = new Angle     (value); break;
-                    case DATE:      object = new Date(Math.addExact(Math.round(value), epochs[i])); break;
+                    default:        valueObject = Double.valueOf(value); break;
+                    case LONGITUDE: valueObject = new Longitude (value); break;
+                    case LATITUDE:  valueObject = new Latitude  (value); break;
+                    case ANGLE:     valueObject = new Angle     (value); break;
+                    case DATE:      valueObject = new Date(Math.addExact(Math.round(value), epochs[i])); break;
                 }
             } else {
-                object = value;
+                valueObject = value;
                 f = getDefaultFormat();
+                unit = direction = null;
             }
             /*
              * At this point we got the value to format together with the Format instance to use.
@@ -1334,16 +1370,12 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
             if (i != 0) {
                 toAppendTo.append(separator);
             }
-            if (f.format(object, destination, dummy) != toAppendTo) {
+            if (f.format(valueObject, destination, dummy) != toAppendTo) {
                 toAppendTo.append(destination);
                 destination.setLength(0);
             }
-            if (unitSymbols != null && i < unitSymbols.length) {
-                final String symbol = unitSymbols[i];
-                if (symbol != null) {
-                    toAppendTo.append(symbol);
-                }
-            }
+            if (unit      != null) toAppendTo.append(unit);
+            if (direction != null) toAppendTo.append(direction);
         }
         /*
          * Finished to format the all coordinate values. Appends the accuracy if
@@ -1489,6 +1521,11 @@ skipSep:    if (i != 0) {
                 }
                 throw new LocalizedParseException(getLocale(), type, text, pos);
             }
+            /*
+             * The value part (number, angle or date) has been parsed successfully.
+             * Get the numerical value. The unit of measurement may not be the same
+             * than the one expected by the CRS (we will convert later).
+             */
             double value;
             if (object instanceof Angle) {
                 value = ((Angle) object).degrees();
@@ -1498,46 +1535,120 @@ skipSep:    if (i != 0) {
                 value = ((Number) object).doubleValue();
             }
             /*
-             * The conversions and sign reversal applied below shall be in exact reverse order than
-             * in the 'format(…)' method. However we have one additional step compared to format(…):
-             * the unit written after the coordinate value may not be the same than the unit declared
-             * in the CRS axis, so we have to parse the unit and convert the value before to apply
-             * the reverse of 'format(…)' steps.
+             * The value sign may need to be adjusted if the value is followed by a direction symbol
+             * such as "N", "E" or "SW". Get the symbols that are allowed for current coordinate.
+             * We will check for their presence after the unit symbol, or immediately after the value
+             * if there is no unit symbol.
              */
-            if (units != null) {
-                final Unit<?> target = units[i];
-                if (target != null) {
-                    final int base = subPos.getIndex();
-                    int index = base;
+            String direction = null;
+            String opposite  = null;
+            if (directionSymbols != null) {
+                direction = directionSymbols[i*2    ];
+                opposite  = directionSymbols[i*2 + 1];
+            }
+            /*
+             * The unit written after the coordinate value may not be the same than the unit declared
+             * in the CRS axis, so we have to parse the unit and convert the value before to apply the
+             * change of sign.
+             */
+            final Unit<?> target;
+parseUnit:  if (units != null && (target = units[i]) != null) {
+                final int base = subPos.getIndex();
+                int index = base;                       // Will become start index of unit symbol.
+                /*
+                 * Skip whitespaces using Character.isSpaceChar(…), not Character.isWhitespace(…),
+                 * because we need to skip also the non-breaking space (Characters.NO_BREAK_SPACE).
+                 * If we can not parse the unit after those spaces, we will revert to the original
+                 * position + spaces skipped (absence of unit will not be considered an error).
+                 */
+                int c;
+                for (;;) {
+                    if (index >= asString.length()) {
+                        break parseUnit;                // Found only spaces until end of string.
+                    }
+                    c = asString.codePointAt(index);
+                    if (!Character.isSpaceChar(c)) break;
+                    index += Character.charCount(c);
+                }
+                /*
+                 * Now the `index` should be positioned on the first character of the unit symbol.
+                 * Before to parse the unit, verify if a direction symbol is found after the unit.
+                 * We need to do this check because unit symbol and direction symbol are separated
+                 * by a no-break space, which causes `UnitFormat` to try to parse them together as
+                 * a unique unit symbol.
+                 */
+                int stopAt = index;                     // Will become stop index of unit symbol.
+                int nextAt = -1;                        // Will become start index of next coordinate.
+searchDir:      if (direction != null) {
+                    do {
+                        stopAt += Character.charCount(c);
+                        if (stopAt >= asString.length()) {
+                            break searchDir;
+                        }
+                        c = asString.codePointAt(stopAt);
+                    } while (!Character.isSpaceChar(c));
                     /*
-                     * Skip whitespaces using Character.isSpaceChar(…), not Character.isWhitespace(…),
-                     * because we need to skip also the non-breaking space (Characters.NO_BREAK_SPACE).
-                     * If we can not parse the unit after those spaces, we will revert to the original
-                     * position (absence of unit will not be considered an error).
+                     * Found the first space character, which may be a no-break space.
+                     * Check for direction symbol here. This strategy is based on the
+                     * fact that the direction symbol starts with a no-break space.
                      */
-                    while (index < asString.length()) {
-                        final int c = asString.codePointAt(index);
-                        if (Character.isSpaceChar(c)) {
-                            index += Character.charCount(c);
-                            continue;
-                        }
-                        subPos.setIndex(index);
-                        final Object unit = getFormat(Unit.class).parseObject(asString, subPos);
-                        if (unit == null) {
-                            subPos.setIndex(base);
-                            subPos.setErrorIndex(-1);
-                        } else try {
-                            value = ((Unit<?>) unit).getConverterToAny(target).convert(value);
-                        } catch (IncommensurableException e) {
-                            index += offset;
-                            pos.setIndex(start);
-                            pos.setErrorIndex(index);
-                            throw (ParseException) new ParseException(e.getMessage(), index).initCause(e);
-                        }
-                        break;
+                    if (asString.regionMatches(true, stopAt, direction, 0, direction.length())) {
+                        nextAt = stopAt + direction.length();
+                    } else if (asString.regionMatches(true, stopAt, opposite, 0, opposite.length())) {
+                        nextAt = stopAt + opposite.length();
+                        value = -value;
                     }
                 }
+                /*
+                 * Parse the unit symbol now. The `nextAt` value determines whether a direction symbol
+                 * has been found, in which case we need to exclude the direction from the text parsed
+                 * by `UnitFormat`.
+                 */
+                final Format f = getFormat(Unit.class);
+                final Object unit;
+                try {
+                    if (nextAt < 0) {
+                        subPos.setIndex(index);
+                        unit = f.parseObject(asString, subPos);     // Let `UnitFormat` decide where to stop parsing.
+                    } else {
+                        unit = f.parseObject(asString.substring(index, stopAt));
+                        subPos.setIndex(nextAt);
+                        direction = opposite = null;
+                    }
+                    if (unit == null) {
+                        subPos.setIndex(base);
+                        subPos.setErrorIndex(-1);
+                    } else {
+                        value = ((Unit<?>) unit).getConverterToAny(target).convert(value);
+                    }
+                } catch (ParseException | IncommensurableException e) {
+                    index += offset;
+                    pos.setIndex(start);
+                    pos.setErrorIndex(index);
+                    if (e instanceof ParseException) {
+                        throw (ParseException) e;
+                    }
+                    throw (ParseException) new ParseException(e.getMessage(), index).initCause(e);
+                }
             }
+            /*
+             * At this point either the unit of measurement has been parsed, or there is no unit.
+             * If the direction symbol ("E", "N", "SW", etc.) has not been found before, check now.
+             */
+            if (direction != null) {
+                int index = subPos.getIndex();
+                if (asString.regionMatches(true, index, direction, 0, direction.length())) {
+                    index += direction.length();
+                } else if (asString.regionMatches(true, index, opposite, 0, opposite.length())) {
+                    index += opposite.length();
+                    value = -value;
+                }
+                subPos.setIndex(index);
+            }
+            /*
+             * The conversions and sign reversal applied below shall be in reverse order
+             * than the operations applied by the 'format(…)' method.
+             */
             if (toFormatUnit != null) {
                 final UnitConverter c = toFormatUnit[i];
                 if (c != null) {
@@ -1548,6 +1659,16 @@ skipSep:    if (i != 0) {
                 value = -value;
             }
             coordinates[i] = value;
+        }
+        /*
+         * If accuracy information is appended after the coordinates (e.g. " ± 3 km"), skip that text.
+         */
+        if (accuracyText != null) {
+            final int index = subPos.getIndex();
+            final int lg = accuracyText.length();
+            if (asString.regionMatches(true, index, accuracyText, 0, lg)) {
+                subPos.setIndex(index + lg);
+            }
         }
         final GeneralDirectPosition position = new GeneralDirectPosition(coordinates);
         position.setCoordinateReferenceSystem(defaultCRS);
