@@ -20,6 +20,8 @@ import java.util.EnumMap;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
 
@@ -44,9 +46,11 @@ import static org.apache.sis.internal.referencing.provider.CassiniSoldner.*;
  * @since   1.1
  * @module
  */
-public class CassiniSoldner extends NormalizedProjection {
-
-    private final double M0;
+public class CassiniSoldner extends MeridianArcBased {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 3007155786839466950L;
 
     /**
      * Creates a Cassini-Soldner projection from the given parameters.
@@ -83,7 +87,8 @@ public class CassiniSoldner extends NormalizedProjection {
     CassiniSoldner(final Initializer initializer) {
         super(initializer);
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
-        M0 = M(φ0);
+        final MatrixSIS denormalize = getContextualParameters().getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
+        denormalize.convertBefore(1, null, -distance(φ0, sin(φ0), cos(φ0)));
     }
 
     /**
@@ -109,25 +114,10 @@ public class CassiniSoldner extends NormalizedProjection {
         final double A3   = A*A2;
         final double T    = tanφ * tanφ;
         final double C    = eccentricitySquared * (cosφ*cosφ) / (1 - eccentricitySquared);
-        final double ν    = 1 / sqrt(1 - eccentricitySquared*(sinφ*sinφ));
-        final double y    = M(φ) - M0 + ν*tanφ*(A2/2 + (5 - T + 6*C)*(A2*A2) / 24);
-        final double x    = ν*(A - T*A3/6 - (8 - T + 8*C)*T*(A3*A2) / 120);
-        dstPts[dstOff  ]  = x;
-        dstPts[dstOff+1]  = y;
+        final double rν   = sqrt(1 - eccentricitySquared*(sinφ*sinφ));
+        dstPts[dstOff  ]  = (A - T*A3/6 - (8 - T + 8*C)*T*(A3*A2) / 120) / rν;
+        dstPts[dstOff+1]  = distance(φ, sinφ, cosφ) + tanφ*(A2/2 + (5 - T + 6*C)*(A2*A2) / 24) / rν;
         return null;
-    }
-
-    private double M(final double φ) {
-        final double e2 = eccentricitySquared;
-        final double e4 = e2*e2;
-        final double e6 = e4*e2;
-        final double sin2φ = sin(2*φ);
-        final double sin4φ = sin(4*φ);
-        final double sin6φ = sin(6*φ);
-        return (1  - e2/4 - 3*e4/64  -  5*e6/256 ) *     φ
-                - (3*e2/8 + 3*e4/32  + 45*e6/1024) * sin2φ
-                +         (15*e4/256 + 45*e6/1024) * sin4φ
-                -                     (35*e6/3072) * sin6φ;
     }
 
     /**
@@ -141,36 +131,19 @@ public class CassiniSoldner extends NormalizedProjection {
                                     final double[] dstPts, final int dstOff)
             throws ProjectionException
     {
-        final double x      = srcPts[srcOff  ];
-        final double y      = srcPts[srcOff+1];
-        final double e2     = eccentricitySquared;
-        final double e4     = e2*e2;
-        final double e6     = e4*e2;
-        final double e1     = (1 - sqrt(1 - eccentricitySquared)) / (1 + sqrt(1 - eccentricitySquared));
-        final double e12    = e1*e1;
-        final double e13    = e12*e1;
-        final double e14    = e12*e12;
-        final double M1     = M0 + y;
-        final double μ1     = M1 / (1 - eccentricitySquared/4 - 3*e4/64 - 5*e6/256);
-        final double sinμ1  = sin(μ1);
-        final double sin2μ1 = sin(2*μ1);
-        final double sin4μ1 = sin(4*μ1);
-        final double sin6μ1 = sin(6*μ1);
-        final double sin8μ1 = sin(8*μ1);
-        final double φ1     = μ1 + (3*e1/2 - 27*e13/32) * sin2μ1 + (21*e12/16 - 55*e14/32)*sin4μ1
-                                 + (151*e13/96)*sin6μ1 + (1097*e14/512)*sin8μ1;
-        final double sinφ1  = sin(φ1);
-        final double cosφ1  = cos(φ1);
-        final double tanφ1  = sinφ1 / cosφ1;
-        final double ν1     = 1/sqrt(1 - eccentricitySquared*(sinφ1*sinφ1));
-        final double ρ1     = (1 - eccentricitySquared) / pow(1 - eccentricitySquared*(sinφ1*sinφ1), 1.5);
-        final double D      = x/ν1;
-        final double D2     = D*D;
-        final double D4     = D2*D2;
-        final double T1     = tanφ1 * tanφ1;
-        final double φ      = φ1 - (ν1*tanφ1 / ρ1) * (D2/2 - (1 + 3*T1)*D4 / 24);
-        final double λ      = (D - T1*(D2*D)/3 + (1 + 3*T1)*T1*(D4*D)/15) / cosφ1;
-        dstPts[dstOff  ]    = λ;
-        dstPts[dstOff+1]    = φ;
+        final double x     = srcPts[srcOff  ];
+        final double y     = srcPts[srcOff+1];
+        final double φ1    = latitude(y);
+        final double sinφ1 = sin(φ1);
+        final double cosφ1 = cos(φ1);
+        final double tanφ1 = sinφ1 / cosφ1;
+        final double rν2   =  1 - eccentricitySquared*(sinφ1*sinφ1);    // ν₁⁻²
+        final double ρ1_ν1 = (1 - eccentricitySquared) / rν2;           // ρ₁/ν₁
+        final double D     = x  * sqrt(rν2);                            // x/ν₁
+        final double D2    = D  * D;
+        final double D4    = D2 * D2;
+        final double T1    = tanφ1 * tanφ1;
+        dstPts[dstOff  ]   = (D - T1*(D2*D)/3 + (1 + 3*T1)*T1*(D4*D)/15) / cosφ1;
+        dstPts[dstOff+1]   = φ1 - (tanφ1 / ρ1_ν1) * (D2/2 - (1 + 3*T1)*D4 / 24);
     }
 }
