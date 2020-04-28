@@ -50,7 +50,7 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Creates a new mock for the given operation method.
      *
-     * @param method The operation method to put in this factory.
+     * @param  method  the operation method to put in this factory.
      */
     public MathTransformFactoryMock(final DefaultOperationMethod method) {
         this.method = method;

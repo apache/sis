@@ -115,8 +115,10 @@ public class CassiniSoldner extends MeridianArcBased {
         final double T    = tanφ * tanφ;
         final double C    = eccentricitySquared * (cosφ*cosφ) / (1 - eccentricitySquared);
         final double rν   = sqrt(1 - eccentricitySquared*(sinφ*sinφ));
-        dstPts[dstOff  ]  = (A - T*A3/6 - (8 - T + 8*C)*T*(A3*A2) / 120) / rν;
-        dstPts[dstOff+1]  = distance(φ, sinφ, cosφ) + tanφ*(A2/2 + (5 - T + 6*C)*(A2*A2) / 24) / rν;
+        if (dstPts != null) {
+            dstPts[dstOff  ]  = (A - T*A3/6 - (8 - T + 8*C)*T*(A3*A2) / 120) / rν;
+            dstPts[dstOff+1]  = distance(φ, sinφ, cosφ) + tanφ*(A2/2 + (5 - T + 6*C)*(A2*A2) / 24) / rν;
+        }
         return null;
     }
 
