@@ -126,9 +126,9 @@ public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
      *
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
-//  @Test
+    @Test
     public void testDerivative() throws TransformException {
-        final double delta = toRadians(100.0 / 60) / 1852;          // Approximately 100 metres.
+        final double delta = toRadians(1. / 60) / 1852;         // Approximately 1 meter.
         derivativeDeltas = new double[] {delta, delta};
 
         // Tests spherical formulas
@@ -139,9 +139,9 @@ public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
         verifyDerivative(toRadians(-4), toRadians(40));
 
         // Tests ellipsoidal formulas
-        tolerance = 1E-8;
         transform = create(true);
         validate();
+        verifyDerivative(toRadians(+3), toRadians(-6));
         verifyDerivative(toRadians(+3), toRadians(-10));
         verifyDerivative(toRadians(-4), toRadians(+10));
     }
@@ -155,7 +155,7 @@ public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
      *
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testOrthographic()
      */
-//  @Test
+    @Test
     public void runGeoapiTest() throws FactoryException, TransformException {
         createGeoApiTest(method()).testCassiniSoldner();
     }

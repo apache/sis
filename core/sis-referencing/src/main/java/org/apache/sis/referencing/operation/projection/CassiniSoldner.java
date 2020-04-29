@@ -20,6 +20,7 @@ import java.util.EnumMap;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.parameter.Parameters;
@@ -104,22 +105,54 @@ public class CassiniSoldner extends MeridianArcBased {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double λ    = srcPts[srcOff  ];
-        final double φ    = srcPts[srcOff+1];
-        final double cosφ = cos(φ);
-        final double sinφ = sin(φ);
-        final double tanφ = sinφ / cosφ;
-        final double A    = λ * cosφ;
-        final double A2   = A*A;
-        final double A3   = A*A2;
-        final double T    = tanφ * tanφ;
-        final double C    = eccentricitySquared * (cosφ*cosφ) / (1 - eccentricitySquared);
-        final double rν   = sqrt(1 - eccentricitySquared*(sinφ*sinφ));
+        /*
+         * Formula from IOGP Publication 373-7-2 — Geomatics Guidance Note
+         * — Coordinate Conversions and Transformations including Formulas.
+         *
+         * Following symbols are from EPSG formulas with a=1, λ₀=0 and M₀=0:
+         * λ, φ, T, A, C and rν=1/ν.
+         *
+         * Following symbol are specific to this implementation: Q and S.
+         * Those symbols are defined because of terms reused in derivatives.
+         */
+        final double λ     = srcPts[srcOff  ];
+        final double φ     = srcPts[srcOff+1];
+        final double cosφ  = cos(φ);
+        final double sinφ  = sin(φ);
+        final double sinφ2 = sinφ * sinφ;
+        final double cosφ2 = cosφ * cosφ;
+        final double tanφ  = sinφ / cosφ;
+        final double T     = tanφ * tanφ;
+        final double A     = λ  * cosφ;
+        final double A2    = A  * A;
+        final double A3    = A2 * A;
+        final double rν2   = 1 - sinφ2*eccentricitySquared;
+        final double C     = cosφ2*eccentricitySquared / (1 - eccentricitySquared);
+        final double Q     = T - 8*(C + 1);
+        final double S     = ((5-T)/6 + C)*A2;
+        final double rν    = sqrt(rν2);
         if (dstPts != null) {
-            dstPts[dstOff  ]  = (A - T*A3/6 - (8 - T + 8*C)*T*(A3*A2) / 120) / rν;
-            dstPts[dstOff+1]  = distance(φ, sinφ, cosφ) + tanφ*(A2/2 + (5 - T + 6*C)*(A2*A2) / 24) / rν;
+            dstPts[dstOff  ] = (A - T*A3/6 + Q*T*(A3*A2) / 120) / rν;
+            dstPts[dstOff+1] = distance(φ, sinφ, cosφ) + tanφ*A2*(0.5 + S/4) / rν;
         }
-        return null;
+        if (!derivate) {
+            return null;
+        }
+        /*
+         * Following formulas have been derived with WxMaxima, then simplified by hand.
+         * See: https://svn.apache.org/repos/asf/sis/analysis/README.html
+         */
+        final double λ2 = λ * λ;
+        final double B  = λ * sinφ;                             // Like A but with sin(φ) instead of cos(φ).
+        final double B2 = B*B;                                  // = T*A2
+        final double D  = cosφ2*eccentricitySquared / rν2;      // Like C but with a sin²φ in denominator.
+        final double V  = A2*Q/60 - 1./3;
+        final double W  = B2*(Q*A2/24 - 0.5);
+        return new Matrix2(
+                  (cosφ/rν) * (W + 1),
+                        (B) * (λ2*V - W + B2*(λ2 + 8*C*A2)/60 +(D*(B2*V/2 + 1) - 1)/rν),
+                (B*cosφ/rν) * (S + 1),
+                    (B2/rν) * ((S/4 + 0.5)*(D + 1/sinφ2) - (S+1 + A2*C/2 + λ2/12)) + dM_dφ(sinφ2));
     }
 
     /**
