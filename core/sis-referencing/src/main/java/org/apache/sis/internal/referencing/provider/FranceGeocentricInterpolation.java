@@ -158,7 +158,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * is {@link #FILE}. All other parameters have been taken from {@link Molodensky} since geocentric interpolations
      * can be though as a Molodensky operations with non-constant (ΔX, ΔY, ΔZ) geocentric translation terms.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         FILE = builder

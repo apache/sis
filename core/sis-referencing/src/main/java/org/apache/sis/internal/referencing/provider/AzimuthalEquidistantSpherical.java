@@ -45,7 +45,7 @@ public final class AzimuthalEquidistantSpherical extends MapProjection {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder().setCodeSpace(null, null)
                 .addName("Azimuthal Equidistant (Spherical)")
