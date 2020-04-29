@@ -72,7 +72,7 @@ public final class TransverseMercatorSouth extends AbstractMercator {
                         TransverseMercator.LATITUDE_OF_ORIGIN,
                         TransverseMercator.LONGITUDE_OF_ORIGIN,
                         TransverseMercator.SCALE_FACTOR,
-                        LambertConformalWest.FALSE_WESTING,
+                        LambertConformalWest.FALSE_WESTING,     // Same as `FALSE_EASTING` with only an additional comment.
                         falseSouthing);
     }
 
