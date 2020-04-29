@@ -59,11 +59,12 @@ public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
         if (ellipse) {
             pg.parameter("semi-major").setValue(WGS84_A);
             pg.parameter("semi-minor").setValue(WGS84_B);
+            return new CassiniSoldner(provider, pg);
         } else {
             pg.parameter("semi-major").setValue(RADIUS);
             pg.parameter("semi-minor").setValue(RADIUS);
+            return new CassiniSoldner.Spherical(new CassiniSoldner(provider, pg));
         }
-        return new CassiniSoldner(provider, pg);
     }
 
     /**

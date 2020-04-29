@@ -17,7 +17,10 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
@@ -90,6 +93,33 @@ public class CassiniSoldner extends MeridianArcBased {
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         final MatrixSIS denormalize = getContextualParameters().getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(1, null, -distance(φ0, sin(φ0), cos(φ0)));
+    }
+
+    /**
+     * Creates a new projection initialized to the same parameters than the given one.
+     */
+    CassiniSoldner(final CassiniSoldner other) {
+        super(other);
+    }
+
+    /**
+     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
+     * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     * The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
+     * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.
+     *
+     * @param  factory  the factory to use for creating the transform.
+     * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
+     */
+    @Override
+    public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+        CassiniSoldner kernel = this;
+        if (eccentricity == 0) {
+            kernel = new Spherical(this);
+        }
+        return context.completeTransform(factory, kernel);
     }
 
     /**
@@ -180,5 +210,78 @@ public class CassiniSoldner extends MeridianArcBased {
         final double T1    = tanφ1 * tanφ1;
         dstPts[dstOff  ]   = (D - T1*(D2*D)/3 + (1 + 3*T1)*T1*(D4*D)/15) / cosφ1;
         dstPts[dstOff+1]   = φ1 - (tanφ1 / ρ1_ν1) * (D2/2 - (1 + 3*T1)*D4 / 24);
+    }
+
+
+    /**
+     * Provides the transform equations for the spherical case of the Cassini-Soldner projection.
+     * Formulas are available on <a href="https://en.wikipedia.org/wiki/Cassini_projection">Wikipedia</a>.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @author  Rémi Maréchal (Geomatys)
+     * @version 1.1
+     * @since   1.1
+     * @module
+     */
+    static final class Spherical extends CassiniSoldner {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -8131887916538379858L;
+
+        /**
+         * Constructs a new map projection from the parameters of the given projection.
+         *
+         * @param  other  the other projection (usually ellipsoidal) from which to copy the parameters.
+         */
+        protected Spherical(final CassiniSoldner other) {
+            super(other);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Matrix transform(final double[] srcPts, final int srcOff,
+                                final double[] dstPts, final int dstOff,
+                                final boolean derivate)
+        {
+            final double λ    = srcPts[srcOff  ];
+            final double φ    = srcPts[srcOff+1];
+            final double sinλ = sin(λ);
+            final double cosλ = cos(λ);
+            final double sinφ = sin(φ);
+            final double cosφ = cos(φ);
+            final double tanφ = sinφ / cosφ;
+            if (dstPts != null) {
+                dstPts[dstOff  ] = asin (cosφ * sinλ);
+                dstPts[dstOff+1] = atan2(tanφ,  cosλ);
+            }
+            if (!derivate) {
+                return null;
+            }
+            final double cosφ2 = cosφ * cosφ;
+            final double sinλ2 = sinλ * sinλ;
+            final double dxden = sqrt(1 - sinλ2*cosφ2);
+            final double dyden = tanφ*tanφ + cosλ*cosλ;
+            return new Matrix2(
+                    cosλ*cosφ  / dxden,
+                   -sinλ*sinφ  / dxden,
+                    sinλ*tanφ  / dyden,
+                    cosλ/cosφ2 / dyden);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        protected void inverseTransform(final double[] srcPts, final int srcOff,
+                                        final double[] dstPts, final int dstOff)
+        {
+            final double x = srcPts[srcOff  ];
+            final double y = srcPts[srcOff+1];
+            dstPts[dstOff  ] = atan2(tan(x),  cos(y));
+            dstPts[dstOff+1] = asin (sin(y) * cos(x));
+        }
     }
 }
