@@ -35,7 +35,7 @@ import static java.lang.StrictMath.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.1
- * @since   0.8
+ * @since   1.1
  * @module
  */
 public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
@@ -112,14 +112,16 @@ public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
                 430000,                                 // False easting  (Clarke's links)
                 325000);                                // False northing (Clarke's links)
 
-        final DirectPosition2D p = new DirectPosition2D(-62, 10);
+        final double λ = -62;
+        final double φ =  10;
+        final DirectPosition2D p = new DirectPosition2D(λ, φ);
         assertSame(p, transform.transform(p, p));
         assertEquals(66644.94, p.x, 0.005);
         assertEquals(82536.22, p.y, 0.005);
 
         assertSame(p, transform.inverse().transform(p, p));
-        assertEquals(-62, p.x, Formulas.ANGULAR_TOLERANCE);
-        assertEquals(+10, p.y, Formulas.ANGULAR_TOLERANCE);
+        assertEquals(λ, p.x, Formulas.ANGULAR_TOLERANCE);
+        assertEquals(φ, p.y, Formulas.ANGULAR_TOLERANCE);
     }
 
     /**
@@ -154,7 +156,7 @@ public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
      *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testOrthographic()
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testCassiniSoldner()
      */
     @Test
     public void runGeoapiTest() throws FactoryException, TransformException {

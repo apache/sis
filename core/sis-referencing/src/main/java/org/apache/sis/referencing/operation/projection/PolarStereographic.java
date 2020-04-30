@@ -90,7 +90,7 @@ public class PolarStereographic extends ConformalProjection {
         if (identMatch(method, "(?i).*\\bvariant\\s*C\\b.*",  PolarStereographicC.IDENTIFIER)) return C;
         if (identMatch(method, "(?i).*\\bNorth\\b.*",         null)) return NORTH;
         if (identMatch(method, "(?i).*\\bSouth\\b.*",         null)) return SOUTH;
-        return 0; // Unidentified case, to be considered as variant B.
+        return STANDARD_VARIANT;            // Unidentified case, to be considered as variant B.
     }
 
     /**

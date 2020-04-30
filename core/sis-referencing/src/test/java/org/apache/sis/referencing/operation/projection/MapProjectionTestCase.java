@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  * Base class of map projection tests.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -81,6 +81,22 @@ abstract strictfp class MapProjectionTestCase extends MathTransformTestCase {
      */
     static ParameterizedTransformTest createGeoApiTest(final MapProjection provider) {
         return new ParameterizedTransformTest(new MathTransformFactoryMock(provider));
+    }
+
+    /**
+     * Instantiates the object to use for running GeoAPI test without derivative tests.
+     *
+     * @param  provider  the provider of the projection to test.
+     * @return the GeoAPI test class using the given provider.
+     */
+    static ParameterizedTransformTest createGeoApiTestNoDerivatives(final MapProjection provider) {
+        final class Tester extends ParameterizedTransformTest {
+            Tester(final MapProjection provider) {
+                super(new MathTransformFactoryMock(provider));
+                isDerivativeSupported = false;
+            }
+        }
+        return new Tester(provider);
     }
 
     /**

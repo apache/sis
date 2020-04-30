@@ -68,7 +68,7 @@ public class CassiniSoldner extends MeridianArcBased {
      * @param  parameters  the parameter values of the projection to create.
      */
     public CassiniSoldner(final OperationMethod method, final Parameters parameters) {
-        this(initializer(method, parameters));
+        this(initializer(method, parameters, STANDARD_VARIANT));
     }
 
     /**
@@ -76,13 +76,13 @@ public class CassiniSoldner extends MeridianArcBased {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
+    static Initializer initializer(final OperationMethod method, final Parameters parameters, final byte variant) {
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
         roles.put(ParameterRole.SCALE_FACTOR,     SCALE_FACTOR);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, (byte) 0);
+        return new Initializer(method, parameters, roles, variant);
     }
 
     /**
@@ -90,9 +90,11 @@ public class CassiniSoldner extends MeridianArcBased {
      */
     CassiniSoldner(final Initializer initializer) {
         super(initializer);
-        final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
-        final MatrixSIS denormalize = getContextualParameters().getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        denormalize.convertBefore(1, null, -distance(φ0, sin(φ0), cos(φ0)));
+        if (initializer.variant == STANDARD_VARIANT) {
+            final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
+            final MatrixSIS denormalize = getContextualParameters().getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
+            denormalize.convertBefore(1, null, -distance(φ0, sin(φ0), cos(φ0)));
+        }
     }
 
     /**
@@ -126,6 +128,13 @@ public class CassiniSoldner extends MeridianArcBased {
      * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
      *
+     * @param  srcPts    the array containing the source point coordinate,
+     *                   as (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
+     * @param  srcOff    the offset of the single coordinate to be converted in the source array.
+     * @param  dstPts    the array into which the converted coordinate is returned (may be the same than {@code srcPts}).
+     *                   Coordinates will be expressed in a dimensionless unit, as a linear distance on a unit sphere or ellipse.
+     * @param  dstOff    the offset of the location of the converted coordinate that is stored in the destination array.
+     * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
      * @throws ProjectionException if the coordinate can not be converted.
@@ -189,6 +198,11 @@ public class CassiniSoldner extends MeridianArcBased {
      * Converts the specified (<var>x</var>,<var>y</var>) coordinates
      * and stores the result in {@code dstPts} (angles in radians).
      *
+     * @param  srcPts  the array containing the source point coordinate, as linear distance on a unit sphere or ellipse.
+     * @param  srcOff  the offset of the point to be converted in the source array.
+     * @param  dstPts  the array into which the converted point coordinate is returned (may be the same than {@code srcPts}).
+     *                 Coordinates will be (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
+     * @param  dstOff  the offset of the location of the converted point that is stored in the destination array.
      * @throws ProjectionException if the point can not be converted.
      */
     @Override

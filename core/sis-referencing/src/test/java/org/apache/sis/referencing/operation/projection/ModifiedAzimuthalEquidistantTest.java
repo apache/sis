@@ -79,9 +79,8 @@ public final strictfp class ModifiedAzimuthalEquidistantTest extends AzimuthalEq
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testModifiedAzimuthalEquidistant()
      */
     @Test
-    @org.junit.Ignore("Implementation not yet completed")
     public void runGeoapiTest() throws FactoryException, TransformException {
-        createGeoApiTest(method()).testModifiedAzimuthalEquidistant();
+        createGeoApiTestNoDerivatives(method()).testModifiedAzimuthalEquidistant();
     }
 
     /**
