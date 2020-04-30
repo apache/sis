@@ -18,8 +18,6 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
@@ -32,11 +30,16 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @module
  */
 @XmlTransient
-public final class HyperbolicCassiniSoldner extends MapProjection {
+public final class HyperbolicCassiniSoldner extends CassiniSoldner {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -4948656632564407426L;
+
+    /**
+     * The EPSG identifier, to be preferred to the name when available.
+     */
+    public static final String IDENTIFIER = "9833";
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -44,14 +47,14 @@ public final class HyperbolicCassiniSoldner extends MapProjection {
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-                .addIdentifier("9833")
+                .addIdentifier(IDENTIFIER)
                 .addName("Hyperbolic Cassini-Soldner")
                 .createGroupForMapProjection(
-                        CassiniSoldner.LATITUDE_OF_ORIGIN,
-                        CassiniSoldner.LONGITUDE_OF_ORIGIN,
-                        CassiniSoldner.SCALE_FACTOR,
-                        CassiniSoldner.FALSE_EASTING,
-                        CassiniSoldner.FALSE_NORTHING);
+                        LATITUDE_OF_ORIGIN,
+                        LONGITUDE_OF_ORIGIN,
+                        SCALE_FACTOR,
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**
@@ -59,15 +62,5 @@ public final class HyperbolicCassiniSoldner extends MapProjection {
      */
     public HyperbolicCassiniSoldner() {
         super(PARAMETERS);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return the map projection created from the given parameter values.
-     */
-    @Override
-    protected NormalizedProjection createProjection(final Parameters parameters) {
-        return new org.apache.sis.referencing.operation.projection.HyperbolicCassiniSoldner(this, parameters);
     }
 }

@@ -26,7 +26,10 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
+import org.apache.sis.internal.referencing.provider.HyperbolicCassiniSoldner;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
@@ -34,7 +37,7 @@ import static org.apache.sis.internal.referencing.provider.CassiniSoldner.*;
 
 
 /**
- * <cite>Cassini-Soldner</cite> projection (EPSG code 9806).
+ * <cite>Cassini-Soldner</cite> projection (EPSG codes 9806 and 9833).
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Cassini_projection">Cassini projection on Wikipedia</a></li>
@@ -54,7 +57,53 @@ public class CassiniSoldner extends MeridianArcBased {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 3007155786839466950L;
+    private static final long serialVersionUID = 8306467537772990906L;
+
+    /**
+     * The hyperbolic variants of this projection. {@link #VANUA} is the special case
+     * of <cite>Vanua Levu Grid</cite>, which is the only hyperbolic variant for which
+     * inverse projection is supported.
+     *
+     * @see #variant
+     */
+    private static final byte HYPERBOLIC = 1, VANUA = 2;
+
+    /**
+     * The latitude of {@link #VANUA} variant (16°15′S) in radians.
+     */
+    private static final double VANUA_LATITUDE = -(16 + 15./60) * (PI/180);
+
+    /**
+     * The type of Cassini-Soldner projection. Possible values are:
+     *
+     * <ul>
+     *   <li>{@link #STANDARD_VARIANT} if this projection is the standard variant.</li>
+     *   <li>{@link #HYPERBOLIC} if this projection is the "Hyperbolic Cassini-Soldner" case.</li>
+     *   <li>{@link #VANUA} if this projection is the "Hyperbolic Cassini-Soldner" case at φ₀=16°15′S.</li>
+     * </ul>
+     *
+     * Other cases may be added in the future.
+     */
+    private final byte variant;
+
+    /**
+     * Meridional distance <var>M</var> from equator to latitude of origin φ₀.
+     * This parameter is explicit only for the hyperbolic variants. The standard variant does not need it
+     * because {@link #M0} is subtracted in the {@linkplain ContextualParameters.MatrixRole#DENORMALIZATION
+     * denormalization matrix}.
+     */
+    private final double M0;
+
+    /**
+     * Returns the variant of the projection based on the name and identifier of the given operation method.
+     * See {@link #variant} for the list of possible values.
+     */
+    private static byte getVariant(final OperationMethod method) {
+        if (identMatch(method, "(?i).*\\bHyperbolic\\b.*", HyperbolicCassiniSoldner.IDENTIFIER)) {
+            return HYPERBOLIC;
+        }
+        return STANDARD_VARIANT;
+    }
 
     /**
      * Creates a Cassini-Soldner projection from the given parameters.
@@ -62,13 +111,14 @@ public class CassiniSoldner extends MeridianArcBased {
      *
      * <ul>
      *   <li><cite>"Cassini-Soldner"</cite>.</li>
+     *   <li><cite>"Hyperbolic Cassini-Soldner"</cite>.</li>
      * </ul>
      *
      * @param  method      description of the projection parameters.
      * @param  parameters  the parameter values of the projection to create.
      */
     public CassiniSoldner(final OperationMethod method, final Parameters parameters) {
-        this(initializer(method, parameters, STANDARD_VARIANT));
+        this(initializer(method, parameters));
     }
 
     /**
@@ -76,13 +126,13 @@ public class CassiniSoldner extends MeridianArcBased {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    static Initializer initializer(final OperationMethod method, final Parameters parameters, final byte variant) {
+    private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
         roles.put(ParameterRole.SCALE_FACTOR,     SCALE_FACTOR);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, variant);
+        return new Initializer(method, parameters, roles, getVariant(method));
     }
 
     /**
@@ -90,11 +140,16 @@ public class CassiniSoldner extends MeridianArcBased {
      */
     CassiniSoldner(final Initializer initializer) {
         super(initializer);
+        final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
+        M0 = distance(φ0, sin(φ0), cos(φ0));
         if (initializer.variant == STANDARD_VARIANT) {
-            final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
             final MatrixSIS denormalize = getContextualParameters().getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
             denormalize.convertBefore(1, null, -distance(φ0, sin(φ0), cos(φ0)));
+        } else if (abs(φ0 - VANUA_LATITUDE) <= ANGULAR_TOLERANCE) {
+            variant = VANUA;
+            return;
         }
+        variant = initializer.variant;
     }
 
     /**
@@ -102,6 +157,34 @@ public class CassiniSoldner extends MeridianArcBased {
      */
     CassiniSoldner(final CassiniSoldner other) {
         super(other);
+        this.variant = other.variant;
+        this.M0      = other.M0;
+    }
+
+    /**
+     * Returns the names of additional internal parameters which need to be taken in account when
+     * comparing two {@code CassiniSoldner} projections or formatting them in debug mode.
+     */
+    @Override
+    final String[] getInternalParameterNames() {
+        if (variant != STANDARD_VARIANT) {
+            return new String[] {"M₀"};
+        } else {
+            return super.getInternalParameterNames();
+        }
+    }
+
+    /**
+     * Returns the values of additional internal parameters which need to be taken in account when
+     * comparing two {@code CassiniSoldner} projections or formatting them in debug mode.
+     */
+    @Override
+    final double[] getInternalParameterValues() {
+        if (variant != STANDARD_VARIANT) {
+            return new double[] {M0};
+        } else {
+            return super.getInternalParameterValues();
+        }
     }
 
     /**
@@ -118,7 +201,7 @@ public class CassiniSoldner extends MeridianArcBased {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         CassiniSoldner kernel = this;
-        if (eccentricity == 0) {
+        if (eccentricity == 0 && variant == STANDARD_VARIANT) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
@@ -173,9 +256,20 @@ public class CassiniSoldner extends MeridianArcBased {
         if (dstPts != null) {
             dstPts[dstOff  ] = (A - T*A3/6 + Q*T*(A3*A2) / 120) / rν;
             dstPts[dstOff+1] = distance(φ, sinφ, cosφ) + tanφ*A2*(0.5 + S/4) / rν;
+            if (variant != STANDARD_VARIANT) {
+                /*
+                 * Offset: X³ / (6ρν)    where    ρ = (1 – ℯ²)⋅ν³
+                 *       = X³ / (6⋅(1 – ℯ²)⋅ν⁴)
+                 */
+                final double X = dstPts[dstOff+1] - M0;
+                dstPts[dstOff+1] = X - (X*X*X) / (6*(1 - eccentricitySquared) / (rν2*rν2));
+            }
         }
         if (!derivate) {
             return null;
+        }
+        if (variant != STANDARD_VARIANT) {
+            throw new ProjectionException(Resources.format(Resources.Keys.CanNotComputeDerivative));
         }
         /*
          * Following formulas have been derived with WxMaxima, then simplified by hand.
@@ -210,8 +304,25 @@ public class CassiniSoldner extends MeridianArcBased {
                                     final double[] dstPts, final int dstOff)
             throws ProjectionException
     {
-        final double x     = srcPts[srcOff  ];
-        final double y     = srcPts[srcOff+1];
+        double x = srcPts[srcOff  ];
+        double y = srcPts[srcOff+1];
+        if (variant != STANDARD_VARIANT) {
+            if (variant != VANUA) {
+                throw new ProjectionException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, "φ₀≠16°15′S"));
+            }
+            /*
+             * Following symbols are related to EPSG symbols with indices and primes dropped, and some multiplication
+             * factors inserted or implicit. EPSG said that this formula is specifically for the Fiji Vanua Levu grid.
+             * I presume that the specificity is in the 315320 constant, which needs to be divided by semi-major axis
+             * length in our implementation. We take the axis length of Fiji Vanua Levu grid on the assumption that it
+             * is the axis length used for computing the 315320 constant.
+             */
+            final double sinφ = sin(VANUA_LATITUDE + y * (317063.667 / 315320));    // Constants are: a / (value from EPSG)
+            final double rν2  = 1 - eccentricitySquared*(sinφ*sinφ);                // = 1/√ν₁′       (ν₁′ defined by EPSG)
+            final double ρν   = 6*(1 - eccentricitySquared)/(rν2 * rν2);            // = 6⋅ρ₁′ν₁′/a²  (ρ₁′ defined by EPSG)
+            final double q    = y + y*y*y / ρν;                                     // = (N + q′)/a   (q′  defined by EPSG)
+            y += q*q*q / ρν + M0;
+        }
         final double φ1    = latitude(y);
         final double sinφ1 = sin(φ1);
         final double cosφ1 = cos(φ1);

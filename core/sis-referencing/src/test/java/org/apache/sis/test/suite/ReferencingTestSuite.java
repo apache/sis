@@ -182,7 +182,6 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.TransverseMercatorTest.class,
     org.apache.sis.referencing.operation.projection.ZonedGridSystemTest.class,
     org.apache.sis.referencing.operation.projection.CassiniSoldnerTest.class,
-    org.apache.sis.referencing.operation.projection.HyperbolicCassiniSoldnerTest.class,
     org.apache.sis.referencing.operation.projection.PolarStereographicTest.class,
     org.apache.sis.referencing.operation.projection.ObliqueStereographicTest.class,
     org.apache.sis.referencing.operation.projection.ObliqueMercatorTest.class,
