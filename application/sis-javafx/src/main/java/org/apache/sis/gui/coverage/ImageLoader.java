@@ -110,7 +110,7 @@ final class ImageLoader extends Task<RenderedImage> {
         if (cv == null) {
             GridGeometry domain = request.getDomain().orElse(null);
             final int[]  range  = request.getRange() .orElse(null);
-            if (request.getOverviewSize().isPresent()) {
+            {
                 if (domain == null) {
                     domain = request.resource.getGridGeometry();
                 }
@@ -118,9 +118,8 @@ final class ImageLoader extends Task<RenderedImage> {
                     domain = slice(domain).build();
                 }
                 /*
-                 * TODO: we should apply a subsampling here. GridDerivation has the API for that,
-                 * what is missing is to transmit this information to GridView column and row headers.
-                 * See ImageRequest.setOverviewSize(int).
+                 * TODO: We restrict loading to a two-dimensional slice for now.
+                 * Future version will need to give user control over slices.
                  */
             }
             cv = request.resource.read(domain, range);                      // May be long to execute.

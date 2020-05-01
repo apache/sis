@@ -24,6 +24,7 @@ import java.util.Set;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -33,6 +34,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.scene.image.Image;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.apache.sis.gui.dataset.ResourceExplorer;
 import org.apache.sis.internal.gui.BackgroundThreads;
@@ -140,12 +142,13 @@ public class DataViewer extends Application {
         final BorderPane pane = new BorderPane();
         pane.setTop(menus);
         pane.setCenter(content.getView());
+        final Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
         window.setTitle("Apache Spatial Information System");
         window.getIcons().addAll(new Image(DataViewer.class.getResourceAsStream("SIS_64px.png")),
                                  new Image(DataViewer.class.getResourceAsStream("SIS_128px.png")));
         window.setScene(new Scene(pane));
-        window.setWidth(1000);
-        window.setHeight(800);
+        window.setWidth (0.75 * bounds.getWidth());
+        window.setHeight(0.75 * bounds.getHeight());
         window.show();
     }
 
