@@ -663,7 +663,7 @@ public abstract class MapCanvas extends PlanarCanvas {
             if (invalidObjectiveToDisplay) {
                 invalidObjectiveToDisplay = false;
                 LinearTransform tr;
-                final CoordinateReferenceSystem crs;
+                CoordinateReferenceSystem crs;
                 if (objectiveBounds != null) {
                     crs = objectiveBounds.getCoordinateReferenceSystem();
                     final Envelope2D target = getDisplayBounds();
@@ -673,6 +673,10 @@ public abstract class MapCanvas extends PlanarCanvas {
                 } else {
                     tr = MathTransforms.identity(BIDIMENSIONAL);
                     crs = null;
+                }
+                if (crs == null) {
+                    // TODO: build an EngineeringCRS reflecting better the data.
+                    crs = getDisplayCRS();
                 }
                 setObjectiveCRS(crs);
                 setObjectiveToDisplay(tr);

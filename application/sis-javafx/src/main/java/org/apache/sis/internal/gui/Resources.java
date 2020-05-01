@@ -336,6 +336,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short TypeOfResource = 26;
 
         /**
+         * Visual
+         */
+        public static final short Visual = 59;
+
+        /**
          * Visualize
          */
         public static final short Visualize = 52;

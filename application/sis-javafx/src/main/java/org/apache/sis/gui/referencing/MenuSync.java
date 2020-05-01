@@ -241,7 +241,10 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
                 }
             }
             group.selectToggle(null);
-            action.changed(this, old, null);
+            /*
+             * Do not invoke action.changed(…) since we have no non-null value to provide.
+             * Invoking that method with a null value would cause the CRSChooser to popup.
+             */
         }
     }
 }
