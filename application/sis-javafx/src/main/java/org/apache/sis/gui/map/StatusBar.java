@@ -635,7 +635,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *         will return a little bit later (pending completion of a background task).
      */
     private CoordinateReferenceSystem setReplaceablePositionCRS(CoordinateReferenceSystem crs) {
-        if (crs != null) {
+        if (crs != null && systemChooser != null) {
             final ComparisonMode mode = systemChooser.duplicationCriterion.get();
             for (final ReferenceSystem system : systemChooser.getItems()) {
                 if (Utilities.deepEquals(crs, system, mode)) {

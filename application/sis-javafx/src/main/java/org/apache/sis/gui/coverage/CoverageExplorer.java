@@ -24,7 +24,6 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Toggle;
 import javafx.scene.layout.Region;
 import javafx.event.ActionEvent;
-import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -32,8 +31,10 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.ToolbarButton;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
+import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.Widget;
 
 
@@ -124,12 +125,12 @@ public class CoverageExplorer extends Widget {
     private boolean isCoverageAdjusting;
 
     /**
-     * The control that put everything together.
+     * The control that put everything together, created when first requested.
      * The type of control may change in any future SIS version.
      *
      * @see #getView()
      */
-    private final SplitPane content;
+    private SplitPane content;
 
     /**
      * The different views we can provide on {@link #coverageProperty},
@@ -148,24 +149,15 @@ public class CoverageExplorer extends Widget {
     public CoverageExplorer() {
         coverageProperty = new SimpleObjectProperty<>(this, "coverage");
         viewTypeProperty = new NonNullObjectProperty<>(this, "viewType", View.TABLE);
-        coverageProperty.addListener(this::onCoverageSpecified);
-        viewTypeProperty.addListener(this::onViewTypeSpecified);
+        coverageProperty.addListener((p,o,n) -> onCoverageSpecified(n));
         referenceSystems = new RecentReferenceSystems();
         referenceSystems.addUserPreferences();
         referenceSystems.addAlternatives("EPSG:4326", "EPSG:3395");         // WGS 84 / World Mercator
         /*
-         * Prepare buttons to add on the toolbar. Those buttons are not managed by this class;
-         * they are managed by org.apache.sis.gui.dataset.DataWindow. We only declare here the
-         * text and action for each button.
-         */
-        final View[]  viewTypes = View.values();
-        final ToggleGroup group = new ToggleGroup();
-        final Control[] buttons = new Control[viewTypes.length + 1];
-        buttons[0] = new Separator();
-        /*
          * The coverage property may be shown in various ways (tabular data, image).
          * Each visualization way is an entry in the `views` array.
          */
+        final View[]     viewTypes  = View.values();
         final Locale     locale     = null;
         final Resources  localized  = Resources.forLocale(locale);
         final Vocabulary vocabulary = Vocabulary.getResources(locale);
@@ -179,15 +171,57 @@ public class CoverageExplorer extends Widget {
             }
             SplitPane.setResizableWithParent(c.controls(), Boolean.FALSE);
             SplitPane.setResizableWithParent(c.view(),     Boolean.TRUE);
-            c.selector = new Selector(type).createButton(group, type.icon, localized, type.tooltip);
-            buttons[buttons.length - type.ordinal() - 1] = c.selector;  // Buttons in reverse order.
             views[type.ordinal()] = c;
         }
-        final Controls c = views[0];                            // First View enumeration is default value.
-        group.selectToggle(group.getToggles().get(0));
-        content = new SplitPane(c.controls(), c.view());
-        content.setDividerPosition(0, INITIAL_SPLIT);
-        ToolbarButton.insert(content, buttons);
+    }
+
+    /**
+     * Returns the region containing the grid or coverage view, band selector and any control managed by this
+     * {@code CoverageExplorer}. The {@link Region} subclass returned by this method is implementation dependent
+     * and may change in any future version.
+     *
+     * @return the region to show.
+     */
+    @Override
+    public final Region getView() {
+        if (content == null) {
+            /*
+             * Prepare buttons to add on the toolbar. Those buttons are not managed by this class;
+             * they are managed by org.apache.sis.gui.dataset.DataWindow. We only declare here the
+             * text and action for each button.
+             */
+            final Locale      locale  = null;
+            final ToggleGroup group   = new ToggleGroup();
+            final Control[]   buttons = new Control[views.length + 1];
+            final Resources localized = Resources.forLocale(locale);
+            buttons[0] = new Separator();
+            for (final View type : View.values()) {
+                final Controls c = views[type.ordinal()];
+                c.selector = new Selector(type).createButton(group, type.icon, localized, type.tooltip);
+                buttons[buttons.length - type.ordinal() - 1] = c.selector;  // Buttons in reverse order.
+            }
+            final Controls c = views[0];                            // First View enumeration is default value.
+            group.selectToggle(group.getToggles().get(0));
+            content = new SplitPane(c.controls(), c.view());
+            content.setDividerPosition(0, INITIAL_SPLIT);
+            ToolbarButton.insert(content, buttons);
+            viewTypeProperty.addListener((p,o,n) -> onViewTypeSpecified(n));
+        }
+        return content;
+    }
+
+    /**
+     * Returns the region containing the only the data visualization part, without controls.
+     * This is a {@link GridView} or {@link CoverageCanvas} together with their {@link StatusBar}.
+     * The {@link Region} subclass returned by this method is implementation dependent and may change
+     * in any future version.
+     *
+     * @param  view  whether to obtain a {@link GridView} or {@link CoverageCanvas}.
+     * @return the requested view for the {@link #coverageProperty}.
+     */
+    public final Region getDataView(final View view) {
+        ArgumentChecks.ensureNonNull("view", view);
+        return views[view.ordinal()].view();
     }
 
     /**
@@ -211,18 +245,6 @@ public class CoverageExplorer extends Widget {
                 button.setSelected(true);       // Prevent situation where all buttons are unselected.
             }
         }
-    }
-
-    /**
-     * Returns the region containing the grid view, band selector and any other control managed
-     * by this {@code CoverageExplorer}. The subclass is implementation dependent and may change
-     * in any future version.
-     *
-     * @return the region to show.
-     */
-    @Override
-    public final Region getView() {
-        return content;
     }
 
     /**
@@ -273,13 +295,9 @@ public class CoverageExplorer extends Widget {
      * This method notifies the GUI controls about the change then starts loading
      * data in a background thread.
      *
-     * @param  property  the {@link #coverageProperty} (ignored).
-     * @param  previous  ignored.
      * @param  coverage  the new coverage.
      */
-    private void onCoverageSpecified(final ObservableValue<? extends GridCoverage> property,
-                                     final GridCoverage previous, final GridCoverage coverage)
-    {
+    private void onCoverageSpecified(final GridCoverage coverage) {
         if (!isCoverageAdjusting) {
             startLoading(null);                                         // Clear data.
             notifyCoverageChange(coverage);
@@ -364,13 +382,9 @@ public class CoverageExplorer extends Widget {
     /**
      * Invoked when a new view type has been specified.
      *
-     * @param  property  the {@link #viewTypeProperty} (ignored).
-     * @param  previous  ignored.
-     * @param  view      the new view type.
+     * @param  view  the new view type.
      */
-    private void onViewTypeSpecified(final ObservableValue<? extends View> property,
-                                     final View previous, final View view)
-    {
+    private void onViewTypeSpecified(final View view) {
         final Controls c = views[view.ordinal()];
         content.getItems().setAll(c.controls(), c.view());
         ((Toggle) c.selector).setSelected(true);

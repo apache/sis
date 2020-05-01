@@ -17,7 +17,6 @@
 package org.apache.sis.gui.coverage;
 
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Control;
@@ -68,7 +67,7 @@ final class GridControls extends Controls {
         view = new GridView(referenceSystems);
         sampleDimensions = new CategoryCellFactory(view.cellFormat).createSampleDimensionTable(vocabulary);
         sampleDimensions.getSelectionModel().selectedIndexProperty().addListener(new BandSelectionListener(view.bandProperty));
-        view.bandProperty.addListener(this::onBandSpecified);
+        view.bandProperty.addListener((p,o,n) -> onBandSpecified(n));
         /*
          * "Coverage" section with the following controls:
          *    - Coverage domain as a list of CRS dimensions with two of them selected (TODO).
@@ -124,9 +123,7 @@ final class GridControls extends Controls {
      * Invoked when the band property changed. This method ensures that the selected row
      * in the sample dimension table matches the band which is shown in the grid view.
      */
-    private void onBandSpecified(final ObservableValue<? extends Number> property,
-                                 final Number previous, final Number band)
-    {
+    private void onBandSpecified(final Number band) {
         sampleDimensions.getSelectionModel().clearAndSelect(band.intValue());
     }
 

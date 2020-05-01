@@ -23,7 +23,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.scene.layout.Region;
-import javafx.scene.control.Control;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
@@ -34,8 +33,8 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.gui.metadata.MetadataSummary;
 import org.apache.sis.gui.metadata.MetadataTree;
 import org.apache.sis.gui.metadata.StandardMetadataTree;
-import org.apache.sis.gui.coverage.GridView;
 import org.apache.sis.gui.coverage.ImageRequest;
+import org.apache.sis.gui.coverage.CoverageExplorer;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.util.collection.TableColumn;
@@ -43,7 +42,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * A panel showing a {@linkplain ResourceTree tree of resources} together with their metadata.
+ * A panel showing a {@linkplain ResourceTree tree of resources} together with their metadata and data views.
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
@@ -70,7 +69,7 @@ public class ResourceExplorer extends WindowManager {
     /**
      * The data as a grid coverage, created when first needed.
      */
-    private GridView coverage;
+    private CoverageExplorer coverage;
 
     /**
      * The widget showing metadata about a selected resource.
@@ -86,7 +85,7 @@ public class ResourceExplorer extends WindowManager {
     private final SplitPane content;
 
     /**
-     * The tab where to show {@link #features} or {@link #coverage}, depending on the kind of resource.
+     * The tab where to show {@link #features} or {@link #coverage} numerical data, depending on the kind of resource.
      * The data will be set only if this tab is visible, because their loading may be costly.
      */
     private final Tab dataTab;
@@ -218,16 +217,16 @@ public class ResourceExplorer extends WindowManager {
      * @param  resource  the resource to set, or {@code null} if none.
      */
     private void updateDataTab(final Resource resource) {
-        Control      view  = null;
+        Region       view  = null;
         FeatureSet   table = null;
         ImageRequest grid  = null;
         if (resource instanceof GridCoverageResource) {
             grid = new ImageRequest((GridCoverageResource) resource, null, 0);
             grid.setOverviewSize(OVERVIEW_SIZE);
             if (coverage == null) {
-                coverage = new GridView();
+                coverage = new CoverageExplorer();
             }
-            view = coverage;
+            view = coverage.getDataView(CoverageExplorer.View.TABLE);
         } else if (resource instanceof FeatureSet) {
             table = (FeatureSet) resource;
             if (features == null) {
@@ -239,7 +238,7 @@ public class ResourceExplorer extends WindowManager {
          * At least one of `grid` or `table` will be null. Invoking the following
          * setter methods with a null argument will release memory.
          */
-        if (coverage != null) coverage.setImage(grid);
+        if (coverage != null) coverage.setCoverage(grid);
         if (features != null) features.setFeatures(table);
         if (view     != null) dataTab .setContent(view);
         if (isDataTabSet) {
