@@ -53,11 +53,6 @@ import org.apache.sis.gui.Widget;
  */
 public class CoverageExplorer extends Widget {
     /**
-     * Initial position of divider in split panes.
-     */
-    private static final double INITIAL_SPLIT = 200;
-
-    /**
      * Type of view shown in the explorer.
      * It may be either an image or a table of numerical values.
      */
@@ -203,15 +198,22 @@ public class CoverageExplorer extends Widget {
             final Controls c = views[0];                            // First View enumeration is default value.
             group.selectToggle(group.getToggles().get(0));
             content = new SplitPane(c.controls(), c.view());
-            content.setDividerPosition(0, INITIAL_SPLIT);
             ToolbarButton.insert(content, buttons);
             viewTypeProperty.addListener((p,o,n) -> onViewTypeSpecified(n));
+            /*
+             * The divider position is supposed to be a fraction between 0 and 1. A value of 1 would mean
+             * to give all the space to controls and no space to data, which is not what we want. However
+             * experience with JavaFX 14 shows that this setting gives just a reasonable space to controls
+             * and most space to data. I have not identified the cause of this surprising behavior.
+             * A smaller value result in too few space for the controls.
+             */
+            content.setDividerPosition(0, 1);
         }
         return content;
     }
 
     /**
-     * Returns the region containing the only the data visualization part, without controls.
+     * Returns the region containing only the data visualization component, without controls.
      * This is a {@link GridView} or {@link CoverageCanvas} together with their {@link StatusBar}.
      * The {@link Region} subclass returned by this method is implementation dependent and may change
      * in any future version.
@@ -222,6 +224,19 @@ public class CoverageExplorer extends Widget {
     public final Region getDataView(final View view) {
         ArgumentChecks.ensureNonNull("view", view);
         return views[view.ordinal()].view();
+    }
+
+    /**
+     * Returns the region containing only the controls, without data visualization component.
+     * The {@link Region} subclass returned by this method is implementation dependent and may
+     * change in any future version.
+     *
+     * @param  view  whether to obtain controls for {@link GridView} or {@link CoverageCanvas}.
+     * @return the controls on specified data view.
+     */
+    public final Region getControls(final View view) {
+        ArgumentChecks.ensureNonNull("view", view);
+        return views[view.ordinal()].controls();
     }
 
     /**
