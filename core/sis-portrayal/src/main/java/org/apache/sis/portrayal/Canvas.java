@@ -480,11 +480,15 @@ public class Canvas extends Observable implements Localized {
 
     /**
      * Sets the Coordinate Reference System in which all data are transformed before displaying.
-     * The given CRS should have a domain of validity wide enough for encompassing all data
+     * The new CRS must be compatible with the previous CRS, i.e. a coordinate operation between
+     * the two CRSs shall exist. If this is not the case (e.g. for rendering completely new data),
+     * use {@link #setGridGeometry(GridGeometry)} instead.
+     *
+     * <p>The given CRS should have a domain of validity wide enough for encompassing all data
      * (the {@link CRS#suggestCommonTarget CRS.suggestCommonTarget(…)} method may be helpful
      * for choosing an objective CRS from a set of data CRS).
      * If the given value is different than the previous value, then a change event is sent to
-     * all listeners registered for the {@value #OBJECTIVE_CRS_PROPERTY} property.
+     * all listeners registered for the {@value #OBJECTIVE_CRS_PROPERTY} property.</p>
      *
      * <p>If the transform between old and new CRS is not identity, then this method recomputes
      * the <cite>objective to display</cite> conversion in a way preserving the display coordinates
@@ -528,8 +532,8 @@ public class Canvas extends Observable implements Localized {
                      * (same location, same Jacobian matrix) in the neighborhood of the point of interest,
                      * so that we can apply the old `objectiveToCRS` transform. For achieving that goal,
                      * we apply a local affine transform which cancel the effect of "old CRS → new CRS"
-                     * transformation around the point of interest. The effect of CRS change will appear
-                     * as we look further from the point of interest.
+                     * transformation around the point of interest. The deformations caused by CRS change
+                     * will be more visible as we look further from the point of interest.
                      */
                     final MathTransform  poiToNew = findTransform(pointOfInterest.getCoordinateReferenceSystem(), newValue);
                     final DirectPosition poiInNew = poiToNew.transform(pointOfInterest, allocatePosition());
@@ -1061,6 +1065,9 @@ public class Canvas extends Observable implements Localized {
     /**
      * Computes the value for {@link #objectiveToGeographic}. The value is not stored by this method for
      * giving caller a chance to validate other properties before to write them in a "all or nothing" way.
+     *
+     * @param  crs  the new objective CRS in process of being set by the caller.
+     * @return the conversion from given CRS to geographic CRS, or {@code null} if none.
      */
     private CoordinateOperation objectiveToGeographic(final CoordinateReferenceSystem crs) throws FactoryException {
         final GeographicCRS geoCRS = ReferencingUtilities.toNormalizedGeographicCRS(crs, false, false);
@@ -1073,14 +1080,12 @@ public class Canvas extends Observable implements Localized {
      * CRS may differ depending on which area is currently visible in the canvas. All requests for a coordinate
      * operation should invoke this method instead than {@link CRS#findOperation(CoordinateReferenceSystem,
      * CoordinateReferenceSystem, GeographicBoundingBox)}.
-     *
-     * @todo verify if bounding box/resolution are up-to-date.
      */
     private MathTransform findTransform(final CoordinateReferenceSystem source,
                                         final CoordinateReferenceSystem target)
-            throws FactoryException, RenderException
+            throws FactoryException, TransformException, RenderException
     {
-        operationContext.refresh();
+        operationContext.refresh(this);
         return coordinateOperationFactory.createOperation(source, target, operationContext).getMathTransform();
     }
 

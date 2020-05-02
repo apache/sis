@@ -264,6 +264,7 @@ public class ResourceExplorer extends WindowManager {
         Region       table = null;
         FeatureSet   data  = null;
         ImageRequest grid  = null;
+        CoverageExplorer.View type = null;
         if (resource instanceof GridCoverageResource) {
             grid = new ImageRequest((GridCoverageResource) resource, null, 0);
             if (coverage == null) {
@@ -271,6 +272,7 @@ public class ResourceExplorer extends WindowManager {
             }
             image = coverage.getDataView(CoverageExplorer.View.IMAGE);
             table = coverage.getDataView(CoverageExplorer.View.TABLE);
+            type  = viewTab.isSelected() ? CoverageExplorer.View.IMAGE : CoverageExplorer.View.TABLE;
         } else if (resource instanceof FeatureSet) {
             data = (FeatureSet) resource;
             if (features == null) {
@@ -288,6 +290,7 @@ public class ResourceExplorer extends WindowManager {
         if (table    != null) tableTab.setContent(table);
         if (isDataTabSet) {
             setNewWindowDisabled(image == null && table == null);
+            updateControls(type);
         }
     }
 
@@ -300,14 +303,26 @@ public class ResourceExplorer extends WindowManager {
      * @param  visual    {@code true} for visual, or {@code false} for tabular data.
      */
     private void dataTabShown(final Boolean selected, final boolean visual) {
-        Region controlPanel = null;
+        CoverageExplorer.View type = null;
         if (selected) {
             if (!isDataTabSet) {
                 isDataTabSet = true;                    // Must be set before to invoke `updateDataTab(…)`.
                 updateDataTab(selectedResource.get());
             }
-            controlPanel = coverage.getControls(visual ? CoverageExplorer.View.IMAGE : CoverageExplorer.View.TABLE);
+            if (coverage != null) {                     // May still be null if selected resource is not a coverage.
+                type = visual ? CoverageExplorer.View.IMAGE : CoverageExplorer.View.TABLE;
+            }
         }
+        updateControls(type);
+    }
+
+    /**
+     * Adds or removes controls for the given view.
+     *
+     * @param  type  the view for which to provide controls, or {@code null} if none.
+     */
+    private void updateControls(final CoverageExplorer.View type) {
+        final Region controlPanel = (type != null) ? coverage.getControls(type) : null;
         final ObservableList<Node> items = controls.getItems();
         if (items.size() >= 2) {
             if (controlPanel != null) {

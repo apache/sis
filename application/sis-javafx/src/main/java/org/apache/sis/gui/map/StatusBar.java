@@ -320,6 +320,15 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private ChangeListener<Boolean> renderingListener;
 
     /**
+     * The listener registered on {@link MapCanvas#errorProperty()}, or {@code null} if the
+     * listener has not yet been registered. This listener is remembered for allowing removal.
+     *
+     * @see #canvas
+     * @see #onCanvasSpecified(MapCanvas, MapCanvas)
+     */
+    private ChangeListener<Throwable> errorListener;
+
+    /**
      * Whether the mouse listeners have been registered. Those listeners are registered the
      * first time that {@link #apply(GridGeometry)} is invoked on a newly initialized canvas.
      */
@@ -415,11 +424,13 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             previous.floatingPane.removeEventHandler(MouseEvent.MOUSE_EXITED,  this);
             previous.floatingPane.removeEventHandler(MouseEvent.MOUSE_MOVED,   this);
             previous.renderingProperty().removeListener(renderingListener);
+            previous.errorProperty().removeListener(errorListener);
             renderingListener = null;
             isMouseListenerRegistered = false;
         }
         if (value != null) {
             value.renderingProperty().addListener(renderingListener = new RenderingListener());
+            value.errorProperty().addListener(errorListener = (p,o,n) -> setRenderingError(n));
         }
         position.setText(null);
         registerMouseListeners(value);
@@ -469,7 +480,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                  * Do not try to rewrite position neither since `lastX` and `lastY` are not valid anymore.
                  */
             } catch (RenderException e) {
-                setErrorMessage(null, e);
+                setRenderingError(e);
             }
         }
     }
@@ -696,9 +707,10 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                  * the coordinates will appear in red for telling user that there is a problem.
                  */
                 @Override protected void failed() {
-                    final Locale locale = format.getLocale(Locale.Category.DISPLAY);
+                    final Locale locale = getLocale();
                     setErrorMessage(Resources.forLocale(locale).getString(Resources.Keys.CanNotUseRefSys_1,
                                     IdentifiedObjects.getDisplayName(crs, locale)), getException());
+                    selectedSystem.set(format.getDefaultCRS());
                     resetPositionCRS(Styles.ERROR_TEXT);
                 }
             });
@@ -731,6 +743,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @param  operation  the new value to assign to {@link #objectiveToPositionCRS}
      */
     private void setPositionCRS(final CoordinateReferenceSystem crs, final CoordinateOperation operation) {
+        setErrorMessage(null, null);
         Length accuracy = null;
         double a = CRS.getLinearAccuracy(operation);
         if (a > 0) {
@@ -771,7 +784,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private void setFormatCRS(final CoordinateReferenceSystem crs, final Length accuracy) {
         format.setDefaultCRS(crs);
         format.setGroundAccuracy(accuracy);
-        String text = IdentifiedObjects.getDisplayName(crs, format.getLocale(Locale.Category.DISPLAY));
+        String text = IdentifiedObjects.getDisplayName(crs, getLocale());
         Tooltip tp = null;
         if (text != null) {
             tp = position.getTooltip();
@@ -1041,7 +1054,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         text = Strings.trimOrNull(text);
         Button more = null;
         if (details != null) {
-            final Locale locale = format.getLocale(Locale.Category.DISPLAY);
+            final Locale locale = getLocale();
             if (text == null) {
                 text = Exceptions.getLocalizedMessage(details, locale);
                 if (text == null) {
@@ -1057,5 +1070,25 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         message.setGraphic(more);
         message.setText(text);
         message.setTextFill(Styles.ERROR_TEXT);
+    }
+
+    /**
+     * Shown an error message that occurred in the context of rendering the {@link #canvas} content.
+     * This method should not be invoked for other context like an error during transformation of
+     * coordinates shown is the status bar.
+     */
+    private void setRenderingError(final Throwable details) {
+        String text = null;
+        if (details != null) {
+            text = Resources.forLocale(getLocale()).getString(Resources.Keys.CanNotRender);
+        }
+        setErrorMessage(text, details);
+    }
+
+    /**
+     * Returns the locale for error messages.
+     */
+    private Locale getLocale() {
+        return format.getLocale(Locale.Category.DISPLAY);
     }
 }

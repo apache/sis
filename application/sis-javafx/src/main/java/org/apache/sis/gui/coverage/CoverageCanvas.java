@@ -26,7 +26,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
@@ -113,8 +112,8 @@ public class CoverageCanvas extends MapCanvasAWT {
         sliceExtentProperty    = new SimpleObjectProperty<>(this, "sliceExtent");
         dataAlternatives       = new EnumMap<>(RangeType.class);
         currentDataAlternative = RangeType.DECLARED;
-        coverageProperty   .addListener(this::onImageSpecified);
-        sliceExtentProperty.addListener(this::onImageSpecified);
+        coverageProperty   .addListener((p,o,n) -> onImageSpecified());
+        sliceExtentProperty.addListener((p,o,n) -> onImageSpecified());
     }
 
     /**
@@ -194,12 +193,9 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * Invoked when a new coverage has been specified or when the slice extent changed.
-     *
-     * @param  property  the {@link #coverageProperty} or {@link #sliceExtentProperty} (ignored).
-     * @param  previous  ignored.
-     * @param  value     ignored.
+     * This method starts loading in a background thread.
      */
-    private void onImageSpecified(final ObservableValue<?> property, final Object previous, final Object value) {
+    private void onImageSpecified() {
         data = null;
         dataAlternatives.clear();
         final GridCoverage coverage = getCoverage();

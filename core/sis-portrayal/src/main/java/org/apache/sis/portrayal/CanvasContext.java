@@ -95,6 +95,8 @@ final class CanvasContext extends CoordinateOperationContext {
 
     /**
      * Sets the operation from {@link Canvas#objectiveCRS} to geographic CRS.
+     *
+     * @param  op  the conversion from objective CRS to geographic CRS, or {@code null} if none.
      */
     final void setObjectiveToGeographic(final CoordinateOperation op) {
         objectiveToGeographic = op;
@@ -152,10 +154,13 @@ final class CanvasContext extends CoordinateOperationContext {
 
     /**
      * Recomputes {@link #geographicArea} and {@link #resolution} fields that are not valid.
-     * This method assumes that {@link #objectiveToGeographic} is valid.
+     * This method assumes that {@link #objectiveToGeographic} is {@code null} or valid.
      */
     @SuppressWarnings("fallthrough")
     private void recompute(final Canvas canvas) throws TransformException {
+        if (objectiveToGeographic == null) {
+            return;
+        }
         final LinearTransform objectiveToDisplay = canvas.getObjectiveToDisplay();
         final MathTransform displayToGeographic = MathTransforms.concatenate(
                             objectiveToDisplay.inverse(),
@@ -207,7 +212,8 @@ final class CanvasContext extends CoordinateOperationContext {
      * Sets the {@link CoordinateOperationContext} object to the desired area and accuracy
      * of the coordinate operation to obtain.
      */
-    final void refresh() {
+    final void refresh(final Canvas canvas) throws TransformException {
+        recompute(canvas);
         setAreaOfInterest(geographicArea);                          // null for default behavior.
         setDesiredAccuracy(resolution * DISPLAY_RESOLUTION);        // 0 for default behavior.
     }

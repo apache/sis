@@ -41,20 +41,24 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 import org.opengis.geometry.Envelope;
+import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
-import org.apache.sis.internal.system.Modules;
 
 
 /**
@@ -662,11 +666,11 @@ public abstract class MapCanvas extends PlanarCanvas {
              */
             if (invalidObjectiveToDisplay) {
                 invalidObjectiveToDisplay = false;
-                LinearTransform tr;
+                final LinearTransform tr;
                 CoordinateReferenceSystem crs;
+                final Envelope2D target = getDisplayBounds();
                 if (objectiveBounds != null) {
                     crs = objectiveBounds.getCoordinateReferenceSystem();
-                    final Envelope2D target = getDisplayBounds();
                     final MatrixSIS m = Matrices.createTransform(objectiveBounds, target);
                     Matrices.forceUniformScale(m, 0, new double[] {target.width / 2, target.height / 2});
                     tr = MathTransforms.linear(m);
@@ -678,11 +682,14 @@ public abstract class MapCanvas extends PlanarCanvas {
                     // TODO: build an EngineeringCRS reflecting better the data.
                     crs = getDisplayCRS();
                 }
-                setObjectiveCRS(crs);
-                setObjectiveToDisplay(tr);
+                final GridExtent extent = new GridExtent(null,
+                        new long[] {Math.round(target.getMinX()), Math.round(target.getMinY())},
+                        new long[] {Math.round(target.getMaxX()), Math.round(target.getMaxY())}, false);
+                setGridGeometry(new GridGeometry(extent, PixelInCell.CELL_CORNER, tr.inverse(), crs));
                 transform.setToIdentity();
             }
-        } catch (RenderException ex) {
+        } catch (NoninvertibleTransformException | RenderException ex) {
+            floatingPane.setCursor(Cursor.CROSSHAIR);
             errorOccurred(ex);
             return;
         }
