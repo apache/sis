@@ -218,8 +218,9 @@ public class ImageRequest {
         /*
          * By `GridCoverage.render(GridExtent)` contract, the `RenderedImage` pixel coordinates are relative
          * to the requested `GridExtent`. Consequently we need to translate the image coordinates so that it
-         * become the coordinates of the original `GridGeometry` before to apply `gridToCRS`. It is okay to
-         * modify `StatusBar.localToObjectiveCRS` because we do not associate it to a `MapCanvas`.
+         * become the coordinates of the original `GridGeometry` before to apply `gridToCRS`.  It is okay to
+         * modify `StatusBar.localToObjectiveCRS` because we do not associate it to a `MapCanvas`, so it will
+         * not be overwritten by gesture events (zoom, pan, etc).
          */
         if (request != null) {
             final double[] origin = new double[request.getDimension()];

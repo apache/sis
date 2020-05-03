@@ -43,7 +43,7 @@ import javafx.scene.transform.NonInvertibleTransformException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -666,29 +666,30 @@ public abstract class MapCanvas extends PlanarCanvas {
              */
             if (invalidObjectiveToDisplay) {
                 invalidObjectiveToDisplay = false;
-                final LinearTransform tr;
-                CoordinateReferenceSystem crs;
                 final Envelope2D target = getDisplayBounds();
-                if (objectiveBounds != null) {
-                    crs = objectiveBounds.getCoordinateReferenceSystem();
-                    final MatrixSIS m = Matrices.createTransform(objectiveBounds, target);
-                    Matrices.forceUniformScale(m, 0, new double[] {target.width / 2, target.height / 2});
-                    tr = MathTransforms.linear(m);
-                } else {
-                    tr = MathTransforms.identity(BIDIMENSIONAL);
-                    crs = null;
-                }
-                if (crs == null) {
-                    // TODO: build an EngineeringCRS reflecting better the data.
-                    crs = getDisplayCRS();
-                }
                 final GridExtent extent = new GridExtent(null,
                         new long[] {Math.round(target.getMinX()), Math.round(target.getMinY())},
                         new long[] {Math.round(target.getMaxX()), Math.round(target.getMaxY())}, false);
-                setGridGeometry(new GridGeometry(extent, PixelInCell.CELL_CORNER, tr.inverse(), crs));
+
+                final LinearTransform crsToDisplay;
+                CoordinateReferenceSystem crs;
+                if (objectiveBounds != null) {
+                    final MatrixSIS m = Matrices.createTransform(objectiveBounds, target);
+                    Matrices.forceUniformScale(m, 0, new double[] {target.width / 2, target.height / 2});
+                    crsToDisplay = MathTransforms.linear(m);
+                    crs = objectiveBounds.getCoordinateReferenceSystem();
+                    if (crs == null) {
+                        crs = extent.toEnvelope(crsToDisplay.inverse()).getCoordinateReferenceSystem();
+                        // CRS computed above should not be null.
+                    }
+                } else {
+                    crsToDisplay = MathTransforms.identity(BIDIMENSIONAL);
+                    crs = getDisplayCRS();
+                }
+                setGridGeometry(new GridGeometry(extent, PixelInCell.CELL_CORNER, crsToDisplay.inverse(), crs));
                 transform.setToIdentity();
             }
-        } catch (NoninvertibleTransformException | RenderException ex) {
+        } catch (TransformException | RenderException ex) {
             floatingPane.setCursor(Cursor.CROSSHAIR);
             errorOccurred(ex);
             return;

@@ -35,6 +35,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.cs.VerticalCS;
@@ -49,16 +50,20 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.datum.TemporalDatum;
+import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
+import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultTimeCS;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
+import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
+import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -69,6 +74,7 @@ import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -125,7 +131,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
  *
@@ -1770,6 +1776,140 @@ public enum CommonCRS {
                 return ((TemporalCRS) object).getDatum();
             }
             return null;
+        }
+    }
+
+
+
+
+    /**
+     * Frequently-used engineering CRS and datum that are guaranteed to be available in SIS.
+     * Below is an alphabetical list of object names available in this enumeration:
+     *
+     * <blockquote><table class="sis">
+     *   <caption>Temporal objects accessible by enumeration constants</caption>
+     *   <tr><th>Name or alias</th>    <th>Object type</th> <th>Enumeration value</th></tr>
+     *   <tr><td>Computer display</td> <td>CRS, Datum</td>  <td>{@link #GEODISPLAY}</td></tr>
+     *   <tr><td>Computer display</td> <td>CRS, Datum</td>  <td>{@link #DISPLAY}</td></tr>
+     * </table></blockquote>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.1
+     * @since   1.1
+     * @module
+     */
+    public enum Engineering {
+        /**
+         * Cartesian coordinate system with (east, south) oriented axes in pixel units.
+         * Axis directions are {@link AxisDirection#EAST EAST} and {@link AxisDirection#SOUTH SOUTH},
+         * which implies that the coordinate system can be related to a geospatial system in some way.
+         * The CRS is defined by the <cite>OGC Web Map Service Interface</cite> specification.
+         *
+         * <blockquote><table class="compact">
+         * <caption>Computer display properties</caption>
+         *   <tr><th>WMS identifier:</th> <td>CRS:1</td></tr>
+         *   <tr><th>Primary names:</th>  <td>"Computer display"</td></tr>
+         *   <tr><th>Direction:</th>
+         *     <td>{@link AxisDirection#EAST},
+         *         {@link AxisDirection#SOUTH SOUTH}</td></tr>
+         *   <tr><th>Unit:</th> <td>{@link Units#PIXEL}</td></tr>
+         * </table></blockquote>
+         */
+        GEODISPLAY(new DefaultEngineeringDatum(JDK9.mapOf(
+                EngineeringDatum.NAME_KEY, "Computer display",
+                EngineeringDatum.ANCHOR_POINT_KEY, "Origin is in upper left."))),
+
+        /**
+         * Cartesian coordinate system with (right, down) oriented axes in pixel units.
+         * This definition does not require the data to be geospatial.
+         *
+         * <blockquote><table class="compact">
+         * <caption>Computer display properties</caption>
+         *   <tr><th>Primary names:</th> <td>"Computer display"</td></tr>
+         *   <tr><th>Direction:</th>
+         *     <td>{@link AxisDirection#DISPLAY_RIGHT},
+         *         {@link AxisDirection#DISPLAY_DOWN DISPLAY_DOWN}</td></tr>
+         *   <tr><th>Unit:</th> <td>{@link Units#PIXEL}</td></tr>
+         * </table></blockquote>
+         */
+        DISPLAY(GEODISPLAY.datum),
+
+        /**
+         * Cartesian coordinate system with (column, row) oriented axes in unity units.
+         * This definition does not require the data to be geospatial.
+         *
+         * <blockquote><table class="compact">
+         * <caption>Grid properties</caption>
+         *   <tr><th>Primary names:</th> <td>"Cell indices"</td></tr>
+         *   <tr><th>Direction:</th>
+         *     <td>{@link AxisDirection#COLUMN_POSITIVE},
+         *         {@link AxisDirection#ROW_POSITIVE ROW_POSITIVE}</td></tr>
+         *   <tr><th>Unit:</th> <td>{@link Units#UNITY}</td></tr>
+         * </table></blockquote>
+         */
+        GRID(new DefaultEngineeringDatum(singletonMap(EngineeringDatum.NAME_KEY, "Cell indices")));
+
+        /**
+         * The datum.
+         */
+        private final EngineeringDatum datum;
+
+        /**
+         * The CRS, built when first needed.
+         */
+        private EngineeringCRS crs;
+
+        /**
+         * Creates a new enumeration value with the specified datum.
+         */
+        private Engineering(final EngineeringDatum datum) {
+            this.datum = datum;
+        }
+
+        /**
+         * Returns the coordinate reference system associated to this engineering object.
+         *
+         * @return the CRS associated to this enum.
+         */
+        public synchronized EngineeringCRS crs() {
+            if (crs == null) {
+                final String x, y;
+                final AxisDirection dx, dy;
+                final Map<String,Object> cs = singletonMap(CartesianCS.NAME_KEY, datum.getName());
+                final Map<String,Object> properties = new HashMap<>(cs);
+                switch (this) {
+                    case GEODISPLAY: {
+                        x = "i"; dx = AxisDirection.EAST;
+                        y = "j"; dy = AxisDirection.SOUTH;
+                        properties.put(EngineeringCRS.NAME_KEY, new NamedIdentifier(Citations.WMS, "1"));
+                        break;
+                    }
+                    case DISPLAY: {
+                        x = "x"; dx = AxisDirection.DISPLAY_RIGHT;
+                        y = "y"; dy = AxisDirection.DISPLAY_DOWN;
+                        break;
+                    }
+                    case GRID: {
+                        x = "i"; dx = AxisDirection.COLUMN_POSITIVE;
+                        y = "j"; dy = AxisDirection.ROW_POSITIVE;
+                        break;
+                    }
+                    default: throw new AssertionError(this);
+                }
+                crs = new DefaultEngineeringCRS(properties, datum, new DefaultCartesianCS(cs,
+                        new DefaultCoordinateSystemAxis(singletonMap(CartesianCS.NAME_KEY, x), x, dx, Units.PIXEL),
+                        new DefaultCoordinateSystemAxis(singletonMap(CartesianCS.NAME_KEY, y), y, dy, Units.PIXEL)));
+            }
+            return crs;
+        }
+
+        /**
+         * Returns the datum associated to this engineering object.
+         *
+         * @return the datum associated to this enum.
+         */
+        public EngineeringDatum datum() {
+            return datum;
         }
     }
 
