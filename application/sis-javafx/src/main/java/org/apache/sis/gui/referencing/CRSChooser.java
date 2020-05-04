@@ -190,7 +190,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
                 CodeFilter.apply(table, searchField.getText());
             });
             HBox.setHgrow(searchField, Priority.ALWAYS);
-            final Label label = new Label(i18n.getString(Resources.Keys.Filter));
+            final Label label = new Label(vocabulary.getString(Vocabulary.Keys.Filter));
             label.setLabelFor(searchField);
             /*
              * Button for showing the CRS description in Well Known Text (WKT) format.
@@ -264,20 +264,20 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
                 wktPane = new WKTPane(locale);
             }
             wktPane.setContent(getAuthorityCodes(), table.getSelectionModel().getSelectedItem().code);
-            labelText = Resources.Keys.Format;
+            labelText = Vocabulary.Keys.Format;
             control   = wktPane.convention;
             main      = wktPane.text;
             info      = null;
         } else {
-            labelText = Resources.Keys.Filter;
+            labelText = Vocabulary.Keys.Filter;
             control   = searchField;
             main      = table;
             info      = summary;
         }
         final ObservableList<Node> children = tools.getChildren();
         final Label label = (Label) children.get(0);
-        final Resources i18n = Resources.forLocale(locale);
-        label.setText(i18n.getLabel(labelText));
+        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        label.setText(vocabulary.getLabel(labelText));
         label.setLabelFor(control);
         children.set(1, control);
         content.setCenter(main);

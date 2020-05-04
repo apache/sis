@@ -45,6 +45,7 @@ import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -116,13 +117,14 @@ public class DataViewer extends Application {
     public void start(final Stage window) {
         this.window = window;
         content = new ResourceExplorer();
-        final Resources localized = Resources.getInstance();
+        final Resources  localized  = Resources.getInstance();
+        final Vocabulary vocabulary = Vocabulary.getResources(localized.getLocale());
         /*
          * Configure the menu bar. For all menu items except simple ones, the action is
          * to invoke a method of the same name in this application class (e.g. open(…)).
          */
         final MenuBar menus = new MenuBar();
-        final Menu file = new Menu(localized.getString(Resources.Keys.File));
+        final Menu file = new Menu(vocabulary.getString(Vocabulary.Keys.File));
         {   // For keeping variables locale.
             final MenuItem open;
             file.getItems().addAll(

@@ -33,7 +33,6 @@ import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.map.StatusBar;
-import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -69,12 +68,11 @@ final class CoverageControls extends Controls {
     /**
      * Creates a new set of coverage controls.
      *
-     * @param  localized   localized GUI resources, provided in argument because often known by the caller.
      * @param  vocabulary  localized set of words, provided in argument because often known by the caller.
      * @param  coverage    property containing the coverage to show.
      */
-    CoverageControls(final Resources localized, final Vocabulary vocabulary,
-            final ObjectProperty<GridCoverage> coverage, final RecentReferenceSystems referenceSystems)
+    CoverageControls(final Vocabulary vocabulary, final ObjectProperty<GridCoverage> coverage,
+                     final RecentReferenceSystems referenceSystems)
     {
         final Color background = Color.BLACK;
         view = new CoverageCanvas();
@@ -93,7 +91,7 @@ final class CoverageControls extends Controls {
             final ChoiceBox<ReferenceSystem> systems = referenceSystems.createChoiceBox(this::onReferenceSystemSelected);
             systems.setMaxWidth(Double.POSITIVE_INFINITY);
             referenceSystem = systems.valueProperty();
-            final Label systemLabel = new Label(localized.getLabel(Resources.Keys.ReferenceSystem));
+            final Label systemLabel = new Label(vocabulary.getLabel(Vocabulary.Keys.ReferenceSystem));
             systemLabel.setPadding(CAPTION_MARGIN);
             systemLabel.setLabelFor(systems);
             final GridPane gp = createControlGrid(

@@ -23,7 +23,7 @@ import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.GridSpatialRepresentation;
 import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.iso.Types;
 
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
@@ -82,7 +82,7 @@ final class RepresentationInfo extends Section<SpatialRepresentation> {
         if (info instanceof GridSpatialRepresentation) {
             build((GridSpatialRepresentation) info);
         }
-        addLine(Resources.Keys.ReferenceSystem, IdentifiedObjects.getDisplayName(referenceSystem, owner.localized.getLocale()));
+        addLine(Vocabulary.Keys.ReferenceSystem, IdentifiedObjects.getDisplayName(referenceSystem, owner.vocabulary.getLocale()));
     }
 
     /**
@@ -112,12 +112,12 @@ final class RepresentationInfo extends Section<SpatialRepresentation> {
         }
         if (dimensionCount != 0) {
             buffer.setLength(buffer.length() - 3);
-            addLine(Resources.Keys.Dimensions, buffer.toString());
+            addLine(Vocabulary.Keys.Dimensions, buffer.toString());
         }
         final Integer nd = info.getNumberOfDimensions();
         if (nd != null && nd != dimensionCount) {
-            addLine(Resources.Keys.NumberOfDimensions, owner.getNumberFormat().format(dimensionCount));
+            addLine(Vocabulary.Keys.NumberOfDimensions, owner.getNumberFormat().format(dimensionCount));
         }
-        addLine(Resources.Keys.CellGeometry, owner.string(Types.getCodeTitle(info.getCellGeometry())));
+        addLine(Vocabulary.Keys.CellGeometry, owner.string(Types.getCodeTitle(info.getCellGeometry())));
     }
 }

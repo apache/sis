@@ -154,14 +154,13 @@ public class CoverageExplorer extends Widget {
          */
         final View[]     viewTypes  = View.values();
         final Locale     locale     = null;
-        final Resources  localized  = Resources.forLocale(locale);
         final Vocabulary vocabulary = Vocabulary.getResources(locale);
         views = new Controls[viewTypes.length];
         for (final View type : viewTypes) {
             final Controls c;
             switch (type) {
                 case TABLE: c = new GridControls(referenceSystems, vocabulary); break;
-                case IMAGE: c = new CoverageControls(localized, vocabulary, coverageProperty, referenceSystems); break;
+                case IMAGE: c = new CoverageControls(vocabulary, coverageProperty, referenceSystems); break;
                 default: throw new AssertionError(type);
             }
             SplitPane.setResizableWithParent(c.controls(), Boolean.FALSE);

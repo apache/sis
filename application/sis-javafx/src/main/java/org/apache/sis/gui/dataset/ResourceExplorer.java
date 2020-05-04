@@ -146,14 +146,14 @@ public class ResourceExplorer extends WindowManager {
         /*
          * Build the tabs.
          */
-        final Resources localized = localized();
-        viewTab = new Tab(localized.getString(Resources.Keys.Visual));
+        final Vocabulary vocabulary = Vocabulary.getResources(localized().getLocale());
+        viewTab = new Tab(vocabulary.getString(Vocabulary.Keys.Visual));
         // TODO: add contextual menu for window showing directly the visual.
 
-        tableTab = new Tab(localized.getString(Resources.Keys.Data));
+        tableTab = new Tab(vocabulary.getString(Vocabulary.Keys.Data));
         tableTab.setContextMenu(new ContextMenu(SelectedData.setTabularView(createNewWindowMenu())));
 
-        final String nativeTabText = Vocabulary.getResources(localized.getLocale()).getString(Vocabulary.Keys.Format);
+        final String nativeTabText = vocabulary.getString(Vocabulary.Keys.Format);
         final MetadataTree nativeMetadata = new MetadataTree(metadata);
         final Tab nativeTab = new Tab(nativeTabText, nativeMetadata);
         nativeTab.setDisable(true);
@@ -164,8 +164,8 @@ public class ResourceExplorer extends WindowManager {
         });
 
         final TabPane tabs = new TabPane(
-            new Tab(localized.getString(Resources.Keys.Summary),  metadata.getView()), viewTab, tableTab,
-            new Tab(localized.getString(Resources.Keys.Metadata), new StandardMetadataTree(metadata)),
+            new Tab(vocabulary.getString(Vocabulary.Keys.Summary),  metadata.getView()), viewTab, tableTab,
+            new Tab(vocabulary.getString(Vocabulary.Keys.Metadata), new StandardMetadataTree(metadata)),
             nativeTab);
 
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
