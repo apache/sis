@@ -368,23 +368,23 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Returns an image with the same sample values than the given image, but with its color ramp rescaled between the specified bounds.
+     * Returns an image with the same sample values than the given image, but with its color ramp stretched between the specified bounds.
      * For example in a gray scale image, pixels with the minimum value will be black and pixels with the maximum value will be white.
      * This operation is a kind of <cite>tone mapping</cite>, a technique used in image processing to map one set of colors to another.
      * The mapping applied by this method is conceptually a simple linear transform (a scale and an offset)
      * applied on sample values before they are mapped to their colors.
      *
-     * <p>Current implementation can remap only gray scale images (it may be extended to indexed color models
-     * in a future version). If this method can not rescale the color ramp, for example because the given image
+     * <p>Current implementation can stretch only gray scale images (it may be extended to indexed color models
+     * in a future version). If this method can not stretch the color ramp, for example because the given image
      * is an RGB image, then the image is returned unchanged.</p>
      *
      * @param  source    the image to recolor (may be {@code null}).
      * @param  minimum   the sample value to display with the first color of the color ramp (black in a grayscale image).
      * @param  maximum   the sample value to display with the last color of the color ramp (white in a grayscale image).
-     * @return the image with color ramp rescaled between the given bounds, or {@code image} unchanged if the operation
+     * @return the image with color ramp stretched between the given bounds, or {@code image} unchanged if the operation
      *         can not be applied on the given image.
      */
-    public RenderedImage rescaleColorRamp(final RenderedImage source, final double minimum, final double maximum) {
+    public RenderedImage stretchColorRamp(final RenderedImage source, final double minimum, final double maximum) {
         ArgumentChecks.ensureFinite("minimum", minimum);
         ArgumentChecks.ensureFinite("maximum", maximum);
         if (!(minimum < maximum)) {
@@ -398,8 +398,8 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Returns an image with the same sample values than the given image, but with its color ramp rescaled between
-     * automatically determined bounds. This is the same operation than {@link #rescaleColorRamp rescaleColorRamp(…)}
+     * Returns an image with the same sample values than the given image, but with its color ramp stretched between
+     * automatically determined bounds. This is the same operation than {@link #stretchColorRamp rescaleColorRamp(…)}
      * except that the minimum and maximum values are determined by {@linkplain #statistics(RenderedImage) statistics}
      * on the image: a range of value is determined first from the {@linkplain Statistics#minimum() minimum} and
      * {@linkplain Statistics#maximum() maximum} values found in the image, optionally narrowed to an interval
@@ -415,7 +415,7 @@ public class ImageProcessor implements Cloneable {
      * @param  deviations  multiple of standard deviations around the mean, of {@link Double#POSITIVE_INFINITY}
      *                     for not using standard deviation for narrowing the range of values.
      *                     Some values giving good results for a Gaussian distribution are 1.5, 2 or 3.
-     * @return the image with color ramp rescaled between the automatic bounds,
+     * @return the image with color ramp stretched between the automatic bounds,
      *         or {@code image} unchanged if the operation can not be applied on the given image.
      */
     public RenderedImage automaticColorRamp(final RenderedImage source, double deviations) {

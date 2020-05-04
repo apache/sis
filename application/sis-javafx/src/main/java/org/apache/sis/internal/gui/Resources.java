@@ -156,11 +156,6 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Exit = 20;
 
         /**
-         * From metadata
-         */
-        public static final short FromMetadata = 21;
-
-        /**
          * Full screen
          */
         public static final short FullScreen = 22;
@@ -228,7 +223,7 @@ public final class Resources extends IndexedResourceBundle {
         /**
          * Windows
          */
-        public static final short Windows = 35;
+        public static final short Windows = 21;
     }
 
     /**

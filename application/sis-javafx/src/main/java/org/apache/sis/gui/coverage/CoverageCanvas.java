@@ -78,16 +78,16 @@ public class CoverageCanvas extends MapCanvasAWT {
     /**
      * Different ways to represent the data. The {@link #data} field shall be one value from this map.
      *
-     * @see #setImage(RangeType, RenderedImage)
+     * @see #setImage(Stretching, RenderedImage)
      */
-    private final EnumMap<RangeType,RenderedImage> dataAlternatives;
+    private final EnumMap<Stretching,RenderedImage> dataAlternatives;
 
     /**
      * Key of the currently selected alternative in {@link #dataAlternatives} map.
      *
-     * @see #setImage(RangeType, RenderedImage)
+     * @see #setImage(Stretching, RenderedImage)
      */
-    private RangeType currentDataAlternative;
+    private Stretching currentDataAlternative;
 
     /**
      * The data to show, or {@code null} if not yet specified. This image may be tiled,
@@ -110,8 +110,8 @@ public class CoverageCanvas extends MapCanvasAWT {
         super(Locale.getDefault());
         coverageProperty       = new SimpleObjectProperty<>(this, "coverage");
         sliceExtentProperty    = new SimpleObjectProperty<>(this, "sliceExtent");
-        dataAlternatives       = new EnumMap<>(RangeType.class);
-        currentDataAlternative = RangeType.DECLARED;
+        dataAlternatives       = new EnumMap<>(Stretching.class);
+        currentDataAlternative = Stretching.NONE;
         coverageProperty   .addListener((p,o,n) -> onImageSpecified());
         sliceExtentProperty.addListener((p,o,n) -> onImageSpecified());
     }
@@ -121,7 +121,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * {@link #dataAlternatives} map. All alternative images are computed from this source.
      */
     private RenderedImage getSourceData() {
-        return dataAlternatives.get(RangeType.DECLARED);
+        return dataAlternatives.get(Stretching.NONE);
     }
 
     /**
@@ -220,32 +220,33 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Invoked when the user selected a new range of values to scale. Also invoked {@linkplain #onImageSpecified after
+     * Invoked when the user selected a new color stretching mode. Also invoked {@linkplain #onImageSpecified after
      * loading a new image or a new slice} for switching the new image to the same type of range as previously selected.
      * If the image for the specified type is not already available, then this method computes the image in a background
      * thread and refreshes the view after the computation completed.
      */
-    final void setRangeType(final RangeType rangeType) {
-        currentDataAlternative = rangeType;
-        final RenderedImage alt = dataAlternatives.get(rangeType);
+    final void setStretching(final Stretching type) {
+        currentDataAlternative = type;
+        final RenderedImage alt = dataAlternatives.get(type);
         if (alt != null) {
-            setImage(rangeType, alt);
+            setImage(type, alt);
         } else {
             final RenderedImage source = getSourceData();
             if (source != null) {
                 execute(new Task<RenderedImage>() {
                     /** Invoked in background thread for fetching the image. */
                     @Override protected RenderedImage call() {
-                        switch (rangeType) {
-                            case AUTOMATIC: return ImageRenderings.automaticScale(source);
-                            default:        return source;
+                        switch (type) {
+                            case VALUE_RANGE: return ImageRenderings.valueRangeStretching(source);
+                            case AUTOMATIC:   return ImageRenderings. automaticStretching(source);
+                            default:          return source;
                         }
                     }
 
                     /** Invoked in JavaFX thread on success. */
                     @Override protected void succeeded() {
                         if (source.equals(getSourceData())) {
-                            setImage(rangeType, getValue());
+                            setImage(type, getValue());
                         }
                     }
                 });
@@ -260,10 +261,10 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @param  type  the type of range used for scaling the color ramp of given image.
      * @param  alt   the image or alternative image to show (can be {@code null}).
      */
-    private void setImage(final RangeType type, RenderedImage alt) {
+    private void setImage(final Stretching type, RenderedImage alt) {
         /*
          * Store the result but do not necessarily show it because maybe the user changed the
-         * `RangeType` during the time the background thread was working. If the user did not
+         * `Stretching` during the time the background thread was working. If the user did not
          * changed the type, then the `alt` variable below will stay unchanged.
          */
         dataAlternatives.put(type, alt);
@@ -284,8 +285,8 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @param  sliceExtent  the extent that was requested.
      */
     private void setImage(final RenderedImage image, final GridGeometry geometry, final GridExtent sliceExtent) {
-        setImage(RangeType.DECLARED, image);
-        setRangeType(currentDataAlternative);
+        setImage(Stretching.NONE, image);
+        setStretching(currentDataAlternative);
         try {
             gridToCRS = AffineTransforms2D.castOrCopy(geometry.getGridToCRS(PixelInCell.CELL_CENTER));
         } catch (RuntimeException e) {                      // Conversion not defined or not affine.

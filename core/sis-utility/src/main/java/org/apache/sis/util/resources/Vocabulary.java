@@ -205,6 +205,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short ColorIndex = 30;
 
         /**
+         * Colors
+         */
+        public static final short Colors = 228;
+
+        /**
          * Commands
          */
         public static final short Commands = 31;
@@ -988,6 +993,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Start point
          */
         public static final short StartPoint = 187;
+
+        /**
+         * Stretching
+         */
+        public static final short Stretching = 229;
 
         /**
          * Subset of {0}

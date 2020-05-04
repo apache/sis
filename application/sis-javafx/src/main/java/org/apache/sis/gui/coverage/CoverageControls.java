@@ -84,6 +84,7 @@ final class CoverageControls extends Controls {
         /*
          * "Display" section with the following controls:
          *    - Coordinate reference system
+         *    - Color stretching
          *    - Background color
          */
         final VBox displayPane;
@@ -95,10 +96,10 @@ final class CoverageControls extends Controls {
             systemLabel.setPadding(CAPTION_MARGIN);
             systemLabel.setLabelFor(systems);
             final GridPane gp = createControlGrid(
-                label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton(background)),
-                label(vocabulary, Vocabulary.Keys.ValueRange, RangeType.createButton((p,o,n) -> view.setRangeType(n)))
+                label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStretching(n))),
+                label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton(background))
             );
-            final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Image));
+            final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Colors));
             label.setPadding(NEXT_CAPTION_MARGIN);
             label.setLabelFor(gp);
             displayPane = new VBox(systemLabel, systems, label, gp);
