@@ -58,7 +58,7 @@ import static org.apache.sis.internal.referencing.provider.LambertCylindricalEqu
  * However this projection may be useful for computing areas.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -76,14 +76,14 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         if (identMatch(method, "(?i).*\\bSpherical\\b.*", LambertCylindricalEqualAreaSpherical.IDENTIFIER)) {
             return Initializer.AUTHALIC_RADIUS;
         }
-        return 0;
+        return STANDARD_VARIANT;
     }
 
     /**
      * The type of Cylindrical Equal Area projection. Possible values are:
      *
      * <ul>
-     *   <li>0 if this projection is a default variant.</li>
+     *   <li>{@link #STANDARD_VARIANT} if this projection is a default variant.</li>
      *   <li>{@link Initializer#AUTHALIC_RADIUS} if this projection is the "Lambert Cylindrical Equal Area (Spherical)"
      *       case, in which case the semi-major and semi-minor axis lengths should be replaced by the authalic radius
      *       (this replacement is performed by the {@link Initializer} constructor).</li>
@@ -117,6 +117,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
          * "Longitude of origin" and "scale factor" are intentionally omitted from this map because they will
          * be handled in a special way. See comments in Mercator.initializer(…) method for more details.
          */
+        roles.put(ParameterRole.SCALE_FACTOR,   SCALE_FACTOR);
         roles.put(ParameterRole.FALSE_EASTING,  FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING, FALSE_NORTHING);
         return new Initializer(method, parameters, roles, getVariant(method));

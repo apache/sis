@@ -19,11 +19,12 @@ package org.apache.sis.gui.dataset;
 import java.util.Objects;
 import java.util.Collection;
 import javafx.beans.property.ReadOnlyProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.geometry.Orientation;
+import javafx.scene.Node;
 import javafx.scene.layout.Region;
-import javafx.scene.control.Control;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
@@ -34,16 +35,16 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.gui.metadata.MetadataSummary;
 import org.apache.sis.gui.metadata.MetadataTree;
 import org.apache.sis.gui.metadata.StandardMetadataTree;
-import org.apache.sis.gui.coverage.GridView;
 import org.apache.sis.gui.coverage.ImageRequest;
-import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.gui.coverage.CoverageExplorer;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.gui.Resources;
 
 
 /**
- * A panel showing a {@linkplain ResourceTree tree of resources} together with their metadata.
+ * A panel showing a {@linkplain ResourceTree tree of resources} together with their metadata and data views.
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
@@ -53,29 +54,38 @@ import org.apache.sis.util.resources.Vocabulary;
  */
 public class ResourceExplorer extends WindowManager {
     /**
-     * Approximate overview width and height (averaged) in number of pixels.
-     */
-    private static final int OVERVIEW_SIZE = 10000;
-
-    /**
      * The tree of resources.
      */
     private final ResourceTree resources;
 
     /**
-     * The data as a table, created when first needed.
+     * The currently selected resource.
+     *
+     * @see #getSelectedResourceProperty()
      */
-    private FeatureTable features;
-
-    /**
-     * The data as a grid coverage, created when first needed.
-     */
-    private GridView coverage;
+    private final ReadOnlyObjectWrapper<Resource> selectedResource;
 
     /**
      * The widget showing metadata about a selected resource.
      */
     private final MetadataSummary metadata;
+
+    /**
+     * The gridded data as an image or as a table, created when first needed.
+     */
+    private CoverageExplorer coverage;
+
+    /**
+     * The vector data as a table, created when first needed.
+     */
+    private FeatureTable features;
+
+    /**
+     * Controls for the image or tabular data. This is a vertical split pane.
+     * The upper part contains the {@link #resources} tree and the lower part
+     * contains the resource-dependent controls.
+     */
+    private final SplitPane controls;
 
     /**
      * The control that put everything together.
@@ -87,33 +97,52 @@ public class ResourceExplorer extends WindowManager {
 
     /**
      * The tab where to show {@link #features} or {@link #coverage}, depending on the kind of resource.
-     * The data will be set only if this tab is visible, because their loading may be costly.
+     * The {@code viewTab} and {@code tableTab} are collectively identified in this class as "data tab".
+     * The {@link #features} and {@link #coverage} data will be set only if a data tab is visible,
+     * because the data loading may be costly.
+     *
+     * @see #isDataTabSet
+     * @see #isDataTabSelected()
+     * @see #updateDataTab(Resource)
      */
-    private final Tab dataTab;
+    private final Tab viewTab, tableTab;
 
     /**
-     * The currently selected resource.
-     */
-    public final ReadOnlyProperty<Resource> selectedResourceProperty;
-
-    /**
-     * Whether the setting of new values in {@link #dataTab} has been done.
-     * The new values are set only if the tab is visible, and otherwise are
-     * delayed until the tab become visible.
+     * Whether the setting of new values in {@link #viewTab} or {@link #tableTab} has been done.
+     * The new values are set only if a data tab is visible, and otherwise are delayed until one
+     * of data tab become visible.
+     *
+     * @see #updateDataTab(Resource)
      */
     private boolean isDataTabSet;
+
+    /**
+     * Last divider position as a fraction between 0 and 1, or {@code NaN} if undefined.
+     * This is used for keeping the position constant when adding and removing controls.
+     */
+    private double dividerPosition;
 
     /**
      * Creates a new panel for exploring resources.
      */
     public ResourceExplorer() {
+        /*
+         * Build the resource explorer. Must be first because `localized()` depends on it.
+         */
         resources = new ResourceTree();
-        metadata  = new MetadataSummary();
-        content   = new SplitPane();
-
+        resources.getSelectionModel().getSelectedItems().addListener(this::selectResource);
+        resources.setPrefWidth(400);
+        selectedResource = new ReadOnlyObjectWrapper<>(this, "selectedResource");
+        metadata = new MetadataSummary();
+        /*
+         * Build the tabs.
+         */
         final Resources localized = localized();
-        dataTab = new Tab(localized.getString(Resources.Keys.Data));
-        dataTab.setContextMenu(new ContextMenu(SelectedData.setTabularView(createNewWindowMenu())));
+        viewTab = new Tab(localized.getString(Resources.Keys.Visual));
+        // TODO: add contextual menu for window showing directly the visual.
+
+        tableTab = new Tab(localized.getString(Resources.Keys.Data));
+        tableTab.setContextMenu(new ContextMenu(SelectedData.setTabularView(createNewWindowMenu())));
 
         final String nativeTabText = Vocabulary.getResources(localized.getLocale()).getString(Vocabulary.Keys.Format);
         final MetadataTree nativeMetadata = new MetadataTree(metadata);
@@ -126,21 +155,27 @@ public class ResourceExplorer extends WindowManager {
         });
 
         final TabPane tabs = new TabPane(
-            new Tab(localized.getString(Resources.Keys.Summary),  metadata.getView()), dataTab,
+            new Tab(localized.getString(Resources.Keys.Summary),  metadata.getView()), viewTab, tableTab,
             new Tab(localized.getString(Resources.Keys.Metadata), new StandardMetadataTree(metadata)),
             nativeTab);
 
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
-
-        content.getItems().setAll(resources, tabs);
-        resources.getSelectionModel().getSelectedItems().addListener(this::selectResource);
+        /*
+         * Build the main pane which put everything together.
+         */
+        controls = new SplitPane(resources);
+        controls.setOrientation(Orientation.VERTICAL);
+        content = new SplitPane(controls, tabs);
+        content.setDividerPosition(0, 0.2);
+        dividerPosition = Double.NaN;
         SplitPane.setResizableWithParent(resources, Boolean.FALSE);
         SplitPane.setResizableWithParent(tabs, Boolean.TRUE);
-        resources.setPrefWidth(400);
-
-        selectedResourceProperty = new SimpleObjectProperty<>(this, "selectedResource");
-        dataTab.selectedProperty().addListener(this::dataTabShown);
+        /*
+         * Register listeners last, for making sure we don't have undesired event.
+         */
+        viewTab .selectedProperty().addListener((p,o,n) -> dataTabShown(n, true));
+        tableTab.selectedProperty().addListener((p,o,n) -> dataTabShown(n, false));
     }
 
     /**
@@ -196,9 +231,9 @@ public class ResourceExplorer extends WindowManager {
                 if (resource != null) break;
             }
         }
-        ((SimpleObjectProperty<Resource>) selectedResourceProperty).set(resource);
+        selectedResource.set(resource);
         metadata.setMetadata(resource);
-        isDataTabSet = dataTab.isSelected();
+        isDataTabSet = isDataTabSelected();
         updateDataTab(isDataTabSet ? resource : null);
         if (!isDataTabSet) {
             setNewWindowDisabled(!(resource instanceof GridCoverageResource || resource instanceof FeatureSet));
@@ -206,9 +241,16 @@ public class ResourceExplorer extends WindowManager {
     }
 
     /**
-     * Sets the given resource to the {@link #dataTab}. Should be invoked only if the tab is visible, since data
-     * loading may be costly. It is caller responsibility to invoke {@link #setNewWindowDisabled(boolean)} after
-     * this method.
+     * Returns whether the currently selected tab is {@link #viewTab} or {@link #tableTab}.
+     */
+    private boolean isDataTabSelected() {
+        return viewTab.isSelected() || tableTab.isSelected();
+    }
+
+    /**
+     * Assigns the given resource into the {@link #viewTab} and {@link #tableTab}. Should be invoked only
+     * if a data tab is visible because data loading may be costly. It is caller responsibility to invoke
+     * {@link #setNewWindowDisabled(boolean)} after this method.
      *
      * <p>The {@link #isDataTabSet} flag should be set before to invoke this method. If {@code true}, then
      * the given resource is the final content and window menus will be updated accordingly by this method.
@@ -218,49 +260,82 @@ public class ResourceExplorer extends WindowManager {
      * @param  resource  the resource to set, or {@code null} if none.
      */
     private void updateDataTab(final Resource resource) {
-        Control      view  = null;
-        FeatureSet   table = null;
+        Region       image = null;
+        Region       table = null;
+        FeatureSet   data  = null;
         ImageRequest grid  = null;
+        CoverageExplorer.View type = null;
         if (resource instanceof GridCoverageResource) {
             grid = new ImageRequest((GridCoverageResource) resource, null, 0);
-            grid.setOverviewSize(OVERVIEW_SIZE);
             if (coverage == null) {
-                coverage = new GridView();
+                coverage = new CoverageExplorer();      // TODO: build in background thread.
             }
-            view = coverage;
+            image = coverage.getDataView(CoverageExplorer.View.IMAGE);
+            table = coverage.getDataView(CoverageExplorer.View.TABLE);
+            type  = viewTab.isSelected() ? CoverageExplorer.View.IMAGE : CoverageExplorer.View.TABLE;
         } else if (resource instanceof FeatureSet) {
-            table = (FeatureSet) resource;
+            data = (FeatureSet) resource;
             if (features == null) {
                 features = new FeatureTable();
             }
-            view = features;
+            table = features;
         }
         /*
-         * At least one of `grid` or `table` will be null. Invoking the following
+         * At least one of `grid` or `data` will be null. Invoking the following
          * setter methods with a null argument will release memory.
          */
-        if (coverage != null) coverage.setImage(grid);
-        if (features != null) features.setFeatures(table);
-        if (view     != null) dataTab .setContent(view);
+        if (coverage != null) coverage.setCoverage(grid);
+        if (features != null) features.setFeatures(data);
+        if (image    != null) viewTab .setContent(image);
+        if (table    != null) tableTab.setContent(table);
         if (isDataTabSet) {
-            setNewWindowDisabled(view == null);
+            setNewWindowDisabled(image == null && table == null);
+            updateControls(type);
         }
     }
 
     /**
-     * Invoked when the data tab become selected or unselected.
-     * This method sets the current resource in the {@link #dataTab} if it has not been already set.
+     * Invoked when a data tab become selected or unselected.
+     * This method sets the current resource in the {@link #viewTab}
+     * or {@link #tableTab} if it has not been already set.
      *
-     * @param  property  ignored.
-     * @param  previous  ignored.
      * @param  selected  whether the tab became the selected one.
+     * @param  visual    {@code true} for visual, or {@code false} for tabular data.
      */
-    private void dataTabShown(final ObservableValue<? extends Boolean> property,
-                              final Boolean previous, final Boolean selected)
-    {
-        if (selected && !isDataTabSet) {
-            isDataTabSet = true;                // Must be set before to invoke `updateDataTab(…)`.
-            updateDataTab(selectedResourceProperty.getValue());
+    private void dataTabShown(final Boolean selected, final boolean visual) {
+        CoverageExplorer.View type = null;
+        if (selected) {
+            if (!isDataTabSet) {
+                isDataTabSet = true;                    // Must be set before to invoke `updateDataTab(…)`.
+                updateDataTab(selectedResource.get());
+            }
+            if (coverage != null) {                     // May still be null if selected resource is not a coverage.
+                type = visual ? CoverageExplorer.View.IMAGE : CoverageExplorer.View.TABLE;
+            }
+        }
+        updateControls(type);
+    }
+
+    /**
+     * Adds or removes controls for the given view.
+     *
+     * @param  type  the view for which to provide controls, or {@code null} if none.
+     */
+    private void updateControls(final CoverageExplorer.View type) {
+        final Region controlPanel = (type != null) ? coverage.getControls(type) : null;
+        final ObservableList<Node> items = controls.getItems();
+        if (items.size() >= 2) {
+            if (controlPanel != null) {
+                items.set(1, controlPanel);
+            } else {
+                dividerPosition = controls.getDividerPositions()[0];
+                items.remove(1);
+            }
+        } else if (controlPanel != null) {
+            items.add(controlPanel);
+            if (dividerPosition >= 0) {
+                controls.setDividerPosition(0, dividerPosition);
+            }
         }
     }
 
@@ -269,7 +344,7 @@ public class ResourceExplorer extends WindowManager {
      */
     @Override
     final SelectedData getSelectedData() {
-        final Resource resource = selectedResourceProperty.getValue();
+        final Resource resource = selectedResource.get();
         if (resource == null) {
             return null;
         }
@@ -300,5 +375,14 @@ public class ResourceExplorer extends WindowManager {
             return null;
         }
         return new SelectedData(resources.getTitle(resource, false), table, grid, resources.localized);
+    }
+
+    /**
+     * Returns the property for currently selected resource.
+     *
+     * @return property for currently selected resource.
+     */
+    public ReadOnlyProperty<Resource> getSelectedResourceProperty() {
+        return selectedResource.getReadOnlyProperty();
     }
 }

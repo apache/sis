@@ -95,7 +95,7 @@ public class LambertConicConformal extends ConformalProjection {
         if (identMatch(method, "(?i).*\\bWest\\b.*",     LambertConformalWest    .IDENTIFIER)) return WEST;
         if (identMatch(method, "(?i).*\\b2SP\\b.*",      LambertConformal2SP     .IDENTIFIER)) return SP2;
         if (identMatch(method, "(?i).*\\b1SP\\b.*",      LambertConformal1SP     .IDENTIFIER)) return SP1;
-        return 0; // Unidentified case, to be considered as 2SP.
+        return STANDARD_VARIANT;                         // Unidentified case, to be considered as 2SP.
     }
 
     /**
@@ -202,6 +202,7 @@ public class LambertConicConformal extends ConformalProjection {
                 scaleFactor = LambertConformalMichigan.SCALE_FACTOR;    // Ellipsoid scaling factor (EPSG:1038)
                 // Fallthrough
             }
+            case STANDARD_VARIANT:
             case BELGIUM:
             case SP2: {
                 roles.put(eastingDirection,               LambertConformal2SP.EASTING_AT_FALSE_ORIGIN);

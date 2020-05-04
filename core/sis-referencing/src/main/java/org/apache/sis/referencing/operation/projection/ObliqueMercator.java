@@ -91,7 +91,7 @@ public class ObliqueMercator extends ConformalProjection {
         if (identMatch(method, "(?i).*\\bvariant\\s*B\\b.*", IDENTIFIER  ))        return CENTER;
         if (identMatch(method, "(?i).*\\bTwo[_\\s]Point[_\\s]Natural\\b.*", null)) return TWO_POINTS;
         if (identMatch(method, "(?i).*\\bTwo[_\\s]Point[_\\s]Center\\b.*",  null)) return TWO_POINTS | CENTER;
-        return 0;       // Unidentified case, to be considered as variant A.
+        return STANDARD_VARIANT;                // Unidentified case, to be considered as variant A.
     }
 
     /**

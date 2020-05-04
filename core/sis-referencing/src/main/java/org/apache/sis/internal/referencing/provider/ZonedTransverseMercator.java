@@ -81,7 +81,7 @@ public final class ZonedTransverseMercator extends AbstractProvider {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         INITIAL_LONGITUDE = builder.addIdentifier("8830").addName("Initial longitude")

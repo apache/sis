@@ -94,6 +94,7 @@ public final strictfp class ProvidersTest extends TestCase {
             TransverseMercator.class,
             TransverseMercatorSouth.class,
             CassiniSoldner.class,
+            HyperbolicCassiniSoldner.class,
             PolarStereographicA.class,
             PolarStereographicB.class,
             PolarStereographicC.class,

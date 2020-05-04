@@ -54,11 +54,14 @@ final class BandSelectionListener implements ChangeListener<Number> {
      */
     @Override
     public void changed(ObservableValue<? extends Number> property, Number oldValue, Number newValue) {
-        if (!isAdjusting) try {
-            isAdjusting = true;
-            bandProperty.set(newValue.intValue());
-        } finally {
-            isAdjusting = false;
+        final int row = newValue.intValue();
+        if (row >= 0) {                         // Negative if table became empty after image became null.
+            if (!isAdjusting) try {
+                isAdjusting = true;
+                bandProperty.set(row);
+            } finally {
+                isAdjusting = false;
+            }
         }
     }
 }

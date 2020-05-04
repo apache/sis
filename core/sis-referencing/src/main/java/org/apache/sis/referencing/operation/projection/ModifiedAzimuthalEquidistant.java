@@ -87,7 +87,7 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, (byte) 0);
+        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
     }
 
     /**

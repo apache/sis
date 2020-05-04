@@ -17,7 +17,6 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Optional;
-import java.util.OptionalInt;
 import javafx.concurrent.WorkerStateEvent;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridDerivation;
@@ -49,10 +48,6 @@ public class ImageRequest {
      * The source for rendering the image, specified at construction time.
      * After class initialization, only one of {@link #resource} and {@link #coverage} is non-null.
      * But after task execution, this field will be set to the coverage which has been read.
-     *
-     * @todo If we implement subsampling using the {@link #overviewSize} parameter, then we need to
-     *       remember whether subsampling has been used for this {@code coverage} instance. This is
-     *       needed for deciding if we can reuse that instance for a view over the full coverage.
      */
     volatile GridCoverage coverage;
 
@@ -82,15 +77,6 @@ public class ImageRequest {
      * @see GridDerivation#sliceByRatio(double, int[])
      */
     static final double SLICE_RATIO = 0;
-
-    /**
-     * Approximate width and height of desired image for overview purpose, or 0 for the full image.
-     * If non-zero, then {@link ImageLoader} may return only a subset of coverage data.
-     *
-     * @see #getOverviewSize()
-     * @see #setOverviewSize(int)
-     */
-    private int overviewSize;
 
     /**
      * For transferring a listener to {@link ImageLoader#listener} before background execution starts.
@@ -221,35 +207,6 @@ public class ImageRequest {
     }
 
     /**
-     * If an overview has been requested, the average width and height of the overview. This method returns the value
-     * given to the last call to {@link #setOverviewSize(int)} — see the javadoc of that method for more information.
-     * The default value is empty, meaning that the full coverage is desired.
-     *
-     * @return if this request is for an overview, the approximate overview width and height (averaged).
-     */
-    public OptionalInt getOverviewSize() {
-        return (overviewSize > 0) ? OptionalInt.of(overviewSize) : OptionalInt.empty();
-    }
-
-    /**
-     * Requests an overview of the given approximate width and height. The {@code size} argument is an average size;
-     * the overview will try to preserve the image height/width ratio. When an overview is requested, {@link GridView}
-     * may use only a subset of coverage data. The subset may consist in reading only the first slice, applying a
-     * subsampling at reading time, or other implementation specific settings.
-     *
-     * @param  size  approximate overview width and height (averaged).
-     *
-     * @todo The specified size is currently ignored. We only use the fact that an overview has been requested.
-     *       For taking the size in account, we would need to improve {@link GridView} for letting user know in
-     *       some way that a subsampling has been applied, for example by adjusting the indices shown in column
-     *       and row headers (e.g. showing "0 2 4 6 …").
-     */
-    public void setOverviewSize(final int size) {
-        ArgumentChecks.ensureStrictlyPositive("size", size);
-        overviewSize = size;
-    }
-
-    /**
      * Configures the given status bar with the geometry of the grid coverage we have just read.
      * This method is invoked by {@link GridView#onImageLoaded(WorkerStateEvent)} in JavaFX thread
      * after {@link ImageLoader} successfully loaded in background thread a new image.
@@ -261,8 +218,9 @@ public class ImageRequest {
         /*
          * By `GridCoverage.render(GridExtent)` contract, the `RenderedImage` pixel coordinates are relative
          * to the requested `GridExtent`. Consequently we need to translate the image coordinates so that it
-         * become the coordinates of the original `GridGeometry` before to apply `gridToCRS`. It is okay to
-         * modify `StatusBar.localToObjectiveCRS` because we do not associate it to a `MapCanvas`.
+         * become the coordinates of the original `GridGeometry` before to apply `gridToCRS`.  It is okay to
+         * modify `StatusBar.localToObjectiveCRS` because we do not associate it to a `MapCanvas`, so it will
+         * not be overwritten by gesture events (zoom, pan, etc).
          */
         if (request != null) {
             final double[] origin = new double[request.getDimension()];

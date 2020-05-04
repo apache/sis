@@ -101,6 +101,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotReadResource = 55;
 
         /**
+         * An error occurred while rendering the data.
+         */
+        public static final short CanNotRender = 60;
+
+        /**
          * Can not use the “{0}” reference system.
          */
         public static final short CanNotUseRefSys_1 = 58;
@@ -334,6 +339,11 @@ public final class Resources extends IndexedResourceBundle {
          * Type of resource
          */
         public static final short TypeOfResource = 26;
+
+        /**
+         * Visual
+         */
+        public static final short Visual = 59;
 
         /**
          * Visualize

@@ -181,7 +181,7 @@ public abstract class MapProjection extends AbstractProvider {
      * Constructs a math transform provider from a set of parameters. The provider
      * {@linkplain #getIdentifiers() identifiers} will be the same than the parameter ones.
      *
-     * @param parameters The set of parameters (never {@code null}).
+     * @param  parameters  the set of parameters (never {@code null}).
      */
     protected MapProjection(final ParameterDescriptorGroup parameters) {
         super(2, 2, parameters);

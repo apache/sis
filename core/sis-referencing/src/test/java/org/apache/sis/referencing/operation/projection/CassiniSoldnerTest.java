@@ -35,15 +35,18 @@ import static java.lang.StrictMath.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.1
- * @since   0.8
+ * @since   1.1
  * @module
  */
 public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
     /**
      * Returns the operation method for the projection tested in this class.
+     *
+     * @param  hyperbolic  {@code false} for standard case, or {@code true} for hyperbolic case.
      */
-    private static MapProjection method() {
-        return new org.apache.sis.internal.referencing.provider.CassiniSoldner();
+    private static MapProjection method(final boolean hyperbolic) {
+        return hyperbolic ? new org.apache.sis.internal.referencing.provider.HyperbolicCassiniSoldner()
+                          : new org.apache.sis.internal.referencing.provider.CassiniSoldner();
     }
 
     /**
@@ -54,16 +57,17 @@ public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
      * @return newly created projection.
      */
     private static CassiniSoldner create(final boolean ellipse) {
-        final MapProjection provider = method();
+        final MapProjection provider = method(false);
         final Parameters pg = Parameters.castOrWrap(provider.getParameters().createValue());
         if (ellipse) {
             pg.parameter("semi-major").setValue(WGS84_A);
             pg.parameter("semi-minor").setValue(WGS84_B);
+            return new CassiniSoldner(provider, pg);
         } else {
             pg.parameter("semi-major").setValue(RADIUS);
             pg.parameter("semi-minor").setValue(RADIUS);
+            return new CassiniSoldner.Spherical(new CassiniSoldner(provider, pg));
         }
-        return new CassiniSoldner(provider, pg);
     }
 
     /**
@@ -92,15 +96,15 @@ public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the point given in EPSG example. This is the same test than {@link #runGeoapiTest()}
-     * but is repeated here for easier debugging.
+     * Tests the point given in EPSG example for the usual "Cassini-Soldner" projection.
+     * This is the same test than {@link #runGeoapiTest()} but is repeated here for easier debugging.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    public void testExampleEPSG() throws FactoryException, TransformException {
-        createCompleteProjection(method(),
+    public void testClassic() throws FactoryException, TransformException {
+        createCompleteProjection(method(false),
                 31706587.88,                            // Semi-major axis (Clarke's links)
                 31706587.88 * (20855233./20926348),     // Semi-minor axis (Clarke's links)
                 -(61 + 20./60),                         // Longitude of natural origin
@@ -111,14 +115,49 @@ public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
                 430000,                                 // False easting  (Clarke's links)
                 325000);                                // False northing (Clarke's links)
 
-        final DirectPosition2D p = new DirectPosition2D(-62, 10);
+        final double λ = -62;
+        final double φ =  10;
+        final DirectPosition2D p = new DirectPosition2D(λ, φ);
         assertSame(p, transform.transform(p, p));
         assertEquals(66644.94, p.x, 0.005);
         assertEquals(82536.22, p.y, 0.005);
 
         assertSame(p, transform.inverse().transform(p, p));
-        assertEquals(-62, p.x, Formulas.ANGULAR_TOLERANCE);
-        assertEquals(+10, p.y, Formulas.ANGULAR_TOLERANCE);
+        assertEquals(λ, p.x, Formulas.ANGULAR_TOLERANCE);
+        assertEquals(φ, p.y, Formulas.ANGULAR_TOLERANCE);
+    }
+
+    /**
+     * Tests the point given in EPSG example for the "Hyperbolic Cassini-Soldner" projection.
+     * This is the same test than {@link #runGeoapiHyperbolicTest()} but is repeated here for
+     * easier debugging.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    public void testHyperbolic() throws FactoryException, TransformException {
+        createCompleteProjection(method(true),
+                317063.667,                             // Semi-major axis (chains)
+                317063.667 * (20854895./20926202),      // Semi-minor axis (chains)
+                179 + 20./60,                           // Longitude of natural origin
+                -(16 + 15./60),                         // Latitude of natural origin
+                NaN,                                    // Standard parallel 1 (none)
+                NaN,                                    // Standard parallel 2 (none)
+                NaN,                                    // Scale factor (none)
+                12513.318,                              // False easting  (chains)
+                16628.885);                             // False northing (chains)
+
+        final double λ =  179 + (59 + 39.6115/60)/60;   // 179°59′39.6115″E
+        final double φ = -(16 + (50 + 29.2435/60)/60);  //  16°50′29.2435″S
+        final DirectPosition2D p = new DirectPosition2D(λ, φ);
+        assertSame(p, transform.transform(p, p));
+        assertEquals(16015.2890, p.x, 0.00005);
+        assertEquals(13369.6601, p.y, 0.00005);
+
+        assertSame(p, transform.inverse().transform(p, p));
+        assertEquals(λ, p.x, Formulas.ANGULAR_TOLERANCE);
+        assertEquals(φ, p.y, Formulas.ANGULAR_TOLERANCE);
     }
 
     /**
@@ -126,9 +165,9 @@ public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
      *
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
-//  @Test
+    @Test
     public void testDerivative() throws TransformException {
-        final double delta = toRadians(100.0 / 60) / 1852;          // Approximately 100 metres.
+        final double delta = toRadians(1. / 60) / 1852;         // Approximately 1 meter.
         derivativeDeltas = new double[] {delta, delta};
 
         // Tests spherical formulas
@@ -139,9 +178,9 @@ public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
         verifyDerivative(toRadians(-4), toRadians(40));
 
         // Tests ellipsoidal formulas
-        tolerance = 1E-8;
         transform = create(true);
         validate();
+        verifyDerivative(toRadians(+3), toRadians(-6));
         verifyDerivative(toRadians(+3), toRadians(-10));
         verifyDerivative(toRadians(-4), toRadians(+10));
     }
@@ -153,10 +192,24 @@ public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
      *
-     * @see org.opengis.test.referencing.ParameterizedTransformTest#testOrthographic()
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testCassiniSoldner()
      */
-//  @Test
+    @Test
     public void runGeoapiTest() throws FactoryException, TransformException {
-        createGeoApiTest(method()).testCassiniSoldner();
+        createGeoApiTest(method(false)).testCassiniSoldner();
+    }
+
+    /**
+     * Tests the <cite>"Hyperbolic Cassini-Soldner"</cite> (EPSG:9833) projection method.
+     * This test is defined in GeoAPI conformance test suite.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testHyperbolicCassiniSoldner()
+     */
+    @Test
+    public void runGeoapiHyperbolicTest() throws FactoryException, TransformException {
+        createGeoApiTestNoDerivatives(method(true)).testHyperbolicCassiniSoldner();
     }
 }

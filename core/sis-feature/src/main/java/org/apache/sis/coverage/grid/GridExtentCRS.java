@@ -28,15 +28,14 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
 import org.apache.sis.util.Characters;
 
 
@@ -52,11 +51,6 @@ import org.apache.sis.util.Characters;
  * @module
  */
 final class GridExtentCRS {
-    /**
-     * The datum for grid.
-     */
-    private static final EngineeringDatum DATUM = new DefaultEngineeringDatum(properties("Grid"));
-
     /**
      * Do not allow instantiation of this class.
      */
@@ -191,6 +185,7 @@ final class GridExtentCRS {
             case 3:  cs = csFactory.createAffineCS(properties, axes[0], axes[1], axes[2]); break;
             default: cs = new AbstractCS(properties, axes); break;
         }
-        return DefaultFactories.forBuildin(CRSFactory.class).createEngineeringCRS(properties(cs.getName()), DATUM, cs);
+        return DefaultFactories.forBuildin(CRSFactory.class).createEngineeringCRS(
+                properties(cs.getName()), CommonCRS.Engineering.GRID.datum(), cs);
     }
 }

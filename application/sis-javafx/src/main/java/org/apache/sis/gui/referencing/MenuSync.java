@@ -108,7 +108,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     /**
      * Sets the initial value to the first item in the {@code systems} list, if any.
      * This method is invoked in JavaFX thread at construction time or, if it didn't
-     * work at some later time when the systems list may contain an element.
+     * work, at some later time when the systems list may contain an element.
      * This method should not be invoked anymore after initialization succeeded.
      */
     private void initialize(final ObservableList<? extends ReferenceSystem> systems) {
@@ -241,7 +241,10 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
                 }
             }
             group.selectToggle(null);
-            action.changed(this, old, null);
+            /*
+             * Do not invoke action.changed(…) since we have no non-null value to provide.
+             * Invoking that method with a null value would cause the CRSChooser to popup.
+             */
         }
     }
 }

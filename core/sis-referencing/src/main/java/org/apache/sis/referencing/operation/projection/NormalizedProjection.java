@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -182,6 +183,12 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * in case someone uses SIS for some planet with higher eccentricity.
      */
     static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS;
+
+    /**
+     * In map projection implementations that can have some variants, the constant for identifying
+     * the most standard form of the projection.
+     */
+    static final byte STANDARD_VARIANT = 0;
 
     /**
      * The internal parameter descriptors. Keys are implementation classes.  Values are parameter descriptor groups
@@ -428,7 +435,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
             final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles)
     {
-        this(new Initializer(method, parameters, roles, (byte) 0));
+        this(new Initializer(method, parameters, roles, STANDARD_VARIANT));
     }
 
     /**
@@ -1040,22 +1047,29 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                 break;
             }
         }
-        final double[] parameters = getInternalParameterValues();
-        if (parameters != null) {
-            /*
-             * super.equals(…) guarantees that the two objects are of the same class.
-             * So in SIS implementation, this implies that the arrays have the same length.
-             */
-            final double[] others = that.getInternalParameterValues();
-            assert others.length == parameters.length;
-            for (int i=0; i<parameters.length; i++) {
-                if (!Numerics.epsilonEqual(parameters[i], others[i], mode)) {
-                    assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(
-                            getInternalParameterNames()[i], parameters[i], others[i]);
-                    return false;
+        /*
+         * Compares the internal parameter names and values. Many implementations have no parameter other
+         * than the eccentricity (because other parameters can often be stored in normalization matrices),
+         * so the `values` array will often be null. For some implementations offering different variants
+         * of a map projection, the number of internal parameters depends on the variant.
+         */
+        final double[] values = this.getInternalParameterValues();
+        final double[] others = that.getInternalParameterValues();
+        if (values == null) {
+            return others == null;
+        }
+        if (others != null && values.length == others.length) {
+            final String[] names = getInternalParameterNames();
+            if (Arrays.equals(names, that.getInternalParameterNames())) {
+                for (int i=0; i<values.length; i++) {
+                    if (!Numerics.epsilonEqual(values[i], others[i], mode)) {
+                        assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(names[i], values[i], others[i]);
+                        return false;
+                    }
                 }
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }

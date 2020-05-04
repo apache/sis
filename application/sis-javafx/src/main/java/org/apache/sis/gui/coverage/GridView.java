@@ -26,12 +26,11 @@ import java.awt.image.DataBuffer;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.IntegerPropertyBase;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
@@ -224,8 +223,8 @@ public class GridView extends Control {
      * @param  referenceSystems  the manager of reference systems chosen by the user, or {@code null} if none.
      */
     GridView(final RecentReferenceSystems referenceSystems) {
+        bandProperty     = new BandProperty();
         imageProperty    = new SimpleObjectProperty<>(this, "image");
-        bandProperty     = new SimpleIntegerProperty (this, "band");
         headerWidth      = new SimpleDoubleProperty  (this, "headerWidth", 60);
         cellWidth        = new SimpleDoubleProperty  (this, "cellWidth",   60);
         cellHeight       = new SimpleDoubleProperty  (this, "cellHeight",  20);
@@ -238,9 +237,39 @@ public class GridView extends Control {
         tileHeight       = 1;       // For avoiding division by zero.
 
         setMinSize(120, 40);        // 2 cells on each dimension.
-        imageProperty.addListener(this::onImageSpecified);
-        bandProperty .addListener(this::onBandSpecified);
+        imageProperty.addListener((p,o,n) -> onImageSpecified(n));
         // Other listeners registered by GridViewSkin.Flow.
+    }
+
+    /**
+     * The property for selecting the band to show. This property verifies
+     * the validity of given band argument before to modify the value.
+     *
+     * @see #getBand()
+     * @see #setBand(int)
+     */
+    private final class BandProperty extends IntegerPropertyBase {
+        @Override public Object getBean() {return GridView.this;}
+        @Override public String getName() {return "band";}
+
+        /** Invoked when a new band is selected. */
+        @Override public void set(final int band) {
+            final RenderedImage image = getImage();
+            final SampleModel sm;
+            if (image != null && (sm = image.getSampleModel()) != null) {
+                ArgumentChecks.ensureBetween("band", 0, sm.getNumBands() - 1, band);
+                cellFormat.configure(image, band);
+            } else {
+                ArgumentChecks.ensurePositive("band", band);
+            }
+            super.set(band);
+            contentChanged(false);
+        }
+
+        /** Sets the band without performing checks, except ensuring that value is positive. */
+        final void setNoCheck(final int bands) {
+            super.set(Math.max(bands, 0));
+        }
     }
 
     /**
@@ -308,13 +337,6 @@ public class GridView extends Control {
      * @throws IllegalArgumentException if the given band index is out of bounds.
      */
     public final void setBand(final int index) {
-        final RenderedImage image = getImage();
-        final SampleModel sm;
-        if (image != null && (sm = image.getSampleModel()) != null) {
-            ArgumentChecks.ensureBetween("band", 0, sm.getNumBands() - 1, index);
-        } else {
-            ArgumentChecks.ensurePositive("band", index);
-        }
         bandProperty.set(index);
     }
 
@@ -334,14 +356,10 @@ public class GridView extends Control {
      * Invoked (indirectly) when the user sets a new {@link RenderedImage}.
      * See {@link #setImage(RenderedImage)} for more description.
      *
-     * @param  property  the {@link #imageProperty} (ignored).
-     * @param  previous  the previous image (ignored).
-     * @param  image     the new image to show. May be {@code null}.
+     * @param  image  the new image to show. May be {@code null}.
      * @throws ArithmeticException if the "tile grid x/y offset" property is too large.
      */
-    private void onImageSpecified(final ObservableValue<? extends RenderedImage> property,
-                                  final RenderedImage previous, final RenderedImage image)
-    {
+    private void onImageSpecified(final RenderedImage image) {
         if (loader != null) {
             loader.cancel();
             loader = null;
@@ -364,30 +382,15 @@ public class GridView extends Control {
             final SampleModel sm = image.getSampleModel();
             if (sm != null) {                               // Should never be null, but we are paranoiac.
                 final int numBands = sm.getNumBands();
-                if (bandProperty.get() >= numBands) {
-                    bandProperty.set(numBands - 1);
+                if (getBand() >= numBands) {
+                    ((BandProperty) bandProperty).setNoCheck(numBands - 1);
                 }
                 final int dataType = sm.getDataType();
                 cellFormat.dataTypeisInteger = (dataType >= DataBuffer.TYPE_BYTE && dataType <= DataBuffer.TYPE_INT);
             }
-            cellFormat.configure(image, bandProperty.getValue());
+            cellFormat.configure(image, getBand());
         }
         contentChanged(true);
-    }
-
-    /**
-     * Invoked (indirectly) when the user selects a new band.
-     * See {@link #setBand(int)} for more description.
-     *
-     * @param  property  the {@link #bandProperty} (ignored).
-     * @param  previous  the previous band index (ignored).
-     * @param  band      index of the new band to show.
-     */
-    private void onBandSpecified(final ObservableValue<? extends Number> property,
-                                 final Number previous, final Number band)
-    {
-        cellFormat.configure(getImage(), band.intValue());
-        contentChanged(false);
     }
 
     /**

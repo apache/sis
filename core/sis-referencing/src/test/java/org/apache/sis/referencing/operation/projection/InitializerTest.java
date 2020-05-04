@@ -77,7 +77,7 @@ public final strictfp class InitializerTest extends TestCase{
         roles.put(NormalizedProjection.ParameterRole.SCALE_FACTOR,     ObliqueStereographic.SCALE_FACTOR);
         roles.put(NormalizedProjection.ParameterRole.FALSE_EASTING,    ObliqueStereographic.FALSE_EASTING);
         roles.put(NormalizedProjection.ParameterRole.FALSE_NORTHING,   ObliqueStereographic.FALSE_NORTHING);
-        final Initializer initializer = new Initializer(op, (Parameters) p, roles, (byte) 0);
+        final Initializer initializer = new Initializer(op, (Parameters) p, roles, NormalizedProjection.STANDARD_VARIANT);
         /*
          * The following lines give an example of how Apache SIS projection constructors
          * use the Initializer class.

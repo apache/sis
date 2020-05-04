@@ -170,6 +170,8 @@ public final class GUIUtilities extends Static {
      * <a href="https://en.wikipedia.org/wiki/Longest_common_subsequence_problem">Longest common subsequence problem</a>
      */
     static <E> List<? extends E> longestCommonSubsequence(List<? extends E> x, List<? extends E> y) {
+        final List<? extends E> ox = x;     // The whole list, before sublisting that may be applied.
+        final List<? extends E> oy = y;     // Idem.
         /*
          * This method can be optimized by excluding the common prefix and common suffix before
          * to build the matrix. It can reduce a lot the matrix size and the number of iterations.
@@ -198,8 +200,8 @@ public final class GUIUtilities extends Static {
         for (int i=0; ; i++) {
             final int sx = nx - i;
             final int sy = ny - i;
-            if (sx == 0) return x;
-            if (sy == 0) return y;
+            if (sx == 0) return ox;                 // Concatenation of prefix + suffix = original list.
+            if (sy == 0) return oy;
             if (x.get(sx - 1) != y.get(sy - 1)) {
                 if (i == 0) {
                     suffix = Collections.emptyList();

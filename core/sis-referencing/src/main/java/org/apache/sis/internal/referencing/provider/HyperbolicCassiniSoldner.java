@@ -18,32 +18,28 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for <cite>"Lambert Conic Conformal (2SP Belgium)"</cite> projection (EPSG:9803).
+ * The provider for "<cite>Hyperbolic Cassini-Soldner</cite>" projection (EPSG:9833).
+ * This is a slight modification of {@link CassiniSoldner} and shares the same parameters.
  *
- * @author  Martin Desruisseaux (IRD, Geomatys)
- * @author  Rueben Schulz (UBC)
- * @version 0.6
- *
- * @see <a href="http://geotiff.maptools.org/proj_list/lambert_conic_conformal_2sp_belgium.html">GeoTIFF parameters for Lambert Conic Conformal 2SP (Belgium)</a>
- *
- * @since 0.6
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 @XmlTransient
-public final class LambertConformalBelgium extends AbstractLambert {
+public final class HyperbolicCassiniSoldner extends CassiniSoldner {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -6388030784088639876L;
+    private static final long serialVersionUID = -4948656632564407426L;
 
     /**
      * The EPSG identifier, to be preferred to the name when available.
      */
-    public static final String IDENTIFIER = "9803";
+    public static final String IDENTIFIER = "9833";
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -52,24 +48,19 @@ public final class LambertConformalBelgium extends AbstractLambert {
     static {
         PARAMETERS = builder()
                 .addIdentifier(IDENTIFIER)
-                .addName(                    "Lambert Conic Conformal (2SP Belgium)")
-                .addName(Citations.OGC,      "Lambert_Conformal_Conic_2SP_Belgium")
-                .addName(Citations.ESRI,     "Lambert_Conformal_Conic_2SP_Belgium")
-                .addIdentifier(Citations.MAP_INFO, "19")
-                .addIdentifier(Citations.S57,       "6")
+                .addName("Hyperbolic Cassini-Soldner")
                 .createGroupForMapProjection(
-                        LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN,
-                        LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN,
-                        LambertConformal2SP.STANDARD_PARALLEL_1,
-                        LambertConformal2SP.STANDARD_PARALLEL_2,
-                        LambertConformal2SP.EASTING_AT_FALSE_ORIGIN,
-                        LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN);
+                        LATITUDE_OF_ORIGIN,
+                        LONGITUDE_OF_ORIGIN,
+                        SCALE_FACTOR,
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**
      * Constructs a new provider.
      */
-    public LambertConformalBelgium() {
+    public HyperbolicCassiniSoldner() {
         super(PARAMETERS);
     }
 }

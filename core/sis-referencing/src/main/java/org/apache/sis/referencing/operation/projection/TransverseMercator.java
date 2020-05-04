@@ -129,6 +129,13 @@ public class TransverseMercator extends NormalizedProjection {
     private static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = true;
 
     /**
+     * The "South orientated" variant of Transverse Mercator projection.
+     * Currently this is informative only (the south variant is handled
+     * with {@link ParameterRole} instead).
+     */
+    private static final byte SOUTH_VARIANT = 1;
+
+    /**
      * Verifies if a trigonometric identity produced the expected value. This method is used in assertions only,
      * for values close to the [-1 … +1] range. The tolerance threshold is approximately 1.5E-12 (note that it
      * still about 7000 time greater than {@code Math.ulp(1.0)}).
@@ -199,7 +206,7 @@ public class TransverseMercator extends NormalizedProjection {
         roles.put(ParameterRole.SCALE_FACTOR, SCALE_FACTOR);
         roles.put(xOffset, FALSE_EASTING);
         roles.put(yOffset, FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, isSouth ? (byte) 1 : (byte) 0);
+        return new Initializer(method, parameters, roles, isSouth ? SOUTH_VARIANT : STANDARD_VARIANT);
     }
 
     /**

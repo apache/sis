@@ -18,6 +18,7 @@ package org.apache.sis.gui.map;
 
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Predicate;
 import javax.measure.Unit;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
@@ -43,11 +44,9 @@ import javafx.beans.property.ReadOnlyObjectPropertyBase;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
-import javafx.concurrent.Task;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -58,7 +57,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -72,7 +70,6 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
@@ -81,7 +78,6 @@ import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 
@@ -194,7 +190,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *
      * @see #updateLocalToPositionCRS()
      */
-    private CoordinateOperation objectiveToPositionCRS;
+    private MathTransform objectiveToPositionCRS;
 
     /**
      * Conversion from local coordinates to geographic or projected coordinates of rendered data.
@@ -247,8 +243,20 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *
      * <p>The target CRS can be obtained by {@link CoordinateOperation#getTargetCRS()} on
      * {@link #objectiveToPositionCRS} or by {@link CoordinateFormat#getDefaultCRS()}.</p>
+     *
+     * @see #updateLocalToPositionCRS()
      */
     private MathTransform localToPositionCRS;
+
+    /**
+     * If non-null, determines if {@link #apply(GridGeometry)} needs to update {@link #localToPositionCRS} with a
+     * potentially costly search for coordinate operation even in context where it would normally not be required.
+     * An explanation of the context when it may happen is given in {@link OperationFinder#dataGeometry}.
+     * This is rarely needed for most data (i.e. this field is almost always {@code null}).
+     *
+     * @see OperationFinder#fullOperationSearchRequired()
+     */
+    private Predicate<MapCanvas> fullOperationSearchRequired;
 
     /**
      * The source local indices before conversion to geospatial coordinates.
@@ -318,6 +326,15 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @see #onCanvasSpecified(MapCanvas, MapCanvas)
      */
     private ChangeListener<Boolean> renderingListener;
+
+    /**
+     * The listener registered on {@link MapCanvas#errorProperty()}, or {@code null} if the
+     * listener has not yet been registered. This listener is remembered for allowing removal.
+     *
+     * @see #canvas
+     * @see #onCanvasSpecified(MapCanvas, MapCanvas)
+     */
+    private ChangeListener<Throwable> errorListener;
 
     /**
      * Whether the mouse listeners have been registered. Those listeners are registered the
@@ -415,19 +432,28 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             previous.floatingPane.removeEventHandler(MouseEvent.MOUSE_EXITED,  this);
             previous.floatingPane.removeEventHandler(MouseEvent.MOUSE_MOVED,   this);
             previous.renderingProperty().removeListener(renderingListener);
+            previous.errorProperty().removeListener(errorListener);
             renderingListener = null;
             isMouseListenerRegistered = false;
         }
         if (value != null) {
             value.renderingProperty().addListener(renderingListener = new RenderingListener());
+            value.errorProperty().addListener(errorListener = (p,o,n) -> setRenderingError(n));
         }
         position.setText(null);
         registerMouseListeners(value);
-        try {
-            apply(value != null ? value.getGridGeometry() : null);
+        /*
+         * Configure this status bar for showing coordinates in the CRS and with the resolution given by
+         * the canvas grid geometry. This is the same operation than the one executed every time that a
+         * new rendering occurred.
+         */
+        GridGeometry geometry = null;
+        if (value != null) try {
+            geometry = value.getGridGeometry();
         } catch (RenderException e) {
-            setErrorMessage(null, e);
+            setRenderingError(e);
         }
+        applyCanvasGeometry(geometry);
     }
 
     /**
@@ -469,7 +495,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                  * Do not try to rewrite position neither since `lastX` and `lastY` are not valid anymore.
                  */
             } catch (RenderException e) {
-                setErrorMessage(null, e);
+                setRenderingError(e);
             }
         }
     }
@@ -585,10 +611,14 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         if (sameCRS) {
             updateLocalToPositionCRS();
             // Keep the format CRS unchanged since we made `localToPositionCRS` consistent with its value.
+            if (fullOperationSearchRequired != null && fullOperationSearchRequired.test(canvas.get())) {
+                setPositionCRS(format.getDefaultCRS());
+            }
         } else {
             objectiveToPositionCRS = null;
             setFormatCRS(crs, null);                                // Should be invoked before to set precision.
-            crs = setReplaceablePositionCRS(crs);                   // May invoke later setFormatCRS(…) again.
+            crs = OperationFinder.toGeospatial(crs, canvas);
+            crs = setReplaceablePositionCRS(crs);                   // May invoke setFormatCRS(…) after background work.
         }
         format.setGroundPrecision(Quantities.create(resolution, unit));
         /*
@@ -616,8 +646,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      */
     private void updateLocalToPositionCRS() {
         if (objectiveToPositionCRS != null) {
-            localToPositionCRS = MathTransforms.concatenate(
-                    localToObjectiveCRS.get(), objectiveToPositionCRS.getMathTransform());
+            localToPositionCRS = MathTransforms.concatenate(localToObjectiveCRS.get(), objectiveToPositionCRS);
         }
     }
 
@@ -635,7 +664,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *         will return a little bit later (pending completion of a background task).
      */
     private CoordinateReferenceSystem setReplaceablePositionCRS(CoordinateReferenceSystem crs) {
-        if (crs != null) {
+        if (crs != null && systemChooser != null) {
             final ComparisonMode mode = systemChooser.duplicationCriterion.get();
             for (final ReferenceSystem system : systemChooser.getItems()) {
                 if (Utilities.deepEquals(crs, system, mode)) {
@@ -661,34 +690,43 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private void setPositionCRS(final CoordinateReferenceSystem crs) {
         if (crs != null && objectiveCRS != null && objectiveCRS != crs) {
             position.setTextFill(Styles.OUTDATED_TEXT);
+            /*
+             * Take snapshots of references to all objects that the background thread will use.
+             * The background thread shall not read StatusBar fields directly since they may be
+             * in the middle of changes at any time. All objects are assumed immutable.
+             */
             final Envelope aoi = (systemChooser != null) ? systemChooser.areaOfInterest.get() : null;
-            BackgroundThreads.execute(new Task<CoordinateOperation>() {
+            BackgroundThreads.execute(new OperationFinder(canvas.get(), aoi, objectiveCRS, crs) {
+                /**
+                 * The accuracy to show on the status bar, or {@code null} if none.
+                 * This is computed after {@link CoordinateOperation} has been determined.
+                 */
+                private Length accuracy;
+
                 /**
                  * Invoked in a background thread for fetching transformation to target CRS.
-                 * The potentially costly part is {@code CRS.findOperation(…)}.
+                 * The potentially costly part is {@code CRS.findOperation(…)} in super.call().
                  */
-                @Override protected CoordinateOperation call() throws FactoryException {
-                    DefaultGeographicBoundingBox bbox = null;
-                    if (aoi != null) try {
-                        bbox = new DefaultGeographicBoundingBox();
-                        bbox.setBounds(aoi);
-                    } catch (TransformException e) {
-                        bbox = null;
-                        Logging.recoverableException(Logging.getLogger(Modules.APPLICATION),
-                                StatusBar.class, "setPositionCRS", e);
+                @Override protected MathTransform call() throws Exception {
+                    final MathTransform value = super.call();
+                    double a = CRS.getLinearAccuracy(getOperation());
+                    if (a > 0) {
+                        final Unit<Length> unit;
+                        if      (a < 1)    unit = Units.CENTIMETRE;
+                        else if (a < 1000) unit = Units.METRE;
+                        else               unit = Units.KILOMETRE;
+                        a = Units.METRE.getConverterTo(unit).convert(Math.max(a, Formulas.LINEAR_TOLERANCE));
+                        accuracy = Quantities.create(a, unit);
                     }
-                    return CRS.findOperation(objectiveCRS, crs, bbox);
+                    return value;
                 }
-
                 /**
                  * Invoked in JavaFX thread on success. The {@link StatusBar#localToPositionCRS} transform
                  * is set to the transform that we computed in background and the {@link CoordinateFormat}
                  * is configured with auxiliary information such as positional accuracy.
                  */
                 @Override protected void succeeded() {
-                    final CoordinateOperation operation = getValue();
-                    final CoordinateReferenceSystem targetCRS = operation.getTargetCRS();
-                    setPositionCRS(targetCRS != null ? targetCRS : crs, operation);
+                    setPositionCRS(this, accuracy);
                 }
 
                 /**
@@ -696,11 +734,16 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                  * the coordinates will appear in red for telling user that there is a problem.
                  */
                 @Override protected void failed() {
-                    final Locale locale = format.getLocale(Locale.Category.DISPLAY);
+                    final Locale locale = getLocale();
                     setErrorMessage(Resources.forLocale(locale).getString(Resources.Keys.CanNotUseRefSys_1,
                                     IdentifiedObjects.getDisplayName(crs, locale)), getException());
+                    selectedSystem.set(format.getDefaultCRS());
                     resetPositionCRS(Styles.ERROR_TEXT);
                 }
+
+                /** For logging purpose if a non-fatal error occurs. */
+                @Override protected Class<?> getCallerClass()  {return StatusBar.class;}
+                @Override protected String   getCallerMethod() {return "setPositionCRS";}
             });
         } else {
             /*
@@ -727,26 +770,17 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * and {@link #lastY} are still valid. This assumption should be correct when
      * only the format CRS has been updated and not {@link #localToObjectiveCRS}.
      *
-     * @param  crs        the new CRS. Should not be {@code null}.
-     * @param  operation  the new value to assign to {@link #objectiveToPositionCRS}
+     * @param  finder    the completed task with the new {@link #objectiveToPositionCRS}.
+     * @param  accuracy  the accuracy to show on the status bar, or {@code null} if none.
      */
-    private void setPositionCRS(final CoordinateReferenceSystem crs, final CoordinateOperation operation) {
-        Length accuracy = null;
-        double a = CRS.getLinearAccuracy(operation);
-        if (a > 0) {
-            final Unit<Length> unit;
-            if      (a < 1)    unit = Units.CENTIMETRE;
-            else if (a < 1000) unit = Units.METRE;
-            else               unit = Units.KILOMETRE;
-            a = Units.METRE.getConverterTo(unit).convert(Math.max(a, Formulas.LINEAR_TOLERANCE));
-            accuracy = Quantities.create(a, unit);
-        }
-        setFormatCRS(crs, accuracy);
-        objectiveToPositionCRS = operation;
+    private void setPositionCRS(final OperationFinder finder, final Length accuracy) {
+        setErrorMessage(null, null);
+        setFormatCRS(finder.getTargetCRS(), accuracy);
+        objectiveToPositionCRS = finder.getValue();
+        fullOperationSearchRequired = finder.fullOperationSearchRequired();
         updateLocalToPositionCRS();
         position.setTextFill(Styles.NORMAL_TEXT);
         position.setMinWidth(0);
-        setErrorMessage(null, null);
         if (isPositionVisible()) {
             final double x = lastX;
             final double y = lastY;
@@ -771,7 +805,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private void setFormatCRS(final CoordinateReferenceSystem crs, final Length accuracy) {
         format.setDefaultCRS(crs);
         format.setGroundAccuracy(accuracy);
-        String text = IdentifiedObjects.getDisplayName(crs, format.getLocale(Locale.Category.DISPLAY));
+        String text = IdentifiedObjects.getDisplayName(crs, getLocale());
         Tooltip tp = null;
         if (text != null) {
             tp = position.getTooltip();
@@ -1041,7 +1075,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         text = Strings.trimOrNull(text);
         Button more = null;
         if (details != null) {
-            final Locale locale = format.getLocale(Locale.Category.DISPLAY);
+            final Locale locale = getLocale();
             if (text == null) {
                 text = Exceptions.getLocalizedMessage(details, locale);
                 if (text == null) {
@@ -1057,5 +1091,25 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         message.setGraphic(more);
         message.setText(text);
         message.setTextFill(Styles.ERROR_TEXT);
+    }
+
+    /**
+     * Shown an error message that occurred in the context of rendering the {@link #canvas} content.
+     * This method should not be invoked for other context like an error during transformation of
+     * coordinates shown is the status bar.
+     */
+    private void setRenderingError(final Throwable details) {
+        String text = null;
+        if (details != null) {
+            text = Resources.forLocale(getLocale()).getString(Resources.Keys.CanNotRender);
+        }
+        setErrorMessage(text, details);
+    }
+
+    /**
+     * Returns the locale for error messages.
+     */
+    private Locale getLocale() {
+        return format.getLocale(Locale.Category.DISPLAY);
     }
 }

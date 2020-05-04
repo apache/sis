@@ -27,7 +27,9 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.List;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
@@ -77,6 +79,17 @@ public final class JDK9 {
             case 1:  return Collections.singleton(elements[0]);
             default: return Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(elements)));
         }
+    }
+
+    /**
+     * Placeholder for {@code Map.of(...)}.
+     */
+    public static <K,V> Map<K,V> mapOf(final Object... entries) {
+        final Map map = new HashMap();
+        for (int i=0; i<entries.length;) {
+            map.put(entries[i++], entries[i++]);
+        }
+        return map;
     }
 
     /**
