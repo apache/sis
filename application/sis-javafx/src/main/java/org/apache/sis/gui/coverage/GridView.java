@@ -118,7 +118,7 @@ public class GridView extends Control {
      * since "real" caching is done by {@link org.apache.sis.image.ComputedImage}. The purpose of this cache is
      * to remember that a tile is immediately available and that we do not need to start a background thread.
      */
-    private final GridTileCache tiles = new GridTileCache();
+    private final GridTileCache tiles;
 
     /**
      * The most recently used tile. Cached separately because it will be the desired tile in the vast majority
@@ -233,6 +233,7 @@ public class GridView extends Control {
         headerFormat     = NumberFormat.getIntegerInstance();
         cellFormat       = new CellFormat(this);
         statusBar        = new StatusBar(referenceSystems);
+        tiles            = new GridTileCache();
         tileWidth        = 1;
         tileHeight       = 1;       // For avoiding division by zero.
 

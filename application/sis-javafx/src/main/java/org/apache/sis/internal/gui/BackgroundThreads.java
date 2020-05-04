@@ -21,7 +21,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import javafx.application.Platform;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Threads;
 import org.apache.sis.util.logging.Logging;
@@ -73,13 +75,36 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
     }
 
     /**
-     * Executes the given task in a background thread.
-     * This method can be invoked from any thread.
+     * Executes the given task in a background thread. This method can be invoked from any thread.
+     * If the current thread is not the {@linkplain Platform#isFxApplicationThread() JavaFX thread},
+     * then this method assumes that current thread is already a background thread and execute the
+     * given task in that thread.
      *
      * @param  task  the task to execute.
      */
     public static void execute(final Runnable task) {
-        EXECUTOR.execute(task);
+        if (Platform.isFxApplicationThread()) {
+            EXECUTOR.execute(task);
+        } else {
+            task.run();
+            /*
+             * The given task is almost always a `javafx.concurrent.Task` which needs to do some work
+             * in JavaFX thread after the background thread finished. Because this method is normally
+             * invoked from JavaFX thread, the caller does not expect its JavaFX properties to change
+             * concurrently. For avoiding unexpected behavior, we wait for the given task to complete
+             * the work that it may be doing in JavaFX thread. We rely on the fact that `task.run()`
+             * has already done its `Platform.runLater(…)` calls at this point, and the call that we
+             * are doing below is guaranteed to be executed after the calls done by `task.run()`.
+             * The timeout is low because the tasks on JavaFX threads are supposed to be very short.
+             */
+            final CountDownLatch c = new CountDownLatch(1);
+            Platform.runLater(c::countDown);
+            try {
+                c.await(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                interrupted("execute", e);
+            }
+        }
     }
 
     /**
@@ -98,8 +123,21 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
              * Someone does not want to wait for termination.
              * Closes the data stores now even if some of them may still be in use.
              */
-            Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), BackgroundThreads.class, "stop", e);
+            interrupted("stop", e);
         }
         ResourceLoader.closeAll();
+    }
+
+    /**
+     * Invoked when waiting for an operation to complete and the wait has been interrupted.
+     * It should not happen, but if it happens anyway we just log a warning and continue.
+     * Note that this is not very different than continuing after the timeout elapsed.
+     * In both cases the risk is that some data structure may be in inconsistent state.
+     *
+     * @param  method  the method which has been interrupted.
+     * @param  e       the exception that interrupted the waiting process.
+     */
+    private static void interrupted(final String method, final InterruptedException e) {
+        Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), BackgroundThreads.class, method, e);
     }
 }
