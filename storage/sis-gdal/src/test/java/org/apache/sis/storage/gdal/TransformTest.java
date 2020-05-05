@@ -88,7 +88,6 @@ public class TransformTest extends ParameterizedTransformTest {
         if (!FAILURES.isEmpty()) {
             assertSetEquals(Arrays.asList(
                     "Abridged Molodensky",
-                    "Cassini-Soldner",                          // No OperationMethod in SIS yet.
                     "Krovak",                                   // No OperationMethod in SIS yet.
                     "Lambert Azimuthal Equal Area",             // No OperationMethod in SIS yet.
                     "Lambert Conic Conformal (2SP Belgium)",
