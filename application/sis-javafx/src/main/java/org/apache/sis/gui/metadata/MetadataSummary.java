@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.metadata;
 
+import java.util.Locale;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Collection;
@@ -40,13 +41,13 @@ import org.opengis.util.ControlledVocabulary;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
-import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.gui.Widget;
@@ -73,7 +74,7 @@ public class MetadataSummary extends Widget {
     /**
      * The resources for localized strings. Stored because needed often.
      */
-    final Resources localized;
+    final Vocabulary vocabulary;
 
     /**
      * The format to use for writing numbers, created when first needed.
@@ -141,10 +142,10 @@ public class MetadataSummary extends Widget {
      * Creates an initially empty metadata overview.
      */
     public MetadataSummary() {
-        localized   = Resources.forLocale(null);
+        vocabulary  = Vocabulary.getResources((Locale) null);
         information = new TitledPane[] {
-            new TitledPane(localized.getString(Resources.Keys.ResourceIdentification), new IdentificationInfo(this)),
-            new TitledPane(localized.getString(Resources.Keys.SpatialRepresentation),  new RepresentationInfo(this))
+            new TitledPane(vocabulary.getString(Vocabulary.Keys.ResourceIdentification), new IdentificationInfo(this)),
+            new TitledPane(vocabulary.getString(Vocabulary.Keys.SpatialRepresentation),  new RepresentationInfo(this))
         };
         content = new ScrollPane(new VBox());
         content.setFitToWidth(true);
@@ -349,6 +350,6 @@ public class MetadataSummary extends Widget {
      * Returns the given international string as a non-empty localized string, or {@code null} if none.
      */
     final String string(final InternationalString i18n) {
-        return (i18n != null) ? Strings.trimOrNull(i18n.toString(localized.getLocale())) : null;
+        return (i18n != null) ? Strings.trimOrNull(i18n.toString(vocabulary.getLocale())) : null;
     }
 }

@@ -20,37 +20,41 @@ import javafx.beans.value.ChangeListener;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.SingleSelectionModel;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.gui.Resources;
 
 
 /**
- * The kind of range to use for scaling the color palette of an image.
+ * The kind of color ramp stretching for scaling the color palette of an image.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-enum RangeType {
+enum Stretching {
     /**
      * As declared in the data store.
      * This is the default value.
      */
-    DECLARED,
+    NONE,
 
     /**
      * Computed from statistics (minimum and maximum values).
+     */
+    VALUE_RANGE,
+
+    /**
+     * Computed from statistics (minimum and maximum values) adjusted with standard deviation.
      */
     AUTOMATIC;
 
     /**
      * Creates the button for selecting a type of range.
-     * The initial value is {@link #DECLARED}.
+     * The initial value is {@link #NONE}.
      */
-    static ChoiceBox<RangeType> createButton(final ChangeListener<RangeType> listener) {
-        final ChoiceBox<RangeType> button = new ChoiceBox<>();
+    static ChoiceBox<Stretching> createButton(final ChangeListener<Stretching> listener) {
+        final ChoiceBox<Stretching> button = new ChoiceBox<>();
         button.getItems().addAll(values());
-        final SingleSelectionModel<RangeType> select = button.getSelectionModel();
+        final SingleSelectionModel<Stretching> select = button.getSelectionModel();
         select.select(0);
         select.selectedItemProperty().addListener(listener);
         return button;
@@ -61,10 +65,13 @@ enum RangeType {
      */
     @Override
     public String toString() {
+        final short key;
         switch (this) {
-            case DECLARED:  return Resources .format(Resources.Keys.FromMetadata);
-            case AUTOMATIC: return Vocabulary.format(Vocabulary.Keys.Automatic);
-            default:        return super.toString();
+            case NONE:        key = Vocabulary.Keys.None;       break;
+            case VALUE_RANGE: key = Vocabulary.Keys.ValueRange; break;
+            case AUTOMATIC:   key = Vocabulary.Keys.Automatic;  break;
+            default:          return super.toString();
         }
+        return Vocabulary.format(key);
     }
 }

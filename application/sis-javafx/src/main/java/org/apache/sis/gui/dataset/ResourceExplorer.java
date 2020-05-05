@@ -22,6 +22,7 @@ import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
@@ -41,6 +42,8 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.ExceptionReporter;
 
 
 /**
@@ -123,6 +126,12 @@ public class ResourceExplorer extends WindowManager {
     private double dividerPosition;
 
     /**
+     * Used for building {@link #viewTab} and {@link #tableTab} when first needed.
+     * This is {@code null} the rest of the time.
+     */
+    private transient DataTabBuilder builder;
+
+    /**
      * Creates a new panel for exploring resources.
      */
     public ResourceExplorer() {
@@ -137,14 +146,14 @@ public class ResourceExplorer extends WindowManager {
         /*
          * Build the tabs.
          */
-        final Resources localized = localized();
-        viewTab = new Tab(localized.getString(Resources.Keys.Visual));
+        final Vocabulary vocabulary = Vocabulary.getResources(localized().getLocale());
+        viewTab = new Tab(vocabulary.getString(Vocabulary.Keys.Visual));
         // TODO: add contextual menu for window showing directly the visual.
 
-        tableTab = new Tab(localized.getString(Resources.Keys.Data));
+        tableTab = new Tab(vocabulary.getString(Vocabulary.Keys.Data));
         tableTab.setContextMenu(new ContextMenu(SelectedData.setTabularView(createNewWindowMenu())));
 
-        final String nativeTabText = Vocabulary.getResources(localized.getLocale()).getString(Vocabulary.Keys.Format);
+        final String nativeTabText = vocabulary.getString(Vocabulary.Keys.Format);
         final MetadataTree nativeMetadata = new MetadataTree(metadata);
         final Tab nativeTab = new Tab(nativeTabText, nativeMetadata);
         nativeTab.setDisable(true);
@@ -155,8 +164,8 @@ public class ResourceExplorer extends WindowManager {
         });
 
         final TabPane tabs = new TabPane(
-            new Tab(localized.getString(Resources.Keys.Summary),  metadata.getView()), viewTab, tableTab,
-            new Tab(localized.getString(Resources.Keys.Metadata), new StandardMetadataTree(metadata)),
+            new Tab(vocabulary.getString(Vocabulary.Keys.Summary),  metadata.getView()), viewTab, tableTab,
+            new Tab(vocabulary.getString(Vocabulary.Keys.Metadata), new StandardMetadataTree(metadata)),
             nativeTab);
 
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -176,6 +185,49 @@ public class ResourceExplorer extends WindowManager {
          */
         viewTab .selectedProperty().addListener((p,o,n) -> dataTabShown(n, true));
         tableTab.selectedProperty().addListener((p,o,n) -> dataTabShown(n, false));
+    }
+
+    /**
+     * A background task for building the content of {@link #viewTab} and {@link #tableTab} when first needed.
+     * This task does not load data, it is only for building the GUI. This operation is longer for those tabs
+     * when built for the first time.
+     */
+    private final class DataTabBuilder extends Task<CoverageExplorer> {
+        /**
+         * The resource to show after construction is completed, or {@code null} if none.
+         */
+        volatile Resource resource;
+
+        /**
+         * Creates a new data tabs builder. The given resource will be shown after
+         * the tabs are ready, unless {@link #resource} is modified after construction.
+         */
+        DataTabBuilder(final Resource resource) {
+            this.resource = resource;
+        }
+
+        /** Builds the tabs GUI components in a background thread. */
+        @Override protected CoverageExplorer call() {
+            return new CoverageExplorer();
+        }
+
+        /** Shows the resource after the tabs GUI are built. */
+        @Override protected void succeeded() {
+            builder  = null;
+            coverage = getValue();
+            updateDataTab(resource);
+        }
+
+        /** Invoked if the tabs can not be built. */
+        @Override protected void failed() {
+            builder = null;
+            ExceptionReporter.show(this);
+        }
+
+        /** Should never happen, but defined as a safety. */
+        @Override protected void cancelled() {
+            builder = null;
+        }
     }
 
     /**
@@ -260,16 +312,26 @@ public class ResourceExplorer extends WindowManager {
      * @param  resource  the resource to set, or {@code null} if none.
      */
     private void updateDataTab(final Resource resource) {
+        /*
+         * If tabs are being built in a background thread, wait for construction to finish.
+         * The builder will callback this `updateDataTab(resource)` method when ready.
+         */
+        if (builder != null) {
+            builder.resource = resource;
+            return;
+        }
         Region       image = null;
         Region       table = null;
         FeatureSet   data  = null;
         ImageRequest grid  = null;
         CoverageExplorer.View type = null;
         if (resource instanceof GridCoverageResource) {
-            grid = new ImageRequest((GridCoverageResource) resource, null, 0);
             if (coverage == null) {
-                coverage = new CoverageExplorer();      // TODO: build in background thread.
+                builder = new DataTabBuilder(resource);
+                BackgroundThreads.execute(builder);
+                return;
             }
+            grid  = new ImageRequest((GridCoverageResource) resource, null, 0);
             image = coverage.getDataView(CoverageExplorer.View.IMAGE);
             table = coverage.getDataView(CoverageExplorer.View.TABLE);
             type  = viewTab.isSelected() ? CoverageExplorer.View.IMAGE : CoverageExplorer.View.TABLE;

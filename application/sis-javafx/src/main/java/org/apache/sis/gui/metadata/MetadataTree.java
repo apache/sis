@@ -147,7 +147,7 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
     MetadataTree(final MetadataSummary controller, final boolean standard) {
         final Locale locale;
         if (controller != null) {
-            locale = controller.localized.getLocale();
+            locale = controller.vocabulary.getLocale();
         } else {
             locale = Locale.getDefault(Locale.Category.DISPLAY);
         }

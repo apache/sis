@@ -46,12 +46,12 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
 import org.apache.sis.internal.gui.RecentChoices;
-import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
 
@@ -810,7 +810,7 @@ next:       for (int i=0; i<count; i++) {
      */
     public Menu createMenuItems(final ChangeListener<ReferenceSystem> action) {
         ArgumentChecks.ensureNonNull("action", action);
-        final Menu menu = new Menu(Resources.forLocale(locale).getString(Resources.Keys.ReferenceSystem));
+        final Menu menu = new Menu(Vocabulary.getResources(locale).getString(Vocabulary.Keys.ReferenceSystem));
         final MenuSync property = new MenuSync(this, updateItems(), menu, new Listener(action));
         menu.getProperties().put(SELECTED_ITEM_KEY, property);
         controlValues.add(property);

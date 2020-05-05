@@ -39,7 +39,6 @@ import org.opengis.metadata.identification.Identification;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -174,7 +173,7 @@ final class IdentificationInfo extends Section<Identification> {
             }
         }
         if (text == null) {
-            text = vocabulary(Vocabulary.Keys.Untitled);
+            text = owner.vocabulary.getString(Vocabulary.Keys.Untitled);
         } else if (CharSequences.isUnicodeIdentifier(text)) {
             text = CharSequences.camelCaseToSentence(text).toString();
         }
@@ -189,7 +188,7 @@ final class IdentificationInfo extends Section<Identification> {
                 buffer.add(IdentifiedObjects.toString(id));
             }
             if (buffer.length() != 0) {
-                addLine(Resources.Keys.Identifiers, buffer.toString());
+                addLine(Vocabulary.Keys.Identifiers, buffer.toString());
             }
         }
         /*
@@ -197,16 +196,16 @@ final class IdentificationInfo extends Section<Identification> {
          * We use those fallback because they can provide some hints about the product.
          * The topic category (climatology, health, etc.) follows.
          */
-        short label = Resources.Keys.Abstract;
+        short label = Vocabulary.Keys.Abstract;
         text = owner.string(info.getAbstract());
         if (text == null) {
-            label = Resources.Keys.Purpose;
+            label = Vocabulary.Keys.Purpose;
             text = owner.string(info.getPurpose());
             if (text == null) {
                 for (final InternationalString c : nonNull(info.getCredits())) {
                     text = owner.string(c);
                     if (text != null) {
-                        label = Resources.Keys.Credit;
+                        label = Vocabulary.Keys.Credit;
                         break;
                     }
                 }
@@ -216,7 +215,7 @@ final class IdentificationInfo extends Section<Identification> {
         /*
          * Topic category.
          */
-        addLine(Resources.Keys.TopicCategory, owner.string(nonNull(info.getTopicCategories())));
+        addLine(Vocabulary.Keys.TopicCategory, owner.string(nonNull(info.getTopicCategories())));
         /*
          * Select a single, arbitrary date. We take the release or publication date if available.
          * If no publication date is found, fallback on the creation date. If no creation date is
@@ -224,19 +223,19 @@ final class IdentificationInfo extends Section<Identification> {
          */
         if (citation != null) {
             Date date = null;
-            label = Resources.Keys.Date;
+            label = Vocabulary.Keys.Date;
             for (final CitationDate c : nonNull(citation.getDates())) {
                 final Date cd = c.getDate();
                 if (cd != null) {
                     final DateType type = c.getDateType();
                     if (DateType.PUBLICATION.equals(type) || DateType.RELEASED.equals(type)) {
-                        label = Resources.Keys.PublicationDate;
+                        label = Vocabulary.Keys.PublicationDate;
                         date  = cd;
                         break;                      // Take the first publication or release date.
                     }
                     final boolean isCreation = DateType.CREATION.equals(type);
                     if (date == null || isCreation) {
-                        label = isCreation ? Resources.Keys.CreationDate : Resources.Keys.Date;
+                        label = isCreation ? Vocabulary.Keys.CreationDate : Vocabulary.Keys.Date;
                         date  = cd;     // Fallback date: creation date, or the first date otherwise.
                     }
                 }
@@ -250,7 +249,7 @@ final class IdentificationInfo extends Section<Identification> {
          * of the next section, "Spatial representation". For that reason we put it close to
          * that next section, i.e. last in this section but just before the map.
          */
-        addLine(Resources.Keys.TypeOfResource, owner.string(nonNull(info.getSpatialRepresentationTypes())));
+        addLine(Vocabulary.Keys.TypeOfResource, owner.string(nonNull(info.getSpatialRepresentationTypes())));
         /*
          * Write the first description about the spatio-temporal extent, then draw all geographic bounding boxes
          * on a world map. If the bounding box encompasses the whole world, replace it by a "World" description.
@@ -281,18 +280,11 @@ final class IdentificationInfo extends Section<Identification> {
         if (isWorld) {
             clearWorldMap();
             if (text == null) {
-                text = vocabulary(Vocabulary.Keys.World);
+                text = owner.vocabulary.getString(Vocabulary.Keys.World);
             }
         }
-        addLine(Resources.Keys.Extent, text);
+        addLine(Vocabulary.Keys.Extent, text);
         setRowIndex(extentOnMap, nextRowIndex());
-    }
-
-    /**
-     * Returns a localized word from the {@link Vocabulary} resources.
-     */
-    private String vocabulary(final short key) {
-        return Vocabulary.getResources(owner.localized.getLocale()).getString(key);
     }
 
     /**

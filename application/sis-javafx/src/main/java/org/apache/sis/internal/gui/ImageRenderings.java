@@ -34,8 +34,7 @@ public final class ImageRenderings {
     /**
      * The set of operations to use.
      *
-     * @todo Creates our own instance which listen to logging messages.
-     *       We need to create a logging panel first.
+     * @todo Listen to logging messages. We need to create a logging panel first.
      */
     private static final ImageProcessor PROCESSOR = new ImageProcessor();
     static {
@@ -49,13 +48,25 @@ public final class ImageRenderings {
     }
 
     /**
-     * Rescale the given image between a minimum and maximum values determined from statistics.
-     * If the given image is null or can not be rescaled, then it is returned as-is.
+     * Stretches the color ramp of given image between a minimum and maximum values.
+     * If the given image is null or can not be stretched, then it is returned as-is.
      *
-     * @param  image  the image to rescale, or {@code null}.
-     * @return the rescaled image.
+     * @param  image  the image to stretch, or {@code null}.
+     * @return the stretched image.
      */
-    public static RenderedImage automaticScale(final RenderedImage image) {
+    public static RenderedImage valueRangeStretching(final RenderedImage image) {
+        return PROCESSOR.automaticColorRamp(image, Double.POSITIVE_INFINITY);
+    }
+
+    /**
+     * Stretches the color ramp of given image between a minimum and maximum values
+     * adjusted  with standard deviations. If the given image is null or can not be
+     * stretched, then it is returned as-is.
+     *
+     * @param  image  the image to stretch, or {@code null}.
+     * @return the stretched image.
+     */
+    public static RenderedImage automaticStretching(final RenderedImage image) {
         return PROCESSOR.automaticColorRamp(image, 3);
     }
 }

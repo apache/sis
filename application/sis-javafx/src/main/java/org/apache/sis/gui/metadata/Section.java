@@ -35,8 +35,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.TilePane;
 import org.opengis.metadata.Metadata;
-import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -237,14 +237,14 @@ abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> 
      * Adds a (label, value) pair to this section.
      * This method does nothing if the given {@code value} is null.
      *
-     * @param  label  a {@link Resources.Keys} for the label of the line to add.
+     * @param  label  a {@link Vocabulary.Keys} for the label of the line to add.
      * @param  value  the value associated to the label, or {@code null} if none.
      */
     final void addLine(final short label, final String value) {
         if (value == null) {
             return;
         }
-        final String labelText = owner.localized.getLabel(label);
+        final String labelText = owner.vocabulary.getLabel(label);
         final Label labelCtrl, valueCtrl;
         final ObservableList<Node> children = getChildren();
         if (linesEndIndex < children.size()) {

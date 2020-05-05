@@ -549,14 +549,58 @@ public class ResourceTree extends TreeView<Resource> {
                 isChildrenKnown = true;                 // Set first for avoiding to repeat in case of failure.
                 final Resource resource = getValue();
                 if (resource instanceof Aggregate) {
-                    final GetChildren task = new GetChildren((Aggregate) resource);
-                    task.setOnSucceeded((event) -> setResources(((GetChildren) event.getSource()).getValue()));
-                    task.setOnFailed((event) -> setResources(((GetChildren) event.getSource()).unloadable()));
-                    BackgroundThreads.execute(task);
+                    BackgroundThreads.execute(new GetChildren((Aggregate) resource));
                     children.add(new Item(PseudoResource.LOADING));     // Temporary node with "loading" text.
                 }
             }
             return children;
+        }
+
+        /**
+         * The task to execute in a background thread for fetching the children.
+         */
+        private final class GetChildren extends Task<List<TreeItem<Resource>>> {
+            /**
+             * The aggregate from which to get the children.
+             */
+            private final Aggregate resource;
+
+            /**
+             * Creates a new background task for fetching the children from the given resource.
+             */
+            GetChildren(final Aggregate resource) {
+                this.resource = resource;
+            }
+
+            /**
+             * Invoked in a background thread for fetching the children of the resource
+             * specified at construction time.
+             */
+            @Override
+            protected List<TreeItem<Resource>> call() throws DataStoreException {
+                final List<TreeItem<Resource>> items = new ArrayList<>();
+                for (final Resource component : resource.components()) {
+                    items.add(new Item(component));
+                }
+                return items;
+            }
+
+            /**
+             * Invoked in JavaFX thread if children have been loaded successfully.
+             */
+            @Override
+            protected void succeeded() {
+                setResources(getValue());
+            }
+
+            /**
+             * Invoked in JavaFX thread if children can not be loaded.
+             * This method set a placeholder items with error message.
+             */
+            @Override
+            protected void failed() {
+                setResources(Collections.singletonList(new Item(new Unloadable(getException()))));
+            }
         }
 
         /**
@@ -565,45 +609,6 @@ public class ResourceTree extends TreeView<Resource> {
          */
         private void setResources(final List<TreeItem<Resource>> result) {
             super.getChildren().setAll(result);
-        }
-    }
-
-    /**
-     * The task to execute in a background thread for fetching the children.
-     *
-     * @todo Draw a progress bar.
-     */
-    private static final class GetChildren extends Task<List<TreeItem<Resource>>> {
-        /**
-         * The aggregate from which to get the children.
-         */
-        private final Aggregate resource;
-
-        /**
-         * Creates a new background task for fetching the children from the given resource.
-         */
-        GetChildren(final Aggregate resource) {
-            this.resource = resource;
-        }
-
-        /**
-         * Invoked in a background thread for fetching the children of the resource specified
-         * at construction time.
-         */
-        @Override
-        protected List<TreeItem<Resource>> call() throws DataStoreException {
-            final List<TreeItem<Resource>> items = new ArrayList<>();
-            for (final Resource component : resource.components()) {
-                items.add(new Item(component));
-            }
-            return items;
-        }
-
-        /**
-         * Returns an item to set instead of the result when the operation failed.
-         */
-        final List<TreeItem<Resource>> unloadable() {
-            return Collections.singletonList(new Item(new Unloadable(getException())));
         }
     }
 
