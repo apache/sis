@@ -278,8 +278,8 @@ public abstract class ChannelData implements Markable {
      * <h4>Departure from Image I/O specification</h4>
      * The {@link javax.imageio.stream.ImageInputStream#reset()} contract specifies that if there is no matching mark,
      * then this method shall do nothing. This method throws {@link InvalidMarkException} instead; silently ignoring
-     * the mismatch is considered too dangerous. However we may revisit this policy in the future if it appears to be
-     * a compatibility problem. Consequently, no code shall rely on {@code InvalidMarkException} to be thrown.
+     * the mismatch is considered too dangerous. This is a departure from {@code ImageInputStream} but is consistent
+     * with {@link java.io.InputStream#reset()} contract.
      *
      * @throws IOException if an I/O error occurs.
      */
@@ -295,10 +295,10 @@ public abstract class ChannelData implements Markable {
     }
 
     /**
-     * Invoked when an operation between the channel and the buffer transfered no byte. Note that this is unrelated
+     * Invoked when an operation between the channel and the buffer transferred no byte. Note that this is unrelated
      * to end-of-file, in which case {@link java.nio.channels.ReadableByteChannel#read(ByteBuffer)} returns -1.
      * A return value of 0 happen for example if the channel is a socket in non-blocking mode and the socket buffer
-     * has not yet transfered new data.
+     * has not yet transferred new data.
      *
      * <p>The current implementation sleeps an arbitrary amount of time before to allow a new try.
      * We do that in order to avoid high CPU consumption when data are expected to take more than
@@ -313,7 +313,7 @@ public abstract class ChannelData implements Markable {
             /*
              * Someone doesn't want to let us sleep. Stop the reading or writing process. We don't try to go back to
              * work, because the waiting time was short and this method is invoked in loops. Consequently if the user
-             * interrupted us, it is probably because he waited for a long time and we still have not transfered any
+             * interrupted us, it is probably because he waited for a long time and we still have not transferred any
              * new data.
              */
             throw new IOException(e);

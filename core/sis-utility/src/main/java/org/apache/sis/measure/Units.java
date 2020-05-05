@@ -824,7 +824,7 @@ public final class Units extends Static {
 
     /**
      * The SI derived unit for electric charge (C).
-     * One coulomb is the charge transfered by a current of one ampere during one second.
+     * One coulomb is the charge transferred by a current of one ampere during one second.
      * The unlocalized name is “coulomb”.
      *
      * <div class="note">
