@@ -263,6 +263,10 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
     org.apache.sis.referencing.operation.builder.LocalizationGridBuilderTest.class,
 
+    // GeoAPI conformance test suite.
+    org.apache.sis.referencing.geoapi.AuthorityFactoryTest.class,
+    org.apache.sis.referencing.geoapi.ParameterizedTransformTest.class,
+
     // Geometry and miscellaneous
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,
