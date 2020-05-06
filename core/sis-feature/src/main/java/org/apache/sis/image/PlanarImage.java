@@ -163,9 +163,19 @@ public abstract class PlanarImage implements RenderedImage {
      *
      * <table class="sis">
      *   <caption>Examples of property keys</caption>
-     *   <tr><th>Keys</th>                             <th>Values</th></tr>
-     *   <tr><td>{@value #SAMPLE_RESOLUTIONS_KEY}</td> <td>Resolutions of sample values in each band.</td></tr>
-     *   <tr><td>{@value #STATISTICS_KEY}</td>         <td>Minimum, maximum and mean values for each band.</td></tr>
+     *   <tr>
+     *     <th>Keys</th>
+     *     <th>Values</th>
+     *   </tr><tr>
+     *     <td>{@value #SAMPLE_RESOLUTIONS_KEY}</td>
+     *     <td>Resolutions of sample values in each band.</td>
+     *   </tr><tr>
+     *     <td>{@value #STATISTICS_KEY}</td>
+     *     <td>Minimum, maximum and mean values for each band.</td>
+     *   </tr><tr>
+     *     <td>{@value ComputedImage#SOURCE_PADDING_KEY}</td>
+     *     <td>Amount of additional source pixels needed on each side of a destination pixel for computing its value.</td>
+     *   </tr>
      * </table>
      *
      * This method shall return {@link Image#UndefinedProperty} if the specified property is not defined.
