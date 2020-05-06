@@ -16,8 +16,10 @@
  */
 package org.apache.sis.image;
 
+import java.util.Set;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Collections;
 import java.nio.DoubleBuffer;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -33,6 +35,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -68,6 +71,14 @@ import org.apache.sis.measure.NumberRange;
  * @module
  */
 public class ResampledImage extends ComputedImage {
+    /**
+     * The properties to forwards to source image in calls to {@link #getProperty(String)}.
+     * This list may be augmented in any future Apache SIS version.
+     *
+     * @see #getProperty(String)
+     */
+    private static final Set<String> FILTERED_PROPERTIES = Collections.singleton(SAMPLE_RESOLUTIONS_KEY);
+
     /**
      * The {@value} value for identifying code expecting exactly 2 dimensions.
      */
@@ -233,7 +244,7 @@ public class ResampledImage extends ComputedImage {
         if (error == null && toSource instanceof MathTransform2D) try {
             final Rectangle bounds = getBounds();
             final Rectangle2D tb = Shapes2D.transform((MathTransform2D) toSource, bounds, bounds);
-            if (!ImageUtilities.getBounds(getSource(0)).intersects(tb)) {
+            if (!ImageUtilities.getBounds(getSource()).intersects(tb)) {
                 return "toSource";
             }
         } catch (TransformException e) {
@@ -244,13 +255,65 @@ public class ResampledImage extends ComputedImage {
     }
 
     /**
+     * Returns the unique source of this resampled image.
+     */
+    private RenderedImage getSource() {
+        return getSource(0);
+    }
+
+    /**
      * Returns the same color model than the source image.
      *
      * @return the color model, or {@code null} if unspecified.
      */
     @Override
     public ColorModel getColorModel() {
-        return getSource(0).getColorModel();
+        return getSource().getColorModel();
+    }
+
+    /**
+     * Gets a property from this image. Current default implementation forwards the following property requests
+     * to the source image (more properties may be added to this list in future Apache SIS versions):
+     *
+     * <ul>
+     *   <li>{@value #SAMPLE_RESOLUTIONS_KEY}</li>
+     * </ul>
+     *
+     * Above listed properties are selected because they should have approximately the same values before and after
+     * resampling. {@linkplain #STATISTICS_KEY Statistics} are not in this list because, while minimum and maximum
+     * values should stay approximately the same, the average value and standard deviation may be quite different.
+     */
+    @Override
+    public Object getProperty(final String key) {
+        if (FILTERED_PROPERTIES.contains(key)) {
+            return getSource().getProperty(key);
+        } else {
+            return super.getProperty(key);
+        }
+    }
+
+    /**
+     * Returns the names of all recognized properties, or {@code null} if this image has no properties.
+     * The returned array contains the properties listed in {@link #getProperty(String)} if the source
+     * image has those properties.
+     *
+     * @return names of all recognized properties, or {@code null} if none.
+     */
+    @Override
+    public String[] getPropertyNames() {
+        final String[] names = getSource().getPropertyNames();      // Array should be a copy, so we don't copy again.
+        if (names != null) {
+            int n = 0;
+            for (final String name : names) {
+                if (FILTERED_PROPERTIES.contains(name)) {
+                    names[n++] = name;
+                }
+            }
+            if (n != 0) {
+                return ArraysExt.resize(names, n);
+            }
+        }
+        return null;
     }
 
     /**
@@ -334,7 +397,7 @@ public class ResampledImage extends ComputedImage {
         final PixelIterator it;
         {   // For keeping temporary variables locale.
             final Dimension support = interpolation.getSupportSize();
-            it = new PixelIterator.Builder().setWindowSize(support).create(getSource(0));
+            it = new PixelIterator.Builder().setWindowSize(support).create(getSource());
             final Rectangle domain = it.getDomain();    // Source image bounds.
             xmin = domain.getMinX();                    // We will tolerate 0.5 pixels before (from center to border).
             ymin = domain.getMinY();

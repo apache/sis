@@ -109,13 +109,30 @@ public abstract class PlanarImage implements RenderedImage {
      * Key of a property defining the resolutions of sample values in each band. This property is recommended
      * for images having sample values as floating point numbers. For example if sample values were computed by
      * <var>value</var> = <var>integer</var> × <var>scale factor</var>, then the resolution is the scale factor.
-     * This information is used for choosing the number of fraction digits to show when writing sample values in
-     * text format.
+     * This information can be used for choosing the number of fraction digits to show when writing sample values
+     * in text format.
      *
      * <p>Values should be instances of {@code float[]} or {@code double[]}.
-     * The array length should be the number of bands.</p>
+     * The array length should be the number of bands. This property may be computed automatically during
+     * {@linkplain org.apache.sis.coverage.grid.GridCoverage#forConvertedValues(boolean) conversions from
+     * integer values to floating point values}.</p>
      */
-    public static final String SAMPLE_RESOLUTIONS_KEY = "SampleResolution";
+    public static final String SAMPLE_RESOLUTIONS_KEY = "org.apache.sis.SampleResolution";
+
+    /**
+     * Key of property providing statistics on sample values in each band. Providing a value for this key
+     * is recommended when those statistics are known in advance (for example if they are provided in some
+     * metadata of a raster format). Statistics are useful for stretching a color palette over the values
+     * actually used in an image.
+     *
+     * <p>Values should be instances of <code>{@linkplain org.apache.sis.math.Statistics}[]</code>.
+     * The array length should be the number of bands. If this property is not provided, Apache SIS
+     * may have to {@linkplain ImageProcessor#statistics(RenderedImage) compute statistics itself}
+     * (by iterating over pixel values) when needed.</p>
+     *
+     * @see ImageProcessor#statistics(RenderedImage)
+     */
+    public static final String STATISTICS_KEY = "org.apache.sis.Statistics";
 
     /**
      * Creates a new rendered image.
@@ -140,16 +157,18 @@ public abstract class PlanarImage implements RenderedImage {
     }
 
     /**
-     * Gets a property from this image.
-     * The property to get is identified by the specified key. Some keys supported by Apache SIS are:
+     * Gets a property from this image. The property to get is identified by the specified key.
+     * The set of available keys is given by {@link #getPropertyNames()} and depends on the image instance.
+     * The following table gives examples of keys recognized by some Apache SIS {@link RenderedImage} instances:
      *
      * <table class="sis">
-     *   <caption>Recognized property keys</caption>
+     *   <caption>Examples of property keys</caption>
      *   <tr><th>Keys</th>                             <th>Values</th></tr>
      *   <tr><td>{@value #SAMPLE_RESOLUTIONS_KEY}</td> <td>Resolutions of sample values in each band.</td></tr>
+     *   <tr><td>{@value #STATISTICS_KEY}</td>         <td>Minimum, maximum and mean values for each band.</td></tr>
      * </table>
      *
-     * This method returns {@link Image#UndefinedProperty} if the specified property is not defined.
+     * This method shall return {@link Image#UndefinedProperty} if the specified property is not defined.
      * The default implementation returns {@link Image#UndefinedProperty} in all cases.
      *
      * @param  key  the name of the property to get.

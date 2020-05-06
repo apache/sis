@@ -26,13 +26,16 @@ import java.awt.image.BandedSampleModel;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.TileObserver;
+import java.lang.reflect.Array;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.image.ComputedImage;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
 
 
@@ -99,6 +102,8 @@ public class BandedSampleConverter extends ComputedImage {
          */
         boolean hasResolutions = false;
         final double[] resolutions = new double[converters.length];
+        final Object sr = source.getProperty(SAMPLE_RESOLUTIONS_KEY);
+        final int n = (sr != null && Numbers.isNumber(sr.getClass().getComponentType())) ? Array.getLength(sr) : 0;
         for (int i=0; i<resolutions.length; i++) {
             /*
              * Get the sample value in the middle of the range of valid values for the current band.
@@ -131,6 +136,17 @@ public class BandedSampleConverter extends ComputedImage {
                 }
             } catch (TransformException e) {
                 r = Double.NaN;
+            }
+            /*
+             * The implicit source resolution if 1 on the assumption that we are converting from
+             * integer values. But if the source image specifies a resolution, use the specified
+             * value instead than the implicit 1 value.
+             */
+            if (i < n) {
+                final Number v = (Number) Array.get(sr, i);
+                if (v != null) {
+                    r *= (v instanceof Float) ? DecimalFunctions.floatToDouble(v.floatValue()) : v.doubleValue();
+                }
             }
             resolutions[i] = r;
             hasResolutions |= Double.isFinite(r);
