@@ -109,7 +109,7 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
             fail("Expected ImagingOpException.");
         } catch (ImagingOpException e) {
             final String message = e.getMessage();
-            assertTrue(message, message.contains("statistics"));
+            assertTrue(message, message.contains(StatisticsCalculator.STATISTICS_KEY));
             assertNotNull("Expected a cause.", e.getCause());
         }
         loggings.assertNoUnexpectedLog();

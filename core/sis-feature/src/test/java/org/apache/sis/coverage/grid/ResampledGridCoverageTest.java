@@ -29,6 +29,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.opengis.referencing.datum.PixelInCell.CELL_CENTER;
@@ -47,7 +48,7 @@ import static org.opengis.test.Assert.*;
  * @module
  */
 @DependsOn(org.apache.sis.image.ResampledImageTest.class)
-public final strictfp class ResampledGridCoverageTest {
+public final strictfp class ResampledGridCoverageTest extends TestCase {
     /**
      * Creates a small grid coverage with arbitrary data. The rendered image will
      * have only one tile since testing tiling is not the purpose of this class.

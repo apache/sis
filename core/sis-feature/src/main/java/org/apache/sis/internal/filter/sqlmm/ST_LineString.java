@@ -82,7 +82,7 @@ final class ST_LineString extends NamedFunction implements FeatureExpression {
         }
 
         if (this.parameters.size() > 1) {
-            constantCrs = toCrs(this.parameters.get(1), null);
+//          constantCrs = toCrs(this.parameters.get(1), null);      // TODO: NullPointerException here.
         }
     }
 
