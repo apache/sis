@@ -27,7 +27,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 /**
  * Computes statistics on all pixel values of an image. The results are stored in an array
- * of {@link Statistics} objects (one per band) in a property named {@value #PROPERTY_NAME}.
+ * of {@link Statistics} objects (one per band) in a property named {@value #STATISTICS_KEY}.
  * The statistics can be computed in parallel or sequentially for non thread-safe images.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -36,11 +36,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @module
  */
 final class StatisticsCalculator extends AnnotatedImage {
-    /**
-     * Name of the property computed by this class.
-     */
-    static final String PROPERTY_NAME = "org.apache.sis.image.statistics";
-
     /**
      * Creates a new calculator.
      *
@@ -59,7 +54,7 @@ final class StatisticsCalculator extends AnnotatedImage {
      */
     @Override
     protected String getComputedPropertyName() {
-        return PROPERTY_NAME;
+        return STATISTICS_KEY;
     }
 
     /**

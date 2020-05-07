@@ -27,6 +27,7 @@ import java.awt.geom.NoninvertibleTransformException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
@@ -57,6 +58,8 @@ public final class AffineTransforms2D extends Static {
      * @param  transform  the transform to convert, or {@code null}.
      * @return the transform argument if it can be safely casted (including {@code null} argument) or converted.
      * @throws IllegalArgumentException if the given transform can not be caster or converted.
+     *
+     * @see #toMathTransform(AffineTransform)
      */
     public static AffineTransform castOrCopy(final MathTransform transform) throws IllegalArgumentException {
         if (transform == null || transform instanceof AffineTransform) {
@@ -103,6 +106,26 @@ public final class AffineTransforms2D extends Static {
         return new Matrix3(transform.getScaleX(), transform.getShearX(), transform.getTranslateX(),
                            transform.getShearY(), transform.getScaleY(), transform.getTranslateY(),
                            0,                     0,                     1);
+    }
+
+    /**
+     * Creates a math transform from the given affine transform.
+     * This method is the converse of {@link #castOrCopy(MathTransform)}.
+     *
+     * @param  transform  the affine transform to cast or copy as a {@link MathTransform}, or {@code null}.
+     * @return a {@link MathTransform} doing the same operation than the given {@link AffineTransform},
+     *         or {@code null} if the given transform was null.
+     *
+     * @see #castOrCopy(MathTransform)
+     *
+     * @since 1.1
+     */
+    public static LinearTransform toMathTransform(final AffineTransform transform) {
+        if (transform == null || transform instanceof LinearTransform) {
+            return (LinearTransform) transform;
+        } else {
+            return new AffineTransform2D(transform);
+        }
     }
 
     /**

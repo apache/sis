@@ -71,7 +71,7 @@ import org.apache.sis.internal.feature.Resources;
  * implementation assumes that source images occupy the same region as this {@code ComputedImage}:
  * all pixels at coordinates (<var>x</var>, <var>y</var>) in this {@code ComputedImage} depend on pixels
  * at the same (<var>x</var>, <var>y</var>) coordinates in the source images,
- * possibly shifted or expanded to neighborhood pixels as described in {@link #SOURCE_PADDING_PROPERTY}.
+ * possibly shifted or expanded to neighborhood pixels as described in {@link #SOURCE_PADDING_KEY}.
  * If this assumption does not hold, then subclasses should override the
  * {@link #sourceTileChanged(RenderedImage, int, int)} method.</p>
  *
@@ -139,7 +139,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @see #getProperty(String)
      * @see #sourceTileChanged(RenderedImage, int, int)
      */
-    public static final String SOURCE_PADDING_PROPERTY = "sourcePadding";
+    public static final String SOURCE_PADDING_KEY = "org.apache.sis.SourcePadding";
 
     /**
      * Weak reference to this image, also used as a cleaner when the image is garbage-collected.
@@ -588,7 +588,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * <p>The default implementation assumes that source images use pixel coordinate systems aligned with this
      * {@code ComputedImage} in such a way that all pixels at coordinates (<var>x</var>, <var>y</var>) in the
      * {@code source} image are used for calculation of pixels at the same (<var>x</var>, <var>y</var>) coordinates
-     * in this {@code ComputedImage}, possibly expanded to neighborhood pixels if the {@value #SOURCE_PADDING_PROPERTY}
+     * in this {@code ComputedImage}, possibly expanded to neighborhood pixels if the {@value #SOURCE_PADDING_KEY}
      * property is defined. If this assumption does not hold, then subclasses should override this method and invoke
      * {@link #markDirtyTiles(Rectangle)} themselves.</p>
      *
@@ -603,7 +603,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
         final long targetHeight = this  .getTileHeight();
         final long tx           = tileX * sourceWidth  + source.getTileGridXOffset() - getTileGridXOffset();
         final long ty           = tileY * sourceHeight + source.getTileGridYOffset() - getTileGridYOffset();
-        final Insets b = getProperty(Insets.class, SOURCE_PADDING_PROPERTY, source);
+        final Insets b = getProperty(Insets.class, SOURCE_PADDING_KEY, source);
         reference.markDirtyTiles(Numerics.clamp(Math.floorDiv(tx - (b == null ? 0 : b.left), targetWidth)),
                                  Numerics.clamp(Math.floorDiv(ty - (b == null ? 0 : b.top),  targetHeight)),
                                  Numerics.clamp(Math.floorDiv(tx + (b == null ? 0 : b.right)  + sourceWidth  - 1, targetWidth)),

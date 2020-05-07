@@ -471,34 +471,42 @@ final class ResampledGridCoverage extends GridCoverage {
 
     /**
      * Returns a two-dimensional slice of resampled grid data as a rendered image.
+     *
+     * @throws CannotEvaluateException if this method can not produce the rendered image.
      */
     @Override
     public RenderedImage render(GridExtent sliceExtent) {
-        if (sliceExtent != null) try {
-            final GeneralEnvelope bounds = sliceExtent.toCRS(toSourceCorner, toSourceCenter, null);
-            sliceExtent = new GridExtent(bounds, GridRoundingMode.ENCLOSING, null, null, null);
-        } catch (TransformException e) {
+        final RenderedImage values;         // Source image providing the values to resample.
+        final MathTransform toSource;       // From resampled image pixels to source image pixels.
+        final Rectangle     bounds;         // Bounds (in pixel coordinates) of resampled image.
+        try {
+            GridExtent sourceExtent = null;
+            if (sliceExtent != null) {
+                final GeneralEnvelope envelope = sliceExtent.toCRS(toSourceCorner, toSourceCenter, null);
+                sourceExtent = new GridExtent(envelope, GridRoundingMode.ENCLOSING, null, null, null);
+            }
+            values = source.render(sourceExtent);
+            if (sliceExtent  == null) sliceExtent  = gridGeometry.getExtent();
+            if (sourceExtent == null) sourceExtent = source.getGridGeometry().getExtent();
+            bounds = new Rectangle(Math.toIntExact(sliceExtent.getSize(xDimension)),
+                                   Math.toIntExact(sliceExtent.getSize(yDimension)));
+            /*
+             * `this.toSource` is a transform from source cell coordinates to target cell coordinates.
+             * We need a transform from source pixel coordinates to target pixel coordinates (in images).
+             * An offset may exist between cell coordinates and pixel coordinates.
+             */
+            final MathTransform pixelsToTransform = MathTransforms.translation(
+                    sliceExtent.getLow(xDimension),
+                    sliceExtent.getLow(yDimension));
+
+            final MathTransform transformToPixels = MathTransforms.translation(
+                    Math.negateExact(sourceExtent.getLow(xDimension)),
+                    Math.negateExact(sourceExtent.getLow(yDimension)));
+
+            toSource = MathTransforms.concatenate(pixelsToTransform, toSourceCenter, transformToPixels);
+        } catch (TransformException | ArithmeticException e) {
             throw new CannotEvaluateException(e.getLocalizedMessage(), e);
         }
-        final RenderedImage image        = source.render(sliceExtent);
-        final GridExtent    sourceExtent = source.getGridGeometry().getExtent();
-        final GridExtent    targetExtent = gridGeometry.getExtent();
-        final Rectangle     bounds       = new Rectangle(Math.toIntExact(targetExtent.getSize(xDimension)),
-                                                         Math.toIntExact(targetExtent.getSize(yDimension)));
-        /*
-         * `this.toSource` is a transform from source cell coordinates to target cell coordinates.
-         * We need a transform from source pixel coordinates to target pixel coordinates (in images).
-         * An offset may exist between cell coordinates and pixel coordinates.
-         */
-        final MathTransform pixelsToTransform = MathTransforms.translation(
-                targetExtent.getLow(xDimension),
-                targetExtent.getLow(yDimension));
-
-        final MathTransform transformToPixels = MathTransforms.translation(
-                Math.subtractExact(image.getMinX(), sourceExtent.getLow(xDimension)),
-                Math.subtractExact(image.getMinY(), sourceExtent.getLow(yDimension)));
-
-        final MathTransform toImage = MathTransforms.concatenate(pixelsToTransform, toSourceCenter, transformToPixels);
-        return imageProcessor.resample(bounds, toImage, image);
+        return imageProcessor.resample(bounds, toSource, values);
     }
 }

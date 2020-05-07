@@ -39,7 +39,7 @@ import static java.lang.Double.doubleToLongBits;
  * Static methods working with {@link Number} objects, and a few primitive types by extension.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.math.MathFunctions
  *
@@ -178,6 +178,24 @@ public final class Numbers extends Static {
     public static boolean isInteger(final Class<?> type) {
         final Numbers mapping = MAPPING.get(type);
         return (mapping != null) && mapping.isInteger;
+    }
+
+    /**
+     * Returns {@code true} if the given {@code type} is a floating point or an integer type.
+     * This method returns {@code true} if either {@link #isFloat(Class)} or {@link #isInteger(Class)}
+     * returns {@code true} for the given argument.
+     *
+     * @param  type  the primitive type or wrapper class to test (can be {@code null}).
+     * @return {@code true} if {@code type} is a floating point or an integer type.
+     *
+     * @see #isFloat(Class)
+     * @see #isInteger(Class)
+     *
+     * @since 1.1
+     */
+    public static boolean isNumber(final Class<?> type) {
+        final Numbers mapping = MAPPING.get(type);
+        return (mapping != null) && (mapping.isInteger | mapping.isFloat);
     }
 
     /**

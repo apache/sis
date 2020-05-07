@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
@@ -31,6 +32,7 @@ import java.awt.image.ImagingOpException;
 import java.awt.image.RasterFormatException;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -351,20 +353,45 @@ public class ImageProcessor implements Cloneable {
 
     /**
      * Returns statistics (minimum, maximum, mean, standard deviation) on each bands of the given image.
+     * Invoking this method is equivalent to invoking {@link #statistics(RenderedImage)} and extracting
+     * immediately the statistics property value, except that errors are handled by the
+     * {@linkplain #getErrorAction() error handler}.
      *
      * @param  source  the image for which to compute statistics.
      * @return the statistics of sample values in each band.
-     * @throws ImagingOpException if an error occurred during calculation and {@code failOnException} is {@code true}.
+     * @throws ImagingOpException if an error occurred during calculation
+     *         and the error handler is {@link ErrorAction#THROW}.
+     *
+     * @see #statistics(RenderedImage)
+     * @see StatisticsCalculator#STATISTICS_KEY
      */
-    public Statistics[] statistics(final RenderedImage source) {
+    public Statistics[] getStatistics(final RenderedImage source) {
         ArgumentChecks.ensureNonNull("source", source);
-        final StatisticsCalculator calculator = new StatisticsCalculator(source, parallel(source), failOnException());
-        final Object property = calculator.getProperty(StatisticsCalculator.PROPERTY_NAME);
-        calculator.logAndClearError(ImageProcessor.class, "statistics", errorListener());
-        if (property instanceof Statistics[]) {
-            return (Statistics[]) property;
+        Object property = source.getProperty(StatisticsCalculator.STATISTICS_KEY);
+        if (!(property instanceof Statistics[])) {
+            final StatisticsCalculator calculator = new StatisticsCalculator(source, parallel(source), failOnException());
+            property = calculator.getProperty(StatisticsCalculator.STATISTICS_KEY);
+            calculator.logAndClearError(ImageProcessor.class, "getStatistics", errorListener());
         }
-        return null;
+        return (Statistics[]) property;
+    }
+
+    /**
+     * Returns an image with statistics (minimum, maximum, mean, standard deviation) on each bands.
+     * If the given image already contains an {@value StatisticsCalculator#STATISTICS_KEY} property,
+     * then that image is returned as-is. Otherwise this method returns a new image having that property.
+     * The property value will be computed when first requested (it is not computed by this method).
+     *
+     * @param  source  the image for which to provide statistics.
+     * @return an image with an {@value StatisticsCalculator#STATISTICS_KEY} property.
+     *
+     * @see #getStatistics(RenderedImage)
+     * @see StatisticsCalculator#STATISTICS_KEY
+     */
+    public RenderedImage statistics(final RenderedImage source) {
+        ArgumentChecks.ensureNonNull("source", source);
+        return ArraysExt.contains(source.getPropertyNames(), StatisticsCalculator.STATISTICS_KEY)
+                ? source : unique(new StatisticsCalculator(source, parallel(source), failOnException()));
     }
 
     /**
@@ -399,9 +426,10 @@ public class ImageProcessor implements Cloneable {
 
     /**
      * Returns an image with the same sample values than the given image, but with its color ramp stretched between
-     * automatically determined bounds. This is the same operation than {@link #stretchColorRamp rescaleColorRamp(…)}
-     * except that the minimum and maximum values are determined by {@linkplain #statistics(RenderedImage) statistics}
-     * on the image: a range of value is determined first from the {@linkplain Statistics#minimum() minimum} and
+     * automatically determined bounds. This is the same operation than {@link #stretchColorRamp(RenderedImage,
+     * double, double) stretchColorRamp(…)} except that the minimum and maximum values are determined by
+     * {@linkplain #getStatistics(RenderedImage) statistics} on the image:
+     * a range of value is determined first from the {@linkplain Statistics#minimum() minimum} and
      * {@linkplain Statistics#maximum() maximum} values found in the image, optionally narrowed to an interval
      * of some {@linkplain Statistics#standardDeviation(boolean) standard deviations} around the mean value.
      *
@@ -411,18 +439,41 @@ public class ImageProcessor implements Cloneable {
      * values for the color ramp because a single value very far from other values is sufficient for making the colors
      * difficult to distinguish for 99.9% of the data.</p>
      *
-     * @param  source      the image to recolor (may be {@code null}).
-     * @param  deviations  multiple of standard deviations around the mean, of {@link Double#POSITIVE_INFINITY}
-     *                     for not using standard deviation for narrowing the range of values.
-     *                     Some values giving good results for a Gaussian distribution are 1.5, 2 or 3.
+     * <p>The range of values for the color ramp can be narrowed with following modifiers
+     * (a {@link Map} is used for allowing addition of more modifiers in future Apache SIS versions).
+     * All unrecognized modifiers are silently ignored. If no modifier is specified, then the color ramp
+     * will be stretched from minimum to maximum values.</p>
+     *
+     * <table>
+     *   <caption>Value range modifiers</caption>
+     *   <tr>
+     *     <th>Key</th>
+     *     <th>Purpose</th>
+     *     <th>Examples</th>
+     *   </tr><tr>
+     *     <td>{@code MultStdDev}</td>
+     *     <td>Multiple of the standard deviation.</td>
+     *     <td>1.5, 2 or 3.</td>
+     *   </tr>
+     * </table>
+     *
+     * @param  source     the image to recolor (may be {@code null}).
+     * @param  modifiers  modifiers for narrowing the range of values, or {@code null} if none.
      * @return the image with color ramp stretched between the automatic bounds,
      *         or {@code image} unchanged if the operation can not be applied on the given image.
      */
-    public RenderedImage automaticColorRamp(final RenderedImage source, double deviations) {
-        ArgumentChecks.ensureStrictlyPositive("deviations", deviations);
+    public RenderedImage stretchColorRamp(final RenderedImage source, final Map<String,Number> modifiers) {
+        double deviations = Double.POSITIVE_INFINITY;
+        if (modifiers != null) {
+            Number value = modifiers.get("MultStdDev");
+            if (value != null) {
+                deviations = value.doubleValue();
+                ArgumentChecks.ensureStrictlyPositive("MultStdDev", deviations);
+            }
+        }
         final int visibleBand = ImageUtilities.getVisibleBand(source);
         if (visibleBand >= 0) {
-            final Statistics[] statistics = statistics(source);
+            final Statistics[] statistics = getStatistics(source);
             if (statistics != null && visibleBand < statistics.length) {
                 final Statistics s = statistics[visibleBand];
                 if (s != null) {

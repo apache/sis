@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.gui;
 
+import java.util.Collections;
 import java.awt.image.RenderedImage;
 import org.apache.sis.image.ImageProcessor;
 
@@ -55,7 +56,7 @@ public final class ImageRenderings {
      * @return the stretched image.
      */
     public static RenderedImage valueRangeStretching(final RenderedImage image) {
-        return PROCESSOR.automaticColorRamp(image, Double.POSITIVE_INFINITY);
+        return PROCESSOR.stretchColorRamp(image, null);
     }
 
     /**
@@ -67,6 +68,6 @@ public final class ImageRenderings {
      * @return the stretched image.
      */
     public static RenderedImage automaticStretching(final RenderedImage image) {
-        return PROCESSOR.automaticColorRamp(image, 3);
+        return PROCESSOR.stretchColorRamp(image, Collections.singletonMap("MultStdDev", 3));
     }
 }
