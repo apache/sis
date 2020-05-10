@@ -108,7 +108,9 @@ public abstract class PlanarCanvas extends Canvas {
      * {@link Units#PIXEL} and coordinate values are usually (but not necessarily) integers.
      *
      * <p>This value may be {@code null} on newly created {@code Canvas}, before data are added and canvas
-     * is configured. It should not be {@code null} anymore once a {@code Canvas} is ready for displaying.</p>
+     * is configured. It should not be {@code null} anymore once a {@code Canvas} is ready for displaying.
+     * The returned envelope is a copy; display changes happening after this method invocation will not be
+     * reflected in the returned envelope.</p>
      *
      * @return size and location of the display device.
      *

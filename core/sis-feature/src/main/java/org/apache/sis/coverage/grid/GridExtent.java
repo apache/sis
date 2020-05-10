@@ -58,6 +58,8 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Modules;
 
 // Branch-dependent imports
 import org.opengis.coverage.grid.GridEnvelope;
@@ -959,7 +961,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 }
             }
         } catch (FactoryException e) {
-            GridGeometry.recoverableException(e);
+            // "toEnvelope" is the closest public method that may invoke this method.
+            Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridExtent.class, "toEnvelope", e);
         }
         return envelope;
     }

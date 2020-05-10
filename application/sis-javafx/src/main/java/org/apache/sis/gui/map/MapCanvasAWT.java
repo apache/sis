@@ -32,6 +32,7 @@ import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.concurrent.Task;
 import javafx.util.Callback;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 
 
@@ -134,8 +135,12 @@ public abstract class MapCanvasAWT extends MapCanvas {
      *   <tr><td>{@link #createRenderer()}</td>  <td>JavaFX thread</td>     <td></td></tr>
      *   <tr><td>{@link #render()}</td>          <td>Background thread</td> <td></td></tr>
      *   <tr><td>{@link #paint(Graphics2D)}</td> <td>Background thread</td> <td>May be invoked many times.</td></tr>
-     *   <tr><td>{@link #commit()}</td>          <td>JavaFX thread</td>     <td></td></tr>
+     *   <tr><td>{@link #commit(MapCanvas)}</td> <td>JavaFX thread</td>     <td></td></tr>
      * </table>
+     *
+     * This class should not access any {@link MapCanvasAWT} property from a method invoked in background thread
+     * ({@link #render()} and {@link #paint(Graphics2D)}). It may access {@link MapCanvasAWT} properties from the
+     * {@link #commit(MapCanvas)} method.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
@@ -165,9 +170,12 @@ public abstract class MapCanvasAWT extends MapCanvas {
          * advance allow to hold the {@link Graphics2D} handler for a shorter time.
          *
          * <p>The default implementation does nothing.</p>
+         *
+         * @throws TransformException if the rendering required coordinate transformation and that
+         *         operation failed.
          */
         @Override
-        protected void render() {
+        protected void render() throws TransformException {
         }
 
         /**
@@ -181,17 +189,20 @@ public abstract class MapCanvasAWT extends MapCanvas {
         protected abstract void paint(Graphics2D gr);
 
         /**
-         * Invoked in JavaFX thread after {@link #render()} completion. This method can update the
-         * {@link #floatingPane} children with the nodes (images, shaped, <i>etc.</i>) created by
-         * {@link #render()}.
+         * Invoked in JavaFX thread after {@link #paint(Graphics2D)} completion. This method can update the
+         * {@link #floatingPane} children with the nodes (images, shaped, <i>etc.</i>) created by {@link #render()}.
+         * If this method detects that data has changed during the time {@code Renderer} was working in background,
+         * then this method can return {@code true} for requesting a new repaint. In such case that repaint will use
+         * a new {@link Renderer} instance; the current instance will not be reused.
          *
-         * <p>The default implementation does nothing.</p>
+         * <p>The default implementation does nothing and returns {@code true}.</p>
          *
+         * @param  canvas  the canvas where drawing has been done. It will be a {@link MapCanvasAWT} instance.
          * @return {@code true} on success, or {@code false} if the rendering should be redone
          *         (for example because a change has been detected in the data).
          */
         @Override
-        protected boolean commit() {
+        protected boolean commit(MapCanvas canvas) {
             return true;
         }
     }
@@ -275,7 +286,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
          * background thread is executed; no direct reference to {@link MapCanvas} here.
          */
         @Override
-        protected WritableImage call() {
+        protected WritableImage call() throws TransformException {
             renderer.render();
             final int width  = renderer.getWidth();
             final int height = renderer.getHeight();
@@ -314,7 +325,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
             buffer              = drawTo;
             bufferWrapper       = wrapper;
             bufferConfiguration = configuration;
-            final boolean done  = renderer.commit();
+            final boolean done  = renderer.commit(MapCanvasAWT.this);
             renderingCompleted(this);
             if (!done || contentsChanged()) {
                 repaint();
@@ -370,7 +381,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
          * background thread is executed; no direct reference to {@link MapCanvas} here.
          */
         @Override
-        protected VolatileImage call() {
+        protected VolatileImage call() throws TransformException {
             renderer.render();
             final int width  = renderer.getWidth();
             final int height = renderer.getHeight();
@@ -433,7 +444,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
             } finally {
                 drawTo.flush();                     // Release native resources.
             }
-            final boolean done = renderer.commit();
+            final boolean done = renderer.commit(MapCanvasAWT.this);
             renderingCompleted(this);
             if (!done || contentsLost || contentsChanged()) {
                 repaint();

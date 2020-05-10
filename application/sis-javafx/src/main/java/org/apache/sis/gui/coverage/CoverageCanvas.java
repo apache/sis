@@ -18,10 +18,9 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
 import java.util.EnumMap;
-import java.util.Objects;
 import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
+import java.awt.geom.AffineTransform;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Background;
@@ -30,16 +29,20 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import org.opengis.geometry.Envelope;
-import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.internal.gui.ImageRenderings;
+import org.apache.sis.coverage.grid.ImageRenderer;
 import org.apache.sis.internal.gui.ExceptionReporter;
-import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.image.PlanarImage;
+import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
+import org.apache.sis.internal.gui.Resources;
 
 
 /**
@@ -77,53 +80,32 @@ public class CoverageCanvas extends MapCanvasAWT {
     public final ObjectProperty<GridExtent> sliceExtentProperty;
 
     /**
-     * Different ways to represent the data. The {@link #data} field shall be one value from this map.
+     * The {@code RenderedImage} to draw together with transform from pixel coordinates to display coordinates.
+     * Shall never be {@code null} but may be {@linkplain RenderingData#isEmpty() empty}. This instance shall be
+     * read and modified in JavaFX thread only and cloned if those data needed by a background thread.
      *
-     * @see #setDerivedImage(Stretching, RenderedImage)
+     * @see Worker
      */
-    private final EnumMap<Stretching,RenderedImage> stretchedColorRamps;
+    private RenderingData data;
 
     /**
-     * Key of the currently selected alternative in {@link #stretchedColorRamps} map.
-     *
-     * @see #setDerivedImage(Stretching, RenderedImage)
+     * The {@link #data} resampled to a CRS which can easily be mapped to {@linkplain #getDisplayCRS() display CRS}.
+     * The different values are slight variants of the values associated to {@link Stretching#NONE}, with only the
+     * color map changed.
      */
-    private Stretching currentDataAlternative;
-
-    /**
-     * The data to show, or {@code null} if not yet specified. This image may be tiled,
-     * and fetching tiles may require computations to be performed in background thread.
-     * The size of this {@code RenderedImage} is not necessarily the {@link #image} size.
-     * In particular {@code data} way cover a larger area.
-     */
-    private RenderedImage data;
-
-    /**
-     * The {@link GridGeometry#getGridToCRS(PixelInCell)} conversion of rendered {@linkplain #data}
-     * as an affine transform. This is often an immutable instance. A null value is synonymous to
-     * identity transform.
-     */
-    private AffineTransform gridToCRS;
+    private final EnumMap<Stretching,RenderedImage> resampledImages;
 
     /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
      */
     public CoverageCanvas() {
         super(Locale.getDefault());
-        coverageProperty       = new SimpleObjectProperty<>(this, "coverage");
-        sliceExtentProperty    = new SimpleObjectProperty<>(this, "sliceExtent");
-        stretchedColorRamps    = new EnumMap<>(Stretching.class);
-        currentDataAlternative = Stretching.NONE;
+        coverageProperty    = new SimpleObjectProperty<>(this, "coverage");
+        sliceExtentProperty = new SimpleObjectProperty<>(this, "sliceExtent");
+        resampledImages     = new EnumMap<>(Stretching.class);
+        data                = new RenderingData();
         coverageProperty   .addListener((p,o,n) -> onImageSpecified());
         sliceExtentProperty.addListener((p,o,n) -> onImageSpecified());
-    }
-
-    /**
-     * Returns the data which are the source of all alternative images that may be stored in the
-     * {@link #stretchedColorRamps} map. All alternative images are computed from this source.
-     */
-    private RenderedImage getSourceData() {
-        return stretchedColorRamps.get(Stretching.NONE);
     }
 
     /**
@@ -202,221 +184,62 @@ public class CoverageCanvas extends MapCanvasAWT {
         if (coverage == null) {
             clear();
         } else {
-            execute(new Process(coverage, currentDataAlternative));
-        }
-    }
+            final GridExtent sliceExtent = getSliceExtent();
+            execute(new Task<RenderedImage>() {
+                /**
+                 * The coverage geometry reduced to two dimensions and with a translation taking in account
+                 * the {@code sliceExtent}. That value will be stored in {@link CoverageCanvas#dataGeometry}.
+                 */
+                private GridGeometry imageGeometry;
 
-    /**
-     * Invoked when the user selected a new color stretching mode. Also invoked {@linkplain #setRawImage after
-     * loading a new image or a new slice} for switching the new image to the same type of range as previously
-     * selected. If the image for the specified type is not already available, then this method computes the
-     * image in a background thread and refreshes the view after the computation completed.
-     */
-    final void setStretching(final Stretching type) {
-        currentDataAlternative = type;
-        final RenderedImage alt = stretchedColorRamps.get(type);
-        if (alt != null) {
-            setDerivedImage(type, alt);
-        } else {
-            final RenderedImage source = getSourceData();
-            if (source != null) {
-                execute(new Process(source, type));
-            }
-        }
-    }
-
-    /**
-     * Loads or resample images before to show them in the canvas. This class performs some or all of
-     * the following tasks, in order. It is possible to skip the first tasks if they are already done,
-     * but after the work started at some point all remaining points are executed:
-     *
-     * <ol>
-     *   <li>Loads the image.</li>
-     *   <li>Compute statistics on sample values (if needed).</li>
-     *   <li>Reproject the image (if needed).</li>
-     * </ol>
-     */
-    private final class Process extends Task<RenderedImage> {
-        /**
-         * The coverage from which to fetch an image, or {@code null} if the {@link #source} is already known.
-         */
-        private final GridCoverage coverage;
-
-        /**
-         * The {@linkplain #coverage} slice to fetch, or {@code null} if {@link #coverage} is null
-         * or for loading the whole coverage extent.
-         */
-        private final GridExtent sliceExtent;
-
-        /**
-         * The source image, or {@code null} if it will be the result of fetching an image from
-         * the {@linkplain #coverage}. If non-null then it should be {@link #getSourceData()}.
-         */
-        private RenderedImage source;
-
-        /**
-         * The color ramp stretching to apply, or {@link Stretching#NONE} if none.
-         */
-        private final Stretching stretching;
-
-        /**
-         * Creates a new process which will load data from the specified coverage.
-         */
-        Process(final GridCoverage coverage, final Stretching stretching) {
-            this.coverage    = coverage;
-            this.sliceExtent = getSliceExtent();
-            this.stretching  = stretching;
-        }
-
-        /**
-         * Creates a new process which will resample the given image.
-         */
-        Process(final RenderedImage source, final Stretching stretching) {
-            this.coverage    = null;
-            this.sliceExtent = null;
-            this.source      = source;
-            this.stretching  = stretching;
-        }
-
-        /**
-         * Invoked in background thread for fetching the image, stretching the color ramp or resampling.
-         * This method performs some or all steps documented in class Javadoc, with possibility to skip
-         * the first step is required source image is already loaded.
-         */
-        @Override protected RenderedImage call() {
-            if (source == null) {
-                source = coverage.render(sliceExtent);
-            }
-            final RenderedImage derived;
-            switch (stretching) {
-                case VALUE_RANGE: derived = ImageRenderings.valueRangeStretching(source); break;
-                case AUTOMATIC:   derived = ImageRenderings. automaticStretching(source); break;
-                default:          derived = source; break;
-            }
-            return derived;
-        }
-
-        /**
-         * Invoked in JavaFX thread on success. This method stores the computation results, provided that
-         * the settings ({@link #coverage}, source image, <i>etc.</i>) are still the ones for which the
-         * computation has been launched.
-         */
-        @Override protected void succeeded() {
-            /*
-             * The image is shown only if the coverage and extent did not changed during the time we were
-             * loading in background thread (if they changed, another thread is probably running for them).
-             * After `setRawImage(…)` execution, `getSourceData()` should return the given `source`.
-             */
-            if (coverage != null && coverage.equals(getCoverage()) && Objects.equals(sliceExtent, getSliceExtent())) {
-                setRawImage(source, coverage.getGridGeometry(), sliceExtent);
-            }
-            /*
-             * The stretching result is stored only if the user did not changed the image while we were computing
-             * statistics in background thread. This method does not verify if user changed the stretching mode;
-             * this check will be done by `setDerivedImage(…)`.
-             */
-            if (source.equals(getSourceData())) {
-                setDerivedImage(stretching, getValue());
-            }
-        }
-
-        /**
-         * Invoked when an error occurred while loading an image or processing it.
-         * This method popups the dialog box immediately because it is considered
-         * an important error.
-         */
-        @Override protected void failed() {
-            final Throwable ex = getException();
-            errorOccurred(ex);
-            ExceptionReporter.canNotUseResource(ex);
-        }
-    }
-
-    /**
-     * Invoked when a new image has been successfully loaded. The given image must the the "raw" image,
-     * without resampling and without color ramp stretching. The {@link #setDerivedImage} method may
-     * be invoked after this method for specifying image derived from this raw image.
-     *
-     * @todo Needs to handle non-affine transform.
-     *
-     * @param  image        the image to load.
-     * @param  geometry     the grid geometry of the coverage that produced the image.
-     * @param  sliceExtent  the extent that was requested.
-     */
-    private void setRawImage(final RenderedImage image, final GridGeometry geometry, GridExtent sliceExtent) {
-        data = null;
-        stretchedColorRamps.clear();
-        setDerivedImage(Stretching.NONE, image);
-        try {
-            gridToCRS = AffineTransforms2D.castOrCopy(geometry.getGridToCRS(PixelInCell.CELL_CENTER));
-        } catch (RuntimeException e) {                      // Conversion not defined or not affine.
-            gridToCRS = null;
-            errorOccurred(e);
-        }
-        /*
-         * If the user did not specified a sub-region, set the initial visible area to the envelope
-         * of the whole coverage. The `setObjectiveBounds(…)` method will take care of computing an
-         * initial "objective to display" transform from that information.
-         */
-        Envelope visibleArea = null;
-        if (sliceExtent == null) {
-            if (gridToCRS != null && geometry.isDefined(GridGeometry.ENVELOPE)) {
-                // This envelope is valid only if we are able to use the `gridToCRS`.
-                visibleArea = geometry.getEnvelope();
-            }
-            if (geometry.isDefined(GridGeometry.EXTENT)) {
-                sliceExtent = geometry.getExtent();
-            }
-        }
-        /*
-         * If geospatial area declared in grid geometry can not be used, compute it from grid extent.
-         * It is the case for example when only a sub-region has been fetched.
-         */
-        if (sliceExtent != null) {
-            if (visibleArea == null) try {
-                visibleArea = sliceExtent.toEnvelope((gridToCRS != null)
-                                ? AffineTransforms2D.toMathTransform(gridToCRS)
-                                : MathTransforms.identity(sliceExtent.getDimension()));
-            } catch (TransformException e) {
-                // Should never happen because we used an affine transform.
-                errorOccurred(e);
-            }
-            /*
-             * Coordinate (0,0) in the image corresponds to the lowest coordinates requested.
-             * For taking that offset in account, we need to apply a translation.
-             */
-            if (gridToCRS != null) {
-                final int[] dimensions = sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
-                final long tx = sliceExtent.getLow(dimensions[0]);
-                final long ty = sliceExtent.getLow(dimensions[1]);
-                if ((tx | ty) != 0) {
-                    gridToCRS = new AffineTransform(gridToCRS);
-                    gridToCRS.translate(tx, ty);
+                /**
+                 * Invoked in a background thread for fetching the image and computing its geometry. The image
+                 * geometry should be provided by {@value PlanarImage#GRID_GEOMETRY_KEY} property. But if that
+                 * property is not provided, {@link ImageRenderer} is used as a fallback for computing it.
+                 */
+                @Override protected RenderedImage call() throws FactoryException {
+                    final RenderedImage image = coverage.render(sliceExtent);
+                    final Object value = image.getProperty(PlanarImage.GRID_GEOMETRY_KEY);
+                    imageGeometry = (value instanceof GridGeometry) ? (GridGeometry) value
+                                  : new ImageRenderer(coverage, sliceExtent).getImageGeometry(BIDIMENSIONAL);
+                    return image;
                 }
-            }
+
+                /**
+                 * Invoked when an error occurred while loading an image or processing it.
+                 * This method popups the dialog box immediately because it is considered
+                 * an important error.
+                 */
+                @Override protected void failed() {
+                    final Throwable ex = getException();
+                    errorOccurred(ex);
+                    ExceptionReporter.canNotUseResource(ex);
+                }
+
+                /**
+                 * Invoked in JavaFX thread for setting the image to the instance we juste fetched.
+                 */
+                @Override protected void succeeded() {
+                    setRawImage(getValue(), imageGeometry);
+                }
+            });
         }
-        setObjectiveBounds(visibleArea);
     }
 
     /**
-     * Invoked in JavaFX thread for setting the image to show. The given image should be a slice
-     * produced by current value of {@link #coverageProperty} (should be verified by the caller).
-     *
-     * @param  type  the type of range used for scaling the color ramp of given image.
-     * @param  alt   the image or alternative image to show (can be {@code null}).
+     * Invoked when a new image has been successfully loaded. The given image must be the "raw" image,
+     * without resampling and without color ramp stretching. The call to this method is followed by a
+     * a repaint event, which will cause the image to be resampled in a background thread.
      */
-    private void setDerivedImage(final Stretching type, RenderedImage alt) {
-        /*
-         * Store the result but do not necessarily show it because maybe the user changed the
-         * `Stretching` during the time the background thread was working. If the user did not
-         * changed the type, then the `alt` variable below will stay unchanged.
-         */
-        stretchedColorRamps.put(type, alt);
-        alt = stretchedColorRamps.get(currentDataAlternative);
-        if (!Objects.equals(alt, data)) {
-            data = alt;
-            requestRepaint();
+    private void setRawImage(final RenderedImage image, final GridGeometry imageGeometry) {
+        resampledImages.clear();
+        data.setImage(image, imageGeometry);
+        Envelope bounds = null;
+        if (imageGeometry != null && imageGeometry.isDefined(GridGeometry.ENVELOPE)) {
+            bounds = imageGeometry.getEnvelope();
         }
+        setObjectiveBounds(bounds);
+        requestRepaint();   // Cause `Worker` class to be executed.
     }
 
     /**
@@ -426,25 +249,152 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     @Override
     protected Renderer createRenderer() {
-        final RenderedImage data = this.data;       // Need to copy this reference here before background task.
-        if (data == null) {
-            return null;
-        }
-        /*
-         * At each rendering operation, compute the transform from `data` cell coordinates to pixel coordinates
-         * of the image shown in this view. We do this computation every times because `objectiveToDisplay` may
-         * vary at any time, and also because we need a new `AffineTransform` instance anyway (we can not reuse
-         * an existing instance, because it needs to be stable for use by the background thread).
+        return data.isEmpty() ? null : new Worker(this);
+    }
+
+    /**
+     * Resample and paint image in the canvas. This class performs some or all of the following tasks, in order.
+     * It is possible to skip the first tasks if they are already done, but after the work started at some point
+     * all remaining points are executed:
+     *
+     * <ol>
+     *   <li>Compute statistics on sample values (if needed).</li>
+     *   <li>Resample the image (if needed).</li>
+     *   <li>Paint the image.</li>
+     * </ol>
+     */
+    private static final class Worker extends Renderer {
+        /**
+         * Value of {@link CoverageCanvas#data} at the time this worker has been initialized.
          */
-        final AffineTransform gridToDisplay = new AffineTransform(objectiveToDisplay);
-        if (gridToCRS != null) {
-            gridToDisplay.concatenate(gridToCRS);
+        private final RenderingData data;
+
+        /**
+         * The coordinate reference system in which to reproject the data.
+         */
+        private final CoordinateReferenceSystem objectiveCRS;
+
+        /**
+         * The conversion from {@link #objectiveCRS} to the canvas display CRS.
+         */
+        private final LinearTransform objectiveToDisplay;
+
+        /**
+         * The source image after resampling.
+         */
+        private RenderedImage resampledImage;
+
+        /**
+         * The resampled image after stretching.
+         */
+        private RenderedImage stretchedImage;
+
+        /**
+         * Conversion from {@link #resampledImage} (also {@link #stretchedImage}) pixel coordinates
+         * to display coordinates.
+         */
+        private AffineTransform resampledToDisplay;
+
+        /**
+         * Creates a new renderer.
+         */
+        Worker(final CoverageCanvas canvas) {
+            data               = canvas.data.clone();
+            objectiveCRS       = canvas.getObjectiveCRS();
+            objectiveToDisplay = canvas.getObjectiveToDisplay();
+            resampledImage     = canvas.resampledImages.get(Stretching.NONE);
+            stretchedImage     = canvas.resampledImages.get(data.selectedStretching);
         }
-        return new Renderer() {
-            @Override protected void paint(final Graphics2D gr) {
-                gr.drawRenderedImage(data, gridToDisplay);
+
+        /**
+         * Invoked in background thread for resampling the image or stretching the color ramp.
+         * This method performs some of the steps documented in class Javadoc, with possibility
+         * to skip the first step if the required source image is already resampled.
+         */
+        @Override
+        @SuppressWarnings("PointlessBitwiseExpression")
+        protected void render() throws TransformException {
+            boolean isResampled = (resampledImage != null);
+            if (isResampled) {
+                resampledToDisplay = data.getTransform(objectiveToDisplay);
+                // Recompute if anything else than identity or translation.
+                isResampled = (resampledToDisplay.getType()
+                        & ~(AffineTransform.TYPE_IDENTITY | AffineTransform.TYPE_TRANSLATION)) == 0;
             }
-        };
+            if (!isResampled) {
+                stretchedImage = null;
+                resampledImage = data.resample(objectiveCRS, objectiveToDisplay);
+                resampledToDisplay = data.getTransform(objectiveToDisplay);
+            }
+            if (stretchedImage == null) {
+                stretchedImage = data.stretch(resampledImage);
+            }
+        }
+
+        /**
+         * Draws the image in a background buffer after {@link #render()} finished to prepare data.
+         */
+        @Override
+        protected void paint(final Graphics2D gr) {
+            gr.drawRenderedImage(stretchedImage, resampledToDisplay);
+        }
+
+        /**
+         * Invoked in JavaFX thread after {@link #paint(Graphics2D)} completion. This method stores
+         * the computation results.
+         */
+        @Override
+        protected boolean commit(final MapCanvas canvas) {
+            ((CoverageCanvas) canvas).cacheRenderingData(this);
+            return super.commit(canvas);
+        }
+    }
+
+    /**
+     * Invoked after a paint event for caching rendering data.
+     * If the resampled image changed, all previously cached images are discarded.
+     */
+    private void cacheRenderingData(final Worker worker) {
+        data = worker.data;
+        final RenderedImage newValue = worker.resampledImage;
+        final RenderedImage oldValue = resampledImages.put(Stretching.NONE, newValue);
+        if (oldValue != newValue && oldValue != null) {
+            resampledImages.clear();
+            resampledImages.put(Stretching.NONE, newValue);
+        }
+        resampledImages.put(data.selectedStretching, worker.stretchedImage);
+    }
+
+    /**
+     * Invoked when the user selected a new color stretching mode.
+     */
+    final void setStretching(final Stretching type) {
+        data.selectedStretching = type;
+        requestRepaint();
+    }
+
+    /**
+     * Sets the Coordinate Reference System in which all data are transformed before displaying.
+     * The new CRS must be compatible with the previous CRS, i.e. a coordinate operation between
+     * the two CRSs shall exist. If the CRS can not be set to the specified value, then an error
+     * message is shown in the status bar.
+     *
+     * @param  crs  the new Coordinate Reference System in which to transform all data before displaying.
+     */
+    @Override
+    public void setObjectiveCRS(final CoordinateReferenceSystem crs) {
+        resampledImages.clear();
+        data.clearCRS();
+        try {
+            super.setObjectiveCRS(crs);
+        } catch (Exception e) {
+            errorOccurred(e);
+            final Locale locale = getLocale();
+            final Resources i18n = Resources.forLocale(locale);
+            ExceptionReporter.show(null, i18n.getString(Resources.Keys.CanNotUseRefSys_1,
+                    IdentifiedObjects.getDisplayName(crs, locale)), e);
+        }
+        requestRepaint();
     }
 
     /**
@@ -452,8 +402,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     @Override
     protected void clear() {
-        data = null;
-        stretchedColorRamps.clear();
+        setRawImage(null, null);
         super.clear();
     }
 }

@@ -322,7 +322,8 @@ public final strictfp class GridGeometryTest extends TestCase {
 
     /**
      * Tests {@link GridGeometry#reduce(int...)} with a {@code gridToCRS} transform having a constant value
-     * in one dimension. This method tests indirectly {@link GridGeometry#findTargetDimensions(int[])}.
+     * in one dimension. This method tests indirectly {@link SliceGeometry#findTargetDimensions(MathTransform,
+     * GridExtent, double[], int[], int)}.
      */
     @Test
     public void testReduceScalelessDimension() {

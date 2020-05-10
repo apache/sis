@@ -29,6 +29,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.paint.Color;
 import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.map.StatusBar;
@@ -88,7 +89,11 @@ final class CoverageControls extends Controls {
          */
         final VBox displayPane;
         {   // Block for making variables locale to this scope.
-            final ChoiceBox<ReferenceSystem> systems = referenceSystems.createChoiceBox((p,o,n) -> onReferenceSystemSelected(n));
+            final ChoiceBox<ReferenceSystem> systems = referenceSystems.createChoiceBox((p,o,n) -> {
+                if (n instanceof CoordinateReferenceSystem) {
+                    view.setObjectiveCRS((CoordinateReferenceSystem) n);
+                }
+            });
             systems.setMaxWidth(Double.POSITIVE_INFINITY);
             referenceSystem = systems.valueProperty();
             final Label systemLabel = new Label(vocabulary.getLabel(Vocabulary.Keys.ReferenceSystem));
@@ -137,12 +142,6 @@ final class CoverageControls extends Controls {
         if (data != null) {
             referenceSystem.set(data.getCoordinateReferenceSystem());
         }
-    }
-
-    /**
-     * Invoked when a new coordinate reference system is selected.
-     */
-    private void onReferenceSystemSelected(final ReferenceSystem newValue) {
     }
 
     /**

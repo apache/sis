@@ -39,6 +39,7 @@ import static java.awt.geom.AffineTransform.*;
 /**
  * Bridge between {@link Matrix} and Java2D {@link AffineTransform} instances.
  * Those {@code AffineTransform} instances can be viewed as 3×3 matrices.
+ * Contains also utility methods operating on {@link AffineTransform} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1

@@ -469,7 +469,7 @@ public final class MathTransforms extends Static {
     public static MathTransform2D concatenate(MathTransform2D tr1, MathTransform2D tr2)
             throws MismatchedDimensionException
     {
-        return (MathTransform2D) concatenate((MathTransform) tr1, (MathTransform) tr2);
+        return bidimensional(concatenate((MathTransform) tr1, (MathTransform) tr2));
     }
 
     /**
@@ -525,7 +525,26 @@ public final class MathTransforms extends Static {
     public static MathTransform2D concatenate(MathTransform2D tr1, MathTransform2D tr2, MathTransform2D tr3)
             throws MismatchedDimensionException
     {
-        return (MathTransform2D) concatenate((MathTransform) tr1, (MathTransform) tr2, (MathTransform) tr3);
+        return bidimensional(concatenate((MathTransform) tr1, (MathTransform) tr2, (MathTransform) tr3));
+    }
+
+    /**
+     * Returns the given transform as a {@link MathTransform2D} instance.
+     * If the given transform is {@code null} or already implements the {@link MathTransform2D} interface,
+     * then it is returned as-is. Otherwise the given transform is wrapped in an adapter.
+     *
+     * @param  transform  the transform to have as {@link MathTransform2D} instance, or {@code null}.
+     * @return the given transform as a {@link MathTransform2D}, or {@code null} if the argument was null.
+     * @throws MismatchedDimensionException if the number of source and target dimensions is not 2.
+     *
+     * @since 1.1
+     */
+    public static MathTransform2D bidimensional(final MathTransform transform) {
+        if (transform == null || transform instanceof MathTransform2D) {
+            return (MathTransform2D) transform;
+        } else {
+            return new TransformAdapter2D(transform);
+        }
     }
 
     /**

@@ -78,6 +78,14 @@ final class ScaledColorModel extends ComponentColorModel {
     @Override public int getAlpha(int    value) {return                                   MASK;}
 
     /**
+     * Returns whether this color model is capable to handle transparent pixels.
+     */
+    @Override
+    public int getTransparency() {
+        return ImageUtilities.isIntegerType(transferType) ? Transparency.OPAQUE : Transparency.BITMASK;
+    }
+
+    /**
      * Returns the alpha value for the given sample values.
      * This is based only on whether or not the value is NaN.
      */

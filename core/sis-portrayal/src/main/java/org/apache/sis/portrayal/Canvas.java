@@ -804,9 +804,10 @@ public class Canvas extends Observable implements Localized {
     /**
      * Returns the coordinate values of the Point Of Interest (POI) in objective CRS.
      * The array length should be equal to {@link #getDisplayDimensions()}.
+     * May be {@code null} if the point of interest is unknown.
      */
     final double[] getObjectivePOI() {
-        return objectivePOI.getCoordinate();
+        return (objectivePOI != null) ? objectivePOI.getCoordinate() : null;
     }
 
     /**

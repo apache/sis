@@ -17,6 +17,7 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
@@ -28,6 +29,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.apache.sis.internal.util.Numerics.COMPARISON_THRESHOLD;
 
 
 /**
@@ -174,5 +176,27 @@ public final strictfp class ImageUtilitiesTest extends TestCase {
                 Vocabulary.Keys.Green,
                 Vocabulary.Keys.Blue,
                 Vocabulary.Keys.Transparency);
+    }
+
+    /**
+     * Tests the {@link ImageUtilities#roundIfAlmostInteger(AffineTransform)} method.
+     */
+    @Test
+    public void testRoundIfAlmostInteger() {
+        final double tolerance = COMPARISON_THRESHOLD;
+        final AffineTransform test = new AffineTransform(4, 0, 0, 4, -400, -1186);
+        final AffineTransform copy = new AffineTransform(test);
+        assertTrue(ImageUtilities.roundIfAlmostInteger(test));
+        assertEquals("Coefficients were already integers, so the " +
+                "transform should not have been modified.", copy, test);
+
+        test.scale(1 + tolerance/8, 1 - tolerance/8);
+        assertTrue(ImageUtilities.roundIfAlmostInteger(test));
+        assertEquals("Coefficients should have been rounded.", copy, test);
+
+        test.scale(1 + tolerance*2, 1 - tolerance*2);
+        assertFalse(ImageUtilities.roundIfAlmostInteger(test));
+        assertFalse("Change was larger than threshold, so the " +
+                "transform should not have been modified.", copy.equals(test));
     }
 }

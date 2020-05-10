@@ -17,6 +17,7 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
+import java.util.Hashtable;
 import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -26,7 +27,9 @@ import java.awt.image.SampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import java.awt.image.ImagingOpException;
 import java.awt.image.RasterFormatException;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.MismatchedCoverageRangeException;
@@ -38,7 +41,11 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.Vector;
+
+import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
 
 
 /**
@@ -87,6 +94,31 @@ import org.apache.sis.math.Vector;
  * @module
  */
 public class ImageRenderer {
+    /**
+     * The grid geometry of the {@link GridCoverage} specified at construction time.
+     */
+    private final GridGeometry geometry;
+
+    /**
+     * The requested slice, or {@code null} if unspecified.
+     * If unspecified, then the extent to use is the full coverage grid extent.
+     */
+    private final GridExtent sliceExtent;
+
+    /**
+     * The dimensions to select in the grid coverage for producing an image. This is an array of length
+     * {@value GridCoverage2D#BIDIMENSIONAL} obtained by {@link GridExtent#getSubspaceDimensions(int)}.
+     */
+    private final int[] gridDimensions;
+
+    /**
+     * The result of {@link #getImageGeometry(int)} if the specified number of dimension 2.
+     * This is cached for avoiding to recompute this geometry if asked many times.
+     *
+     * @see #getImageGeometry(int)
+     */
+    private GridGeometry imageGeometry;
+
     /**
      * Location of the first image pixel relative to the grid coverage extent. The (0,0) offset means that the first pixel
      * in the {@code sliceExtent} (specified at construction time) is the first pixel in the whole {@link GridCoverage}.
@@ -206,6 +238,13 @@ public class ImageRenderer {
     private DataBuffer buffer;
 
     /**
+     * The properties to give to the image, or {@code null} if none.
+     *
+     * @see #addProperty(String, Object)
+     */
+    private Hashtable<String,Object> properties;
+
+    /**
      * Creates a new image renderer for the given slice extent.
      *
      * @param  coverage     the source coverage for which to build an image.
@@ -217,7 +256,9 @@ public class ImageRenderer {
     public ImageRenderer(final GridCoverage coverage, GridExtent sliceExtent) {
         ArgumentChecks.ensureNonNull("coverage", coverage);
         bands = CollectionsExt.toArray(coverage.getSampleDimensions(), SampleDimension.class);
-        final GridExtent source = coverage.getGridGeometry().getExtent();
+        geometry = coverage.getGridGeometry();
+        final GridExtent source = geometry.getExtent();
+        this.sliceExtent = sliceExtent;
         if (sliceExtent != null) {
             final int dimension = sliceExtent.getDimension();
             if (source.getDimension() != dimension) {
@@ -227,9 +268,9 @@ public class ImageRenderer {
         } else {
             sliceExtent = source;
         }
-        final int[] dimensions = sliceExtent.getSubspaceDimensions(2);
-        final int  xd   = dimensions[0];
-        final int  yd   = dimensions[1];
+        gridDimensions  = sliceExtent.getSubspaceDimensions(GridCoverage2D.BIDIMENSIONAL);
+        final int  xd   = gridDimensions[0];
+        final int  yd   = gridDimensions[1];
         final long xcov = source.getLow(xd);
         final long ycov = source.getLow(yd);
         final long xreq = sliceExtent.getLow(xd);
@@ -289,12 +330,120 @@ public class ImageRenderer {
     }
 
     /**
-     * Returns the location of the image upper-left corner together with the image size.
+     * Returns the location of the image upper-left corner together with the image size. The image coordinate system
+     * is relative to the {@code sliceExtent} specified at construction time: the (0,0) pixel coordinates correspond
+     * to the {@code sliceExtent} {@linkplain GridExtent#getLow(int) low coordinates}. Consequently the rectangle
+     * {@linkplain Rectangle#x <var>x</var>} and {@linkplain Rectangle#y <var>y</var>} coordinates are (0,0) if
+     * the image is located exactly in the area requested by {@code sliceExtent}, or is shifted as below otherwise:
+     *
+     * <blockquote>( <var>x</var>, <var>y</var> ) =
+     * (grid coordinates of actually provided region) − (grid coordinates of requested region)</blockquote>
      *
      * @return the rendered image location and size (never null).
      */
     public final Rectangle getBounds() {
         return new Rectangle(imageX, imageY, width, height);
+    }
+
+    /**
+     * Computes the conversion from pixel coordinates to CRS, together with the geospatial envelope of the image.
+     * The {@link GridGeometry} returned by this method is derived from the {@linkplain GridCoverage#getGridGeometry()
+     * coverage grid geometry} with the following changes:
+     *
+     * <ul>
+     *   <li>The {@linkplain GridGeometry#getDimension() number of grid dimensions} is always 2.</li>
+     *   <li>The number of {@linkplain GridGeometry#getCoordinateReferenceSystem() CRS} dimensions
+     *       is specified by {@code dimCRS} (usually 2).</li>
+     *   <li>The {@linkplain GridGeometry#getEnvelope() envelope} may be a sub-region of the coverage envelope.</li>
+     *   <li>The {@linkplain GridGeometry#getExtent() grid extent} is the {@linkplain #getBounds() image bounds}.</li>
+     *   <li>The {@linkplain GridGeometry#getGridToCRS grid to CRS} transform is derived from the coverage transform
+     *       with a translation for mapping the {@code sliceExtent} {@linkplain GridExtent#getLow(int) low coordinates}
+     *       to (0,0) pixel coordinates.</li>
+     * </ul>
+     *
+     * @param  dimCRS  desired number of dimensions in the CRS. This is usually 2.
+     * @return conversion from pixel coordinates to CRS of the given number of dimensions,
+     *         together with image bounds and geospatial envelope if possible.
+     *
+     * @see org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY
+     *
+     * @since 1.1
+     */
+    public GridGeometry getImageGeometry(final int dimCRS) {
+        GridGeometry ig = imageGeometry;
+        if (ig == null || dimCRS != GridCoverage2D.BIDIMENSIONAL) {
+            if (isSameGeometry(dimCRS)) {
+                ig = geometry;
+            } else try {
+                ig = new SliceGeometry(geometry, sliceExtent, gridDimensions, null)
+                        .reduce(new GridExtent(imageX, imageY, width, height), dimCRS);
+            } catch (FactoryException e) {
+                throw canNotCompute(e);
+            }
+            if (dimCRS == GridCoverage2D.BIDIMENSIONAL) {
+                imageGeometry = ig;
+            }
+        }
+        return ig;
+    }
+
+    /**
+     * Returns the value associated to the given property. By default the only property is
+     * {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY}, but more properties can
+     * be added by calls to {@link #addProperty(String, Object)}.
+     *
+     * @param  key  the property for which to get a value.
+     * @return value associated to the given property, or {@code null} if none.
+     *
+     * @since 1.1
+     */
+    public Object getProperty(final String key) {
+        if (GRID_GEOMETRY_KEY.equals(key)) {
+            return getImageGeometry(GridCoverage2D.BIDIMENSIONAL);
+        }
+        return (properties != null) ? properties.get(key) : null;
+    }
+
+    /**
+     * Adds a value associated to a property. This method can be invoked only once for each {@code key}.
+     * Those properties will be given to the image created by the {@link #image()} method.
+     *
+     * @param  key    key of the property to set.
+     * @param  value  value to associate to the given key.
+     * @throws IllegalArgumentException if a value is already associated to the given key.
+     *
+     * @since 1.1
+     */
+    public void addProperty(final String key, final Object value) {
+        ArgumentChecks.ensureNonNull("key", key);
+        if (!GRID_GEOMETRY_KEY.equals(key)) {
+            if (properties == null) {
+                properties = new Hashtable<>();
+            }
+            if (properties.putIfAbsent(key, value) == null) {
+                return;
+            }
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
+    }
+
+    /**
+     * Returns {@code true} if a {@link #getImageGeometry(int)} request for the given number of CRS dimensions
+     * can return {@link #geometry} directly. This common case avoids the need for more costly computation with
+     * {@link SliceGeometry}.
+     */
+    private boolean isSameGeometry(final int dimCRS) {
+        final int tgtDim = geometry.getTargetDimension();
+        ArgumentChecks.ensureBetween("dimCRS", GridCoverage2D.BIDIMENSIONAL, tgtDim, dimCRS);
+        if (tgtDim == dimCRS && geometry.getDimension() == gridDimensions.length) {
+            final GridExtent extent = geometry.extent;
+            if (sliceExtent == null) {
+                return extent == null || extent.startsAtZero();
+            } else if (sliceExtent.equals(extent, ComparisonMode.IGNORE_METADATA)) {
+                return sliceExtent.startsAtZero();
+            }
+        }
+        return false;
     }
 
     /**
@@ -456,6 +605,8 @@ public class ImageRenderer {
     /**
      * Creates an image with the data specified by the last call to a {@code setData(…)} method.
      * The image upper-left corner is located at the position given by {@link #getBounds()}.
+     * The two-dimensional {@linkplain #getImageGeometry(int) image geometry} is stored as
+     * a property associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
      *
      * @return the image.
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
@@ -465,6 +616,84 @@ public class ImageRenderer {
     public RenderedImage image() {
         WritableRaster raster = raster();
         ColorModel colors = ColorModelFactory.createColorModel(bands, visibleBand, buffer.getDataType(), ColorModelFactory.GRAYSCALE);
-        return new BufferedImage(colors, raster, false, null);
+        final Untiled image = new Untiled(colors, raster, properties);
+        if (imageGeometry != null) {
+            image.geometry = imageGeometry;
+        } else if (isSameGeometry(GridCoverage2D.BIDIMENSIONAL)) {
+            image.geometry = imageGeometry = geometry;
+        } else {
+            image.supplier = new SliceGeometry(geometry, sliceExtent, gridDimensions, null);
+        }
+        return image;
+    }
+
+    /**
+     * A {@link BufferedImage} which will compute the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY}
+     * property when first needed. We use this class even when the property value is known in advance because it
+     * has the desired side-effect of not letting {@link #getSubimage(int, int, int, int)} inherit that property.
+     * The use of a {@link BufferedImage} subclass is desired because Java2D rendering pipeline has optimizations
+     * in the form {@code if (image instanceof BufferedImage)}.
+     */
+    private static final class Untiled extends BufferedImage {
+        /**
+         * The value associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key,
+         * or {@code null} if not yet computed.
+         */
+        private GridGeometry geometry;
+
+        /**
+         * The object to use for computing {@link #geometry}, or {@code null} if not needed.
+         * This field is cleared after {@link #geometry} has been computed.
+         */
+        private SliceGeometry supplier;
+
+        /**
+         * Creates a new buffered image wrapping the given raster.
+         */
+        Untiled(final ColorModel colors, final WritableRaster raster, final Hashtable<?,?> properties) {
+            super(colors, raster, false, properties);
+        }
+
+        /**
+         * Returns the names of properties that this image can provide.
+         */
+        @Override
+        public String[] getPropertyNames() {
+            return ArraysExt.concatenate(super.getPropertyNames(), new String[] {GRID_GEOMETRY_KEY});
+        }
+
+        /**
+         * Returns the property associated to the given key.
+         * If the key is {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY},
+         * then the {@link GridGeometry} will be computed when first needed.
+         *
+         * @throws ImagingOpException if the property value can not be computed.
+         */
+        @Override
+        public Object getProperty(final String key) {
+            if (!GRID_GEOMETRY_KEY.equals(key)) {
+                return super.getProperty(key);
+            }
+            synchronized (this) {
+                if (geometry == null) try {
+                    final GridExtent extent = new GridExtent(getMinX(), getMinY(), getWidth(), getHeight());
+                    geometry = supplier.reduce(extent, GridCoverage2D.BIDIMENSIONAL);
+                } catch (FactoryException e) {
+                    throw canNotCompute(e);
+                }
+                supplier = null;                // Let GC do its work.
+            }
+            return geometry;
+        }
+    }
+
+    /**
+     * Invoked if an error occurred while computing the {@link #getImageGeometry(int)} value.
+     * This exception should never occur actually, unless a custom factory implementation is
+     * used (instead of the Apache SIS default) and there is a problem with that factory.
+     */
+    private static ImagingOpException canNotCompute(final FactoryException e) {
+        throw (ImagingOpException) new ImagingOpException(
+                Errors.format(Errors.Keys.CanNotCompute_1, "ImageGeometry")).initCause(e);
     }
 }

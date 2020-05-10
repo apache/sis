@@ -49,6 +49,7 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
@@ -1094,7 +1095,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                 yEnd  = y    - step;
             }
             yStart    = gridY;
-            gridToAOI = (MathTransform2D) op.getMathTransform().inverse();
+            gridToAOI = MathTransforms.bidimensional(op.getMathTransform().inverse());
             /*
              * To be strict, we should also test that the region of interest does not intersect both the upper half
              * and lower half of Universal Polar Stereographic (UPS) projection domain. We do not check that because

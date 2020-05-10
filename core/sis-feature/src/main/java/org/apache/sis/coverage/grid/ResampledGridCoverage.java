@@ -152,7 +152,9 @@ final class ResampledGridCoverage extends GridCoverage {
      */
     private GridCoverage specialize(final boolean isGeometryExplicit) throws TransformException {
         GridExtent extent = gridGeometry.getExtent();
-        if (extent.getDimension() < GridCoverage2D.MIN_DIMENSION || extent.getSubDimension() > BIDIMENSIONAL) {
+        if (extent.getDimension()    < GridCoverage2D.BIDIMENSIONAL ||
+            extent.getSubDimension() > GridCoverage2D.BIDIMENSIONAL)
+        {
             return this;
         }
         /*

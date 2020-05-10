@@ -22,7 +22,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -37,7 +36,7 @@ import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
 
@@ -400,12 +399,7 @@ public final class Shapes2D extends Static {
         if (envelope == null) {
             return null;
         }
-        final MathTransform transform = operation.getMathTransform();
-        if (!(transform instanceof MathTransform2D)) {
-            throw new MismatchedDimensionException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
-                    "transform", MathTransform2D.class, MathTransform.class));
-        }
-        MathTransform2D mt = (MathTransform2D) transform;
+        MathTransform2D mt = MathTransforms.bidimensional(operation.getMathTransform());
         final double[] center = new double[2];
         destination = transform(mt, envelope, destination, center);
         /*

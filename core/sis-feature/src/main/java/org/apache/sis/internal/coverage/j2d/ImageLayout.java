@@ -51,10 +51,9 @@ public class ImageLayout {
 
     /**
      * The default instance which will target {@value ImageUtilities#DEFAULT_TILE_SIZE} pixels as tile
-     * width and height. This default instance conservatively disallows tile sizes that are not divisors
-     * of image size.
+     * width and height.
      */
-    public static final ImageLayout DEFAULT = new ImageLayout(null, false);
+    public static final ImageLayout DEFAULT = new ImageLayout(null);
 
     /**
      * Preferred size for tiles.
@@ -64,20 +63,11 @@ public class ImageLayout {
     private final int preferredTileWidth, preferredTileHeight;
 
     /**
-     * Whether this instance allows tiles that are only partially filled. A value of {@code true} implies that
-     * tiles in the last row or in the last column may contain empty pixels. A value of {@code false} implies
-     * that this class will be unable to subdivide large images in smaller tiles if the image size is a prime
-     * number.
-     */
-    private final boolean allowPartialTiles;
-
-    /**
      * Creates a new image layout.
      *
      * @param  preferredTileSize  the preferred tile size, or {@code null} for the default size.
-     * @param  allowPartialTiles  whether this instance allows tiles that are only partially filled.
      */
-    public ImageLayout(final Dimension preferredTileSize, final boolean allowPartialTiles) {
+    public ImageLayout(final Dimension preferredTileSize) {
         if (preferredTileSize != null) {
             preferredTileWidth  = preferredTileSize.width;
             preferredTileHeight = preferredTileSize.height;
@@ -85,7 +75,6 @@ public class ImageLayout {
             preferredTileWidth  = ImageUtilities.DEFAULT_TILE_SIZE;
             preferredTileHeight = ImageUtilities.DEFAULT_TILE_SIZE;
         }
-        this.allowPartialTiles = allowPartialTiles;
     }
 
     /**
@@ -100,24 +89,32 @@ public class ImageLayout {
      * @return the suggested tile size, or {@code imageSize} if none.
      */
     private static int toTileSize(final int imageSize, final int preferredTileSize, final boolean allowPartialTiles) {
-        if (imageSize <= 2*preferredTileSize) {     // Factor 2 is arbitrary.
+        final int maxTileSize = 2*preferredTileSize;    // Factor 2 is arbitrary (may be revisited in future versions).
+        if (imageSize <= maxTileSize) {
             return imageSize;
         }
         int rmax = imageSize % preferredTileSize;
         if (rmax == 0) return preferredTileSize;
         /*
          * Find tile sizes which are divisors of image size and select the one closest to desired size.
-         * Note: the (i >= 0) check is a paranoiac check redundant with (imageSize % tileSize == 0) check.
+         * Note: the (i >= 0) case should never happen because it an exact match existed, it should have
+         * been found by the (imageSize % tileSize == 0) check.
          */
         final int[] divisors = MathFunctions.divisors(imageSize);
         int i = Arrays.binarySearch(divisors, preferredTileSize);
-        if (i >= 0) return divisors[i];
         if ((i = ~i) < divisors.length) {
-            final int smaller = divisors[i];
-            final boolean tooSmall = (smaller < MIN_TILE_SIZE);
-            if (++i < divisors.length) {
-                final int larger = divisors[i];
-                if (larger < imageSize && (tooSmall || (larger - preferredTileSize) <= preferredTileSize - smaller)) {
+            final int smaller;
+            final boolean tooSmall;
+            if (i == 0) {
+                smaller  = 0;
+                tooSmall = true;
+            } else {
+                smaller  = divisors[i - 1];
+                tooSmall = (smaller < MIN_TILE_SIZE);
+            }
+            final int larger = divisors[i];
+            if (larger <= (allowPartialTiles ? maxTileSize : imageSize)) {
+                if (tooSmall || (larger - preferredTileSize) <= (preferredTileSize - smaller)) {
                     return larger;
                 }
             }
@@ -129,29 +126,31 @@ public class ImageLayout {
          * Found no exact divisor. If we are allowed to return an approximated size,
          * search the divisor which will minimize the amount of empty pixels.
          */
+        if (!allowPartialTiles) {
+            return imageSize;
+        }
         int best = preferredTileSize;
-        if (allowPartialTiles) {
-            for (i = imageSize/2; --i >= MIN_TILE_SIZE;) {
-                final int r = imageSize % i;
-                if (r == 0) return i;       // Should never happen since we checked divisors before, but be paranoiac.
-                if (r > rmax || (r == rmax && Math.abs(i - preferredTileSize) < Math.abs(best - preferredTileSize))) {
-                    rmax = r;
-                    best = i;
-                }
+        for (i = maxTileSize; --i >= MIN_TILE_SIZE;) {
+            final int r = imageSize % i;                    // Should never be 0 since we checked divisors before.
+            if (r > rmax || (r == rmax && Math.abs(i - preferredTileSize) < Math.abs(best - preferredTileSize))) {
+                rmax = r;
+                best = i;
             }
         }
         /*
          * At this point `best` is an "optimal" tile size (the one that left as few empty pixels as possible),
-         * and `rmax` is the amount of non-empty pixels using this tile size. We will use that "optimal" size
-         * only if it fills at least 75% of the tile size. Otherwise, we arbitrarily consider that it doesn't
-         * worth to tile.
+         * and `rmax` is the amount of non-empty pixels using this tile size.
          */
-        return (rmax >= preferredTileSize - preferredTileSize/4) ? best : imageSize;
+        return best;
     }
 
     /**
      * Suggests a tile size for the specified image size. This method suggests a tile size which is a divisor
      * of the given image size if possible, or a size that left as few empty pixels as possible otherwise.
+     * The {@code allowPartialTile} argument specifies whether to allow tiles that are only partially filled.
+     * A value of {@code true} implies that tiles in the last row or in the last column may contain empty pixels.
+     * A value of {@code false} implies that this class will be unable to subdivide large images in smaller tiles
+     * if the image size is a prime number.
      *
      * <p>The {@code allowPartialTile} argument should be {@code false} if the tiled image is opaque,
      * or if the sample value for transparent pixels is different than zero. This restriction is for
@@ -162,8 +161,7 @@ public class ImageLayout {
      * @param  allowPartialTiles  whether to allow tiles that are only partially filled.
      * @return suggested tile size for the given image size.
      */
-    public Dimension suggestTileSize(final int imageWidth, final int imageHeight, boolean allowPartialTiles) {
-        allowPartialTiles &= this.allowPartialTiles;
+    public Dimension suggestTileSize(final int imageWidth, final int imageHeight, final boolean allowPartialTiles) {
         return new Dimension(toTileSize(imageWidth,  preferredTileWidth,  allowPartialTiles),
                              toTileSize(imageHeight, preferredTileHeight, allowPartialTiles));
     }
@@ -183,14 +181,15 @@ public class ImageLayout {
      * @return suggested tile size for the given image.
      */
     public Dimension suggestTileSize(final RenderedImage image, final Rectangle bounds) {
-        boolean pt = allowPartialTiles;
-        if (pt && image != null) {
+        boolean allowPartialTiles = (bounds instanceof PreferredSize);
+        if (allowPartialTiles && image != null) {
             final ColorModel cm = image.getColorModel();
-            if (pt = (cm != null)) {
+            allowPartialTiles = (cm != null);
+            if (allowPartialTiles) {
                 if (cm instanceof IndexColorModel) {
-                    pt = ((IndexColorModel) cm).getTransparentPixel() == 0;
+                    allowPartialTiles = ((IndexColorModel) cm).getTransparentPixel() == 0;
                 } else {
-                    pt = cm.hasAlpha();
+                    allowPartialTiles = (cm.getTransparency() != ColorModel.OPAQUE);
                 }
             }
         }
@@ -215,8 +214,13 @@ public class ImageLayout {
         } else {
             return new Dimension(preferredTileWidth, preferredTileHeight);
         }
-        return new Dimension(toTileSize(width,  preferredTileWidth,  pt & singleXTile),
-                             toTileSize(height, preferredTileHeight, pt & singleYTile));
+        final Dimension tileSize = new Dimension(
+                toTileSize(width,  preferredTileWidth,  allowPartialTiles & singleXTile),
+                toTileSize(height, preferredTileHeight, allowPartialTiles & singleYTile));
+        if (allowPartialTiles) {
+            ((PreferredSize) bounds).makeDivisible(tileSize);
+        }
+        return tileSize;
     }
 
     /**
@@ -226,7 +230,7 @@ public class ImageLayout {
      * constructor.
      *
      * @param  image   the image form which to get a sample model.
-     * @param  bounds  the bounds of the image to create, or {@code null} is same as {@code image}.
+     * @param  bounds  the bounds of the image to create, or {@code null} if same as {@code image}.
      * @return image sample model with preferred tile size.
      *
      * @see ComputedImage#ComputedImage(SampleModel, RenderedImage...)
@@ -249,7 +253,6 @@ public class ImageLayout {
     @Override
     public String toString() {
         return Strings.toString(getClass(),
-                "preferredTileSize", new StringBuilder().append(preferredTileWidth).append('×').append(preferredTileHeight),
-                "allowPartialTiles", allowPartialTiles);
+                "preferredTileSize", new StringBuilder().append(preferredTileWidth).append('×').append(preferredTileHeight));
     }
 }

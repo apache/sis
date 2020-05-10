@@ -37,7 +37,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -104,7 +103,7 @@ public class ImageProcessor implements Cloneable {
      * of known implementation, especially the ones which are costly to compute. The implementation
      * shall override {@link Object#equals(Object)} and {@link Object#hashCode()} methods.
      */
-    private static RenderedImage unique(final RenderedImage image) {
+    static RenderedImage unique(final RenderedImage image) {
         return CACHE.unique(image);
     }
 
@@ -382,15 +381,15 @@ public class ImageProcessor implements Cloneable {
      * then that image is returned as-is. Otherwise this method returns a new image having that property.
      * The property value will be computed when first requested (it is not computed by this method).
      *
-     * @param  source  the image for which to provide statistics.
+     * @param  source  the image for which to provide statistics (may be {@code null}).
      * @return an image with an {@value StatisticsCalculator#STATISTICS_KEY} property.
+     *         May be {@code image} if the given argument is null or already has a statistics property.
      *
      * @see #getStatistics(RenderedImage)
      * @see StatisticsCalculator#STATISTICS_KEY
      */
     public RenderedImage statistics(final RenderedImage source) {
-        ArgumentChecks.ensureNonNull("source", source);
-        return ArraysExt.contains(source.getPropertyNames(), StatisticsCalculator.STATISTICS_KEY)
+        return (source == null) || ArraysExt.contains(source.getPropertyNames(), StatisticsCalculator.STATISTICS_KEY)
                 ? source : unique(new StatisticsCalculator(source, parallel(source), failOnException()));
     }
 
@@ -414,14 +413,7 @@ public class ImageProcessor implements Cloneable {
     public RenderedImage stretchColorRamp(final RenderedImage source, final double minimum, final double maximum) {
         ArgumentChecks.ensureFinite("minimum", minimum);
         ArgumentChecks.ensureFinite("maximum", maximum);
-        if (!(minimum < maximum)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minimum, maximum));
-        }
-        final int visibleBand = ImageUtilities.getVisibleBand(source);
-        if (visibleBand >= 0) {
-            return unique(RecoloredImage.rescale(source, visibleBand, minimum, maximum));
-        }
-        return source;
+        return RecoloredImage.create(source, minimum, maximum);
     }
 
     /**
@@ -442,18 +434,22 @@ public class ImageProcessor implements Cloneable {
      * <p>The range of values for the color ramp can be narrowed with following modifiers
      * (a {@link Map} is used for allowing addition of more modifiers in future Apache SIS versions).
      * All unrecognized modifiers are silently ignored. If no modifier is specified, then the color ramp
-     * will be stretched from minimum to maximum values.</p>
+     * will be stretched from minimum to maximum values found in specified image.</p>
      *
      * <table>
      *   <caption>Value range modifiers</caption>
      *   <tr>
      *     <th>Key</th>
      *     <th>Purpose</th>
-     *     <th>Examples</th>
+     *     <th>Values</th>
      *   </tr><tr>
-     *     <td>{@code MultStdDev}</td>
+     *     <td>{@code "MultStdDev"}</td>
      *     <td>Multiple of the standard deviation.</td>
-     *     <td>1.5, 2 or 3.</td>
+     *     <td>{@link Number} (typical values: 1.5, 2 or 3)</td>
+     *   </tr><tr>
+     *     <td>{@code "statistics"}</td>
+     *     <td>Statistics or image from which to get statistics.</td>
+     *     <td>{@link Statistics} or {@link RenderedImage}</td>
      *   </tr>
      * </table>
      *
@@ -462,32 +458,8 @@ public class ImageProcessor implements Cloneable {
      * @return the image with color ramp stretched between the automatic bounds,
      *         or {@code image} unchanged if the operation can not be applied on the given image.
      */
-    public RenderedImage stretchColorRamp(final RenderedImage source, final Map<String,Number> modifiers) {
-        double deviations = Double.POSITIVE_INFINITY;
-        if (modifiers != null) {
-            Number value = modifiers.get("MultStdDev");
-            if (value != null) {
-                deviations = value.doubleValue();
-                ArgumentChecks.ensureStrictlyPositive("MultStdDev", deviations);
-            }
-        }
-        final int visibleBand = ImageUtilities.getVisibleBand(source);
-        if (visibleBand >= 0) {
-            final Statistics[] statistics = getStatistics(source);
-            if (statistics != null && visibleBand < statistics.length) {
-                final Statistics s = statistics[visibleBand];
-                if (s != null) {
-                    deviations *= s.standardDeviation(true);
-                    final double mean    = s.mean();
-                    final double minimum = Math.max(s.minimum(), mean - deviations);
-                    final double maximum = Math.min(s.maximum(), mean + deviations);
-                    if (minimum < maximum) {
-                        return unique(RecoloredImage.rescale(source, visibleBand, minimum, maximum));
-                    }
-                }
-            }
-        }
-        return source;
+    public RenderedImage stretchColorRamp(final RenderedImage source, final Map<String,?> modifiers) {
+        return RecoloredImage.create(this, source, modifiers);
     }
 
     /**

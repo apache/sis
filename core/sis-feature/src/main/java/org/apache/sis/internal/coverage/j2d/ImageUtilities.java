@@ -19,6 +19,7 @@ package org.apache.sis.internal.coverage.j2d;
 import java.util.Arrays;
 import java.awt.Rectangle;
 import java.awt.color.ColorSpace;
+import java.awt.geom.AffineTransform;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
@@ -34,6 +35,10 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.rint;
+import static org.apache.sis.internal.util.Numerics.COMPARISON_THRESHOLD;
 
 
 /**
@@ -406,5 +411,40 @@ public final class ImageUtilities extends Static {
         }
         bounds.height = Math.max(1, Math.min(BUFFER_SIZE / (size * bounds.width), bounds.height));
         return afterLastRow;
+    }
+
+    /**
+     * If scale and shear coefficients are close to integers, replaces their current values by their rounded values.
+     * The scale and shear coefficients are handled in a "all or nothing" way; either all of them or none are rounded.
+     * The translation terms are handled separately, provided that the scale and shear coefficients have been rounded.
+     *
+     * <p>This rounding is useful in order to accelerate some rendering operations. In particular Java2D has an
+     * optimization when drawing {@link RenderedImage}: if the transform has only a translation (scale factors
+     * are equal to 1) and if that translation is integer, then Java2D will fetch only tiles that are required
+     * for the area to draw. Otherwise Java2D fetches a copy of the whole image.</p>
+     *
+     * @param  tr  the transform to round. Rounding will be applied in place.
+     * @return whether the transform has integer coefficients (possibly after rounding applied by this method).
+     */
+    public static boolean roundIfAlmostInteger(final AffineTransform tr) {
+        double r;
+        final double m00, m01, m10, m11;
+        if (abs((m00 = rint(r=tr.getScaleX())) - r) <= COMPARISON_THRESHOLD &&
+            abs((m01 = rint(r=tr.getShearX())) - r) <= COMPARISON_THRESHOLD &&
+            abs((m11 = rint(r=tr.getScaleY())) - r) <= COMPARISON_THRESHOLD &&
+            abs((m10 = rint(r=tr.getShearY())) - r) <= COMPARISON_THRESHOLD)
+        {
+            /*
+             * At this point the scale and shear coefficients can been rounded to integers.
+             * Continue only if this rounding does not make the transform non-invertible.
+             */
+            if ((m00!=0 || m01!=0) && (m10!=0 || m11!=0)) {
+                final double m02 = rint(tr.getTranslateX());
+                final double m12 = rint(tr.getTranslateY());
+                tr.setTransform(m00, m10, m01, m11, m02, m12);
+                return true;
+            }
+        }
+        return false;
     }
 }

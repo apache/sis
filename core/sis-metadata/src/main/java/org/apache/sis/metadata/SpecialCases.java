@@ -29,7 +29,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * which are returned as {@link Longitude} or {@link Latitude} instances instead of {@link Double}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -115,9 +115,11 @@ final class SpecialCases extends PropertyAccessor {
         Object value = super.get(index, metadata);
         if (value != null) {
             if (index == westBoundLongitude || index == eastBoundLongitude) {
-                value = new Longitude((Double) value);
+                final double angle = (Double) value;
+                value = Double.isNaN(angle) ? null : new Longitude(angle);
             } else if (index == southBoundLatitude || index == northBoundLatitude) {
-                value = new Latitude((Double) value);
+                final double angle = (Double) value;
+                value = Double.isNaN(angle) ? null : new Latitude(angle);
             }
         }
         return value;

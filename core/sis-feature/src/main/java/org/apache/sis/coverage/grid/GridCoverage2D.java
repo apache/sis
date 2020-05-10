@@ -100,9 +100,10 @@ import org.opengis.coverage.PointOutsideCoverageException;
  */
 public class GridCoverage2D extends GridCoverage {
     /**
-     * Minimal number of dimension for this coverage.
+     * A constant for identifying code that relying on having 2 dimensions.
+     * This is the minimal number of dimension required for this coverage.
      */
-    static final int MIN_DIMENSION = 2;
+    static final int BIDIMENSIONAL = 2;
 
     /**
      * The sample values stored as a {@code RenderedImage}.
@@ -225,7 +226,7 @@ public class GridCoverage2D extends GridCoverage {
         final GridExtent extent = domain.getExtent();
         final int[] imageAxes;
         try {
-            imageAxes = extent.getSubspaceDimensions(MIN_DIMENSION);
+            imageAxes = extent.getSubspaceDimensions(BIDIMENSIONAL);
         } catch (CannotEvaluateException e) {
             throw new IllegalGridGeometryException(e.getMessage(), e);
         }
@@ -237,7 +238,7 @@ public class GridCoverage2D extends GridCoverage {
          * Verify that the domain is consistent with image size.
          * We do not verify image location; it can be anywhere.
          */
-        for (int i=0; i<MIN_DIMENSION; i++) {
+        for (int i=0; i<BIDIMENSIONAL; i++) {
             final int imageSize = (i == 0) ? data.getWidth() : data.getHeight();
             final long gridSize = extent.getSize(imageAxes[i]);
             if (imageSize != gridSize) {
@@ -296,7 +297,7 @@ public class GridCoverage2D extends GridCoverage {
             domain = new GridGeometry(extent, PixelInCell.CELL_CENTER, null, null);
         } else if (!domain.isDefined(GridGeometry.EXTENT)) {
             final int dimension = domain.getDimension();
-            if (dimension >= MIN_DIMENSION) {
+            if (dimension >= BIDIMENSIONAL) {
                 CoordinateReferenceSystem crs = null;
                 if (domain.isDefined(GridGeometry.CRS)) {
                     crs = domain.getCoordinateReferenceSystem();
@@ -354,12 +355,11 @@ public class GridCoverage2D extends GridCoverage {
     private static GridGeometry createGridGeometry(final RenderedImage data, final Envelope envelope) {
         ArgumentChecks.ensureNonNull("data", data);
         CoordinateReferenceSystem crs = null;
-        int dimension = MIN_DIMENSION;
+        int dimension = BIDIMENSIONAL;
         if (envelope != null) {
             dimension = envelope.getDimension();
-            if (dimension < MIN_DIMENSION) {
-                throw new IllegalGridGeometryException(Resources.format(
-                        Resources.Keys.GridEnvelopeMustBeNDimensional_1, MIN_DIMENSION));
+            if (dimension < BIDIMENSIONAL) {
+                throw new IllegalGridGeometryException(Resources.format(Resources.Keys.GridEnvelopeMustBeNDimensional_1, BIDIMENSIONAL));
             }
             crs = envelope.getCoordinateReferenceSystem();
         }

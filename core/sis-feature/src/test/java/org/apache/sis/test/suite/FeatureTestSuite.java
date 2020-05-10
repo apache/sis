@@ -75,6 +75,7 @@ import org.junit.runners.Suite;
 
     // Rasters
     org.apache.sis.internal.coverage.j2d.ImageUtilitiesTest.class,
+    org.apache.sis.internal.coverage.j2d.ImageLayoutTest.class,
     org.apache.sis.internal.coverage.j2d.ScaledColorSpaceTest.class,
     org.apache.sis.image.PlanarImageTest.class,
     org.apache.sis.image.ComputedImageTest.class,

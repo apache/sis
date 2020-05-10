@@ -92,8 +92,8 @@ import org.apache.sis.portrayal.RenderException;
  *     of every information needed for performing the rendering in background.</li>
  *   <li>{@link Renderer#render()} is invoked in a background thread. That method creates or updates
  *     the nodes to show in this {@code MapCanvas} but without interacting with the canvas yet.</li>
- *   <li>{@link Renderer#commit()} is invoked in the JavaFX thread. The nodes prepared by {@code render()}
- *     can be transferred to {@link #floatingPane} in that method.</li>
+ *   <li>{@link Renderer#commit(MapCanvas)} is invoked in the JavaFX thread. The nodes prepared by
+ *     {@code render()} can be transferred to {@link #floatingPane} in that method.</li>
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -490,10 +490,14 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Sets the data bounds to use for computing the initial value of {@link #objectiveToDisplay}.
-     * This method should be invoked only when new data have been loaded, or when the caller wants
-     * to discard any zoom or translation and reset the view to the given bounds.
+     * Invoking this method also sets the {@link #getObjectiveCRS() objective CRS} of this canvas
+     * to the CRS of given envelope.
      *
-     * @param  visibleArea  bounding box in objective CRS of the initial area to show,
+     * <p>This method should be invoked only when new data have been loaded, or when the caller wants
+     * to discard any zoom or translation and reset the view to the given bounds. This method does not
+     * cause new repaint event; {@link #requestRepaint()} must be invoked by the caller if desired.</p>
+     *
+     * @param  visibleArea  bounding box in (new) objective CRS of the initial area to show,
      *         or {@code null} if unknown (in which case an identity transform will be set).
      *
      * @see #setObjectiveCRS(CoordinateReferenceSystem)
@@ -525,9 +529,12 @@ public abstract class MapCanvas extends PlanarCanvas {
      *   <li>{@link MapCanvas} invokes {@link #render()} in a background thread. That method creates or
      *     updates the nodes to show in the canvas but without reading or writing any canvas property;
      *     that method should use only the snapshot taken in step 1.</li>
-     *   <li>{@link MapCanvas} invokes {@link #commit()} in the JavaFX thread. The nodes prepared at
-     *     step 2 can be transferred to {@link MapCanvas#floatingPane} in that method.</li>
+     *   <li>{@link MapCanvas} invokes {@link #commit(MapCanvas)} in the JavaFX thread. The nodes prepared
+     *     at step 2 can be transferred to {@link MapCanvas#floatingPane} in that method.</li>
      * </ol>
+     *
+     * This class should not access any {@link MapCanvas} property from a method invoked in background thread
+     * ({@link #render()}). It may access {@link MapCanvas} properties from the {@link #commit(MapCanvas)} method.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
@@ -579,18 +586,22 @@ public abstract class MapCanvas extends PlanarCanvas {
          * Invoked in a background thread for rendering the map. This method should not access any
          * {@link MapCanvas} property; if some canvas properties are needed, they should have been
          * copied at construction time.
+         *
+         * @throws TransformException if the rendering required coordinate transformation and that
+         *         operation failed.
          */
-        protected abstract void render();
+        protected abstract void render() throws TransformException;
 
         /**
          * Invoked in JavaFX thread after {@link #render()} completion. This method can update the
          * {@link #floatingPane} children with the nodes (images, shaped, <i>etc.</i>) created by
          * {@link #render()}.
          *
+         * @param  canvas  the canvas where drawing has been done.
          * @return {@code true} on success, or {@code false} if the rendering should be redone
          *         (for example because a change has been detected in the data).
          */
-        protected abstract boolean commit();
+        protected abstract boolean commit(MapCanvas canvas);
     }
 
     /**
@@ -730,14 +741,14 @@ public abstract class MapCanvas extends PlanarCanvas {
     Task<?> createWorker(final Renderer renderer) {
         return new Task<Void>() {
             /** Invoked in background thread. */
-            @Override protected Void call() {
+            @Override protected Void call() throws TransformException {
                 renderer.render();
                 return null;
             }
 
             /** Invoked in JavaFX thread on success. */
             @Override protected void succeeded() {
-                final boolean done = renderer.commit();
+                final boolean done = renderer.commit(MapCanvas.this);
                 renderingCompleted(this);
                 if (!done || contentsChanged()) {
                     repaint();
@@ -879,5 +890,6 @@ public abstract class MapCanvas extends PlanarCanvas {
         objectiveBounds = null;
         error.set(null);
         isRendering.set(false);
+        requestRepaint();
     }
 }

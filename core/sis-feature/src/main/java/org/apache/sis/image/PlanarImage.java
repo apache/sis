@@ -34,6 +34,7 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.coverage.grid.GridGeometry;       // For javadoc
 
 
 /**
@@ -106,6 +107,23 @@ import org.apache.sis.internal.jdk9.JDK9;
  */
 public abstract class PlanarImage implements RenderedImage {
     /**
+     * Key for a property defining a conversion from pixel coordinates to "real world" coordinates.
+     * Other information include an envelope in "real world" coordinates and an estimation of pixel resolution.
+     * The value is a {@link GridGeometry} instance with following properties:
+     *
+     * <ul>
+     *   <li>The {@linkplain GridGeometry#getDimension() number of grid dimensions} is always 2.</li>
+     *   <li>The number of {@linkplain GridGeometry#getCoordinateReferenceSystem() CRS} dimensions is always 2.</li>
+     *   <li>The {@linkplain GridGeometry#getExtent() grid extent} is the {@linkplain #getBounds() image bounds}.</li>
+     *   <li>The {@linkplain GridGeometry#getGridToCRS grid to CRS} map pixel coordinates "real world" coordinates
+     *       (always two-dimensional).</li>
+     * </ul>
+     *
+     * @see org.apache.sis.coverage.grid.ImageRenderer#getImageGeometry(int)
+     */
+    public static final String GRID_GEOMETRY_KEY = "org.apache.sis.GridGeometry";
+
+    /**
      * Key of a property defining the resolutions of sample values in each band. This property is recommended
      * for images having sample values as floating point numbers. For example if sample values were computed by
      * <var>value</var> = <var>integer</var> × <var>scale factor</var>, then the resolution is the scale factor.
@@ -166,6 +184,9 @@ public abstract class PlanarImage implements RenderedImage {
      *   <tr>
      *     <th>Keys</th>
      *     <th>Values</th>
+     *   </tr><tr>
+     *     <td>{@value #GRID_GEOMETRY_KEY}</td>
+     *     <td>Conversion from pixel coordinates to "real world" coordinates.</td>
      *   </tr><tr>
      *     <td>{@value #SAMPLE_RESOLUTIONS_KEY}</td>
      *     <td>Resolutions of sample values in each band.</td>
