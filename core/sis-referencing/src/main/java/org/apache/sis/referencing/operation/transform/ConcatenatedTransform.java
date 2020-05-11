@@ -37,6 +37,7 @@ import org.apache.sis.internal.referencing.provider.GeocentricAffine;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
@@ -44,6 +45,7 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -56,7 +58,7 @@ import org.apache.sis.util.resources.Errors;
  * <p>Concatenated transforms are serializable if all their step transforms are serializable.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.opengis.referencing.operation.MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
  *
@@ -182,7 +184,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
 
     /**
      * Tries to returns an optimized concatenation, for example by merging two affine transforms
-     * into a single one. If no optimized cases has been found, returns {@code null}. In the later
+     * into a single one. If no optimized case has been found, returns {@code null}. In the later
      * case, the caller will need to create a more heavy {@link ConcatenatedTransform} instance.
      *
      * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
@@ -240,6 +242,53 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
          * If both transforms use matrix, then we can create
          * a single transform using the concatenated matrix.
          */
+        final MathTransform concatenated = multiply(tr1, tr2, factory);
+        if (concatenated instanceof AbstractLinearTransform) {
+            /*
+             * Following code computes the inverse of `concatenated` transform. In principle this is
+             * not necessary because `MathTransform.inverse()` would do that computation itself when
+             * first needed. However if the matrices are not square (e.g. if a transform is dropping
+             * a dimension) some information may be lost. By computing inverse transform immediately
+             * as the concatenation of the inverse of individual transforms, we use information that
+             * would otherwise be lost (e.g. the inverse of the transform dropping a dimension may be
+             * a transform setting that dimension to a constant value, often zero). Consequently the
+             * inverse transform here may have real values for coefficients that `MathTransform.inverse()`
+             * would have set to NaN, or may succeed while `MathTransform.inverse()` would have throw
+             * an exception. Even with square matrices, computing the inverse transform now may avoid
+             * some rounding errors.
+             */
+            final AbstractLinearTransform impl = (AbstractLinearTransform) concatenated;
+            if (impl.inverse == null) try {
+                final MathTransform inverse = multiply(tr2.inverse(), tr1.inverse(), factory);
+                if (inverse != null) {
+                    if (inverse.isIdentity()) {
+                        return inverse;
+                    }
+                    if (inverse instanceof LinearTransform) {
+                        impl.inverse = (LinearTransform) inverse;
+                    }
+                }
+            } catch (NoninvertibleTransformException e) {
+                /*
+                 * Ignore. The `concatenated.inverse()` method will try to compute the inverse itself,
+                 * possible at the cost of more NaN values than what above code would have produced.
+                 */
+                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                        ConcatenatedTransform.class, "create", e);
+            }
+        }
+        return concatenated;
+    }
+
+    /**
+     * Returns a transform resulting from the multiplication of the matrices of given transforms.
+     * If the given transforms does not provide matrix, then this method returns {@code null}.
+     *
+     * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
+     */
+    private static MathTransform multiply(final MathTransform tr1, final MathTransform tr2,
+            final MathTransformFactory factory) throws FactoryException
+    {
         final Matrix matrix1 = MathTransforms.getMatrix(tr1);
         if (matrix1 != null) {
             final Matrix matrix2 = MathTransforms.getMatrix(tr2);
@@ -251,9 +300,9 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                 /*
                  * NOTE: It is quite tempting to "fix rounding errors" in the matrix before to create the transform.
                  * But this is often wrong for datum shift transformations (Molodensky and the like) since the datum
-                 * shifts are very small. The shift may be the order of magnitude of the tolerance threshold. Intead,
+                 * shifts are very small. The shift may be the order of magnitude of the tolerance threshold. Instead,
                  * Apache SIS performs matrix operations using double-double arithmetic in the hope to get exact
-                 * results at the 'double' accuracy, which avoid the need for a tolerance threshold.
+                 * results at the `double` accuracy, which avoid the need for a tolerance threshold.
                  */
                 if (factory != null) {
                     return factory.createAffineTransform(matrix);
@@ -355,10 +404,13 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Returns all concatenated transforms, modified with the pre- and post-processing required for WKT formating.
+     * Returns all concatenated transforms, modified with the pre- and post-processing required for WKT formatting.
      * More specifically, if there is any Apache SIS implementation of Map Projection in the chain, then the
      * (<var>normalize</var>, <var>normalized projection</var>, <var>denormalize</var>) tuples are replaced by single
      * (<var>projection</var>) elements, which does not need to be instances of {@link MathTransform}.
+     *
+     * <p>This method is used only for producing human-readable parameter values.
+     * It is not used for coordinate operations or construction of operation chains.</p>
      */
     private List<Object> getPseudoSteps() {
         final List<Object> transforms = new ArrayList<>();
@@ -821,8 +873,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
 
     /**
      * Concatenates or pre-concatenates in an optimized way this transform with the given transform, if possible.
-     * This method try to delegate the concatenation to {@link #transform1} or {@link #transform2}. Assuming that
-     * transforms are associative, this is equivalent to trying the following arrangements:
+     * This method tries to delegate the concatenation to {@link #transform1} or {@link #transform2}.
+     * Assuming that transforms are associative, this is equivalent to trying the following arrangements:
      *
      * {@preformat text
      *   Instead of : other → tr1 → tr2

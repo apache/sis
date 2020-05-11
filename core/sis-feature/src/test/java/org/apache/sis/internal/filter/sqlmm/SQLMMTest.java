@@ -48,6 +48,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.test.Assert.assertEqualsIgnoreMetadata;
 
 
 /**
@@ -335,7 +336,7 @@ public final strictfp class SQLMMTest extends TestCase {
                 factory.literal(10.0),
                 factory.literal(20.0),
                 factory.literal("CRS:84")));
-        assertEquals("userData", HardCodedCRS.WGS84, result.getUserData());
+        assertEqualsIgnoreMetadata(HardCodedCRS.WGS84, result.getUserData());
         assertEquals(10.0, result.getX(), STRICT);
         assertEquals(20.0, result.getY(), STRICT);
     }
