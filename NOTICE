@@ -1,5 +1,5 @@
 Apache Spatial Information System (SIS)
-Copyright 2010-2019 The Apache Software Foundation
+Copyright 2010-2020 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
@@ -33,6 +33,14 @@ The test suite uses software developed by the JUnit community
 under Eclipse public license version 2.
 http://junit.org/junit4/
 
-The `non-free` group of modules contain geodetic data collected
-by the International Association of Oil and Gas Producers.
+
+-------------------------------------------------------------
+  Optional modules NOT included unless explicitly requested
+-------------------------------------------------------------
+The optional `non-free` group of modules contain geodetic data
+collected by the International Association of Oil and Gas Producers.
 http://www.epsg.org/TermsOfUse.aspx
+
+The optional `sis-javafx` module depends on JavaFX
+published under GPL 2 with classpath exception.
+https://github.com/openjdk/jfx/blob/master/LICENSE

@@ -26,9 +26,10 @@
      Apache SIS build requires Java 11 or higher, but compiled files can be executed on Java 8.
      Setting the SIS_DATA environment variable before build is optional but recommended.
 
-     Build development snapshot:    mvn clean install
-     Include EPSG database:         mvn install -Pnon-free
-     Run more extensive tests:      mvn test -Dorg.apache.sis.test.extensive=true
+     Build development snapshot:        mvn clean install
+     Include EPSG database:             mvn install -Pnon-free
+     Include JavaFX dependency (GPL):   mvn install -Pjavafx
+     Run more extensive tests:          mvn test -Dorg.apache.sis.test.extensive=true
      ============================================================================================= -->
 <project xmlns              = "http://maven.apache.org/POM/4.0.0"
          xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
@@ -579,7 +580,8 @@
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
-    <sis.non-free.version>1.0</sis.non-free.version>                 <!-- Used only if "non-free" profile is enabled. -->
+    <sis.non-free.version>1.0</sis.non-free.version>                <!-- Used only if "non-free" profile is activated. -->
+    <javafx.version>14.0.1</javafx.version>                         <!-- Used only if "javafx" profile is activated. -->
     <geoapi.version>4.0-SNAPSHOT</geoapi.version>
     <jaxb.version>2.3.2</jaxb.version>
   </properties>

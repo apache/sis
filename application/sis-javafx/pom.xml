@@ -37,7 +37,7 @@
        =========================================================== -->
   <groupId>org.apache.sis.application</groupId>
   <artifactId>sis-javafx</artifactId>
-  <name>Apache SIS application for JavaFX</name>
+  <name>Apache SIS application for JavaFX (optional)</name>
   <description>
     Client application for JavaFX.
     This module require the JavaFX environment to be pre-installed.
@@ -92,11 +92,7 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <release>13</release>
-          <compilerArgs>
-            <arg>--module-path</arg> <arg>${env.PATH_TO_FX}</arg>
-            <arg>--add-modules</arg> <arg>javafx.graphics,javafx.controls</arg>
-          </compilerArgs>
+          <release>11</release>     <!-- Minimal version required by JavaFX. -->
         </configuration>
       </plugin>
 
@@ -167,5 +163,67 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <!-- Dependencies under GPL + classpath exception included only if explicitly requested. -->
+    <profile>
+      <id>javafx</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.openjfx</groupId>
+          <artifactId>javafx-graphics</artifactId>
+          <version>${javafx.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.openjfx</groupId>
+          <artifactId>javafx-controls</artifactId>
+          <version>${javafx.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.openjfx</groupId>
+          <artifactId>javafx-swing</artifactId>
+          <version>${javafx.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.openjfx</groupId>
+          <artifactId>javafx-fxml</artifactId>
+          <version>${javafx.version}</version>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.openjfx</groupId>
+          <artifactId>javafx-web</artifactId>
+          <version>${javafx.version}</version>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <!-- Alternative way to compile sis-javafx without above Maven depencencies. -->
+    <profile>
+      <activation>
+        <property>
+          <name>env.PATH_TO_FX</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <!-- To be removed after SIS has been fully modularized. -->
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <compilerArgs>
+                <arg>--module-path</arg> <arg>${env.PATH_TO_FX}</arg>
+                <arg>--add-modules</arg> <arg>javafx.graphics,javafx.controls</arg>
+              </compilerArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

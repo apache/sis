@@ -114,7 +114,7 @@
   <!-- ===========================================================
            Sub-modules included in the build in dependency order.
            JavaFX module is built only if PATH_TO_FX environment
-           variable is set.
+           variable is set or if "javafx" profile is activated.
        =========================================================== -->
   <modules>
     <module>sis-console</module>
@@ -123,6 +123,7 @@
   </modules>
   <profiles>
     <profile>
+      <id>javafx</id>
       <activation>
         <property>
           <name>env.PATH_TO_FX</name>
