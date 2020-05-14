@@ -51,7 +51,7 @@ import org.apache.sis.internal.feature.Resources;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -235,6 +235,21 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
      * @see #getPixel(double[])
      */
     public abstract void setPixel​(double[] values);
+
+    /**
+     * Sets the data elements (not necessarily band values) of current pixel.
+     * The {@code Object} argument is a relatively opaque format (it may be {@code int[]}, {@code byte[]}, <i>etc.</i>).
+     * It should be the value provided by a call to {@link #getDataElements(Object)} on an image using
+     * a compatible sample model.
+     *
+     * @param  values  the new the data elements.
+     *
+     * @see WritableRaster#setDataElements​(int, int, Object)
+     * @see #getDataElements(Object)
+     *
+     * @since 1.1
+     */
+    public abstract void setDataElements(Object values);
 
     /**
      * Releases any resources hold by this iterator.

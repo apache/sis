@@ -663,6 +663,30 @@ public abstract class PixelIterator {
     public abstract double[] getPixel​(double[] dest);
 
     /**
+     * Returns the data elements (not necessarily band values) of current pixel.
+     * The {@code Object} argument and return value is a relatively opaque format (it may be {@code int[]},
+     * {@code byte[]}, <i>etc.</i>): it is used for transferring values in a packed format between compatible
+     * Java2D sample or color models. That {@code Object} should generally not be used directly by the caller.
+     *
+     * <div class="note"><b>Example:</b>
+     * if an image has Red, Green, Blue and Alpha bands, then the {@link #getPixel(int[])} methods will return
+     * arrays of length 4 containing the individual values for each band, no matter how those bands are stored
+     * in the image. By contrast this {@code getDataElements​(…)} method may return an array of length 1 with
+     * all sample values packed as a single ARGB value.</div>
+     *
+     * Data elements are useful for copying efficiently values in another image using the same sample model,
+     * or for getting colors with a call to {@link java.awt.image.ColorModel#getRGB(Object)}.
+     *
+     * @param  dest  a pre-allocated array where to store the data elements, or {@code null} if none.
+     * @return the data elements for current pixel.
+     *
+     * @see Raster#getDataElements​(int, int, Object)
+     *
+     * @since 1.1
+     */
+    public abstract Object getDataElements(Object dest);
+
+    /**
      * Returns a moving window over the sample values in a rectangular region starting at iterator position.
      * The <cite>window size</cite> must have been specified at {@code PixelIterator} construction time.
      * The current iterator position is the window corner having the smallest <var>x</var> and <var>y</var> coordinates.

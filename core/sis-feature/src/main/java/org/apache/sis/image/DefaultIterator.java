@@ -367,8 +367,17 @@ class DefaultIterator extends WritablePixelIterator {
      * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
      */
     @Override
-    public double[] getPixel​(double[] dest) {
-        return currentRaster.getPixel(x, y, dest);
+    public double[] getPixel​(double[] values) {
+        return currentRaster.getPixel(x, y, values);
+    }
+
+    /**
+     * Returns the data elements of current pixel.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
+     */
+    @Override
+    public Object getDataElements​(Object values) {
+        return currentRaster.getDataElements​(x, y, values);
     }
 
     /**
@@ -376,8 +385,8 @@ class DefaultIterator extends WritablePixelIterator {
      * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
      */
     @Override
-    public void setPixel​(int[] dest) {
-        destRaster.setPixel(x, y, dest);
+    public void setPixel​(int[] values) {
+        destRaster.setPixel(x, y, values);
     }
 
     /**
@@ -385,8 +394,8 @@ class DefaultIterator extends WritablePixelIterator {
      * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
      */
     @Override
-    public void setPixel​(float[] dest) {
-        destRaster.setPixel(x, y, dest);
+    public void setPixel​(float[] values) {
+        destRaster.setPixel(x, y, values);
     }
 
     /**
@@ -394,8 +403,17 @@ class DefaultIterator extends WritablePixelIterator {
      * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
      */
     @Override
-    public void setPixel​(double[] dest) {
-        destRaster.setPixel(x, y, dest);
+    public void setPixel​(double[] values) {
+        destRaster.setPixel(x, y, values);
+    }
+
+    /**
+     * Sets the data elements of current pixel.
+     * This method assumes that {@link #next()} or {@link #moveTo(int,int)} has been invoked.
+     */
+    @Override
+    public void setDataElements(Object values) {
+        destRaster.setDataElements(x, y, values);
     }
 
     /**
