@@ -1419,8 +1419,8 @@ public class GridGeometry implements LenientComparable, Serializable {
             }
             /*
              * Example: Geographic extent
-             *  ├─Upper bound:  90°00′00″N  180°00′00″E  2019-05-02T00:00:00Z
-             *  └─Lower bound:  80°00′00″S  180°00′00″W  2019-05-01T21:00:00Z
+             *  ├─Lower bound:  80°00′00″S  180°00′00″W  2019-05-01T21:00:00Z
+             *  └─Upper bound:  90°00′00″N  180°00′00″E  2019-05-02T00:00:00Z
              *
              * The angle and date/time patterns are fixed for now, with a precision equivalent to about 30 metres.
              * The angles are rounded toward up and down for making sure that the box encloses fully the coverage.
@@ -1432,19 +1432,6 @@ public class GridGeometry implements LenientComparable, Serializable {
                 final AngleFormat nf = new AngleFormat("DD°MM′SS″", locale);
                 final GeographicBoundingBox bbox = geographicBBox();
                 final Instant[] times = timeRange();
-                vocabulary.appendLabel(Vocabulary.Keys.UpperBound, table);
-                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
-                if (bbox != null) {
-                    nf.setRoundingMode(RoundingMode.CEILING);
-                    table.nextColumn(); table.append(nf.format(new  Latitude(bbox.getNorthBoundLatitude())));
-                    table.nextColumn(); table.append(nf.format(new Longitude(bbox.getEastBoundLongitude())));
-                }
-                if (times.length >= 2) {
-                    table.nextColumn();
-                    table.append(times[1].toString());
-                }
-                table.nextLine();
-                table.setCellAlignment(TableAppender.ALIGN_LEFT);
                 vocabulary.appendLabel(Vocabulary.Keys.LowerBound, table);
                 table.setCellAlignment(TableAppender.ALIGN_RIGHT);
                 if (bbox != null) {
@@ -1455,6 +1442,19 @@ public class GridGeometry implements LenientComparable, Serializable {
                 if (times.length >= 1) {
                     table.nextColumn();
                     table.append(times[0].toString());
+                }
+                table.nextLine();
+                table.setCellAlignment(TableAppender.ALIGN_LEFT);
+                vocabulary.appendLabel(Vocabulary.Keys.UpperBound, table);
+                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                if (bbox != null) {
+                    nf.setRoundingMode(RoundingMode.CEILING);
+                    table.nextColumn(); table.append(nf.format(new  Latitude(bbox.getNorthBoundLatitude())));
+                    table.nextColumn(); table.append(nf.format(new Longitude(bbox.getEastBoundLongitude())));
+                }
+                if (times.length >= 2) {
+                    table.nextColumn();
+                    table.append(times[1].toString());
                 }
                 table.flush();
                 writeNodes();

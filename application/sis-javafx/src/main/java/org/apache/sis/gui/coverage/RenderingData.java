@@ -44,6 +44,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -157,9 +158,24 @@ final class RenderingData implements Cloneable {
     }
 
     /**
+     * Verifies if this {@code RenderingData} contains an image for the given objective CRS.
+     * If this is not the case, the cached resampled images will be discarded.
+     *
+     * @param  objectiveCRS  the coordinate reference system to use for rendering.
+     * @return whether the data are valid for the given objective CRS.
+     */
+    final boolean validateCRS(final CoordinateReferenceSystem objectiveCRS) {
+        if (changeOfCRS != null && !Utilities.equalsIgnoreMetadata(objectiveCRS, changeOfCRS.getTargetCRS())) {
+            clearCRS();
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Clears the cache of transforms that depend on the CRS.
      */
-    final void clearCRS() {
+    private void clearCRS() {
         changeOfCRS       = null;
         cornerToObjective = null;
         centerToObjective = null;

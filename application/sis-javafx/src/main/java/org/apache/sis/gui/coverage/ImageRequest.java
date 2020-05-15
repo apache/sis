@@ -17,7 +17,8 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Optional;
-import javafx.concurrent.WorkerStateEvent;
+import java.util.concurrent.FutureTask;
+import java.awt.image.RenderedImage;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -26,6 +27,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
@@ -40,33 +42,45 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  */
 public class ImageRequest {
     /**
+     * The {@value} value, for identifying code that assume two-dimensional objects.
+     */
+    private static final int BIDIMENSIONAL = 2;
+
+    /**
      * The source from where to read the image, specified at construction time.
      */
-    GridCoverageResource resource;
+    final GridCoverageResource resource;
 
     /**
      * The source for rendering the image, specified at construction time.
      * After class initialization, only one of {@link #resource} and {@link #coverage} is non-null.
      * But after task execution, this field will be set to the coverage which has been read.
      */
-    volatile GridCoverage coverage;
+    private GridCoverage coverage;
 
     /**
      * Desired grid extent and resolution, or {@code null} for reading the whole domain.
      * This is used only if the data source is a {@link GridCoverageResource}.
+     *
+     * @see #getDomain()
      */
-    private GridGeometry domain;
+    private final GridGeometry domain;
 
     /**
      * 0-based indices of sample dimensions to read, or {@code null} for reading them all.
      * This is used only if the data source is a {@link GridCoverageResource}.
+     *
+     * @see #getDomain()
      */
-    private int[] range;
+    private final int[] range;
 
     /**
      * A subspace of the grid coverage extent to render, or {@code null} for the whole extent.
      * If the extent has more than two dimensions, then the image will be rendered along the
      * two first dimensions having a size greater than 1 cell.
+     *
+     * @see #getSliceExtent()
+     * @see #setSliceExtent(GridExtent)
      */
     private GridExtent sliceExtent;
 
@@ -76,12 +90,12 @@ public class ImageRequest {
      *
      * @see GridDerivation#sliceByRatio(double, int[])
      */
-    static final double SLICE_RATIO = 0;
+    private static final double SLICE_RATIO = 0;
 
     /**
-     * For transferring a listener to {@link ImageLoader#listener} before background execution starts.
-     * We do not provide a more generic listeners API for now, but it could be done in the future
-     * if there is a need for that.
+     * The coverage explorer to inform after loading completed, or {@code null} if none.
+     * We do not provide a more generic listeners API for now, but we could do that
+     * in the future if there is a need.
      */
     CoverageExplorer listener;
 
@@ -123,8 +137,21 @@ public class ImageRequest {
      */
     public ImageRequest(final GridCoverage source, final GridExtent sliceExtent) {
         ArgumentChecks.ensureNonNull("source", source);
+        this.resource    = null;
+        this.domain      = null;
+        this.range       = null;
         this.coverage    = source;
         this.sliceExtent = sliceExtent;
+    }
+
+    /**
+     * Returns the coverage, or an empty value is not yet known. This is either the value specified explicitly
+     * to the constructor, or otherwise the coverage obtained after a read operation.
+     *
+     * @return the coverage.
+     */
+    public final Optional<GridCoverage> getCoverage() {
+        return Optional.ofNullable(coverage);
     }
 
     /**
@@ -144,7 +171,7 @@ public class ImageRequest {
      *
      * @return the desired grid extent and resolution of the coverage.
      */
-    public Optional<GridGeometry> getDomain() {
+    public final Optional<GridGeometry> getDomain() {
         return Optional.ofNullable(domain);
     }
 
@@ -165,7 +192,7 @@ public class ImageRequest {
      *
      * @return the 0-based indices of sample dimensions to read.
      */
-    public Optional<int[]> getRange() {
+    public final Optional<int[]> getRange() {
         /*
          * To be strict we should clone the array, but ImageRequest is just passing the array to
          * GridCoverageResource, which is the class making real use of it. This is not sensitive
@@ -189,7 +216,7 @@ public class ImageRequest {
      *
      * @return subspace of the grid coverage extent to render.
      */
-    public Optional<GridExtent> getSliceExtent() {
+    public final Optional<GridExtent> getSliceExtent() {
         return Optional.ofNullable(sliceExtent);
     }
 
@@ -202,14 +229,83 @@ public class ImageRequest {
      *
      * @param  sliceExtent  subspace of the grid coverage extent to render.
      */
-    public void setSliceExtent(final GridExtent sliceExtent) {
+    public final void setSliceExtent(final GridExtent sliceExtent) {
         this.sliceExtent = sliceExtent;
     }
 
     /**
+     * Computes a two dimension slice of the given grid geometry.
+     * This method selects the two first dimensions having a size greater than 1 cell.
+     *
+     * @param  domain  the grid geometry in which to choose a two-dimensional slice.
+     * @return a builder configured for returning the desired two-dimensional slice.
+     */
+    private static GridDerivation slice(final GridGeometry domain) {
+        final GridExtent extent = domain.getExtent();
+        final int dimension = extent.getDimension();
+        final int[] sliceDimensions = new int[BIDIMENSIONAL];
+        int k = 0;
+        for (int i=0; i<dimension; i++) {
+            if (extent.getLow(i) != extent.getHigh(i)) {
+                sliceDimensions[k] = i;
+                if (++k >= BIDIMENSIONAL) break;
+            }
+        }
+        return domain.derive().sliceByRatio(ImageRequest.SLICE_RATIO, sliceDimensions);
+    }
+
+    /**
+     * Loads the image. Current implementation reads the full image. If the coverage has more than
+     * {@value #BIDIMENSIONAL} dimensions, only two of them are taken for the image; for all other
+     * dimensions, only the values at lowest index will be read.
+     *
+     * <p>If the {@link #coverage} field was null, it will be initialized as a side-effect.
+     * No other fields will be modified.</p>
+     *
+     * <p>This class does not need to be thread-safe since it should be used only once in a well-defined
+     * life cycle. We nevertheless synchronize as a safety (user could give the same {@code ImageRequest}
+     * to two different {@link CoverageExplorer} instances).</p>
+     *
+     * @param  task       the task invoking this method (for checking for cancellation).
+     * @param  converted  {@code true} for a coverage containing converted values,
+     *                    or {@code false} for a coverage containing packed values.
+     * @return the image loaded from the source given at construction time,
+     *         or {@code null} if the task has been cancelled.
+     * @throws DataStoreException if an error occurred while loading the grid coverage.
+     */
+    final synchronized RenderedImage load(final FutureTask<?> task, final boolean converted) throws DataStoreException {
+        if (coverage == null) {
+            GridGeometry domain = this.domain;
+            if (domain == null) {
+                domain = resource.getGridGeometry();
+            }
+            if (domain != null && domain.getDimension() > BIDIMENSIONAL) {
+                domain = slice(domain).build();
+            }
+            /*
+             * TODO: We restrict loading to a two-dimensional slice for now.
+             * Future version will need to give user control over slices.
+             */
+            coverage = resource.read(domain, range);                    // May be long to execute.
+            coverage = coverage.forConvertedValues(converted);
+        }
+        if (task.isCancelled()) {
+            return null;
+        }
+        GridExtent se = sliceExtent;
+        if (se == null) {
+            final GridGeometry cd = coverage.getGridGeometry();
+            if (cd != null && cd.getDimension() > BIDIMENSIONAL) {      // Should never be null but we are paranoiac.
+                se = slice(cd).getIntersection();
+            }
+        }
+        return coverage.render(se);
+    }
+
+    /**
      * Configures the given status bar with the geometry of the grid coverage we have just read.
-     * This method is invoked by {@link GridView#onImageLoaded(WorkerStateEvent)} in JavaFX thread
-     * after {@link ImageLoader} successfully loaded in background thread a new image.
+     * This method is invoked in JavaFX thread after {@link GridView#setImage(ImageRequest)}
+     * successfully loaded in background thread a new image.
      */
     final void configure(final StatusBar bar) {
         final GridCoverage cv = coverage;

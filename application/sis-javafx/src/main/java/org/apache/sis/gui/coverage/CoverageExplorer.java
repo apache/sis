@@ -322,12 +322,9 @@ public class CoverageExplorer extends Widget {
     }
 
     /**
-     * Invoked in JavaFX thread by {@link ImageLoader} when the coverage has been read.
-     * This method does not set the image because it will be set by {@link ImageLoader}.
-     * This method is invoked only as a step during the loading process, which is continuing
-     * after this method invocation.
+     * Invoked in JavaFX thread by {@link GridView} after the coverage has been read.
      *
-     * @param  coverage  the new coverage, or {@code null} if loading failed.
+     * @param  coverage  the new coverage, or {@code null} if loading failed or has been cancelled.
      */
     final void onCoverageLoaded(final GridCoverage coverage) {
         notifyCoverageChange(coverage);

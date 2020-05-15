@@ -31,14 +31,18 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
-import javafx.concurrent.WorkerStateEvent;
+import javafx.concurrent.Task;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
@@ -80,8 +84,6 @@ public class GridView extends Control {
 
     /**
      * If a loading is in progress, the loading process. Otherwise {@code null}.
-     *
-     * @see #onImageLoaded(WorkerStateEvent)
      */
     private ImageLoader loader;
 
@@ -310,12 +312,101 @@ public class GridView extends Control {
         if (source == null) {
             setImage((RenderedImage) null);
         } else {
-            if (loader != null) {
-                loader.cancel();
+            final ImageLoader previous = loader;
+            loader = null;
+            if (previous != null) {
+                previous.cancel();
             }
             loader = new ImageLoader(source, true);
-            loader.setOnSucceeded(this::onImageLoaded);
             BackgroundThreads.execute(loader);
+        }
+    }
+
+    /**
+     * A task for loading {@link GridCoverage} from a resource in a background thread,
+     * then fetching an image from it.
+     */
+    private final class ImageLoader extends Task<RenderedImage> {
+        /**
+         * The image source together with optional parameters for reading only a subset.
+         */
+        private final ImageRequest request;
+
+        /**
+         * Whether the caller wants a grid coverage that contains real values or sample values.
+         */
+        private final boolean converted;
+
+        /**
+         * Creates a new task for loading an image from the specified coverage resource.
+         *
+         * @param  request    source of the image to load.
+         * @param  converted  {@code true} for a coverage containing converted values,
+         */
+        ImageLoader(final ImageRequest request, final boolean converted) {
+            this.request   = request;
+            this.converted = converted;
+        }
+
+        /**
+         * Loads the image. Current implementation reads the full image. If the coverage has more than 2 dimensions,
+         * only two of them are taken for the image; for all other dimensions, only the values at lowest index will
+         * be read.
+         *
+         * @return the image loaded from the source given at construction time.
+         * @throws DataStoreException if an error occurred while loading the grid coverage.
+         */
+        @Override
+        protected RenderedImage call() throws DataStoreException {
+            return request.load(this, converted);
+        }
+
+        /**
+         * Invoked in JavaFX thread after {@link GridView#loader} completed its task successfully.
+         * This method updates the image shown in this {@link GridView} and configures the status bar.
+         */
+        @Override
+        protected void succeeded() {
+            loader = null;
+            terminated(request.getCoverage().get());    // Should not be empty when the task is successful.
+            setImage(getValue());                       // Must be after the coverage has been set.
+            request.configure(statusBar);
+        }
+
+        /**
+         * Invoked in JavaFX thread on failure.
+         * Current implementation popups a dialog box for reporting the error.
+         */
+        @Override
+        protected void failed() {
+            terminated(null);
+            final GridCoverageResource resource = request.resource;
+            if (resource instanceof StoreListeners) {
+                ExceptionReporter.canNotReadFile(((StoreListeners) resource).getSourceName(), getException());
+            } else {
+                ExceptionReporter.canNotUseResource(getException());
+            }
+        }
+
+        /**
+         * Invoked in JavaFX thread in case of cancellation.
+         */
+        @Override
+        protected void cancelled() {
+            terminated(null);
+        }
+
+        /**
+         * Notifies listener that the given coverage has been read or failed to be read,
+         * then discards the listener. This method shall be invoked in JavaFX thread.
+         * A null argument means that the read operation failed (or has been cancelled.
+         */
+        private void terminated(final GridCoverage result) {
+            final CoverageExplorer snapshot = request.listener;
+            request.listener = null;                // Clear now in case an error happen.
+            if (snapshot != null) {
+                snapshot.onCoverageLoaded(result);
+            }
         }
     }
 
@@ -339,18 +430,6 @@ public class GridView extends Control {
      */
     public final void setBand(final int index) {
         bandProperty.set(index);
-    }
-
-    /**
-     * Invoked in JavaFX thread after {@link #loader} completed its task successfully.
-     * This method updates the image shown in this {@link GridView} and configures the
-     * status bar.
-     */
-    private void onImageLoaded(final WorkerStateEvent event) {
-        loader = null;
-        final ImageLoader result = (ImageLoader) event.getSource();
-        setImage(result.getValue());
-        result.request.configure(statusBar);
     }
 
     /**

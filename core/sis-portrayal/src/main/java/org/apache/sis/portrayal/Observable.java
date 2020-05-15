@@ -74,16 +74,17 @@ abstract class Observable {
         }
         final PropertyChangeListener[] oldList = listeners.get(propertyName);
         final PropertyChangeListener[] newList;
-        final int n;
+        final boolean success;
         if (oldList != null) {
-            n = oldList.length;
+            final int n = oldList.length;
             newList = Arrays.copyOf(oldList, n+1);
+            newList[n] = listener;
+            success = listeners.replace(propertyName, oldList, newList);
         } else {
-            n = 0;
-            newList = new PropertyChangeListener[1];
+            newList = new PropertyChangeListener[] {listener};
+            success = (listeners.putIfAbsent(propertyName, newList) == null);
         }
-        newList[n] = listener;
-        if (!listeners.replace(propertyName, oldList, newList)) {
+        if (!success) {
             // Opportunistic safety against some multi-threading misuse.
             throw new ConcurrentModificationException();
         }

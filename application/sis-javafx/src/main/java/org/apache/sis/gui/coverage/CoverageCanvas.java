@@ -27,9 +27,12 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WritableValue;
 import javafx.concurrent.Task;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -302,8 +305,10 @@ public class CoverageCanvas extends MapCanvasAWT {
             data               = canvas.data.clone();
             objectiveCRS       = canvas.getObjectiveCRS();
             objectiveToDisplay = canvas.getObjectiveToDisplay();
-            resampledImage     = canvas.resampledImages.get(Stretching.NONE);
-            stretchedImage     = canvas.resampledImages.get(data.selectedStretching);
+            if (data.validateCRS(objectiveCRS)) {
+                resampledImage = canvas.resampledImages.get(Stretching.NONE);
+                stretchedImage = canvas.resampledImages.get(data.selectedStretching);
+            }
         }
 
         /**
@@ -374,27 +379,27 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Sets the Coordinate Reference System in which all data are transformed before displaying.
-     * The new CRS must be compatible with the previous CRS, i.e. a coordinate operation between
-     * the two CRSs shall exist. If the CRS can not be set to the specified value, then an error
-     * message is shown in the status bar.
+     * Invoked when the user changed the CRS from a JavaFX control. If the CRS can not be set to the specified
+     * value, then an error message is shown in the status bar and the property is reset to its previous value.
      *
      * @param  crs  the new Coordinate Reference System in which to transform all data before displaying.
+     * @param  property  the property to reset if the operation fails.
      */
-    @Override
-    public void setObjectiveCRS(final CoordinateReferenceSystem crs) {
-        resampledImages.clear();
-        data.clearCRS();
-        try {
-            super.setObjectiveCRS(crs);
+    final void setObjectiveCRS(final CoordinateReferenceSystem crs, final ObservableValue<? extends ReferenceSystem> property) {
+        final CoordinateReferenceSystem previous = getObjectiveCRS();
+        if (crs != previous) try {
+            setObjectiveCRS(crs);
+            requestRepaint();
         } catch (Exception e) {
+            if (property instanceof WritableValue<?>) {
+                ((WritableValue<ReferenceSystem>) property).setValue(previous);
+            }
             errorOccurred(e);
             final Locale locale = getLocale();
             final Resources i18n = Resources.forLocale(locale);
             ExceptionReporter.show(null, i18n.getString(Resources.Keys.CanNotUseRefSys_1,
-                    IdentifiedObjects.getDisplayName(crs, locale)), e);
+                                   IdentifiedObjects.getDisplayName(crs, locale)), e);
         }
-        requestRepaint();
     }
 
     /**

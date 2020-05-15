@@ -16,6 +16,8 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Control;
@@ -44,7 +46,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @since   1.1
  * @module
  */
-final class CoverageControls extends Controls {
+final class CoverageControls extends Controls implements PropertyChangeListener {
     /**
      * The component for showing sample values.
      */
@@ -71,6 +73,7 @@ final class CoverageControls extends Controls {
      * @param  vocabulary  localized set of words, provided in argument because often known by the caller.
      * @param  coverage    property containing the coverage to show.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     CoverageControls(final Vocabulary vocabulary, final ObjectProperty<GridCoverage> coverage,
                      final RecentReferenceSystems referenceSystems)
     {
@@ -91,7 +94,7 @@ final class CoverageControls extends Controls {
         {   // Block for making variables locale to this scope.
             final ChoiceBox<ReferenceSystem> systems = referenceSystems.createChoiceBox((p,o,n) -> {
                 if (n instanceof CoordinateReferenceSystem) {
-                    view.setObjectiveCRS((CoordinateReferenceSystem) n);
+                    view.setObjectiveCRS((CoordinateReferenceSystem) n, p);
                 }
             });
             systems.setMaxWidth(Double.POSITIVE_INFINITY);
@@ -117,6 +120,7 @@ final class CoverageControls extends Controls {
         );
         controls.setExpandedPane(controls.getPanes().get(0));
         view.coverageProperty.bind(coverage);
+        view.addPropertyChangeListener(CoverageCanvas.OBJECTIVE_CRS_PROPERTY, this);
     }
 
     /**
@@ -132,15 +136,23 @@ final class CoverageControls extends Controls {
 
     /**
      * Invoked in JavaFX thread after {@link CoverageExplorer#setCoverage(ImageRequest)} completed.
-     * This method updates the GUI with new information available, in particular
-     * the coordinate reference system and the list of sample dimensions.
+     * This method updates the GUI with new information available.
      *
      * @param  data  the new coverage, or {@code null} if none.
      */
     @Override
     final void coverageChanged(final GridCoverage data) {
-        if (data != null) {
-            referenceSystem.set(data.getCoordinateReferenceSystem());
+        // TODO
+    }
+
+    /**
+     * Invoked when a canvas property changed.
+     */
+    @Override
+    public void propertyChange(final PropertyChangeEvent event) {
+        final Object value = event.getNewValue();
+        if (value instanceof CoordinateReferenceSystem) {
+            referenceSystem.set((CoordinateReferenceSystem) value);
         }
     }
 
