@@ -423,7 +423,13 @@ public final class ImageUtilities extends Static {
      * are equal to 1) and if that translation is integer, then Java2D will fetch only tiles that are required
      * for the area to draw. Otherwise Java2D fetches a copy of the whole image.</p>
      *
-     * @param  tr  the transform to round. Rounding will be applied in place.
+     * <p>This method assumes that the given argument is a transform from something to display coordinates in pixel
+     * units, or other kind of measurements usually expressed as integer values. In particular this method assumes
+     * that if the scale and shear factors are integers, then translation terms should also be integer. Be careful
+     * to not use this method with transforms where the translation terms may have a 0.5 offset (e.g. for mapping
+     * pixel centers).</p>
+     *
+     * @param  tr  the transform to round in place. Target coordinates should be integer measurements such as pixels.
      * @return whether the transform has integer coefficients (possibly after rounding applied by this method).
      */
     public static boolean roundIfAlmostInteger(final AffineTransform tr) {
@@ -437,6 +443,9 @@ public final class ImageUtilities extends Static {
             /*
              * At this point the scale and shear coefficients can been rounded to integers.
              * Continue only if this rounding does not make the transform non-invertible.
+             *
+             * Note: we round translation terms without checking if they are close to integers
+             * on the assumption that the transform target coordinates are pixel coordinates.
              */
             if ((m00!=0 || m01!=0) && (m10!=0 || m11!=0)) {
                 final double m02 = rint(tr.getTranslateX());

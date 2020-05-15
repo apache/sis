@@ -106,8 +106,12 @@ public class SimpleQuery extends Query implements Cloneable {
     private SortBy[] sortBy;
 
     /**
-     * Hint use by resources to optimise returned features.
+     * Hint used by resources to optimize returned features.
      * Different stores makes use of vector tiles of different scales.
+     * A {@code null} value means to query data at their full resolution.
+     *
+     * @see #getLinearResolution()
+     * @see #setLinearResolution(Quantity)
      */
     private Quantity<Length> linearResolution;
 
@@ -263,19 +267,20 @@ public class SimpleQuery extends Query implements Cloneable {
     }
 
     /**
-     * Set linear resolution hint.
-     * This hing is optional, resources may ignore it.
+     * Sets the desired spatial resolution of geometries.
+     * This property is an optional hint; resources may ignore it.
      *
-     * @param linearResolution can be null.
+     * @param  linearResolution  desired spatial resolution, or {@code null} for full resolution.
      */
-    public void setLinearResolution(Quantity<Length> linearResolution) {
+    public void setLinearResolution(final Quantity<Length> linearResolution) {
         this.linearResolution = linearResolution;
     }
 
     /**
-     * Get linear resolution hint.
+     * Returns the desired spatial resolution of geometries.
+     * A {@code null} value means that data are queried at their full resolution.
      *
-     * @return linear resolution, may be null.
+     * @return  desired spatial resolution, or {@code null} for full resolution.
      */
     public Quantity<Length> getLinearResolution() {
         return linearResolution;
@@ -471,7 +476,8 @@ public class SimpleQuery extends Query implements Cloneable {
     @Override
     public int hashCode() {
         return 97 * Arrays.hashCode(columns) + 31 * filter.hashCode()
-                + 7 * Arrays.hashCode(sortBy) + Long.hashCode(limit ^ skip);
+              + 7 * Arrays.hashCode(sortBy) + Long.hashCode(limit ^ skip)
+              + 3 * Objects.hashCode(linearResolution);
     }
 
     /**
@@ -491,7 +497,8 @@ public class SimpleQuery extends Query implements Cloneable {
                    limit == other.limit &&
                    filter.equals(other.filter) &&
                    Arrays.equals(columns, other.columns) &&
-                   Arrays.equals(sortBy,  other.sortBy);
+                   Arrays.equals(sortBy,  other.sortBy)  &&
+                   Objects.equals(linearResolution, other.linearResolution);
         }
         return false;
     }
@@ -522,6 +529,9 @@ public class SimpleQuery extends Query implements Cloneable {
                 if (i != 0) sb.append(", ");
                 sb.append(sortBy[i]);
             }
+        }
+        if (linearResolution != null) {
+            sb.append(" RESOLUTION ").append(linearResolution);
         }
         if (limit != UNLIMITED) {
             sb.append(" LIMIT ").append(limit);

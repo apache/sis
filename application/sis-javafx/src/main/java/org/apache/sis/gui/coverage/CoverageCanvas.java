@@ -239,7 +239,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             bounds = imageGeometry.getEnvelope();
         }
         setObjectiveBounds(bounds);
-        requestRepaint();   // Cause `Worker` class to be executed.
+        requestRepaint();                       // Cause `Worker` class to be executed.
     }
 
     /**
