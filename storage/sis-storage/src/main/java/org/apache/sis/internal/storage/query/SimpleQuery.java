@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Objects;
+import javax.measure.Quantity;
+import javax.measure.quantity.Length;
 import org.opengis.util.GenericName;
 import org.apache.sis.filter.InvalidExpressionException;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -102,6 +104,12 @@ public class SimpleQuery extends Query implements Cloneable {
      * @see #setSortBy(SortBy...)
      */
     private SortBy[] sortBy;
+
+    /**
+     * Hint use by resources to optimise returned features.
+     * Different stores makes use of vector tiles of different scales.
+     */
+    private Quantity<Length> linearResolution;
 
     /**
      * Creates a new query retrieving no column and applying no filter.
@@ -252,6 +260,25 @@ public class SimpleQuery extends Query implements Cloneable {
      */
     public SortBy[] getSortBy() {
         return (sortBy.length == 0) ? SortBy.UNSORTED : sortBy.clone();
+    }
+
+    /**
+     * Set linear resolution hint.
+     * This hing is optional, resources may ignore it.
+     *
+     * @param linearResolution can be null.
+     */
+    public void setLinearResolution(Quantity<Length> linearResolution) {
+        this.linearResolution = linearResolution;
+    }
+
+    /**
+     * Get linear resolution hint.
+     *
+     * @return linear resolution, may be null.
+     */
+    public Quantity<Length> getLinearResolution() {
+        return linearResolution;
     }
 
     /**
