@@ -830,17 +830,17 @@ public final class Matrices extends Static {
      * directly the scale factors on the matrix diagonal and {@code selector=0} sets all those scales to the smallest
      * value while {@code selector=1} sets all those scales to the largest value (ignoring sign).
      *
-     * <p>Translation terms can be compensated for scale changes if the {@code shift} argument is non-null.
-     * The {@code shift} values should be proportional to {@linkplain Envelope#getSpan(int) envelope spans}.
-     * For example if the matrix is for transforming coordinates to a screen device, then:</p>
+     * <p>Translation terms can be compensated for scale changes if the {@code anchor} argument is non-null.
+     * The anchor gives coordinates of the point to keep at fixed position in target coordinates.
+     * For example if the matrix is for transforming coordinates to a screen device
+     * and {@code target} is an {@link Envelope} with device position and size in pixels, then:</p>
      *
      * <ul>
-     *   <li>{@code shift[i] = 0} will keep translation term unchanged in the dimension <var>i</var>.
-     *       For rendering on screen, it means that the image will stay on the left border (<var>i</var> = 0)
+     *   <li>{@code anchor[i] = target.getMinimum(i)} keeps the image on the left border (<var>i</var> = 0)
      *       or upper border (<var>i</var> = 1).</li>
-     *   <li>{@code shift[i] = span} where {@code span} is the window width (<var>i</var> = 0) or height
-     *       (<var>i</var> = 1) will translate the image to the right border or to the bottom border respectively.</li>
-     *   <li>{@code shift[i] = span / 2} where {@code span} is as above will translate the image to the window center.</li>
+     *   <li>{@code anchor[i] = target.getMaximum(i)} translates the image to the right border (<var>i</var> = 0)
+     *       or to the bottom border (<var>i</var> = 1).</li>
+     *   <li>{@code anchor[i] = target.getMedian(i)} translates the image to the device center.</li>
      *   <li>Any intermediate values are allowed.</li>
      * </ul>
      *
@@ -848,17 +848,17 @@ public final class Matrices extends Static {
      * @param  selector  a value between 0 for smallest scale magnitude and 1 for largest scale magnitude (inclusive).
      *                   Values outside [0 … 1] range are authorized, but will result in scale factors outside the
      *                   range of current scale factors in the given matrix.
-     * @param  shift     compensation for the translation terms, or {@code null} if none.
+     * @param  anchor    point to keep at fixed position in target coordinates, or {@code null} if none.
      * @return {@code true} if the given matrix changed as a result of this method call.
      *
      * @since 1.1
      */
-    public static boolean forceUniformScale(final Matrix matrix, final double selector, final double[] shift) {
+    public static boolean forceUniformScale(final Matrix matrix, final double selector, final double[] anchor) {
         ArgumentChecks.ensureNonNull("matrix", matrix);
         ArgumentChecks.ensureFinite("selector", selector);
         final int srcDim = matrix.getNumCol() - 1;
         final int tgtDim = matrix.getNumRow() - 1;
-        ArgumentChecks.ensureDimensionMatches("shift", tgtDim, shift);
+        ArgumentChecks.ensureDimensionMatches("anchor", tgtDim, anchor);
         final double[] row = new double[srcDim];
         final double[] mgn = new double[tgtDim];
         double min = Double.POSITIVE_INFINITY;
@@ -872,6 +872,10 @@ public final class Matrices extends Static {
             if (m > max) max = m;
             mgn[j] = m;
         }
+        /*
+         * Found the magnitude of each rows together with minimum and maximum magnitude values.
+         * The `scale` value below is the constant magnitude that we want to get on all rows.
+         */
         boolean changed = false;
         if (min < max) {
             final double scale = (1 - selector)*min + selector*max;
@@ -882,9 +886,12 @@ public final class Matrices extends Static {
                     changed |= (e != (e *= rescale));
                     matrix.setElement(j, i, e);
                 }
-                double e = matrix.getElement(j, srcDim);
-                changed |= (e != (e += shift[j] * (1 - rescale)));
-                matrix.setElement(j, srcDim, e);
+                if (anchor != null) {
+                    final double p = anchor[j];
+                    double e = matrix.getElement(j, srcDim);
+                    changed |= (e != (e = (e-p)*rescale + p));
+                    matrix.setElement(j, srcDim, e);
+                }
             }
         }
         return changed;

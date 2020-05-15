@@ -226,6 +226,13 @@ public abstract class MapCanvas extends PlanarCanvas {
     private double xPanStart, yPanStart;
 
     /**
+     * {@code true} if a drag even is in progress.
+     *
+     * @see #onDrag(MouseEvent)
+     */
+    private boolean isDragging;
+
+    /**
      * Whether a rendering is in progress. This property is set to {@code true} when {@code MapCanvas}
      * is about to start a background thread for performing a rendering, and is reset to {@code false}
      * after the {@code MapCanvas} has been updated with new rendering result.
@@ -304,18 +311,21 @@ public abstract class MapCanvas extends PlanarCanvas {
         final double x = event.getX();
         final double y = event.getY();
         final EventType<? extends MouseEvent> type = event.getEventType();
-        if (type == MouseEvent.MOUSE_PRESSED) {
+        if (type == MouseEvent.MOUSE_PRESSED && event.isPrimaryButtonDown()) {
             floatingPane.setCursor(Cursor.CLOSED_HAND);
             floatingPane.requestFocus();
-            xPanStart = x;
-            yPanStart = y;
-        } else {
+            isDragging = true;
+            xPanStart  = x;
+            yPanStart  = y;
+            event.consume();
+        } else if (isDragging) {
             if (type != MouseEvent.MOUSE_DRAGGED) {
                 floatingPane.setCursor(renderingInProgress != null ? Cursor.WAIT : Cursor.CROSSHAIR);
+                isDragging = false;
             }
             applyTranslation(x - xPanStart, y - yPanStart, type == MouseEvent.MOUSE_RELEASED);
+            event.consume();
         }
-        event.consume();
     }
 
     /**
@@ -686,7 +696,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                 CoordinateReferenceSystem crs;
                 if (objectiveBounds != null) {
                     final MatrixSIS m = Matrices.createTransform(objectiveBounds, target);
-                    Matrices.forceUniformScale(m, 0, new double[] {target.width / 2, target.height / 2});
+                    Matrices.forceUniformScale(m, 0, new double[] {target.getCenterX(), target.getCenterY()});
                     crsToDisplay = MathTransforms.linear(m);
                     crs = objectiveBounds.getCoordinateReferenceSystem();
                     if (crs == null) {
@@ -707,10 +717,9 @@ public abstract class MapCanvas extends PlanarCanvas {
         }
         /*
          * If a temporary zoom, rotation or translation has been applied using JavaFX transform API,
-         * replaced that temporary transform by a "permanent" adjustment of the `objectiveToDisplay`
+         * replace that temporary transform by a "permanent" adjustment of the `objectiveToDisplay`
          * transform. It allows SIS to get new data for the new visible area and resolution.
          */
-        assert changeInProgress.isIdentity() : changeInProgress;
         changeInProgress.setToTransform(transform);
         transformOnNewImage.setToIdentity();
         isRendering.set(true);
