@@ -433,10 +433,20 @@ public class RecentReferenceSystems {
                     systemsOrCodes.subList(i, j).clear();
                     break;
                 }
-                final Object item = systemsOrCodes.get(i);
+                Object item = systemsOrCodes.get(i);
                 while (--j > i) {
                     if (Utilities.deepEquals(item, systemsOrCodes.get(j), mode)) {
-                        systemsOrCodes.remove(j);
+                        final Object removed = systemsOrCodes.remove(j);
+                        if (IdentifiedObjects.getIdentifier((IdentifiedObject) removed, null) != null &&
+                            IdentifiedObjects.getIdentifier((IdentifiedObject) item,    null) == null)
+                        {
+                            /*
+                             * Keep the instance which has an identifier. The instance without identifier
+                             * is typically a CRS with non-standard axis order. It happens when it is the
+                             * CRS associated to an image that has just been read.
+                             */
+                            systemsOrCodes.set(i, item = removed);
+                        }
                     }
                 }
             }
@@ -453,6 +463,9 @@ public class RecentReferenceSystems {
             for (int i=0; i<n; i++) {
                 final ReferenceSystem system = (ReferenceSystem) systemsOrCodes.get(i);
                 if (i >= NUM_CORE_ITEMS && !Utils.intersects(domain, system.getDomainOfValidity())) {
+                    continue;
+                }
+                if (Utils.isIgnoreable(system)) {       // Ignore "Computer display" CRS.
                     continue;
                 }
                 systems.add(system);
