@@ -77,12 +77,15 @@ import org.apache.sis.internal.util.Strings;
 public class TileOpExecutor {
     /**
      * Minimum/maximum index of tiles to process, inclusive.
+     *
+     * @see #getTileIndices()
      */
     private final int minTileX, minTileY, maxTileX, maxTileY;
 
     /**
      * Creates a new operation for tiles in the specified region of the specified image.
-     * It is caller responsibility to ensure that {@code aoi} is contained inside {@code image} bounds.
+     * It is caller responsibility to ensure that {@code aoi} is contained inside {@code image} bounds
+     * (caller can invoke {@link ImageUtilities#clipBounds(RenderedImage, Rectangle)} if needed).
      *
      * @param  image  the image from which tiles will be fetched.
      * @param  aoi    region of interest, or {@code null} for the whole image.
@@ -126,7 +129,9 @@ public class TileOpExecutor {
      * @return range of tile indices to be processed.
      */
     public final Rectangle getTileIndices() {
-        return new Rectangle(minTileX, minTileY, maxTileX - minTileX + 1, maxTileY - minTileY + 1);
+        return new Rectangle(minTileX, minTileY,
+                Math.incrementExact(Math.subtractExact(maxTileX, minTileX)),
+                Math.incrementExact(Math.subtractExact(maxTileY, minTileY)));
     }
 
     /**

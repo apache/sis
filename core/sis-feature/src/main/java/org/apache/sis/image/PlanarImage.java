@@ -371,7 +371,7 @@ public abstract class PlanarImage implements RenderedImage {
      */
     @Override
     public Raster getData() {
-        final Rectangle aoi = ImageUtilities.getBounds(this);
+        final Rectangle aoi = getBounds();
         final WritableRaster raster = createWritableRaster(aoi);
         copyData(aoi, raster);
         return raster;
@@ -388,7 +388,7 @@ public abstract class PlanarImage implements RenderedImage {
     @Override
     public Raster getData(final Rectangle aoi) {
         ArgumentChecks.ensureNonNull("aoi", aoi);
-        if (!ImageUtilities.getBounds(this).contains(aoi)) {
+        if (!getBounds().contains(aoi)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
         }
         final WritableRaster raster = createWritableRaster(aoi);
@@ -410,8 +410,9 @@ public abstract class PlanarImage implements RenderedImage {
         final Rectangle aoi;
         if (raster != null) {
             aoi = raster.getBounds();
+            ImageUtilities.clipBounds(this, aoi);
         } else {
-            aoi = ImageUtilities.getBounds(this);
+            aoi = getBounds();
             raster = createWritableRaster(aoi);
         }
         copyData(aoi, raster);

@@ -506,8 +506,8 @@ abstract class Transferer {
      * @return object to use for applying the operation.
      */
     static Transferer create(final RenderedImage source, final WritableRaster target) {
-        int tileX = Math.floorDiv((target.getMinX() - source.getTileGridXOffset()), source.getTileWidth());
-        int tileY = Math.floorDiv((target.getMinY() - source.getTileGridYOffset()), source.getTileHeight());
+        int tileX = ImageUtilities.pixelToTileX(source, target.getMinX());
+        int tileY = ImageUtilities.pixelToTileY(source, target.getMinY());
         return create(source.getTile(tileX, tileY), target, target.getBounds());
     }
 

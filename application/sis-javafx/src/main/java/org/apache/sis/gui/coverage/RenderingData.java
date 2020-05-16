@@ -23,6 +23,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -32,6 +33,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.image.ImageProcessor;
@@ -253,6 +255,9 @@ final class RenderingData implements Cloneable {
 
     /**
      * Creates the stretched image from the given resampled image.
+     *
+     * @param  resampledImage  the image computed by {@link #resample(CoordinateReferenceSystem, LinearTransform)}.
+     * @return image with color ramp stretched. May be the same instance than given image.
      */
     final RenderedImage stretch(final RenderedImage resampledImage) {
         if (selectedStretching != Stretching.NONE) {
@@ -267,6 +272,27 @@ final class RenderingData implements Cloneable {
             return processor.stretchColorRamp(resampledImage, modifiers);
         }
         return resampledImage;
+    }
+
+    /**
+     * Computes immediately, possibly using many threads, the tiles that are going to be displayed.
+     * The returned instance should be used only for current rendering event; it should not be cached.
+     *
+     * @param  stretchedImage      the image computed by {@link #stretch(RenderedImage)}.
+     * @param  resampledToDisplay  the transform computed by {@link #getTransform(LinearTransform)}.
+     * @param  displayBounds       size and location of the display device, in pixel units.
+     * @return a temporary image with tiles intersecting the display region already computed.
+     */
+    final RenderedImage prefetch(final RenderedImage stretchedImage, final AffineTransform resampledToDisplay,
+                                 final Envelope2D displayBounds)
+    {
+        try {
+            return processor.prefetch(stretchedImage, (Rectangle) AffineTransforms2D.transform(
+                        resampledToDisplay.createInverse(), displayBounds, new Rectangle()));
+        } catch (NoninvertibleTransformException e) {
+            recoverableException(e);
+            return stretchedImage;
+        }
     }
 
     /**

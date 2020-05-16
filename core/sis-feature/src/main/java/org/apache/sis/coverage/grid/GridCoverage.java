@@ -34,6 +34,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -314,8 +315,8 @@ public abstract class GridCoverage {
      * @throws IndexOutOfBoundsException if a coordinate is out of bounds.
      */
     static double[] evaluate(final RenderedImage data, final int x, final int y, final double[] buffer) {
-        final int tx = Math.toIntExact(Math.floorDiv(x - (long) data.getTileGridXOffset(), data.getTileWidth()));
-        final int ty = Math.toIntExact(Math.floorDiv(y - (long) data.getTileGridYOffset(), data.getTileHeight()));
+        final int tx = ImageUtilities.pixelToTileX(data, x);
+        final int ty = ImageUtilities.pixelToTileY(data, y);
         return data.getTile(tx, ty).getPixel(x, y, buffer);
     }
 

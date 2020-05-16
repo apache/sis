@@ -386,6 +386,28 @@ public final class ImageUtilities extends Static {
     }
 
     /**
+     * Converts a <var>x</var> pixel coordinates to a tile index.
+     *
+     * @param  image  the image containing tiles.
+     * @param  x      the pixel coordinate for which to get tile index.
+     * @return tile index for the given pixel coordinate.
+     */
+    public static int pixelToTileX(final RenderedImage image, final int x) {
+        return Math.toIntExact(Math.floorDiv((x - (long) image.getTileGridXOffset()), image.getTileWidth()));
+    }
+
+    /**
+     * Converts a <var>y</var> pixel coordinates to a tile index.
+     *
+     * @param  image  the image containing tiles.
+     * @param  y      the pixel coordinate for which to get tile index.
+     * @return tile index for the given pixel coordinate.
+     */
+    public static int pixelToTileY(final RenderedImage image, final int y) {
+        return Math.toIntExact(Math.floorDiv((y - (long) image.getTileGridYOffset()), image.getTileHeight()));
+    }
+
+    /**
      * Suggests the height of a transfer region for a tile of the given size. The given region should be
      * contained inside {@link Raster#getBounds()}. This method modifies {@link Rectangle#height} in-place.
      * The {@link Rectangle#width} value is never modified, so caller can iterate on all raster rows without

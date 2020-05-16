@@ -313,6 +313,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * method and invoke {@code super.computeProperty(…)} with a sub-region to compute.
      *
      * @param  areaOfInterest  pixel coordinates of the region of interest, or {@code null} for the whole image.
+     *         It is caller responsibility to ensure that this rectangle is fully included inside image bounds.
      * @return the computed property value. Note that {@code null} is a valid result.
      * @throws Exception if an error occurred while computing the property.
      */

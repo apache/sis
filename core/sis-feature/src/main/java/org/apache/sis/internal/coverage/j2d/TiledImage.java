@@ -49,8 +49,7 @@ public final class TiledImage extends PlanarImage {
     private final int width, height;
 
     /**
-     * Index of the first tile in the image. Should be a non-trivial value
-     * for increasing the chances to detect error in index calculation.
+     * Index of the first tile in the image.
      */
     private final int minTileX, minTileY;
 

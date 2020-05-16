@@ -42,6 +42,7 @@ import org.apache.sis.coverage.grid.ImageRenderer;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
@@ -293,10 +294,21 @@ public class CoverageCanvas extends MapCanvasAWT {
         private RenderedImage stretchedImage;
 
         /**
-         * Conversion from {@link #resampledImage} (also {@link #stretchedImage}) pixel coordinates
-         * to display coordinates.
+         * The stretched image with tiles computed in advance. The set of prefetched
+         * tiles may differ at each rendering event. This image should not be cached.
+         */
+        private RenderedImage prefetchedImage;
+
+        /**
+         * Conversion from {@link #resampledImage} (also {@link #prefetchedImage})
+         * pixel coordinates to display coordinates.
          */
         private AffineTransform resampledToDisplay;
+
+        /**
+         * Size and location of the display device, in pixel units.
+         */
+        private final Envelope2D displayBounds;
 
         /**
          * Creates a new renderer.
@@ -305,6 +317,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             data               = canvas.data.clone();
             objectiveCRS       = canvas.getObjectiveCRS();
             objectiveToDisplay = canvas.getObjectiveToDisplay();
+            displayBounds      = canvas.getDisplayBounds();
             if (data.validateCRS(objectiveCRS)) {
                 resampledImage = canvas.resampledImages.get(Stretching.NONE);
                 stretchedImage = canvas.resampledImages.get(data.selectedStretching);
@@ -334,6 +347,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             if (stretchedImage == null) {
                 stretchedImage = data.stretch(resampledImage);
             }
+            prefetchedImage = data.prefetch(stretchedImage, resampledToDisplay, displayBounds);
         }
 
         /**
@@ -341,7 +355,7 @@ public class CoverageCanvas extends MapCanvasAWT {
          */
         @Override
         protected void paint(final Graphics2D gr) {
-            gr.drawRenderedImage(stretchedImage, resampledToDisplay);
+            gr.drawRenderedImage(prefetchedImage, resampledToDisplay);
         }
 
         /**

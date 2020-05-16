@@ -889,7 +889,7 @@ public final class Matrices extends Static {
                 if (anchor != null) {
                     final double p = anchor[j];
                     double e = matrix.getElement(j, srcDim);
-                    changed |= (e != (e = (e-p)*rescale + p));
+                    changed |= (e != (e = (e-p)*rescale + p));      // TODO: use Math.fma in JDK9.
                     matrix.setElement(j, srcDim, e);
                 }
             }

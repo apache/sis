@@ -25,19 +25,15 @@ import java.util.logging.LogRecord;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
-import java.awt.image.Raster;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
-import java.awt.image.RasterFormatException;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
@@ -521,7 +517,7 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Computes all tiles immediately, then return an image will all tiles ready.
+     * Computes immediately all tiles in the given region of interest, then return an image will those tiles ready.
      * Computations will use many threads if {@linkplain #getExecutionMode() execution mode} is parallel.
      *
      * <div class="note"><b>Note:</b>
@@ -529,62 +525,21 @@ public class ImageProcessor implements Cloneable {
      * have a mechanism for specifying which tile to produce in replacement of tiles that can not be computed.
      * This behavior may be changed in a future version.</div>
      *
-     * @param  source  the image to compute immediately (may be {@code null}).
-     * @return image with all tiles computed, or {@code null} if the given image was null.
+     * @param  source          the image to compute immediately (may be {@code null}).
+     * @param  areaOfInterest  pixel coordinates of the region to prefetch, or {@code null} for the whole image.
+     * @return image with all tiles intersecting the AOI computed, or {@code null} if the given image was null.
      * @throws ImagingOpException if an exception occurred during {@link RenderedImage#getTile(int, int)} call.
      *         This exception wraps the original exception as its {@linkplain ImagingOpException#getCause() cause}.
      */
-    public RenderedImage prefetch(final RenderedImage source) {
+    public RenderedImage prefetch(RenderedImage source, final Rectangle areaOfInterest) {
         if (source == null || source instanceof BufferedImage || source instanceof TiledImage) {
             return source;
         }
-        final Prefetch worker = new Prefetch(source);
-        if (parallel(source)) {
-            worker.parallelReadFrom(source);
-        } else {
-            worker.readFrom(source);
+        while (source instanceof PrefetchedImage) {
+            source = ((PrefetchedImage) source).source;
         }
-        return new TiledImage(source.getColorModel(), source.getWidth(), source.getHeight(),
-                              source.getMinTileX(), source.getMinTileY(), worker.tiles);
-    }
-
-    /**
-     * A worker for prefetching tiles in an image.
-     */
-    private static final class Prefetch extends TileOpExecutor {
-        /** Number of tiles in a row. */
-        private final int numXTiles;
-
-        /** Image properties for converting pixel coordinates to tile indices. */
-        private final long tileWidth, tileHeight, tileGridXOffset, tileGridYOffset;
-
-        /** The tiles in a row-major fashion. */
-        final Raster[] tiles;
-
-        /** Prepares an instance for prefetching tiles from the given image. */
-        Prefetch(final RenderedImage source) {
-            super(source, null);
-            numXTiles       = source.getNumXTiles();
-            tileWidth       = source.getTileWidth();
-            tileHeight      = source.getTileHeight();
-            tileGridXOffset = source.getTileGridXOffset();
-            tileGridYOffset = source.getTileGridYOffset();
-            tiles           = new Raster[Math.multiplyExact(source.getNumYTiles(), numXTiles)];
-        }
-
-        /** Invoked in a when a tile have been computed, possibly in a background thread. */
-        @Override protected void readFrom(final Raster source) {
-            final long tx = Math.floorDiv(source.getMinX() - tileGridXOffset, tileWidth);
-            final long ty = Math.floorDiv(source.getMinY() - tileGridYOffset, tileHeight);
-            final int index = Math.toIntExact(tx + ty*numXTiles);
-            synchronized (tiles) {
-                if (tiles[index] != null) {
-                    throw new RasterFormatException(Errors.format(
-                            Errors.Keys.DuplicatedElement_1, "Tile[" + tx + ", " + ty + ']'));
-                }
-                tiles[index] = source;
-            }
-        }
+        final PrefetchedImage image = new PrefetchedImage(source, areaOfInterest, parallel(source));
+        return image.isEmpty() ? source : image;
     }
 
     /**
