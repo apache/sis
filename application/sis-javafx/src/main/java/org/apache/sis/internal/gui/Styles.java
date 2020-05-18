@@ -165,10 +165,12 @@ public final class Styles extends Static {
      * The controls must be associated to the given labels by {@link Label#getLabelFor()}.
      * If a label is {@code null}, then no row is created for that label.
      *
+     * @param  row       index of the first row. If different than 0, then it is caller responsibility
+     *                   to provide controls for all rows before the specified index.
      * @param  controls  (label, control) pairs to layout in rows.
      * @return a pane with each (label, control) pair on a row.
      */
-    public static GridPane createControlGrid(final Label... controls) {
+    public static GridPane createControlGrid(int row, final Label... controls) {
         final GridPane gp = new GridPane();
         final ColumnConstraints labelColumn   = new ColumnConstraints();
         final ColumnConstraints controlColumn = new ColumnConstraints();
@@ -194,7 +196,6 @@ public final class Styles extends Static {
         gp.setPadding(FORM_INSETS);
         gp.setVgap(9);
         gp.setHgap(9);
-        int row = 0;
         for (final Label label : controls) {
             if (label != null) {
                 final Node control = label.getLabelFor();

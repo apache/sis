@@ -224,7 +224,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
             final Label ld = new Label(vocabulary.getLabel(Vocabulary.Keys.Domain));
             lt.setLabelFor(type   = new Label());
             ld.setLabelFor(domain = new Label());
-            summary = Styles.createControlGrid(lt, ld);
+            summary = Styles.createControlGrid(0, lt, ld);
             final Tooltip tp = new Tooltip();
             tp.setShowDelay(Duration.seconds(0.5));
             tp.setShowDuration(Duration.minutes(1));

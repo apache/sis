@@ -195,7 +195,18 @@ final class RenderingData implements Cloneable {
     }
 
     /**
+     * Gets the interpolation method to use during resample operations.
+     *
+     * @see CoverageCanvas#getInterpolation()
+     */
+    final Interpolation getInterpolation() {
+        return processor.getInterpolation();
+    }
+
+    /**
      * Sets the interpolation method to use during resample operations.
+     *
+     * @see CoverageCanvas#setInterpolation(Interpolation)
      */
     final void setInterpolation(final Interpolation newValue) {
         processor = processor.clone();          // Previous processor may be in use by background thread.

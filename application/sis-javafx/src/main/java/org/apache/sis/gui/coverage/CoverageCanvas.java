@@ -44,6 +44,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.image.PlanarImage;
+import org.apache.sis.image.Interpolation;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.internal.gui.Resources;
@@ -84,6 +85,14 @@ public class CoverageCanvas extends MapCanvasAWT {
     public final ObjectProperty<GridExtent> sliceExtentProperty;
 
     /**
+     * The interpolation method to use for resampling the image.
+     *
+     * @see #getInterpolation()
+     * @see #setInterpolation(Interpolation)
+     */
+    public final ObjectProperty<Interpolation> interpolationProperty;
+
+    /**
      * The {@code RenderedImage} to draw together with transform from pixel coordinates to display coordinates.
      * Shall never be {@code null} but may be {@linkplain RenderingData#isEmpty() empty}. This instance shall be
      * read and modified in JavaFX thread only and cloned if those data needed by a background thread.
@@ -104,12 +113,14 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     public CoverageCanvas() {
         super(Locale.getDefault());
-        coverageProperty    = new SimpleObjectProperty<>(this, "coverage");
-        sliceExtentProperty = new SimpleObjectProperty<>(this, "sliceExtent");
-        resampledImages     = new EnumMap<>(Stretching.class);
-        data                = new RenderingData();
-        coverageProperty   .addListener((p,o,n) -> onImageSpecified());
-        sliceExtentProperty.addListener((p,o,n) -> onImageSpecified());
+        data                  = new RenderingData();
+        resampledImages       = new EnumMap<>(Stretching.class);
+        coverageProperty      = new SimpleObjectProperty<>(this, "coverage");
+        sliceExtentProperty   = new SimpleObjectProperty<>(this, "sliceExtent");
+        interpolationProperty = new SimpleObjectProperty<>(this, "interpolation", data.getInterpolation());
+        coverageProperty     .addListener((p,o,n) -> onImageSpecified());
+        sliceExtentProperty  .addListener((p,o,n) -> onImageSpecified());
+        interpolationProperty.addListener((p,o,n) -> onInterpolationSpecified(n));
     }
 
     /**
@@ -170,6 +181,28 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     public final void setSliceExtent(final GridExtent sliceExtent) {
         sliceExtentProperty.set(sliceExtent);
+    }
+
+    /**
+     * Gets the interpolation method used during resample operations.
+     *
+     * @return the current interpolation method.
+     *
+     * @see #interpolationProperty
+     */
+    public final Interpolation getInterpolation() {
+        return interpolationProperty.get();
+    }
+
+    /**
+     * Sets the interpolation method to use during resample operations.
+     *
+     * @param interpolation the new interpolation method.
+     *
+     * @see #interpolationProperty
+     */
+    public final void setInterpolation(final Interpolation interpolation) {
+        interpolationProperty.set(interpolation);
     }
 
     /**
@@ -244,6 +277,15 @@ public class CoverageCanvas extends MapCanvasAWT {
         }
         setObjectiveBounds(bounds);
         requestRepaint();                       // Cause `Worker` class to be executed.
+    }
+
+    /**
+     * Invoked when a new interpolation has been specified.
+     */
+    private void onInterpolationSpecified(final Interpolation interpolation) {
+        data.setInterpolation(interpolation);
+        resampledImages.clear();
+        requestRepaint();
     }
 
     /**

@@ -16,12 +16,13 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.Locale;
+import java.util.Objects;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Control;
-import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -30,11 +31,13 @@ import javafx.scene.layout.VBox;
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.paint.Color;
+import javafx.util.StringConverter;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.map.StatusBar;
+import org.apache.sis.image.Interpolation;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -87,29 +90,32 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
         /*
          * "Display" section with the following controls:
          *    - Coordinate reference system
+         *    - Interpolation
          *    - Color stretching
          *    - Background color
          */
         final VBox displayPane;
         {   // Block for making variables locale to this scope.
-            final ChoiceBox<ReferenceSystem> systems = referenceSystems.createChoiceBox((p,o,n) -> {
+            final GridPane referencing = createControlGrid(1,
+                label(vocabulary, Vocabulary.Keys.Interpolation, createInterpolationButton(vocabulary.getLocale()))
+            );
+            final ChoiceBox<ReferenceSystem> systemChoices = referenceSystems.createChoiceBox((p,o,n) -> {
                 if (n instanceof CoordinateReferenceSystem) {
                     view.setObjectiveCRS((CoordinateReferenceSystem) n, p);
                 }
             });
-            systems.setMaxWidth(Double.POSITIVE_INFINITY);
-            referenceSystem = systems.valueProperty();
-            final Label systemLabel = new Label(vocabulary.getLabel(Vocabulary.Keys.ReferenceSystem));
-            systemLabel.setPadding(CAPTION_MARGIN);
-            systemLabel.setLabelFor(systems);
-            final GridPane gp = createControlGrid(
+            systemChoices.setMaxWidth(Double.POSITIVE_INFINITY);
+            GridPane.setConstraints(systemChoices, 0, 0, 2, 1);     // First row and column, span 2 columns.
+            referencing.getChildren().add(systemChoices);
+            referenceSystem = systemChoices.valueProperty();
+
+            final GridPane colors = createControlGrid(0,
                 label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStretching(n))),
                 label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton(background))
             );
-            final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Colors));
-            label.setPadding(NEXT_CAPTION_MARGIN);
-            label.setLabelFor(gp);
-            displayPane = new VBox(systemLabel, systems, label, gp);
+            displayPane = new VBox(
+                labelOfGroup(vocabulary, Vocabulary.Keys.ReferenceSystem, referencing, true), referencing,
+                labelOfGroup(vocabulary, Vocabulary.Keys.Colors,          colors,     false), colors);
         }
         /*
          * Put all sections together and have the first one expanded by default.
@@ -121,6 +127,71 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
         controls.setExpandedPane(controls.getPanes().get(0));
         view.coverageProperty.bind(coverage);
         view.addPropertyChangeListener(CoverageCanvas.OBJECTIVE_CRS_PROPERTY, this);
+    }
+
+    /**
+     * Creates the controls for choosing an interpolation method.
+     */
+    private ChoiceBox<Interpolation> createInterpolationButton(final Locale locale) {
+        final ChoiceBox<Interpolation> b = new ChoiceBox<>();
+        b.setConverter(new InterpolationConverter(locale));
+        b.getItems().setAll(InterpolationConverter.INTERPOLATIONS);
+        b.getSelectionModel().select(view.getInterpolation());
+        view.interpolationProperty.bind(b.getSelectionModel().selectedItemProperty());
+        return b;
+    }
+
+    /**
+     * Gives a localized {@link String} instance for a given {@link Interpolation} and conversely.
+     */
+    private static final class InterpolationConverter extends StringConverter<Interpolation> {
+        /** The interpolation supported by this converter. */
+        static final Interpolation[] INTERPOLATIONS = {
+            Interpolation.NEAREST, Interpolation.BILINEAR, Interpolation.LANCZOS
+        };
+
+        /** Keys of localized names for each {@link #INTERPOLATIONS} element. */
+        private static final short[] VOCABULARIES = {
+            Vocabulary.Keys.NearestNeighbor, Vocabulary.Keys.Bilinear, 0
+        };
+
+        /** The locale to use for string representation. */
+        private final Locale locale;
+
+        /** Creates a new converter for the given locale. */
+        InterpolationConverter(final Locale locale) {
+            this.locale = locale;
+        }
+
+        /** Returns a string representation of the given item. */
+        @Override public String toString(final Interpolation item) {
+            for (int i=0; i<INTERPOLATIONS.length; i++) {
+                if (INTERPOLATIONS[i].equals(item)) {
+                    final short key = VOCABULARIES[i];
+                    if (key != 0) {
+                        return Vocabulary.getResources(locale).getString(key);
+                    } else if (item == Interpolation.LANCZOS) {
+                        return "Lanczos";
+                    }
+                }
+            }
+            return Objects.toString(item);
+        }
+
+        /** Returns the interpolation for the given text. */
+        @Override public Interpolation fromString(final String text) {
+            final Vocabulary vocabulary = Vocabulary.getResources(locale);
+            for (int i=0; i<VOCABULARIES.length; i++) {
+                final short key = VOCABULARIES[i];
+                final Interpolation item = INTERPOLATIONS[i];
+                if ((key != 0 && vocabulary.getString(key).equalsIgnoreCase(text))
+                                        || item.toString().equalsIgnoreCase(text))
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
     }
 
     /**

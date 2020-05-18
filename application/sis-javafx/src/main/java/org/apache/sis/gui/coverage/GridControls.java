@@ -75,9 +75,7 @@ final class GridControls extends Controls {
          */
         final VBox coveragePane;
         {   // Block for making variables locale to this scope.
-            final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.SampleDimensions));
-            label.setPadding(CAPTION_MARGIN);
-            label.setLabelFor(sampleDimensions);
+            final Label label = labelOfGroup(vocabulary, Vocabulary.Keys.SampleDimensions, sampleDimensions, true);
             coveragePane = new VBox(label, sampleDimensions);
         }
         /*
@@ -87,15 +85,12 @@ final class GridControls extends Controls {
          */
         final VBox displayPane;
         {   // Block for making variables locale to this scope.
-            final GridPane gp = createControlGrid(
+            final GridPane gp = createControlGrid(0,
                 label(vocabulary, Vocabulary.Keys.Width,  createSlider(view.cellWidth,  30, 200)),
                 label(vocabulary, Vocabulary.Keys.Height, createSlider(view.cellHeight, 10,  50)),
                 label(vocabulary, Vocabulary.Keys.Format, view.cellFormat.createEditor())
             );
-            final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Cells));
-            label.setPadding(CAPTION_MARGIN);
-            label.setLabelFor(gp);
-            displayPane = new VBox(label, gp);
+            displayPane = new VBox(labelOfGroup(vocabulary, Vocabulary.Keys.Cells, gp, true), gp);
         }
         /*
          * Put all sections together and have the first one expanded by default.

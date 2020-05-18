@@ -135,6 +135,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short BarometricAltitude = 16;
 
         /**
+         * Bilinear
+         */
+        public static final short Bilinear = 230;
+
+        /**
          * Black
          */
         public static final short Black = 17;
@@ -590,6 +595,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Index = 106;
 
         /**
+         * Interpolation
+         */
+        public static final short Interpolation = 231;
+
+        /**
          * Invalid
          */
         public static final short Invalid = 107;
@@ -753,6 +763,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Name
          */
         public static final short Name = 139;
+
+        /**
+         * Nearest neighbor
+         */
+        public static final short NearestNeighbor = 232;
 
         /**
          * No data

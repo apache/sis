@@ -48,7 +48,7 @@ abstract class Controls {
     /**
      * Margin to keep around captions after the first one.
      */
-    static final Insets NEXT_CAPTION_MARGIN = new Insets(30, 0, 9, 0);
+    private static final Insets NEXT_CAPTION_MARGIN = new Insets(30, 0, 9, 0);
 
     /**
      * The border to use for grouping some controls together.
@@ -73,11 +73,13 @@ abstract class Controls {
      * The controls must be associated to the given labels by {@link Label#getLabelFor()}.
      * If a label is {@code null}, then no row is created for that label.
      *
+     * @param  row       index of the first row. If different than 0, then it is caller responsibility
+     *                   to provide controls for all rows before the specified index.
      * @param  controls  (label, control) pairs to layout in rows.
      * @return a pane with each (label, control) pair on a row.
      */
-    static GridPane createControlGrid(final Label... controls) {
-        final GridPane gp = Styles.createControlGrid(controls);
+    static GridPane createControlGrid(final int row, final Label... controls) {
+        final GridPane gp = Styles.createControlGrid(row, controls);
         Styles.setAllRowToSameHeight(gp);
         gp.setBorder(GROUP_BORDER);
         return gp;
@@ -99,6 +101,22 @@ abstract class Controls {
         control.setMaxWidth(Double.POSITIVE_INFINITY);
         final Label label = new Label(vocabulary.getLabel(key));
         label.setLabelFor(control);
+        return label;
+    }
+
+    /**
+     * Creates a label with the specified text associated to the given group of controls.
+     *
+     * @param  vocabulary  the resources from which to get the text.
+     * @param  key         {@code vocabulary} key of the text to put in the label.
+     * @param  group       the group of controls to associate to the label.
+     * @param  isFirst     whether the given group is the first group in the pane.
+     * @return label associated to the given group of controls.
+     */
+    static Label labelOfGroup(final Vocabulary vocabulary, final short key, final Region group, final boolean isFirst) {
+        final Label label = new Label(vocabulary.getLabel(key));
+        label.setPadding(isFirst ? CAPTION_MARGIN : NEXT_CAPTION_MARGIN);
+        label.setLabelFor(group);
         return label;
     }
 
