@@ -113,7 +113,8 @@ public abstract class GeometryWrapper<G> implements Geometry {
     /**
      * Returns the geometry bounding box, together with its coordinate reference system.
      *
-     * @return the geometry envelope. Should never be {@code null} except for an empty geometry or a single point.
+     * @return the geometry envelope. Should never be {@code null}. Note though that for an empty geometry or a single
+     * point, the returned envelope will be empty.
      */
     @Override
     public abstract GeneralEnvelope getEnvelope();

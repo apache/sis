@@ -31,6 +31,7 @@ import org.apache.sis.internal.feature.GeometryWithCRS;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -81,13 +82,11 @@ final class Wrapper extends GeometryWithCRS<Shape> {
     @Override
     public GeneralEnvelope getEnvelope() {
         final Rectangle2D bounds = geometry.getBounds2D();
-        if (!bounds.isEmpty()) {                                     // Test if there is NaN values.
-            final GeneralEnvelope env = new GeneralEnvelope(Factory.BIDIMENSIONAL);
-            env.setRange(0, bounds.getMinX(), bounds.getMaxX());
-            env.setRange(1, bounds.getMinY(), bounds.getMaxY());
-            return env;
-        }
-        return null;
+        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
+        final GeneralEnvelope env = crs == null ? new GeneralEnvelope(Factory.BIDIMENSIONAL) : new GeneralEnvelope(crs);
+        env.setRange(0, bounds.getMinX(), bounds.getMaxX());
+        env.setRange(1, bounds.getMinY(), bounds.getMaxY());
+        return env;
     }
 
     /**
@@ -97,7 +96,7 @@ final class Wrapper extends GeometryWithCRS<Shape> {
     public DirectPosition getCentroid() {
         final RectangularShape frame = (geometry instanceof RectangularShape)
                         ? (RectangularShape) geometry : geometry.getBounds2D();
-        return new DirectPosition2D(frame.getCenterX(), frame.getCenterY());
+        return new DirectPosition2D(getCoordinateReferenceSystem(), frame.getCenterX(), frame.getCenterY());
     }
 
     /**

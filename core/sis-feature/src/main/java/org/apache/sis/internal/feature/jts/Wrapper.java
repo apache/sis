@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Iterator;
+import org.apache.sis.util.ArgumentChecks;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -100,14 +101,13 @@ final class Wrapper extends GeometryWrapper<Geometry> {
      */
     @Override
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
+        if (crs != null) ArgumentChecks.ensureBetween("CRS dimension", 2, 3, crs.getCoordinateSystem().getDimension());
         JTS.setCoordinateReferenceSystem(geometry, crs);
     }
 
     /**
-     * If the JTS geometry is non-empty, returns its envelope as an Apache SIS implementation.
-     * Otherwise returns {@code null}.
      *
-     * @return the envelope, or {@code null} if empty.
+     * @return the envelope of the decorated JTS geometry. Never null, but can be empty.
      */
     @Override
     public GeneralEnvelope getEnvelope() {
@@ -115,7 +115,7 @@ final class Wrapper extends GeometryWrapper<Geometry> {
         final GeneralEnvelope env = new GeneralEnvelope(Factory.BIDIMENSIONAL);
         env.setRange(0, bounds.getMinX(), bounds.getMaxX());
         env.setRange(1, bounds.getMinY(), bounds.getMaxY());
-        return env.isEmpty() ? null : env;
+        return env;
     }
 
     /**
@@ -126,9 +126,12 @@ final class Wrapper extends GeometryWrapper<Geometry> {
         final Coordinate c = geometry.getCentroid().getCoordinate();
         final double z = c.getZ();
         if (Double.isNaN(z)) {
-            return new DirectPosition2D(c.x, c.y);
+            return new DirectPosition2D(getCoordinateReferenceSystem(), c.x, c.y);
         } else {
-            return new GeneralDirectPosition(c.x, c.y, z);
+            final GeneralDirectPosition point = new GeneralDirectPosition(c.x, c.y, z);
+            final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
+            if (crs != null) point.setCoordinateReferenceSystem(crs);
+            return point;
         }
     }
 

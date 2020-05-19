@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.feature;
 
+import org.apache.sis.util.ArgumentChecks;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
@@ -60,6 +61,7 @@ public abstract class GeometryWithCRS<G> extends GeometryWrapper<G> {
      */
     @Override
     public final void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
+        ArgumentChecks.ensureDimensionMatches("crs", 2, crs);
         this.crs = crs;
     }
 }

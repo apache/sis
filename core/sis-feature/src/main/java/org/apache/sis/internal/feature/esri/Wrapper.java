@@ -33,6 +33,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWithCRS;
 import org.apache.sis.util.Debug;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -84,10 +85,8 @@ final class Wrapper extends GeometryWithCRS<Geometry> {
     public GeneralEnvelope getEnvelope() {
         final Envelope2D bounds = new Envelope2D();
         geometry.queryEnvelope2D(bounds);
-        if (bounds.isEmpty()) {                 // Test if there is NaN values.
-            return null;
-        }
-        final GeneralEnvelope env = new GeneralEnvelope(Factory.BIDIMENSIONAL);
+        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
+        final GeneralEnvelope env = crs == null ? new GeneralEnvelope(org.apache.sis.internal.feature.j2d.Factory.BIDIMENSIONAL) : new GeneralEnvelope(crs);
         env.setRange(0, bounds.xmin, bounds.xmax);
         env.setRange(1, bounds.ymin, bounds.ymax);
         return env;
@@ -99,7 +98,7 @@ final class Wrapper extends GeometryWithCRS<Geometry> {
     @Override
     public DirectPosition getCentroid() {
         final Point2D c = getCentroidImpl();
-        return new DirectPosition2D(c.x, c.y);
+        return new DirectPosition2D(getCoordinateReferenceSystem(), c.x, c.y);
     }
 
     /**

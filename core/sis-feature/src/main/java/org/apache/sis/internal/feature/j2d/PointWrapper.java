@@ -66,11 +66,12 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
     }
 
     /**
-     * Returns {@code null} since envelopes of points are empty.
+     * @return An empty envelope centered on this point.
      */
     @Override
     public GeneralEnvelope getEnvelope() {
-        return null;
+        final DirectPosition centroid = getCentroid();
+        return new GeneralEnvelope(centroid, centroid);
     }
 
     /**
@@ -78,7 +79,7 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
      */
     @Override
     public DirectPosition getCentroid() {
-        return new DirectPosition2D(point.getX(), point.getY());
+        return new DirectPosition2D(getCoordinateReferenceSystem(), point.getX(), point.getY());
     }
 
     /**
