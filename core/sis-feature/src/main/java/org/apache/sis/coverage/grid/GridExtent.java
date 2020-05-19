@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Locale;
+import java.util.stream.LongStream;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -66,7 +67,6 @@ import org.opengis.coverage.grid.GridEnvelope;
 import org.opengis.coverage.grid.GridCoordinates;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
-
 
 /**
  * A range of grid coverage coordinates, also known as "grid envelope".
@@ -503,7 +503,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @param enclosing    the extent from which to copy axes, or {@code null} if none.
      * @param coordinates  the coordinates. This array is not cloned.
      */
-    GridExtent(final GridExtent enclosing, final long[] coordinates) {
+    GridExtent(final GridExtent enclosing, final long... coordinates) {
         this.coordinates = coordinates;
         types = (enclosing != null) ? enclosing.types : null;
         assert (types == null) || types.length == getDimension();
@@ -1386,5 +1386,32 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                     Long.toUnsignedString(upper - lower + 1))).append(')').nextLine();
         }
         table.flush();
+    }
+
+    /**
+     * Create a fresh translated extent from the current one. A translated extent <em>matches this extent size</em>,
+     * meaning that both its low and high coordinates are displaced by the same amount.
+     *
+     * @param translation Translation to apply to each axis, respectively. If argument dimension is lower than this
+     *                    extent, we consider all dimensions non affected as not translated. Meaning that for an extent
+     *                    (x: [0..10], y: [2..4], z: [0..1]) and a translation [-2, 2], the resulting extent would be
+     *                    (x: [-2..8], y: [4..6], z: [0..1]).
+     * @return A new/independant grid-extent whose coordinates (both low and high ones) have been translated by a given
+     * amount. However, if given translation is a no-op (no value or only 0 ones), this extent is returned as is.
+     * @throws IllegalArgumentException If given translation dimension is greater than {@link #getDimension() this extent dimension}.
+     */
+    public GridExtent translate(long... translation) {
+        if (translation == null || translation.length < 1) return this;
+        final int dimension = getDimension();
+        if (translation.length > dimension) throw new IllegalArgumentException("Given translation dimension is higher than this extent");
+        // In case of badly sized input, this could become a very costly check, so we check dimension before.
+        if (LongStream.of(translation).allMatch(v -> v == 0)) return this;
+        final long[] translatedCoords = Arrays.copyOf(coordinates, coordinates.length);
+        for (int min = 0, max = dimension ; min < translation.length ; min++, max++) {
+            translatedCoords[min] += translation[min];
+            translatedCoords[max] += translation[min];
+        }
+
+        return new GridExtent(this, translatedCoords);
     }
 }
