@@ -28,6 +28,7 @@ import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
 
@@ -366,10 +367,18 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
     }
 
     /**
-     * Not needed for the tests.
+     * Sets a rectangle of this image to the contents of given raster.
+     * The raster is assumed to be in the same coordinate space as this image.
+     * Current implementation can set raster covering only only one tile.
      */
     @Override
-    public void setData(Raster r) {
-        throw new UnsupportedOperationException();
+    public void setData(final Raster r) {
+        final int minX = r.getMinX();
+        final int minY = r.getMinY();
+        final int tx = ImageUtilities.pixelToTileX(this, minX);
+        final int ty = ImageUtilities.pixelToTileY(this, minY);
+        assertEquals("Unsupported operation.", tx, ImageUtilities.pixelToTileX(this, minX + r.getWidth()  - 1));
+        assertEquals("Unsupported operation.", ty, ImageUtilities.pixelToTileX(this, minY + r.getHeight() - 1));
+        tile(tx, ty, true).setRect(r);
     }
 }

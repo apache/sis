@@ -160,24 +160,20 @@ public class GridCoverage2D extends GridCoverage {
     /**
      * Creates a new grid coverage for the resampling of specified source coverage.
      *
-     * @param  source       the coverage containing source values.
-     * @param  domain       the grid extent, CRS and conversion from cell indices to CRS.
-     * @param  extent       the {@code domain.getExtent()} value.
-     * @param  data         the sample values as a {@link RenderedImage}, with one band for each sample dimension.
-     * @param  xDimension   index of extent dimension for image <var>x</var> coordinates.
-     * @param  yDimension   index of extent dimension for image <var>y</var> coordinates.
+     * @param  source  the coverage containing source values.
+     * @param  domain  the grid extent, CRS and conversion from cell indices to CRS.
+     * @param  extent  the {@code domain.getExtent()} value.
+     * @param  data    the sample values as a {@link RenderedImage}, with one band for each sample dimension.
      */
-    GridCoverage2D(final GridCoverage source, final GridGeometry domain, final GridExtent extent,
-                   RenderedImage data, final int xDimension, final int yDimension)
-    {
+    GridCoverage2D(final GridCoverage source, final GridGeometry domain, final GridExtent extent, RenderedImage data) {
         super(source, domain);
-        data = unwrapIfSameSize(data);
-        this.data       = data;
-        this.xDimension = xDimension;
-        this.yDimension = yDimension;
-        gridToImageX    = subtractExact(data.getMinX(), extent.getLow(xDimension));
-        gridToImageY    = subtractExact(data.getMinY(), extent.getLow(yDimension));
-        gridGeometry2D  = new AtomicReference<>();
+        final int[] imageAxes = extent.getSubspaceDimensions(BIDIMENSIONAL);
+        xDimension     = imageAxes[0];
+        yDimension     = imageAxes[1];
+        this.data      = data = unwrapIfSameSize(data);
+        gridToImageX   = subtractExact(data.getMinX(), extent.getLow(xDimension));
+        gridToImageY   = subtractExact(data.getMinY(), extent.getLow(yDimension));
+        gridGeometry2D = new AtomicReference<>();
     }
 
     /**

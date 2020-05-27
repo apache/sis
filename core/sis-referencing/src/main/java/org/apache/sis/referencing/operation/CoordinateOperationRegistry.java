@@ -113,6 +113,11 @@ class CoordinateOperationRegistry {
     static final Identifier IDENTITY = createIdentifier(Vocabulary.Keys.Identity);
 
     /**
+     * The identifier for an operation setting some coordinates to constant values.
+     */
+    static final Identifier CONSTANTS = createIdentifier(Vocabulary.Keys.Constants);
+
+    /**
      * The identifier for conversion using an affine transform for axis swapping and/or unit conversions.
      */
     static final Identifier AXIS_CHANGES = createIdentifier(Vocabulary.Keys.AxisChanges);

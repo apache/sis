@@ -885,7 +885,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
      * @param  gridToCRS    the transform specified by the user. May be the same as {@code cornerToCRS}.
-     *                      If different, then this is assumed to map cell centers instead than cell corners.
+     *                      If different, then this is assumed to map cell centers instead of cell corners.
      * @param  fallback     bounds to use if some values still NaN, or {@code null} if none.
      * @return this grid extent in real world coordinates.
      * @throws TransformException if the envelope can not be computed with the given transform.

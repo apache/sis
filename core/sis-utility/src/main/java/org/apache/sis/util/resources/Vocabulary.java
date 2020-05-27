@@ -225,6 +225,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short ConstantPressureSurface = 32;
 
         /**
+         * Constants
+         */
+        public static final short Constants = 233;
+
+        /**
          * Container
          */
         public static final short Container = 33;

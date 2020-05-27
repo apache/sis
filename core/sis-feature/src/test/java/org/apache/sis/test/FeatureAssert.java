@@ -16,7 +16,12 @@
  */
 package org.apache.sis.test;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
+import org.opengis.coverage.grid.SequenceType;
+import org.apache.sis.image.PixelIterator;
 
 import static org.junit.Assert.*;
 
@@ -35,6 +40,42 @@ public strictfp class FeatureAssert extends ReferencingAssert {
      * For subclass constructor only.
      */
     protected FeatureAssert() {
+    }
+
+    /**
+     * Verifies that sample values in the given image are equal to the expected integer values.
+     *
+     * @param  expected       the expected sample values.
+     * @param  boundsExpected bounds of the expected region, or {@code null} for the whole image.
+     * @param  actual         the image to verify.
+     * @param  boundsActual   bounds of the actual region, or {@code null} for the whole image.
+     */
+    public static void assertPixelsEqual(final RenderedImage expected, final Rectangle boundsExpected,
+                                         final RenderedImage actual,   final Rectangle boundsActual)
+    {
+        if (boundsExpected != null && boundsActual != null) {
+            assertEquals("width",  boundsExpected.width,  boundsActual.width);
+            assertEquals("height", boundsExpected.height, boundsActual.height);
+        }
+        final PixelIterator ie = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR).setRegionOfInterest(boundsExpected).create(expected);
+        final PixelIterator ia = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR).setRegionOfInterest(boundsActual).create(actual);
+        double[] ev = null;
+        double[] av = null;
+        while (ie.next()) {
+            assertTrue(ia.next());
+            ev = ie.getPixel(ev);
+            av = ia.getPixel(av);
+            assertEquals(ev.length, av.length);
+            for (int band=0; band<ev.length; band++) {
+                final double e = ev[band];
+                final double a = av[band];
+                if (Double.doubleToRawLongBits(a) != Double.doubleToRawLongBits(e)) {
+                    final Point p = ia.getPosition();
+                    fail(mismatchedSampleValue(p.x, p.y, p.x - actual.getMinX(), p.y - actual.getMinY(), band, e, a));
+                }
+            }
+        }
+        assertFalse(ia.next());
     }
 
     /**

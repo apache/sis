@@ -78,6 +78,16 @@ public final strictfp class HardCodedCRS {
             properties("WGS 84 (3D)", null), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_3D);
 
     /**
+     * A four-dimensional geographic coordinate reference system using the WGS84 datum.
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>, <var>height</var>, <var>time</var>)
+     * with the 3 first dimensions specified by {@link #WGS84_3D} and the fourth dimension specified
+     * by {@link #TIME}.
+     *
+     * @see #TIME_WGS84
+     */
+    public static final DefaultCompoundCRS WGS84_4D;
+
+    /**
      * A two-dimensional geographic coordinate reference system using the Paris prime meridian.
      * This CRS uses (<var>longitude</var>, <var>latitude</var>) coordinates with longitude values
      * increasing towards the East and latitude values increasing towards the North.
@@ -234,6 +244,19 @@ public final strictfp class HardCodedCRS {
             getProperties(HardCodedCS.DAYS), HardCodedDatum.MODIFIED_JULIAN, HardCodedCS.DAYS);
 
     /**
+     * A four-dimensional geographic coordinate reference system with time as the first axis.
+     * This CRS uses (<var>time</var>, <var>longitude</var>, <var>latitude</var>, <var>height</var>)
+     * with the first dimension specified by {@link #TIME} and the 3 last dimensions specified by {@link #WGS84_3D}.
+     * Such axis order is unusual but we use it as a way to verify that SIS is robust to arbitrary axis order.
+     */
+    public static final DefaultCompoundCRS TIME_WGS84 = new DefaultCompoundCRS(
+            properties("time + WGS 84 (3D)", null), TIME, WGS84_3D);;
+
+    static {
+        WGS84_4D = new DefaultCompoundCRS(properties("WGS 84 (3D) + time", null), WGS84_3D, TIME);
+    }
+
+    /**
      * A (λ,φ,H) CRS where <var>H</var> is the {@link #GRAVITY_RELATED_HEIGHT}.
      * This constant uses the "geoid" term as an approximation for the gravity related height.
      */
@@ -250,6 +273,7 @@ public final strictfp class HardCodedCRS {
     /**
      * A (H,λ,φ) CRS where <var>H</var> is the {@link #GRAVITY_RELATED_HEIGHT}.
      * This is the same CRS than {@link #GEOID_3D} but with height first.
+     * Such axis order is unusual but we use it as a way to verify that SIS is robust to arbitrary axis order.
      */
     public static final DefaultCompoundCRS GEOID_ZXY = new DefaultCompoundCRS(
             properties("height + WGS 84", null), GRAVITY_RELATED_HEIGHT, WGS84);

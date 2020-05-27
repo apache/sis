@@ -25,7 +25,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.geometry.Envelopes;
@@ -34,12 +33,11 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
@@ -80,13 +78,6 @@ final class ResampledGridCoverage extends GridCoverage {
     private final ImageProcessor imageProcessor;
 
     /**
-     * Indices of extent dimensions corresponding to image <var>x</var> and <var>y</var> coordinates.
-     * Typical values are 0 for {@code xDimension} and 1 for {@code yDimension}, but different values
-     * are allowed. This class select the dimensions having largest size.
-     */
-    private final int xDimension, yDimension;
-
-    /**
      * Creates a new grid coverage which will be the resampling of the given source.
      *
      * @param  source          the coverage to resample.
@@ -104,26 +95,6 @@ final class ResampledGridCoverage extends GridCoverage {
         this.source         = source;
         this.toSourceCorner = toSourceCorner;
         this.toSourceCenter = toSourceCenter;
-        final GridExtent extent = domain.getExtent();
-        long size1 = 0; int idx1 = 0;
-        long size2 = 0; int idx2 = 1;
-        final int dimension = extent.getDimension();
-        for (int i=0; i<dimension; i++) {
-            final long size = extent.getSize(i);
-            if (size > size1) {
-                size2 = size1; idx2 = idx1;
-                size1 = size;  idx1 = i;
-            } else if (size > size2) {
-                size2 = size;  idx2 = i;
-            }
-        }
-        if (idx1 < idx2) {          // Keep (x,y) dimensions in the order they appear.
-            xDimension = idx1;
-            yDimension = idx2;
-        } else {
-            xDimension = idx2;
-            yDimension = idx1;
-        }
         /*
          * Get fill values from background values declared for each band, if any.
          * If no background value is declared, default is 0 for integer data or
@@ -173,10 +144,10 @@ final class ResampledGridCoverage extends GridCoverage {
                 if (sourceGG.equals(targetGG, ComparisonMode.APPROXIMATE)) {
                     return source;
                 }
-                return new GridCoverage2D(source, targetGG, extent, source.render(null), xDimension, yDimension);
+                return new GridCoverage2D(source, targetGG, extent, source.render(null));
             }
         }
-        return new GridCoverage2D(source, gridGeometry, extent, render(null), xDimension, yDimension);
+        return new GridCoverage2D(source, gridGeometry, extent, render(null));
     }
 
     /**
@@ -248,42 +219,15 @@ final class ResampledGridCoverage extends GridCoverage {
     static GridCoverage create(final GridCoverage source, final GridGeometry target, final ImageProcessor processor)
             throws FactoryException, TransformException
     {
-        final CoordinateReferenceSystem sourceCRS = source.getCoordinateReferenceSystem();
-        final CoordinateReferenceSystem targetCRS = target.isDefined(GridGeometry.CRS) ?
-                                                    target.getCoordinateReferenceSystem() : sourceCRS;
-        /*
-         * Get the coordinate operation from source CRS to target CRS. It may be the identity operation,
-         * or null only if there is not enough information for determining the operation. We try to take
-         * envelopes in account because the operation choice may depend on the geographic area.
-         */
-        CoordinateOperation changeOfCRS = null;
         final GridGeometry sourceGG = source.getGridGeometry();
-        if (sourceGG.isDefined(GridGeometry.ENVELOPE) && target.isDefined(GridGeometry.ENVELOPE)) {
-            changeOfCRS = Envelopes.findOperation(sourceGG.getEnvelope(), target.getEnvelope());
-        }
-        if (changeOfCRS == null && sourceCRS != null && targetCRS != null) try {
-            DefaultGeographicBoundingBox areaOfInterest = null;
-            if (sourceGG.isDefined(GridGeometry.ENVELOPE)) {
-                areaOfInterest = new DefaultGeographicBoundingBox();
-                areaOfInterest.setBounds(sourceGG.getEnvelope());
-            }
-            changeOfCRS = CRS.findOperation(sourceCRS, targetCRS, areaOfInterest);
-        } catch (IncompleteGridGeometryException e) {
-            // Happen if the source GridCoverage does not define a CRS.
-            GridCoverageProcessor.recoverableException("resample", e);
-        }
+        final CoordinateOperationFinder changeOfCRS = new CoordinateOperationFinder(sourceGG, target);
         /*
          * Compute the transform from source pixels to target CRS (to be completed to target pixels later).
-         * The following line may throw IncompleteGridGeometryException, which is desired because if that
+         * The following lines may throw IncompleteGridGeometryException, which is desired because if that
          * transform is missing, we can not continue (we have no way to guess it).
          */
-        MathTransform sourceCornerToCRS = sourceGG.getGridToCRS(PixelInCell.CELL_CORNER);
-        MathTransform sourceCenterToCRS = sourceGG.getGridToCRS(PixelInCell.CELL_CENTER);
-        if (changeOfCRS != null) {
-            final MathTransform tr = changeOfCRS.getMathTransform();
-            sourceCornerToCRS = MathTransforms.concatenate(sourceCornerToCRS, tr);
-            sourceCenterToCRS = MathTransforms.concatenate(sourceCenterToCRS, tr);
-        }
+        final MathTransform sourceCornerToCRS = changeOfCRS.gridToCRS(PixelInCell.CELL_CORNER);
+        final MathTransform sourceCenterToCRS = changeOfCRS.gridToCRS(PixelInCell.CELL_CENTER);
         /*
          * Compute the transform from target grid to target CRS. This transform may be unspecified,
          * in which case we need to compute a default transform trying to preserve resolution at the
@@ -424,6 +368,7 @@ final class ResampledGridCoverage extends GridCoverage {
         GridGeometry resampled = target;
         ComparisonMode mode = ComparisonMode.IGNORE_METADATA;
         if (!target.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS | GridGeometry.CRS)) {
+            final CoordinateReferenceSystem targetCRS = changeOfCRS.getTargetCRS();
             resampled = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetCenterToCRS, targetCRS);
             mode = ComparisonMode.APPROXIMATE;
             if (target.isDefined(GridGeometry.ENVELOPE)) {
@@ -478,37 +423,53 @@ final class ResampledGridCoverage extends GridCoverage {
      */
     @Override
     public RenderedImage render(GridExtent sliceExtent) {
-        final RenderedImage values;         // Source image providing the values to resample.
-        final MathTransform toSource;       // From resampled image pixels to source image pixels.
+        if (sliceExtent == null) {
+            sliceExtent = gridGeometry.getExtent();
+        }
         final Rectangle     bounds;         // Bounds (in pixel coordinates) of resampled image.
+        final MathTransform toSource;       // From resampled image pixels to source image pixels.
+        final GridExtent    sourceExtent;
         try {
-            GridExtent sourceExtent = null;
-            if (sliceExtent != null) {
-                final GeneralEnvelope envelope = sliceExtent.toCRS(toSourceCorner, toSourceCenter, null);
-                sourceExtent = new GridExtent(envelope, GridRoundingMode.ENCLOSING, null, null, null);
-            }
-            values = source.render(sourceExtent);
-            if (sliceExtent  == null) sliceExtent  = gridGeometry.getExtent();
-            if (sourceExtent == null) sourceExtent = source.getGridGeometry().getExtent();
-            bounds = new Rectangle(Math.toIntExact(sliceExtent.getSize(xDimension)),
-                                   Math.toIntExact(sliceExtent.getSize(yDimension)));
+            final GeneralEnvelope sourceBounds = sliceExtent.toCRS(toSourceCorner, toSourceCenter, null);
+            sourceExtent = new GridExtent(sourceBounds, GridRoundingMode.ENCLOSING, null, null, null);
+            final int[] resampledDimensions = sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
+            final int[] sourceDimensions  =  sourceExtent.getSubspaceDimensions(BIDIMENSIONAL);
+            bounds = new Rectangle(Math.toIntExact(sliceExtent.getSize(resampledDimensions[0])),
+                                   Math.toIntExact(sliceExtent.getSize(resampledDimensions[1])));
+            /*
+             * The transform needs to be two-dimensional. The `toSourceCenter` transform does not met that condition,
+             * otherwise `specialize(…)` would have replaced this ResampledGridCoverage by a GridCoverage2D instance.
+             * Try to extract a two-dimensional part operating only on the slice dimensions having an extent larger
+             * than one cell. The choice of dimensions may vary between different calls to this `render(…)` method,
+             * depending on `sliceExtent` value.
+             */
+            final TransformSeparator sep = new TransformSeparator(toSourceCenter);
+            sep.addSourceDimensions(resampledDimensions);
+            sep.addTargetDimensions(sourceDimensions);
+            final MathTransform toSourceSlice = sep.separate();
             /*
              * `this.toSource` is a transform from source cell coordinates to target cell coordinates.
              * We need a transform from source pixel coordinates to target pixel coordinates (in images).
              * An offset may exist between cell coordinates and pixel coordinates.
              */
-            final MathTransform pixelsToTransform = MathTransforms.translation(
-                    sliceExtent.getLow(xDimension),
-                    sliceExtent.getLow(yDimension));
+            final MathTransform resampledToGrid = MathTransforms.translation(
+                    sliceExtent.getLow(resampledDimensions[0]),
+                    sliceExtent.getLow(resampledDimensions[1]));
 
-            final MathTransform transformToPixels = MathTransforms.translation(
-                    Math.negateExact(sourceExtent.getLow(xDimension)),
-                    Math.negateExact(sourceExtent.getLow(yDimension)));
+            final MathTransform gridToSource = MathTransforms.translation(
+                    Math.negateExact(sourceExtent.getLow(sourceDimensions[0])),
+                    Math.negateExact(sourceExtent.getLow(sourceDimensions[1])));
 
-            toSource = MathTransforms.concatenate(pixelsToTransform, toSourceCenter, transformToPixels);
-        } catch (TransformException | ArithmeticException e) {
+            toSource = MathTransforms.concatenate(resampledToGrid, toSourceSlice, gridToSource);
+        } catch (FactoryException | TransformException | ArithmeticException e) {
             throw new CannotEvaluateException(e.getLocalizedMessage(), e);
         }
+        /*
+         * Following call is potentially costly, depending on `source` implementation.
+         * For example it may cause loading of tiles from a file. For this reason we
+         * call this method only here, when remaining operations are unlikely to fail.
+         */
+        final RenderedImage values = source.render(sourceExtent);
         return imageProcessor.resample(bounds, toSource, values);
     }
 }
