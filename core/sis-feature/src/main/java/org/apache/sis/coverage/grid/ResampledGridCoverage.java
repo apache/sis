@@ -431,6 +431,16 @@ final class ResampledGridCoverage extends GridCoverage {
         final GridExtent    sourceExtent;
         try {
             final GeneralEnvelope sourceBounds = sliceExtent.toCRS(toSourceCorner, toSourceCenter, null);
+            if (sourceBounds.isEmpty()) {
+                final GridExtent se = source.gridGeometry.getExtent();
+                for (int i = sourceBounds.getDimension(); --i >= 0;) {
+                    double min = sourceBounds.getMinimum(i);
+                    double max = sourceBounds.getMaximum(i);
+                    if (Double.isNaN(min)) min = se.getLow (i);
+                    if (Double.isNaN(max)) max = se.getHigh(i);
+                    sourceBounds.setRange(i, min, max);
+                }
+            }
             sourceExtent = new GridExtent(sourceBounds, GridRoundingMode.ENCLOSING, null, null, null);
             final int[] resampledDimensions = sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
             final int[] sourceDimensions  =  sourceExtent.getSubspaceDimensions(BIDIMENSIONAL);

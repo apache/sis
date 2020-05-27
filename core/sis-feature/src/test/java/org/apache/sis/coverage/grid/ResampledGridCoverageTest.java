@@ -389,8 +389,8 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
          * shall be the lower-left corner of `sliceExtent`, which is (3,3) in this test.
          */
         targetImage = result.render(new GridExtent(3, 3, 2, 2));
-        assertPixelsEqual(sourceImage, new Rectangle (3, 3, 2, 2),
-                          targetImage, new Rectangle (0, 0, 2, 2));
+        assertPixelsEqual(sourceImage, new Rectangle(3, 3, 2, 2),
+                          targetImage, new Rectangle(0, 0, 2, 2));
     }
 
     /**
