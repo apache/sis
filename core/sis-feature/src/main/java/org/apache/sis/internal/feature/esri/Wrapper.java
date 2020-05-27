@@ -33,7 +33,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWithCRS;
 import org.apache.sis.util.Debug;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -76,17 +75,15 @@ final class Wrapper extends GeometryWithCRS<Geometry> {
     }
 
     /**
-     * If the ESRI geometry is non-empty, returns its envelope as an Apache SIS implementation.
-     * Otherwise returns {@code null}.
+     * Returns the ESRI envelope as an Apache SIS implementation.
      *
-     * @return the envelope, or {@code null} if empty.
+     * @return the envelope.
      */
     @Override
     public GeneralEnvelope getEnvelope() {
         final Envelope2D bounds = new Envelope2D();
         geometry.queryEnvelope2D(bounds);
-        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
-        final GeneralEnvelope env = crs == null ? new GeneralEnvelope(org.apache.sis.internal.feature.j2d.Factory.BIDIMENSIONAL) : new GeneralEnvelope(crs);
+        final GeneralEnvelope env = createEnvelope();
         env.setRange(0, bounds.xmin, bounds.xmax);
         env.setRange(1, bounds.ymin, bounds.ymax);
         return env;

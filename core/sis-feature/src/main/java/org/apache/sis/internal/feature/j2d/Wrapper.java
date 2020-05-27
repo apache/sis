@@ -31,7 +31,6 @@ import org.apache.sis.internal.feature.GeometryWithCRS;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -74,16 +73,14 @@ final class Wrapper extends GeometryWithCRS<Shape> {
     }
 
     /**
-     * If the wrapped geometry is non-empty, returns its envelope as an Apache SIS implementation.
-     * Otherwise returns {@code null}.
+     * Returns the Java2D envelope as an Apache SIS implementation.
      *
-     * @return the envelope of the geometry, or {@code null} if empty.
+     * @return the envelope of the geometry.
      */
     @Override
     public GeneralEnvelope getEnvelope() {
         final Rectangle2D bounds = geometry.getBounds2D();
-        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
-        final GeneralEnvelope env = crs == null ? new GeneralEnvelope(Factory.BIDIMENSIONAL) : new GeneralEnvelope(crs);
+        final GeneralEnvelope env = createEnvelope();
         env.setRange(0, bounds.getMinX(), bounds.getMaxX());
         env.setRange(1, bounds.getMinY(), bounds.getMaxY());
         return env;

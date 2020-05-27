@@ -16,8 +16,9 @@
  */
 package org.apache.sis.internal.feature;
 
-import org.apache.sis.util.ArgumentChecks;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -55,13 +56,24 @@ public abstract class GeometryWithCRS<G> extends GeometryWrapper<G> {
     }
 
     /**
-     * Sets the coordinate reference system, which is assumed two-dimensional (this method does not verify).
+     * Sets the coordinate reference system, which shall be two-dimensional.
      *
      * @param  crs  the coordinate reference system to set.
      */
     @Override
     public final void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
-        ArgumentChecks.ensureDimensionMatches("crs", 2, crs);
+        ArgumentChecks.ensureDimensionMatches("crs", Geometries.BIDIMENSIONAL, crs);
         this.crs = crs;
+    }
+
+    /**
+     * Creates an initially empty envelope with the CRS of this geometry.
+     * If this geometry has no CRS, then a two-dimensional envelope is created.
+     * This is a convenience method for {@link #getEnvelope()} implementations.
+     *
+     * @return an initially empty envelope.
+     */
+    protected final GeneralEnvelope createEnvelope() {
+        return (crs != null) ? new GeneralEnvelope(crs) : new GeneralEnvelope(Geometries.BIDIMENSIONAL);
     }
 }

@@ -44,6 +44,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests {@link GridExtent}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   1.0
  * @module
@@ -315,56 +316,75 @@ public final strictfp class GridExtentTest extends TestCase {
                 "Time:   [ 40 …  49]  (10 cells)\n", buffer);
     }
 
+    /**
+     * Verifies that a translation of zero cell results in the same {@link GridExtent} instance.
+     */
     @Test
     public void empty_translation_returns_same_extent_instance() {
         final GridExtent extent = new GridExtent(10, 10);
-        assertTrue("Same instance returned in case of no-op", extent == extent.translate());
-        assertTrue("Same instance returned in case of no-op", extent == extent.translate(null));
-        assertTrue("Same instance returned in case of no-op", extent == extent.translate(new long[0]));
-        assertTrue("Same instance returned in case of no-op", extent == extent.translate(0));
-        assertTrue("Same instance returned in case of no-op", extent == extent.translate(0, 0));
+        assertSame("Same instance returned in case of no-op", extent, extent.translate(null));
+        assertSame("Same instance returned in case of no-op", extent, extent.translate());
+        assertSame("Same instance returned in case of no-op", extent, extent.translate(0));
+        assertSame("Same instance returned in case of no-op", extent, extent.translate(0, 0));
     }
 
+    /**
+     * Verifies that {@link GridExtent#translate(long...)} does not accept a vector with too many dimensions.
+     */
     @Test
     public void translation_fails_if_given_array_contains_too_many_elements() {
         try {
             new GridExtent(2, 1).translate(2, 1, 2);
-            fail("A translation with too many dimensions should fail-fast");
+            fail("A translation with too many dimensions shall fail.");
         } catch (IllegalArgumentException e) {
-            // expected behavior
+            assertTrue(e.getMessage().contains("translation"));
+            // Expected behavior.
         }
     }
 
+    /**
+     * Verifies that {@link GridExtent#translate(long...)} accepts a vector with less dimensions
+     * than the extent number of dimensions. No translation shall be applied in missing dimensions.
+     */
     @Test
     public void translating_only_first_dimensions_leave_others_untouched() {
-        final GridExtent base = new GridExtent(null, 0, 0, 0,   2, 2, 2);
+        final GridExtent base = new GridExtent(null, new long[] {
+            0, 0, 0,
+            2, 2, 2
+        });
         final GridExtent translatedByX = base.translate(1);
-        assertArrayEquals("Lower corner", new long[] {1, 0, 0}, translatedByX.getLow().getCoordinateValues());
+        assertArrayEquals("Lower corner", new long[] {1, 0, 0}, translatedByX.getLow() .getCoordinateValues());
         assertArrayEquals("Upper corner", new long[] {3, 2, 2}, translatedByX.getHigh().getCoordinateValues());
 
         final GridExtent translatedByY = base.translate(0, -1);
-        assertArrayEquals("Lower corner", new long[] {0, -1, 0}, translatedByY.getLow().getCoordinateValues());
-        assertArrayEquals("Upper corner", new long[] {2, 1, 2}, translatedByY.getHigh().getCoordinateValues());
+        assertArrayEquals("Lower corner", new long[] {0, -1, 0}, translatedByY.getLow() .getCoordinateValues());
+        assertArrayEquals("Upper corner", new long[] {2,  1, 2}, translatedByY.getHigh().getCoordinateValues());
 
         final GridExtent translatedByXAndY = base.translate(-1, 4);
-        assertArrayEquals("Lower corner", new long[] {-1, 4, 0}, translatedByXAndY.getLow().getCoordinateValues());
-        assertArrayEquals("Upper corner", new long[] {1, 6, 2}, translatedByXAndY.getHigh().getCoordinateValues());
+        assertArrayEquals("Lower corner", new long[] {-1, 4, 0}, translatedByXAndY.getLow() .getCoordinateValues());
+        assertArrayEquals("Upper corner", new long[] { 1, 6, 2}, translatedByXAndY.getHigh().getCoordinateValues());
 
-        // paranoid check: ensure base extent has been left untouched
-        assertArrayEquals("Base lower corner", new long[]{0, 0, 0}, base.getLow().getCoordinateValues());
-        assertArrayEquals("Base lower corner", new long[]{2, 2, 2}, base.getHigh().getCoordinateValues());
+        // Paranoiac check: ensure that base extent has been left untouched.
+        assertArrayEquals("Base lower corner", new long[] {0, 0, 0}, base.getLow() .getCoordinateValues());
+        assertArrayEquals("Base lower corner", new long[] {2, 2, 2}, base.getHigh().getCoordinateValues());
     }
 
+    /**
+     * Verifies that {@link GridExtent#translate(long...)} applies a translation on all dimensions
+     * when the given vector is long enough.
+     */
     @Test
     public void translating_all_dimensions() {
-        final GridExtent base = new GridExtent(null, -1, -1, -2, 10,   2, 2, 2, 20);
-
+        final GridExtent base = new GridExtent(null, new long[] {
+            -1, -1, -2, 10,
+             2,  2,  2, 20
+        });
         final GridExtent translated = base.translate(-2, 1, 1, 100);
-        assertArrayEquals("Lower corner", new long[] {-3, 0, -1, 110}, translated.getLow().getCoordinateValues());
-        assertArrayEquals("Upper corner", new long[] {0, 3, 3, 120}, translated.getHigh().getCoordinateValues());
+        assertArrayEquals("Lower corner", new long[] {-3, 0, -1, 110}, translated.getLow() .getCoordinateValues());
+        assertArrayEquals("Upper corner", new long[] { 0, 3,  3, 120}, translated.getHigh().getCoordinateValues());
 
-        // paranoid check: ensure base extent has been left untouched
-        assertArrayEquals("Base lower corner", new long[]{-1, -1, -2, 10}, base.getLow().getCoordinateValues());
-        assertArrayEquals("Base lower corner", new long[]{2, 2, 2, 20}, base.getHigh().getCoordinateValues());
+        // Paranoiac check: ensure that base extent has been left untouched.
+        assertArrayEquals("Base lower corner", new long[] {-1, -1, -2, 10}, base.getLow() .getCoordinateValues());
+        assertArrayEquals("Base lower corner", new long[] { 2,  2,  2, 20}, base.getHigh().getCoordinateValues());
     }
 }

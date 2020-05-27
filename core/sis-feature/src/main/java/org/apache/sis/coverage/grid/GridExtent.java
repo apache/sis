@@ -21,13 +21,13 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Locale;
-import java.util.stream.LongStream;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -83,6 +83,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * The same instance can be shared by different {@link GridGeometry} instances.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   1.0
  * @module
@@ -503,7 +504,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @param enclosing    the extent from which to copy axes, or {@code null} if none.
      * @param coordinates  the coordinates. This array is not cloned.
      */
-    GridExtent(final GridExtent enclosing, final long... coordinates) {
+    GridExtent(final GridExtent enclosing, final long[] coordinates) {
         this.coordinates = coordinates;
         types = (enclosing != null) ? enclosing.types : null;
         assert (types == null) || types.length == getDimension();
@@ -593,10 +594,23 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * This is a very common case since many grids start their cell numbering at zero.
      *
      * @return whether all low coordinates are zero.
+     *
+     * @see #translate(long...)
      */
     public boolean startsAtZero() {
-        for (int i = getDimension(); --i >= 0;) {
-            if (coordinates[i] != 0) {
+        return isZero(coordinates, getDimension());
+    }
+
+    /**
+     * Returns {@code true} if all values in the given vector are zero.
+     *
+     * @param  vector  the vector to verify.
+     * @param  n       number of elements to verify. All remaining elements are ignored.
+     * @return whether the <var>n</var> first elements in the given array are all zero.
+     */
+    private static boolean isZero(final long[] vector, int n) {
+        while (--n >= 0) {
+            if (vector[n] != 0) {
                 return false;
             }
         }
@@ -1292,6 +1306,51 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Returns an extent translated by the given amount of cells compared to this extent.
+     * The returned extent has the same {@linkplain #getSize(int) size} than this extent,
+     * i.e. both low and high grid coordinates are displaced by the same amount of cells.
+     * The given translation vector should have a length equal to this extent
+     * {@linkplain #getDimension() dimension}, but shorter arrays are allowed:
+     * missing values are assumed zero (i.e. the extent is not translated in missing dimensions).
+     *
+     * <div class="note"><b>Example:</b>
+     * for an extent (x: [0…10], y: [2…4], z: [0…1]) and a translation {-2, 2},
+     * the resulting extent would be (x: [-2…8], y: [4…6], z: [0…1]).</div>
+     *
+     * @param  translation  translation to apply on each axis in order, or {@code null} if none.
+     * @return a grid-extent whose coordinates (both low and high ones) have been translated by given amounts.
+     *         If the given translation is a no-op (no value or only 0 ones), then this extent is returned as is.
+     * @throws MismatchedDimensionException if given translation vector is longer than
+     *         {@linkplain #getDimension() this extent dimension}.
+     * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
+     *
+     * @see #startsAtZero()
+     *
+     * @since 1.1
+     */
+    public GridExtent translate(final long... translation) {
+        if (translation != null) {
+            final int dimension = getDimension();
+            if (translation.length > dimension) {
+                throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
+                                                       "translation", translation.length, dimension));
+            }
+            if (!isZero(translation, translation.length)) {
+                final GridExtent translated = new GridExtent(this);
+                final long[] c = translated.coordinates;
+                for (int i=0; i < translation.length; i++) {
+                    final int  j = i + dimension;
+                    final long t = translation[i];
+                    c[i] = Math.addExact(c[i], t);
+                    c[j] = Math.addExact(c[j], t);
+                }
+                return translated;
+            }
+        }
+        return this;
+    }
+
+    /**
      * Returns a hash value for this grid envelope. This value needs not to remain
      * consistent between different implementations of the same class.
      *
@@ -1386,32 +1445,5 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                     Long.toUnsignedString(upper - lower + 1))).append(')').nextLine();
         }
         table.flush();
-    }
-
-    /**
-     * Create a fresh translated extent from the current one. A translated extent <em>matches this extent size</em>,
-     * meaning that both its low and high coordinates are displaced by the same amount.
-     *
-     * @param translation Translation to apply to each axis, respectively. If argument dimension is lower than this
-     *                    extent, we consider all dimensions non affected as not translated. Meaning that for an extent
-     *                    (x: [0..10], y: [2..4], z: [0..1]) and a translation [-2, 2], the resulting extent would be
-     *                    (x: [-2..8], y: [4..6], z: [0..1]).
-     * @return A new/independant grid-extent whose coordinates (both low and high ones) have been translated by a given
-     * amount. However, if given translation is a no-op (no value or only 0 ones), this extent is returned as is.
-     * @throws IllegalArgumentException If given translation dimension is greater than {@link #getDimension() this extent dimension}.
-     */
-    public GridExtent translate(long... translation) {
-        if (translation == null || translation.length < 1) return this;
-        final int dimension = getDimension();
-        if (translation.length > dimension) throw new IllegalArgumentException("Given translation dimension is higher than this extent");
-        // In case of badly sized input, this could become a very costly check, so we check dimension before.
-        if (LongStream.of(translation).allMatch(v -> v == 0)) return this;
-        final long[] translatedCoords = Arrays.copyOf(coordinates, coordinates.length);
-        for (int min = 0, max = dimension ; min < translation.length ; min++, max++) {
-            translatedCoords[min] += translation[min];
-            translatedCoords[max] += translation[min];
-        }
-
-        return new GridExtent(this, translatedCoords);
     }
 }

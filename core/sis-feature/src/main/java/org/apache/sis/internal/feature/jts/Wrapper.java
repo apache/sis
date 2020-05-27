@@ -36,6 +36,7 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.Debug;
 
@@ -101,18 +102,31 @@ final class Wrapper extends GeometryWrapper<Geometry> {
      */
     @Override
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
-        if (crs != null) ArgumentChecks.ensureBetween("CRS dimension", 2, 3, crs.getCoordinateSystem().getDimension());
+        final int dimension = ReferencingUtilities.getDimension(crs);
+        if (dimension != Factory.BIDIMENSIONAL) {
+            ArgumentChecks.ensureDimensionMatches("crs",
+                    (dimension <= Factory.BIDIMENSIONAL) ? Factory.BIDIMENSIONAL : 3, crs);
+        }
         JTS.setCoordinateReferenceSystem(geometry, crs);
     }
 
     /**
-     *
-     * @return the envelope of the decorated JTS geometry. Never null, but can be empty.
+     * Returns the envelope of the wrapped JTS geometry. Never null, but may be empty.
+     * In current implementation, <var>z</var> values of three-dimensional envelopes
+     * are {@link Double#NaN}. It may change in a future version if we have a way to
+     * get those <var>z</var> values from a JTS object.
      */
     @Override
     public GeneralEnvelope getEnvelope() {
         final Envelope bounds = geometry.getEnvelopeInternal();
-        final GeneralEnvelope env = new GeneralEnvelope(Factory.BIDIMENSIONAL);
+        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
+        final GeneralEnvelope env;
+        if (crs != null) {
+            env = new GeneralEnvelope(crs);
+            env.setToNaN();
+        } else {
+            env = new GeneralEnvelope(Factory.BIDIMENSIONAL);
+        }
         env.setRange(0, bounds.getMinX(), bounds.getMaxX());
         env.setRange(1, bounds.getMinY(), bounds.getMaxY());
         return env;
@@ -124,15 +138,20 @@ final class Wrapper extends GeometryWrapper<Geometry> {
     @Override
     public DirectPosition getCentroid() {
         final Coordinate c = geometry.getCentroid().getCoordinate();
-        final double z = c.getZ();
-        if (Double.isNaN(z)) {
-            return new DirectPosition2D(getCoordinateReferenceSystem(), c.x, c.y);
-        } else {
-            final GeneralDirectPosition point = new GeneralDirectPosition(c.x, c.y, z);
-            final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
-            if (crs != null) point.setCoordinateReferenceSystem(crs);
+        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
+        if (crs == null) {
+            final double z = c.getZ();
+            if (!Double.isNaN(z)) {
+                return new GeneralDirectPosition(c.x, c.y, z);
+            }
+        } else if (ReferencingUtilities.getDimension(crs) != Factory.BIDIMENSIONAL) {
+            final GeneralDirectPosition point = new GeneralDirectPosition(crs);
+            point.setOrdinate(0, c.x);
+            point.setOrdinate(1, c.y);
+            point.setOrdinate(2, c.getZ());
             return point;
         }
+        return new DirectPosition2D(crs, c.x, c.y);
     }
 
     /**
