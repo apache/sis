@@ -336,6 +336,8 @@ final class EnvelopeOperation extends AbstractOperation {
                 }
                 if (envelope == null) {
                     envelope = GeneralEnvelope.castOrCopy(genv);        // Should always be a cast without copy.
+                    // Ensure that default CRS is set in case envelope returned by geometry was not specified
+                    if (envelope.getCoordinateReferenceSystem() == null && crs != null) envelope.setCoordinateReferenceSystem(crs);
                 } else {
                     envelope.add(genv);
                 }
