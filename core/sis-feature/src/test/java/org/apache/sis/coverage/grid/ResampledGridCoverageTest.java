@@ -155,11 +155,12 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         /* Lower-left  quarter */ Arrays.fill(color, Color.GREEN.getRGB()); image.setRGB( 0, QS, QS, QS, color, 0, QS);
         /* Lower-right quarter */ Arrays.fill(color, Color.BLUE .getRGB()); image.setRGB(QS, QS, QS, QS, color, 0, QS);
         /*
-         * Create an image with origin different than 0. The image has a single tile
-         * with pixel coordinates from (-2, -2) inclusive to (4, 4) exclusive.
+         * Create an image with origin between -2 and +2. We use a random image location for more
+         * complete testing, but actually the tests in this class are independent of image origin.
+         * Note that grid extent origin does not need to be the same than image origin.
          */
-        minX = -2;
-        minY = -2;
+        minX = random.nextInt(5) - 2;
+        minY = random.nextInt(5) - 2;
         GridGeometry gg = createGridGeometryND(withTime ? HardCodedCRS.WGS84_4D : HardCodedCRS.WGS84_3D, 0, 1, 2, 3, false);
         final TiledImage shiftedImage = new TiledImage(
                 image.getColorModel(),
@@ -470,8 +471,8 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         nonSeparableMatrix.setElement(0, 2, 1);     // Make X dependent of Z.
         nonSeparableMatrix.setElement(1, 2, 1);     // Make Y dependent of Z.
         final MathTransform nonSeparableG2C = MathTransforms.concatenate(
-                MathTransforms.linear(nonSeparableMatrix),
-                source.getGridGeometry().getGridToCRS(CELL_CENTER));
+                source.getGridGeometry().getGridToCRS(CELL_CENTER),
+                MathTransforms.linear(nonSeparableMatrix));
         {
             /*
              * The test in this block is not a `ResampleGridCoverage` test, but rather a
@@ -493,11 +494,10 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
                 source.getCoordinateReferenceSystem());
         /*
          * Real test is below (above code was only initialization).
-         * The source image is 6×6 but the target image is 7×7 with
-         * the last row and column left black.
+         * Target image should be 6×6 pixels, like source image.
          */
         final GridCoverage result = resample(source, targetGeom);
-        assertPixelsEqual(source.render(null), null, result.render(null), new Rectangle(2*QS, 2*QS));
+        assertPixelsEqual(source.render(null), null, result.render(null), null);
     }
 
     /**

@@ -407,8 +407,8 @@ final class ResampledGridCoverage extends GridCoverage {
     private static GridExtent targetExtent(final GridExtent source, final MathTransform cornerToCRS,
             final MathTransform crsToGrid, final boolean center) throws TransformException
     {
-        final MathTransform tr = MathTransforms.concatenate(cornerToCRS, crsToGrid);
-        final GeneralEnvelope bounds = source.toCRS(tr, tr, null);
+        final MathTransform sourceToTarget = MathTransforms.concatenate(cornerToCRS, crsToGrid);
+        final GeneralEnvelope bounds = source.toCRS(sourceToTarget, sourceToTarget, null);
         if (center) {
             final double[] vector = new double[bounds.getDimension()];
             Arrays.fill(vector, 0.5);
