@@ -555,11 +555,10 @@ public class GridCoverage2D extends GridCoverage {
             sliceExtent = extent;
         }
         if (extent != null) {
-            for (int i = min(sliceExtent.getDimension(), extent.getDimension()); --i >= 0;) {
-                if (i != xDimension && i != yDimension) {
-                    if (sliceExtent.getHigh(i) < extent.getLow(i) || sliceExtent.getLow(i) > extent.getHigh(i)) {
-                        throw new DisjointExtentException(extent, sliceExtent, i);
-                    }
+            final int n = min(sliceExtent.getDimension(), extent.getDimension());
+            for (int i=0; i<n; i++) {
+                if (sliceExtent.getHigh(i) < extent.getLow(i) || sliceExtent.getLow(i) > extent.getHigh(i)) {
+                    throw new DisjointExtentException(extent, sliceExtent, i);
                 }
             }
         }
