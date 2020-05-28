@@ -428,7 +428,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
         try {
             /*
              * Get the most recent version number from the history table. We get the date in local timezone
-             * instead then UTC because the date is for information purpose only, and the local timezone is
+             * instead than UTC because the date is for information purpose only, and the local timezone is
              * more likely to be shown nicely (without artificial hours) to the user.
              */
             final String query = translator.apply("SELECT VERSION_NUMBER, VERSION_DATE FROM [Version History]" +

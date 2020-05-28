@@ -1531,7 +1531,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                 /* ------------------------------------------
                  * STRING ANALYSIS FOLLOWING PRESUMED DEGREES
                  * ------------------------------------------
-                 * Found the seconds suffix instead then the degrees suffix. Move 'degrees'
+                 * Found the seconds suffix instead than the degrees suffix. Move 'degrees'
                  * value to 'seconds' and stop parsing, since seconds are the last field.
                  */
                 case SECONDS_FIELD: {
@@ -1585,7 +1585,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                         /* ------------------------------------------
                          * STRING ANALYSIS FOLLOWING PRESUMED MINUTES
                          * ------------------------------------------
-                         * Found the seconds suffix instead then the minutes suffix. Move 'minutes'
+                         * Found the seconds suffix instead than the minutes suffix. Move 'minutes'
                          * value to 'seconds' and stop parsing, since seconds are the last field.
                          */
                         case SECONDS_FIELD: {

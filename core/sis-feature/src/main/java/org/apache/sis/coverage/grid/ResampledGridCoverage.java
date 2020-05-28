@@ -31,6 +31,7 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -376,7 +377,7 @@ final class ResampledGridCoverage extends GridCoverage {
                 GeneralEnvelope bounds = new GeneralEnvelope(resampled.getEnvelope());
                 bounds.intersect(target.getEnvelope());
                 bounds = Envelopes.transform(targetCornerToCRS.inverse(), bounds);
-                targetExtent = new GridExtent(bounds, GridRoundingMode.ENCLOSING, null, targetExtent, null);
+                targetExtent = new GridExtent(bounds, GridRoundingMode.NEAREST, null, targetExtent, null);
                 resampled = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetCenterToCRS, targetCRS);
                 isGeometryExplicit = true;
             }
@@ -456,7 +457,44 @@ final class ResampledGridCoverage extends GridCoverage {
             final TransformSeparator sep = new TransformSeparator(toSourceCenter);
             sep.addSourceDimensions(resampledDimensions);
             sep.addTargetDimensions(sourceDimensions);
-            final MathTransform toSourceSlice = sep.separate();
+            sep.setSourceExpandable(true);
+            MathTransform toSourceSlice = sep.separate();
+            final int[] requiredSources = sep.getSourceDimensions();
+            if (requiredSources.length > BIDIMENSIONAL) {
+                /*
+                 * If we enter in this block, TransformSeparator can not create a MathTransform with only the 2
+                 * requested source dimensions; it needs more sources. In such case, if coordinates in missing
+                 * dimensions can be set to constant values (grid low == grid high), create a transform which
+                 * will add new dimensions with coordinates set to those constant values. The example below
+                 * passes the two first dimensions as-is and set the third dimensions to constant value 7:
+                 *
+                 *     ┌   ┐   ┌         ┐┌   ┐
+                 *     │ x │   │ 1  0  0 ││ x │
+                 *     │ y │ = │ 0  1  0 ││ y │
+                 *     │ z │   │ 0  0  7 ││ 1 │
+                 *     │ 1 │   │ 0  0  1 │└   ┘
+                 *     └   ┘   └         ┘
+                 */
+                final MatrixSIS m = Matrices.createZero(requiredSources.length + 1, BIDIMENSIONAL + 1);
+                m.setElement(requiredSources.length, BIDIMENSIONAL, 1);
+                for (int j=0; j < requiredSources.length; j++) {
+                    final int r = requiredSources[j];
+                    final int i = Arrays.binarySearch(resampledDimensions, r);
+                    if (i >= 0) {
+                        m.setElement(j, i, 1);
+                    } else {
+                        final long low = sliceExtent.getLow(r);
+                        if (low == sliceExtent.getHigh(r)) {
+                            m.setElement(j, BIDIMENSIONAL, low);
+                        } else {
+                            throw new CannotEvaluateException(Resources.format(
+                                    Resources.Keys.TransformDependsOnDimension_1,
+                                    sliceExtent.getAxisIdentification(r, r)));
+                        }
+                    }
+                }
+                toSourceSlice = MathTransforms.concatenate(MathTransforms.linear(m), toSourceSlice);
+            }
             /*
              * `this.toSource` is a transform from source cell coordinates to target cell coordinates.
              * We need a transform from source pixel coordinates to target pixel coordinates (in images).

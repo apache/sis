@@ -186,6 +186,18 @@ public final strictfp class TransformSeparatorTest extends TestCase {
             // This is the expected exception.
             assertNotNull(e.getMessage());
         }
+        /*
+         * Try again, but allow TransformSeparator to expand the list of source dimensions.
+         */
+        s.setSourceExpandable(true);
+        matrix = Matrices.create(3, 4, new double[] {
+            2, 0, 0, 7,
+            0, 5, 0, 6,
+            0, 0, 0, 1
+        });
+        assertMatrixEquals("transform", matrix, ((LinearTransform) s.separate()).getMatrix(), STRICT);
+        assertArrayEquals("sourceDimensions", new int[] {0, 1, 2}, s.getSourceDimensions());
+        assertArrayEquals("targetDimensions", new int[] {0, 1},    s.getTargetDimensions());
     }
 
     /**

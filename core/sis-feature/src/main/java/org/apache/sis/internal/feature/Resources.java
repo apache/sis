@@ -148,6 +148,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DependencyNotFound_3 = 8;
 
         /**
+         * Image has zero pixel.
+         */
+        public static final short EmptyImage = 73;
+
+        /**
          * Empty tile or image region.
          */
         public static final short EmptyTileOrImageRegion = 67;
@@ -358,6 +363,11 @@ public final class Resources extends IndexedResourceBundle {
          * Too many qualitative categories.
          */
         public static final short TooManyQualitatives = 48;
+
+        /**
+         * Coordinate operation depends on grid dimension {0}.
+         */
+        public static final short TransformDependsOnDimension_1 = 74;
 
         /**
          * The {0} geometry library is not available in current runtime environment.

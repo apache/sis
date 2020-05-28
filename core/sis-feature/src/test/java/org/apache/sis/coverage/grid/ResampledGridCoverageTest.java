@@ -464,7 +464,6 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
      */
     @Test
-    @org.junit.Ignore("Needs more development")
     public void testNonSeparableGridToCRS() throws TransformException {
         final GridCoverage source = createCoverageND(false);
         final MatrixSIS nonSeparableMatrix = Matrices.createDiagonal(4, 4);
@@ -489,14 +488,16 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
             }
         }
         final GridGeometry targetGeom = new GridGeometry(
-                source.getGridGeometry().getExtent(),
+                null,           // Let the resample operation compute the extent automatically.
                 CELL_CENTER, nonSeparableG2C,
                 source.getCoordinateReferenceSystem());
         /*
          * Real test is below (above code was only initialization).
+         * The source image is 6×6 but the target image is 7×7 with
+         * the last row and column left black.
          */
         final GridCoverage result = resample(source, targetGeom);
-        assertPixelsEqual(source.render(null), null, result.render(null), null);
+        assertPixelsEqual(source.render(null), null, result.render(null), new Rectangle(2*QS, 2*QS));
     }
 
     /**

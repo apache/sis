@@ -34,6 +34,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
@@ -144,6 +145,9 @@ public class ResampledImage extends ComputedImage {
                              final Interpolation interpolation, final Number[] fillValues)
     {
         super(ImageLayout.DEFAULT.createCompatibleSampleModel(source, bounds), source);
+        if (source.getWidth() <= 0 || source.getHeight() <= 0) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.EmptyImage));
+        }
         ArgumentChecks.ensureNonNull("interpolation", interpolation);
         ArgumentChecks.ensureStrictlyPositive("width",  width  = bounds.width);
         ArgumentChecks.ensureStrictlyPositive("height", height = bounds.height);

@@ -36,6 +36,7 @@ import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.internal.feature.Resources;
 
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
@@ -185,6 +186,9 @@ public abstract class PixelIterator {
      */
     private static Rectangle intersection(int x, int y, int width, int height, Rectangle subArea, Dimension window) {
         if (window != null) {
+            if (width <= 0 || height <= 0) {
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.EmptyImage));
+            }
             ArgumentChecks.ensureBetween("window.width",  1, width,  window.width);
             ArgumentChecks.ensureBetween("window.height", 1, height, window.height);
             width  -= (window.width  - 1);
