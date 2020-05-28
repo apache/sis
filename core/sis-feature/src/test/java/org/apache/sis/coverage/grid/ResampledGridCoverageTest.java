@@ -76,7 +76,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     /**
      * Arbitrary non-zero pixel coordinates for image origin.
      */
-    private int minX = -2, minY = -2;
+    private int minX, minY;
 
     /**
      * Arbitrary non-zero grid coordinate for the <var>z</var> and <var>t</var> dimensions.
@@ -118,12 +118,17 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     private static final int QS = 3;
 
     /**
+     * Low values for the grid extent created by {@link #createCoverage2D()}.
+     */
+    private static final int LX = 3, LY = -2;
+
+    /**
      * Creates a coverage in {@linkplain HardCodedCRS#WGS84_3D OGC:CRS:84 + elevation} reference system.
      * If the {@code withTime} argument is {@code true}, then the coverage will also include a temporal
      * dimension. The grid coverage characteristics are:
      * <ul>
      *   <li>Dimension is 6×6.</li>
-     *   <li>Grid extent is zero-based.</li>
+     *   <li>Grid extent starts at arbitrary non-zero low values.</li>
      *   <li>Envelope is arbitrary but stable (no random values).</li>
      *   <li>Display oriented (origin is in upper-left corner).</li>
      *   <li>3 byte bands for RGB coloration.</li>
@@ -188,7 +193,8 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         final int dim = crs.getCoordinateSystem().getDimension();
         final long[] lower = new long[dim];
         final long[] upper = new long[dim];
-        Arrays.fill(upper, StrictMath.min(x,y), StrictMath.max(x,y)+1, 2*QS - 1);
+        lower[x] = LX; upper[x] = LX + 2*QS - 1;
+        lower[y] = LY; upper[y] = LY + 2*QS - 1;
         final MatrixSIS gridToCRS = Matrices.createIdentity(dim + 1);
         gridToCRS.setElement(x, x,    44./(2*QS));  // X scale
         gridToCRS.setElement(x, dim, -50./(2*QS));  // X translation
@@ -201,8 +207,13 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
             lower[t] = upper[t] = gridT = 12;
         }
         if (flipY) {
-            gridToCRS.setElement(y, y,     3.5);    // Inverse sign.
-            gridToCRS.setElement(y, dim, -18.25);
+            /*
+             * Lower Y coordinate before flip:    Ty₁ + scale × LY
+             * Upper Y coordinate after flip:     Ty₂ − scale × (LY+2×QS−1)
+             * Condition  Ty₁ = Ty₂  gives:       Ty₂ = Ty₁ + scale × (2(QS+LY)−1)
+             */
+            gridToCRS.setElement(y, y, 3.5);    // Inverse sign.
+            gridToCRS.setElement(y, dim, -0.75 + -3.5 * (2*(QS+LY) - 1));
         }
         return new GridGeometry(new GridExtent(null, lower, upper, true),
                     CELL_CENTER, MathTransforms.linear(gridToCRS), crs);
@@ -371,7 +382,8 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         final GridCoverage source     = createCoverageND(false);
         final GridGeometry sourceGeom = source.getGridGeometry();
         final GridGeometry targetGeom = new GridGeometry(
-                new GridExtent(null, new long[] {2, 2, gridZ}, new long[] {5, 5, gridZ}, true),
+                new GridExtent(null, new long[] {LX+2, LY+2, gridZ},
+                                     new long[] {LX+5, LY+5, gridZ}, true),
                 CELL_CENTER, sourceGeom.gridToCRS,
                 sourceGeom.getCoordinateReferenceSystem());
 
@@ -389,7 +401,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
          * Verify GridCoverage.render(GridExtent) contract: the origin of the returned image
          * shall be the lower-left corner of `sliceExtent`, which is (3,3) in this test.
          */
-        targetImage = result.render(new GridExtent(3, 3, 2, 2));
+        targetImage = result.render(new GridExtent(LX+3, LY+3, 2, 2));
         assertPixelsEqual(sourceImage, new Rectangle(3, 3, 2, 2),
                           targetImage, new Rectangle(0, 0, 2, 2));
     }
