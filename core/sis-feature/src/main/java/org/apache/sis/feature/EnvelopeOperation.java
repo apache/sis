@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Optional;
+import org.apache.sis.util.Utilities;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
@@ -130,7 +131,7 @@ final class EnvelopeOperation extends AbstractOperation {
         final String characteristicName = AttributeConvention.CRS_CHARACTERISTIC.toString();
         /*
          * Get all property names without duplicated values. If a property is a link to an attribute,
-         * then the key will be the name of the referenced attribute instead than the operation name.
+         * then the key will be the name of the referenced attribute instead of the operation name.
          * The intent is to avoid querying the same geometry twice if the attribute is also specified
          * explicitly in the array of properties.
          *
@@ -190,10 +191,8 @@ final class EnvelopeOperation extends AbstractOperation {
                     if (crs == null) {
                         crs = value;                                    // Fallback if default geometry has no CRS.
                     }
-                    final CoordinateOperation op = CRS.findOperation(value, crs, null);
-                    if (!op.getMathTransform().isIdentity()) {
-                        attributeToCRS[i] = op;
-                    }
+                    // even in case of identity operation, we keep it to be able to fetch characteristic CRS of the attribute.
+                    attributeToCRS[i] = CRS.findOperation(value, crs, null);
                 }
             }
         }
@@ -287,7 +286,7 @@ final class EnvelopeOperation extends AbstractOperation {
             final String[] attributeNames = EnvelopeOperation.this.attributeNames;
             GeneralEnvelope envelope = null;                                        // Union of all envelopes.
             for (int i=0; i<attributeNames.length; i++) {
-                Envelope genv;                                                      // Envelope of a single geometry.
+                GeneralEnvelope genv;                                               // Envelope of a single geometry.
                 final String name = attributeNames[i];
                 if (attributeToCRS == null) {
                     /*
@@ -319,28 +318,33 @@ final class EnvelopeOperation extends AbstractOperation {
                     try {
                         if (at == null) {
                             final CoordinateOperation op = attributeToCRS[i];
-                            if (op != null) {                           // Null operation means identity transform.
-                                genv = Envelopes.transform(op, genv);
+                            if (op != null) {
+                                // Ensure attribute envelope has a CRS by forcing CRS found as characteristic
+                                if (op.getMathTransform().isIdentity() && op.getSourceCRS() != null) genv.setCoordinateReferenceSystem(op.getSourceCRS());
+                                else genv = Envelopes.transform(op, genv);
                             }
                         } else {                                                        // Should be a rare case.
                             final Object geomCRS = at.getValue();
                             if (!(geomCRS instanceof CoordinateReferenceSystem)) {
                                 throw new IllegalStateException(Errors.format(Errors.Keys.UnspecifiedCRS));
                             }
-                            ((GeneralEnvelope) genv).setCoordinateReferenceSystem((CoordinateReferenceSystem) geomCRS);
-                            genv = Envelopes.transform(genv, crs);
+                            genv.setCoordinateReferenceSystem((CoordinateReferenceSystem) geomCRS);
+                            genv = GeneralEnvelope.castOrCopy(Envelopes.transform(genv, crs));
                         }
                     } catch (TransformException e) {
                         throw new IllegalStateException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
                     }
                 }
+
+                /* Add current attribute envelope in result one. For now, we only allow union of envelopes in the same
+                 * crs because we were not able to deduce output space from feature type characteristics. However, in
+                 * the future, we could find a common space to use.
+                 */
                 if (envelope == null) {
-                    envelope = GeneralEnvelope.castOrCopy(genv);        // Should always be a cast without copy.
-                    // Ensure that default CRS is set in case envelope returned by geometry was not specified
-                    if (envelope.getCoordinateReferenceSystem() == null && crs != null) envelope.setCoordinateReferenceSystem(crs);
-                } else {
+                    envelope = genv;
+                } else if (Utilities.equalsIgnoreMetadata(genv.getCoordinateReferenceSystem(), envelope.getCoordinateReferenceSystem())) {
                     envelope.add(genv);
-                }
+                } else throw new IllegalStateException(Errors.format(Errors.Keys.MismatchedCRS));
             }
             return envelope;
         }
