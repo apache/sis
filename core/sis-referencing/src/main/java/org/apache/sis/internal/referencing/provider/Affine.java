@@ -57,7 +57,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * </table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -180,11 +180,11 @@ public final class Affine extends AbstractProvider {
     /**
      * The inverse of this operation can be described by the same operation with different parameter values.
      *
-     * @return {@code true} for all {@code Affine}.
+     * @return {@code this} for all {@code Affine}.
      */
     @Override
-    public final boolean isInvertible() {
-        return true;
+    public AbstractProvider inverse() {
+        return this;
     }
 
     /**

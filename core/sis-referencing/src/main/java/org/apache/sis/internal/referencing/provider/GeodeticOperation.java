@@ -31,7 +31,7 @@ import org.opengis.referencing.operation.Transformation;
  * variants are specific to Apache SIS and can be fetched only by a call to {@link #redimension(int, int)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -127,10 +127,10 @@ abstract class GeodeticOperation extends AbstractProvider {
     /**
      * The inverse of {@code GeodeticOperation} is usually the same operation with parameter signs inverted.
      *
-     * @return {@code true} for most {@code GeodeticOperation} instances.
+     * @return {@code this} for most {@code GeodeticOperation} instances.
      */
     @Override
-    public boolean isInvertible() {
-        return true;
+    public AbstractProvider inverse() {
+        return this;
     }
 }

@@ -32,7 +32,7 @@ import org.apache.sis.parameter.Parameters;
  * This provider creates transforms from geocentric to geographic coordinate reference systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see GeographicToGeocentric
  *
@@ -104,11 +104,11 @@ public final class GeocentricToGeographic extends GeodeticOperation {
     /**
      * Specifies that the inverse of this operation is a different kind of operation.
      *
-     * @return {@code false}.
+     * @return {@code null}.
      */
     @Override
-    public boolean isInvertible() {
-        return false;
+    public AbstractProvider inverse() {
+        return null;
     }
 
     /**

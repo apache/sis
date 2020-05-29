@@ -219,11 +219,11 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
     /**
      * The inverse of {@code FranceGeocentricInterpolation} is a different operation.
      *
-     * @return {@code false}.
+     * @return {@code null}.
      */
     @Override
-    public final boolean isInvertible() {
-        return false;
+    public AbstractProvider inverse() {
+        return null;
     }
 
     /**

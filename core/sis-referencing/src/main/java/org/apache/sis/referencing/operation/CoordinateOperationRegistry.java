@@ -234,8 +234,7 @@ class CoordinateOperationRegistry {
             } else try {
                 codeFinder = IdentifiedObjects.newFinder(Citations.toCodeSpace(registry.getAuthority()));
             } catch (NoSuchAuthorityFactoryException e) {
-                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
-                        CoordinateOperationRegistry.class, "<init>", e);
+                recoverableException("<init>", e);
             }
             if (codeFinder != null) {
                 codeFinder.setIgnoringAxes(true);
@@ -315,7 +314,7 @@ class CoordinateOperationRegistry {
     {
         CoordinateReferenceSystem source = sourceCRS;
         CoordinateReferenceSystem target = targetCRS;
-        for (int combine=0; ;combine++) {
+        for (int combine=0; ; combine++) {
             /*
              * First, try directly the provided (sourceCRS, targetCRS) pair. If that pair does not work,
              * try to use different combinations of user-provided CRS and two-dimensional components of
@@ -575,7 +574,7 @@ class CoordinateOperationRegistry {
         final CoordinateReferenceSystem sourceCRS = op.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = op.getTargetCRS();
         final MathTransform transform = op.getMathTransform().inverse();
-        final OperationMethod method = InverseOperationMethod.create(op.getMethod());
+        final OperationMethod method = InverseOperationMethod.create(op.getMethod(), factorySIS);
         final Map<String,Object> properties = properties(INVERSE_OPERATION);
         InverseOperationMethod.properties(op, properties);
         /*
@@ -1194,5 +1193,18 @@ class CoordinateOperationRegistry {
             record.setThrown(exception);
         }
         Logging.log(CoordinateOperationFinder.class, "createOperations", record);
+    }
+
+    /**
+     * Logs an ignorable exception. This method pretends that the logging come from
+     * {@link CoordinateOperationFinder} since this is the public API which use this
+     * {@code CoordinateOperationRegistry} class.
+     *
+     * @param  method     the method name where the error occurred.
+     * @param  exception  the exception which occurred, or {@code null} if a {@code record} is specified instead.
+     */
+    static void recoverableException(final String method, final Exception exception) {
+        Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                CoordinateOperationFinder.class, method, exception);
     }
 }

@@ -22,8 +22,6 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
@@ -215,8 +213,7 @@ next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; 
                                             operation, null, sourceStartAtDimension, sourceEndAtDimension);
 
                                     if (failure != null) {
-                                        Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
-                                                CoordinateOperationFinder.class, "decompose", failure);
+                                        CoordinateOperationRegistry.recoverableException("decompose", failure);
                                     }
                                     continue next;
                                 }
