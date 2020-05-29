@@ -367,6 +367,7 @@ public class Formatter implements Localized {
         this.convention       = convention;
         this.authority        = convention.getNameAuthority();
         this.symbols          = symbols.immutable();
+        this.transliterator   = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
         this.separatorNewLine = this.symbols.separatorNewLine();
         this.indentation      = (byte) indentation;
         this.numberFormat     = symbols.createNumberFormat();
