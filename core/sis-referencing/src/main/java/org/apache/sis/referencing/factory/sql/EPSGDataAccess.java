@@ -550,7 +550,7 @@ addURIs:    for (int i=0; ; i++) {
         Map<String,String> result = Collections.emptyMap();
         for (final TableInfo table : TableInfo.EPSG) {
             /*
-             * We test 'isAssignableFrom' in the two ways for catching the following use cases:
+             * We test `isAssignableFrom` in the two ways for catching the following use cases:
              *
              *  - table.type.isAssignableFrom(type)
              *    is for the case where a table is for CoordinateReferenceSystem while the user type is some subtype
@@ -749,7 +749,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 } while ((alias = !alias) == true);
             }
             /*
-             * At this point, 'identifier' should be the primary key. It may still be a non-numerical string
+             * At this point, `identifier` should be the primary key. It may still be a non-numerical string
              * if the above code did not found a match in the name column or in the alias table.
              */
             try {
@@ -1371,8 +1371,8 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final String  type       = getString   (code, result, 7);
                 /*
-                 * Note: Do not invoke 'createProperties' now, even if we have all required information,
-                 *       because the 'properties' map is going to overwritten by calls to 'createDatum', etc.
+                 * Note: Do not invoke `createProperties` now, even if we have all required information,
+                 *       because the `properties` map is going to overwritten by calls to `createDatum`, etc.
                  *
                  * The following switch statement should have a case for all "epsg_crs_kind" values enumerated
                  * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
@@ -1383,8 +1383,8 @@ codes:  for (int i=0; i<codes.length; i++) {
                     /* ----------------------------------------------------------------------
                      *   GEOGRAPHIC CRS
                      *
-                     *   NOTE: 'createProperties' MUST be invoked after any call to an other
-                     *         'createFoo' method. Consequently, do not factor out.
+                     *   NOTE: `createProperties` MUST be invoked after any call to an other
+                     *         `createFoo` method. Consequently, do not factor out.
                      * ---------------------------------------------------------------------- */
                     case "geographic 2d":
                     case "geographic 3d": {
@@ -1415,7 +1415,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      *   PROJECTED CRS
                      *
                      *   NOTE: This method invokes itself indirectly, through createGeographicCRS.
-                     *         Consequently we can not use 'result' anymore after this block.
+                     *         Consequently we can not use `result` anymore after this block.
                      * ---------------------------------------------------------------------- */
                     case "projected": {
                         final String csCode  = getString(code, result,  8);
@@ -1445,7 +1445,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                                  * Apache SIS can not instantiate a ProjectedCRS when the baseCRS uses such units, so we
                                  * set a flag asking to replace the deprecated CS by a supported one. Since that baseCRS
                                  * would not be exactly as defined by EPSG, we must not cache it because we do not want
-                                 * 'owner.createGeographicCRS(geoCode)' to return that modified CRS. Since the same CRS
+                                 * `owner.createGeographicCRS(geoCode)` to return that modified CRS. Since the same CRS
                                  * may be recreated every time a deprecated ProjectedCRS is created, we temporarily
                                  * shutdown the loggings in order to avoid the same warning to be logged many time.
                                  */
@@ -1471,7 +1471,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                             try {
                                 /*
                                  * For a ProjectedCRS, the baseCRS is always geographic. So in theory we would not
-                                 * need the 'instanceof' check. However the EPSG dataset version 8.9 also uses the
+                                 * need the `instanceof` check. However the EPSG dataset version 8.9 also uses the
                                  * "projected" type for CRS that are actually derived CRS. See EPSG:5820 and 5821.
                                  */
                                 final Map<String, Object> properties = createProperties("Coordinate Reference System",
@@ -1519,7 +1519,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      *   COMPOUND CRS
                      *
                      *   NOTE: This method invokes itself recursively.
-                     *         Consequently, we can not use 'result' anymore.
+                     *         Consequently, we can not use `result` anymore.
                      * ---------------------------------------------------------------------- */
                     case "compound": {
                         final String code1 = getString(code, result, 12);
@@ -1533,7 +1533,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                         } finally {
                             endOfRecursivity(CompoundCRS.class, epsg);
                         }
-                        // Note: Do not invoke 'createProperties' sooner.
+                        // Note: Do not invoke `createProperties` sooner.
                         crs  = crsFactory.createCompoundCRS(createProperties("Coordinate Reference System",
                                 name, epsg, area, scope, remarks, deprecated), crs1, crs2);
                         break;
@@ -1779,7 +1779,7 @@ codes:  for (int i=0; i<codes.length; i++) {
     {
         /*
          * We do not provide TOWGS84 information for WGS84 itself or for any other datum on our list of target datum,
-         * in order to avoid infinite recursivity. The 'ensureNonRecursive' call is an extra safety check which should
+         * in order to avoid infinite recursivity. The `ensureNonRecursive` call is an extra safety check which should
          * never fail, unless TARGET_CRS and TARGET_DATUM values do not agree with database content.
          */
         if (code == BursaWolfInfo.TARGET_DATUM) {
@@ -1922,8 +1922,8 @@ codes:  for (int i=0; i<codes.length; i++) {
         {
             while (result.next()) {
                 /*
-                 * One of 'semiMinorAxis' and 'inverseFlattening' values can be NULL in the database.
-                 * Consequently, we don't use 'getString(ResultSet, int)' for those parameters because
+                 * One of `semiMinorAxis` and `inverseFlattening` values can be NULL in the database.
+                 * Consequently, we don't use `getString(ResultSet, int)` for those parameters because
                  * we do not want to thrown an exception if a NULL value is found.
                  */
                 final Integer epsg              = getInteger  (code, result, 1);
@@ -1948,7 +1948,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     }
                 } else {
                     if (!Double.isNaN(semiMinorAxis)) {
-                        // Both 'inverseFlattening' and 'semiMinorAxis' are defined.
+                        // Both `inverseFlattening` and `semiMinorAxis` are defined.
                         // Log a warning and create the ellipsoid using the inverse flattening.
                         final LogRecord record = resources().getLogRecord(Level.WARNING,
                                 Resources.Keys.AmbiguousEllipsoid_1, Constants.EPSG + Constants.DEFAULT_SEPARATOR + code);
@@ -2296,7 +2296,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final String axis = getString(cs, result, 1);
                 if (i < axes.length) {
                     /*
-                     * If 'i' is out of bounds, an exception will be thrown after the loop.
+                     * If `i` is out of bounds, an exception will be thrown after the loop.
                      * We do not want to thrown an ArrayIndexOutOfBoundsException here.
                      */
                     axes[i] = owner.createCoordinateSystemAxis(axis);
@@ -2455,7 +2455,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 if (source == target) {
                     /*
                      * The unit is a base unit. Verify its consistency:
-                     * conversion from 'source' to itself shall be the identity function.
+                     * conversion from `source` to itself shall be the identity function.
                      */
                     final boolean pb = (b != 1);
                     if (pb || c != 1) {
@@ -2899,7 +2899,7 @@ next:               while (r.next()) {
                         fillParameterValues(methodCode, epsg, parameters);
                     }
                     /*
-                     * Creates common properties. The 'version' and 'accuracy' are usually defined
+                     * Creates common properties. The `version` and `accuracy` are usually defined
                      * for transformations only. However, we check them for all kind of operations
                      * (including conversions) and copy the information unconditionally if present.
                      *
@@ -3050,7 +3050,7 @@ next:               while (r.next()) {
             boolean searchTransformations = false;
             do {
                 /*
-                 * This 'do' loop is executed twice: the first time for searching defining conversions, and the second
+                 * This `do` loop is executed twice: the first time for searching defining conversions, and the second
                  * time for searching all other kind of operations. Defining conversions are searched first because
                  * they are, by definition, the most accurate operations.
                  */
@@ -3378,7 +3378,7 @@ next:               while (r.next()) {
             if (exception == null) {
                 exception = e;
             } else {
-                e.addSuppressed(exception);     // Keep the connection thrown be Connection as the main one to report.
+                e.addSuppressed(exception);     // Keep the connection thrown by Connection as the main one to report.
             }
         }
         if (exception != null) {

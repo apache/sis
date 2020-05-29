@@ -299,7 +299,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
          * Key collision is usually an error. But in this case we allow them in order to enable recursivity.
          * If during the creation of an object the program asks to this ConcurrentAuthorityFactory for the same
          * object (using the same key), then the default Cache implementation considers that situation as an
-         * error unless the above property has been set to 'true'.
+         * error unless the above property has been set to `true`.
          */
         remainingDAOs = maxConcurrentQueries;
         cache = new Cache<>(20, maxStrongReferences, false);
@@ -407,8 +407,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 usage.timestamp = System.nanoTime();
             } catch (Throwable e) {
                 /*
-                 * If any kind of error occurred, restore the 'remainingDAO' field as if no code were executed.
-                 * This code would not have been needed if we were allowed to decrement 'remainingDAO' only as
+                 * If any kind of error occurred, restore the `remainingDAO` field as if no code were executed.
+                 * This code would not have been needed if we were allowed to decrement `remainingDAO` only as
                  * the very last step (when we know that everything else succeed).
                  * But it needed to be decremented inside the synchronized block.
                  */
@@ -548,7 +548,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
 
     /**
      * Closes the expired Data Access Objects. This method should be invoked from a background task only.
-     * This method may reschedule the task again for an other execution if it appears that at least one
+     * This method may reschedule the task again for another execution if it appears that at least one
      * Data Access Object was not ready for disposal.
      *
      * @see #close()
@@ -610,7 +610,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
          * all other kind of elements in the cache were dependencies searched as a side effect of the CRS search.
          * Since we have the result of the CRS search, we often do not need anymore the result of dependency search.
          *
-         * Touching 'findPool' also has the desired side-effect of letting WeakHashMap expunges stale entries.
+         * Touching `findPool` also has the desired side-effect of letting WeakHashMap expunges stale entries.
          */
         if (isEmpty) {
             synchronized (findPool) {
@@ -1805,7 +1805,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             if (acquireCount == 0) {
                 final GeodeticAuthorityFactory delegate = ((ConcurrentAuthorityFactory<?>) factory).getDataAccess();
                 /*
-                 * Set 'acquireCount' only after we succeed in fetching the factory, and before any operation on it.
+                 * Set `acquireCount` only after we succeed in fetching the factory, and before any operation on it.
                  * The intent is to get ConcurrentAuthorityFactory.release() invoked if and only if the getDataAccess()
                  * method succeed, no matter what happen after this point.
                  */
@@ -1855,7 +1855,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             synchronized (findPool) {
                 final FindEntry entry = findPool.get(object);
                 if (entry != null) {
-                    // 'finder' may be null if this method is invoked directly by this Finder.
+                    // `finder` may be null if this method is invoked directly by this Finder.
                     return entry.get((finder != null ? finder : this).isIgnoringAxes());
                 }
             }
@@ -1876,7 +1876,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 if (c != null) {
                     entry = c;          // May happen if the same set has been computed in another thread.
                 }
-                // 'finder' should never be null since this method is not invoked directly by this Finder.
+                // `finder` should never be null since this method is not invoked directly by this Finder.
                 result = entry.set(finder.isIgnoringAxes(), result, object == searching);
             }
             return result;
@@ -1892,8 +1892,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             if (candidate == null) {
                 /*
                  * Nothing has been found in the cache. Delegates the search to the Data Access Object.
-                 * Note that the Data Access Object will itself callbacks our 'cache(…)' method, so there
-                 * is no need that we cache the result here.
+                 * Note that the Data Access Object will itself callbacks our `cache(…)` method,
+                 * so there is no need that we cache the result here.
                  */
                 synchronized (this) {
                     try {

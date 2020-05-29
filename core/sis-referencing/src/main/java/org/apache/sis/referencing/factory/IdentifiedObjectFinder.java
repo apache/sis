@@ -564,7 +564,7 @@ public class IdentifiedObjectFinder {
      */
     private static void exceptionOccurred(final FactoryException exception) {
         /*
-         * use 'getMessage()' instead of 'getLocalizedMessage()' for
+         * use `getMessage()` instead of `getLocalizedMessage()` for
          * giving preference to the locale of system administrator.
          */
         final LogRecord record = new LogRecord(Level.FINER, exception.getMessage());
