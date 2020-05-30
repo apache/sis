@@ -146,7 +146,7 @@ public enum DataDirectory {
     }
 
     /**
-     * Returns {@code true} if the {@value #ENV} environment variable is unset. In case of doubt, this method
+     * Returns {@code true} if the {@value #ENV} environment variable is undefined. In case of doubt, this method
      * returns {@code false}. This method is used for avoiding or at least delaying the log messages emitted by
      * {@link #getRootDirectory()} when a fallback exists in absence of any user attempt to configure the system.
      *
@@ -154,11 +154,11 @@ public enum DataDirectory {
      *
      * @since 0.8
      */
-    public static synchronized boolean isEnvClear() {
+    public static synchronized boolean isUndefined() {
         if (rootDirectory == null) try {
             return getenv() == null;
         } catch (SecurityException e) {
-            Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM), DataDirectory.class, "isEnvClear", e);
+            Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM), DataDirectory.class, "isUndefined", e);
         }
         return false;
     }

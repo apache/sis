@@ -110,7 +110,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
             final String home;
             switch (dialect) {
                 // More cases may be added in the future.
-                case DERBY: home = AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getProperty(DERBY_HOME_KEY)); break;
+                case DERBY: home = AccessController.doPrivileged((PrivilegedAction<String>) LocalDataSource::getDerbyHome); break;
                 default:    home = null; break;
             }
             final String  dbFile;
@@ -162,6 +162,14 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
         sources = ArraysExt.resize(sources, count);
         Arrays.sort(sources);
         return sources;
+    }
+
+    /**
+     * Returns the home directory of Derby databases, or {@code null} if none.
+     * Defined as a separated method for clearer stack trace in case of security exception.
+     */
+    private static String getDerbyHome() {
+        return System.getProperty(DERBY_HOME_KEY);
     }
 
     /**
@@ -241,7 +249,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
     }
 
     /**
-     * Creates the database if needed. For Derby we need to explicitly allows creation.
+     * Creates the database if needed. For Derby we need to explicitly allow creation.
      * For HSQLDB the creation is enabled by default.
      */
     final void createDatabase() throws Exception {

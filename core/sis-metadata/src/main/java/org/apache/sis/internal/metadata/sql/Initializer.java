@@ -321,7 +321,7 @@ public abstract class Initializer {
              */
             DataSource        embedded   = null;
             LocalDataSource[] candidates = null;
-            final boolean     isEnvClear = DataDirectory.isEnvClear();
+            final boolean     isEnvClear = DataDirectory.isUndefined();
             if (isEnvClear) {
                 embedded = embedded();                  // Check embedded data first only if SIS_DATA is not defined.
             }
@@ -369,8 +369,15 @@ public abstract class Initializer {
      */
     public static boolean hasJNDI() {
         return NamingManager.hasInitialContextFactoryBuilder() ||
-               AccessController.doPrivileged((PrivilegedAction<Boolean>) () ->
-                       System.getProperty(Context.INITIAL_CONTEXT_FACTORY) != null);
+               AccessController.doPrivileged((PrivilegedAction<Boolean>) Initializer::isContextDefined);
+    }
+
+    /**
+     * Returns whether an initial context factory is specified.
+     * Defined as a separated method for clearer stack trace in case of security exception.
+     */
+    private static Boolean isContextDefined() {
+        return System.getProperty(Context.INITIAL_CONTEXT_FACTORY) != null;
     }
 
     /**
