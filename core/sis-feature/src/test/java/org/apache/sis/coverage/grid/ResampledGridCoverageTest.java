@@ -534,7 +534,6 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
      */
     @Test
-    @org.junit.Ignore("To debug")
     public void crs4D_to_crs3D() throws TransformException {
         final GridGeometry target3D = createGridGeometryND(HardCodedCRS.WGS84_3D, 0, 1, 2, 3, false);
         final GridCoverage source4D = createCoverageND(true);
