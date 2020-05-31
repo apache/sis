@@ -597,8 +597,8 @@
     </profile>
 
     <!-- ===================================================================
-           If the user has not set the SIS_DATA environment variable, set a
-           default value where we can create a minimalist database.
+           If the user has not set the SIS_DATA environment variable,
+           set a default value where we can create a minimalist database.
          =================================================================== -->
     <profile>
       <id>sis-data</id>

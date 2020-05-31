@@ -170,4 +170,25 @@
     </dependency>
   </dependencies>
 
+  <!-- Because the EPSG database is not free, require the user to ask it explicitly. -->
+  <profiles>
+    <profile>
+      <id>non-free</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.sis.non-free</groupId>
+          <artifactId>sis-epsg</artifactId>
+          <version>${sis.non-free.version}</version>
+          <scope>test</scope>
+          <exclusions>
+            <exclusion>
+              <groupId>*</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+
 </project>
