@@ -342,6 +342,9 @@ public class ScriptRunner implements AutoCloseable {
         if (!isCommentSupported) {
             addStatementToSkip("COMMENT\\s+ON\\s+.*");
         }
+        if (!dialect.supportsAlterTableWithAddConstraint) {
+            addStatementToSkip("ALTER TABLE.+ADD CONSTRAINT.*");
+        }
     }
 
     /**

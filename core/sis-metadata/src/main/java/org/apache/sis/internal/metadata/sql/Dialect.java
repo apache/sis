@@ -91,16 +91,16 @@ public enum Dialect {
      *
      * @see <a href="https://www.sqlite.org/omitted.html">SQL Features That SQLite Does Not Implement</a>
      */
-    public final boolean supportsAlterTableWithAddForeignKey;
+    public final boolean supportsAlterTableWithAddConstraint;
 
     /**
      * Creates a new enumeration value for a SQL dialect for the given protocol.
      */
     private Dialect(final String protocol, final boolean isTableInheritanceSupported,
-            final boolean supportsAlterTableWithAddForeignKey) {
+            final boolean supportsAlterTableWithAddConstraint) {
         this.protocol = protocol;
         this.isTableInheritanceSupported = isTableInheritanceSupported;
-        this.supportsAlterTableWithAddForeignKey = supportsAlterTableWithAddForeignKey;
+        this.supportsAlterTableWithAddConstraint = supportsAlterTableWithAddConstraint;
     }
 
     /**
