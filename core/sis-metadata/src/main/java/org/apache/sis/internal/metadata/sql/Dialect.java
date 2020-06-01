@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.metadata.sql;
 
-import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import org.apache.sis.util.CharSequences;
 
 
@@ -34,30 +34,37 @@ public enum Dialect {
     /**
      * The database is presumed to use ANSI SQL syntax.
      */
-    ANSI(null, false),
+    ANSI(null, false, true),
 
     /**
      * The database uses Derby syntax. This is ANSI, with some constraints that PostgreSQL does not have
      * (for example column with {@code UNIQUE} constraint must explicitly be specified as {@code NOT NULL}).
      */
-    DERBY("derby", false),
+    DERBY("derby", false, true),
 
     /**
      * The database uses HSQL syntax. This is ANSI, but does not allow {@code INSERT} statements inserting many lines.
      * It also have a {@code SHUTDOWN} command which is specific to HSQLDB.
      */
-    HSQL("hsqldb", false),
+    HSQL("hsqldb", false, true),
 
     /**
      * The database uses PostgreSQL syntax. This is ANSI, but provided an a separated
      * enumeration value because it allows a few additional commands like {@code VACUUM}.
      */
-    POSTGRESQL("postgresql", true),
+    POSTGRESQL("postgresql", true, true),
 
     /**
      * The database uses Oracle syntax. This is ANSI, but without {@code "AS"} keyword.
      */
-    ORACLE("oracle", false);
+    ORACLE("oracle", false, true),
+
+    /**
+     * The database uses SQLite syntax. This is ANSI, but with several limitations.
+     *
+     * @see <a href="https://www.sqlite.org/omitted.html">SQL Features That SQLite Does Not Implement</a>
+     */
+    SQLITE("sqlite", false, false);
 
     /**
      * The protocol in JDBC URL, or {@code null} if unknown.
@@ -79,11 +86,21 @@ public enum Dialect {
     public final boolean isIndexInheritanceSupported = false;
 
     /**
+     * Whether this dialect support adding table constraints after creation.
+     * This feature is not yet supported in SQLite.
+     *
+     * @see <a href="https://www.sqlite.org/omitted.html">SQL Features That SQLite Does Not Implement</a>
+     */
+    public final boolean supportsAlterTableWithAddForeignKey;
+
+    /**
      * Creates a new enumeration value for a SQL dialect for the given protocol.
      */
-    private Dialect(final String protocol, final boolean isTableInheritanceSupported) {
+    private Dialect(final String protocol, final boolean isTableInheritanceSupported,
+            final boolean supportsAlterTableWithAddForeignKey) {
         this.protocol = protocol;
         this.isTableInheritanceSupported = isTableInheritanceSupported;
+        this.supportsAlterTableWithAddForeignKey = supportsAlterTableWithAddForeignKey;
     }
 
     /**
