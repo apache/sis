@@ -416,6 +416,19 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                     if (lower != upper) upper--;                                // For making the coordinate inclusive.
                     break;
                 }
+                case CONTAINED: {
+                    final double lo = Math.ceil (min);
+                    final double hi = Math.floor(max);
+                    if (lo > hi) {
+                        lower = (long) ((lo - min > max - hi) ? hi : lo);       // Take the value closest to integer.
+                        upper = lower;
+                    } else {
+                        lower = (long) lo;
+                        upper = (long) hi;
+                        if (lower != upper) upper--;                            // For making the coordinate inclusive.
+                    }
+                    break;
+                }
                 case NEAREST: {
                     lower = Math.round(min);
                     upper = Math.round(max);

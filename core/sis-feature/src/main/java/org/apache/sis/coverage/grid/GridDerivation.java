@@ -1012,6 +1012,7 @@ public class GridDerivation {
                 switch (rounding) {
                     default:        throw new AssertionError(rounding);
                     case NEAREST:   s = (int) Math.min(Math.round(scales[i]), Integer.MAX_VALUE); break;
+                    case CONTAINED: // Assume user wants more data in source (ENCLOSING) or target (CONTAINED) grid.
                     case ENCLOSING: s = (int) Math.nextUp(scales[i]); break;
                 }
                 subsamplings[i] = Math.max(1, s);
