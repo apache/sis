@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Optional;
-import org.apache.sis.util.Utilities;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
@@ -37,6 +36,7 @@ import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.resources.Errors;
 
@@ -69,7 +69,8 @@ import org.opengis.feature.PropertyType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -77,7 +78,7 @@ final class EnvelopeOperation extends AbstractOperation {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 6250548001562807671L;
+    private static final long serialVersionUID = 8034615858550405350L;
 
     /**
      * The parameter descriptor for the "Envelope" operation, which does not take any parameter.
@@ -92,17 +93,26 @@ final class EnvelopeOperation extends AbstractOperation {
     /**
      * The coordinate reference system of the envelope to compute, or {@code null}
      * for using the CRS of the default geometry or the first non-empty geometry.
+     * Note that this is the CRS desired by user of this {@link EnvelopeOperation};
+     * it may be unrelated to the CRS of stored geometries.
      */
-    final CoordinateReferenceSystem crs;
+    final CoordinateReferenceSystem targetCRS;
 
     /**
      * The coordinate conversions or transformations from the CRS used by the geometries to the CRS requested
      * by the user, or {@code null} if there is no operation to apply.  If non-null, the length of this array
      * shall be equal to the length of the {@link #attributeNames} array and element at index <var>i</var> is
-     * the operation from the {@code attributeNames[i]} geometry CRS to the {@link #crs}.
+     * the operation from the {@code attributeNames[i]} geometry CRS to the {@link #targetCRS}. It may be the
+     * identity operation, and may also be {@code null} if the property at index <var>i</var> does not declare
+     * a default CRS.
      *
-     * <p>This array contains null element when the {@code MathTransform} associated to the coordinate operation
-     * is the identity transform.</p>
+     * <p><b>Performance note:</b>
+     * if this array is {@code null}, then {@link Feature#getProperty(String)} does not need to be invoked at all.
+     * A null array is a signal that invoking only the cheaper {@link Feature#getPropertyValue(String)} method is
+     * sufficient. However this array become non-null as soon as there is at least one CRS characteristic to check.
+     * We do not distinguish which particular property may have a CRS characteristic because as of Apache SIS 1.0,
+     * implementations of {@link DenseFeature} and {@link SparseFeature} have a "all of nothing" behavior anyway.
+     * So there is no performance gain to expect from a fine-grained knowledge of which properties declare a CRS.</p>
      */
     private final CoordinateOperation[] attributeToCRS;
 
@@ -120,10 +130,10 @@ final class EnvelopeOperation extends AbstractOperation {
      * Creates a new operation computing the envelope of features of the given type.
      *
      * @param identification      the name and other information to be given to this operation.
-     * @param crs                 the coordinate reference system of envelopes to computes, or {@code null}.
+     * @param targetCRS           the coordinate reference system of envelopes to computes, or {@code null}.
      * @param geometryAttributes  the operation or attribute type from which to get geometry values.
      */
-    EnvelopeOperation(final Map<String,?> identification, CoordinateReferenceSystem crs,
+    EnvelopeOperation(final Map<String,?> identification, CoordinateReferenceSystem targetCRS,
             final PropertyType[] geometryAttributes) throws FactoryException
     {
         super(identification);
@@ -158,8 +168,8 @@ final class EnvelopeOperation extends AbstractOperation {
                 final AttributeType<?> ct = at.get().characteristics().get(characteristicName);
                 if (ct != null && CoordinateReferenceSystem.class.isAssignableFrom(ct.getValueClass())) {
                     attributeCRS = (CoordinateReferenceSystem) ct.getDefaultValue();              // May still null.
-                    if (crs == null && isDefault) {
-                        crs = attributeCRS;
+                    if (targetCRS == null && isDefault) {
+                        targetCRS = attributeCRS;
                     }
                     characterizedByCRS = true;
                 }
@@ -188,17 +198,22 @@ final class EnvelopeOperation extends AbstractOperation {
             if (characterizedByCRS) {
                 final CoordinateReferenceSystem value = entry.getValue();
                 if (value != null) {
-                    if (crs == null) {
-                        crs = value;                                    // Fallback if default geometry has no CRS.
+                    if (targetCRS == null) {
+                        targetCRS = value;                  // Fallback if default geometry has no CRS.
                     }
-                    // even in case of identity operation, we keep it to be able to fetch characteristic CRS of the attribute.
-                    attributeToCRS[i] = CRS.findOperation(value, crs, null);
+                    /*
+                     * The following operation is often identity. We do not filter identity operations
+                     * because their source CRS is still a useful information (it is the CRS instance
+                     * found in the attribute characteristic, not necessarily identical to `targetCRS`)
+                     * and because we keep the null value for meaning that attribute CRS is unspecified.
+                     */
+                    attributeToCRS[i] = CRS.findOperation(value, targetCRS, null);
                 }
             }
         }
         resultType = FeatureOperations.POOL.unique(new DefaultAttributeType<>(
                 resultIdentification(identification), Envelope.class, 1, 1, null));
-        this.crs = crs;
+        this.targetCRS = targetCRS;
     }
 
     /**
@@ -280,73 +295,112 @@ final class EnvelopeOperation extends AbstractOperation {
          *
          * @return the union of envelopes of all geometries in the attribute specified to the constructor,
          *         or {@code null} if none.
+         * @throws FeatureOperationException if the envelope can not be computed.
          */
         @Override
-        public Envelope getValue() throws IllegalStateException {
+        public Envelope getValue() throws FeatureOperationException {
             final String[] attributeNames = EnvelopeOperation.this.attributeNames;
-            GeneralEnvelope envelope = null;                                        // Union of all envelopes.
-            for (int i=0; i<attributeNames.length; i++) {
-                GeneralEnvelope genv;                                               // Envelope of a single geometry.
-                final String name = attributeNames[i];
-                if (attributeToCRS == null) {
-                    /*
-                     * If there is no CRS characteristic on any of the properties to query, then invoke the
-                     * Feature.getPropertyValue(String) method instead than Feature.getProperty(String) in
-                     * order to avoid forcing DenseFeature and SparseFeature implementations to wrap the
-                     * property values into real property instances. This is an optimization for reducing
-                     * the amount of objects to create.
-                     */
-                    genv = Geometries.getEnvelope(feature.getPropertyValue(name)).orElse(null);
-                    if (genv == null) continue;
-                } else {
-                    /*
-                     * If there is at least one CRS characteristic to query, then we need the full Property instance.
-                     * We do not distinguish which particular property may have a CRS characteristic because SIS 0.7
-                     * implementations of DenseFeature and SparseFeature have a "all of nothing" behavior anyway.
-                     */
-                    final Property property = feature.getProperty(name);
-                    genv = Geometries.getEnvelope(property.getValue()).orElse(null);
-                    if (genv == null) continue;
-                    /*
-                     * Get the CRS characteristic if present. Most of the time, 'at' will be null and we will
-                     * fallback on the 'attributeToCRS' operations computed at construction time. In the rare
-                     * cases where a CRS characteristic is associated to a particular feature, we will let
-                     * Envelopes.transform(…) searches a coordinate operation.
-                     */
-                    final Attribute<?> at = ((Attribute<?>) property).characteristics()
-                                    .get(AttributeConvention.CRS_CHARACTERISTIC.toString());
-                    try {
-                        if (at == null) {
-                            final CoordinateOperation op = attributeToCRS[i];
-                            if (op != null) {
-                                // Ensure attribute envelope has a CRS by forcing CRS found as characteristic
-                                if (op.getMathTransform().isIdentity() && op.getSourceCRS() != null) genv.setCoordinateReferenceSystem(op.getSourceCRS());
-                                else genv = Envelopes.transform(op, genv);
-                            }
-                        } else {                                                        // Should be a rare case.
-                            final Object geomCRS = at.getValue();
+            GeneralEnvelope   envelope = null;                  // Union of all envelopes.
+            GeneralEnvelope[] deferred = null;                  // Envelopes not yet included in union envelope.
+            boolean hasUnknownCRS = false;                      // Whether at least one geometry has no known CRS.
+            for (int i = 0; i < attributeNames.length; i++) {
+                /*
+                 * Call `Feature.getPropertyValue(…)` instead of `Feature.getProperty(…).getValue()`
+                 * in order to avoid forcing DenseFeature and SparseFeature implementations to wrap
+                 * the property values into new `Property` objects.  The potentially costly call to
+                 * `Feature.getProperty(…)` can be avoided in two scenarios:
+                 *
+                 *   - The constructor determined that no attribute should have CRS characteristics.
+                 *     This scenario is identified by (attributeToCRS == null).
+                 *
+                 *   - The geometry already declares its CRS, in which case that CRS has precedence
+                 *     over attribute characteristics, so we don't need to fetch them.
+                 *
+                 * Inconvenient is that in a third scenario (CRS is defined by attribute characteristics),
+                 * we will do two calls to some `Feature.getProperty…` method, which results in two lookups
+                 * in hash table. We presume that the gain from the optimistic assumption is worth the cost.
+                 */
+                GeneralEnvelope genv = Geometries.getEnvelope(feature.getPropertyValue(attributeNames[i])).orElse(null);
+                if (genv == null) {
+                    continue;
+                }
+                /*
+                 * Get the CRS either directly from the geometry or indirectly from property characteristic.
+                 * The CRS associated with the geometry will be kept consistent with `sourceCRS` and will be
+                 * null only if no CRS has been found anywhere.  Note that `sourceCRS` may be different than
+                 * `op.getSourceCRS()`. This difference will be handled by `Envelopes.transform(…)` later.
+                 */
+                CoordinateReferenceSystem sourceCRS = genv.getCoordinateReferenceSystem();
+                CoordinateOperation op = null;
+                if (attributeToCRS != null) {
+                    op = attributeToCRS[i];
+                    if (sourceCRS == null) {
+                        /*
+                         * Try to get CRS from property characteristic. Usually `at` is null and we fallback
+                         * on the coordinate operation computed at construction time. In the rare case where
+                         * a CRS characteristic is associated to a particular feature, setting `op` to null
+                         * will cause a new coordinate operation to be searched.
+                         */
+                        final Attribute<?> at = ((Attribute<?>) feature.getProperty(attributeNames[i]))
+                                .characteristics().get(AttributeConvention.CRS_CHARACTERISTIC.toString());
+                        final Object geomCRS;
+                        if (at != null && (geomCRS = at.getValue()) != null) {
                             if (!(geomCRS instanceof CoordinateReferenceSystem)) {
-                                throw new IllegalStateException(Errors.format(Errors.Keys.UnspecifiedCRS));
+                                throw new FeatureOperationException(Resources.formatInternational(
+                                        Resources.Keys.IllegalCharacteristicsType_3,
+                                        AttributeConvention.CRS_CHARACTERISTIC,
+                                        CoordinateReferenceSystem.class,
+                                        geomCRS.getClass()));
                             }
-                            genv.setCoordinateReferenceSystem((CoordinateReferenceSystem) geomCRS);
-                            genv = GeneralEnvelope.castOrCopy(Envelopes.transform(genv, crs));
+                            sourceCRS = (CoordinateReferenceSystem) geomCRS;
+                        } else if (op != null) {
+                            sourceCRS = op.getSourceCRS();
                         }
-                    } catch (TransformException e) {
-                        throw new IllegalStateException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
+                        genv.setCoordinateReferenceSystem(sourceCRS);
                     }
                 }
-
-                /* Add current attribute envelope in result one. For now, we only allow union of envelopes in the same
-                 * crs because we were not able to deduce output space from feature type characteristics. However, in
-                 * the future, we could find a common space to use.
+                /*
+                 * If the geometry CRS is unknown (sourceCRS == null), leave the geometry CRS to null.
+                 * Do not set it to `targetCRS` because that value is the desired CRS, not necessarily
+                 * the actual CRS.
                  */
+                if (sourceCRS != null && targetCRS != null) try {
+                    if (op == null) {
+                        op = CRS.findOperation(sourceCRS, targetCRS, null);
+                    }
+                    if (!op.getMathTransform().isIdentity()) {
+                        genv = Envelopes.transform(op, genv);
+                    }
+                } catch (FactoryException | TransformException e) {
+                    throw new FeatureOperationException(Errors.formatInternational(Errors.Keys.CanNotTransformEnvelope), e);
+                }
+                /*
+                 * If there is only one geometry, we will return that geometry as-is even if its CRS is unknown.
+                 * It will be up to the user to decide what to do with that. Otherwise (two or more geometries)
+                 * we throw an exception if a CRS is unknown, because we don't know how to combine them.
+                 */
+                hasUnknownCRS |= (sourceCRS == null);
                 if (envelope == null) {
                     envelope = genv;
-                } else if (Utilities.equalsIgnoreMetadata(genv.getCoordinateReferenceSystem(), envelope.getCoordinateReferenceSystem())) {
+                } else if (hasUnknownCRS) {
+                    throw new FeatureOperationException(Errors.formatInternational(Errors.Keys.UnspecifiedCRS));
+                } else if (targetCRS != null) {
                     envelope.add(genv);
-                } else throw new IllegalStateException(Errors.format(Errors.Keys.MismatchedCRS));
+                } else {
+                    if (deferred == null) {
+                        deferred = new GeneralEnvelope[attributeNames.length];
+                        deferred[0] = envelope;
+                    }
+                    deferred[i] = genv;
+                }
             }
-            return envelope;
+            if (deferred == null) {
+                return envelope;
+            } else try {
+                return Envelopes.union(deferred);
+            } catch (TransformException e) {
+                throw new FeatureOperationException(Errors.formatInternational(Errors.Keys.CanNotTransformEnvelope), e);
+            }
         }
 
         /**
@@ -372,11 +426,11 @@ final class EnvelopeOperation extends AbstractOperation {
     @Override
     public boolean equals(final Object obj) {
         if (super.equals(obj)) {
-            // 'this.result' is compared (indirectly) by the super class.
+            // `this.result` is compared (indirectly) by the super class.
             final EnvelopeOperation that = (EnvelopeOperation) obj;
             return Arrays.equals(attributeNames, that.attributeNames) &&
                    Arrays.equals(attributeToCRS, that.attributeToCRS) &&
-                   Objects.equals(crs, that.crs);
+                   Objects.equals(targetCRS,     that.targetCRS);
         }
         return false;
     }

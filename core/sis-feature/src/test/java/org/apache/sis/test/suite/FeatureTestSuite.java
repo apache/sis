@@ -47,6 +47,7 @@ import org.junit.runners.Suite;
     org.apache.sis.feature.LinkOperationTest.class,
     org.apache.sis.feature.StringJoinOperationTest.class,
     org.apache.sis.feature.EnvelopeOperationTest.class,
+    org.apache.sis.feature.FeatureOperationsTest.class,
     org.apache.sis.feature.FeatureFormatTest.class,
     org.apache.sis.feature.FeaturesTest.class,
     org.apache.sis.filter.CapabilitiesTest.class,

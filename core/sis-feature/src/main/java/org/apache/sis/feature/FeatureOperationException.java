@@ -16,47 +16,50 @@
  */
 package org.apache.sis.feature;
 
-import org.opengis.util.InternationalString;
 import org.apache.sis.util.LocalizedException;
-
-// Branch-dependent imports
-import org.opengis.feature.Feature;
-import org.opengis.feature.InvalidPropertyValueException;
+import org.opengis.util.InternationalString;
 
 
 /**
- * Thrown when a feature fails at least one conformance test.
- *
- * <div class="note"><b>Note:</b>
- * this exception extends {@link InvalidPropertyValueException} because an Apache SIS feature
- * can be invalid only if a property is invalid.</div>
+ * Thrown when a property value can not be computed.
+ * This exception may occur during a call to {@link AbstractAttribute#getValue()} on an attribute
+ * instance which computes its value dynamically instead than returning a stored value.
+ * It may be for example the attributes produced by {@link FeatureOperations}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- *
- * @see Features#validate(Feature)
- *
- * @since 0.7
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-final class InvalidFeatureException extends InvalidPropertyValueException implements LocalizedException {
+final class FeatureOperationException extends IllegalStateException implements LocalizedException {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 7288810679876346027L;
+    private static final long serialVersionUID = -7281160433831489357L;
 
     /**
-     * A description of the illegal feature.
+     * A description of the computation error.
      */
     private final InternationalString message;
 
     /**
      * Creates a new exception with the given explanation message.
      *
-     * @param message  a description of the illegal feature.
+     * @param message  a description of the computation error.
      */
-    InvalidFeatureException(final InternationalString message) {
+    FeatureOperationException(final InternationalString message) {
         super(message.toString());
+        this.message = message;
+    }
+
+    /**
+     * Creates a new exception with the given explanation message and cause.
+     *
+     * @param message  a description of the computation error.
+     * @param cause    the cause of the error.
+     */
+    FeatureOperationException(final InternationalString message, final Exception cause) {
+        super(message.toString(), cause);
         this.message = message;
     }
 

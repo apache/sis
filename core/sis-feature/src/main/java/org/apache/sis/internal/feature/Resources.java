@@ -20,6 +20,8 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import org.opengis.util.InternationalString;
+import org.apache.sis.util.resources.ResourceInternationalString;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
@@ -30,7 +32,7 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -178,6 +180,11 @@ public final class Resources extends IndexedResourceBundle {
          * Sample value range {1} for “{0}” category is illegal.
          */
         public static final short IllegalCategoryRange_2 = 31;
+
+        /**
+         * Expected an instance of ‘{1}’ for the “{0}” characteristics, but got an instance of ‘{2}’.
+         */
+        public static final short IllegalCharacteristicsType_3 = 75;
 
         /**
          * Association “{0}” does not accept features of type ‘{2}’. Expected an instance of ‘{1}’ or
@@ -563,5 +570,32 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg3) throws MissingResourceException
     {
         return forLocale(null).getString(key, arg0, arg1, arg2, arg3);
+    }
+
+    /**
+     * The international string to be returned by {@link formatInternational}.
+     */
+    private static final class International extends ResourceInternationalString {
+        private static final long serialVersionUID = -667435900917846518L;
+
+        International(short key)                           {super(key);}
+        International(short key, Object args)              {super(key, args);}
+        @Override protected KeyConstants getKeyConstants() {return Keys.INSTANCE;}
+        @Override protected IndexedResourceBundle getBundle(final Locale locale) {
+            return forLocale(locale);
+        }
+    }
+
+    /**
+     * Gets an international string for the given key. This method does not check for the key
+     * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
+     * when a {@link InternationalString#toString(Locale)} method is invoked.
+     *
+     * @param  key   the key for the desired string.
+     * @param  args  values to substitute to "{0}", "{1}", <i>etc</i>.
+     * @return an international string for the given key.
+     */
+    public static InternationalString formatInternational(final short key, final Object... args) {
+        return new International(key, args);
     }
 }

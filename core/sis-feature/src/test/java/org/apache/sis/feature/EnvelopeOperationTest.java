@@ -16,313 +16,251 @@
  */
 package org.apache.sis.feature;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Collections;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
-import com.esri.core.geometry.Polygon;
-import org.apache.sis.feature.builder.AttributeRole;
-import org.apache.sis.feature.builder.AttributeTypeBuilder;
-import org.apache.sis.feature.builder.CharacteristicTypeBuilder;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.GeometryWrapper;
-import org.apache.sis.referencing.CRS;
-import org.opengis.feature.Attribute;
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
+import com.esri.core.geometry.Geometry;
 import org.opengis.geometry.Envelope;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.feature.builder.AttributeRole;
+import org.apache.sis.feature.builder.AttributeTypeBuilder;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometryWrapper;
 
 // Test dependencies
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
 
 // Branch-dependent imports
-import org.opengis.feature.PropertyType;
+import org.opengis.feature.Attribute;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 
 
 /**
  * Tests {@link EnvelopeOperation}.
+ * This test uses a feature with two geometric properties, named "g1" and "g2",
+ * optionally associated with a default CRS declared in attribute characteristics.
+ * This class tests different ways to declare the CRS and tests the case where the
+ * CRSs are not the same.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.7
+ * @author  Alexis Manin (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
  * @since   0.7
  * @module
  */
-@DependsOn(LinkOperationTest.class)
 public final strictfp class EnvelopeOperationTest extends TestCase {
-
-    private static final AttributeType<CoordinateReferenceSystem> CRS_CHARACTERISTIC = new FeatureTypeBuilder()
-            .addAttribute(CoordinateReferenceSystem.class)
-            .setName(AttributeConvention.CRS_CHARACTERISTIC)
-            .setMinimumOccurs(0)
-            .build();
+    /**
+     * The description of a feature with two geometric properties. The properties are named "g1" and "g2"
+     * and may or may not have default CRS, depending which {@code initialize(…)} method is invoked.
+     *
+     * @see #initialize()
+     * @see #initialize(CoordinateReferenceSystem, boolean, CoordinateReferenceSystem, boolean)
+     */
+    private FeatureType type;
 
     /**
-     * Creates a feature type with a bounds operation.
-     * The feature contains the following properties:
+     * The feature created by a test method. Saved for allowing additional checks or operations.
+     */
+    private Feature feature;
+
+    /**
+     * Creates the feature type with two geometric properties without default CRS.
+     *
+     * @see #initialize(CoordinateReferenceSystem, boolean, CoordinateReferenceSystem, boolean)
+     */
+    private void initialize() {
+        initialize(null, false, null, false);
+    }
+
+    /**
+     * Creates a feature type containing two geometric properties in the specified CRSs, which may be null.
+     * They will be specified as default CRS of each property through property type CRS characteristic only
+     * if the corresponding {@code declareCRS} flag is true. The first geometry will be the default one.
+     *
+     * @param defaultCRS1        default CRS of first property (may be {@code null}).
+     * @param defaultCRS1        default CRS of second property (may be {@code null}).
+     * @param asCharacteristic1  whether to declare CRS 1 as a characteristic of first property.
+     * @param asCharacteristic2  whether to declare CRS 2 as a characteristic of second property.
+     */
+    private void initialize(final CoordinateReferenceSystem defaultCRS1, boolean asCharacteristic1,
+                            final CoordinateReferenceSystem defaultCRS2, boolean asCharacteristic2)
+    {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("test");
+        final AttributeTypeBuilder<?> g1 = builder.addAttribute(GeometryWrapper.class).setName("g1");
+        final AttributeTypeBuilder<?> g2 = builder.addAttribute(GeometryWrapper.class).setName("g2");
+        if (asCharacteristic1) g1.setCRS(defaultCRS1);
+        if (asCharacteristic2) g2.setCRS(defaultCRS2);
+        g1.addRole(AttributeRole.DEFAULT_GEOMETRY);
+        type = builder.build();
+    }
+
+    /**
+     * Sets the two properties to arbitrary geometries in given CRS, then computes the envelope.
+     * The CRS are set directly on the geometry objects, not in the attribute characteristics.
+     * The two geometries are:
      *
      * <ul>
-     *   <li>{@code name} as a {@link String}</li>
-     *   <li>{@code classes} as a {@link Polygon}</li>
-     *   <li>{@code climbing wall} as a {@link Point}</li>
-     *   <li>{@code gymnasium} as a {@link Polygon}</li>
-     *   <li>{@code sis:geometry} as a link to the default geometry</li>
-     *   <li>{@code bounds} as the feature envelope attribute.</li>
+     *   <li>A point at (4 7)</li>
+     *   <li>A polyline in envelope from lower corner (12 15) to upper corner (17 15).
      * </ul>
      *
-     * @param  defaultGeometry  1 for using "classes" as the default geometry, or 3 for "gymnasium".
-     * @return the feature for a school.
+     * @param  crs1  CRS to associate to the first geometry  (not on property characteristic, but geometry itself).
+     * @param  crs2  CRS to associate to the second geometry (not on property characteristic, but geometry itself).
+     * @return a non null envelope, result of the envelope operation.
      */
-    private static DefaultFeatureType school(final int defaultGeometry) throws FactoryException {
-        final DefaultAttributeType<?> standardCRS = new DefaultAttributeType<>(
-                name(AttributeConvention.CRS_CHARACTERISTIC), CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84_φλ);
-
-        final DefaultAttributeType<?> normalizedCRS = new DefaultAttributeType<>(
-                name(AttributeConvention.CRS_CHARACTERISTIC), CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84);
-
-        final PropertyType[] attributes = {
-            new DefaultAttributeType<>(name("name"),          String.class,  1, 1, null),
-            new DefaultAttributeType<>(name("classes"),       Polygon.class, 1, 1, null, standardCRS),
-            new DefaultAttributeType<>(name("climbing wall"), Point.class,   1, 1, null, standardCRS),
-            new DefaultAttributeType<>(name("gymnasium"),     Polygon.class, 1, 1, null, normalizedCRS),
-            null,
-            null
-        };
-        attributes[4] = FeatureOperations.link(name(AttributeConvention.GEOMETRY_PROPERTY), attributes[defaultGeometry]);
-        attributes[5] = FeatureOperations.envelope(name("bounds"), null, attributes);
-        return new DefaultFeatureType(name("school"), false, null, attributes);
+    private Envelope compute(final CoordinateReferenceSystem crs1,
+                             final CoordinateReferenceSystem crs2)
+    {
+        return compute(crs1, false, crs2, false);
     }
 
     /**
-     * Creates a map of identification properties containing only an entry for the given name.
-     */
-    private static Map<String,?> name(final Object name) {
-        return Collections.singletonMap(DefaultAttributeType.NAME_KEY, name);
-    }
-
-    /**
-     * Tests the constructor. The set of attributes on which the operation depends shall include
-     * "classes", "climbing wall" and "gymnasium" but not "name" since the later does not contain
-     * a geometry. Furthermore the default CRS shall be {@code HardCodedCRS.WGS84}, not
-     * {@code HardCodedCRS.WGS84_φλ}, because this test uses "gymnasium" as the default geometry.
+     * Sets the two properties to arbitrary geometries in given CRS, then computes the envelope.
+     * The CRS are set either on geometry objects or on the attribute characteristics, depending
+     * on the {@code asCharacteristic} flags.
      *
-     * @throws FactoryException if an error occurred while searching for the coordinate operations.
+     * @param  crs1  CRS to associate to the first geometry  (either directly or indirectly).
+     * @param  crs2  CRS to associate to the second geometry (either directly or indirectly).
+     * @return a non null envelope, result of the envelope operation.
      */
-    @Test
-    public void testConstruction() throws FactoryException {
-        final PropertyType property = school(3).getProperty("bounds");
-        assertInstanceOf("bounds", EnvelopeOperation.class, property);
-        final EnvelopeOperation op = (EnvelopeOperation) property;
-        assertSame("crs", HardCodedCRS.WGS84, op.crs);
-        assertSetEquals(Arrays.asList("classes", "climbing wall", "gymnasium"), op.getDependencies());
+    private Envelope compute(final CoordinateReferenceSystem crs1, final boolean asCharacteristic1,
+                             final CoordinateReferenceSystem crs2, final boolean asCharacteristic2)
+    {
+        feature = type.newInstance();
+        set("g1", crs1, asCharacteristic1, new Point(4, 7));
+        set("g2", crs2, asCharacteristic2, new Polyline(new Point(12, 15), new Point(17, 14)));
+        final Object result = feature.getPropertyValue("sis:envelope");
+        assertInstanceOf("sis:envelope", Envelope.class, result);
+        return (Envelope) result;
     }
 
     /**
-     * Implementation of the test methods.
-     */
-    private static void run(final AbstractFeature feature) {
-        assertNull("Before a geometry is set", feature.getPropertyValue("bounds"));
-        GeneralEnvelope expected;
-
-        // Set one geometry
-        Polygon classes = new Polygon();
-        classes.startPath(10, 20);
-        classes.lineTo(10, 30);
-        classes.lineTo(15, 30);
-        classes.lineTo(15, 20);
-        feature.setPropertyValue("classes", classes);
-        expected = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
-        expected.setRange(0, 10, 15);
-        expected.setRange(1, 20, 30);
-        assertEnvelopeEquals(expected, (Envelope) feature.getPropertyValue("bounds"));
-
-        // Set second geometry
-        Point wall = new Point(18, 40);
-        feature.setPropertyValue("climbing wall", wall);
-        expected = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
-        expected.setRange(0, 10, 18);
-        expected.setRange(1, 20, 40);
-        assertEnvelopeEquals(expected, (Envelope) feature.getPropertyValue("bounds"));
-
-        // Set third geometry. This geometry has CRS axis order reversed.
-        Polygon gymnasium = new Polygon();
-        gymnasium.startPath(-5, -30);
-        gymnasium.lineTo(-6, -30);
-        gymnasium.lineTo(-6, -31);
-        gymnasium.lineTo(-5, -31);
-        feature.setPropertyValue("gymnasium", gymnasium);
-        expected = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
-        expected.setRange(0, -31, 18);
-        expected.setRange(1,  -6, 40);
-        assertEnvelopeEquals(expected, (Envelope) feature.getPropertyValue("bounds"));
-    }
-
-    /**
-     * Tests a dense type with operations.
+     * Sets a geometric property value together with its CRS, either directly or indirectly through
+     * attribute characteristic.
      *
-     * @throws FactoryException if an error occurred while searching for the coordinate operations.
+     * @param  propertyName      name of the property on which to set the CRS.
+     * @param  crs               the CRS to set on the geometry.
+     * @param  asCharacteristic  whether to associate the CRS as a characteristic or directly on the geometry.
+     * @param  geometry          the ESRI geometry value to store in the property.
      */
-    @Test
-    @DependsOnMethod("testConstruction")
-    public void testDenseFeature() throws FactoryException {
-        run(new DenseFeature(school(1)));
-    }
+    private void set(final String propertyName, final CoordinateReferenceSystem crs,
+                     final boolean asCharacteristic, final Geometry geometry)
+    {
+        final GeometryWrapper<?> wrapper = Geometries.wrap(geometry).orElseThrow(
+                    () -> new IllegalStateException("Cannot load ESRI binding"));
 
-    /**
-     * Tests a sparse feature type with operations.
-     *
-     * @throws FactoryException if an error occurred while searching for the coordinate operations.
-     */
-    @Test
-    @DependsOnMethod("testConstruction")
-    public void testSparseFeature() throws FactoryException {
-        run(new SparseFeature(school(2)));
-    }
-
-    /**
-     * If no characteristic is defined on properties, but geometries define different ones, we should return an
-     * error, because it is an ambiguous case (Note: In the future, we could try to push them all in a
-     * {@link CRS#suggestCommonTarget(GeographicBoundingBox, CoordinateReferenceSystem...) common space}.
-     */
-    @Test
-    public void no_characteristic_but_different_geometry_crs() {
-        try {
-            final Envelope env = new CRSManagementUtil().test(HardCodedCRS.WGS84, HardCodedCRS.NTF);
-            fail("Ambiguity in CRS should have caused an error,  a value has been returned: "+env);
-        } catch (IllegalStateException e) {
-            // Expected behavior
+        if (asCharacteristic) {
+            @SuppressWarnings("unchecked")
+            final Attribute<GeometryWrapper<?>> property =
+                    (Attribute<GeometryWrapper<?>>) feature.getProperty(propertyName);
+            final Attribute<CoordinateReferenceSystem> crsCharacteristic = Features.cast(
+                    property.getType().characteristics().get(AttributeConvention.CRS_CHARACTERISTIC.toString()),
+                    CoordinateReferenceSystem.class).newInstance();
+            crsCharacteristic.setValue(crs);
+            property.characteristics().put(AttributeConvention.CRS_CHARACTERISTIC.toString(), crsCharacteristic);
+            property.setValue(wrapper);
+        } else {
+            wrapper.setCoordinateReferenceSystem(crs);
+            feature.setPropertyValue(propertyName, wrapper);
         }
     }
 
     /**
-     * When CRS is not in characteristics, but can be found on geometries, returned envelope should match it.
+     * Verifies that two geometries using the same CRS, without any CRS declared as the default one, can be combined.
+     * The CRS is not declared in characteristics but can be found on geometries, so returned envelope should use it.
+     * The expected envelope is {@code BOX(4 7, 17 15)}
      */
     @Test
     public void same_crs_on_geometries() {
-        final Envelope env = new CRSManagementUtil().test(HardCodedCRS.WGS84, HardCodedCRS.WGS84);
-        assertEquals(HardCodedCRS.WGS84, env.getCoordinateReferenceSystem());
+        initialize();
+        final Envelope result = compute(HardCodedCRS.WGS84, HardCodedCRS.WGS84);
+        final Envelope expected = new Envelope2D(HardCodedCRS.WGS84, 4, 7, 13, 8);
+        assertSame(HardCodedCRS.WGS84, result.getCoordinateReferenceSystem());
+        assertEnvelopeEquals(expected, result, STRICT);
     }
 
     /**
-     * When referencing is defined neither in characteristics nor on geometries, we should assume all geometries are
-     * expressed in the same space. Therefore, an envelope with no CRS should be returned.
+     * Verifies that two geometries using the same CRS, specified as characteristics, can be combined.
+     * This tests ensures that envelope CRS is the default one specified by property type characteristics.
      */
     @Test
-    public void no_crs_defined() {
-        Envelope env = new CRSManagementUtil().test(null, null);
-        assertNull(env.getCoordinateReferenceSystem());
+    public void same_crs_on_characteristic() {
+        initialize(HardCodedCRS.WGS84, true, HardCodedCRS.WGS84, true);
+        final Envelope result = compute(null, null);
+        final Envelope expected = new Envelope2D(HardCodedCRS.WGS84, 4, 7, 13, 8);
+        assertSame(HardCodedCRS.WGS84, result.getCoordinateReferenceSystem());
+        assertEnvelopeEquals(expected, result, STRICT);
     }
 
     /**
-     * Ensure that returned envelope CRS is the default one specified by property type characteristics if no geometry
-     * defines its CRS.
+     * Verifies that two geometries using different CRS, without any CRS declared as the default one,
+     * are combined using a common CRS. The difference between the two CRS is only a change of axis order.
+     * The expected envelope is {@code BOX(4 7, 15 17)} where the upper corner (15 17) was (17 15) in
+     * the original geometry (before the change of CRS has been applied).
      */
     @Test
-    public void feature_type_characteristic_defines_crs() {
-        final Envelope env = new CRSManagementUtil(HardCodedCRS.WGS84, false, HardCodedCRS.WGS84, false)
-                .test(null, null);
-        assertEquals(HardCodedCRS.WGS84, env.getCoordinateReferenceSystem());
+    public void different_crs_on_geometries() {
+        initialize();
+        final Envelope result = compute(HardCodedCRS.WGS84, HardCodedCRS.WGS84_φλ);
+        final Envelope expected = new Envelope2D(HardCodedCRS.WGS84, 4, 7, 11, 10);
+        assertSame(HardCodedCRS.WGS84, result.getCoordinateReferenceSystem());
+        assertEnvelopeEquals(expected, result, STRICT);
     }
 
+    /**
+     * Verifies that two geometries using different CRS, specified as characteristics, can be combined.
+     */
     @Test
-    public void feature_characteristic_define_crs() {
-        final CRSManagementUtil environment = new CRSManagementUtil(null, true, null, true);
-        Envelope env = environment
-                .test(HardCodedCRS.WGS84, true, HardCodedCRS.WGS84, true);
-        assertEquals(HardCodedCRS.WGS84, env.getCoordinateReferenceSystem());
+    public void different_crs_on_characteristic() {
+        initialize(null, true, null, true);
+        final Envelope result = compute(HardCodedCRS.WGS84, true, HardCodedCRS.WGS84, true);
+        final Envelope expected = new Envelope2D(HardCodedCRS.WGS84, 4, 7, 13, 8);
+        assertSame(HardCodedCRS.WGS84, result.getCoordinateReferenceSystem());
+        assertEnvelopeEquals(expected, result, STRICT);
+    }
 
+    /**
+     * Verifies attempts to compute envelope when geometries have unspecified CRS.
+     * If the feature has two or more geometries, the operation should fail because of ambiguity.
+     * If the feature has only one geometry, its envelope should be returned with a null CRS.
+     */
+    @Test
+    public void unspecified_crs() {
+        initialize();
         try {
-            env = environment.test(HardCodedCRS.WGS84, true, HardCodedCRS.NTF, true);
-            fail("Envelope should not be computed due to different CRS in geometries: "+env);
-        } catch (IllegalStateException e) {
-            // expected behavior
+            final Envelope result = compute(null, null);
+            fail("Should not combine envelopes without CRS, but a value has been returned: " + result);
+        } catch (FeatureOperationException e) {
+            // Expected behavior
+            assertNotNull(e.getMessage());
         }
+        feature.setPropertyValue("g2", null);
+        final Envelope result = (Envelope) feature.getPropertyValue("sis:envelope");
+        assertNull(result.getCoordinateReferenceSystem());
+        assertEnvelopeEquals(new Envelope2D(null, 4, 7, 0, 0), result, STRICT);
     }
 
-    private static class CRSManagementUtil {
-        final FeatureType type;
-
-        CRSManagementUtil() {
-            this(null, false, null, false);
-        }
-
-        /**
-         * Create a feature type containing two geometric fields. If given CRS are non null, they will be specified as
-         * default CRS of each field through property type CRS characteristic.
-         * @param defaultCrs1 Default CRS of first property
-         * @param forceCharacteristic1 True if we want a CRS characteristic even with a null CRS. False to omit
-         *                             characteristic i defaultCrs1 is null.
-         * @param defaultCrs2 Default CRS for second property
-         * @param forceCharacteristic2 True if we want a CRS characteristic even with a null CRS. False to omit
-         *                             characteristic i defaultCrs2 is null.
-         */
-        CRSManagementUtil(final CoordinateReferenceSystem defaultCrs1, boolean forceCharacteristic1, final CoordinateReferenceSystem defaultCrs2, boolean forceCharacteristic2) {
-            final FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("test");
-            final AttributeTypeBuilder<GeometryWrapper> g1 = builder.addAttribute(GeometryWrapper.class).setName("g1");
-            if (defaultCrs1 != null || forceCharacteristic1) g1.setCRS(defaultCrs1);
-            g1.addRole(AttributeRole.DEFAULT_GEOMETRY);
-
-            final AttributeTypeBuilder<GeometryWrapper> g2 = builder.addAttribute(GeometryWrapper.class).setName("g2");
-            if (defaultCrs2 != null || forceCharacteristic2) g2.setCRS(defaultCrs2);
-
-            type = builder.build();
-        }
-
-        /**
-         * Compute the envelope of this feature, and ensure that lower/upper coordinates are well-defined.
-         * The result is returned, so user can check the coordinate reference system on it.
-         *
-         * @param c1 CRS to put on the first geometry (not on property characteristic, but geometry itself)
-         * @param c2 CRS to put on the second geometry (not on property characteristic, but geometry itself)
-         * @return A non null envelope, result of the envelope operation.
-         */
-        Envelope test(final CoordinateReferenceSystem c1, final CoordinateReferenceSystem c2) {
-            return test(c1, false, c2, false);
-        }
-
-        Envelope test(final CoordinateReferenceSystem c1, final boolean c1AsCharacteristic, final CoordinateReferenceSystem c2, final boolean c2AsCharacteristic) {
-            final GeometryWrapper g1 = Geometries.wrap(new Point(4, 4))
-                    .orElseThrow(() -> new IllegalStateException("Cannot load ESRI binding"));
-            final GeometryWrapper g2 = Geometries.wrap(new Polyline(new Point(2, 2), new Point(3, 3)))
-                    .orElseThrow(() -> new IllegalStateException("Cannot load ESRI binding"));
-
-            Feature f = type.newInstance();
-            set(f, "g1", g1, c1, c1AsCharacteristic);
-            set(f, "g2", g2, c2, c2AsCharacteristic);
-
-            Object result = f.getPropertyValue("sis:envelope");
-            assertNotNull(result);
-            assertTrue(result instanceof Envelope);
-            Envelope env = (Envelope) result;
-            assertArrayEquals(new double[]{2, 2}, env.getLowerCorner().getCoordinate(), 1e-4);
-            assertArrayEquals(new double[]{4, 4}, env.getUpperCorner().getCoordinate(), 1e-4);
-            return env;
-        }
-
-        private void set(final Feature target, final String propertyName, final GeometryWrapper geometry, final CoordinateReferenceSystem crs, final boolean asCharacteristic) {
-            if (asCharacteristic) {
-                final Attribute g1p = (Attribute) target.getProperty(propertyName);
-                final Attribute<CoordinateReferenceSystem> crsCharacteristic = CRS_CHARACTERISTIC.newInstance();
-                crsCharacteristic.setValue(crs);
-                g1p.characteristics().put(AttributeConvention.CRS_CHARACTERISTIC.toString(), crsCharacteristic);
-                g1p.setValue(geometry);
-            } else {
-                geometry.setCoordinateReferenceSystem(crs);
-                target.setPropertyValue(propertyName, geometry);
-            }
+    /**
+     * Verifies attempts to compute envelope when only one geometry has unspecified CRS.
+     * The operation should fail because of ambiguity.
+     */
+    @Test
+    public void partially_unspecified_crs() {
+        initialize();
+        try {
+            final Envelope result = compute(null, HardCodedCRS.WGS84);
+            fail("Ambiguity in CRS should have caused an error, but a value has been returned: " + result);
+        } catch (FeatureOperationException e) {
+            // Expected behavior
+            assertNotNull(e.getMessage());
         }
     }
 }
