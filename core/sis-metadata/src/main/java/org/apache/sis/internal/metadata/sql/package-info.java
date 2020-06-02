@@ -72,6 +72,7 @@
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.7
  * @module

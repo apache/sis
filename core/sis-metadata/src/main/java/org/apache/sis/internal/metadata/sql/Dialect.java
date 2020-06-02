@@ -26,13 +26,16 @@ import org.apache.sis.util.CharSequences;
  * that can not (to our knowledge) be inferred from the {@link DatabaseMetaData}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.1
  * @since   0.7
  * @module
  */
 public enum Dialect {
     /**
      * The database is presumed to use ANSI SQL syntax.
+     *
+     * @see DatabaseMetaData#supportsANSI92EntryLevelSQL()
      */
     ANSI(null, false, true),
 
@@ -75,7 +78,7 @@ public enum Dialect {
     /**
      * Whether this dialect support table inheritance.
      */
-    public final boolean isTableInheritanceSupported;
+    public final boolean supportsTableInheritance;
 
     /**
      * {@code true} if child tables inherit the index of their parent tables.
@@ -83,23 +86,25 @@ public enum Dialect {
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-358">SIS-358</a>
      */
-    public final boolean isIndexInheritanceSupported = false;
+    public final boolean supportsIndexInheritance = false;
 
     /**
      * Whether this dialect support adding table constraints after creation.
      * This feature is not yet supported in SQLite.
      *
-     * @see <a href="https://www.sqlite.org/omitted.html">SQL Features That SQLite Does Not Implement</a>
+     * @see DatabaseMetaData#supportsAlterTableWithAddColumn()
      */
     public final boolean supportsAlterTableWithAddConstraint;
 
     /**
      * Creates a new enumeration value for a SQL dialect for the given protocol.
      */
-    private Dialect(final String protocol, final boolean isTableInheritanceSupported,
-            final boolean supportsAlterTableWithAddConstraint) {
+    private Dialect(final String  protocol,
+                    final boolean supportsTableInheritance,
+                    final boolean supportsAlterTableWithAddConstraint)
+    {
         this.protocol = protocol;
-        this.isTableInheritanceSupported = isTableInheritanceSupported;
+        this.supportsTableInheritance = supportsTableInheritance;
         this.supportsAlterTableWithAddConstraint = supportsAlterTableWithAddConstraint;
     }
 

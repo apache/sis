@@ -50,7 +50,8 @@ import org.apache.sis.util.resources.Errors;
  * functionalities other than what we need for those scripts.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -343,7 +344,7 @@ public class ScriptRunner implements AutoCloseable {
             addStatementToSkip("COMMENT\\s+ON\\s+.*");
         }
         if (!dialect.supportsAlterTableWithAddConstraint) {
-            addStatementToSkip("ALTER TABLE.+ADD CONSTRAINT.*");
+            addStatementToSkip("ALTER\\s+TABLE\\s+\\w+\\s+ADD\\s+CONSTRAINT\\s+.*");
         }
     }
 
@@ -714,7 +715,7 @@ parseLine:  while (pos < length) {
             return 0;
         }
         String subSQL = currentSQL = CharSequences.trimWhitespaces(sql).toString();
-        if (!dialect.isTableInheritanceSupported && subSQL.startsWith("CREATE TABLE")) {
+        if (!dialect.supportsTableInheritance && subSQL.startsWith("CREATE TABLE")) {
             final int s = sql.lastIndexOf("INHERITS");
             if (s >= 0 && isOutsideQuotes(sql, s+8, sql.length())) {             // 8 is the length of "INHERITS".
                 sql.setLength(CharSequences.skipTrailingWhitespaces(sql, 0, s));
