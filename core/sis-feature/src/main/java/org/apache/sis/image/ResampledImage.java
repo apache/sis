@@ -28,6 +28,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import java.awt.image.ImagingOpException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
@@ -105,6 +106,10 @@ public class ResampledImage extends ComputedImage {
      * we need are not the coordinates of the pixel we want to interpolate, but 1 or 2 pixels before for making room
      * for interpolation support.
      *
+     * <p>This transform may be an instance of {@link ResamplingGrid} if the usage of such grid has been authorized.
+     * That transform may be non-invertible. Consequently this transform should not be used for inverse operations
+     * and should not be made accessible to the user.</p>
+     *
      * @see #interpolationSupportOffset(int)
      */
     private final MathTransform toSourceSupport;
@@ -134,6 +139,9 @@ public class ResampledImage extends ComputedImage {
      * @param  toSource       conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
      * @param  source         the image to be resampled.
      * @param  interpolation  the object to use for performing interpolations.
+     * @param  accuracy       desired positional accuracy in pixel units, or 0 for the best accuracy available.
+     *                        A value such as 0.125 pixel may enable the use of a slightly faster algorithm
+     *                        at the expense of accuracy. This is only a hint honored on a <em>best-effort</em> basis.
      * @param  fillValues     the values to use for pixels in this image that can not be mapped to pixels in source image.
      *                        May be {@code null} or contain {@code null} elements. If shorter than the number of bands,
      *                        missing values are assumed {@code null}. If longer than the number of bands, extraneous
@@ -142,7 +150,7 @@ public class ResampledImage extends ComputedImage {
      * @see ImageProcessor#resample(Rectangle, MathTransform, RenderedImage)
      */
     protected ResampledImage(final Rectangle bounds, final MathTransform toSource, final RenderedImage source,
-                             final Interpolation interpolation, final Number[] fillValues)
+                             final Interpolation interpolation, final float accuracy, final Number[] fillValues)
     {
         super(ImageLayout.DEFAULT.createCompatibleSampleModel(source, bounds), source);
         if (source.getWidth() <= 0 || source.getHeight() <= 0) {
@@ -177,12 +185,22 @@ public class ResampledImage extends ComputedImage {
         final double[] offset = new double[numDim];
         offset[0] = interpolationSupportOffset(s.width);
         offset[1] = interpolationSupportOffset(s.height);
-        toSourceSupport = MathTransforms.concatenate(toSource, MathTransforms.translation(offset));
-        final int numBands = ImageUtilities.getNumBands(source);
+        MathTransform toSourceSupport = MathTransforms.concatenate(toSource, MathTransforms.translation(offset));
+        /*
+         * If the desired accuracy is large enough, try using a grid of precomputed values for faster operations.
+         * This is optional; it is okay to abandon the grid if we can not compute it.
+         */
+        if (accuracy >= ResamplingGrid.TOLERANCE) try {
+            toSourceSupport = ResamplingGrid.getOrCreate(MathTransforms.bidimensional(toSourceSupport), bounds);
+        } catch (TransformException | ImagingOpException e) {
+            recoverableException("<init>", e);
+        }
+        this.toSourceSupport = toSourceSupport;
         /*
          * Copy the `fillValues` either as an `int[]` or `double[]` array, depending on
          * whether the data type is an integer type or not. Null elements default to zero.
          */
+        final int numBands = ImageUtilities.getNumBands(source);
         final int dataType = ImageUtilities.getDataType(source);
         if (ImageUtilities.isIntegerType(dataType)) {
             final int[] fill = new int[numBands];
@@ -252,10 +270,20 @@ public class ResampledImage extends ComputedImage {
                 return "toSource";
             }
         } catch (TransformException e) {
-            Logging.recoverableException(Logging.getLogger(Modules.RASTER), getClass(), "verify", e);
+            recoverableException("verify", e);
             return "toSource";
         }
         return error;
+    }
+
+    /**
+     * Invoked when a non-fatal error occurred.
+     *
+     * @param  method  the method where the ignorable error occurred.
+     * @param  error   the ignore which can be ignored.
+     */
+    private static void recoverableException(final String method, final Exception error) {
+        Logging.recoverableException(Logging.getLogger(Modules.RASTER), ResampledImage.class, method, error);
     }
 
     /**

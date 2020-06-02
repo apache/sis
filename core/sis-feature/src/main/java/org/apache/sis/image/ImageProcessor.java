@@ -28,6 +28,8 @@ import java.awt.image.SampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
+import javax.measure.Quantity;
+import javax.measure.Unit;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArraysExt;
@@ -36,6 +38,7 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -158,6 +161,17 @@ public class ImageProcessor implements Cloneable {
          */
         DEFAULT
     }
+
+    /**
+     * Hints about the desired positional accuracy (in "real world" units or in pixel units),
+     * or {@code null} if unspecified. In order to avoid the need to clone this array in the
+     * {@link #clone()} method, the content of this array should not be modified.
+     * For setting new values, a new array should be created.
+     *
+     * @see #getPositionalAccuracyHints()
+     * @see #setPositionalAccuracyHints(Quantity...)
+     */
+    private Quantity<?>[] positionalAccuracyHints;
 
     /**
      * Whether errors occurring during computation should be propagated or wrapped in a {@link LogRecord}.
@@ -302,6 +316,72 @@ public class ImageProcessor implements Cloneable {
             case SEQUENTIAL: return false;
             default:         return source.getClass().getName().startsWith(Modules.CLASSNAME_PREFIX);
         }
+    }
+
+    /**
+     * Returns hints about the desired positional accuracy, in "real world" units or in pixel units.
+     * This is an empty array by default, which means that {@code ImageProcessor} aims for the best
+     * accuracy it can produce. If the returned array is non-empty and contains accuracies large enough,
+     * {@code ImageProcessor} may use some slightly faster algorithms at the expense of accuracy.
+     *
+     * @return desired accuracy in no particular order, or an empty array if none.
+     */
+    public Quantity<?>[] getPositionalAccuracyHints() {
+        return (positionalAccuracyHints != null) ? positionalAccuracyHints.clone() : new Quantity<?>[0];
+    }
+
+    /**
+     * Sets hints about desired positional accuracy, in "real world" units or in pixel units.
+     * More than one hint can be specified for allowing the use of different units.
+     * For example the given array can contain an accuracy in metres and an accuracy in seconds,
+     * for specifying desired accuracies in both spatial dimensions and in the temporal dimension.
+     * Accuracy can also be specified in both real world units such as {@linkplain Units#METRE metres}
+     * and in {@linkplain Units#PIXEL pixel units}, which are converted to real world units depending
+     * on image resolution. If more than one value is applicable to a dimension
+     * (after unit conversion if needed), the smallest value is taken.
+     *
+     * <p>Those values are only hints, the {@code ImageProcessor} is free to ignore them.
+     * In any cases there is no guarantees that computed images will met those accuracies.
+     * The given values are honored on a <em>best effort</em> basis only.</p>
+     *
+     * <p>In current implementation, {@code ImageProcessor} recognizes only accuracies in {@link Units#PIXEL}.
+     * A value such as 0.125 pixel may cause {@code ImageProcessor} to use some a slightly faster algorithm
+     * at the expense of accuracy during {@linkplain #resample resampling operations}.</p>
+     *
+     * @param  hints  desired accuracy in no particular order, or a {@code null} array if none.
+     *                Null elements in the array are ignored.
+     */
+    public void setPositionalAccuracyHints(final Quantity<?>... hints) {
+        if (hints != null) {
+            final Quantity<?>[] copy = new Quantity<?>[hints.length];
+            int n = 0;
+            for (final Quantity<?> hint : hints) {
+                if (hint != null) copy[n++] = hint;
+            }
+            if (n != 0) {
+                positionalAccuracyHints = ArraysExt.resize(copy, n);
+                return;
+            }
+        }
+        positionalAccuracyHints = null;
+    }
+
+    /**
+     * Returns the smallest resolution in the given units.
+     * Current implementation checks only quantities having exactly the specified units
+     * because we look only for {@link Units#PIXEL}. A future version will need to apply
+     * unit conversions if we look for other kind of quantities such as metres.
+     */
+    private double getPositionalAccuracy(final Unit<?> unit) {
+        double accuracy = Double.POSITIVE_INFINITY;
+        if (positionalAccuracyHints != null) {
+            for (final Quantity<?> hint : positionalAccuracyHints) {
+                if (unit.equals(hint.getUnit())) {              // See comment in javadoc.
+                    accuracy = Math.min(accuracy, Math.abs(hint.getValue().doubleValue()));
+                }
+            }
+        }
+        return Double.isFinite(accuracy) ? accuracy : 0;
     }
 
     /**
@@ -505,7 +585,8 @@ public class ImageProcessor implements Cloneable {
                     }
                 }
             }
-            resampled = new ResampledImage(bounds, toSource, source, interpolation, fillValues);
+            resampled = new ResampledImage(bounds, toSource, source, interpolation,
+                            (float) getPositionalAccuracy(Units.PIXEL), fillValues);
             break;
         }
         if (cm != null && !cm.equals(resampled.getColorModel())) {

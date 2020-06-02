@@ -252,7 +252,7 @@ class CoordinateOperationRegistry {
             }
             if (codeFinder != null) {
                 codeFinder.setIgnoringAxes(true);
-                authorityCodes = new IdentityHashMap<>(10);
+                authorityCodes = new IdentityHashMap<>(5);          // Rarely more than 4 entries.
             }
         }
         this.codeFinder     = codeFinder;

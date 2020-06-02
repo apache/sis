@@ -28,6 +28,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -79,6 +80,22 @@ final class ResamplingGrid extends AbstractMathTransform2D {
     static final double TOLERANCE = 0.125;
 
     /**
+     * Cache of previously computed {@link ResamplingGrid} instances. The cache may retain up to
+     * 256 kb (32 kb × {@value Double#BYTES}) of grids by strong references. After that amount,
+     * grids are retained by weak references.
+     */
+    private static final Cache<Key,MathTransform2D> CACHE = new Cache<Key,MathTransform2D>(12, 32L * 1024, false) {
+        /** Returns a memory usage estimation divided by {@value Double#BYTES}. */
+        @Override protected int cost(final MathTransform2D value) {
+            if (value instanceof ResamplingGrid) {
+                return ((ResamplingGrid) value).coordinates.length;
+            } else {
+                return 50;          // Arbitrary value: 2 × the size of a 5×5 matrix.
+            }
+        }
+    };
+
+    /**
      * Number of tiles in this grid. A {@link ResamplingGrid} tile is a rectangular region inside which
      * bilinear interpolations can be used with acceptable errors. {@link ResamplingGrid} tiles are not
      * necessarily coincident with image tiles.
@@ -92,13 +109,15 @@ final class ResamplingGrid extends AbstractMathTransform2D {
     private final double tileWidth, tileHeight;
 
     /**
-     * The (x,y) coordinates of the pixel in the upper-left corner of the source grid.
+     * The (x,y) coordinates of the pixel in the upper-left corner of the target image.
+     * The coordinate system is the one of inputs given to {@code transform(…)} methods.
      * Those values are integers, but stored as {@code double} values for avoiding type conversions.
      */
     private final double xmin, ymin;
 
     /**
      * Sequence of (x,y) grid coordinates for all tiles in this grid, stored in row-major fashion.
+     * The coordinate system is the one of outputs computed by {@code transform(…)} methods.
      */
     private final double[] coordinates;
 
@@ -110,8 +129,8 @@ final class ResamplingGrid extends AbstractMathTransform2D {
      * <i>etc.</i> with recursive splits like a QuadTree.
      *
      * <p>Determining an optimal value of {@code depth} argument is the most tricky part of this class.
-     * This work is done by {@link #create(MathTransform2D, MathTransform2D, Rectangle)} which expects
-     * the {@code toSourceCenter} and {@code domain} arguments and compute the {@code depth} one.</p>
+     * This work is done by {@link #create(MathTransform2D, Rectangle)} static method which expects the
+     * {@code toSourceCenter} and {@code bounds} arguments and computes the {@code depth} one.</p>
      *
      * @param  toSourceCenter  conversion from target cell centers to source cell centers.
      * @param  bounds  pixel coordinates of target images for which to create a grid of source coordinates.
@@ -198,22 +217,82 @@ final class ResamplingGrid extends AbstractMathTransform2D {
     }
 
     /**
+     * Key of cached {@link ResamplingGrid} instances.
+     */
+    private static final class Key {
+        /** transform from target grid center to source grid center. */
+        private final MathTransform2D toSourceCenter;
+
+        /** pixel coordinates of target images for which to create a grid of source coordinates. */
+        private final int x, y, width, height;
+
+        /** Creates a new key. */
+        Key(final MathTransform2D toSourceCenter, final Rectangle bounds) {
+            this.toSourceCenter = toSourceCenter;
+            x      = bounds.x;
+            y      = bounds.y;
+            width  = bounds.width;
+            height = bounds.height;
+        }
+
+        /** Computes a hash code value for this key. */
+        @Override public int hashCode() {
+            return (((x * 31) + y * 31) + width) * 31 + height + toSourceCenter.hashCode();
+        }
+
+        /** Compares the given object with this key for equality. */
+        @Override public boolean equals(final Object obj) {
+            if (obj instanceof Key) {
+                final Key other = (Key) obj;
+                return x      == other.x      &&
+                       y      == other.y      &&
+                       width  == other.width  &&
+                       height == other.height &&
+                       toSourceCenter.equals(other.toSourceCenter);
+            }
+            return false;
+        }
+    }
+
+    /**
      * Creates a grid for the given domain of validity.
      * The {@code toSourceCenter} argument is the transform used for computing the coordinate values in the grid.
-     * The {@code toSourceCorner} argument is the transform used for computing derivatives (Jacobian matrices)
-     * in order to determine when the grid as enough tiles.
+     * The {@code toSourceCorner} variable is the transform used for computing derivatives (Jacobian matrices)
+     * in order to determine when the grid has enough tiles.
      *
      * @param  toSourceCenter  transform from target grid center to source grid center.
-     * @param  toSourceCorner  transform from target grid corner to source grid corner.
-     * @param  bounds          the domain of validity in source coordinates.
+     * @param  bounds          pixel coordinates of target images for which to create a grid of source coordinates.
      * @return a precomputed grid for the given transform.
      * @throws TransformException if a derivative can not be computed or a point can not be transformed.
      * @throws ImagingOpException if the grid would be too big for being useful.
      */
-    static MathTransform2D create(final MathTransform2D toSourceCenter,
-                                  final MathTransform2D toSourceCorner,
-                                  final Rectangle bounds) throws TransformException
-    {
+    static MathTransform2D getOrCreate(final MathTransform2D toSourceCenter, final Rectangle bounds) throws TransformException {
+        final Key key = new Key(toSourceCenter, bounds);
+        MathTransform2D grid = CACHE.peek(key);
+        if (grid == null) {
+            final Cache.Handler<MathTransform2D> handler = CACHE.lock(key);
+            try {
+                grid = handler.peek();
+                if (grid == null) {
+                    grid = create(toSourceCenter, bounds);
+                }
+            } finally {
+                handler.putAndUnlock(grid);
+            }
+        }
+        return grid;
+    }
+
+    /**
+     * Implementation of {@link #getOrCreate(MathTransform2D, Rectangle)} but without using cached instances.
+     * Non-private for testing purpose only.
+     */
+    static MathTransform2D create(final MathTransform2D toSourceCenter, final Rectangle bounds) throws TransformException {
+        // transform from target grid corner to source grid corner.
+        final MathTransform2D toSourceCorner = (MathTransform2D) MathTransforms.concatenate(
+                MathTransforms.translation(-0.5, -0.5), toSourceCenter,
+                MathTransforms.translation(+0.5, +0.5));
+
         final double xmin = bounds.getMinX();
         final double xmax = bounds.getMaxX();
         final double ymin = bounds.getMinY();

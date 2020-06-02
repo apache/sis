@@ -48,7 +48,7 @@ import static org.opengis.test.Assert.*;
  */
 public final strictfp class ResamplingGridTest extends TestCase {
     /**
-     * Tests {@link ResamplingGrid#create(MathTransform2D, MathTransform2D, Rectangle)} with an affine transform.
+     * Tests {@link ResamplingGrid#create(MathTransform2D, Rectangle)} with an affine transform.
      * The method should detect the affine case and return an equal transform (not necessarily the same instance).
      *
      * @throws TransformException if an error occurred while transforming a coordinate.
@@ -57,7 +57,7 @@ public final strictfp class ResamplingGridTest extends TestCase {
     public void testCreateAffine() throws TransformException {
         final Rectangle       bounds    = new Rectangle(100, 200, 300, 400);
         final MathTransform2D reference = new AffineTransform2D(2, 0, 0, 3, -10, -20);
-        final MathTransform2D grid      = ResamplingGrid.create(reference, centerToCorner(reference), bounds);
+        final MathTransform2D grid      = ResamplingGrid.create(reference, bounds);
         assertEquals(reference, grid);
     }
 
@@ -83,15 +83,6 @@ public final strictfp class ResamplingGridTest extends TestCase {
             reference.transform(source, 0, expected, 0, 1);
             assertArrayEquals(expected, actual, Numerics.COMPARISON_THRESHOLD);
         }
-    }
-
-    /**
-     * From a transform mapping pixel centers, returns a transform mapping pixel corners.
-     */
-    private static MathTransform2D centerToCorner(final MathTransform projection) {
-        return (MathTransform2D) MathTransforms.concatenate(
-                MathTransforms.translation(-0.5, -0.5), projection,
-                MathTransforms.translation(+0.5, +0.5));
     }
 
     /**
@@ -121,7 +112,7 @@ public final strictfp class ResamplingGridTest extends TestCase {
                 affine(bounds, domain), projection,
                 affine(Shapes2D.transform((MathTransform2D) projection, domain, null), bounds));
 
-        final MathTransform2D grid     = ResamplingGrid.create(reference, centerToCorner(reference), bounds);
+        final MathTransform2D grid     = ResamplingGrid.create(reference, bounds);
         final Statistics      sx       = new Statistics("sx");
         final Statistics      sy       = new Statistics("sy");
         final double[]        source   = new double[2];
