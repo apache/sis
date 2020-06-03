@@ -17,6 +17,16 @@
 package org.apache.sis.storage;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.apache.sis.internal.storage.xml.StoreTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -55,5 +65,51 @@ public final strictfp class DataStoresTest extends TestCase {
     public void testOpen() throws DataStoreException {
         final DataStore store = DataStores.open(new StringReader(StoreTest.XML));
         assertFalse(store.getMetadata().getContacts().isEmpty());
+    }
+
+
+    @Test
+    public void datastore_registry_must_be_thread_safe() throws Exception {
+        final ExecutorService exec = Executors.newFixedThreadPool(6);
+        try {
+            List<Set> allResults = new ArrayList<>();
+            for (int i = 4; i <= 6; i++) allResults.addAll(collectProvidersConcurrently(i, exec));
+
+            for (int i = 1; i < allResults.size() - 1; i++) {
+                assertEquals(
+                        "Index " + i,
+                        allResults.get(i - 1),
+                        allResults.get(i)
+                );
+            }
+            exec.shutdown();
+            exec.awaitTermination(1, TimeUnit.SECONDS);
+        } finally {
+            exec.shutdownNow();
+        }
+    }
+
+    private List<Set<Class>> collectProvidersConcurrently(int nbWorkers, final ExecutorService executor) throws Exception {
+        final DataStoreRegistry dsr = new DataStoreRegistry(DataStoresTest.class.getClassLoader());
+        final CyclicBarrier startSignal = new CyclicBarrier(nbWorkers);
+        Callable<Set> collectProviderClasses = () -> {
+            startSignal.await(1, TimeUnit.SECONDS);
+            Set<Class> result = new HashSet<>();
+            for (DataStoreProvider p : dsr.providers()) result.add(p.getClass());
+            return result;
+        };
+
+        final List<Future<Set>> tasks = new ArrayList<>(nbWorkers);
+        for (int i = 0 ; i < nbWorkers ; i++) {
+            tasks.add(executor.submit(collectProviderClasses));
+        }
+
+        final List<Set<Class>> results = new ArrayList<>(nbWorkers);
+        for (int i = 0 ; i < nbWorkers ; i++) {
+            Set workerResult = tasks.get(i).get(2, TimeUnit.SECONDS);
+            results.add(workerResult);
+        }
+
+        return results;
     }
 }
