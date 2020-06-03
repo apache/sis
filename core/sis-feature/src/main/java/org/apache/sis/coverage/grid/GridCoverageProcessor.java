@@ -17,6 +17,7 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Objects;
+import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.ImageProcessor;
@@ -81,8 +82,11 @@ public class GridCoverageProcessor implements Cloneable {
 
     /**
      * Returns the interpolation method to use for resampling operations.
+     * The default implementation delegates to the image processor.
      *
      * @return interpolation method to use in resampling operations.
+     *
+     * @see ImageProcessor#getInterpolation()
      */
     public Interpolation getInterpolation() {
         return imageProcessor.getInterpolation();
@@ -90,11 +94,39 @@ public class GridCoverageProcessor implements Cloneable {
 
     /**
      * Sets the interpolation method to use for resampling operations.
+     * The default implementation delegates to the image processor.
      *
      * @param  method  interpolation method to use in resampling operations.
+     *
+     * @see ImageProcessor#setInterpolation(Interpolation)
      */
     public void setInterpolation(final Interpolation method) {
         imageProcessor.setInterpolation(method);
+    }
+
+    /**
+     * Returns hints about the desired positional accuracy, in "real world" units or in pixel units.
+     * The default implementation delegates to the image processor.
+     *
+     * @return desired accuracy in no particular order, or an empty array if none.
+     *
+     * @see ImageProcessor#getPositionalAccuracyHints()
+     */
+    public Quantity<?>[] getPositionalAccuracyHints() {
+        return imageProcessor.getPositionalAccuracyHints();
+    }
+
+    /**
+     * Sets hints about desired positional accuracy, in "real world" units or in pixel units.
+     * The default implementation delegates to the image processor.
+     *
+     * @param  hints  desired accuracy in no particular order, or a {@code null} array if none.
+     *                Null elements in the array are ignored.
+     *
+     * @see ImageProcessor#setPositionalAccuracyHints(Quantity...)
+     */
+    public void setPositionalAccuracyHints(final Quantity<?>... hints) {
+        imageProcessor.setPositionalAccuracyHints(hints);
     }
 
     /**
