@@ -578,12 +578,13 @@ public class GridCoverage2D extends GridCoverage {
              * upper-left point is inside the image.
              */
             if (data instanceof BufferedImage) {
+                // BufferedImage origin should be (0, 0), but for consistency over image API, we consider it variable
                 final long ix = data.getMinX();
                 final long iy = data.getMinY();
                 if (xmin >= ix && ymin >= iy) {
                     return ((BufferedImage) data).getSubimage(toIntExact(xmin), toIntExact(ymin),
-                            toIntExact(min(xmax + 1, ix + data.getWidth()  - 1) - xmin),
-                            toIntExact(min(ymax + 1, iy + data.getHeight() - 1) - ymin));
+                            toIntExact(min(xmax + 1, ix + data.getWidth() ) - xmin),
+                            toIntExact(min(ymax + 1, iy + data.getHeight()) - ymin));
                 }
             }
             /*

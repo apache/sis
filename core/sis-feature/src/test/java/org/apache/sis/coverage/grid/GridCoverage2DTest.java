@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.awt.image.RenderedImage;
 import java.util.List;
 import java.util.Collections;
 import java.awt.image.BufferedImage;
@@ -191,6 +192,52 @@ public strictfp class GridCoverage2DTest extends TestCase {
         } catch (PointOutsideCoverageException ex) {
             assertNotNull(ex.getMessage());
         }
+    }
+
+    /**
+     * Ensure that calling {@link GridCoverage#render(GridExtent)} with a sub-extent (crop operation)
+     * returns precisely the requested area, not a smaller or bigger one.
+     */
+    @Test
+    public void render_of_subextent() {
+        final GridCoverage coverage = createTestCoverage();
+        final Raster completeRendering = coverage.render(null).getTile(0, 0);
+
+        final GridExtent singleRow = new GridExtent(2, 1).translate(0, 1);
+        RenderedImage subset = coverage.render(singleRow);
+        assertEquals("Rendering width", 2, subset.getWidth());
+        assertEquals("Rendering height", 1, subset.getHeight());
+        Raster subsetTile = subset.getTile(0, 0);
+        assertArrayEquals(
+                "Row extraction, pixel source(0, 1) -> output(0, 0)",
+                completeRendering.getPixel(0, 1, (double[])null),
+                subsetTile.getPixel(0, 0, (double[])null),
+                1e-1
+        );
+        assertArrayEquals(
+                "Row extraction, pixel source(1, 1) -> output(1, 0)",
+                completeRendering.getPixel(1, 1, (double[])null),
+                subsetTile.getPixel(1, 0, (double[])null),
+                1e-1
+        );
+
+        final GridExtent singleCol = new GridExtent(1, 2).translate(1, 0);
+        subset = coverage.render(singleCol);
+        assertEquals("Rendering width", 1, subset.getWidth());
+        assertEquals("Rendering height", 2, subset.getHeight());
+        subsetTile = subset.getTile(0, 0);
+        assertArrayEquals(
+                "Column extraction, pixel source(1, 0) -> output(0, 0)",
+                completeRendering.getPixel(1, 0, (double[])null),
+                subsetTile.getPixel(0, 0, (double[])null),
+                1e-1
+        );
+        assertArrayEquals(
+                "Column extraction, pixel source(1, 1) -> output(0, 1)",
+                completeRendering.getPixel(1, 1, (double[])null),
+                subsetTile.getPixel(0, 1, (double[])null),
+                1e-1
+        );
     }
 
     /**
