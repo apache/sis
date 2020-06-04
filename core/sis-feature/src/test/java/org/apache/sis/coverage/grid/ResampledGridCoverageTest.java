@@ -76,14 +76,9 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     private Random random;
 
     /**
-     * Arbitrary non-zero pixel coordinates for image origin.
+     * Arbitrary non-zero grid coordinate for the <var>z</var> dimensions.
      */
-    private int minX, minY;
-
-    /**
-     * Arbitrary non-zero grid coordinate for the <var>z</var> and <var>t</var> dimensions.
-     */
-    private int gridZ, gridT;
+    private int gridZ;
 
     /**
      * Creates a small grid coverage with arbitrary data. The rendered image will
@@ -94,11 +89,10 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         random = TestUtilities.createRandomNumberGenerator();
         final int width  = random.nextInt(8) + 3;
         final int height = random.nextInt(8) + 3;
-        minX = random.nextInt(32) - 10;
-        minY = random.nextInt(32) - 10;
         final TiledImageMock image = new TiledImageMock(
                 DataBuffer.TYPE_USHORT, 2,      // dataType and numBands
-                minX,  minY,
+                random.nextInt(32) - 10,        // minX (no effect on tests)
+                random.nextInt(32) - 10,        // minY (no effect on tests)
                 width, height,                  // Image size
                 width, height,                  // Tile size
                 random.nextInt(32) - 10,        // minTileX
@@ -166,8 +160,8 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
          * complete testing, but actually the tests in this class are independent of image origin.
          * Note that grid extent origin does not need to be the same than image origin.
          */
-        minX = random.nextInt(5) - 2;
-        minY = random.nextInt(5) - 2;
+        final int minX = random.nextInt(5) - 2;
+        final int minY = random.nextInt(5) - 2;
         GridGeometry gg = createGridGeometryND(withTime ? HardCodedCRS.WGS84_4D : HardCodedCRS.WGS84_3D, 0, 1, 2, 3, false);
         final TiledImage shiftedImage = new TiledImage(
                 image.getColorModel(),
@@ -206,7 +200,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         lower[z] = upper[z] = gridZ = 7;            // Arbitrary non-zero position in the grid.
         if (t < dim) {
             gridToCRS.setElement(t, dim, 48055);
-            lower[t] = upper[t] = gridT = 12;
+            lower[t] = upper[t] = 12;
         }
         if (flipY) {
             /*
@@ -403,7 +397,9 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
          * Verify GridCoverage.render(GridExtent) contract: the origin of the returned image
          * shall be the lower-left corner of `sliceExtent`, which is (3,3) in this test.
          */
-        targetImage = result.render(new GridExtent(LX+3, LY+3, 2, 2));
+        targetImage = result.render(new GridExtent(null,
+                new long[] {LX+3, LY+3, gridZ},
+                new long[] {LX+4, LY+4, gridZ}, true));
         assertPixelsEqual(sourceImage, new Rectangle(3, 3, 2, 2),
                           targetImage, new Rectangle(0, 0, 2, 2));
     }

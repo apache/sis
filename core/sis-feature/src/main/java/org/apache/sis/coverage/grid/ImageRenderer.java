@@ -69,8 +69,8 @@ import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
  *     class MyResource extends GridCoverage {
  *         &#64;Override
  *         public RenderedImage render(GridExtent sliceExtent) {
+ *             ImageRenderer renderer = new ImageRenderer(this, sliceExtent);
  *             try {
- *                 ImageRenderer renderer = new ImageRenderer(this, sliceExtent);
  *                 renderer.setData(data);
  *                 return renderer.image();
  *             } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
@@ -263,7 +263,7 @@ public class ImageRenderer {
             final int dimension = sliceExtent.getDimension();
             if (source.getDimension() != dimension) {
                 throw new MismatchedDimensionException(Errors.format(
-                        Errors.Keys.MismatchedDimension_3, "target", source.getDimension(), dimension));
+                        Errors.Keys.MismatchedDimension_3, "sliceExtent", source.getDimension(), dimension));
             }
         } else {
             sliceExtent = source;

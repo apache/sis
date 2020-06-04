@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
@@ -420,6 +421,7 @@ public abstract class GridCoverage {
      * @param  sliceExtent  a subspace of this grid coverage extent where all dimensions except two have a size of 1 cell.
      *         May be {@code null} if this grid coverage has only two dimensions with a size greater than 1 cell.
      * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
+     * @throws MismatchedDimensionException if the given extent does not have the same number of dimensions than this coverage.
      * @throws SubspaceNotSpecifiedException if the given argument is not sufficient for reducing the grid to a two-dimensional slice.
      * @throws DisjointExtentException if the given extent does not intersect this grid coverage.
      * @throws CannotEvaluateException if this method can not produce the rendered image for another reason.

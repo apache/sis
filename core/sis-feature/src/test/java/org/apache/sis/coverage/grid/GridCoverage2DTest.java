@@ -25,6 +25,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.datum.PixelInCell;
@@ -47,12 +48,13 @@ import static org.apache.sis.test.FeatureAssert.*;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
 public strictfp class GridCoverage2DTest extends TestCase {
-    /*
+    /**
      * Width and height of the grid tested in this class.
      */
     protected static final int GRID_SIZE = 2;
@@ -103,6 +105,22 @@ public strictfp class GridCoverage2DTest extends TestCase {
         raster.setSample(0, 1, 0,  -5);
         raster.setSample(1, 1, 0, -10);
         return new GridCoverage2D(grid, sd, image);
+    }
+
+    /**
+     * Asserts that the sample values in the given coverage are equal to the expected values.
+     *
+     * @param  coverage  the coverage containing the sample values to check.
+     * @param  expected  the expected sample values.
+     */
+    private static void assertSamplesEqual(final GridCoverage coverage, final double[][] expected) {
+        final Raster raster = coverage.render(null).getData();
+        for (int y=0; y<expected.length; y++) {
+            for (int x=0; x<expected[y].length; x++) {
+                double value = raster.getSampleDouble(x, y, 0);
+                assertEquals(expected[y][x], value, STRICT);
+            }
+        }
     }
 
     /**
@@ -195,7 +213,7 @@ public strictfp class GridCoverage2DTest extends TestCase {
     }
 
     /**
-     * Ensure that calling {@link GridCoverage#render(GridExtent)} with a sub-extent (crop operation)
+     * Ensures that calling {@link GridCoverage#render(GridExtent)} with a sub-extent (crop operation)
      * returns precisely the requested area, not a smaller or bigger one.
      */
     @Test
@@ -211,6 +229,9 @@ public strictfp class GridCoverage2DTest extends TestCase {
         final GridExtent singleRow = new GridExtent(2, 1).translate(0, 1);
         assertPixelsEqual(coverage.render(null), new Rectangle(0, 1, 2, 1),     // Expected values.
                           coverage.render(singleRow), null);                    // Actual values to test.
+        assertSamplesEqual(coverage, new double[][] {
+            {2, 5}                                      // Redundant with previous assert, but let be explicit.
+        });
         /*
          * Column extraction:
          *   - Expected size (1,2) is verified by `assertPixelsEqual(…)`.
@@ -221,21 +242,26 @@ public strictfp class GridCoverage2DTest extends TestCase {
         final GridExtent singleCol = new GridExtent(1, 2).translate(1, 0);
         assertPixelsEqual(coverage.render(null), new Rectangle(1, 0, 1, 2),     // Expected values.
                           coverage.render(singleCol), null);                    // Actual values to test.
+        assertSamplesEqual(coverage, new double[][] {
+            { 2},                                       // Redundant with previous assert, but let be explicit.
+            {-5}
+        });
     }
 
     /**
-     * Asserts that the sample values in the given coverage are equal to the expected values.
-     *
-     * @param  coverage  the coverage containing the sample values to check.
-     * @param  expected  the expected sample values.
+     * Verifies that calling {@link GridCoverage#render(GridExtent)} with an extent
+     * having the wrong number of exception causes an exception to be thrown.
      */
-    private static void assertSamplesEqual(final GridCoverage coverage, final double[][] expected) {
-        final Raster raster = coverage.render(null).getData();
-        for (int y=0; y<expected.length; y++) {
-            for (int x=0; x<expected[y].length; x++) {
-                double value = raster.getSampleDouble(x, y, 0);
-                assertEquals(expected[y][x], value, STRICT);
-            }
+    @Test
+    public void testInvalidDimension() {
+        final GridCoverage coverage = createTestCoverage();
+        final GridExtent sliceExtent = new GridExtent(null, null, new long[] {GRID_SIZE, GRID_SIZE, 0}, true);
+        try {
+            coverage.render(sliceExtent);
+            fail("Should not have accepted an extent with wrong number of dimensions.");
+        } catch (MismatchedDimensionException e) {
+            // This is the expected exception.
+            assertTrue(e.getMessage().contains("sliceExtent"));
         }
     }
 }

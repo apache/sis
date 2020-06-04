@@ -36,6 +36,7 @@ import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -49,6 +50,7 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Workaround;
@@ -94,6 +96,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
@@ -539,6 +542,7 @@ public class GridCoverage2D extends GridCoverage {
      *
      * @param  sliceExtent  area of interest, or {@code null} for the whole image.
      * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
+     * @throws MismatchedDimensionException if the given extent does not have the same number of dimensions than this coverage.
      * @throws DisjointExtentException if the given extent does not intersect this grid coverage.
      * @throws CannotEvaluateException if this method can not produce the rendered image for another reason.
      *
@@ -553,6 +557,13 @@ public class GridCoverage2D extends GridCoverage {
                 return data;
             }
             sliceExtent = extent;
+        } else {
+            final int expected = gridGeometry.getDimension();
+            final int dimension = sliceExtent.getDimension();
+            if (expected != dimension) {
+                throw new MismatchedDimensionException(Errors.format(
+                        Errors.Keys.MismatchedDimension_3, "sliceExtent", expected, dimension));
+            }
         }
         if (extent != null) {
             final int n = min(sliceExtent.getDimension(), extent.getDimension());
