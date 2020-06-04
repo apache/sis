@@ -36,6 +36,7 @@ import org.apache.sis.image.Interpolation;
 import org.apache.sis.image.TiledImageMock;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
@@ -61,6 +62,7 @@ import static org.apache.sis.test.FeatureAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
@@ -520,7 +522,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
      */
     @Test
-    public void crs3D_to_crs4D() throws TransformException {
+    public void testDimensionalityIncrease() throws TransformException {
         final GridCoverage source3D = createCoverageND(false);
         final GridGeometry target4D = createGridGeometryND(HardCodedCRS.WGS84_4D, 0, 1, 2, 3, false);
         final GridCoverage result   = resample(source3D, target4D);
@@ -534,12 +536,39 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
      */
     @Test
-    public void crs4D_to_crs3D() throws TransformException {
+    public void testDimensionalityReduction() throws TransformException {
         final GridGeometry target3D = createGridGeometryND(HardCodedCRS.WGS84_3D, 0, 1, 2, 3, false);
         final GridCoverage source4D = createCoverageND(true);
         final GridCoverage result   = resample(source4D, target3D);
         assertEquals(target3D, result.getGridGeometry());
         assertPixelsEqual(source4D.render(null), null, result.render(null), null);
+    }
+
+    /**
+     * Tests resampling with a target domain larger than the source domain.
+     * Pixel outside the source domain shall be set to fill value, which is 0.
+     *
+     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-495">SIS-495</a>
+     */
+    @Test
+    public void testDomainIncrease() throws TransformException {
+        final int size = 2;
+        final CoordinateReferenceSystem crs = HardCodedCRS.WGS84;
+        final BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_BYTE_GRAY);
+        image.getRaster().setDataElements(0, 0, size, size, new byte[] {10, 12, 16, 14});
+        final AffineTransform2D gridToCRS = new AffineTransform2D(1, 0, 0, -1, 0, 0);
+        final GridGeometry sourceGrid = new GridGeometry(null, CELL_CENTER, gridToCRS, crs);
+        final GridGeometry targetGrid = new GridGeometry(new GridExtent(4, 4), CELL_CENTER, gridToCRS, crs);
+        final GridCoverage source     = new GridCoverage2D(sourceGrid, null, image);
+        final GridCoverage target     = resample(source, targetGrid);
+        assertValuesEqual(target.render(null).getData(), 0, new int[][] {
+            {10, 12, 0, 0},
+            {16, 14, 0, 0},
+            { 0,  0, 0, 0},
+            { 0,  0, 0, 0}
+        });
     }
 
     /**

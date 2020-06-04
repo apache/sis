@@ -578,13 +578,25 @@ public class GridCoverage2D extends GridCoverage {
              * upper-left point is inside the image.
              */
             if (data instanceof BufferedImage) {
-                // BufferedImage origin should be (0, 0), but for consistency over image API, we consider it variable
+                // BufferedImage origin should be (0, 0), but for consistency with image API, we consider it variable.
                 final long ix = data.getMinX();
                 final long iy = data.getMinY();
                 if (xmin >= ix && ymin >= iy) {
-                    return ((BufferedImage) data).getSubimage(toIntExact(xmin), toIntExact(ymin),
-                            toIntExact(min(xmax + 1, ix + data.getWidth() ) - xmin),
-                            toIntExact(min(ymax + 1, iy + data.getHeight()) - ymin));
+                    final int width  = data.getWidth();
+                    final int height = data.getHeight();
+                    /*
+                     * Result of `ix + width` requires at most 33 bits for any `ix` value (same for y axis).
+                     * Subtractions by `xmin` and `ymin` never overflow if `ix` and `iy` are zero or positive,
+                     * which should always be the case with BufferedImage. The +1 is applied after subtraction
+                     * instead than on `xmax` and `ymax` for avoiding overflow, since the result of `min(…)`
+                     * uses at most 33 bits.
+                     */
+                    final int nx = toIntExact(min(xmax, ix + width  - 1) - xmin + 1);
+                    final int ny = toIntExact(min(ymax, iy + height - 1) - ymin + 1);
+                    if ((ix | iy) == 0 && nx == width && ny == height) {
+                        return data;
+                    }
+                    return ((BufferedImage) data).getSubimage(toIntExact(xmin), toIntExact(ymin), nx, ny);
                 }
             }
             /*

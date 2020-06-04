@@ -16,9 +16,9 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.awt.image.RenderedImage;
 import java.util.List;
 import java.util.Collections;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
@@ -38,7 +38,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.FeatureAssert.*;
 
 
 /**
@@ -201,43 +201,26 @@ public strictfp class GridCoverage2DTest extends TestCase {
     @Test
     public void render_of_subextent() {
         final GridCoverage coverage = createTestCoverage();
-        final Raster completeRendering = coverage.render(null).getTile(0, 0);
-
+        /*
+         * Row extraction:
+         *   - Expected size (2,1) is verified by `assertPixelsEqual(…)`.
+         *   - Bounds of expected values is Rectangle(translation, size).
+         *   - Pixel source(0, 1) → output(0, 0)
+         *   - Pixel source(1, 1) → output(1, 0)
+         */
         final GridExtent singleRow = new GridExtent(2, 1).translate(0, 1);
-        RenderedImage subset = coverage.render(singleRow);
-        assertEquals("Rendering width", 2, subset.getWidth());
-        assertEquals("Rendering height", 1, subset.getHeight());
-        Raster subsetTile = subset.getTile(0, 0);
-        assertArrayEquals(
-                "Row extraction, pixel source(0, 1) -> output(0, 0)",
-                completeRendering.getPixel(0, 1, (double[])null),
-                subsetTile.getPixel(0, 0, (double[])null),
-                1e-1
-        );
-        assertArrayEquals(
-                "Row extraction, pixel source(1, 1) -> output(1, 0)",
-                completeRendering.getPixel(1, 1, (double[])null),
-                subsetTile.getPixel(1, 0, (double[])null),
-                1e-1
-        );
-
+        assertPixelsEqual(coverage.render(null), new Rectangle(0, 1, 2, 1),     // Expected values.
+                          coverage.render(singleRow), null);                    // Actual values to test.
+        /*
+         * Column extraction:
+         *   - Expected size (1,2) is verified by `assertPixelsEqual(…)`.
+         *   - Bounds of expected values is Rectangle(translation, size).
+         *   - Pixel source(1, 0) → output(0, 0)
+         *   - Pixel source(1, 1) → output(0, 1)
+         */
         final GridExtent singleCol = new GridExtent(1, 2).translate(1, 0);
-        subset = coverage.render(singleCol);
-        assertEquals("Rendering width", 1, subset.getWidth());
-        assertEquals("Rendering height", 2, subset.getHeight());
-        subsetTile = subset.getTile(0, 0);
-        assertArrayEquals(
-                "Column extraction, pixel source(1, 0) -> output(0, 0)",
-                completeRendering.getPixel(1, 0, (double[])null),
-                subsetTile.getPixel(0, 0, (double[])null),
-                1e-1
-        );
-        assertArrayEquals(
-                "Column extraction, pixel source(1, 1) -> output(0, 1)",
-                completeRendering.getPixel(1, 1, (double[])null),
-                subsetTile.getPixel(0, 1, (double[])null),
-                1e-1
-        );
+        assertPixelsEqual(coverage.render(null), new Rectangle(1, 0, 1, 2),     // Expected values.
+                          coverage.render(singleCol), null);                    // Actual values to test.
     }
 
     /**

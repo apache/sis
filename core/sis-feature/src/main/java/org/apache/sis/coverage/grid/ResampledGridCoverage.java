@@ -456,9 +456,8 @@ final class ResampledGridCoverage extends GridCoverage {
             bounds = new Rectangle(Math.toIntExact(sliceExtent.getSize(resampledDimensions[0])),
                                    Math.toIntExact(sliceExtent.getSize(resampledDimensions[1])));
             /*
-             * The transform needs to be two-dimensional. The `toSourceCenter` transform does not met that condition,
-             * otherwise `specialize(…)` would have replaced this ResampledGridCoverage by a GridCoverage2D instance.
-             * Try to extract a two-dimensional part operating only on the slice dimensions having an extent larger
+             * The transform inputs must be two-dimensional (outputs may be more flexible). If this is not the case,
+             * try to extract a two-dimensional part operating only on the slice dimensions having an extent larger
              * than one cell. The choice of dimensions may vary between different calls to this `render(…)` method,
              * depending on `sliceExtent` value.
              */
