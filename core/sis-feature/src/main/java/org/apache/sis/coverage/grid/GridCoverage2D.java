@@ -593,7 +593,7 @@ public class GridCoverage2D extends GridCoverage {
                      */
                     final int nx = toIntExact(min(xmax, ix + width  - 1) - xmin + 1);
                     final int ny = toIntExact(min(ymax, iy + height - 1) - ymin + 1);
-                    if ((ix | iy) == 0 && nx == width && ny == height) {
+                    if ((xmin | ymin) == 0 && nx == width && ny == height) {
                         return data;
                     }
                     return ((BufferedImage) data).getSubimage(toIntExact(xmin), toIntExact(ymin), nx, ny);
