@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
@@ -90,6 +91,13 @@ public final class JDK9 {
             map.put(entries[i++], entries[i++]);
         }
         return map;
+    }
+
+    /**
+     * Placeholder for {@code Map.of(...)} (actually a JDK10 method).
+     */
+    public static <K,V> Map<K,V> copyOf(final Map<K,V> map) {
+        return map.size() < 2 ? CollectionsExt.compact(map) : new HashMap<>(map);
     }
 
     /**

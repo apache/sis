@@ -16,8 +16,8 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.Arrays;
 import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -34,8 +34,10 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.MismatchedCoverageRangeException;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.internal.coverage.j2d.DeferredProperty;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
+import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.NullArgumentException;
@@ -96,6 +98,7 @@ import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
 public class ImageRenderer {
     /**
      * The grid geometry of the {@link GridCoverage} specified at construction time.
+     * Never {@code null}.
      */
     private final GridGeometry geometry;
 
@@ -285,8 +288,8 @@ public class ImageRenderer {
         }
         width   = Math.incrementExact(Math.toIntExact(xmax - xmin));
         height  = Math.incrementExact(Math.toIntExact(ymax - ymin));
-        imageX  = Math.toIntExact(Math.subtractExact(xreq, xmin));
-        imageY  = Math.toIntExact(Math.subtractExact(yreq, ymin));
+        imageX  = Math.toIntExact(Math.subtractExact(xmin, xreq));
+        imageY  = Math.toIntExact(Math.subtractExact(ymin, yreq));
         offsetX = Math.subtractExact(xmin, xcov);
         offsetY = Math.subtractExact(ymin, ycov);
         /*
@@ -378,7 +381,7 @@ public class ImageRenderer {
                 ig = new SliceGeometry(geometry, sliceExtent, gridDimensions, null)
                         .reduce(new GridExtent(imageX, imageY, width, height), dimCRS);
             } catch (FactoryException e) {
-                throw canNotCompute(e);
+                throw SliceGeometry.canNotCompute(e);
             }
             if (dimCRS == GridCoverage2D.BIDIMENSIONAL) {
                 imageGeometry = ig;
@@ -415,7 +418,8 @@ public class ImageRenderer {
      * @since 1.1
      */
     public void addProperty(final String key, final Object value) {
-        ArgumentChecks.ensureNonNull("key", key);
+        ArgumentChecks.ensureNonNull("key",   key);
+        ArgumentChecks.ensureNonNull("value", value);
         if (!GRID_GEOMETRY_KEY.equals(key)) {
             if (properties == null) {
                 properties = new Hashtable<>();
@@ -614,17 +618,26 @@ public class ImageRenderer {
      * @throws ArithmeticException if a property of the image to construct exceeds the capacity of 32 bits integers.
      */
     public RenderedImage image() {
-        WritableRaster raster = raster();
-        ColorModel colors = ColorModelFactory.createColorModel(bands, visibleBand, buffer.getDataType(), ColorModelFactory.GRAYSCALE);
-        final Untiled image = new Untiled(colors, raster, properties);
-        if (imageGeometry != null) {
-            image.geometry = imageGeometry;
-        } else if (isSameGeometry(GridCoverage2D.BIDIMENSIONAL)) {
-            image.geometry = imageGeometry = geometry;
-        } else {
-            image.supplier = new SliceGeometry(geometry, sliceExtent, gridDimensions, null);
+        final WritableRaster raster = raster();
+        final ColorModel colors = ColorModelFactory.createColorModel(bands, visibleBand,
+                                    buffer.getDataType(), ColorModelFactory.GRAYSCALE);
+
+        SliceGeometry supplier = null;
+        if (imageGeometry == null) {
+            if (isSameGeometry(GridCoverage2D.BIDIMENSIONAL)) {
+                imageGeometry = geometry;
+            } else {
+                supplier = new SliceGeometry(geometry, sliceExtent, gridDimensions, null);
+            }
         }
-        return image;
+        if ((imageX | imageY) == 0) {
+            return new Untiled(colors, raster, properties, imageGeometry, supplier);
+        }
+        if (properties == null) {
+            properties = new Hashtable<>();
+        }
+        properties.putIfAbsent(GRID_GEOMETRY_KEY, (supplier != null) ? new DeferredProperty(supplier) : imageGeometry);
+        return new TiledImage(properties, colors, width, height, 0, 0, raster);
     }
 
     /**
@@ -650,8 +663,12 @@ public class ImageRenderer {
         /**
          * Creates a new buffered image wrapping the given raster.
          */
-        Untiled(final ColorModel colors, final WritableRaster raster, final Hashtable<?,?> properties) {
+        Untiled(final ColorModel colors, final WritableRaster raster, final Hashtable<?,?> properties,
+                final GridGeometry geometry, final SliceGeometry supplier)
+        {
             super(colors, raster, false, properties);
+            this.geometry = geometry;
+            this.supplier = supplier;
         }
 
         /**
@@ -675,25 +692,15 @@ public class ImageRenderer {
                 return super.getProperty(key);
             }
             synchronized (this) {
-                if (geometry == null) try {
-                    final GridExtent extent = new GridExtent(getMinX(), getMinY(), getWidth(), getHeight());
-                    geometry = supplier.reduce(extent, GridCoverage2D.BIDIMENSIONAL);
-                } catch (FactoryException e) {
-                    throw canNotCompute(e);
+                if (geometry == null) {
+                    final SliceGeometry s = supplier;
+                    if (s != null) {
+                        supplier = null;                // Let GC do its work.
+                        geometry = s.apply(this);
+                    }
                 }
-                supplier = null;                // Let GC do its work.
             }
             return geometry;
         }
-    }
-
-    /**
-     * Invoked if an error occurred while computing the {@link #getImageGeometry(int)} value.
-     * This exception should never occur actually, unless a custom factory implementation is
-     * used (instead of the Apache SIS default) and there is a problem with that factory.
-     */
-    private static ImagingOpException canNotCompute(final FactoryException e) {
-        throw (ImagingOpException) new ImagingOpException(
-                Errors.format(Errors.Keys.CanNotCompute_1, "ImageGeometry")).initCause(e);
     }
 }

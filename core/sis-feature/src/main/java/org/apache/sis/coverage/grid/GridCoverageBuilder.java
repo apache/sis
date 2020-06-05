@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Hashtable;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -158,6 +159,13 @@ public class GridCoverageBuilder {
      * @see #flipAxis(int)
      */
     private long flippedAxes;
+
+    /**
+     * The properties to give to the image, or {@code null} if none.
+     *
+     * @see #addImageProperty(String, Object)
+     */
+    private Hashtable<String,Object> properties;
 
     /**
      * Creates an initially empty builder.
@@ -392,6 +400,27 @@ public class GridCoverageBuilder {
     }
 
     /**
+     * Adds a value associated to an image property. This method can be invoked only once for each {@code key}.
+     * Those properties will be given to the {@link RenderedImage} created by the {@link #build()} method.
+     *
+     * @param  key    key of the property to set.
+     * @param  value  value to associate to the given key.
+     * @throws IllegalArgumentException if a value is already associated to the given key.
+     *
+     * @since 1.1
+     */
+    public void addImageProperty(final String key, final Object value) {
+        ArgumentChecks.ensureNonNull("key",   key);
+        ArgumentChecks.ensureNonNull("value", value);
+        if (properties == null) {
+            properties = new Hashtable<>();
+        }
+        if (properties.putIfAbsent(key, value) != null) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
+        }
+    }
+
+    /**
      * Creates the grid coverage from the domain, ranges and values given to setter methods.
      * The returned coverage is often a {@link GridCoverage2D} instance, but not necessarily.
      *
@@ -442,9 +471,9 @@ public class GridCoverageBuilder {
                  * and fallback on TiledImage only if the BufferedImage can not be created.
                  */
                 if (raster instanceof WritableRaster && raster.getMinX() == 0 && raster.getMinY() == 0) {
-                    image = new BufferedImage(colors, (WritableRaster) raster, false, null);
+                    image = new BufferedImage(colors, (WritableRaster) raster, false, properties);
                 } else {
-                    image = new TiledImage(colors, raster.getWidth(), raster.getHeight(), 0, 0, raster);
+                    image = new TiledImage(properties, colors, raster.getWidth(), raster.getHeight(), 0, 0, raster);
                 }
             }
             /*

@@ -16,7 +16,9 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.function.Function;
 import java.awt.image.RenderedImage;
+import java.awt.image.ImagingOpException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -33,18 +35,22 @@ import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
  * Builds a grid geometry for a slice in a {@link GridCoverage}. This is the implementation of
  * {@link GridGeometry#reduce(int...)} and {@link ImageRenderer#getImageGeometry(int)} methods.
  *
+ * <p>This class implements {@link Function} for allowing {@code apply(…)} to be invoked from outside this package.
+ * That function is invoked (indirectly) by {@link org.apache.sis.internal.coverage.j2d.TiledImage#getProperty(String)}.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-final class SliceGeometry {
+final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
     /**
      * The coverage grid geometry from which to take a slice.
      */
@@ -80,6 +86,23 @@ final class SliceGeometry {
         this.sliceExtent    = sliceExtent;
         this.gridDimensions = gridDimensions;
         this.factory        = factory;
+    }
+
+    /**
+     * Computes the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY}
+     * property value for the given image.
+     *
+     * @param  image  the image for which to compute the image geometry.
+     * @throws ImagingOpException if the property can not be computed.
+     */
+    @Override
+    public GridGeometry apply(final RenderedImage image) {
+        try {
+            final GridExtent extent = new GridExtent(image.getMinX(), image.getMinY(), image.getWidth(), image.getHeight());
+            return reduce(extent, GridCoverage2D.BIDIMENSIONAL);
+        } catch (FactoryException e) {
+            throw canNotCompute(e);
+        }
     }
 
     /**
@@ -340,5 +363,15 @@ final class SliceGeometry {
         } else {
             return MathTransforms.concatenate(tr1, tr2);
         }
+    }
+
+    /**
+     * Invoked if an error occurred while computing the {@link ImageRenderer#getImageGeometry(int)} value.
+     * This exception should never occur actually, unless a custom factory implementation is used
+     * (instead of the Apache SIS default) and there is a problem with that factory.
+     */
+    static ImagingOpException canNotCompute(final FactoryException e) {
+        throw (ImagingOpException) new ImagingOpException(
+                Errors.format(Errors.Keys.CanNotCompute_1, "ImageGeometry")).initCause(e);
     }
 }

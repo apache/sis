@@ -88,7 +88,7 @@ public final strictfp class InterpolationTest extends TestCase {
                 raster.setSample(x, y, 0, value++);
             }
         }
-        final TiledImage source = new TiledImage(null, XUP-XMIN, YUP-YMIN, 0, 0, raster);
+        final TiledImage source = new TiledImage(null, null, XUP-XMIN, YUP-YMIN, 0, 0, raster);
         assertNull(source.verify());
         iterator = new PixelIterator.Builder().setWindowSize(new Dimension(support, support)).create(source);
         window   = iterator.createWindow(TransferType.DOUBLE);

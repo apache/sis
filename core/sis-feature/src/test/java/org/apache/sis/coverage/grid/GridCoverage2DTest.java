@@ -22,6 +22,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.opengis.geometry.DirectPosition;
@@ -115,7 +116,9 @@ public strictfp class GridCoverage2DTest extends TestCase {
      */
     private static void assertSamplesEqual(final GridCoverage coverage, final double[][] expected) {
         final Raster raster = coverage.render(null).getData();
+        assertEquals("height", expected.length, raster.getHeight());
         for (int y=0; y<expected.length; y++) {
+            assertEquals("width", expected[y].length, raster.getWidth());
             for (int x=0; x<expected[y].length; x++) {
                 double value = raster.getSampleDouble(x, y, 0);
                 assertEquals(expected[y][x], value, STRICT);
@@ -213,12 +216,13 @@ public strictfp class GridCoverage2DTest extends TestCase {
     }
 
     /**
-     * Ensures that calling {@link GridCoverage#render(GridExtent)} with a sub-extent (crop operation)
+     * Verifies that calling {@link GridCoverage#render(GridExtent)} with a sub-extent (crop operation)
      * returns precisely the requested area, not a smaller or bigger one.
      */
     @Test
-    public void render_of_subextent() {
+    public void testRenderOfSubextent() {
         final GridCoverage coverage = createTestCoverage();
+        RenderedImage result;
         /*
          * Row extraction:
          *   - Expected size (2,1) is verified by `assertPixelsEqual(…)`.
@@ -226,12 +230,10 @@ public strictfp class GridCoverage2DTest extends TestCase {
          *   - Pixel source(0, 1) → output(0, 0)
          *   - Pixel source(1, 1) → output(1, 0)
          */
-        final GridExtent singleRow = new GridExtent(2, 1).translate(0, 1);
-        assertPixelsEqual(coverage.render(null), new Rectangle(0, 1, 2, 1),     // Expected values.
-                          coverage.render(singleRow), null);                    // Actual values to test.
-        assertSamplesEqual(coverage, new double[][] {
-            {2, 5}                                      // Redundant with previous assert, but let be explicit.
-        });
+        final GridExtent singleRow = new GridExtent(GRID_SIZE, 1).translate(0, 1);
+        result = coverage.render(singleRow);
+        assertInstanceOf("render", BufferedImage.class, result);
+        assertPixelsEqual(coverage.render(null), new Rectangle(0, 1, GRID_SIZE, 1), result, null);
         /*
          * Column extraction:
          *   - Expected size (1,2) is verified by `assertPixelsEqual(…)`.
@@ -239,13 +241,28 @@ public strictfp class GridCoverage2DTest extends TestCase {
          *   - Pixel source(1, 0) → output(0, 0)
          *   - Pixel source(1, 1) → output(0, 1)
          */
-        final GridExtent singleCol = new GridExtent(1, 2).translate(1, 0);
-        assertPixelsEqual(coverage.render(null), new Rectangle(1, 0, 1, 2),     // Expected values.
-                          coverage.render(singleCol), null);                    // Actual values to test.
-        assertSamplesEqual(coverage, new double[][] {
-            { 2},                                       // Redundant with previous assert, but let be explicit.
-            {-5}
-        });
+        final GridExtent singleCol = new GridExtent(1, GRID_SIZE).translate(1, 0);
+        result = coverage.render(singleCol);
+        assertInstanceOf("render", BufferedImage.class, result);
+        assertPixelsEqual(coverage.render(null), new Rectangle(1, 0, 1, GRID_SIZE), result, null);
+    }
+
+    /**
+     * Verifies that calling {@link GridCoverage#render(GridExtent)} with a larger extent
+     * returns an image with the appropriate offset.
+     */
+    @Test
+    public void testRenderOfLargerExtent() {
+        final GridCoverage coverage = createTestCoverage();
+        final GridExtent sliceExtent = new GridExtent(null,
+                new long[] {-5, -2},
+                new long[] {GRID_SIZE + 3, GRID_SIZE + 5}, true);
+        final RenderedImage result = coverage.render(sliceExtent);
+        assertEquals("minX",   5,         result.getMinX());
+        assertEquals("minY",   2,         result.getMinY());
+        assertEquals("width",  GRID_SIZE, result.getWidth());
+        assertEquals("height", GRID_SIZE, result.getHeight());
+        assertPixelsEqual(coverage.render(null), null, result, null);
     }
 
     /**

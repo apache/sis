@@ -16,10 +16,14 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
+import java.util.Map;
+import java.util.Collections;
+import java.awt.Image;
 import java.awt.image.Raster;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import org.apache.sis.image.PlanarImage;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -59,11 +63,17 @@ public final class TiledImage extends PlanarImage {
     private final Raster[] tiles;
 
     /**
+     * Image properties, or an empty map if none.
+     */
+    private final Map<String,Object> properties;
+
+    /**
      * Creates a new tiled image. The first tile in the given array must be the
      * one located at the minimal tile indices. All tiles must have the same size
      * and the same sample model and must be sorted in row-major fashion
      * (this is not verified in current version, but may be in the future).
      *
+     * @param properties  image properties, or {@code null} if none.
      * @param colorModel  the color model, or {@code null} if none.
      * @param width       number of pixels along X axis in the whole rendered image.
      * @param height      number of pixels along Y axis in the whole rendered image.
@@ -71,8 +81,9 @@ public final class TiledImage extends PlanarImage {
      * @param minTileY    minimum tile index in the Y direction.
      * @param tiles       the tiles. Must contains at least one element.
      */
-    public TiledImage(final ColorModel colorModel, final int width, final int height,
-                      final int minTileX, final int minTileY, final Raster... tiles)
+    public TiledImage(final Map<String,Object> properties, final ColorModel colorModel,
+                      final int width, final int height, final int minTileX, final int minTileY,
+                      final Raster... tiles)
     {
         ArgumentChecks.ensureStrictlyPositive("width",  width);
         ArgumentChecks.ensureStrictlyPositive("height", height);
@@ -83,6 +94,7 @@ public final class TiledImage extends PlanarImage {
         this.minTileX   = minTileX;
         this.minTileY   = minTileY;
         this.tiles      = tiles;
+        this.properties = (properties != null) ? JDK9.copyOf(properties) : Collections.emptyMap();
     }
 
     /**
@@ -101,6 +113,32 @@ public final class TiledImage extends PlanarImage {
         return tiles[0].getSampleModel();
     }
 
+    /**
+     * Gets a property from this image.
+     *
+     * @param  key  the name of the property to get.
+     * @return the property value, or {@link Image#UndefinedProperty} if none.
+     */
+    @Override
+    public Object getProperty(final String key) {
+        Object value = properties.getOrDefault(key, Image.UndefinedProperty);
+        if (value instanceof DeferredProperty) {
+            value = ((DeferredProperty) value).compute(this);
+        }
+        return value;
+    }
+
+    /**
+     * Returns the names of all recognized properties,
+     * or {@code null} if this image has no properties.
+     *
+     * @return names of all recognized properties, or {@code null} if none.
+     */
+    @Override
+    public String[] getPropertyNames() {
+        final int n = properties.size();
+        return (n == 0) ? null : properties.keySet().toArray(new String[n]);
+    }
 
     /**
      * Returns the minimum <var>x</var> coordinate (inclusive) of this image.

@@ -163,7 +163,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         final int minX = random.nextInt(5) - 2;
         final int minY = random.nextInt(5) - 2;
         GridGeometry gg = createGridGeometryND(withTime ? HardCodedCRS.WGS84_4D : HardCodedCRS.WGS84_3D, 0, 1, 2, 3, false);
-        final TiledImage shiftedImage = new TiledImage(
+        final TiledImage shiftedImage = new TiledImage(null,
                 image.getColorModel(),
                 image.getWidth(), image.getHeight(),        // Image size
                 random.nextInt(32) - 10,                    // minTileX
