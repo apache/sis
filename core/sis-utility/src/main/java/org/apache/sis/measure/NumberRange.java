@@ -20,6 +20,7 @@ import java.util.Objects;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.collection.WeakHashSet;
 
 
@@ -77,9 +78,9 @@ import org.apache.sis.util.collection.WeakHashSet;
  * given to {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor parameter descriptor}.
  * Other methods do not check for shared instances, since the created object is often temporary.</p>
  *
- * @author  Martin Desruisseaux (IRD)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @version 1.0
+ * @version 1.1
  *
  * @param <E>  the type of range elements as a subclass of {@link Number}.
  *
@@ -571,6 +572,86 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
+     * Computes the average of minimum and maximum values. If numbers are integers, the average is computed using
+     * inclusive values (e.g. equivalent to <code>{@linkplain #getMinDouble(boolean) getMinDouble}(true)</code>).
+     * Otherwise the minimum and maximum values are used as-is
+     * (because making them inclusive is considered an infinitely small change).
+     *
+     * <p>Special cases:</p>
+     * <ul>
+     *   <li>If one bound is infinite, the return value is the same infinity.</li>
+     *   <li>If the two bounds are infinite, the return value is {@link Double#NaN}.</li>
+     *   <li>If the range {@linkplain #isEmpty() is empty}, the return value is {@link Double#NaN}.</li>
+     *   <li>If a bound {@linkplain Double#isNaN(double) is NaN}, the return value is the same NaN
+     *       (reminder: {@linkplain MathFunctions#toNanFloat(int) multiple NaN values} are possible).</li>
+     * </ul>
+     *
+     * @return (<var>minimum</var> + <var>maximum</var>) / 2 computed using inclusive values.
+     *
+     * @since 1.1
+     */
+    public double getMedian() {
+        return medianOrSpan(true);
+    }
+
+    /**
+     * Computes the difference between minimum and maximum values. If numbers are integers, the difference is computed
+     * using inclusive values (e.g. equivalent to <code>{@linkplain #getMinDouble(boolean) getMinDouble}(true)</code>).
+     * Otherwise the minimum and maximum values are used as-is
+     * (because making them inclusive is considered an infinitely small change).
+     *
+     * <p>Special cases:</p>
+     * <ul>
+     *   <li>If the range {@linkplain #isEmpty() is empty}, the return value is 0.</li>
+     *   <li>If at least one bound is infinite, the return value is {@link Double#POSITIVE_INFINITY}.</li>
+     *   <li>If a bound {@linkplain Double#isNaN(double) is NaN}, the return value is the same NaN
+     *       (reminder: {@linkplain MathFunctions#toNanFloat(int) multiple NaN values} are possible).</li>
+     * </ul>
+     *
+     * @return (<var>maximum</var> − <var>minimum</var>) computed using inclusive values.
+     *
+     * @since 1.1
+     */
+    public double getSpan() {
+        return medianOrSpan(false);
+    }
+
+    /**
+     * Implementation of {@link #getMedian()} and {@link #getSpan()}.
+     */
+    private double medianOrSpan(final boolean median) {
+        if (minValue == null) {
+            if (median) {
+                return (maxValue == null) ? Double.NaN : Double.NEGATIVE_INFINITY;
+            }
+            return Double.POSITIVE_INFINITY;
+        } else if (maxValue == null) {
+            return Double.POSITIVE_INFINITY;
+        }
+        if (Numbers.isInteger(getElementType())) {
+            long min = minValue.longValue();
+            long max = maxValue.longValue();
+            if (!isMinIncluded) min++;
+            if (!isMaxIncluded) max--;
+            if (min <= max) {
+                return median ? MathFunctions.average(min, max)
+                              : Numerics.toUnsignedDouble(max - min);
+            }
+        } else {
+            final double min = minValue.doubleValue();
+            final double max = maxValue.doubleValue();
+            if (min <= max) {
+                return median ? (min + max) * 0.5 : (max - min);
+            } else if (Double.isNaN(min) && (isMinIncluded || !Double.isNaN(max))) {
+                return min;     // Same NaN with precedence to inclusive bound if the 2 bounds are NaN.
+            } else if (Double.isNaN(max)) {
+                return max;
+            }
+        }
+        return median ? Double.NaN : 0;
+    }
+
+    /**
      * Returns the next value for the given type.
      *
      * @param  type   the element type.
@@ -588,7 +669,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
             value = up ? Math.nextUp(value) : Math.nextDown(value);
         } else {
             // Thrown IllegalStateException instead than IllegalArgumentException because
-            // the 'type' argument given to this method come from a NumberRange field.
+            // the `type` argument given to this method come from a NumberRange field.
             throw new IllegalStateException(Errors.format(Errors.Keys.NotAPrimitiveWrapper_1, type));
         }
         return value;

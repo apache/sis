@@ -255,7 +255,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
     private static int infer(final Vector source, final Matrix fromGrid, final int dim) {
         final NumberRange<?> range = source.range();
         final double min  = range.getMinDouble(true);
-        final double span = range.getMaxDouble(true) - min;
+        final double span = range.getSpan();
         final Number increment = source.increment(EPS * span);
         double inc;
         if (increment != null) {

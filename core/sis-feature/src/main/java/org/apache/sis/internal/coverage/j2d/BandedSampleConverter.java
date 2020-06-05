@@ -113,7 +113,7 @@ public class BandedSampleConverter extends ComputedImage {
             if (ranges != null) {
                 final NumberRange<?> range = ranges[i];
                 if (range != null) {
-                    middle = (range.getMinDouble() + range.getMaxDouble()) / 2;
+                    middle = range.getMedian();
                 }
             }
             if (!Double.isFinite(middle)) {
