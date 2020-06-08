@@ -23,6 +23,7 @@ import javax.measure.Unit;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -31,6 +32,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.text.TextAlignment;
@@ -44,6 +46,7 @@ import javafx.beans.property.ReadOnlyObjectPropertyBase;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -302,7 +305,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private final CoordinateFormat format;
 
     /**
-     * The labels where to format the cursor position, either as coordinate values or other representations.
+     * The label where to format the cursor position, either as coordinate values or other representations.
      * The text is usually the result of formatting coordinate values as numerical values,
      * but may also be other representations such as Military Grid Reference System (MGRS) codes.
      *
@@ -311,12 +314,33 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     protected final Label position;
 
     /**
+     * Maximal length of {@linkplain #position} text found so far. This is used for detecting when
+     * to compute a minimal {@linkplain #position} width for making sure that the coordinates stay
+     * visible even when an error message is shown on the left.
+     */
+    private int maximalPositionLength;
+
+    /**
      * The {@link #position} text to show when the mouse is outside the canvas area.
      * This text is set to the axis abbreviations, for example "(φ, λ)".
      *
      * @see #setFormatCRS(CoordinateReferenceSystem, Length)
      */
     private String outsideText;
+
+    /**
+     * The label where to format the sample value(s) below cursor position, or {@code null} if none.
+     *
+     * @see #setSampleValuesVisible(boolean)
+     */
+    private Label sampleValues;
+
+    /**
+     * The object providing sample values under cursor position.
+     * The property value may be {@code null} if there is no sample values to format.
+     * If non-null, the text provided by this object will appear at the right of the coordinates.
+     */
+    public final ObjectProperty<ValuesUnderCursor> sampleValuesProvider;
 
     /**
      * The listener registered on {@link MapCanvas#renderingProperty()}, or {@code null} if the
@@ -370,6 +394,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         position.setTextAlignment(TextAlignment.RIGHT);
         canvas = new SimpleObjectProperty<>(this, "canvas");
         canvas.addListener((p,o,n) -> onCanvasSpecified(o,n));
+        final ContextMenu menu = new ContextMenu();
         this.systemChooser = systemChooser;
         if (systemChooser == null) {
             selectedSystem = null;
@@ -394,22 +419,36 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             /*
              * Create a contextual menu offering to user a choice of CRS in which to display the coordinates.
              * The CRS choices are controlled by `RecentReferenceSystems`. Selection of a new CRS causes the
-             * `setPositionCRS(…)` method to be invoked. Contextual menu can be invoked anywhere on the HBox;
-             * we do not register this menu to `position` only because it is a relatively small area.
+             * `setPositionCRS(…)` method to be invoked.
              */
             final Menu choices = systemChooser.createMenuItems((property, oldValue, newValue) -> {
                 setPositionCRS(newValue instanceof CoordinateReferenceSystem ? (CoordinateReferenceSystem) newValue : null);
             });
             selectedSystem = RecentReferenceSystems.getSelectedProperty(choices);
-            final ContextMenu menu = new ContextMenu(choices);
-            view.setOnMousePressed((event) -> {
-                if (event.isSecondaryButtonDown()) {
-                    menu.show((HBox) event.getSource(), event.getScreenX(), event.getScreenY());
-                } else {
-                    menu.hide();
-                }
-            });
+            menu.getItems().add(choices);
         }
+        /*
+         * Configure the property that allow user to specify which values to display on the right of cursor position.
+         */
+        final ObservableList<MenuItem> items = menu.getItems();
+        sampleValuesProvider = new SimpleObjectProperty<>(this, "valueProvider");
+        sampleValuesProvider.addListener((p,o,n) -> {
+            ValuesUnderCursor.update(this, o, n);
+            setSampleValuesVisible(n != null);
+            if (o != null) items.remove(o.valueChoices);
+            if (n != null) items.add(n.valueChoices);
+        });
+        /*
+         * Contextual menu can be invoked anywhere on the HBox; we do not register this menu
+         * to `position` or `sampleValues` only because they are relatively small regions.
+         */
+        view.setOnMousePressed((event) -> {
+            if (event.isSecondaryButtonDown() && !menu.getItems().isEmpty()) {
+                menu.show((HBox) event.getSource(), event.getScreenX(), event.getScreenY());
+            } else {
+                menu.hide();
+            }
+        });
     }
 
     /**
@@ -433,7 +472,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             previous.floatingPane.removeEventHandler(MouseEvent.MOUSE_MOVED,   this);
             previous.renderingProperty().removeListener(renderingListener);
             previous.errorProperty().removeListener(errorListener);
-            renderingListener = null;
+            renderingListener         = null;
+            errorListener             = null;
             isMouseListenerRegistered = false;
         }
         if (value != null) {
@@ -454,6 +494,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             setRenderingError(e);
         }
         applyCanvasGeometry(geometry);
+        sampleValuesProvider.set(ValuesUnderCursor.create(value));
     }
 
     /**
@@ -648,6 +689,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         if (objectiveToPositionCRS != null) {
             localToPositionCRS = MathTransforms.concatenate(localToObjectiveCRS.get(), objectiveToPositionCRS);
         }
+        targetCoordinates.setCoordinateReferenceSystem(format.getDefaultCRS());
     }
 
     /**
@@ -760,6 +802,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 objectiveCRS = crs;
             }
             position.setMinWidth(0);
+            maximalPositionLength = 0;
             resetPositionCRS(Styles.NORMAL_TEXT);
         }
     }
@@ -781,6 +824,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         updateLocalToPositionCRS();
         position.setTextFill(Styles.NORMAL_TEXT);
         position.setMinWidth(0);
+        maximalPositionLength = 0;
         if (isPositionVisible()) {
             final double x = lastX;
             final double y = lastY;
@@ -817,7 +861,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         }
         position.setTooltip(tp);
         /*
-         * Prepare the text to show when the moust is outside the canvas area.
+         * Prepare the text to show when the mouse is outside the canvas area.
          * We will write axis abbreviations, for example "(φ, λ)".
          */
         text = null;
@@ -845,10 +889,15 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 }
             }
         }
+        /*
+         * If the mouse is already outside canvas area, update the `position` text now.
+         * Otherwise `position` is probably showing coordinates, which we leave unchanged for now.
+         */
         if (position.getText() == outsideText) {          // Identity comparison is okay for this value.
             position.setText(text);
         }
         outsideText = text;
+        targetCoordinates.setCoordinateReferenceSystem(crs);
         ((PositionSystem) positionReferenceSystem).fireValueChangedEvent();
     }
 
@@ -946,6 +995,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         if (x != lastX || y != lastY) {
             sourceCoordinates[0] = lastX = x;
             sourceCoordinates[1] = lastY = y;
+            boolean success = false;
             String text;
             try {
                 Matrix derivative;
@@ -988,6 +1038,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 }
                 format.setPrecisions(precisions);
                 text = format.format(targetCoordinates);
+                success = true;
             } catch (TransformException | RuntimeException e) {
                 /*
                  * If even the fallback without derivative failed, show the error message.
@@ -1003,9 +1054,16 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
              * Make sure that there is enough space for keeping the coordinates always visible.
              * This is the needed if there is an error message on the left which may be long.
              */
-            final double width = Math.min(view.getWidth() / 2, Math.ceil(position.prefWidth(position.getHeight())));
-            if (width > position.getMinWidth()) {
-                position.setMinWidth(width);
+            if (text.length() > maximalPositionLength) {
+                maximalPositionLength = text.length();
+                position.setMinWidth(Math.min(view.getWidth() / 2, Math.ceil(position.prefWidth(position.getHeight()))));
+            }
+            /*
+             * Format the values under cursor if the coordinates are valid.
+             */
+            final ValuesUnderCursor vp = sampleValuesProvider.get();
+            if (vp != null) {
+                sampleValues.setText(success ? vp.evaluate(targetCoordinates) : null);
             }
         }
     }
@@ -1051,6 +1109,46 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             return text != null && text != outsideText;           // Identity comparison is okay for that value.
         }
         return false;
+    }
+
+    /**
+     * Sets whether to show or hide the label for values under the cursor.
+     * This method is invoked when {@link #sampleValuesProvider} changed.
+     *
+     * @see #sampleValuesProvider
+     * @see #sampleValues
+     */
+    private void setSampleValuesVisible(final boolean visible) {
+        final ObservableList<Node> c = view.getChildren();
+        if (visible) {
+            if (sampleValues == null) {
+                sampleValues = new Label();
+                sampleValues.setAlignment(Pos.CENTER_RIGHT);
+                sampleValues.setTextAlignment(TextAlignment.RIGHT);
+                sampleValues.setMinWidth(Label.USE_PREF_SIZE);
+                sampleValues.setMaxWidth(Label.USE_PREF_SIZE);
+            }
+            if (c.lastIndexOf(sampleValues) < 0) {
+                c.add(sampleValues);
+            }
+        } else if (sampleValues != null) {
+            c.remove(sampleValues);
+        }
+        sampleValues.setText(null);
+    }
+
+    /**
+     * Given the longest expected text for values under the cursor,
+     * computes the {@link #sampleValues} minimal width.
+     *
+     * @see ValuesUnderCursor#prototype(String)
+     */
+    final void computeSizeOfSampleValues(final String prototype) {
+        if (sampleValues != null) {
+            sampleValues.setText(prototype);
+            sampleValues.setPrefWidth(sampleValues.prefWidth(sampleValues.getHeight()));
+            sampleValues.setText(null);
+        }
     }
 
     /**

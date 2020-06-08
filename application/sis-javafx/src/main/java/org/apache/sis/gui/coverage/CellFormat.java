@@ -296,7 +296,7 @@ final class CellFormat extends SimpleStringProperty {
      */
     private void formatCell(final double value) {
         if (Double.isNaN(value)) {
-            lastValueAsText = "⬚";
+            lastValueAsText = Styles.SYMBOL_NaN;
         } else {
             lastValueAsText = cellFormat.format(value, buffer, formatField).toString();
         }

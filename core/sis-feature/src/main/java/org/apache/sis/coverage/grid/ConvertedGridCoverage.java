@@ -177,7 +177,7 @@ final class ConvertedGridCoverage extends GridCoverage {
 
     /**
      * Returns a sequence of double values for a given point in the coverage.
-     * This method delegates to the source coverage, then convert values.
+     * This method delegates to the source coverage, then converts the values.
      *
      * @param  point   the coordinate point where to evaluate.
      * @param  buffer  an array in which to store values, or {@code null} to create a new array.

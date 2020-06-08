@@ -796,7 +796,7 @@ next:       for (int i=0; i<count; i++) {
     }
 
     /**
-     * Creates a box offering choices among the reference systems specified to this {@code ShortChoiceList}.
+     * Creates a box offering choices among the reference systems specified to this {@code RecentReferenceSystems}.
      * The returned control may be initially empty, in which case its content will be automatically set at
      * a later time (after a background thread finished to process the {@link CoordinateReferenceSystem}s).
      *
@@ -814,7 +814,7 @@ next:       for (int i=0; i<count; i++) {
     }
 
     /**
-     * Creates menu items offering choices among the reference systems specified to this {@code ShortChoiceList}.
+     * Creates menu items offering choices among the reference systems specified to this {@code RecentReferenceSystems}.
      * The items will be inserted in the {@linkplain Menu#getItems() menu list}. The content of that list will
      * change at any time after this method returned: items will be added or removed as a result of user actions.
      *
