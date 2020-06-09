@@ -50,7 +50,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  *
- * @see GridCoverage#toGridCoordinates(DirectPosition)
+ * @see Evaluator#toGridCoordinates(DirectPosition)
  *
  * @since 1.1
  * @module
@@ -71,7 +71,7 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
      *
      * <div class="note"><b>Note:</b>
      * {@code FractionalGridCoordinates} are usually not created directly, but are instead obtained
-     * indirectly for example from the {@linkplain GridCoverage#toGridCoordinates(DirectPosition)
+     * indirectly for example from the {@linkplain Evaluator#toGridCoordinates(DirectPosition)
      * conversion of a geospatial position}.</div>
      *
      * @param  dimension  the number of dimensions.
@@ -324,31 +324,6 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
     }
 
     /**
-     * Creates a new grid coordinates computed from the given geospatial position. The given {@code crsToGrid}
-     * argument should be the inverse of {@link GridGeometry#getGridToCRS(PixelInCell)}. This method does not
-     * verify if CRS of the given point and does not verify if the resulting grid coordinates are inside the
-     * grid coverage bounds.
-     *
-     * @param  point       the geospatial position.
-     * @param  crsToGrid   conversion from the geospatial CRS to the grid coordinates.
-     * @return the given position converted to grid coordinates (possibly out of grid bounds).
-     * @throws TransformException if the given position can not be converted.
-     *
-     * @see GridCoverage#toGridCoordinates(DirectPosition)
-     */
-    static FractionalGridCoordinates fromPosition(final DirectPosition point, final MathTransform crsToGrid)
-            throws TransformException
-    {
-        final Position gc = new Position(crsToGrid.getTargetDimensions());
-        final DirectPosition result = crsToGrid.transform(point, gc);
-        if (result != gc) {
-            final double[] coordinates = result.getCoordinate();
-            System.arraycopy(coordinates, 0, gc.coordinates, 0, gc.coordinates.length);
-        }
-        return gc;
-    }
-
-    /**
      * Returns the grid coordinates converted to a geospatial position using the given transform.
      * The {@code gridToCRS} argument is typically {@link GridGeometry#getGridToCRS(PixelInCell)}
      * with {@link PixelInCell#CELL_CENTER}.
@@ -357,7 +332,7 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
      * @return the grid coordinates converted using the given transform.
      * @throws TransformException if the grid coordinates can not be converted by {@code gridToCRS}.
      *
-     * @see GridCoverage#toGridCoordinates(DirectPosition)
+     * @see Evaluator#toGridCoordinates(DirectPosition)
      */
     public DirectPosition toPosition(final MathTransform gridToCRS) throws TransformException {
         return gridToCRS.transform(new Position(this), null);
@@ -371,7 +346,7 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
      * <p>Note this this class does not comply with the contract documented in {@link DirectPosition#equals(Object)}
      * and {@link DirectPosition#hashCode()} javadoc. This is another reason for not making this class public.</p>
      */
-    private static final class Position extends FractionalGridCoordinates implements DirectPosition {
+    static final class Position extends FractionalGridCoordinates implements DirectPosition {
         /**
          * For cross-version compatibility.
          */

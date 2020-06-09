@@ -180,35 +180,35 @@ public strictfp class GridCoverage2DTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridCoverage2D#evaluate(DirectPosition, double[])}.
+     * Tests {@link Evaluator#apply(DirectPosition)}.
      */
     @Test
-    public void testEvaluate() {
-        final GridCoverage coverage = createTestCoverage();
+    public void testEvaluator() {
+        final Evaluator evaluator = createTestCoverage().evaluator();
         /*
          * Test evaluation at indeger indices. No interpolation should be applied.
          */
-        assertArrayEquals(new double[] {  2}, coverage.evaluate(new DirectPosition2D(0, 0), null), STRICT);
-        assertArrayEquals(new double[] {  5}, coverage.evaluate(new DirectPosition2D(1, 0), null), STRICT);
-        assertArrayEquals(new double[] { -5}, coverage.evaluate(new DirectPosition2D(0, 1), null), STRICT);
-        assertArrayEquals(new double[] {-10}, coverage.evaluate(new DirectPosition2D(1, 1), null), STRICT);
+        assertArrayEquals(new double[] {  2}, evaluator.apply(new DirectPosition2D(0, 0)), STRICT);
+        assertArrayEquals(new double[] {  5}, evaluator.apply(new DirectPosition2D(1, 0)), STRICT);
+        assertArrayEquals(new double[] { -5}, evaluator.apply(new DirectPosition2D(0, 1)), STRICT);
+        assertArrayEquals(new double[] {-10}, evaluator.apply(new DirectPosition2D(1, 1)), STRICT);
         /*
          * Test evaluation at fractional indices. Current interpolation is nearest neighor rounding,
          * but future version may do a bilinear interpolation.
          */
-        assertArrayEquals(new double[] {2}, coverage.evaluate(new DirectPosition2D(-0.499, -0.499), null), STRICT);
-        assertArrayEquals(new double[] {2}, coverage.evaluate(new DirectPosition2D( 0.499,  0.499), null), STRICT);
+        assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D(-0.499, -0.499)), STRICT);
+        assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D( 0.499,  0.499)), STRICT);
         /*
          * Test some points that are outside the coverage extent.
          */
         try {
-            coverage.evaluate(new DirectPosition2D(-0.51, 0), null);
+            evaluator.apply(new DirectPosition2D(-0.51, 0));
             fail("Expected PointOutsideCoverageException.");
         } catch (PointOutsideCoverageException ex) {
             assertNotNull(ex.getMessage());
         }
         try {
-            coverage.evaluate(new DirectPosition2D(1.51, 0), null);
+            evaluator.apply(new DirectPosition2D(1.51, 0));
             fail("Expected PointOutsideCoverageException.");
         } catch (PointOutsideCoverageException ex) {
             assertNotNull(ex.getMessage());

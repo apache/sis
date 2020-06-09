@@ -43,6 +43,7 @@ import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.gui.coverage.CoverageCanvas;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.Evaluator;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.internal.system.Modules;
@@ -214,11 +215,9 @@ public abstract class ValuesUnderCursor {
         private static final int SCIENTIFIC_NOTATION = -2;
 
         /**
-         * The source of values converted to the {@linkplain #units} of measurement.
-         * Not necessarily the same instance than the property this {@code FromCoverage} is listening,
-         * since we take the instance returned by {@link GridCoverage#forConvertedValues(boolean)}.
+         * The object computing or interpolation sample values in the coverage.
          */
-        private GridCoverage coverage;
+        private Evaluator evaluator;
 
         /**
          * The selection status of each band.
@@ -226,12 +225,7 @@ public abstract class ValuesUnderCursor {
         private final BitSet selectedBands;
 
         /**
-         * A temporary buffer for getting numerical values. Created when first needed.
-         */
-        private double[] results;
-
-        /**
-         * Formatter for {@link #results} values.
+         * Formatter for the values computed or interpolated by {@link #evaluator}.
          * The number of fraction digits is computed from transfer function resolution.
          * The same {@link NumberFormat} instance may appear at more than one index.
          */
@@ -297,11 +291,11 @@ public abstract class ValuesUnderCursor {
          */
         @Override
         public void changed(final ObservableValue<? extends GridCoverage> property,
-                            final GridCoverage previous, GridCoverage coverage)
+                            final GridCoverage previous, final GridCoverage coverage)
         {
             final List<SampleDimension> bands;      // Should never be null, but check anyway.
             if (coverage == null || (bands = coverage.getSampleDimensions()) == null) {
-                this.coverage = null;
+                evaluator     = null;
                 units         = null;
                 sampleFormats = null;
                 outsideText   = null;
@@ -310,8 +304,8 @@ public abstract class ValuesUnderCursor {
                 valueChoices.getItems().clear();
                 return;
             }
-            this.coverage = coverage.forConvertedValues(true);
-            if (previous != null && bands.equals(previous.forConvertedValues(true).getSampleDimensions())) {
+            evaluator = coverage.forConvertedValues(true).evaluator();
+            if (previous != null && bands.equals(previous.getSampleDimensions())) {
                 // Same configuration than previous coverage.
                 return;
             }
@@ -466,11 +460,11 @@ public abstract class ValuesUnderCursor {
          * @param  point  the cursor location in arbitrary CRS, or {@code null} if outside canvas region.
          * @return string representation of data under given position, or {@code null} if none.
          *
-         * @see GridCoverage#evaluate(DirectPosition, double[])
+         * @see Evaluator#apply(DirectPosition)
          */
         @Override
         public String evaluate(final DirectPosition point) {
-            if (outsideText == null) {
+            if (outsideText == null && evaluator != null) {
                 onBandSelectionChanged();
             }
             if (point != null) {
@@ -482,8 +476,8 @@ public abstract class ValuesUnderCursor {
                  */
                 synchronized (buffer) {
                     buffer.setLength(0);
-                    if (coverage != null) try {
-                        results = coverage.evaluate(point, results);
+                    if (evaluator != null) try {
+                        final double[] results = evaluator.apply(point);
                         if (results != null) {
                             for (int i = -1; (i = selectedBands.nextSetBit(i+1)) >= 0;) {
                                 if (buffer.length() != 0) {
@@ -551,7 +545,7 @@ public abstract class ValuesUnderCursor {
          */
         private boolean onBandSelectionChanged() {
             final ObservableList<MenuItem> menus = valueChoices.getItems();
-            final List<SampleDimension>    bands = coverage.getSampleDimensions();
+            final List<SampleDimension>    bands = evaluator.getCoverage().getSampleDimensions();
             final StringBuilder            names = new StringBuilder().append('(');
             final String text;
             synchronized (buffer) {

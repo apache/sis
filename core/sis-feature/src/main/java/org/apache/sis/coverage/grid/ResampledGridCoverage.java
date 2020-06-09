@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import org.opengis.util.FactoryException;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -531,14 +530,9 @@ final class ResampledGridCoverage extends GridCoverage {
 
     /**
      * Delegates to the source coverage, which should transform the point itself if needed.
-     *
-     * @param  point   the coordinate point where to evaluate.
-     * @param  buffer  an array in which to store values, or {@code null} to create a new array.
-     * @return the {@code buffer} array, or a newly created array if {@code buffer} was null.
-     * @throws CannotEvaluateException if the values can not be computed at the specified coordinate.
      */
     @Override
-    public double[] evaluate(final DirectPosition point, final double[] buffer) throws CannotEvaluateException {
-        return source.evaluate(point, buffer);
+    public Evaluator evaluator() {
+        return source.evaluator();
     }
 }

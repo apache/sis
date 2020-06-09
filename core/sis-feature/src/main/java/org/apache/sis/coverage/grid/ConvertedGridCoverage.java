@@ -44,7 +44,7 @@ import org.apache.sis.measure.NumberRange;
  *   <li>In calls to {@link #render(GridExtent)}, sample values are converted when first needed
  *       on a tile-by-tile basis then cached for future reuse. Note however that discarding the
  *       returned image may result in the lost of cached tiles.</li>
- *   <li>In calls to {@link #evaluate(DirectPosition, double[])}, the conversion is applied
+ *   <li>In calls to {@link Evaluator#apply(DirectPosition)}, the conversion is applied
  *       on-the-fly each time in order to avoid the potentially costly tile computations.</li>
  * </ul>
  *
@@ -176,25 +176,56 @@ final class ConvertedGridCoverage extends GridCoverage {
     }
 
     /**
-     * Returns a sequence of double values for a given point in the coverage.
-     * This method delegates to the source coverage, then converts the values.
+     * Creates a new function for computing or interpolating sample values at given locations.
      *
-     * @param  point   the coordinate point where to evaluate.
-     * @param  buffer  an array in which to store values, or {@code null} to create a new array.
-     * @return the {@code buffer} array, or a newly created array if {@code buffer} was null.
-     * @throws CannotEvaluateException if the values can not be computed.
+     * <h4>Multi-threading</h4>
+     * {@code Evaluator}s are not thread-safe. For computing sample values concurrently,
+     * a new {@link Evaluator} instance should be created for each thread.
+     *
+     * @since 1.1
      */
     @Override
-    public double[] evaluate(final DirectPosition point, double[] buffer) throws CannotEvaluateException {
-        try {
-            buffer = source.evaluate(point, buffer);
-            for (int i=0; i<converters.length; i++) {
-                buffer[i] = converters[i].transform(buffer[i]);
-            }
-        } catch (TransformException ex) {
-            throw new CannotEvaluateException(ex.getMessage(), ex);
+    public Evaluator evaluator() {
+        return new SampleConverter();
+    }
+
+    /**
+     * Implementation of evaluator returned by {@link #evaluator()}.
+     */
+    private final class SampleConverter extends Evaluator {
+        /**
+         * The evaluator provided by source coverage.
+         */
+        private final Evaluator evaluator;
+
+        /**
+         * Creates a new evaluator for the enclosing coverage.
+         */
+        SampleConverter() {
+            super(ConvertedGridCoverage.this);
+            evaluator = source.evaluator();
         }
-        return buffer;
+
+        /**
+         * Returns a sequence of double values for a given point in the coverage.
+         * This method delegates to the source coverage, then converts the values.
+         *
+         * @param  point  the coordinate point where to evaluate.
+         * @throws CannotEvaluateException if the values can not be computed.
+         */
+        @Override
+        public double[] apply(final DirectPosition point) throws CannotEvaluateException {
+            final double[] values;
+            try {
+                values = evaluator.apply(point);
+                for (int i=0; i<converters.length; i++) {
+                    values[i] = converters[i].transform(values[i]);
+                }
+            } catch (TransformException ex) {
+                throw new CannotEvaluateException(ex.getMessage(), ex);
+            }
+            return values;
+        }
     }
 
     /**

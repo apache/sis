@@ -496,36 +496,53 @@ public class GridCoverage2D extends GridCoverage {
     }
 
     /**
-     * Returns a sequence of double values for a given point in the coverage.
-     * The CRS of the given point may be any coordinate reference system,
-     * or {@code null} for the same CRS than this coverage.
-     * The returned sequence contains a value for each {@linkplain SampleDimension sample dimension}.
+     * Creates a new function for computing or interpolating sample values at given locations.
      *
-     * @param  point   the coordinate point where to evaluate.
-     * @param  buffer  an array in which to store values, or {@code null} to create a new array.
-     * @return the {@code buffer} array, or a newly created array if {@code buffer} was null.
-     * @throws PointOutsideCoverageException if the evaluation failed because the input point
-     *         has invalid coordinates.
-     * @throws CannotEvaluateException if the values can not be computed at the specified coordinate
-     *         for another reason.
+     * <h4>Multi-threading</h4>
+     * {@code Evaluator}s are not thread-safe. For computing sample values concurrently,
+     * a new {@link Evaluator} instance should be created for each thread.
+     *
+     * @since 1.1
      */
     @Override
-    public double[] evaluate(final DirectPosition point, final double[] buffer) throws CannotEvaluateException {
-        try {
-            final FractionalGridCoordinates gc = toGridCoordinates(point);
+    public Evaluator evaluator() {
+        return new PixelAccessor();
+    }
+
+    /**
+     * Implementation of evaluator returned by {@link #evaluator()}.
+     */
+    private final class PixelAccessor extends Evaluator {
+        /**
+         * Creates a new evaluator for the enclosing coverage.
+         */
+        PixelAccessor() {
+            super(GridCoverage2D.this);
+        }
+
+        /**
+         * Returns a sequence of double values for a given point in the coverage.
+         * The CRS of the given point may be any coordinate reference system,
+         * or {@code null} for the same CRS than the coverage.
+         */
+        @Override
+        public double[] apply(final DirectPosition point) throws CannotEvaluateException {
             try {
-                final int x = toIntExact(addExact(gc.getCoordinateValue(xDimension), gridToImageX));
-                final int y = toIntExact(addExact(gc.getCoordinateValue(yDimension), gridToImageY));
-                return evaluate(data, x, y, buffer);
-            } catch (ArithmeticException | IndexOutOfBoundsException | DisjointExtentException ex) {
-                throw (PointOutsideCoverageException) new PointOutsideCoverageException(
-                        gc.pointOutsideCoverage(gridGeometry.extent), point).initCause(ex);
+                final FractionalGridCoordinates gc = toGridPosition(point);
+                try {
+                    final int x = toIntExact(addExact(gc.getCoordinateValue(xDimension), gridToImageX));
+                    final int y = toIntExact(addExact(gc.getCoordinateValue(yDimension), gridToImageY));
+                    return evaluate(data, x, y);
+                } catch (ArithmeticException | IndexOutOfBoundsException | DisjointExtentException ex) {
+                    throw (PointOutsideCoverageException) new PointOutsideCoverageException(
+                            gc.pointOutsideCoverage(gridGeometry.extent), point).initCause(ex);
+                }
+            } catch (PointOutsideCoverageException ex) {
+                ex.setOffendingLocation(point);
+                throw ex;
+            } catch (RuntimeException | TransformException ex) {
+                throw new CannotEvaluateException(ex.getMessage(), ex);
             }
-        } catch (PointOutsideCoverageException ex) {
-            ex.setOffendingLocation(point);
-            throw ex;
-        } catch (RuntimeException | TransformException ex) {
-            throw new CannotEvaluateException(ex.getMessage(), ex);
         }
     }
 
