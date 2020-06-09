@@ -30,8 +30,6 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.Static;
@@ -176,22 +174,6 @@ public final class Styles extends Static {
         final ColumnConstraints controlColumn = new ColumnConstraints();
         labelColumn  .setHgrow(Priority.NEVER);
         controlColumn.setHgrow(Priority.ALWAYS);
-        /*
-         * I'm not aware of a way to specify that the first column should be always wide enough
-         * for showing fully the labels. As a workaround, we set the minimum width to the width
-         * of the widest label.
-         */
-        final ChangeListener<Number> widthFixer = new ChangeListener<>() {
-            @Override public void changed(final ObservableValue<? extends Number> e, final Number o, final Number n) {
-                final double v = n.doubleValue();
-                if (v > o.doubleValue()) {
-                    if (v > labelColumn.getMinWidth()) {
-                        labelColumn.setMinWidth(v);
-                    }
-                    e.removeListener(this);
-                }
-            }
-        };
         gp.getColumnConstraints().setAll(labelColumn, controlColumn);
         gp.setPadding(FORM_INSETS);
         gp.setVgap(9);
@@ -202,7 +184,7 @@ public final class Styles extends Static {
                 GridPane.setConstraints(label,   0, row);
                 GridPane.setConstraints(control, 1, row);
                 gp.getChildren().addAll(label, control);
-                label.widthProperty().addListener(widthFixer);
+                label.setMinWidth(Label.USE_PREF_SIZE);
                 row++;
             }
         }
