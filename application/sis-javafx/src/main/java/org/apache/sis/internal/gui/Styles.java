@@ -124,11 +124,6 @@ public final class Styles extends Static {
     public static final String WARNING_ICON = "\u26A0\uFE0F";           // ⚠
 
     /**
-     * Text to format in place of NaN values.
-     */
-    public static final String SYMBOL_NaN = "⬚";
-
-    /**
      * Do not allow instantiation of this class.
      */
     private Styles() {

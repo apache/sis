@@ -47,6 +47,11 @@ import org.apache.sis.internal.gui.RecentChoices;
  */
 final class CellFormat extends SimpleStringProperty {
     /**
+     * Text to format in place of NaN values.
+     */
+    private static final String SYMBOL_NaN = "⬚";
+
+    /**
      * The "classic" number format pattern (as opposed to scientific notation). This is non-null only after
      * {@link #cellFormat} switched to scientific notation and is used for switching back to classic notation.
      * This is a workaround for the absence of `DecimalFormat.useScientificNotation(boolean)` method.
@@ -296,7 +301,7 @@ final class CellFormat extends SimpleStringProperty {
      */
     private void formatCell(final double value) {
         if (Double.isNaN(value)) {
-            lastValueAsText = Styles.SYMBOL_NaN;
+            lastValueAsText = SYMBOL_NaN;
         } else {
             lastValueAsText = cellFormat.format(value, buffer, formatField).toString();
         }

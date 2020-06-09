@@ -330,6 +330,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     /**
      * The label where to format the sample value(s) below cursor position, or {@code null} if none.
      *
+     * @see #isSampleValuesVisible
      * @see #setSampleValuesVisible(boolean)
      */
     private Label sampleValues;
@@ -344,6 +345,20 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
      */
     public final ObjectProperty<ValuesUnderCursor> sampleValuesProvider;
+
+    /**
+     * Whether the {@link #sampleValues} are visible.
+     * This field is {@code true} only if all following conditions are met:
+     *
+     * <ul>
+     *   <li>{@link #sampleValues} is non-null (it is created by {@link #setSampleValuesVisible(boolean)}).</li>
+     *   <li>{@link #sampleValuesProvider} property value is non-null (it is set by user).</li>
+     *   <li>{@link ValuesUnderCursor#isEmpty()} is {@code false}.</li>
+     * </ul>
+     *
+     * @see #setSampleValuesVisible(boolean)
+     */
+    private boolean isSampleValuesVisible;
 
     /**
      * Creates a new status bar for showing coordinates of mouse cursor position in a canvas.
@@ -439,9 +454,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         sampleValuesProvider = new SimpleObjectProperty<>(this, "valueProvider");
         sampleValuesProvider.addListener((p,o,n) -> {
             ValuesUnderCursor.update(this, o, n);
-            setSampleValuesVisible(n != null);
             if (o != null) items.remove(o.valueChoices);
             if (n != null) items.add(n.valueChoices);
+            setSampleValuesVisible(n != null && !n.isEmpty());
         });
         /*
          * If a canvas is specified, register listeners for mouse position, rendering events, errors, etc.
@@ -1023,9 +1038,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             /*
              * Format the values under cursor if the coordinates are valid.
              */
-            final ValuesUnderCursor vp = sampleValuesProvider.get();
-            if (vp != null) {
-                sampleValues.setText(success ? vp.evaluate(targetCoordinates) : null);
+            if (isSampleValuesVisible) {
+                sampleValues.setText(success ? sampleValuesProvider.get().evaluate(targetCoordinates) : null);
             }
         }
     }
@@ -1060,6 +1074,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * we want the Tooltip to continue to be available.
          */
         position.setText(outsideText);
+        if (isSampleValuesVisible) {
+            sampleValues.setText(sampleValuesProvider.get().evaluate(null));
+        }
     }
 
     /**
@@ -1094,23 +1111,48 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 c.add(sampleValues);
             }
         } else if (sampleValues != null) {
+            sampleValues.setText(null);
             c.remove(sampleValues);
         }
-        sampleValues.setText(null);
+        isSampleValuesVisible = visible;
     }
 
     /**
-     * Given the longest expected text for values under the cursor,
-     * computes the {@link #sampleValues} minimal width.
+     * Given the longest expected text for values under the cursor, computes the {@link #sampleValues} minimal width.
+     * If {@code prototype} is empty, then no sample values are expected and the {@link #sampleValues} label will be
+     * hidden.
      *
-     * @see ValuesUnderCursor#prototype(String)
+     * @param  prototype  an example of longest normal text that we expect.
+     * @param  others     some other texts that may appear, such as labels for missing data.
+     * @return {@code true} on success, or {@code false} if this method should be invoked again.
+     *
+     * @see ValuesUnderCursor#prototype(String, Iterable)
      */
-    final void computeSizeOfSampleValues(final String prototype) {
-        if (sampleValues != null) {
+    final boolean computeSizeOfSampleValues(final String prototype, final Iterable<String> others) {
+        setSampleValuesVisible(prototype != null && !prototype.isEmpty());
+        if (isSampleValuesVisible) {
             sampleValues.setText(prototype);
-            sampleValues.setPrefWidth(sampleValues.prefWidth(sampleValues.getHeight()));
+            sampleValues.setPrefWidth(Label.USE_COMPUTED_SIZE);                 // Enable `prefWidth(…)` computation.
+            double width = sampleValues.prefWidth(sampleValues.getHeight());
+            final double max = Math.max(width * 1.25, 100);                     // Arbitrary limit.
+            for (final String other : others) {
+                sampleValues.setText(other);
+                final double cw = sampleValues.prefWidth(sampleValues.getHeight());
+                if (cw > width) {
+                    width = cw;
+                    if (width > max) {
+                        width = max;
+                        break;
+                    }
+                }
+            }
             sampleValues.setText(null);
+            if (!(width > 0)) {                 // May be 0 if canvas is not yet added to scene graph.
+                return false;
+            }
+            sampleValues.setPrefWidth(width);
         }
+        return true;
     }
 
     /**

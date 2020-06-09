@@ -19,6 +19,7 @@ package org.apache.sis.gui.map;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.BitSet;
 import java.util.Locale;
 import java.util.Optional;
@@ -27,6 +28,7 @@ import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ObservableList;
@@ -36,13 +38,13 @@ import javafx.scene.control.MenuItem;
 import javax.measure.Unit;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.gui.coverage.CoverageCanvas;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
-import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
@@ -96,22 +98,39 @@ public abstract class ValuesUnderCursor {
     }
 
     /**
+     * Returns {@code true} if this {@code ValuesUnderCursor} has currently no data to show.
+     * A {@code ValuesUnderCursor} may be empty for example if user unselected all bands from
+     * the contextual menu.
+     *
+     * @return {@code true} if there is no data to show yet.
+     */
+    public abstract boolean isEmpty();
+
+    /**
      * Returns a string representation of data under given position.
      * The position may be in any CRS; this method should convert coordinates as needed.
      *
      * @param  point  the cursor location in arbitrary CRS (usually the CRS shown in the status bar).
+     *                May be {@code null} for declaring that the point is outside canvas region.
      * @return string representation of data under given position, or {@code null} if none.
      */
     public abstract String evaluate(final DirectPosition point);
 
     /**
      * Invoked when a new source of values is known for computing the expected size.
-     * The given text should be the longest text that we expect to format.
+     * The given {@code main} text should be an example of the longest expected text,
+     * ignoring "special" labels like "no data" values (those special cases are listed
+     * in the {@code others} argument).
+     *
+     * <p>If {@code main} is an empty string, then no values are expected and {@link MapCanvas}
+     * may hide the space normally used for showing values.</p>
+     *
+     * @param  main    a prototype of longest normal text that we expect.
+     * @param  others  some other texts that may appear, such as labels for missing data.
+     * @return {@code true} on success, or {@code false} if this method should be invoked again.
      */
-    final void prototype(final String text) {
-        if (owner != null) {
-            owner.computeSizeOfSampleValues(text);
-        }
+    final boolean prototype(final String main, final Iterable<String> others) {
+        return (owner == null) || owner.computeSizeOfSampleValues(main, others);
     }
 
     /**
@@ -154,7 +173,12 @@ public abstract class ValuesUnderCursor {
     static ValuesUnderCursor create(final MapCanvas canvas) {
         if (canvas instanceof CoverageCanvas) {
             final FromCoverage listener = new FromCoverage();
-            ((CoverageCanvas) canvas).coverageProperty.addListener(new WeakChangeListener<>(listener));
+            final ObjectProperty<GridCoverage> coverageProperty = ((CoverageCanvas) canvas).coverageProperty;
+            coverageProperty.addListener(new WeakChangeListener<>(listener));
+            final GridCoverage coverage = coverageProperty.get();
+            if (coverage != null) {
+                listener.changed(null, null, coverage);
+            }
             return listener;
         } else {
             // More cases may be added in the future.
@@ -238,8 +262,9 @@ public abstract class ValuesUnderCursor {
         private final Map<Long,String> nodata;
 
         /**
-         * The text to show when cursor is outside coverage area.
-         * This text should contain the sample dimension names.
+         * The text to show when cursor is outside coverage area. It should contain dimension names,
+         * for example "(SST)". A {@code null} value means that {@link #onBandSelectionChanged()}
+         * needs to be invoked.
          */
         private String outsideText;
 
@@ -254,11 +279,19 @@ public abstract class ValuesUnderCursor {
         }
 
         /**
+         * Returns {@code true} if all bands are unselected.
+         */
+        @Override
+        public boolean isEmpty() {
+            return selectedBands.isEmpty();
+        }
+
+        /**
          * Notifies this {@code ValuesUnderCursor} object that it needs to display values for a new coverage.
          * The {@code previous} argument should be the argument given in the last call to this method and is
          * used as an optimization hint. In case of doubt, it can be {@code null}.
          *
-         * @param  property  the property which has been updated, or {@code null} is unknown.
+         * @param  property  the property which has been updated, or {@code null} if unknown.
          * @param  previous  previous property value, of {@code null} if none or unknown.
          * @param  coverage  new coverage for which to show sample values, or {@code null} if none.
          */
@@ -285,7 +318,7 @@ public abstract class ValuesUnderCursor {
             final int n   = bands.size();
             units         = new String[n];
             sampleFormats = new NumberFormat[n];
-            outsideText   = null;
+            outsideText = null;                     // Will be recomputed on next `evaluate(…)` call.
             /*
              * Only the first band is initially selected, unless the image has only 2 or 3 bands
              * in which case all bands are selected. An image with two bands is often giving the
@@ -362,11 +395,14 @@ public abstract class ValuesUnderCursor {
                 });
             }
             valueChoices.getItems().setAll(menuItems);
-            onBandSelectionChanged();
+            if (!onBandSelectionChanged()) {
+                outsideText = null;             // For forcing a new computation after canvas is added to scene graph.
+            }
         }
 
         /**
          * Returns the key to use in {@link #nodata} map for the given "no data" value.
+         * The band number can be obtained by {@link Long#intValue()}.
          *
          * @param  band   band index.
          * @param  value  the NaN value used for "no data".
@@ -416,7 +452,9 @@ public abstract class ValuesUnderCursor {
             item.setSelected(selectedBands.get(index));
             item.selectedProperty().addListener((p,o,n) -> {
                 selectedBands.set(index, n);
-                outsideText = null;
+                if (!onBandSelectionChanged()) {
+                    outsideText = null;                         // Will be recomputed on next `evaluate(…)` call.
+                }
             });
             return item;
         }
@@ -425,56 +463,62 @@ public abstract class ValuesUnderCursor {
          * Returns a string representation of data under given position.
          * The position may be in any CRS; this method will convert coordinates as needed.
          *
-         * @param  point  the cursor location in arbitrary CRS.
+         * @param  point  the cursor location in arbitrary CRS, or {@code null} if outside canvas region.
          * @return string representation of data under given position, or {@code null} if none.
          *
          * @see GridCoverage#evaluate(DirectPosition, double[])
          */
         @Override
         public String evaluate(final DirectPosition point) {
-            /*
-             * Take lock once instead than at each StringBuffer method call. It makes this method thread-safe,
-             * but this is a side effect of the fact that `NumberFormat` accepts only `StringBuffer` argument.
-             * We do not document this thread-safety in method contract since it is not guaranteed to apply in
-             * future SIS versions if a future `NumberFormat` version accepts non-synchronized `StringBuilder`.
-             */
-            synchronized (buffer) {
-                buffer.setLength(0);
-                if (coverage != null) try {
-                    results = coverage.evaluate(point, results);
-                    if (results != null) {
-                        for (int i = -1; (i = selectedBands.nextSetBit(i+1)) >= 0;) {
-                            if (buffer.length() != 0) {
-                                buffer.append(SEPARATOR);
-                            }
-                            final double value = results[i];
-                            if (Double.isNaN(value)) {
-                                Long key;
-                                try {
-                                    key = toNodataKey(i, (float) value);
+            if (outsideText == null) {
+                onBandSelectionChanged();
+            }
+            if (point != null) {
+                /*
+                 * Take lock once instead than at each StringBuffer method call. It makes this method thread-safe,
+                 * but this is a side effect of the fact that `NumberFormat` accepts only `StringBuffer` argument.
+                 * We do not document this thread-safety in method contract since it is not guaranteed to apply in
+                 * future SIS versions if a future `NumberFormat` version accepts non-synchronized `StringBuilder`.
+                 */
+                synchronized (buffer) {
+                    buffer.setLength(0);
+                    if (coverage != null) try {
+                        results = coverage.evaluate(point, results);
+                        if (results != null) {
+                            for (int i = -1; (i = selectedBands.nextSetBit(i+1)) >= 0;) {
+                                if (buffer.length() != 0) {
+                                    buffer.append(SEPARATOR);
+                                }
+                                final double value = results[i];
+                                if (Double.isNaN(value)) try {
+                                    /*
+                                     * If a value is NaN, returns its label as the whole content. Numerical values
+                                     * in other bands are lost. We do that because "no data" strings are often too
+                                     * long for being shown together with numerical values, and are often the same
+                                     * for all bands. Users can see numerical values by hiding the band containing
+                                     * "no data" values with contextual menu on the status bar.
+                                     */
+                                    final String label = nodata.get(toNodataKey(i, (float) value));
+                                    if (label != null) return label;
                                 } catch (IllegalArgumentException e) {
                                     recoverableException("evaluate", e);
-                                    key = null;
                                 }
-                                buffer.append(nodata.getOrDefault(key, Styles.SYMBOL_NaN));
-                            } else {
                                 sampleFormats[i].format(value, buffer, field).append(units[i]);
                             }
+                            return buffer.toString();
                         }
-                        return buffer.toString();
+                    } catch (PointOutsideCoverageException e) {
+                        // Ignore.
+                    } catch (CannotEvaluateException e) {
+                        recoverableException("evaluate", e);
                     }
-                } catch (CannotEvaluateException e) {
-                    // Ignore.
                 }
-                /*
-                 * Coordinate is considered outside coverage area.
-                 * Format the sample dimension names.
-                 */
-                if (outsideText == null) {
-                    onBandSelectionChanged();
-                }
-                return outsideText;
             }
+            /*
+             * Coordinate is considered outside coverage area.
+             * Format the sample dimension names.
+             */
+            return outsideText;
         }
 
         /**
@@ -497,8 +541,15 @@ public abstract class ValuesUnderCursor {
          * Also computes the text to show when cursor is outside coverage area. This method is invoked
          * when the bands selection changed, either because of selection in contextual menu or because
          * {@link ValuesUnderCursor} is providing data for a new coverage.
+         *
+         * <p>We use {@link #outsideText} null value as a flag meaning meaning that this method needs
+         * to be invoked. This method invocation sometime needs to be delayed because calculation of
+         * text width may be wrong (produce 0 values) if invoked before {@link StatusBar#sampleValues}
+         * label is added in the scene graph.</p>
+         *
+         * @return {@code true} on success, or {@code false} if this method should be invoked again.
          */
-        private void onBandSelectionChanged() {
+        private boolean onBandSelectionChanged() {
             final ObservableList<MenuItem> menus = valueChoices.getItems();
             final List<SampleDimension>    bands = coverage.getSampleDimensions();
             final StringBuilder            names = new StringBuilder().append('(');
@@ -529,8 +580,20 @@ public abstract class ValuesUnderCursor {
                 }
                 text = buffer.toString();
             }
-            outsideText = text.isEmpty() ? null : names.append(')').toString();
-            prototype(text);
+            /*
+             * At this point, `text` is the longest string of numerical values that we expect.
+             * We also need to take in account the width required for displaying "no data" labels.
+             * If a "no data" label is shown, it will be shown alone (we do not need to compute a
+             * sum of "no data" label widths).
+             */
+            outsideText = text.isEmpty() ? "" : names.append(')').toString();
+            final HashSet<String> others = new HashSet<>();
+            for (final Map.Entry<Long,String> other : nodata.entrySet()) {
+                if (selectedBands.get(other.getKey().intValue())) {
+                    others.add(other.getValue());
+                }
+            }
+            return prototype(text, others);
         }
     }
 
