@@ -83,8 +83,7 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
         final Color background = Color.BLACK;
         view = new CoverageCanvas();
         view.setBackground(background);
-        final StatusBar statusBar = new StatusBar(referenceSystems);
-        statusBar.canvas.set(view);
+        final StatusBar statusBar = new StatusBar(view, referenceSystems);
         imageAndStatus = new BorderPane(view.getView());
         imageAndStatus.setBottom(statusBar.getView());
         /*

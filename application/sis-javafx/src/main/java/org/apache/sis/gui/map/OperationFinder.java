@@ -17,7 +17,6 @@
 package org.apache.sis.gui.map;
 
 import java.util.function.Predicate;
-import javafx.beans.property.ReadOnlyProperty;
 import javafx.concurrent.Task;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -162,9 +161,9 @@ abstract class OperationFinder extends Task<MathTransform> {
      * @param  crs     the CRS to eventually replace by a geospatial CRS.
      * @param  canvas  the canvas that this status bar is tracking.
      */
-    static CoordinateReferenceSystem toGeospatial(CoordinateReferenceSystem crs, final ReadOnlyProperty<MapCanvas> canvas) {
+    static CoordinateReferenceSystem toGeospatial(CoordinateReferenceSystem crs, final MapCanvas canvas) {
         if (isGridCRS(crs)) {
-            final GridGeometry dataGeometry = dataGeometry(canvas.getValue());
+            final GridGeometry dataGeometry = dataGeometry(canvas);
             if (dataGeometry != null && dataGeometry.isDefined(GridGeometry.CRS)) {
                 crs = dataGeometry.getCoordinateReferenceSystem();
             }
