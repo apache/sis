@@ -305,6 +305,7 @@ public abstract class ValuesUnderCursor {
                 return;
             }
             evaluator = coverage.forConvertedValues(true).evaluator();
+            evaluator.setNullIfOutside(true);
             if (previous != null && bands.equals(previous.getSampleDimensions())) {
                 // Same configuration than previous coverage.
                 return;

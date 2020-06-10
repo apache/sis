@@ -215,9 +215,8 @@ final class ConvertedGridCoverage extends GridCoverage {
          */
         @Override
         public double[] apply(final DirectPosition point) throws CannotEvaluateException {
-            final double[] values;
-            try {
-                values = evaluator.apply(point);
+            final double[] values = evaluator.apply(point);
+            if (values != null) try {
                 for (int i=0; i<converters.length; i++) {
                     values[i] = converters[i].transform(values[i]);
                 }

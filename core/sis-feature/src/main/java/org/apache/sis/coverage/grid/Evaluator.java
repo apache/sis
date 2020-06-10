@@ -54,7 +54,7 @@ public class Evaluator implements Function<DirectPosition, double[]> {
     /**
      * The coverage in which to evaluate sample values.
      */
-    protected final GridCoverage coverage;
+    private final GridCoverage coverage;
 
     /**
      * The source coordinate reference system of the converter,
@@ -83,6 +83,14 @@ public class Evaluator implements Function<DirectPosition, double[]> {
     private double[] values;
 
     /**
+     * Whether to return {@code null} instead than throwing an exception if given point
+     * is outside coverage bounds.
+     *
+     * @see #isNullIfOutside()
+     */
+    private boolean nullIfOutside;
+
+    /**
      * Creates a new evaluator for the given coverage. This constructor is protected for allowing
      * {@link GridCoverage} subclasses to provide their own {@code Evaluator} implementations.
      * For using an evaluator, invoke {@link GridCoverage#evaluator()} instead.
@@ -103,6 +111,30 @@ public class Evaluator implements Function<DirectPosition, double[]> {
      */
     public GridCoverage getCoverage() {
         return coverage;
+    }
+
+    /**
+     * Returns whether to return {@code null} instead than throwing an exception if a point is outside coverage bounds.
+     * The default value is {@code false}, which means that the default {@link #apply(DirectPosition)} behavior is to
+     * throw {@link PointOutsideCoverageException} for points outside bounds.
+     *
+     * @return whether {@link #apply(DirectPosition)} return {@code null} for points outside coverage bounds.
+     */
+    public boolean isNullIfOutside() {
+        return nullIfOutside;
+    }
+
+    /**
+     * Sets whether to return {@code null} instead than throwing an exception if a point is outside coverage bounds.
+     * The default value is {@code false}. Setting this flag to {@code true} may improve performances if the caller
+     * expects that many points will be outside coverage bounds, since it reduces the amount of exceptions to be
+     * created.
+     *
+     * @param  flag  whether {@link #apply(DirectPosition)} should use {@code null} return value instead than
+     *               {@link PointOutsideCoverageException} for signaling that a point is outside coverage bounds.
+     */
+    public void setNullIfOutside(final boolean flag) {
+        nullIfOutside = flag;
     }
 
     /**
@@ -145,6 +177,9 @@ public class Evaluator implements Function<DirectPosition, double[]> {
                 final GridExtent subExtent = gc.toExtent(gridGeometry.extent, size);
                 return evaluate(coverage.render(subExtent), 0, 0);
             } catch (ArithmeticException | IndexOutOfBoundsException | DisjointExtentException ex) {
+                if (nullIfOutside) {
+                    return null;
+                }
                 throw (PointOutsideCoverageException) new PointOutsideCoverageException(
                         gc.pointOutsideCoverage(gridGeometry.extent), point).initCause(ex);
             }

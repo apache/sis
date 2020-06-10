@@ -17,8 +17,26 @@
 
 
 /**
- * A coverage backed by a regular grid. In the two-dimensional case, the grid coverage is an image and the cells are pixels.
+ * A coverage backed by a regular grid.
+ * In the two-dimensional case, the grid coverage is an image and the cells are pixels.
  * In the three-dimensional case, the cells are voxels.
+ *
+ * <p>{@link org.apache.sis.coverage.grid.GridCoverage2D}
+ * is a two-dimensional slice in a <var>n</var>-dimensional cube of data.
+ * Despite its name, {@code GridCoverage2D} instances can be associated to <var>n</var>-dimensional
+ * {@linkplain org.opengis.geometry.Envelope envelopes} providing that only two dimensions have a
+ * {@link org.apache.sis.coverage.grid.GridExtent#getSize(int) grid span} greater than 1.</p>
+ *
+ * <p>{@link org.apache.sis.coverage.grid.GridCoverageBuilder} is a convenience class
+ * making easier to create a grid coverage for some common cases.</p>
+ *
+ * <h2>Accurate definition of georeferencing information</h2>
+ * While it is possible to create a grid coverage from a geodetic
+ * {@linkplain org.opengis.geometry.Envelope envelope}, this approach should be used <em>in last resort</em> only.
+ * Instead, always specify the <cite>grid to CRS</cite> affine transform.
+ * This is preferable because envelopes have ambiguities
+ * (do we need to swap the longitude and latitude axes? Do we need to flip the <var>y</var> axis?).
+ * On the other hand, the <cite>grid to CRS</cite> affine transform is fully determinist.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)

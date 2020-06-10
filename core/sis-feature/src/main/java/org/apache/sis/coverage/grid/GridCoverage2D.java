@@ -534,6 +534,9 @@ public class GridCoverage2D extends GridCoverage {
                     final int y = toIntExact(addExact(gc.getCoordinateValue(yDimension), gridToImageY));
                     return evaluate(data, x, y);
                 } catch (ArithmeticException | IndexOutOfBoundsException | DisjointExtentException ex) {
+                    if (isNullIfOutside()) {
+                        return null;
+                    }
                     throw (PointOutsideCoverageException) new PointOutsideCoverageException(
                             gc.pointOutsideCoverage(gridGeometry.extent), point).initCause(ex);
                 }
