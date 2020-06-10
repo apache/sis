@@ -94,7 +94,7 @@ public strictfp class GridCoverage2DTest extends TestCase {
      * @param  sd    the sample dimensions of the coverage to create.
      * @return the coverage instance to test, with above-cited values.
      */
-    protected GridCoverage createTestCoverage(final GridGeometry grid, final List<SampleDimension> sd) {
+    GridCoverage createTestCoverage(final GridGeometry grid, final List<SampleDimension> sd) {
         /*
          * Create an image and set values directly as integers. We do not use one of the
          * BufferedImage.TYPE_* constant because this test uses some negative values.

@@ -14,16 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage.j2d;
+package org.apache.sis.coverage.grid;
 
 import java.util.List;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.GridCoverage2DTest;
-import org.apache.sis.coverage.grid.GridGeometry;
 
 
 /**
@@ -52,7 +49,7 @@ public final strictfp class BufferedGridCoverageTest extends GridCoverage2DTest 
      * @return the coverage instance to test, with above-cited values.
      */
     @Override
-    protected GridCoverage createTestCoverage(final GridGeometry grid, final List<SampleDimension> sd) {
+    GridCoverage createTestCoverage(final GridGeometry grid, final List<SampleDimension> sd) {
         /*
          * Create the grid coverage, gets its image and set values directly as short integers.
          */

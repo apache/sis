@@ -33,7 +33,6 @@ import java.awt.image.WritableRaster;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.internal.coverage.j2d.BufferedGridCoverage;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.internal.feature.Resources;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage.j2d;
+package org.apache.sis.coverage.grid;
 
 import java.util.Collection;
 import java.awt.image.DataBuffer;
@@ -27,11 +27,6 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.coverage.grid.IllegalGridGeometryException;
-import org.apache.sis.coverage.grid.ImageRenderer;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -51,7 +46,7 @@ import org.opengis.coverage.CannotEvaluateException;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.0
+ * @since   1.1
  * @module
  */
 public class BufferedGridCoverage extends GridCoverage {
