@@ -207,6 +207,15 @@ final class ConvertedGridCoverage extends GridCoverage {
         }
 
         /**
+         * Forwards configuration to the wrapped evaluator.
+         */
+        @Override
+        public void setNullIfOutside(final boolean flag) {
+            evaluator.setNullIfOutside(flag);
+            super.setNullIfOutside(flag);
+        }
+
+        /**
          * Returns a sequence of double values for a given point in the coverage.
          * This method delegates to the source coverage, then converts the values.
          *

@@ -41,6 +41,10 @@ import org.apache.sis.util.ArgumentChecks;
  * Evaluators are not thread-safe. An instance of {@code Evaluator} should be created
  * for each thread that need to compute sample values.
  *
+ * <h2>Limitations</h2>
+ * Current implementation performs nearest-neighbor sampling only.
+ * A future version will provide interpolations.
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -80,7 +84,7 @@ public class Evaluator implements Function<DirectPosition, double[]> {
      * Array where to store sample values computed by {@link #apply(DirectPosition)}.
      * For performance reasons, the same array may be recycled on every method call.
      */
-    private double[] values;
+    double[] values;
 
     /**
      * Whether to return {@code null} instead than throwing an exception if given point

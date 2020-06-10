@@ -26,6 +26,8 @@ import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.ArgumentChecks;
@@ -34,14 +36,40 @@ import org.apache.sis.util.resources.Errors;
 // Branch-specific imports
 import org.apache.sis.internal.jdk9.JDK9;
 import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.coverage.PointOutsideCoverageException;
 
 
 /**
- * A {@link GridCoverage} with data stored in an in-memory Java2D buffer.
- * Those data can be shown as {@link RenderedImage}.
+ * Basic access to grid data values backed by a <var>n</var>-dimensional {@link DataBuffer}.
+ * Those data can be shown as an untiled {@link RenderedImage}.
  * Images are created when {@link #render(GridExtent)} is invoked instead than at construction time.
  * This delayed construction makes this class better suited to <var>n</var>-dimensional grids since
  * those grids can not be wrapped into a single {@link RenderedImage}.
+ *
+ * <div class="note"><b>Comparison with alternatives:</b>
+ * this class expects all data to reside in-memory and does not support tiling.
+ * Pixels are stored in a row-major fashion with all bands in a single array <em>or</em> one array per band.
+ * By contrast, {@link GridCoverage2D} allows more flexibility in data layout and supports tiling with data
+ * loaded or computed on-the-fly, but is restricted to two-dimensional images (which may be slices in a
+ * <var>n</var>-dimensional grid).</div>
+ *
+ * The number of bands is determined by the number of {@link SampleDimension}s specified at construction time.
+ * The {@linkplain DataBuffer#getNumBanks() number of banks} is either 1 or the number of bands.
+ *
+ * <ul class="verbose">
+ *   <li>If the number of banks is 1, all data are packed in a single array with band indices varying fastest,
+ *       then column indices (<var>x</var>), then row indices (<var>y</var>), then other dimensions.</li>
+ *   <li>If the number of banks is greater than 1, then each band is stored in a separated array.
+ *       In each array, sample values are stored with column indices (<var>x</var>) varying fastest,
+ *       then row indices (<var>y</var>), then other dimensions.
+ *       In the two-dimensional case, this layout is also known as <cite>row-major</cite>.</li>
+ * </ul>
+ *
+ * The number of cells in each dimension is specified by the {@link GridExtent} of the geometry given at
+ * construction time. By default the {@linkplain GridExtent#getSize(int) extent size} in the two first dimensions
+ * will define the {@linkplain RenderedImage#getWidth() image width} and {@linkplain RenderedImage#getHeight() height},
+ * but different dimensions may be used depending on which dimensions are identified as the
+ * {@linkplain GridExtent#getSubspaceDimensions(int) subspace dimensions}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -51,9 +79,10 @@ import org.opengis.coverage.CannotEvaluateException;
  */
 public class BufferedGridCoverage extends GridCoverage {
     /**
-     * The sample values, potentially multi-banded. The bands may be stored either in a single bank (pixel interleaved image)
-     * or in different banks (banded image). This class detects automatically which of those two sample models is used when
-     * {@link #render(GridExtent)} is invoked.
+     * The sample values, potentially multi-banded. The bands may be stored either in a single bank
+     * ({@linkplain java.awt.image.PixelInterleavedSampleModel pixel interleaved} image) or in different banks
+     * ({@linkplain java.awt.image.BandedSampleModel banded} image). This class detects automatically
+     * which of those two sample models is used when {@link #render(GridExtent)} is invoked.
      */
     protected final DataBuffer data;
 
@@ -61,7 +90,8 @@ public class BufferedGridCoverage extends GridCoverage {
      * Constructs a grid coverage using the specified grid geometry, sample dimensions and data buffer.
      * This method stores the given buffer by reference (no copy). The bands in the given buffer can be
      * stored either in a single bank (pixel interleaved image) or in different banks (banded image).
-     * This class detects automatically which of those two sample models is used.
+     * This class detects automatically which of those two sample models is used
+     * (see class javadoc for more information).
      *
      * <p>Note that {@link DataBuffer} does not contain any information about image size.
      * Consequently {@link #render(GridExtent)} depends on the domain {@link GridExtent},
@@ -74,7 +104,7 @@ public class BufferedGridCoverage extends GridCoverage {
      * @throws NullPointerException if an argument is {@code null}.
      * @throws IllegalArgumentException if the data buffer has an incompatible number of banks.
      * @throws IllegalGridGeometryException if the grid extent is larger than the data buffer capacity.
-     * @throws ArithmeticException if the grid extent is larger than 64 bits integer capacity.
+     * @throws ArithmeticException if the number of cells is larger than 64 bits integer capacity.
      */
     public BufferedGridCoverage(final GridGeometry domain, final Collection<? extends SampleDimension> range, final DataBuffer data) {
         super(domain, range);
@@ -109,8 +139,8 @@ public class BufferedGridCoverage extends GridCoverage {
 
     /**
      * Constructs a grid coverage using the specified grid geometry, sample dimensions and data type.
-     * This constructor creates a single-bank {@link DataBuffer} (pixel interleaved sample model) with
-     * all sample values initialized to zero.
+     * This constructor creates a single-bank {@link DataBuffer} (pixel interleaved sample model)
+     * with all sample values initialized to zero.
      *
      * @param  grid      the grid extent, CRS and conversion from cell indices to CRS.
      * @param  bands     sample dimensions for each image band.
@@ -147,6 +177,18 @@ public class BufferedGridCoverage extends GridCoverage {
     }
 
     /**
+     * Creates a new function for computing or interpolating sample values at given locations.
+     *
+     * <h4>Multi-threading</h4>
+     * {@code Evaluator}s are not thread-safe. For computing sample values concurrently,
+     * a new {@link Evaluator} instance should be created for each thread.
+     */
+    @Override
+    public Evaluator evaluator() {
+        return new CellAccessor(this);
+    }
+
+    /**
      * Returns a two-dimensional slice of grid data as a rendered image.
      * This method returns a view; sample values are not copied.
      *
@@ -160,6 +202,105 @@ public class BufferedGridCoverage extends GridCoverage {
             return renderer.image();
         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Implementation of evaluator returned by {@link #evaluator()}.
+     */
+    private static class CellAccessor extends Evaluator {
+        /**
+         * A copy of {@link BufferedGridCoverage#data} reference.
+         */
+        private final DataBuffer data;
+
+        /**
+         * The grid lower values. Those values need to be subtracted to each
+         * grid coordinate before to compute index in {@link #data} buffer.
+         */
+        private final long[] lower;
+
+        /**
+         * Grid size with shifted index. The size of dimension 0 is stored at index 1, the size of dimension 1
+         * is stored in index 2, <i>etc.</i>. Element 0 contains the number of banks. This layout is convenient
+         * for computing index in {@link DataBuffer}.
+         */
+        private final long[] sizes;
+
+        /**
+         * {@code true} for banded sample model, or {@code false} for pixel interleaved sample model.
+         */
+        private final boolean banded;
+
+        /**
+         * Creates a new evaluator for the specified coverage.
+         */
+        CellAccessor(final BufferedGridCoverage coverage) {
+            super(coverage);
+            data = coverage.data;
+            final GridExtent extent = coverage.getGridGeometry().getExtent();
+            lower = new long[extent.getDimension()];
+            sizes = new long[lower.length + 1];
+            sizes[0] = data.getNumBanks();
+            for (int i=0; i<lower.length; i++) {
+                lower[i]   = extent.getLow(i);
+                sizes[i+1] = extent.getSize(i);
+            }
+            banded = sizes[0] > 1;
+            values = new double[coverage.getSampleDimensions().size()];
+        }
+
+        /**
+         * Returns a sequence of double values for a given point in the coverage.
+         * The CRS of the given point may be any coordinate reference system,
+         * or {@code null} for the same CRS than the coverage.
+         */
+        @Override
+        public double[] apply(final DirectPosition point) throws CannotEvaluateException {
+            final int pos;
+            try {
+                final FractionalGridCoordinates gc = toGridPosition(point);
+                int  i = lower.length;
+                long s = sizes[i];
+                long index = 0;
+                while (--i >= 0) {
+                    final long low = lower[i];
+                    long p = gc.getCoordinateValue(i);
+                    // (p - low) may overflow, so we must test (p < low) before.
+                    if (p < low || (p -= low) >= s) {
+                        if (isNullIfOutside()) {
+                            return null;
+                        }
+                        final PointOutsideCoverageException ex = new PointOutsideCoverageException(
+                                gc.pointOutsideCoverage(getCoverage().gridGeometry.extent), point);
+                        ex.setOffendingLocation(point);
+                        throw ex;
+                    }
+                    /*
+                     * Following should never overflow, otherwise BufferedGridCoverage
+                     * constructor would have failed. Should never be negative neither.
+                     */
+                    index = (index + p) * (s = sizes[i]);
+                }
+                /*
+                 * Failure on next line would not be caused by a point outside coverage bounds.
+                 * So it should not be rethrown as PointOutsideCoverageException.
+                 */
+                pos = Math.toIntExact(index);
+            } catch (ArithmeticException | TransformException ex) {
+                throw new CannotEvaluateException(ex.getMessage(), ex);
+            }
+            final double[] values = this.values;
+            if (banded) {
+                for (int i=0; i<values.length; i++) {
+                    values[i] = data.getElemDouble(i, pos);
+                }
+            } else {
+                for (int i=0; i<values.length; i++) {
+                    values[i] = data.getElemDouble(i + pos);
+                }
+            }
+            return values;
         }
     }
 }
