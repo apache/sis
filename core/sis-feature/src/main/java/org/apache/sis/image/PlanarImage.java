@@ -194,6 +194,9 @@ public abstract class PlanarImage implements RenderedImage {
      *     <td>{@value #STATISTICS_KEY}</td>
      *     <td>Minimum, maximum and mean values for each band.</td>
      *   </tr><tr>
+     *     <td>{@value ResampledImage#POSITIONAL_ERRORS_KEY}</td>
+     *     <td>Estimation of positional error for each pixel.</td>
+     *   </tr><tr>
      *     <td>{@value ComputedImage#SOURCE_PADDING_KEY}</td>
      *     <td>Amount of additional source pixels needed on each side of a destination pixel for computing its value.</td>
      *   </tr>

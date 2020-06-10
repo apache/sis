@@ -39,6 +39,7 @@ import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.geometry.Shapes2D;
@@ -82,9 +83,21 @@ public class ResampledImage extends ComputedImage {
     private static final Set<String> FILTERED_PROPERTIES = Collections.singleton(SAMPLE_RESOLUTIONS_KEY);
 
     /**
+     * Key of a property providing an estimation of positional error for each pixel.
+     * Values should be instances of {@link RenderedImage} with same size and origin than this image.
+     * The image should contain a single band where all sample values are error estimations in pixel units
+     * (relative to pixels of this image). The value should be small, for example between 0 and 0.2.
+     *
+     * <p>The default implementation transforms all pixel coordinates {@linkplain #toSource to source},
+     * then convert them back to pixel coordinates in this image. The result is compared with expected
+     * coordinates and the distance is stored in the image.</p>
+     */
+    public static final String POSITIONAL_ERRORS_KEY = "org.apache.sis.PositionalErrors";
+
+    /**
      * The {@value} value for identifying code expecting exactly 2 dimensions.
      */
-    private static final int BIDIMENSIONAL = 2;
+    static final int BIDIMENSIONAL = 2;
 
     /**
      * Domain of pixel coordinates in this image.
@@ -125,6 +138,14 @@ public class ResampledImage extends ComputedImage {
      * must be equal to the number of bands. Can not be null.
      */
     private final Object fillValues;
+
+    /**
+     * {@link #POSITIONAL_ERRORS_KEY} value, computed when first requested.
+     *
+     * @see #getPositionalErrors()
+     * @see #getProperty(String)
+     */
+    private RenderedImage positionalErrors;
 
     /**
      * Creates a new image which will resample the given image. The resampling operation is defined
@@ -251,6 +272,21 @@ public class ResampledImage extends ComputedImage {
     }
 
     /**
+     * Computes the {@link #POSITIONAL_ERRORS_KEY} value.
+     */
+    private synchronized RenderedImage getPositionalErrors() throws TransformException {
+        if (positionalErrors == null) {
+            final Dimension s = interpolation.getSupportSize();
+            final double[] offset = new double[toSource.getSourceDimensions()];
+            offset[0] = -interpolationSupportOffset(s.width);
+            offset[1] = -interpolationSupportOffset(s.height);
+            final MathTransform tr = MathTransforms.concatenate(toSource, MathTransforms.translation(offset));
+            positionalErrors = new PositionalErrorImage(this, tr);
+        }
+        return positionalErrors;
+    }
+
+    /**
      * Verifies whether image layout information are consistent. This method performs all verifications
      * {@linkplain ComputedImage#verify() documented in parent class}, then verifies that source coordinates
      * required by this image (computed by converting {@linkplain #getBounds() this image bounds} using the
@@ -319,9 +355,12 @@ public class ResampledImage extends ComputedImage {
     public Object getProperty(final String key) {
         if (FILTERED_PROPERTIES.contains(key)) {
             return getSource().getProperty(key);
-        } else {
-            return super.getProperty(key);
+        } else if (POSITIONAL_ERRORS_KEY.equals(key)) try {
+            return getPositionalErrors();
+        } catch (TransformException | IllegalArgumentException e) {
+            throw (ImagingOpException) new ImagingOpException(e.getMessage()).initCause(e);
         }
+        return super.getProperty(key);
     }
 
     /**
@@ -333,19 +372,21 @@ public class ResampledImage extends ComputedImage {
      */
     @Override
     public String[] getPropertyNames() {
-        final String[] names = getSource().getPropertyNames();      // Array should be a copy, so we don't copy again.
-        if (names != null) {
-            int n = 0;
-            for (final String name : names) {
-                if (FILTERED_PROPERTIES.contains(name)) {
-                    names[n++] = name;
-                }
-            }
-            if (n != 0) {
-                return ArraysExt.resize(names, n);
+        int n = 0;
+        String[] names = getSource().getPropertyNames();    // Array should be a copy, so we don't copy again.
+        if (names == null) {
+            names = CharSequences.EMPTY_ARRAY;
+        } else for (final String name : names) {
+            if (FILTERED_PROPERTIES.contains(name)) {
+                names[n++] = name;
             }
         }
-        return null;
+        if (n < names.length) {
+            names[n++] = POSITIONAL_ERRORS_KEY;
+            return ArraysExt.resize(names, n);
+        } else {
+            return ArraysExt.append(names, POSITIONAL_ERRORS_KEY);
+        }
     }
 
     /**
