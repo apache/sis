@@ -154,10 +154,9 @@ final class PositionalErrorImage extends ComputedImage {
             }
             toSource.transform(buffer, 0, buffer, 0, scanline);
             toTarget.transform(buffer, 0, buffer, 0, scanline);
-            for (int i=0, x = tileMinX; x < tileMaxX; x++) {
-                final int t = i;
-                buffer[t] = Math.hypot(buffer[i++] - x,
-                                       buffer[i++] - y);
+            for (int t=0,i=0, x = tileMinX; x < tileMaxX; x++) {
+                buffer[t++] = Math.hypot(buffer[i++] - x,
+                                         buffer[i++] - y);
             }
             tile.setSamples(tileMinX, y, scanline, 1, 0, buffer);
         }

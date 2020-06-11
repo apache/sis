@@ -16,8 +16,9 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Locale;
-import java.util.EnumMap;
 import java.awt.Graphics2D;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
@@ -95,7 +96,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     /**
      * The {@code RenderedImage} to draw together with transform from pixel coordinates to display coordinates.
      * Shall never be {@code null} but may be {@linkplain RenderingData#isEmpty() empty}. This instance shall be
-     * read and modified in JavaFX thread only and cloned if those data needed by a background thread.
+     * read and modified in JavaFX thread only and cloned if those data are needed by a background thread.
      *
      * @see Worker
      */
@@ -103,10 +104,10 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * The {@link #data} resampled to a CRS which can easily be mapped to {@linkplain #getDisplayCRS() display CRS}.
-     * The different values are slight variants of the values associated to {@link Stretching#NONE}, with only the
-     * color map changed.
+     * The different values are variants of the values associated to {@link ImageDerivative#NONE}, with color ramp
+     * changed or other operation applied.
      */
-    private final EnumMap<Stretching,RenderedImage> resampledImages;
+    private final Map<ImageDerivative,RenderedImage> resampledImages;
 
     /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
@@ -114,7 +115,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     public CoverageCanvas() {
         super(Locale.getDefault());
         data                  = new RenderingData();
-        resampledImages       = new EnumMap<>(Stretching.class);
+        resampledImages       = new HashMap<>();
         coverageProperty      = new SimpleObjectProperty<>(this, "coverage");
         sliceExtentProperty   = new SimpleObjectProperty<>(this, "sliceExtent");
         interpolationProperty = new SimpleObjectProperty<>(this, "interpolation", data.getInterpolation());
@@ -331,13 +332,14 @@ public class CoverageCanvas extends MapCanvasAWT {
         private RenderedImage resampledImage;
 
         /**
-         * The resampled image after stretching.
+         * The resampled image after color ramp stretching or other operation applied.
          */
-        private RenderedImage stretchedImage;
+        private RenderedImage filteredImage;
 
         /**
-         * The stretched image with tiles computed in advance. The set of prefetched
-         * tiles may differ at each rendering event. This image should not be cached.
+         * The filtered image with tiles computed in advance. The set of prefetched
+         * tiles may differ at each rendering event. This image should not be cached
+         * after rendering operation is completed.
          */
         private RenderedImage prefetchedImage;
 
@@ -362,7 +364,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             displayBounds      = canvas.getDisplayBounds();
             if (data.validateCRS(objectiveCRS)) {
                 resampledImage = canvas.resampledImages.get(Stretching.NONE);
-                stretchedImage = canvas.resampledImages.get(data.selectedStretching);
+                filteredImage  = canvas.resampledImages.get(data.selectedDerivative);
             }
         }
 
@@ -382,14 +384,14 @@ public class CoverageCanvas extends MapCanvasAWT {
                         & ~(AffineTransform.TYPE_IDENTITY | AffineTransform.TYPE_TRANSLATION)) == 0;
             }
             if (!isResampled) {
-                stretchedImage = null;
+                filteredImage = null;
                 resampledImage = data.resample(objectiveCRS, objectiveToDisplay);
                 resampledToDisplay = data.getTransform(objectiveToDisplay);
             }
-            if (stretchedImage == null) {
-                stretchedImage = data.stretch(resampledImage);
+            if (filteredImage == null) {
+                filteredImage = data.filter(resampledImage);
             }
-            prefetchedImage = data.prefetch(stretchedImage, resampledToDisplay, displayBounds);
+            prefetchedImage = data.prefetch(filteredImage, resampledToDisplay, displayBounds);
         }
 
         /**
@@ -418,19 +420,27 @@ public class CoverageCanvas extends MapCanvasAWT {
     private void cacheRenderingData(final Worker worker) {
         data = worker.data;
         final RenderedImage newValue = worker.resampledImage;
-        final RenderedImage oldValue = resampledImages.put(Stretching.NONE, newValue);
+        final RenderedImage oldValue = resampledImages.put(ImageDerivative.NONE, newValue);
         if (oldValue != newValue && oldValue != null) {
             resampledImages.clear();
-            resampledImages.put(Stretching.NONE, newValue);
+            resampledImages.put(ImageDerivative.NONE, newValue);
         }
-        resampledImages.put(data.selectedStretching, worker.stretchedImage);
+        resampledImages.put(data.selectedDerivative, worker.filteredImage);
+    }
+
+    /**
+     * Invoked when the user selected a new operation.
+     */
+    final void setOperation(final ImageOperation selection) {
+        data.selectedDerivative = data.selectedDerivative.setOperation(selection);
+        requestRepaint();
     }
 
     /**
      * Invoked when the user selected a new color stretching mode.
      */
-    final void setStretching(final Stretching type) {
-        data.selectedStretching = type;
+    final void setStyling(final Stretching selection) {
+        data.selectedDerivative = data.selectedDerivative.setStyling(selection);
         requestRepaint();
     }
 

@@ -27,7 +27,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.gui.Styles;
-import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.IndexedResourceBundle;
 
 
 /**
@@ -94,7 +94,7 @@ abstract class Controls {
      * @param  control     the control to associate to the label, or {@code null} if none.
      * @return label associated to the given control, or {@code null} if the given control was null.
      */
-    static Label label(final Vocabulary vocabulary, final short key, final Control control) {
+    static Label label(final IndexedResourceBundle vocabulary, final short key, final Control control) {
         if (control == null) {
             return null;
         }
@@ -113,7 +113,7 @@ abstract class Controls {
      * @param  isFirst     whether the given group is the first group in the pane.
      * @return label associated to the given group of controls.
      */
-    static Label labelOfGroup(final Vocabulary vocabulary, final short key, final Region group, final boolean isFirst) {
+    static Label labelOfGroup(final IndexedResourceBundle vocabulary, final short key, final Region group, final boolean isFirst) {
         final Label label = new Label(vocabulary.getLabel(key));
         label.setPadding(isFirst ? CAPTION_MARGIN : NEXT_CAPTION_MARGIN);
         label.setLabelFor(group);

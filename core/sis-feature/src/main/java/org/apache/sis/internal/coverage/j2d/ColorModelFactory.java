@@ -439,8 +439,13 @@ public final class ColorModelFactory {
             case DataBuffer.TYPE_USHORT: signed = false; break;
             case DataBuffer.TYPE_SHORT:
             case DataBuffer.TYPE_INT:    signed = true; break;
-            case DataBuffer.TYPE_FLOAT:
-            case DataBuffer.TYPE_DOUBLE: return ((float) minimum) == 0f && ((float) maximum) == 1f;
+            /*
+             * The standard range of floating point types is [0 … 1], but we never return `true`
+             * for those types even if the specified minimum and maximum values match that range
+             * because we have no guarantees that the actual sample values will never be greater.
+             * Values out-of-bounds cause exceptions to be thrown at rendering time with standard
+             * color space.
+             */
             default: return false;
         }
         final int numBits = DataBuffer.getDataTypeSize(dataType);

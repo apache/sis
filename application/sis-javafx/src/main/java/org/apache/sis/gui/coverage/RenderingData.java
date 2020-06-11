@@ -128,7 +128,7 @@ final class RenderingData implements Cloneable {
     /**
      * Key of the currently selected alternative in {@link CoverageCanvas#resampledImages} map.
      */
-    Stretching selectedStretching;
+    ImageDerivative selectedDerivative;
 
     /**
      * Statistics on pixel values of current {@link #data}, or {@code null} if none or not yet computed.
@@ -147,7 +147,7 @@ final class RenderingData implements Cloneable {
      * @todo Listen to logging messages. We need to create a logging panel first.
      */
     RenderingData() {
-        selectedStretching = Stretching.NONE;
+        selectedDerivative = ImageDerivative.NONE;
         processor = new ImageProcessor();
         processor.setErrorAction(ImageProcessor.ErrorAction.LOG);
     }
@@ -265,19 +265,29 @@ final class RenderingData implements Cloneable {
     }
 
     /**
-     * Creates the stretched image from the given resampled image.
+     * Applies the image operation (if any) on the given resampled image, than stretches the color ramp.
      *
      * @param  resampledImage  the image computed by {@link #resample(CoordinateReferenceSystem, LinearTransform)}.
-     * @return image with color ramp stretched. May be the same instance than given image.
+     * @return image with operation applied and color ramp stretched. May be the same instance than given image.
      */
-    final RenderedImage stretch(final RenderedImage resampledImage) {
-        if (selectedStretching != Stretching.NONE) {
-            if (statistics == null) {
-                statistics = processor.getStatistics(data);
-            }
+    final RenderedImage filter(RenderedImage resampledImage) {
+        resampledImage = selectedDerivative.operation.apply(resampledImage);
+        if (selectedDerivative.styling != Stretching.NONE) {
             final Map<String,Object> modifiers = new HashMap<>(4);
-            modifiers.put("statistics", statistics);
-            if (selectedStretching == Stretching.AUTOMATIC) {
+            /*
+             * If no operation is applied, select the original image as the source of statistics.
+             * It saves computation time (no need to recompute the statistics when the projection
+             * is changed) and provides more stable visual output (color ramp computed from same
+             * standard deviation in "automatic" mode). If an operation is applied, the resulting
+             * image can be anything so we let `stretchColorRamp(…)` uses statistics on that image.
+             */
+            if (selectedDerivative.operation == ImageOperation.NONE) {
+                if (statistics == null) {
+                    statistics = processor.getStatistics(data);
+                }
+                modifiers.put("statistics", statistics);
+            }
+            if (selectedDerivative.styling == Stretching.AUTOMATIC) {
                 modifiers.put("MultStdDev", 3);
             }
             return processor.stretchColorRamp(resampledImage, modifiers);
@@ -289,20 +299,20 @@ final class RenderingData implements Cloneable {
      * Computes immediately, possibly using many threads, the tiles that are going to be displayed.
      * The returned instance should be used only for current rendering event; it should not be cached.
      *
-     * @param  stretchedImage      the image computed by {@link #stretch(RenderedImage)}.
+     * @param  filteredImage       the image computed by {@link #filter(RenderedImage)}.
      * @param  resampledToDisplay  the transform computed by {@link #getTransform(LinearTransform)}.
      * @param  displayBounds       size and location of the display device, in pixel units.
      * @return a temporary image with tiles intersecting the display region already computed.
      */
-    final RenderedImage prefetch(final RenderedImage stretchedImage, final AffineTransform resampledToDisplay,
+    final RenderedImage prefetch(final RenderedImage filteredImage, final AffineTransform resampledToDisplay,
                                  final Envelope2D displayBounds)
     {
         try {
-            return processor.prefetch(stretchedImage, (Rectangle) AffineTransforms2D.transform(
+            return processor.prefetch(filteredImage, (Rectangle) AffineTransforms2D.transform(
                         resampledToDisplay.createInverse(), displayBounds, new Rectangle()));
         } catch (NoninvertibleTransformException e) {
             recoverableException(e);
-            return stretchedImage;
+            return filteredImage;
         }
     }
 

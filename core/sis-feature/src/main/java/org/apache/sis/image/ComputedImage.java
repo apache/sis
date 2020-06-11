@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
+import java.lang.ref.Reference;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -220,6 +221,15 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
         }
         this.sources = sources;                     // Note: null value does not have same meaning than empty array.
         reference = new ComputedTiles(this, ws);    // Create cleaner last after all arguments have been validated.
+    }
+
+    /**
+     * Returns a weak reference to this image. Using weak reference instead than strong reference may help to
+     * reduce memory usage when recomputing the image is cheap. This method should not be public because the
+     * returned instance implements public interfaces that caller could invoke.
+     */
+    final Reference<ComputedImage> reference() {
+        return reference;
     }
 
     /**

@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Collections;
+import java.lang.ref.Reference;
 import java.nio.DoubleBuffer;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -145,7 +146,7 @@ public class ResampledImage extends ComputedImage {
      * @see #getPositionalErrors()
      * @see #getProperty(String)
      */
-    private RenderedImage positionalErrors;
+    private Reference<ComputedImage> positionalErrors;
 
     /**
      * Creates a new image which will resample the given image. The resampling operation is defined
@@ -272,18 +273,23 @@ public class ResampledImage extends ComputedImage {
     }
 
     /**
-     * Computes the {@link #POSITIONAL_ERRORS_KEY} value.
+     * Computes the {@link #POSITIONAL_ERRORS_KEY} value. This method is invoked by {@link #getProperty(String)}
+     * when the {@link #POSITIONAL_ERRORS_KEY} property value is requested. The result is saved by weak reference
+     * since recomputing this image is rarely requested, and if needed can be recomputed easily.
      */
     private synchronized RenderedImage getPositionalErrors() throws TransformException {
-        if (positionalErrors == null) {
+        ComputedImage image = (positionalErrors != null) ? positionalErrors.get() : null;
+        if (image == null) {
+            positionalErrors = null;
             final Dimension s = interpolation.getSupportSize();
             final double[] offset = new double[toSource.getSourceDimensions()];
             offset[0] = -interpolationSupportOffset(s.width);
             offset[1] = -interpolationSupportOffset(s.height);
             final MathTransform tr = MathTransforms.concatenate(toSource, MathTransforms.translation(offset));
-            positionalErrors = new PositionalErrorImage(this, tr);
+            image = new PositionalErrorImage(this, tr);
+            positionalErrors = image.reference();
         }
-        return positionalErrors;
+        return image;
     }
 
     /**

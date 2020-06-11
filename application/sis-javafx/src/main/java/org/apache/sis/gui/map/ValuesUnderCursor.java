@@ -273,6 +273,18 @@ public abstract class ValuesUnderCursor {
         }
 
         /**
+         * Returns the grid coverage used as the source of sample values.
+         * This is usually the value of {@link CoverageCanvas#coverageProperty}.
+         *
+         * @return the source coverage, or {@code null} if none.
+         *
+         * @see CoverageCanvas#coverageProperty
+         */
+        public final GridCoverage getCoverage() {
+            return (evaluator != null) ? evaluator.getCoverage() : null;
+        }
+
+        /**
          * Returns {@code true} if all bands are unselected.
          */
         @Override

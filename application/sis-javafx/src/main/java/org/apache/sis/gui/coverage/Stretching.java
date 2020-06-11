@@ -25,6 +25,8 @@ import org.apache.sis.util.resources.Vocabulary;
 /**
  * The kind of color ramp stretching for scaling the color palette of an image.
  *
+ * This enumeration is temporary and will be deleted after SIS provides more complete styling support.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1

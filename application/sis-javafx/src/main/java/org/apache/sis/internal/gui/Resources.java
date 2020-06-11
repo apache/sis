@@ -196,6 +196,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short OpenDataFile = 29;
 
         /**
+         * Positional errors
+         */
+        public static final short PositionalErrors = 35;
+
+        /**
+         * Predefined filters
+         */
+        public static final short PredefinedFilters = 36;
+
+        /**
          * Select a coordinate reference system
          */
         public static final short SelectCRS = 30;

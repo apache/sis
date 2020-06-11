@@ -1134,7 +1134,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             sampleValues.setText(prototype);
             sampleValues.setPrefWidth(Label.USE_COMPUTED_SIZE);                 // Enable `prefWidth(…)` computation.
             double width = sampleValues.prefWidth(sampleValues.getHeight());
-            final double max = Math.max(width * 1.25, 100);                     // Arbitrary limit.
+            final double max = Math.max(width * 1.25, 200);                     // Arbitrary limit.
             for (final String other : others) {
                 sampleValues.setText(other);
                 final double cw = sampleValues.prefWidth(sampleValues.getHeight());

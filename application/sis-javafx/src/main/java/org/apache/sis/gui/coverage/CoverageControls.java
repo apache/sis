@@ -38,6 +38,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.image.Interpolation;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -109,7 +110,7 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
             referenceSystem = systemChoices.valueProperty();
 
             final GridPane colors = createControlGrid(0,
-                label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStretching(n))),
+                label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStyling(n))),
                 label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton(background))
             );
             displayPane = new VBox(
@@ -117,10 +118,22 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
                 labelOfGroup(vocabulary, Vocabulary.Keys.Colors,          colors,     false), colors);
         }
         /*
+         * "Operation" section with the following controls:
+         *    - List of predefined operations.
+         */
+        final VBox operationPane;
+        {   // Block for making variables locale to this scope.
+            final Resources resources = Resources.forLocale(vocabulary.getLocale());
+            final Region operations = ImageOperation.list((p,o,n) -> view.setOperation(n));
+            operationPane = new VBox(
+                labelOfGroup(resources, Resources.Keys.PredefinedFilters, operations, true), operations);
+        }
+        /*
          * Put all sections together and have the first one expanded by default.
          */
         controls = new Accordion(
-            new TitledPane(vocabulary.getString(Vocabulary.Keys.Display), displayPane)
+            new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),    displayPane),
+            new TitledPane(vocabulary.getString(Vocabulary.Keys.Operations), operationPane)
             // TODO: more controls to be added in a future version.
         );
         controls.setExpandedPane(controls.getPanes().get(0));
