@@ -17,6 +17,8 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Arrays;
+import java.util.OptionalInt;
+import java.lang.reflect.Array;
 import java.awt.Rectangle;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
@@ -32,9 +34,12 @@ import java.awt.image.SinglePixelPackedSampleModel;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.image.PlanarImage;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.rint;
@@ -155,6 +160,28 @@ public final class ImageUtilities extends Static {
             }
         }
         return -1;
+    }
+
+    /**
+     * Returns the number of fraction digits to use for formatting sample values in the given band of the given image.
+     * This method use the {@value PlanarImage#SAMPLE_RESOLUTIONS_KEY} property value.
+     *
+     * @param  image  the image from which to get the number of fraction digits.
+     * @param  band   the band for which to get the number of fraction digits.
+     * @return number of fraction digits. Maybe a negative number if the sample resolution is equal or greater than 10.
+     */
+    public static OptionalInt getFractionDigits(final RenderedImage image, final int band) {
+        final Object property = image.getProperty(PlanarImage.SAMPLE_RESOLUTIONS_KEY);
+        if (property != null) {
+            final int c = Numbers.getEnumConstant(property.getClass().getComponentType());
+            if (c >= Numbers.BYTE && c <= Numbers.BIG_DECIMAL && band < Array.getLength(property)) {
+                final double resolution = Math.abs(((Number) Array.get(property, band)).doubleValue());
+                if (resolution > 0 && resolution <= Double.MAX_VALUE) {     // Non-zero, non-NaN and finite.
+                    return OptionalInt.of(DecimalFunctions.fractionDigitsForDelta(resolution, false));
+                }
+            }
+        }
+        return OptionalInt.empty();
     }
 
     /**

@@ -252,7 +252,7 @@ final class RenderingData implements Cloneable {
          *
          * TODO: if user pans the image close to integer range limit, we should create a new resampled image
          *       shifted to new location (i.e. clear `CoverageCanvas.resampledImages` for forcing this method
-         *       to be invoked again).
+         *       to be invoked again). The intent is to move away from integer overflow situation.
          */
         final LinearTransform inverse = objectiveToDisplay.inverse();
         displayToObjective = AffineTransforms2D.castOrCopy(inverse);
@@ -271,7 +271,9 @@ final class RenderingData implements Cloneable {
      * @return image with operation applied and color ramp stretched. May be the same instance than given image.
      */
     final RenderedImage filter(RenderedImage resampledImage) {
-        resampledImage = selectedDerivative.operation.apply(resampledImage);
+        if (resampledImage == (resampledImage = selectedDerivative.operation.apply(resampledImage))) {
+            selectedDerivative = selectedDerivative.setOperation(ImageOperation.NONE);
+        }
         if (selectedDerivative.styling != Stretching.NONE) {
             final Map<String,Object> modifiers = new HashMap<>(4);
             /*

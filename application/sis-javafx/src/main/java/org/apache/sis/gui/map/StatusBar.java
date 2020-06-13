@@ -1036,10 +1036,19 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 position.setMinWidth(Math.min(view.getWidth() / 2, Math.ceil(position.prefWidth(position.getHeight()))));
             }
             /*
-             * Format the values under cursor if the coordinates are valid.
+             * Format the values under cursor if the coordinates are valid. First try to use coordinates
+             * in the CRS used by this status bar. If `ValuesUnderCursor` can not use those "real world"
+             * coordinates, fallback on pixel coordinates.
              */
             if (isSampleValuesVisible) {
-                sampleValues.setText(success ? sampleValuesProvider.get().evaluate(targetCoordinates) : null);
+                text = null;
+                if (success) {
+                    final ValuesUnderCursor sp = sampleValuesProvider.get();
+                    if ((text = sp.evaluate(targetCoordinates)) == null) {
+                        text = sp.evaluateAtPixel(x, y);
+                    }
+                }
+                sampleValues.setText(text);
             }
         }
     }
@@ -1070,6 +1079,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             }
         }
         /*
+         * Mouse exited the canvas. Use substitution texts.
          * Do not use `position.setVisible(false)` because
          * we want the Tooltip to continue to be available.
          */

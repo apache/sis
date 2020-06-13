@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
@@ -27,12 +26,10 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Background;
 import javafx.util.Duration;
-import org.apache.sis.image.PlanarImage;
-import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.RecentChoices;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 
 
 /**
@@ -234,33 +231,22 @@ final class CellFormat extends SimpleStringProperty {
         if (dataTypeisInteger) {
             cellFormat.setMaximumFractionDigits(0);
         } else {
-            int n = 1;          // Default value if we can not determine the number of fraction digits.
-            final Object property = image.getProperty(PlanarImage.SAMPLE_RESOLUTIONS_KEY);
-            if (property != null) {
-                final int c = Numbers.getEnumConstant(property.getClass().getComponentType());
-                if (c >= Numbers.BYTE && c <= Numbers.BIG_DECIMAL && band < Array.getLength(property)) {
-                    final double resolution = Math.abs(((Number) Array.get(property, band)).doubleValue());
-                    if (resolution > 0 && resolution <= Double.MAX_VALUE) {     // Non-zero, non-NaN and finite.
-                        n = DecimalFunctions.fractionDigitsForDelta(resolution, false);
-                        if (n > 6 || n < -9) {      // Arbitrary threshold for switching to scientific notation.
-                            if (cellFormat instanceof DecimalFormat) {
-                                if (classicFormatPattern == null) {
-                                    final DecimalFormat df = (DecimalFormat) cellFormat;
-                                    classicFormatPattern = df.toPattern();
-                                    df.applyPattern("0.###E00");
-                                }
-                                n = 3;
-                            }
-                        } else if (classicFormatPattern != null) {
-                            ((DecimalFormat) cellFormat).applyPattern(classicFormatPattern);
-                            classicFormatPattern = null;
-                        }
-                        if (n < 0) n = 0;
+            ImageUtilities.getFractionDigits(image, band).ifPresent((n) -> {
+                if (n > 6 || n < -9) {      // Arbitrary threshold for switching to scientific notation.
+                    if (cellFormat instanceof DecimalFormat && classicFormatPattern == null) {
+                        final DecimalFormat df = (DecimalFormat) cellFormat;
+                        classicFormatPattern = df.toPattern();
+                        df.applyPattern("0.000E00");
+                        return;
                     }
+                } else if (classicFormatPattern != null) {
+                    ((DecimalFormat) cellFormat).applyPattern(classicFormatPattern);
+                    classicFormatPattern = null;
                 }
-            }
-            cellFormat.setMinimumFractionDigits(n);
-            cellFormat.setMaximumFractionDigits(n);
+                if (n < 0) n = 0;
+                cellFormat.setMinimumFractionDigits(n);
+                cellFormat.setMaximumFractionDigits(n);
+            });
         }
         buffer.setLength(0);
         formatCell(lastValue);

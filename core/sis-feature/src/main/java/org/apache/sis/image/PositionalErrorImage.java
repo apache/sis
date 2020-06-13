@@ -96,6 +96,39 @@ final class PositionalErrorImage extends ComputedImage {
     }
 
     /**
+     * Gets a property from this image. Current default implementation supports the following keys
+     * (more properties may be added to this list in future Apache SIS versions):
+     *
+     * <ul>
+     *   <li>{@value #SAMPLE_RESOLUTIONS_KEY}</li>
+     * </ul>
+     */
+    @Override
+    public Object getProperty(final String key) {
+        if (SAMPLE_RESOLUTIONS_KEY.equals(key)) {
+            /*
+             * Division by 8 is an arbitrary value for having one more digit
+             * and keep a number having an exact representation in base 2.
+             */
+            return new float[] {(float) (ResamplingGrid.TOLERANCE / 8)};
+        } else {
+            return super.getProperty(key);
+        }
+    }
+
+    /**
+     * Returns the names of all recognized properties.
+     *
+     * @return names of all recognized properties.
+     */
+    @Override
+    public String[] getPropertyNames() {
+        return new String[] {
+            SAMPLE_RESOLUTIONS_KEY
+        };
+    }
+
+    /**
      * Returns the minimum <var>x</var> coordinate (inclusive) of this image.
      */
     @Override

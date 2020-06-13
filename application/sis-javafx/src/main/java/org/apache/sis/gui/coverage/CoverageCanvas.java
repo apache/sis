@@ -46,6 +46,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
+import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.internal.gui.Resources;
@@ -110,6 +111,17 @@ public class CoverageCanvas extends MapCanvasAWT {
     private final Map<ImageDerivative,RenderedImage> resampledImages;
 
     /**
+     * Helper methods for configuring the {@link StatusBar} when the user selects an operation.
+     * This is non-null only if this {@link CoverageCanvas} is used together with a status bar.
+     *
+     * <p>Consider as final after {@link #initialize(StatusBar)} invocation. This field may be removed in a future
+     * version if we define a good public API for coverage operations in replacement of {@link ImageOperation}.</p>
+     *
+     * @see #initialize(StatusBar)
+     */
+    private StatusBarSupport statusBar;
+
+    /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
      */
     public CoverageCanvas() {
@@ -122,6 +134,17 @@ public class CoverageCanvas extends MapCanvasAWT {
         coverageProperty     .addListener((p,o,n) -> onImageSpecified());
         sliceExtentProperty  .addListener((p,o,n) -> onImageSpecified());
         interpolationProperty.addListener((p,o,n) -> onInterpolationSpecified(n));
+    }
+
+    /**
+     * Completes initialization of this canvas for use with the given status bar.
+     * The intent is to be notified when an {@link ImageOperation} is applied on the coverage.
+     * We do not yet have a public API for managing the display of image operations in a canvas.
+     * This method may be removed in a future SIS version if we have a clear API for creating a
+     * new {@link GridCoverage} from the result of an image operation.
+     */
+    final void initialize(final StatusBar bar) {
+        statusBar = new StatusBarSupport(bar);
     }
 
     /**
@@ -255,7 +278,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 }
 
                 /**
-                 * Invoked in JavaFX thread for setting the image to the instance we juste fetched.
+                 * Invoked in JavaFX thread for setting the image to the instance we just fetched.
                  */
                 @Override protected void succeeded() {
                     setRawImage(getValue(), imageGeometry);
@@ -422,14 +445,28 @@ public class CoverageCanvas extends MapCanvasAWT {
         final RenderedImage newValue = worker.resampledImage;
         final RenderedImage oldValue = resampledImages.put(ImageDerivative.NONE, newValue);
         if (oldValue != newValue && oldValue != null) {
+            /*
+             * If resampled image changed, then all derivative images (with stretched color ramp
+             * or other operation applied) are not valid anymore. We need to empty the cache.
+             */
             resampledImages.clear();
             resampledImages.put(ImageDerivative.NONE, newValue);
         }
         resampledImages.put(data.selectedDerivative, worker.filteredImage);
+        /*
+         * If an operation has been applied, we may need to update the object used for computing
+         * the sample values shown on the status bar.
+         */
+        if (statusBar != null) {
+            statusBar.select(data.selectedDerivative.operation, worker.filteredImage);
+        }
     }
 
     /**
-     * Invoked when the user selected a new operation.
+     * Invoked by {@link CoverageControls} when the user selected a new operation.
+     * Execution of an image operation may produce sample values very different than the original ones.
+     * This change may require to update {@link StatusBar#sampleValuesProvider} accordingly.
+     * This update is applied by {@link #cacheRenderingData(Worker)}.
      */
     final void setOperation(final ImageOperation selection) {
         data.selectedDerivative = data.selectedDerivative.setOperation(selection);
@@ -437,7 +474,8 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Invoked when the user selected a new color stretching mode.
+     * Invoked by {@link CoverageControls} when the user selected a new color stretching mode.
+     * The sample values are assumed the same; only the image appearance is modified.
      */
     final void setStyling(final Stretching selection) {
         data.selectedDerivative = data.selectedDerivative.setStyling(selection);

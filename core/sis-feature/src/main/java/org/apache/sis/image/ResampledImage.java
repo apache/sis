@@ -273,7 +273,7 @@ public class ResampledImage extends ComputedImage {
     }
 
     /**
-     * Computes the {@link #POSITIONAL_ERRORS_KEY} value. This method is invoked by {@link #getProperty(String)}
+     * Computes the {@value #POSITIONAL_ERRORS_KEY} value. This method is invoked by {@link #getProperty(String)}
      * when the {@link #POSITIONAL_ERRORS_KEY} property value is requested. The result is saved by weak reference
      * since recomputing this image is rarely requested, and if needed can be recomputed easily.
      */
@@ -346,16 +346,19 @@ public class ResampledImage extends ComputedImage {
     }
 
     /**
-     * Gets a property from this image. Current default implementation forwards the following property requests
-     * to the source image (more properties may be added to this list in future Apache SIS versions):
+     * Gets a property from this image. Current default implementation supports the following keys
+     * (more properties may be added to this list in future Apache SIS versions):
      *
      * <ul>
-     *   <li>{@value #SAMPLE_RESOLUTIONS_KEY}</li>
+     *   <li>{@value #POSITIONAL_ERRORS_KEY}</li>
+     *   <li>{@value #SAMPLE_RESOLUTIONS_KEY} (forwarded to the source image)</li>
      * </ul>
      *
-     * Above listed properties are selected because they should have approximately the same values before and after
+     * <div class="note"><b>Note:</b>
+     * the sample resolutions are retained because they should have approximately the same values before and after
      * resampling. {@linkplain #STATISTICS_KEY Statistics} are not in this list because, while minimum and maximum
      * values should stay approximately the same, the average value and standard deviation may be quite different.
+     * </div>
      */
     @Override
     public Object getProperty(final String key) {

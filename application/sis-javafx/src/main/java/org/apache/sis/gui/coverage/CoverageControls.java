@@ -85,6 +85,7 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
         view = new CoverageCanvas();
         view.setBackground(background);
         final StatusBar statusBar = new StatusBar(view, referenceSystems);
+        view.initialize(statusBar);
         imageAndStatus = new BorderPane(view.getView());
         imageAndStatus.setBottom(statusBar.getView());
         /*
@@ -230,6 +231,7 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
 
     /**
      * Invoked when a canvas property changed.
+     * The property of interest is {@value CoverageCanvas#OBJECTIVE_CRS_PROPERTY}.
      */
     @Override
     public void propertyChange(final PropertyChangeEvent event) {

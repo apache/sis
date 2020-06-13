@@ -30,6 +30,10 @@ import static org.apache.sis.image.ResampledImage.POSITIONAL_ERRORS_KEY;
  * Predefined operations that can be applied on image.
  * The resulting images use the same coordinate system than the original image.
  *
+ * <p>This class may be temporary. We need a better way to handle replacement of original image by result of image
+ * operations. A difficulty is to recreate a full {@code GridCoverage} from an image, in particular for the result
+ * of image derived from resampled image (because the original grid geometry is no longer valid).</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
@@ -47,12 +51,12 @@ enum ImageOperation {
     POSITIONAL_ERROR(Resources.format(Resources.Keys.PositionalErrors)) {
         @Override final RenderedImage apply(final RenderedImage source) {
             final Object value = source.getProperty(POSITIONAL_ERRORS_KEY);
-            return (value instanceof RenderedImage) ? (RenderedImage) value : null;
+            return (value instanceof RenderedImage) ? (RenderedImage) value : source;
         }
     };
 
     /**
-     * The label to show in menu.
+     * The label to show in the list view.
      */
     private final String label;
 
@@ -77,6 +81,7 @@ enum ImageOperation {
 
     /**
      * Applies the operation on given image.
+     * If the operation can not be applied, then {@code source} is returned as-is.
      */
     RenderedImage apply(final RenderedImage source) {
         return source;

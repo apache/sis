@@ -975,6 +975,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Scale = 179;
 
         /**
+         * Scientific notation
+         */
+        public static final short ScientificNotation = 234;
+
+        /**
          * Simplified
          */
         public static final short Simplified = 180;

@@ -60,7 +60,14 @@ import org.apache.sis.util.resources.Vocabulary;
 /**
  * Provider of textual content to show in a {@link StatusBar} for values under cursor position.
  * Different subtypes are defined for different data sources such as {@link GridCoverage}.
+ * When the mouse cursor moves, {@link #evaluate(DirectPosition)} is invoked with the same
+ * "real world" coordinates than the ones shown in the status bar.
+ * If that method can not provide sample values, then {@link #evaluateAtPixel(double, double)}
+ * is invoked as a fallback with pixel coordinates relative to the canvas.
+ *
+ * <h2>Multi-threading</h2>
  * Instances of {@code ValueUnderCursor} do not need to be thread-safe.
+ * {@code ValuesUnderCursor} methods will be invoked from JavaFX thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -92,7 +99,8 @@ public abstract class ValuesUnderCursor {
     private String lastErrorMessage;
 
     /**
-     * Creates a new instance.
+     * Creates a new evaluator instance. The {@link #valueChoices} list of items is initially empty;
+     * subclass constructor should set a text and add items.
      */
     protected ValuesUnderCursor() {
         valueChoices = new Menu();
@@ -108,14 +116,29 @@ public abstract class ValuesUnderCursor {
     public abstract boolean isEmpty();
 
     /**
-     * Returns a string representation of data under given position.
-     * The position may be in any CRS; this method should convert coordinates as needed.
+     * Returns a string representation of data under given "real world" position.
+     * The {@linkplain DirectPosition#getCoordinateReferenceSystem() position CRS}
+     * should be non-null for avoiding ambiguity about what is the default CRS.
+     * The position CRS may be anything; this method shall transform coordinates itself if needed.
      *
      * @param  point  the cursor location in arbitrary CRS (usually the CRS shown in the status bar).
      *                May be {@code null} for declaring that the point is outside canvas region.
      * @return string representation of data under given position, or {@code null} if none.
      */
     public abstract String evaluate(final DirectPosition point);
+
+    /**
+     * Returns a string representation of data under given pixel coordinates in the canvas.
+     * This method is invoked as a fallback if {@link #evaluate(DirectPosition)} returned {@code null}.
+     * Coordinates (0,0) are located in the upper-left canvas corner.
+     *
+     * @param  x  0-based column index in the canvas. May be negative for coordinates out of bounds.
+     * @param  y  0-based row index in the canvas. May be negative for coordinates out of bounds.
+     * @return string representation of data under given pixel, or {@code null} if none.
+     */
+    public String evaluateAtPixel(double x, double y) {
+        return null;
+    }
 
     /**
      * Invoked when a new source of values is known for computing the expected size.
@@ -189,8 +212,8 @@ public abstract class ValuesUnderCursor {
 
     /**
      * Provider of textual content to show in {@link StatusBar} for {@link GridCoverage} values under cursor position.
-     * This object should be registered as a listener of some coverage property,
-     * for example {@link CoverageCanvas#coverageProperty}.
+     * This object can be registered as a listener of e.g. {@link CoverageCanvas#coverageProperty} for updating the
+     * values to show when the coverage is changed.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
@@ -270,6 +293,7 @@ public abstract class ValuesUnderCursor {
             field         = new FieldPosition(0);
             nodata        = new HashMap<>();
             selectedBands = new BitSet();
+            valueChoices.setText(Vocabulary.format(Vocabulary.Keys.SampleDimensions));
         }
 
         /**
@@ -344,7 +368,6 @@ public abstract class ValuesUnderCursor {
             final Locale                    locale        = getLocale(property);
             final UnitFormat                unitFormat    = new UnitFormat(locale);
             final CheckMenuItem[]           menuItems     = new CheckMenuItem[n];
-            valueChoices.setText(Vocabulary.getResources(locale).getString(Vocabulary.Keys.SampleDimensions));
             for (int i=0; i<n; i++) {
                 final SampleDimension sd = bands.get(i);
                 menuItems[i] = createMenuItem(i, sd, locale);
