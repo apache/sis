@@ -414,7 +414,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 resampledToDisplay = data.getTransform(objectiveToDisplay);
             }
             if (filteredImage == null) {
-                filteredImage = data.filter(resampledImage);
+                filteredImage = data.filter(resampledImage, displayBounds);
             }
             prefetchedImage = data.prefetch(filteredImage, resampledToDisplay, displayBounds);
         }

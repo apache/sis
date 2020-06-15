@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.util.Map;
+import java.awt.Shape;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
@@ -134,7 +135,9 @@ final class RecoloredImage extends ImageAdapter {
         if (visibleBand >= 0) {
             if (statistics == null) {
                 if (statsAllBands == null) {
-                    statsAllBands = processor.getStatistics(statsSource);
+                    final Object areaOfInterest = modifiers.get("areaOfInterest");
+                    statsAllBands = processor.getStatistics(statsSource,
+                            (areaOfInterest instanceof Shape) ? (Shape) areaOfInterest : null);
                 }
                 if (statsAllBands != null && visibleBand < statsAllBands.length) {
                     statistics = statsAllBands[visibleBand];

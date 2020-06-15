@@ -18,6 +18,7 @@ package org.apache.sis.image;
 
 import java.util.Random;
 import java.awt.image.DataBuffer;
+import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.math.Statistics;
@@ -76,6 +77,16 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
     }
 
     /**
+     * Computes statistics on the given image in a sequential way (everything computed in current thread).
+     *
+     * @param  source  the image on which to compute statistics.
+     * @return statistics on the given image computed sequentially.
+     */
+    private static Statistics[] computeSequentially(final RenderedImage source) {
+        return (Statistics[]) new StatisticsCalculator(source, null, false, true).computeSequentially();
+    }
+
+    /**
      * Tests with parallel execution. The result of sequential execution is used as a reference.
      */
     @Test
@@ -83,8 +94,8 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
         final ImageProcessor operations = new ImageProcessor();
         operations.setExecutionMode(ImageProcessor.Mode.PARALLEL);
         final TiledImageMock image = createImage();
-        final Statistics[] expected = StatisticsCalculator.computeSequentially(image);
-        final Statistics[] actual = operations.getStatistics(image);
+        final Statistics[] expected = computeSequentially(image);
+        final Statistics[] actual = operations.getStatistics(image, null);
         for (int i=0; i<expected.length; i++) {
             final Statistics e = expected[i];
             final Statistics a = actual  [i];
@@ -105,7 +116,7 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
         final TiledImageMock image = createImage();
         image.failRandomly(new Random(-8739538736973900203L));
         try {
-            operations.getStatistics(image);
+            operations.getStatistics(image, null);
             fail("Expected ImagingOpException.");
         } catch (ImagingOpException e) {
             final String message = e.getMessage();
@@ -125,7 +136,7 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
         operations.setErrorAction(ImageProcessor.ErrorAction.LOG);
         final TiledImageMock image = createImage();
         image.failRandomly(new Random(8004277484984714811L));
-        final Statistics[] stats = operations.getStatistics(image);
+        final Statistics[] stats = operations.getStatistics(image, null);
         for (final Statistics a : stats) {
             assertTrue(a.count() > 0);
         }

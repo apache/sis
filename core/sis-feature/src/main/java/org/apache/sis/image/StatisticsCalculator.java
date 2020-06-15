@@ -16,7 +16,7 @@
  */
 package org.apache.sis.image;
 
-import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
@@ -40,13 +40,14 @@ final class StatisticsCalculator extends AnnotatedImage {
      * Creates a new calculator.
      *
      * @param  image            the image for which to compute statistics.
+     * @param  areaOfInterest   pixel coordinates of AOI, or {@code null} for the whole image.
      * @param  parallel         whether parallel execution is authorized.
      * @param  failOnException  whether errors occurring during computation should be propagated.
      */
-    StatisticsCalculator(final RenderedImage image,
+    StatisticsCalculator(final RenderedImage image, final Shape areaOfInterest,
                          final boolean parallel, final boolean failOnException)
     {
-        super(image, parallel, failOnException);
+        super(image, areaOfInterest, parallel, failOnException);
     }
 
     /**
@@ -75,41 +76,35 @@ final class StatisticsCalculator extends AnnotatedImage {
      * This method is invoked in both sequential and parallel case. In the sequential case it
      * is invoked for the whole image; in the parallel case it is invoked for only one tile.
      *
+     * <p>This method may be invoked concurrently by many threads.
+     * Fields used by this method shall be thread-safe when not modified.</p>
+     *
      * @param accumulator  where to accumulate the statistics results.
      * @param it           the iterator on a raster or on the whole image.
      */
-    private static void compute(final Statistics[] accumulator, final PixelIterator it) {
+    private void compute(final Statistics[] accumulator, final PixelIterator it) {
         double[] samples = null;
         while (it.next()) {
-            samples = it.getPixel(samples);                 // Get values in all bands.
-            for (int i=0; i<accumulator.length; i++) {
-                accumulator[i].accept(samples[i]);
+            if (areaOfInterest == null || it.isInside(areaOfInterest)) {
+                samples = it.getPixel(samples);                 // Get values in all bands.
+                for (int i=0; i<accumulator.length; i++) {
+                    accumulator[i].accept(samples[i]);
+                }
             }
         }
     }
 
     /**
-     * Computes statistics on the given image in a sequential way (everything computed in current thread).
-     * This is used for testing purposes, or when the image has only one tile, or when the implementation
-     * of {@link RenderedImage#getTile(int, int)} may be non thread-safe.
-     *
-     * @param  source  the image on which to compute statistics.
-     * @return statistics on the given image computed sequentially.
+     * Computes the statistics on the image using a single thread. This is used for testing purposes, or when
+     * the image has only one tile, or when the implementation of {@link RenderedImage#getTile(int, int)} may
+     * be non thread-safe.
      */
-    static Statistics[] computeSequentially(final RenderedImage source) {
-        final PixelIterator it = PixelIterator.create(source);
+    @Override
+    protected Object computeSequentially() {
+        final PixelIterator it = new PixelIterator.Builder().setRegionOfInterest(boundsOfInterest).create(source);
         final Statistics[] accumulator = createAccumulator(it.getNumBands());
         compute(accumulator, it);
         return accumulator;
-    }
-
-    /**
-     * Computes the statistics on the whole image using a single thread. This method is invoked when it is
-     * not worth to parallelize (image has only one tile), or when the source image may be non-thread safe.
-     */
-    @Override
-    protected Object computeSequentially(Rectangle areaOfInterest) {
-        return computeSequentially(source);
     }
 
     /**
@@ -131,7 +126,7 @@ final class StatisticsCalculator extends AnnotatedImage {
      */
     @Override
     protected Collector<Raster, Statistics[], Statistics[]> collector() {
-        return Collector.of(this::createAccumulator, StatisticsCalculator::compute, StatisticsCalculator::combine);
+        return Collector.of(this::createAccumulator, this::compute, StatisticsCalculator::combine);
     }
 
     /**
@@ -170,7 +165,7 @@ final class StatisticsCalculator extends AnnotatedImage {
      * @param  tile         the tile on which to perform a computation.
      * @throws RuntimeException if the calculation failed.
      */
-    private static void compute(final Statistics[] accumulator, final Raster tile) {
-        compute(accumulator, new PixelIterator.Builder().create(tile));
+    private void compute(final Statistics[] accumulator, final Raster tile) {
+        compute(accumulator, new PixelIterator.Builder().setRegionOfInterest(boundsOfInterest).create(tile));
     }
 }

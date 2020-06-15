@@ -22,6 +22,7 @@ import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.BufferedImage;
@@ -544,6 +545,18 @@ public abstract class PixelIterator {
      *         or {@link #moveTo(int,int)}, or after {@code next()} returned {@code false}.
      */
     public abstract Point getPosition();
+
+    /**
+     * Returns {@code true} if current iterator position is inside the given shape.
+     * Current version does not require implementations to check if iteration started or finished
+     * (this method is non-public for that reason).
+     *
+     * @param  domain  the shape for which to test inclusion.
+     * @return whether current iterator position is inside the given shape.
+     */
+    boolean isInside(final Shape domain) {
+        return domain.contains(getPosition());
+    }
 
     /**
      * Moves the pixel iterator to the given column (x) and row (y) indices. After this method invocation,

@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
+import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
@@ -64,6 +65,13 @@ import org.apache.sis.measure.Units;
  *     in which case partial results may be available.
  *   </li>
  * </ul>
+ *
+ * <h2>Area of interest</h2>
+ * Some operations accept an optional <cite>area of interest</cite> argument specified as a {@link Shape} instance in
+ * pixel coordinates. If a shape is given, it should not be modified after {@code ImageProcessor} method call because
+ * the given object may be retained directly (i.e. the {@code Shape} is not always cloned; it depends on its class).
+ * In addition, the {@code Shape} implementation shall be thread-safe (assuming its state stay unmodified)
+ * unless the execution mode is set to {@link Mode#PARALLEL}.
  *
  * <h2>Error handling</h2>
  * If an exception occurs during the computation of a tile, then the {@code ImageProcessor} behavior
@@ -428,23 +436,25 @@ public class ImageProcessor implements Cloneable {
 
     /**
      * Returns statistics (minimum, maximum, mean, standard deviation) on each bands of the given image.
-     * Invoking this method is equivalent to invoking {@link #statistics(RenderedImage)} and extracting
-     * immediately the statistics property value, except that errors are handled by the
+     * Invoking this method is equivalent to invoking {@link #statistics(RenderedImage, Shape)} and
+     * extracting immediately the statistics property value, except that errors are handled by the
      * {@linkplain #getErrorAction() error handler}.
      *
-     * @param  source  the image for which to compute statistics.
+     * @param  source          the image for which to compute statistics.
+     * @param  areaOfInterest  pixel coordinates of the area of interest, or {@code null} for the whole image.
      * @return the statistics of sample values in each band.
      * @throws ImagingOpException if an error occurred during calculation
      *         and the error handler is {@link ErrorAction#THROW}.
      *
-     * @see #statistics(RenderedImage)
+     * @see #statistics(RenderedImage, Shape)
      * @see StatisticsCalculator#STATISTICS_KEY
      */
-    public Statistics[] getStatistics(final RenderedImage source) {
+    public Statistics[] getStatistics(final RenderedImage source, final Shape areaOfInterest) {
         ArgumentChecks.ensureNonNull("source", source);
         Object property = source.getProperty(StatisticsCalculator.STATISTICS_KEY);
         if (!(property instanceof Statistics[])) {
-            final StatisticsCalculator calculator = new StatisticsCalculator(source, parallel(source), failOnException());
+            final StatisticsCalculator calculator = new StatisticsCalculator(
+                    source, areaOfInterest, parallel(source), failOnException());
             property = calculator.getProperty(StatisticsCalculator.STATISTICS_KEY);
             calculator.logAndClearError(ImageProcessor.class, "getStatistics", errorListener());
         }
@@ -457,16 +467,17 @@ public class ImageProcessor implements Cloneable {
      * then that image is returned as-is. Otherwise this method returns a new image having that property.
      * The property value will be computed when first requested (it is not computed by this method).
      *
-     * @param  source  the image for which to provide statistics (may be {@code null}).
+     * @param  source          the image for which to provide statistics (may be {@code null}).
+     * @param  areaOfInterest  pixel coordinates of the area of interest, or {@code null} for the whole image.
      * @return an image with an {@value StatisticsCalculator#STATISTICS_KEY} property.
      *         May be {@code image} if the given argument is null or already has a statistics property.
      *
-     * @see #getStatistics(RenderedImage)
+     * @see #getStatistics(RenderedImage, Shape)
      * @see StatisticsCalculator#STATISTICS_KEY
      */
-    public RenderedImage statistics(final RenderedImage source) {
+    public RenderedImage statistics(final RenderedImage source, final Shape areaOfInterest) {
         return (source == null) || ArraysExt.contains(source.getPropertyNames(), StatisticsCalculator.STATISTICS_KEY)
-                ? source : unique(new StatisticsCalculator(source, parallel(source), failOnException()));
+                ? source : unique(new StatisticsCalculator(source, areaOfInterest, parallel(source), failOnException()));
     }
 
     /**
@@ -496,7 +507,7 @@ public class ImageProcessor implements Cloneable {
      * Returns an image with the same sample values than the given image, but with its color ramp stretched between
      * automatically determined bounds. This is the same operation than {@link #stretchColorRamp(RenderedImage,
      * double, double) stretchColorRamp(…)} except that the minimum and maximum values are determined by
-     * {@linkplain #getStatistics(RenderedImage) statistics} on the image:
+     * {@linkplain #getStatistics(RenderedImage, Shape) statistics} on the image:
      * a range of value is determined first from the {@linkplain Statistics#minimum() minimum} and
      * {@linkplain Statistics#maximum() maximum} values found in the image, optionally narrowed to an interval
      * of some {@linkplain Statistics#standardDeviation(boolean) standard deviations} around the mean value.
@@ -526,6 +537,10 @@ public class ImageProcessor implements Cloneable {
      *     <td>{@code "statistics"}</td>
      *     <td>Statistics or image from which to get statistics.</td>
      *     <td>{@link Statistics} or {@link RenderedImage}</td>
+     *   </tr><tr>
+     *     <td>{@code "areaOfInterest"}</td>
+     *     <td>Pixel coordinates of the region for which to compute statistics.</td>
+     *     <td>{@link Shape}</td>
      *   </tr>
      * </table>
      *

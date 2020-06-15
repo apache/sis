@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -177,6 +178,19 @@ class DefaultIterator extends WritablePixelIterator {
             return new Point(x,y);
         }
         throw new IllegalStateException(Resources.format(message));
+    }
+
+    /**
+     * Returns {@code true} if current iterator position is inside the given shape.
+     * Current version does not verify if iteration started or finished
+     * (this method is non-public for that reason).
+     *
+     * @param  domain  the shape for which to test inclusion.
+     * @return whether current iterator position is inside the given shape.
+     */
+    @Override
+    boolean isInside(final Shape domain) {
+        return domain.contains(x, y);
     }
 
     /**

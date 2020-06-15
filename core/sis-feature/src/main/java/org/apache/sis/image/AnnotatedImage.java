@@ -17,12 +17,14 @@
 package org.apache.sis.image;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Filter;
 import java.util.stream.Collector;
 import java.awt.Image;
+import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
@@ -33,6 +35,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 
 
 /**
@@ -99,6 +102,25 @@ abstract class AnnotatedImage extends ImageAdapter {
     private final Cache<String,Object> cache;
 
     /**
+     * Pixel coordinates of the region for which to compute the values, or {@code null} for the whole image.
+     * If non-null, the {@link Shape#contains(double, double)} method may be invoked for testing if a pixel
+     * shall be included in the computation or not.
+     *
+     * <p>This shape should not be modified, either by this class or by the caller who provided the shape.
+     * The {@code Shape} implementation shall be thread-safe, assuming its state stay unmodified, unless
+     * the {@link #parallel} argument specified to the constructor was {@code false}.</p>
+     */
+    protected final Shape areaOfInterest;
+
+    /**
+     * Bounds of {@link #areaOfInterest} intersected with image bounds, or {@code null} for the whole image.
+     * If the area of interest fully contains those bounds, then {@link #areaOfInterest} is set to the same
+     * reference than {@code boundsOfInterest}. Subclasses can use {@code areaOfInterest == boundsOfInterest}
+     * for quickly testing if the area of interest is rectangular.
+     */
+    protected final Rectangle boundsOfInterest;
+
+    /**
      * The errors that occurred while computing the result, or {@code null} if none or not yet determined.
      * This field is never set if {@link #failOnException} is {@code true}.
      */
@@ -120,11 +142,24 @@ abstract class AnnotatedImage extends ImageAdapter {
      * The annotations are the additional properties computed by the subclass.
      *
      * @param  source           the image to wrap for adding properties (annotations).
+     * @param  areaOfInterest   pixel coordinates of AOI, or {@code null} for the whole image.
      * @param  parallel         whether parallel execution is authorized.
      * @param  failOnException  whether errors occurring during computation should be propagated.
      */
-    protected AnnotatedImage(RenderedImage source, final boolean parallel, final boolean failOnException) {
+    protected AnnotatedImage(RenderedImage source, Shape areaOfInterest,
+                             final boolean parallel, final boolean failOnException)
+    {
         super(source);
+        if (areaOfInterest != null) {
+            boundsOfInterest = areaOfInterest.getBounds();
+            ImageUtilities.clipBounds(source, boundsOfInterest);
+            if (areaOfInterest.contains(boundsOfInterest)) {
+                areaOfInterest = boundsOfInterest;
+            }
+        } else {
+            boundsOfInterest = null;
+        }
+        this.areaOfInterest  = areaOfInterest;
         this.parallel        = parallel;
         this.failOnException = failOnException;
         /*
@@ -188,8 +223,7 @@ abstract class AnnotatedImage extends ImageAdapter {
     /**
      * Gets a property from this image or from its source. If the given name is for the property
      * to be computed by this class and if that property has not been computed before, then this
-     * method invokes {@link #computeProperty(Rectangle)} with a {@code null} "area of interest"
-     * argument value. That {@code computeProperty(…)} result will be cached.
+     * method invokes {@link #computeProperty()} and caches its result.
      *
      * @param  name  name of the property to get.
      * @return the property for the given name ({@code null} is a valid result),
@@ -212,7 +246,7 @@ abstract class AnnotatedImage extends ImageAdapter {
                 try {
                     value = handler.peek();
                     if (value == null) {
-                        value = computeProperty(null);
+                        value = computeProperty();
                         if (value == null) value = NULL;
                         success = (errors == null);
                     }
@@ -305,21 +339,15 @@ abstract class AnnotatedImage extends ImageAdapter {
      *       and the area of interest covers at least two tiles, then this method distributes
      *       calculation on many threads using the functions provided by the collector.
      *       See {@link #collector()} Javadoc for more information.</li>
-     *   <li>Otherwise this method delegates to {@link #computeSequentially(Rectangle)}.</li>
+     *   <li>Otherwise this method delegates to {@link #computeSequentially()}.</li>
      * </ul>
      *
-     * The {@code areaOfInterest} argument is {@code null} by default, which means to calculate
-     * the property on all tiles. This argument exists for allowing subclasses to override this
-     * method and invoke {@code super.computeProperty(…)} with a sub-region to compute.
-     *
-     * @param  areaOfInterest  pixel coordinates of the region of interest, or {@code null} for the whole image.
-     *         It is caller responsibility to ensure that this rectangle is fully included inside image bounds.
      * @return the computed property value. Note that {@code null} is a valid result.
      * @throws Exception if an error occurred while computing the property.
      */
-    protected Object computeProperty(final Rectangle areaOfInterest) throws Exception {
+    protected Object computeProperty() throws Exception {
         if (parallel) {
-            final TileOpExecutor executor = new TileOpExecutor(source, areaOfInterest);
+            final TileOpExecutor executor = new TileOpExecutor(source, boundsOfInterest);
             if (executor.isMultiTiled()) {
                 final Collector<? super Raster,?,?> collector = collector();
                 if (collector != null) {
@@ -327,7 +355,7 @@ abstract class AnnotatedImage extends ImageAdapter {
                 }
             }
         }
-        return computeSequentially(areaOfInterest);
+        return computeSequentially();
     }
 
     /**
@@ -339,13 +367,10 @@ abstract class AnnotatedImage extends ImageAdapter {
      * returned {@code null}), or when it is not worth to parallelize (image has only one tile), or when
      * the {@linkplain #source} image may be non-thread safe ({@link #parallel} is {@code false}).</p>
      *
-     * @param  areaOfInterest  pixel coordinates of the region of interest, or {@code null} for the whole image.
-     *         This is the argument given to {@link #computeProperty(Rectangle)} and can usually be ignored
-     *         (because always {@code null}) if that method has not been overridden.
      * @return the computed property value. Note that {@code null} is a valid result.
      * @throws Exception if an error occurred while computing the property.
      */
-    protected abstract Object computeSequentially(Rectangle areaOfInterest) throws Exception;
+    protected abstract Object computeSequentially() throws Exception;
 
     /**
      * Returns the function to execute for computing the property value, together with other required functions
@@ -407,5 +432,29 @@ abstract class AnnotatedImage extends ImageAdapter {
         }
         buffer.append('"').append(key).append('"');
         return AnnotatedImage.class;
+    }
+
+    /**
+     * Returns a hash code value for this image. This method should be quick;
+     * it should not compute the hash code from sample values.
+     *
+     * @return a hash code value based on a description of the operation performed by this image.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + Objects.hashCode(areaOfInterest);
+    }
+
+    /**
+     * Compares the given object with this image for equality. This method should be quick and compare
+     * how images compute their values from their sources; it should not compare the actual pixel values.
+     *
+     * @param  object  the object to compare with this image.
+     * @return {@code true} if the given object is an image performing the same calculation than this image.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        return super.equals(object) && Objects.equals(areaOfInterest, ((AnnotatedImage) object).areaOfInterest);
+        // The `boundsOfInterest` is omitted because it is derived from `areaOfInterest`.
     }
 }

@@ -145,10 +145,10 @@ public abstract class PlanarImage implements RenderedImage {
      *
      * <p>Values should be instances of <code>{@linkplain org.apache.sis.math.Statistics}[]</code>.
      * The array length should be the number of bands. If this property is not provided, Apache SIS
-     * may have to {@linkplain ImageProcessor#statistics(RenderedImage) compute statistics itself}
+     * may have to {@linkplain ImageProcessor#statistics(RenderedImage, Shape) compute statistics itself}
      * (by iterating over pixel values) when needed.</p>
      *
-     * @see ImageProcessor#statistics(RenderedImage)
+     * @see ImageProcessor#statistics(RenderedImage, Shape)
      */
     public static final String STATISTICS_KEY = "org.apache.sis.Statistics";
 

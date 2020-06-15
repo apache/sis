@@ -24,6 +24,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Rectangle2D;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -268,9 +269,10 @@ final class RenderingData implements Cloneable {
      * Applies the image operation (if any) on the given resampled image, than stretches the color ramp.
      *
      * @param  resampledImage  the image computed by {@link #resample(CoordinateReferenceSystem, LinearTransform)}.
+     * @param  displayBounds   size and location of the display device, in pixel units.
      * @return image with operation applied and color ramp stretched. May be the same instance than given image.
      */
-    final RenderedImage filter(RenderedImage resampledImage) {
+    final RenderedImage filter(RenderedImage resampledImage, final Rectangle2D displayBounds) {
         /*
          * If the operation is not `NONE` but following call to `apply(…)` returns `resampledImage` unchanged,
          * it means that the operation can not be applied on that image. We should reset operation to `NONE`,
@@ -289,9 +291,21 @@ final class RenderingData implements Cloneable {
              */
             if (selectedDerivative.operation == ImageOperation.NONE) {
                 if (statistics == null) {
-                    statistics = processor.getStatistics(data);
+                    statistics = processor.getStatistics(data, null);
                 }
                 modifiers.put("statistics", statistics);
+            } else {
+                /*
+                 * If an operation is applied, compute statistics only for currently visible region.
+                 * This is necessary because zoomed images may be very large. This is usually not a
+                 * problem because only requested tiles are computed, but statistics requested without
+                 * bounds would cause all those tiles to be computed.
+                 *
+                 * Inconvenient is that visual appareance is not stable: the color ramp may change
+                 * after every zoom, or may not fit data anymore after a pan. Since we need to revisit
+                 * the coverage operation framework anyway, we live with that problem for now.
+                 */
+                modifiers.put("areaOfInterest", displayBounds.getBounds());
             }
             if (selectedDerivative.styling == Stretching.AUTOMATIC) {
                 modifiers.put("MultStdDev", 3);
@@ -305,7 +319,7 @@ final class RenderingData implements Cloneable {
      * Computes immediately, possibly using many threads, the tiles that are going to be displayed.
      * The returned instance should be used only for current rendering event; it should not be cached.
      *
-     * @param  filteredImage       the image computed by {@link #filter(RenderedImage)}.
+     * @param  filteredImage       the image computed by {@link #filter(RenderedImage, Rectangle2D)}.
      * @param  resampledToDisplay  the transform computed by {@link #getTransform(LinearTransform)}.
      * @param  displayBounds       size and location of the display device, in pixel units.
      * @return a temporary image with tiles intersecting the display region already computed.
