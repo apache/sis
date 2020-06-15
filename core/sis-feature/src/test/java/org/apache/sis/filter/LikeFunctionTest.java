@@ -19,8 +19,8 @@ package org.apache.sis.filter;
 import org.opengis.filter.FilterFactory;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
-import org.junit.Ignore;
 
+import static org.apache.sis.test.Assert.*;
 
 /**
  * Tests {@code ComparisonFunction.Like} implementations.
@@ -47,9 +47,20 @@ public final strictfp class LikeFunctionTest extends TestCase {
     /**
      * Tests "Like" (construction, evaluation, serialization, equality).
      */
-    @Ignore
     @Test
     public void testLike() {
-        //todo
+
+        assertTrue(factory.like(factory.literal("Apache SIS"), "Apache*", "*", ".", "\\", true).evaluate(null));
+        assertFalse(factory.like(factory.literal("Apache SIS"), "Oracle*", "*", ".", "\\", true).evaluate(null));
+
+        // a character is missing, should not match
+        assertFalse(factory.like(factory.literal("Apache SIS"), "Apache*IS.*", "*", ".", "\\", true).evaluate(null));
+        assertTrue(factory.like(factory.literal("Apache SIS"), "Apache*I.", "*", ".", "\\", true).evaluate(null));
+
+        // test case insensitive
+        assertTrue(factory.like(factory.literal("Apache SIS"), "apache sis", "*", ".", "\\", false).evaluate(null));
+
+        // test escape
+        assertTrue(factory.like(factory.literal("*Apache* SIS"), "!*Apache!* SIS", "*", ".", "!", true).evaluate(null));
     }
 }

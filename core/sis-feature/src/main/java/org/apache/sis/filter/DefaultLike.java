@@ -18,7 +18,9 @@ package org.apache.sis.filter;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.regex.Pattern;
 import org.apache.sis.internal.filter.Node;
+import org.apache.sis.util.ArgumentChecks;
 import org.opengis.filter.FilterVisitor;
 import org.opengis.filter.PropertyIsLike;
 import org.opengis.filter.expression.Expression;
@@ -40,7 +42,20 @@ final class DefaultLike extends Node implements PropertyIsLike {
     private final String escape;
     private final boolean matchingCase;
 
+    /**
+     * Cached java regular expression.
+     */
+    private Pattern regex;
+
     DefaultLike(Expression expression, String pattern, String wildcard, String singleChar, String escape, boolean matchingCase) {
+        ArgumentChecks.ensureNonNull("pattern", pattern);
+        ArgumentChecks.ensureNonNull("wildcard", wildcard);
+        ArgumentChecks.ensureNonNull("singleChar", singleChar);
+        ArgumentChecks.ensureNonNull("escape", escape);
+        if (wildcard.length() != 1) throw new IllegalArgumentException("WildCard string must be one character long.");
+        if (singleChar.length() != 1) throw new IllegalArgumentException("SingleChar string must be one character long.");
+        if (escape.length() != 1) throw new IllegalArgumentException("Escape string must be one character long.");
+
         this.expression = expression;
         this.pattern = pattern;
         this.wildcard = wildcard;
@@ -91,12 +106,85 @@ final class DefaultLike extends Node implements PropertyIsLike {
 
     @Override
     public boolean evaluate(Object object) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final String value = expression.evaluate(object, String.class);
+        if (value == null) return false;
+        return getPattern().matcher(value).matches();
     }
 
     @Override
     public Object accept(FilterVisitor visitor, Object extraData) {
         return visitor.visit(this, extraData);
+    }
+
+    /**
+     * Get or create java regex pattern.
+     */
+    private Pattern getPattern() {
+        if (regex == null) {
+            //convert pattern to java regex
+            final StringBuilder sb = new StringBuilder();
+            if (!matchingCase) {
+                //add case insensitive
+                sb.append("(?i)");
+            }
+            final int wld = wildcard.charAt(0);
+            final int sgl = singleChar.charAt(0);
+            final int esc = escape.charAt(0);
+
+            for (int i = 0, n = pattern.length(); i < n; i++) {
+                char c = pattern.charAt(i);
+
+                //user defined special characters
+                if (wld == c) {
+                    sb.append('.');
+                    sb.append('*');
+                } else if (sgl == c) {
+                    sb.append('.');
+                } else if (esc == c) {
+                    c = pattern.charAt(++i);
+                    if (c == wld || c == sgl || c == esc) {
+                        if (isMetaCharacter(c)) {
+                            sb.append('\\');
+                        }
+                        sb.append(c);
+                    } else {
+                        throw new IllegalArgumentException("Escape character must be used only to escape wild, single and escape characters.");
+                    }
+                }
+                //java regex reserved metacharacters
+                else if (isMetaCharacter(c)) {
+                    sb.append('\\');
+                    sb.append(c);
+                }
+                //any other character
+                else {
+                    sb.append(c);
+                }
+            }
+
+            regex = Pattern.compile(sb.toString());
+        }
+        return regex;
+    }
+
+    /**
+     * Returns true if given character is a regular expression meta-character.
+     */
+    private static boolean isMetaCharacter(char c) {
+        return c == '.'
+            || c == '*'
+            || c == '?'
+            || c == '('
+            || c == ')'
+            || c == '['
+            || c == ']'
+            || c == '{'
+            || c == '}'
+            || c == '\\'
+            || c == '^'
+            || c == '$'
+            || c == '|'
+            || c == '+';
     }
 
 }
