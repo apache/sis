@@ -362,7 +362,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * Creates a new status bar for showing coordinates of mouse cursor position in a canvas.
-     * If the {@code canvas} argument is non-null, this {@code StatusBar} will show coordinates
+     * If the {@code canvas} argument is non-empty, this {@code StatusBar} will show coordinates
      * (usually geographic or projected) of mouse cursor position when the mouse is over that canvas.
      * Note that in such case, the {@link #localToObjectiveCRS} property value will be overwritten
      * at any time (for example every time that a gesture event such as pan, zoom or rotation happens).
@@ -370,16 +370,21 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * <p>If the {@code choices} argument is non-null, user will be able to select different CRS
      * using the contextual menu on the status bar.</p>
      *
-     * <h4>Note on object references</h4>
+     * <h4>Limitations</h4>
      * This constructor registers numerous listeners on {@code canvas} and {@code systemChooser}.
      * There is currently no unregistration mechanism. The {@code StatusBar} instance is expected
      * to exist as long as the {@code MapCanvas} and {@code RecentReferenceSystems} instances
      * given to this constructor.
      *
-     * @param  canvas         the canvas that this status bar is tracking, or {@code null} if none.
+     * <p>Current implementation accepts only zero or one {@code MapCanvas}. A future implementation
+     * may accept a larger amount of canvas for tracking many views with a single status bar
+     * (for example images over the same area but at different times).</p>
+     *
      * @param  systemChooser  the manager of reference systems chosen by user, or {@code null} if none.
+     * @param  toTrack        the canvas that this status bar is tracking.
+     *                        Currently restricted to an array of length 0 or 1.
      */
-    public StatusBar(final MapCanvas canvas, final RecentReferenceSystems systemChooser) {
+    public StatusBar(final RecentReferenceSystems systemChooser, final MapCanvas... toTrack) {
         positionReferenceSystem = new PositionSystem();
         localToObjectiveCRS     = new LocalToObjective();
         localToPositionCRS      = localToObjectiveCRS.get();
@@ -463,7 +468,15 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * We do not allow the canvas to be changed after construction because of the added complexity
          * (e.g. we would have to remember all registered listeners so we can unregister them).
          */
-        this.canvas = canvas;
+        if (toTrack != null && toTrack.length != 0) {
+            if (toTrack.length != 1) {
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.TooManyCollectionElements_3, "toTrack", 1, toTrack.length));
+            }
+            canvas = toTrack[0];
+        } else {
+            canvas = null;
+        }
         if (canvas != null) {
             sampleValuesProvider.set(ValuesUnderCursor.create(canvas));
             canvas.errorProperty().addListener((p,o,n) -> setRenderingError(n));
@@ -481,7 +494,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                  */
                 canvas.addPropertyChangeListener(MapCanvas.OBJECTIVE_CRS_PROPERTY, new PropertyChangeListener() {
                     @Override public void propertyChange(final PropertyChangeEvent event) {
-                        StatusBar.this.canvas.removePropertyChangeListener(MapCanvas.OBJECTIVE_CRS_PROPERTY, this);
+                        canvas.removePropertyChangeListener(MapCanvas.OBJECTIVE_CRS_PROPERTY, this);
                         registerMouseListeners();
                     }
                 });

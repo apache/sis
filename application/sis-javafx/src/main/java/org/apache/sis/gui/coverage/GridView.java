@@ -234,7 +234,7 @@ public class GridView extends Control {
         headerBackground = new SimpleObjectProperty<>(this, "headerBackground", Color.GAINSBORO);
         headerFormat     = NumberFormat.getIntegerInstance();
         cellFormat       = new CellFormat(this);
-        statusBar        = new StatusBar(null, referenceSystems);
+        statusBar        = new StatusBar(referenceSystems);
         tiles            = new GridTileCache();
         tileWidth        = 1;
         tileHeight       = 1;       // For avoiding division by zero.
