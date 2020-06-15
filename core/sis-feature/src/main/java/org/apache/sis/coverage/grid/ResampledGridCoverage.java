@@ -525,7 +525,7 @@ final class ResampledGridCoverage extends GridCoverage {
          * call this method only here, when remaining operations are unlikely to fail.
          */
         final RenderedImage values = source.render(sourceExtent);
-        return imageProcessor.resample(bounds, toSource, values);
+        return imageProcessor.resample(values, bounds, toSource);
     }
 
     /**

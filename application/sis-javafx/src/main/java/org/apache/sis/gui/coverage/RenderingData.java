@@ -262,7 +262,7 @@ final class RenderingData implements Cloneable {
         final PreferredSize bounds = (PreferredSize) Shapes2D.transform(
                 MathTransforms.bidimensional(cornerToDisplay),
                 ImageUtilities.getBounds(data), new PreferredSize());
-        return processor.resample(bounds, displayToCenter, data);
+        return processor.resample(data, bounds, displayToCenter);
     }
 
     /**

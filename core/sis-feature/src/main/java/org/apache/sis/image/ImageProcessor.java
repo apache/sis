@@ -245,7 +245,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @return interpolation method to use during resample operations.
      *
-     * @see #resample(Rectangle, MathTransform, RenderedImage)
+     * @see #resample(RenderedImage, Rectangle, MathTransform)
      */
     public Interpolation getInterpolation() {
         return interpolation;
@@ -256,7 +256,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @param  method  interpolation method to use during resample operations.
      *
-     * @see #resample(Rectangle, MathTransform, RenderedImage)
+     * @see #resample(RenderedImage, Rectangle, MathTransform)
      */
     public void setInterpolation(final Interpolation method) {
         ArgumentChecks.ensureNonNull("method", method);
@@ -561,16 +561,16 @@ public class ImageProcessor implements Cloneable {
      * in the new image are set to {@linkplain #getFillValues() fill values}. Otherwise sample values are interpolated
      * using the method given by {@link #getInterpolation()}.
      *
-     * <p>If the given source is an instance of {@link ResampledImage} or {@link AnnotatedImage},
+     * <p>If the given source is an instance of {@link ResampledImage},
      * then this method will use {@linkplain PlanarImage#getSources() the source} of the given source.
      * The intent is to avoid resampling a resampled image; instead this method tries to work on the original data.</p>
      *
-     * @param  bounds    domain of pixel coordinates of resampled image.
-     * @param  toSource  conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
      * @param  source    the image to be resampled.
+     * @param  bounds    domain of pixel coordinates of resampled image to create.
+     * @param  toSource  conversion of pixel coordinates from resampled image to {@code source} image.
      * @return resampled image (may be {@code source}).
      */
-    public RenderedImage resample(final Rectangle bounds, MathTransform toSource, RenderedImage source) {
+    public RenderedImage resample(RenderedImage source, final Rectangle bounds, MathTransform toSource) {
         ArgumentChecks.ensureNonNull("bounds",   bounds);
         ArgumentChecks.ensureNonNull("toSource", toSource);
         ArgumentChecks.ensureNonNull("source",   source);
@@ -600,7 +600,7 @@ public class ImageProcessor implements Cloneable {
                     }
                 }
             }
-            resampled = new ResampledImage(bounds, toSource, source, interpolation,
+            resampled = new ResampledImage(source, bounds, toSource, interpolation,
                             (float) getPositionalAccuracy(Units.PIXEL), fillValues);
             break;
         }

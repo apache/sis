@@ -100,7 +100,7 @@ public final strictfp class ResampledImageTest extends TestCase {
      * Creates an interpolated image in the simple case where the image is scaled by a factor 2.
      * The {@link #source} and {@link #interpolation} fields must be initialized before this method is invoked.
      * This method uses processor instead than instantiating {@link ResampledImage} directly for opportunistic
-     * testing of {@link ImageProcessor#resample(Rectangle, MathTransform, RenderedImage)} method.
+     * testing of {@link ImageProcessor#resample(RenderedImage, Rectangle, MathTransform)} method.
      *
      * @param  minX  minimal X coordinate to give to the resampled image.
      * @param  minY  minimal Y coordinate to give to the resampled image.
@@ -112,7 +112,7 @@ public final strictfp class ResampledImageTest extends TestCase {
         tr.translate(-bounds.x, -bounds.y);
         final ImageProcessor processor = new ImageProcessor();
         processor.setInterpolation(interpolation);
-        target = (ResampledImage) processor.resample(bounds, new AffineTransform2D(tr), source);
+        target = (ResampledImage) processor.resample(source, bounds, new AffineTransform2D(tr));
         try {
             tr.invert();
         } catch (NoninvertibleTransformException e) {
@@ -270,7 +270,7 @@ public final strictfp class ResampledImageTest extends TestCase {
         } catch (NoninvertibleTransformException e) {
             throw new AssertionError(e);
         }
-        target = new ResampledImage(new Rectangle(9, 9), toSource, source, interpolation, 0, null);
+        target = new ResampledImage(source, new Rectangle(9, 9), toSource, interpolation, 0, null);
 
         assertEquals("numXTiles", 1, target.getNumXTiles());
         assertEquals("numYTiles", 1, target.getNumYTiles());

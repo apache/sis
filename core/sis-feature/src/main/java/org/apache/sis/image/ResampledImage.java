@@ -158,9 +158,9 @@ public class ResampledImage extends ComputedImage {
      * to {@code fillValues}. If the given array is {@code null}, or if any element in the given array is {@code null},
      * then the default fill value is NaN for floating point data types or zero for integer data types.</p>
      *
+     * @param  source         the image to be resampled.
      * @param  bounds         domain of pixel coordinates of this resampled image.
      * @param  toSource       conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
-     * @param  source         the image to be resampled.
      * @param  interpolation  the object to use for performing interpolations.
      * @param  accuracy       desired positional accuracy in pixel units, or 0 for the best accuracy available.
      *                        A value such as 0.125 pixel may enable the use of a slightly faster algorithm
@@ -170,9 +170,9 @@ public class ResampledImage extends ComputedImage {
      *                        missing values are assumed {@code null}. If longer than the number of bands, extraneous
      *                        values are ignored.
      *
-     * @see ImageProcessor#resample(Rectangle, MathTransform, RenderedImage)
+     * @see ImageProcessor#resample(RenderedImage, Rectangle, MathTransform)
      */
-    protected ResampledImage(final Rectangle bounds, final MathTransform toSource, final RenderedImage source,
+    protected ResampledImage(final RenderedImage source, final Rectangle bounds, final MathTransform toSource,
                              final Interpolation interpolation, final float accuracy, final Number[] fillValues)
     {
         super(ImageLayout.DEFAULT.createCompatibleSampleModel(source, bounds), source);
