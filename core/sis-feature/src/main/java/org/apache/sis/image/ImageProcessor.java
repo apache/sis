@@ -600,16 +600,14 @@ public class ImageProcessor implements Cloneable {
                     }
                 }
             }
-            resampled = new ResampledImage(source, bounds, toSource, interpolation,
-                            (float) getPositionalAccuracy(Units.PIXEL), fillValues);
+            resampled = unique(new ResampledImage(source, bounds, toSource, interpolation,
+                                (float) getPositionalAccuracy(Units.PIXEL), fillValues));
             break;
         }
         if (cm != null && !cm.equals(resampled.getColorModel())) {
-            resampled = new RecoloredImage(resampled, cm);
-        } else if (!(resampled instanceof ResampledImage)) {
-            return resampled;                                   // Do not cache user-provided image.
+            resampled = unique(new RecoloredImage(resampled, cm));
         }
-        return unique(resampled);
+        return resampled;                           // Do not cache user-provided image.
     }
 
     /**

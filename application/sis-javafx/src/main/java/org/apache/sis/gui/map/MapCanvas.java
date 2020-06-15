@@ -17,6 +17,7 @@
 package org.apache.sis.gui.map;
 
 import java.util.Locale;
+import java.util.Arrays;
 import java.util.Objects;
 import java.awt.geom.AffineTransform;
 import javafx.geometry.Bounds;
@@ -41,6 +42,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 import org.opengis.geometry.Envelope;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
@@ -48,15 +50,18 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
 
@@ -519,6 +524,30 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
+     * Given axis directions in the objective CRS, returns axis directions in display CRS.
+     * This method will typically reverse the North direction to a South direction because
+     * <var>y</var> axis is oriented toward down. It may also swap axis order.
+     *
+     * <p>The rules implemented in this method are empirical and may be augmented in any future version.
+     * This method may become {@code protected} if a future version if we want to allow user to override
+     * with her own rules.</p>
+     *
+     * @param  srcAxes  axis directions in objective CRS.
+     * @return axis directions in display CRS.
+     */
+    private static AxisDirection[] toDisplayDirections(final AxisDirection[] srcAxes) {
+        final AxisDirection[] dstAxes = Arrays.copyOf(srcAxes, 2);
+        if (AxisDirections.absolute(dstAxes[0]) == AxisDirection.NORTH &&
+            AxisDirections.absolute(dstAxes[1]) == AxisDirection.EAST)
+        {
+            ArraysExt.swap(dstAxes, 0, 1);
+        }
+        if (AxisDirections.absolute(dstAxes[0]) == AxisDirection.WEST)  dstAxes[0] = AxisDirection.EAST;
+        if (AxisDirections.absolute(dstAxes[1]) == AxisDirection.NORTH) dstAxes[1] = AxisDirection.SOUTH;
+        return dstAxes;
+    }
+
+    /**
      * Invoked in JavaFX thread for creating a renderer to be executed in a background thread.
      * Subclasses shall copy in this method all {@code MapCanvas} properties that the background thread
      * will need for performing the rendering process.
@@ -691,23 +720,34 @@ public abstract class MapCanvas extends PlanarCanvas {
                 final GridExtent extent = new GridExtent(null,
                         new long[] {Math.round(target.getMinX()), Math.round(target.getMinY())},
                         new long[] {Math.round(target.getMaxX()), Math.round(target.getMaxY())}, false);
-
+                /*
+                 * If `setObjectiveBounds(…)` has been invoked (as it should be), initialize the affine
+                 * transform to values which will allow this canvas to contain fully the objective bounds.
+                 * Otherwise the transform is initialized to an identity transform (should not happen often).
+                 * If a CRS is present, it is used for deciding if we need to swap or flip axes.
+                 */
+                CoordinateReferenceSystem objectiveCRS;
                 final LinearTransform crsToDisplay;
-                CoordinateReferenceSystem crs;
                 if (objectiveBounds != null) {
-                    final MatrixSIS m = Matrices.createTransform(objectiveBounds, target);
+                    objectiveCRS = objectiveBounds.getCoordinateReferenceSystem();
+                    final MatrixSIS m;
+                    if (objectiveCRS != null) {
+                        AxisDirection[] srcAxes = CoordinateSystems.getAxisDirections(objectiveCRS.getCoordinateSystem());
+                        m = Matrices.createTransform(objectiveBounds, srcAxes, target, toDisplayDirections(srcAxes));
+                    } else {
+                        m = Matrices.createTransform(objectiveBounds, target);
+                    }
                     Matrices.forceUniformScale(m, 0, new double[] {target.getCenterX(), target.getCenterY()});
                     crsToDisplay = MathTransforms.linear(m);
-                    crs = objectiveBounds.getCoordinateReferenceSystem();
-                    if (crs == null) {
-                        crs = extent.toEnvelope(crsToDisplay.inverse()).getCoordinateReferenceSystem();
+                    if (objectiveCRS == null) {
+                        objectiveCRS = extent.toEnvelope(crsToDisplay.inverse()).getCoordinateReferenceSystem();
                         // CRS computed above should not be null.
                     }
                 } else {
+                    objectiveCRS = getDisplayCRS();
                     crsToDisplay = MathTransforms.identity(BIDIMENSIONAL);
-                    crs = getDisplayCRS();
                 }
-                setGridGeometry(new GridGeometry(extent, PixelInCell.CELL_CORNER, crsToDisplay.inverse(), crs));
+                setGridGeometry(new GridGeometry(extent, PixelInCell.CELL_CORNER, crsToDisplay.inverse(), objectiveCRS));
                 transform.setToIdentity();
             }
         } catch (TransformException | RenderException ex) {

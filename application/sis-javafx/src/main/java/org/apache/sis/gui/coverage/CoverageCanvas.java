@@ -471,8 +471,11 @@ public class CoverageCanvas extends MapCanvasAWT {
      * This update is applied by {@link #cacheRenderingData(Worker)}.
      */
     final void setOperation(final ImageOperation selection) {
-        data.selectedDerivative = data.selectedDerivative.setOperation(selection);
-        requestRepaint();
+        final ImageDerivative sd = data.selectedDerivative;
+        data.selectedDerivative = sd.setOperation(selection);
+        if (data.selectedDerivative != sd) {
+            requestRepaint();
+        }
     }
 
     /**
@@ -480,8 +483,11 @@ public class CoverageCanvas extends MapCanvasAWT {
      * The sample values are assumed the same; only the image appearance is modified.
      */
     final void setStyling(final Stretching selection) {
-        data.selectedDerivative = data.selectedDerivative.setStyling(selection);
-        requestRepaint();
+        final ImageDerivative sd = data.selectedDerivative;
+        data.selectedDerivative = sd.setStyling(selection);
+        if (data.selectedDerivative != sd) {
+            requestRepaint();
+        }
     }
 
     /**
