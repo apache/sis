@@ -24,6 +24,7 @@ import java.text.FieldPosition;
 import java.text.NumberFormat;
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.ListView;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.map.ValuesUnderCursor;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
@@ -37,6 +38,11 @@ import org.opengis.geometry.DirectPosition;
  * Methods for configuring the {@link StatusBar} associated to a {@link CoverageCanvas}.
  * This is used for changing the {@link ValuesUnderCursor} instance used by the status bar
  * when the canvas shows an {@link ImageDerivative} instead than the original image.
+ *
+ * <p>The fields in this class could have been declared directly into {@link CoverageCanvas}.
+ * But we keep this class separated because it is a workaround for the lack of good public API
+ * for describing coverage operations. We may remove this class in a future Apache SIS version
+ * if SIS provides a more complete coverage operation framework.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -62,40 +68,46 @@ final class StatusBarSupport {
     private final Map<ImageOperation,ValuesUnderCursor> sampleValuesProviders;
 
     /**
+     * The list of operations that can be applied on the image. Items may be added or removed in
+     * this list depending on whether the operation is possible for current {@linkplain #image}.
+     */
+    private final ListView<ImageOperation> operations;
+
+    /**
+     * The image from which sample values will be read, or {@code null} if none. This reference is declared here
+     * instead than in {@link #sampleValuesProviders} for having a single reference to update when image changes.
+     * This is desired for avoiding memory leaks.
+     */
+    private RenderedImage image;
+
+    /**
      * Creates a new support class for the given status bar.
      */
-    StatusBarSupport(final StatusBar bar) {
+    StatusBarSupport(final StatusBar bar, final ListView<ImageOperation> operations) {
+        this.operations = operations;
         selectedProvider = bar.sampleValuesProvider;
         sampleValuesProviders = new EnumMap<>(ImageOperation.class);
         sampleValuesProviders.put(ImageOperation.NONE, selectedProvider.get());
     }
 
     /**
-     * Notifies the status bar that a new operation is applied on the image.
-     * This method updates {@link StatusBar#sampleValuesProvider} with an instance
-     * appropriate for the image shown.
+     * Invoked after each rendering event for updating {@link StatusBar#sampleValuesProvider}
+     * with an instance appropriate for the image shown.
      *
      * @param  operation  the operation applied on the image.
-     * @param  image      the image resulting from the operation.
+     * @param  data       the image resulting from the operation.
      */
-    final void select(final ImageOperation operation, final RenderedImage image) {
-        ValuesUnderCursor evaluator = sampleValuesProviders.computeIfAbsent(operation, (o) -> new Evaluator(image));
-        if (evaluator instanceof Evaluator) {
-            ((Evaluator) evaluator).data = image;
-        }
-        selectedProvider.set(evaluator);
+    final void notifyImageShown(final ImageOperation operation, final RenderedImage data) {
+        image = data;
+        selectedProvider.set(sampleValuesProviders.computeIfAbsent(operation, (o) -> new Evaluator(o.fractionDigits)));
+        ImageOperation.update(operations, data);
     }
 
     /**
      * Provides sample values for result of image operation.
      * Current implementation assumes a single-banded image with a fixed number of fraction digits.
      */
-    private static final class Evaluator extends ValuesUnderCursor {
-        /**
-         * The image from which sample values will be read.
-         */
-        private RenderedImage data;
-
+    private final class Evaluator extends ValuesUnderCursor {
         /**
          * The object to use for formatting numbers.
          */
@@ -128,18 +140,14 @@ final class StatusBarSupport {
         /**
          * Creates a new evaluator for the given number of fraction digits.
          *
-         * @param  data  the image from which sample values will be read.
+         * @param  fractionDigits  number of fraction digits.
          */
-        Evaluator(final RenderedImage data) {
-            this.data = data;
+        Evaluator(final int fractionDigits) {
             buffer = new StringBuffer();
             pos    = new FieldPosition(0);
             format = NumberFormat.getNumberInstance();
-            ImageUtilities.getFractionDigits(data, 0).ifPresent((n) -> {
-                if (n < 0) n = 0;
-                format.setMinimumFractionDigits(n);
-                format.setMaximumFractionDigits(n);
-            });
+            format.setMinimumFractionDigits(fractionDigits);
+            format.setMaximumFractionDigits(fractionDigits);
             /*
              * Following menu items are hard-coded for now, may need to become configurable in a future version.
              */
@@ -184,7 +192,8 @@ final class StatusBarSupport {
          */
         @Override
         public String evaluateAtPixel(final double fx, final double fy) {
-            try {
+            final RenderedImage data = image;
+            if (data != null) try {
                 final int  x = Math.toIntExact(Math.round(fx));
                 final int  y = Math.toIntExact(Math.round(fy));
                 final int tx = ImageUtilities.pixelToTileX(data, x);
@@ -212,8 +221,8 @@ final class StatusBarSupport {
                 }
             } catch (ArithmeticException | IllegalArgumentException | IndexOutOfBoundsException e) {
                 // Position outside image. No value to show.
-                return null;
             }
+            return null;
         }
     }
 }

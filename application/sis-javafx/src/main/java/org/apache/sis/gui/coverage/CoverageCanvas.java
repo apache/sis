@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.awt.Graphics2D;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
+import javafx.scene.control.ListView;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Background;
@@ -114,10 +115,11 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Helper methods for configuring the {@link StatusBar} when the user selects an operation.
      * This is non-null only if this {@link CoverageCanvas} is used together with a status bar.
      *
-     * <p>Consider as final after {@link #initialize(StatusBar)} invocation. This field may be removed in a future
-     * version if we define a good public API for coverage operations in replacement of {@link ImageOperation}.</p>
+     * <p>Consider as final after {@link #initialize(StatusBar, ListView)} invocation.
+     * This field may be removed in a future version if we define a good public API
+     * for coverage operations in replacement of {@link ImageOperation}.</p>
      *
-     * @see #initialize(StatusBar)
+     * @see #initialize(StatusBar, ListView)
      */
     private StatusBarSupport statusBar;
 
@@ -143,8 +145,8 @@ public class CoverageCanvas extends MapCanvasAWT {
      * This method may be removed in a future SIS version if we have a clear API for creating a
      * new {@link GridCoverage} from the result of an image operation.
      */
-    final void initialize(final StatusBar bar) {
-        statusBar = new StatusBarSupport(bar);
+    final void initialize(final StatusBar bar, final ListView<ImageOperation> operations) {
+        statusBar = new StatusBarSupport(bar, operations);
     }
 
     /**
@@ -458,7 +460,7 @@ public class CoverageCanvas extends MapCanvasAWT {
          * the sample values shown on the status bar.
          */
         if (statusBar != null) {
-            statusBar.select(data.selectedDerivative.operation, worker.filteredImage);
+            statusBar.notifyImageShown(data.selectedDerivative.operation, worker.filteredImage);
         }
     }
 

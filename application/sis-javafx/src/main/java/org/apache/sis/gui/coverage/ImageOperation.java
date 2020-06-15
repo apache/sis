@@ -16,12 +16,16 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.List;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.awt.image.RenderedImage;
 import javafx.scene.control.ListView;
-import javafx.beans.value.ChangeListener;
 import javafx.scene.control.MultipleSelectionModel;
+import org.apache.sis.image.ResampledImage;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.gui.GUIUtilities;
 
 import static org.apache.sis.image.ResampledImage.POSITIONAL_ERRORS_KEY;
 
@@ -43,12 +47,16 @@ enum ImageOperation {
     /**
      * No operation applied.
      */
-    NONE(Vocabulary.format(Vocabulary.Keys.None)),
+    NONE(Vocabulary.format(Vocabulary.Keys.None), 0),
 
     /**
      * Produces an image showing an estimation of positional error for each pixel.
      */
-    POSITIONAL_ERROR(Resources.format(Resources.Keys.PositionalErrors)) {
+    POSITIONAL_ERROR(Resources.format(Resources.Keys.PositionalErrors), 2) {
+        @Override final boolean isEnabled(final RenderedImage source) {
+            return (source instanceof ResampledImage) && !((ResampledImage) source).isLinear();
+        }
+
         @Override final RenderedImage apply(final RenderedImage source) {
             final Object value = source.getProperty(POSITIONAL_ERRORS_KEY);
             return (value instanceof RenderedImage) ? (RenderedImage) value : source;
@@ -61,26 +69,68 @@ enum ImageOperation {
     private final String label;
 
     /**
+     * Number of fraction digits to use when formatting sample values.
+     * Ignored in the special case of {@link #NONE}.
+     */
+    final int fractionDigits;
+
+    /**
      * Creates a new operation.
      */
-    private ImageOperation(final String label) {
+    private ImageOperation(final String label, final int fractionDigits) {
         this.label = label;
+        this.fractionDigits = fractionDigits;
     }
 
     /**
-     * Creates the widget to be shown in {@link CoverageControls} for selecting an operation.
+     * Updates the given list of operations with operations that are enabled for the given image.
+     * Operations that are not enabled are removed from the list.
+     *
+     * @param  list   the list to update.
+     * @param  image  the new image.
      */
-    static ListView<ImageOperation> list(final ChangeListener<ImageOperation> listener) {
-        final ListView<ImageOperation> list = new ListView<>();
-        list.getItems().setAll(values());
-        final MultipleSelectionModel<ImageOperation> select = list.getSelectionModel();
-        select.select(0);
-        select.selectedItemProperty().addListener(listener);
-        return list;
+    static void update(final ListView<ImageOperation> list, final RenderedImage image) {
+        final EnumSet<ImageOperation> updated = EnumSet.allOf(ImageOperation.class);
+        updated.removeIf((op) -> !op.isSourceEnabled(image));
+        final MultipleSelectionModel<ImageOperation> selection = list.getSelectionModel();
+        final boolean unselect = !updated.contains(selection.getSelectedItem());
+        GUIUtilities.copyAsDiff(Arrays.asList(updated.toArray(new ImageOperation[updated.size()])), list.getItems());
+        if (unselect) {
+            selection.select(0);
+        }
     }
 
     /**
-     * Applies the operation on given image.
+     * Returns whether this operation can be applied for the given image.
+     * The given image should be the same than the one given to {@link #apply(RenderedImage)}.
+     */
+    boolean isEnabled(final RenderedImage source) {
+        return true;
+    }
+
+    /**
+     * Returns whether this operation can be applied for the given image of a parent of this image.
+     */
+    private boolean isSourceEnabled(final RenderedImage source) {
+        if (source != null) {
+            if (isEnabled(source)) {
+                return true;
+            }
+            final List<RenderedImage> sources = source.getSources();
+            if (sources != null) {
+                for (final RenderedImage parent : sources) {
+                    if (isSourceEnabled(parent)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Applies the operation on given image. If a map projection or a zoom has been applied, then the given
+     * image should be the resampled image (instead than the image read directly from the {@code DataStore}).
      * If the operation can not be applied, then {@code source} is returned as-is.
      */
     RenderedImage apply(final RenderedImage source) {

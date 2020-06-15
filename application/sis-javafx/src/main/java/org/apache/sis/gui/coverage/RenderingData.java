@@ -271,9 +271,13 @@ final class RenderingData implements Cloneable {
      * @return image with operation applied and color ramp stretched. May be the same instance than given image.
      */
     final RenderedImage filter(RenderedImage resampledImage) {
-        if (resampledImage == (resampledImage = selectedDerivative.operation.apply(resampledImage))) {
-            selectedDerivative = selectedDerivative.setOperation(ImageOperation.NONE);
-        }
+        /*
+         * If the operation is not `NONE` but following call to `apply(…)` returns `resampledImage` unchanged,
+         * it means that the operation can not be applied on that image. We should reset operation to `NONE`,
+         * update UI by disabling operation and keep `StatusBarSupport.selectedProvider` to its default value.
+         * For now we avoid that complexity since we need to define a better coverage operation framework anyway.
+         */
+        resampledImage = selectedDerivative.operation.apply(resampledImage);
         if (selectedDerivative.styling != Stretching.NONE) {
             final Map<String,Object> modifiers = new HashMap<>(4);
             /*

@@ -30,6 +30,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ListView;
 import javafx.scene.paint.Color;
 import javafx.util.StringConverter;
 import org.opengis.referencing.ReferenceSystem;
@@ -85,7 +86,6 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
         view = new CoverageCanvas();
         view.setBackground(background);
         final StatusBar statusBar = new StatusBar(view, referenceSystems);
-        view.initialize(statusBar);
         imageAndStatus = new BorderPane(view.getView());
         imageAndStatus.setBottom(statusBar.getView());
         /*
@@ -125,9 +125,12 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
         final VBox operationPane;
         {   // Block for making variables locale to this scope.
             final Resources resources = Resources.forLocale(vocabulary.getLocale());
-            final Region operations = ImageOperation.list((p,o,n) -> view.setOperation(n));
+            final ListView<ImageOperation> operations = new ListView<>();
+            operations.getSelectionModel().selectedItemProperty().addListener((p,o,n) -> view.setOperation(n));
             operationPane = new VBox(
                 labelOfGroup(resources, Resources.Keys.PredefinedFilters, operations, true), operations);
+
+            view.initialize(statusBar, operations);
         }
         /*
          * Put all sections together and have the first one expanded by default.
@@ -230,8 +233,9 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
     }
 
     /**
-     * Invoked when a canvas property changed.
+     * Invoked when a canvas property changed, typically after a new coverage has been selected.
      * The property of interest is {@value CoverageCanvas#OBJECTIVE_CRS_PROPERTY}.
+     * This method updates the CRS selected in the {@link ChoiceBox}.
      */
     @Override
     public void propertyChange(final PropertyChangeEvent event) {

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.OptionalInt;
+import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
@@ -26,10 +28,12 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Background;
 import javafx.util.Duration;
+import org.apache.sis.image.PlanarImage;
+import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.RecentChoices;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 
 
 /**
@@ -231,26 +235,49 @@ final class CellFormat extends SimpleStringProperty {
         if (dataTypeisInteger) {
             cellFormat.setMaximumFractionDigits(0);
         } else {
-            ImageUtilities.getFractionDigits(image, band).ifPresent((n) -> {
-                if (n > 6 || n < -9) {      // Arbitrary threshold for switching to scientific notation.
-                    if (cellFormat instanceof DecimalFormat && classicFormatPattern == null) {
+            int n = getFractionDigits(image, band).orElse(1);
+            if (n > 6 || n < -9) {      // Arbitrary threshold for switching to scientific notation.
+                if (cellFormat instanceof DecimalFormat) {
+                    if (classicFormatPattern == null) {
                         final DecimalFormat df = (DecimalFormat) cellFormat;
                         classicFormatPattern = df.toPattern();
                         df.applyPattern("0.000E00");
-                        return;
                     }
-                } else if (classicFormatPattern != null) {
-                    ((DecimalFormat) cellFormat).applyPattern(classicFormatPattern);
-                    classicFormatPattern = null;
+                    n = 3;
                 }
-                if (n < 0) n = 0;
-                cellFormat.setMinimumFractionDigits(n);
-                cellFormat.setMaximumFractionDigits(n);
-            });
+            } else if (classicFormatPattern != null) {
+                ((DecimalFormat) cellFormat).applyPattern(classicFormatPattern);
+                classicFormatPattern = null;
+            }
+            if (n < 0) n = 0;
+            cellFormat.setMinimumFractionDigits(n);
+            cellFormat.setMaximumFractionDigits(n);
         }
         buffer.setLength(0);
         formatCell(lastValue);
         updatePropertyValue();
+    }
+
+    /**
+     * Returns the number of fraction digits to use for formatting sample values in the given band of the given image.
+     * This method use the {@value PlanarImage#SAMPLE_RESOLUTIONS_KEY} property value.
+     *
+     * @param  image  the image from which to get the number of fraction digits.
+     * @param  band   the band for which to get the number of fraction digits.
+     * @return number of fraction digits. Maybe a negative number if the sample resolution is equal or greater than 10.
+     */
+    private static OptionalInt getFractionDigits(final RenderedImage image, final int band) {
+        final Object property = image.getProperty(PlanarImage.SAMPLE_RESOLUTIONS_KEY);
+        if (property != null) {
+            final int c = Numbers.getEnumConstant(property.getClass().getComponentType());
+            if (c >= Numbers.BYTE && c <= Numbers.BIG_DECIMAL && band < Array.getLength(property)) {
+                final double resolution = Math.abs(((Number) Array.get(property, band)).doubleValue());
+                if (resolution > 0 && resolution <= Double.MAX_VALUE) {     // Non-zero, non-NaN and finite.
+                    return OptionalInt.of(DecimalFunctions.fractionDigitsForDelta(resolution, false));
+                }
+            }
+        }
+        return OptionalInt.empty();
     }
 
     /**
