@@ -30,7 +30,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.storage.sql.SQLStore;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
@@ -107,7 +107,7 @@ public final class Database {
      * @throws SQLException if a database error occurred while reading metadata.
      * @throws DataStoreException if a logical error occurred while analyzing the database structure.
      */
-    public Database(final SQLStore store, final Connection connection, final DataSource source,
+    public Database(final DataStore store, final Connection connection, final DataSource source,
             final GenericName[] tableNames, final StoreListeners listeners)
             throws SQLException, DataStoreException
     {
@@ -205,7 +205,7 @@ public final class Database {
      * @return the table (never null).
      * @throws IllegalNameException if no table of the given name is found or if the name is ambiguous.
      */
-    public final FeatureSet findTable(final SQLStore store, final String name) throws IllegalNameException {
+    public final FeatureSet findTable(final DataStore store, final String name) throws IllegalNameException {
         return tablesByNames.get(store, name);
     }
 
