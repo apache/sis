@@ -33,6 +33,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WritableValue;
 import javafx.concurrent.Task;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
@@ -44,6 +45,7 @@ import org.apache.sis.coverage.grid.ImageRenderer;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
@@ -500,7 +502,12 @@ public class CoverageCanvas extends MapCanvasAWT {
     final void setObjectiveCRS(final CoordinateReferenceSystem crs, final ObservableValue<? extends ReferenceSystem> property) {
         final CoordinateReferenceSystem previous = getObjectiveCRS();
         if (crs != previous) try {
-            setObjectiveCRS(crs);
+            DirectPosition anchor = null;
+            final Envelope2D bounds = getDisplayBounds();
+            if (bounds != null) {
+                anchor = AbstractEnvelope.castOrCopy(bounds).getMedian();
+            }
+            setObjectiveCRS(crs, anchor);
             requestRepaint();
         } catch (Exception e) {
             if (property instanceof WritableValue<?>) {

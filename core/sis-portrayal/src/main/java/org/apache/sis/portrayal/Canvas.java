@@ -155,7 +155,7 @@ public class Canvas extends Observable implements Localized {
      * Associated values are instances of {@link CoordinateReferenceSystem}.
      *
      * @see #getObjectiveCRS()
-     * @see #setObjectiveCRS(CoordinateReferenceSystem)
+     * @see #setObjectiveCRS(CoordinateReferenceSystem, DirectPosition)
      * @see #addPropertyChangeListener(String, PropertyChangeListener)
      */
     public static final String OBJECTIVE_CRS_PROPERTY = "objectiveCRS";
@@ -237,7 +237,7 @@ public class Canvas extends Observable implements Localized {
      *
      * @see #OBJECTIVE_CRS_PROPERTY
      * @see #getObjectiveCRS()
-     * @see #setObjectiveCRS(CoordinateReferenceSystem)
+     * @see #setObjectiveCRS(CoordinateReferenceSystem, DirectPosition)
      * @see #augmentedObjectiveCRS
      */
     private CoordinateReferenceSystem objectiveCRS;
@@ -493,21 +493,23 @@ public class Canvas extends Observable implements Localized {
      * If the given value is different than the previous value, then a change event is sent to
      * all listeners registered for the {@value #OBJECTIVE_CRS_PROPERTY} property.</p>
      *
-     * <p>If the transform between old and new CRS is not identity, then this method recomputes
-     * the <cite>objective to display</cite> conversion in a way preserving the display coordinates
-     * of the {@link #getPointOfInterest() point of interest}, together with the scales and
-     * orientations of features in close neighborhood of that point.
+     * <p>If the transform between old and new CRS is not identity, then this method recomputes the
+     * <cite>objective to display</cite> conversion in a way preserving the display coordinates of the given anchor,
+     * together with the scales and orientations of features in close neighborhood of that point.
      * This calculation may cause {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property change event
      * to be sent to listeners, in addition of above-cited {@value #OBJECTIVE_CRS_PROPERTY}
      * (note that {@value #POINT_OF_INTEREST_PROPERTY} stay unchanged).
      * All those change events are sent only after all property values have been updated to their new values.</p>
      *
      * @param  newValue  the new Coordinate Reference System in which to transform all data before displaying.
+     * @param  anchor    the point to keep at fixed display coordinates, expressed in any compatible CRS.
+     *                   If {@code null}, defaults to {@linkplain #getPointOfInterest() point of interest}.
+     *                   If non-null, the anchor must be associated to a CRS.
      * @throws NullPointerException if the given CRS is null.
      * @throws MismatchedDimensionException if the given CRS does not have the number of dimensions of the display device.
      * @throws RenderException if the objective CRS can not be set to the given value for another reason.
      */
-    public void setObjectiveCRS(final CoordinateReferenceSystem newValue) throws RenderException {
+    public void setObjectiveCRS(final CoordinateReferenceSystem newValue, DirectPosition anchor) throws RenderException {
         ArgumentChecks.ensureNonNull(OBJECTIVE_CRS_PROPERTY, newValue);
         ArgumentChecks.ensureDimensionMatches(OBJECTIVE_CRS_PROPERTY, getDisplayDimensions(), newValue);
         final CoordinateReferenceSystem oldValue = objectiveCRS;
@@ -525,23 +527,42 @@ public class Canvas extends Observable implements Localized {
                  * the old CRS. But it is okay because the context information are geographic area (degrees)
                  * and approximate resolution (metres), which should not change a lot since we will continue
                  * to view the same area after the CRS change. Those information only need to be approximate
-                 * anyway, and in many cases will be totally ignored.
+                 * anyway, and in many cases will be totally ignored by `findTransform(…)`.
                  */
                 final MathTransform newToOld = findTransform(newValue, oldValue);
                 if (pointOfInterest != null && !newToOld.isIdentity()) {
-                    oldObjectiveToDisplay = getObjectiveToDisplay();
-                    /*
-                     * Conceptually, we want the coordinates in new CRS to be as they were in the old CRS
-                     * (same location, same Jacobian matrix) in the neighborhood of the point of interest,
-                     * so that we can apply the old `objectiveToCRS` transform. For achieving that goal,
-                     * we apply a local affine transform which cancel the effect of "old CRS → new CRS"
-                     * transformation around the point of interest. The deformations caused by CRS change
-                     * will be more visible as we look further from the point of interest.
-                     */
-                    final MathTransform  poiToNew = findTransform(pointOfInterest.getCoordinateReferenceSystem(), newValue);
+                    final CoordinateReferenceSystem poiCRS = pointOfInterest.getCoordinateReferenceSystem();
+                    final MathTransform  poiToNew = findTransform(poiCRS, newValue);
                     final DirectPosition poiInNew = poiToNew.transform(pointOfInterest, allocatePosition());
-                    final MathTransform    change = orthogonalTangent(newToOld, poiInNew.getCoordinate());
-                    final MathTransform    result = MathTransforms.concatenate(change, oldObjectiveToDisplay);
+                    /*
+                     * We need anchor in new CRS. If no anchor was specified, `poiInNew` is already what we need.
+                     * Otherwise convert the anchor to coordinates in the new CRS. There is good change that the
+                     * anchor CRS is the objective CRS, so we can reuse `poiToNew`.
+                     */
+                    if (anchor == null) {
+                        anchor = poiInNew;
+                    } else {
+                        final CoordinateReferenceSystem crs = anchor.getCoordinateReferenceSystem();
+                        ArgumentChecks.ensureNonNull("anchor.CRS", crs);
+                        if (!Utilities.equalsIgnoreMetadata(crs, newValue)) {
+                            MathTransform anchorToNew = poiToNew;
+                            if (!Utilities.equalsIgnoreMetadata(crs, poiCRS)) {
+                                anchorToNew = findTransform(crs, newValue);
+                            }
+                            anchor = anchorToNew.transform(anchor, allocatePosition());
+                        }
+                    }
+                    /*
+                     * We want pixel coordinates of the Point Of Interest (POI) to be unaffected by the change of CRS,
+                     * and the Jacobian matrix around POI to be approximately the same. Conceptually, this is as if we
+                     * wanted to convert from new CRS to old CRS before to apply the old `objectiveToCRS` transform.
+                     * We get this effect by pre-concatenating a linear approximation of "new to old CRS" transform
+                     * before `objectiveToCRS`. That approximation contain only uniform scale, rotation or axis flips
+                     * in order to preserve pixel ratios (otherwise the map projection would appear deformed).
+                     */
+                    oldObjectiveToDisplay = getObjectiveToDisplay();
+                    final MathTransform change = orthogonalTangent(newToOld, anchor.getCoordinate());
+                    final MathTransform result = MathTransforms.concatenate(change, oldObjectiveToDisplay);
                     /*
                      * The result is the new `objectiveToTransform` such as the display is unchanged around POI.
                      * That transform should be an instance of `LinearTransform` because the two concatenated
@@ -1154,12 +1175,20 @@ public class Canvas extends Observable implements Localized {
      * operation should invoke this method instead than {@link CRS#findOperation(CoordinateReferenceSystem,
      * CoordinateReferenceSystem, GeographicBoundingBox)}.
      */
-    private MathTransform findTransform(final CoordinateReferenceSystem source,
-                                        final CoordinateReferenceSystem target)
+    private MathTransform findTransform(CoordinateReferenceSystem source,
+                                  final CoordinateReferenceSystem target)
             throws FactoryException, TransformException, RenderException
     {
+        final boolean fromDisplay = Utilities.equalsIgnoreMetadata(source, displayBounds.getCoordinateReferenceSystem());
+        if (fromDisplay) {
+            source = objectiveCRS;
+        }
         operationContext.refresh(this);
-        return coordinateOperationFactory.createOperation(source, target, operationContext).getMathTransform();
+        MathTransform tr = coordinateOperationFactory.createOperation(source, target, operationContext).getMathTransform();
+        if (fromDisplay) {
+            tr = MathTransforms.concatenate(getObjectiveToDisplay().inverse(), tr);
+        }
+        return tr;
     }
 
     /**

@@ -515,7 +515,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @param  visibleArea  bounding box in (new) objective CRS of the initial area to show,
      *         or {@code null} if unknown (in which case an identity transform will be set).
      *
-     * @see #setObjectiveCRS(CoordinateReferenceSystem)
+     * @see #setObjectiveCRS(CoordinateReferenceSystem, DirectPosition)
      */
     protected void setObjectiveBounds(final Envelope visibleArea) {
         ArgumentChecks.ensureDimensionMatches("bounds", BIDIMENSIONAL, visibleArea);
