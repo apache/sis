@@ -46,12 +46,15 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -492,7 +495,7 @@ public class Canvas extends Observable implements Localized {
      *
      * <p>If the transform between old and new CRS is not identity, then this method recomputes
      * the <cite>objective to display</cite> conversion in a way preserving the display coordinates
-     * of the {@link #getPointOfInterest() point of interest}, together with the scales, shapes and
+     * of the {@link #getPointOfInterest() point of interest}, together with the scales and
      * orientations of features in close neighborhood of that point.
      * This calculation may cause {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property change event
      * to be sent to listeners, in addition of above-cited {@value #OBJECTIVE_CRS_PROPERTY}
@@ -537,12 +540,12 @@ public class Canvas extends Observable implements Localized {
                      */
                     final MathTransform  poiToNew = findTransform(pointOfInterest.getCoordinateReferenceSystem(), newValue);
                     final DirectPosition poiInNew = poiToNew.transform(pointOfInterest, allocatePosition());
-                    final LinearTransform  cancel = MathTransforms.tangent(newToOld, poiInNew);
-                    final MathTransform    result = MathTransforms.concatenate(cancel, oldObjectiveToDisplay);
+                    final MathTransform    change = orthogonalTangent(newToOld, poiInNew.getCoordinate());
+                    final MathTransform    result = MathTransforms.concatenate(change, oldObjectiveToDisplay);
                     /*
                      * The result is the new `objectiveToTransform` such as the display is unchanged around POI.
                      * That transform should be an instance of `LinearTransform` because the two concatenated
-                     * transforms were linear, but we nevertheless invoke `tangent(…)` again as a safety;
+                     * transforms were linear, but we nevertheless invoke `tangent(…)` as a safety;
                      * normally it should just return the `result` as-is.
                      */
                     newObjectiveToDisplay = MathTransforms.tangent(result, poiInNew);
@@ -563,6 +566,75 @@ public class Canvas extends Observable implements Localized {
         } catch (FactoryException | TransformException e) {
             throw new RenderException(errors().getString(Errors.Keys.CanNotSetPropertyValue_1, OBJECTIVE_CRS_PROPERTY), e);
         }
+    }
+
+    /**
+     * Computes the approximate change from a new {@link #objectiveToDisplay} to the old one for keeping the
+     * Point Of Interest (POI) at the same location. The given {@code newToOld} argument is the change as a
+     * potentially non-linear transform. The transform returned by this method is a linear approximation of
+     * {@code newToOld} {@linkplain MathTransforms#tangent tangent} at the POI, but with orthogonal vectors.
+     * In other words, the returned transform may apply a uniform scale, a rotation or flip axes, but no shear.
+     *
+     * @param  newToOld  the change as a potentially non-linear transform.
+     * @param  poiInNew  point of interest in the coordinates of the new objective CRS.
+     * @return an approximation of {@code newToOld} with only uniform scale, rotation and axis flips.
+     *
+     * @see MathTransforms#tangent(MathTransform, DirectPosition)
+     */
+    private static MathTransform orthogonalTangent(final MathTransform newToOld, final double[] poiInNew)
+            throws TransformException, RenderException
+    {
+        final double[]     poiInOld   = new double[newToOld.getTargetDimensions()];
+        final MatrixSIS    derivative = MatrixSIS.castOrCopy(MathTransforms.derivativeAndTransform(newToOld, poiInNew, 0, poiInOld, 0));
+        final MatrixSIS    magnitudes = derivative.normalizeColumns();
+        final MatrixSIS    affine     = Matrices.createAffine(derivative, new DirectPositionView.Double(poiInOld));
+        final int          srcDim     = magnitudes.getNumCol();
+        final DoubleDouble scale      = new DoubleDouble();             // Will be set to average magnitude value.
+        for (int i=0; i<srcDim; i++) {
+            scale.add(DoubleDouble.castOrCopy(magnitudes.getNumber(0, i)));
+        }
+        scale.divide(srcDim);
+        /*
+         * Following code assumes a two-dimensional rotation matrix. We have not yet explored how
+         * to generalize to n-dimensional case (Gram–Schmidt process may be a path to explore).
+         * We want:
+         *           ┌          ┐     ┌                 ┐
+         *           │ m₀₀  m₀₁ │  ≈  │ cos(θ)  −sin(θ) │
+         *           │ m₁₀  m₁₁ │     │ sin(θ)   cos(θ) │
+         *           └          ┘     └                 ┘
+         *
+         * We want some "average" value for |cos(θ)| (the sign will be adjusted later).
+         * The root mean square (RMS) is convenient because of  cos²(θ) = 1 − sin²(θ):
+         *
+         *     |cos(θ)|  ≈  √((m₀₀² + (1 − m₀₁²) + (1 − m₁₀²) + m₁₁²) / 4)
+         */
+        if (srcDim == PlanarCanvas.BIDIMENSIONAL && poiInOld.length == PlanarCanvas.BIDIMENSIONAL) {
+            final double ms  = Math.max(0, Math.min(1, (cps(affine, 0) + cps(affine, 1) + 2) / 4));
+            final double sin = Math.sqrt(1 - ms);
+            final double cos = Math.sqrt(    ms);
+            for (int row = 0; row <= 1; row++) {
+                final int sor = row ^ 1;
+                affine.setElement(row, row, Math.copySign(cos, affine.getElement(row, row)));
+                affine.setElement(row, sor, Math.copySign(sin, affine.getElement(row, sor)));
+            }
+        } else {
+            throw new RenderException(Errors.format(Errors.Keys.UnsupportedCoordinateSystem_1, "3D"));
+        }
+        for (int i=0; i<srcDim; i++) {
+            affine.convertBefore(i, scale, null);           // Use same scale factor for all coordinates.
+            affine.convertBefore(i, null, -poiInNew[i]);
+        }
+        return MathTransforms.linear(affine);
+    }
+
+    /**
+     * Computes cos(θ)² − sin²(θ) on the given matrix row. Caller needs to add 1 for getting the sum
+     * of squares of cosine values. That addition should be done last for reducing rounding errors.
+     */
+    private static double cps(final MatrixSIS affine, final int row) {
+        final double cos = affine.getElement(row, row);
+        final double sin = affine.getElement(row, row ^ 1);
+        return cos*cos - sin*sin;
     }
 
     /**

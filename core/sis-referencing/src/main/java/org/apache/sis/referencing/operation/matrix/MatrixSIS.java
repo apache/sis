@@ -413,7 +413,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     /**
      * Normalizes all columns in-place and returns their magnitudes as a row vector.
      * Each columns in this matrix is considered as a vector. For each column (vector),
-     * this method computes the magnitude (vector length) as the square root of the sum of all square values.
+     * this method computes the magnitude (vector length) as the square root of the sum of all squared values.
      * Then, all values in the column are divided by that magnitude.
      *
      * <p>This method is useful when the matrix is a

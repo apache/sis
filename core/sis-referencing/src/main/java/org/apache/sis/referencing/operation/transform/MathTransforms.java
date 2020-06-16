@@ -737,10 +737,10 @@ public final class MathTransforms extends Static {
     public static LinearTransform tangent(final MathTransform toApproximate, final DirectPosition tangentPoint)
             throws TransformException
     {
+        ArgumentChecks.ensureNonNull("toApproximate", toApproximate);
         if (toApproximate instanceof LinearTransform) {
             return (LinearTransform) toApproximate;
         }
-        ArgumentChecks.ensureNonNull("toApproximate", toApproximate);
         final int srcDim = toApproximate.getSourceDimensions();
         ArgumentChecks.ensureDimensionMatches("tangentPoint", srcDim, tangentPoint);
         final int tgtDim = toApproximate.getTargetDimensions();
