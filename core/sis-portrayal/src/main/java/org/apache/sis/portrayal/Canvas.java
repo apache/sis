@@ -300,8 +300,8 @@ public class Canvas extends Observable implements Localized {
      *
      * <p>In current implementation, this transform may depend on the zoom level and viewed geographic
      * area at the time this transform has been computed. The transform could be slightly different if
-     * it has been computed at the time a different geographic area was viewed. Those variations may
-     * exist because {@link #findTransform(CoordinateReferenceSystem, CoordinateReferenceSystem)} takes
+     * it has been computed at the time a different geographic area was viewed. Those variations may exist
+     * because {@link #findTransform(CoordinateReferenceSystem, CoordinateReferenceSystem, boolean)} takes
      * in account the current viewing conditions. We may need to revisit this behavior in the future if
      * it appears to be a problem.</p>
      *
@@ -365,7 +365,7 @@ public class Canvas extends Observable implements Localized {
      *
      * @see #getGeographicArea()
      * @see #getSpatialResolution()
-     * @see #findTransform(CoordinateReferenceSystem, CoordinateReferenceSystem)
+     * @see #findTransform(CoordinateReferenceSystem, CoordinateReferenceSystem, boolean)
      */
     private final CanvasContext operationContext;
 
@@ -373,7 +373,7 @@ public class Canvas extends Observable implements Localized {
      * The factory to use for creating coordinate operations. This factory allow us to specify the area
      * of interest (the geographic region shown by this {@code Canvas}) and the desired resolution.
      *
-     * @see #findTransform(CoordinateReferenceSystem, CoordinateReferenceSystem)
+     * @see #findTransform(CoordinateReferenceSystem, CoordinateReferenceSystem, boolean)
      */
     private final DefaultCoordinateOperationFactory coordinateOperationFactory;
 
@@ -529,10 +529,10 @@ public class Canvas extends Observable implements Localized {
                  * to view the same area after the CRS change. Those information only need to be approximate
                  * anyway, and in many cases will be totally ignored by `findTransform(…)`.
                  */
-                final MathTransform newToOld = findTransform(newValue, oldValue);
+                final MathTransform newToOld = findTransform(newValue, oldValue, false);
                 if (pointOfInterest != null && !newToOld.isIdentity()) {
                     final CoordinateReferenceSystem poiCRS = pointOfInterest.getCoordinateReferenceSystem();
-                    final MathTransform  poiToNew = findTransform(poiCRS, newValue);
+                    final MathTransform  poiToNew = findTransform(poiCRS, newValue, false);
                     final DirectPosition poiInNew = poiToNew.transform(pointOfInterest, allocatePosition());
                     /*
                      * We need anchor in new CRS. If no anchor was specified, `poiInNew` is already what we need.
@@ -547,7 +547,7 @@ public class Canvas extends Observable implements Localized {
                         if (!Utilities.equalsIgnoreMetadata(crs, newValue)) {
                             MathTransform anchorToNew = poiToNew;
                             if (!Utilities.equalsIgnoreMetadata(crs, poiCRS)) {
-                                anchorToNew = findTransform(crs, newValue);
+                                anchorToNew = findTransform(crs, newValue, true);
                             }
                             anchor = anchorToNew.transform(anchor, allocatePosition());
                         }
@@ -879,7 +879,7 @@ public class Canvas extends Observable implements Localized {
              */
             MathTransform mt = multidimToObjective;
             if (mt == null || !Utilities.equalsIgnoreMetadata(crs, oldValue.getCoordinateReferenceSystem())) {
-                mt = findTransform(crs, objectiveCRS);
+                mt = findTransform(crs, objectiveCRS, false);
             }
             objectivePOI          = mt.transform(copy, allocatePosition());
             pointOfInterest       = copy;                                           // Set only after transform succeeded.
@@ -1174,18 +1174,23 @@ public class Canvas extends Observable implements Localized {
      * CRS may differ depending on which area is currently visible in the canvas. All requests for a coordinate
      * operation should invoke this method instead than {@link CRS#findOperation(CoordinateReferenceSystem,
      * CoordinateReferenceSystem, GeographicBoundingBox)}.
+     *
+     * @param  allowDisplayCRS  whether the {@code sourceCRS} can be {@link #getDisplayCRS()}.
      */
     private MathTransform findTransform(CoordinateReferenceSystem source,
-                                  final CoordinateReferenceSystem target)
+                                  final CoordinateReferenceSystem target,
+                                  boolean allowDisplayCRS)
             throws FactoryException, TransformException, RenderException
     {
-        final boolean fromDisplay = Utilities.equalsIgnoreMetadata(source, displayBounds.getCoordinateReferenceSystem());
-        if (fromDisplay) {
+        if (allowDisplayCRS) {
+            allowDisplayCRS = Utilities.equalsIgnoreMetadata(source, displayBounds.getCoordinateReferenceSystem());
+        }
+        if (allowDisplayCRS) {
             source = objectiveCRS;
         }
         operationContext.refresh(this);
         MathTransform tr = coordinateOperationFactory.createOperation(source, target, operationContext).getMathTransform();
-        if (fromDisplay) {
+        if (allowDisplayCRS) {
             tr = MathTransforms.concatenate(getObjectiveToDisplay().inverse(), tr);
         }
         return tr;
