@@ -358,7 +358,7 @@ public class RecentReferenceSystems {
      * Authority codes are resolved if possible or removed if they can not be resolved. Unverified CRSs are compared
      * with authoritative definitions and replaced when a match is found. Duplications are removed.
      *
-     * <p>This method can be invoked from any thread.</p>
+     * <p>This method can be invoked from any thread. In practice, it is invoked from a background thread.</p>
      *
      * @param  domain  the {@link #areaOfInterest} value read from JavaFX thread, or {@code null} if none.
      * @param  mode    the {@link #duplicationCriterion} value read from JavaFX thread.
@@ -487,6 +487,7 @@ public class RecentReferenceSystems {
         synchronized (systemsOrCodes) {
             isModified = true;
             if (referenceSystems != null) {
+                // ChoiceBox or Menu already created. They will observe the changes in item list.
                 updateItems();
             }
         }
@@ -558,7 +559,8 @@ public class RecentReferenceSystems {
      *                  {@code systems} list has been computed.
      */
     private void setReferenceSystems(final List<ReferenceSystem> systems, final ComparisonMode mode) {
-        if (systems != null) try {
+        // Nested calls to this method should never happen, but check !isAdjusting anyway as safety.
+        if (systems != null && !isAdjusting) try {
             isAdjusting = true;
             /*
              * The call to `copyAsDiff(…)` may cause some ChoiceBox values to be lost if the corresponding
@@ -621,6 +623,7 @@ public class RecentReferenceSystems {
                 action.changed(property, oldValue, newValue);
                 return;
             }
+            final ComparisonMode mode = duplicationCriterion.get();
             if (newValue == OTHER) {
                 final CRSChooser chooser = new CRSChooser(factory, geographicAOI, locale);
                 newValue = chooser.showDialog(GUIUtilities.getWindow(property)).orElse(null);
@@ -635,7 +638,6 @@ public class RecentReferenceSystems {
                      * given by CRSChooser, which is more conform to authoritative definition.
                      */
                     final ObservableList<ReferenceSystem> items = referenceSystems;
-                    final ComparisonMode mode = duplicationCriterion.get();
                     int count = items.size() - NUM_OTHER_ITEMS;
                     boolean found = false;
                     for (int i=0; i<count; i++) {
@@ -675,20 +677,16 @@ public class RecentReferenceSystems {
             }
             if (oldValue != newValue) {
                 /*
-                 * Notify the user-specified listener first. It will typically starts a background process.
-                 * If an exception occurs in that user code, the list of CRS choices will be left unchanged.
-                 */
-                action.changed(property, oldValue, newValue);
-                RecentChoices.useReferenceSystem(IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(newValue, null)));
-                /*
                  * If the selected CRS is already at the beginning of the list, do nothing. The beginning is
                  * either one of the core items (specified by `setPreferred(…)`) or the first item after the
                  * core items.
                  */
                 final ObservableList<ReferenceSystem> items = referenceSystems;
                 final int count = items.size() - NUM_OTHER_ITEMS;
-                for (int i=Math.min(count, NUM_CORE_ITEMS + 1); --i >= 0;) {
-                    if (items.get(i) == newValue) {
+                for (int i = Math.min(count, NUM_CORE_ITEMS + 1); --i >= 0;) {
+                    final ReferenceSystem current = items.get(i);
+                    if (Utilities.deepEquals(current, newValue, mode)) {
+                        action.changed(property, oldValue, current);
                         return;
                     }
                 }
@@ -697,14 +695,22 @@ public class RecentReferenceSystems {
                  * We need to remove the old value before to add the new one, otherwise it seems
                  * to confuse the list.
                  */
-                for (int i=count; --i >= NUM_CORE_ITEMS;) {
-                    if (items.get(i) == newValue) {
-                        items.remove(i);
+                for (int i = count; --i >= NUM_CORE_ITEMS;) {
+                    if (Utilities.deepEquals(items.get(i), newValue, mode)) {
+                        newValue = items.remove(i);
                         break;
                     }
                 }
                 items.add(Math.min(items.size(), NUM_CORE_ITEMS), newValue);
+                /*
+                 * Notify the user-specified listeners. It will typically starts a background process.
+                 * We test (oldValue != newValue) again because `newValue` may have been replaced.
+                 */
                 notifyChanges();
+                if (oldValue != newValue) {
+                    action.changed(property, oldValue, newValue);       // Typically starts a background process.
+                }
+                RecentChoices.useReferenceSystem(IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(newValue, null)));
             }
         }
     }

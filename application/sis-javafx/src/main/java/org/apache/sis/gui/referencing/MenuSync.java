@@ -164,7 +164,8 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
         }
         final MenuItem[] items = new MenuItem[systems.size()];
         for (int i=0; i<items.length; i++) {
-            items[i] = mapping.remove(systems.get(i));
+            final Object key = systems.get(i);
+            items[i] = mapping.remove(key == RecentReferenceSystems.OTHER ? CHOOSER : key);
         }
         /*
          * Previous loop copied all items that could be reused as-is. Now search for all items that are new.
