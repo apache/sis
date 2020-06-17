@@ -18,6 +18,7 @@ package org.apache.sis.gui.map;
 
 import java.util.Locale;
 import java.nio.IntBuffer;
+import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.GraphicsConfiguration;
@@ -388,13 +389,13 @@ public abstract class MapCanvasAWT extends MapCanvas {
             VolatileImage drawTo = previousBuffer;
             previousBuffer = null;                      // For letting GC do its work.
             if (drawTo == null) {
-                drawTo = configuration.createCompatibleVolatileImage(width, height);
+                drawTo = configuration.createCompatibleVolatileImage(width, height, VolatileImage.TRANSLUCENT);
             }
             boolean invalid = true;
             try {
                 do {
                     if (drawTo.validate(configuration) == VolatileImage.IMAGE_INCOMPATIBLE) {
-                        drawTo = configuration.createCompatibleVolatileImage(width, height);
+                        drawTo = configuration.createCompatibleVolatileImage(width, height, VolatileImage.TRANSLUCENT);
                     }
                     final Graphics2D gr = drawTo.createGraphics();
                     try {
@@ -422,6 +423,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
             final VolatileImage drawTo = doubleBuffer;
             final Graphics2D gr = buffer.createGraphics();
             try {
+                gr.setComposite(AlphaComposite.Src);        // Copy source (previous destination is discarded).
                 gr.drawImage(drawTo, 0, 0, null);
                 contentsLost = drawTo.contentsLost();
             } finally {
