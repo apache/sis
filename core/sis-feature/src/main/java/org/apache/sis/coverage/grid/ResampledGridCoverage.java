@@ -529,6 +529,15 @@ final class ResampledGridCoverage extends GridCoverage {
     }
 
     /**
+     * Returns the {@link java.awt.image.DataBuffer} constant
+     * identifying the primitive type used for storing sample values.
+     */
+    @Override
+    final int getDataType() {
+        return source.getDataType();
+    }
+
+    /**
      * Delegates to the source coverage, which should transform the point itself if needed.
      */
     @Override

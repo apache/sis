@@ -79,6 +79,34 @@ public strictfp class FeatureAssert extends ReferencingAssert {
     }
 
     /**
+     * Verifies that sample values in the given image are equal to the expected floating point values.
+     * NaN values are compared using {@link Double#doubleToRawLongBits(double)} (i.e. different NaNs
+     * are <em>not</em> collapsed in a canonical NaN value).
+     *
+     * @param  image     the image to verify.
+     * @param  band      the band to verify.
+     * @param  expected  the expected sample values.
+     */
+    public static void assertValuesEqual(final RenderedImage image, final int band, final double[][] expected) {
+        assertEquals("Height", expected.length, image.getHeight());
+        final PixelIterator it = PixelIterator.create(image);
+        for (int j=0; j<expected.length; j++) {
+            final double[] row = expected[j];
+            assertEquals("Width", row.length, image.getWidth());
+            for (int i=0; i<row.length; i++) {
+                assertTrue(it.next());
+                final double a = it.getSampleDouble(band);
+                final double e = row[i];
+                if (Double.doubleToRawLongBits(a) != Double.doubleToRawLongBits(e)) {
+                    final Point p = it.getPosition();
+                    fail(mismatchedSampleValue(p.x, p.y, i, j, band, e, a));
+                }
+            }
+        }
+        assertFalse(it.next());
+    }
+
+    /**
      * Verifies that sample values in the given raster are equal to the expected integer values.
      *
      * @param  raster    the raster to verify.

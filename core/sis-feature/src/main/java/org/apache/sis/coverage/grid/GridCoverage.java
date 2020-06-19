@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.Optional;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -168,6 +169,14 @@ public abstract class GridCoverage {
             }
         }
         return ranges;
+    }
+
+    /**
+     * Returns the {@link DataBuffer} constant identifying the primitive type used for storing sample values.
+     * If the type is unknown, returns {@link DataBuffer#TYPE_UNDEFINED}.
+     */
+    int getDataType() {
+        return DataBuffer.TYPE_UNDEFINED;
     }
 
     /**

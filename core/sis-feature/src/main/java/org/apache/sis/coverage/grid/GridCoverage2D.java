@@ -150,7 +150,7 @@ public class GridCoverage2D extends GridCoverage {
                            final MathTransform1D[] converters, final boolean isConverted)
     {
         super(source.gridGeometry, range);
-        final int dataType = ConvertedGridCoverage.getDataType(range, isConverted);
+        final int dataType = ConvertedGridCoverage.getDataType(range, isConverted, source);
         final ColorModel colorModel = createColorModel(Math.max(0, ImageUtilities.getVisibleBand(source.data)), dataType);
         data           = BandedSampleConverter.create(source.data, null, dataType, colorModel, getRanges(), converters);
         gridToImageX   = source.gridToImageX;
@@ -441,6 +441,15 @@ public class GridCoverage2D extends GridCoverage {
                 }
             }
         }
+    }
+
+    /**
+     * Returns the {@link java.awt.image.DataBuffer} constant
+     * identifying the primitive type used for storing sample values.
+     */
+    @Override
+    final int getDataType() {
+        return ImageUtilities.getDataType(data);
     }
 
     /**

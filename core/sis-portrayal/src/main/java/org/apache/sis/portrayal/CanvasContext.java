@@ -52,7 +52,7 @@ final class CanvasContext extends CoordinateOperationContext {
      * Desired resolution in display units (usually pixels). This is used for avoiding
      * the cost of transformations having too much accuracy for the current zoom level.
      *
-     * @see Canvas#findTransform(CoordinateReferenceSystem, CoordinateReferenceSystem)
+     * @see Canvas#findTransform(CoordinateReferenceSystem, CoordinateReferenceSystem, boolean)
      */
     private static final double DISPLAY_RESOLUTION = 1;
 
@@ -60,8 +60,8 @@ final class CanvasContext extends CoordinateOperationContext {
      * Transformation from {@linkplain Canvas#getObjectiveCRS() objective CRS} to a geographic CRS, or {@code null} if
      * none can be found. The geographic CRS (operation target) has (longitude, latitude) axes in degrees but the same
      * geodetic datum than the objective CRS, so the prime meridian is not necessarily Greenwich. This is recomputed
-     * immediately after a change of {@link Canvas#objectiveCRS} or {@link Canvas#pointOfInterest} because it will
-     * be needed anyway for {@link Canvas#findTransform(CoordinateReferenceSystem, CoordinateReferenceSystem)}.
+     * immediately after a change of {@link Canvas#objectiveCRS} or {@link Canvas#pointOfInterest} because it will be
+     * needed anyway for {@link Canvas#findTransform(CoordinateReferenceSystem, CoordinateReferenceSystem, boolean)}.
      *
      * @see Canvas#getGeographicArea()
      * @see Canvas#objectiveToGeographic(CoordinateReferenceSystem)

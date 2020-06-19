@@ -335,7 +335,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
              */
             if (isSampleToUnit) {
                 final int n = converse.minimums.length;
-                if (n != 0 && Double.isNaN(converse.minimums[n - 1])) {
+                if (n != 0 && isNaN(converse.minimums[n - 1])) {
                     fallback = 0;
                     return;
                 }
@@ -391,6 +391,14 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      */
     static CategoryList create(final Category[] categories, final Number background) {
         return new CategoryList(categories, null, background);
+    }
+
+    /**
+     * Returns {@code true} if the category list contains at least one NaN value.
+     */
+    final boolean allowsNaN() {
+        final int n = minimums.length;
+        return (n != 0) && isNaN(minimums[n-1]);
     }
 
     /**
@@ -502,7 +510,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         if (MathFunctions.isPositiveZero(fallback)) {
             return value;
         }
-        if (Double.isNaN(fallback)) {
+        if (isNaN(fallback)) {
             throw new TransformException(formatNoCategory(value));
         }
         return fallback;
@@ -513,7 +521,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      */
     private static String formatNoCategory(final double value) {
         return Resources.format(Resources.Keys.NoCategoryForValue_1,
-                Double.isNaN(value) ? "NaN #" + MathFunctions.toNanOrdinal((float) value) : value);
+                isNaN(value) ? "NaN #" + MathFunctions.toNanOrdinal((float) value) : value);
     }
 
     /**

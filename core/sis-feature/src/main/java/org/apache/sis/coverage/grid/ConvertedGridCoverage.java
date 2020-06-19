@@ -94,7 +94,7 @@ final class ConvertedGridCoverage extends GridCoverage {
         this.source      = source;
         this.converters  = converters;
         this.isConverted = isConverted;
-        this.dataType    = getDataType(range, isConverted);
+        this.dataType    = getDataType(range, isConverted, source);
     }
 
     /**
@@ -157,10 +157,12 @@ final class ConvertedGridCoverage extends GridCoverage {
      *
      * @param  targets    the sample dimensions for which to get the data type.
      * @param  converted  whether the image will hold converted or packed values.
+     * @param  source     if the type can not be determined, coverage from which to inherit the type as a fallback.
      * @return the {@link DataBuffer} type.
      */
-    public static int getDataType(final List<SampleDimension> targets, final boolean converted) {
+    static int getDataType(final List<SampleDimension> targets, final boolean converted, final GridCoverage source) {
         NumberRange<?> union = null;
+        boolean allowsNaN = false;
         for (final SampleDimension dimension : targets) {
             final Optional<NumberRange<?>> c = dimension.getSampleRange();
             if (c.isPresent()) {
@@ -171,8 +173,24 @@ final class ConvertedGridCoverage extends GridCoverage {
                     union = union.unionAny(range);
                 }
             }
+            if (!allowsNaN) allowsNaN = dimension.allowsNaN();
         }
-        return RasterFactory.getDataType(union, converted);
+        int type = RasterFactory.getDataType(union, converted);
+        if (allowsNaN && type >= DataBuffer.TYPE_BYTE && type < DataBuffer.TYPE_FLOAT) {
+            type = (type < DataBuffer.TYPE_INT) ? DataBuffer.TYPE_FLOAT : DataBuffer.TYPE_DOUBLE;
+        }
+        if (type == DataBuffer.TYPE_UNDEFINED) {
+            type = source.getDataType();
+        }
+        return type;
+    }
+
+    /**
+     * Returns the {@link DataBuffer} constant identifying the primitive type used for storing sample values.
+     */
+    @Override
+    final int getDataType() {
+        return dataType;
     }
 
     /**

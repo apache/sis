@@ -177,6 +177,15 @@ public class BufferedGridCoverage extends GridCoverage {
     }
 
     /**
+     * Returns the {@link java.awt.image.DataBuffer} constant
+     * identifying the primitive type used for storing sample values.
+     */
+    @Override
+    final int getDataType() {
+        return data.getDataType();
+    }
+
+    /**
      * Creates a new function for computing or interpolating sample values at given locations.
      *
      * <h4>Multi-threading</h4>

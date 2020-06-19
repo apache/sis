@@ -238,6 +238,8 @@ public class SampleDimension implements Serializable {
      * @return the values to indicate no data values for this sample dimension, or an empty set if none.
      * @throws IllegalStateException if this method can not expand the range of no data values, for example
      *         because some ranges contain an infinite amount of values.
+     *
+     * @see #allowsNaN()
      */
     public Set<Number> getNoDataValues() {
         if (converse != null) {             // Null if SampleDimension does not contain at least one quantitative category.
@@ -393,6 +395,23 @@ public class SampleDimension implements Serializable {
             }
         }
         return Optional.ofNullable(unit);
+    }
+
+    /**
+     * Returns {@code true} if some sample values can be {@link Float#NaN NaN} values.
+     * It may be the case for {@linkplain #forConvertedValues(boolean) converted values},
+     * but not necessarily (because a coverage does not necessarily allow missing values).
+     * If {@code true}, then the NaN values should be listed by {@link #getNoDataValues()}.
+     *
+     * @return whether some values in this sample dimension can be {@link Float#NaN NaN}.
+     *
+     * @see #getNoDataValues()
+     * @see org.apache.sis.math.MathFunctions#toNanFloat(int)
+     *
+     * @since 1.1
+     */
+    public boolean allowsNaN() {
+        return categories.allowsNaN();
     }
 
     /**
