@@ -29,8 +29,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.ListView;
 import javafx.scene.paint.Color;
 import javafx.util.StringConverter;
 import org.opengis.referencing.ReferenceSystem;
@@ -39,7 +40,6 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.image.Interpolation;
-import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -119,30 +119,16 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
                 labelOfGroup(vocabulary, Vocabulary.Keys.Colors,          colors,     false), colors);
         }
         /*
-         * "Operation" section with the following controls:
-         *    - List of predefined operations.
-         */
-        final VBox operationPane;
-        {   // Block for making variables locale to this scope.
-            final Resources resources = Resources.forLocale(vocabulary.getLocale());
-            final ListView<ImageOperation> operations = new ListView<>();
-            operations.getSelectionModel().selectedItemProperty().addListener((p,o,n) -> view.setOperation(n));
-            operationPane = new VBox(
-                labelOfGroup(resources, Resources.Keys.PredefinedFilters, operations, true), operations);
-
-            view.initialize(statusBar, operations);
-        }
-        /*
          * Put all sections together and have the first one expanded by default.
+         * The "Properties" section will be built by `PropertyPaneCreator` only if requested.
          */
-        controls = new Accordion(
-            new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),    displayPane),
-            new TitledPane(vocabulary.getString(Vocabulary.Keys.Operations), operationPane)
-            // TODO: more controls to be added in a future version.
-        );
-        controls.setExpandedPane(controls.getPanes().get(0));
+        final TitledPane p1 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Display), displayPane);
+        final TitledPane p2 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null);
+        controls = new Accordion(p1, p2);
+        controls.setExpandedPane(p1);
         view.coverageProperty.bind(coverage);
         view.addPropertyChangeListener(CoverageCanvas.OBJECTIVE_CRS_PROPERTY, this);
+        p2.expandedProperty().addListener(new PropertyPaneCreator(view, p2));
     }
 
     /**
@@ -219,6 +205,35 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
             view.setBackground(((ColorPicker) e.getSource()).getValue());
         });
         return b;
+    }
+
+    /**
+     * Invoked the first time that the "Properties" pane is opened for building the JavaFX visual components.
+     * We deffer the creation of this pane because it is often not requested at all, since this is more for
+     * developers than users.
+     */
+    private static final class PropertyPaneCreator implements ChangeListener<Boolean> {
+        /** A copy of {@link CoverageControls#view} reference. */
+        private final CoverageCanvas view;
+
+        /** The pane where to set the content. */
+        private final TitledPane pane;
+
+        /** Creates a new {@link ImagePropertyExplorer} constructor. */
+        PropertyPaneCreator(final CoverageCanvas view, final TitledPane pane) {
+            this.view = view;
+            this.pane = pane;
+        }
+
+        /** Creates the {@link ImagePropertyExplorer}. */
+        @Override public void changed(ObservableValue<? extends Boolean> property, Boolean oldValue, Boolean newValue) {
+            if (newValue) {
+                pane.expandedProperty().removeListener(this);
+                final ImagePropertyExplorer properties = view.createPropertyExplorer();
+                properties.updateOnChange.bind(pane.expandedProperty());
+                pane.setContent(properties.getView());
+            }
+        }
     }
 
     /**

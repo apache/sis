@@ -26,6 +26,8 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.layout.Pane;
 import javafx.stage.Window;
 import org.apache.sis.util.Static;
 
@@ -71,6 +73,20 @@ public final class GUIUtilities extends Static {
             }
         }
         return null;
+    }
+
+    /**
+     * Sets on the given pane a clip defined to the pane bounds. This method is invoked for pane having content
+     * that may be drawn outside the pane bounds (typically images). We use this method as a workaround for the
+     * fact that JavaFX pane does not apply clip by itself.
+     *
+     * @param  pane  the pane on which to set the clip.
+     */
+    public static void setClipToBounds(final Pane pane) {
+        final Rectangle clip = new Rectangle();
+        clip.widthProperty() .bind(pane.widthProperty());
+        clip.heightProperty().bind(pane.heightProperty());
+        pane.setClip(clip);
     }
 
     /**

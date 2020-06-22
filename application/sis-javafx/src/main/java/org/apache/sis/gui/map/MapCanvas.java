@@ -38,7 +38,6 @@ import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.concurrent.Task;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 import org.opengis.geometry.Envelope;
@@ -61,6 +60,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
@@ -291,10 +291,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         view.setCursor(Cursor.CROSSHAIR);
         floatingPane = view;
         fixedPane = new StackPane(view);
-        final Rectangle clip = new Rectangle();
-        clip.widthProperty() .bind(fixedPane.widthProperty());
-        clip.heightProperty().bind(fixedPane.heightProperty());
-        fixedPane.setClip(clip);
+        GUIUtilities.setClipToBounds(fixedPane);
         isRendering = new ReadOnlyBooleanWrapper(this, "isRendering");
         error = new ReadOnlyObjectWrapper<>(this, "exception");
     }

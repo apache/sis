@@ -585,6 +585,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short ImageLayout = 103;
 
         /**
+         * Image size
+         */
+        public static final short ImageSize = 234;
+
+        /**
          * Implementation
          */
         public static final short Implementation = 104;
@@ -633,6 +638,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Latitude
          */
         public static final short Latitude = 112;
+
+        /**
+         * Layout
+         */
+        public static final short Layout = 235;
 
         /**
          * Legend
@@ -805,6 +815,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short NumberOfNaN = 145;
 
         /**
+         * Number of tiles
+         */
+        public static final short NumberOfTiles = 236;
+
+        /**
          * Number of values
          */
         public static final short NumberOfValues = 146;
@@ -890,6 +905,16 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Projected = 162;
 
         /**
+         * Properties
+         */
+        public static final short Properties = 237;
+
+        /**
+         * Property
+         */
+        public static final short Property = 238;
+
+        /**
          * Publication date
          */
         public static final short PublicationDate = 163;
@@ -973,11 +998,6 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Scale
          */
         public static final short Scale = 179;
-
-        /**
-         * Scientific notation
-         */
-        public static final short ScientificNotation = 234;
 
         /**
          * Simplified

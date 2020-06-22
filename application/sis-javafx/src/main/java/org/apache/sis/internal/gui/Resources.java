@@ -61,6 +61,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AllFiles = 1;
 
         /**
+         * Along {0}
+         */
+        public static final short Along_1 = 35;
+
+        /**
          * Can not close “{0}”. Data may be lost.
          */
         public static final short CanNotClose_1 = 2;
@@ -116,6 +121,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CopyAs = 12;
 
         /**
+         * Display start
+         */
+        public static final short DisplayStart = 38;
+
+        /**
+         * Displayed size
+         */
+        public static final short DisplayedSize = 41;
+
+        /**
          * Does not cover the area of interest.
          */
         public static final short DoesNotCoverAOI = 13;
@@ -166,6 +181,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short GeospatialFiles = 23;
 
         /**
+         * Image start
+         */
+        public static final short ImageStart = 36;
+
+        /**
+         * {0} – inconsistency in {1}
+         */
+        public static final short InconsistencyIn_2 = 39;
+
+        /**
          * Loading…
          */
         public static final short Loading = 24;
@@ -196,16 +221,6 @@ public final class Resources extends IndexedResourceBundle {
         public static final short OpenDataFile = 29;
 
         /**
-         * Positional errors
-         */
-        public static final short PositionalErrors = 35;
-
-        /**
-         * Predefined filters
-         */
-        public static final short PredefinedFilters = 36;
-
-        /**
          * Select a coordinate reference system
          */
         public static final short SelectCRS = 30;
@@ -216,6 +231,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short SendTo = 31;
 
         /**
+         * Size or position
+         */
+        public static final short SizeOrPosition = 40;
+
+        /**
          * Standard error stream
          */
         public static final short StandardErrorStream = 32;
@@ -224,6 +244,11 @@ public final class Resources extends IndexedResourceBundle {
          * Tabular data
          */
         public static final short TabularData = 33;
+
+        /**
+         * Tile index start
+         */
+        public static final short TileIndexStart = 37;
 
         /**
          * Visualize

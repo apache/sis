@@ -129,7 +129,7 @@ final class RenderingData implements Cloneable {
     /**
      * Key of the currently selected alternative in {@link CoverageCanvas#resampledImages} map.
      */
-    ImageDerivative selectedDerivative;
+    Stretching selectedDerivative;
 
     /**
      * Statistics on pixel values of current {@link #data}, or {@code null} if none or not yet computed.
@@ -148,7 +148,7 @@ final class RenderingData implements Cloneable {
      * @todo Listen to logging messages. We need to create a logging panel first.
      */
     RenderingData() {
-        selectedDerivative = ImageDerivative.NONE;
+        selectedDerivative = Stretching.NONE;
         processor = new ImageProcessor();
         processor.setErrorAction(ImageProcessor.ErrorAction.LOG);
     }
@@ -273,41 +273,18 @@ final class RenderingData implements Cloneable {
      * @return image with operation applied and color ramp stretched. May be the same instance than given image.
      */
     final RenderedImage filter(RenderedImage resampledImage, final Rectangle2D displayBounds) {
-        /*
-         * If the operation is not `NONE` but following call to `apply(…)` returns `resampledImage` unchanged,
-         * it means that the operation can not be applied on that image. We should reset operation to `NONE`,
-         * update UI by disabling operation and keep `StatusBarSupport.selectedProvider` to its default value.
-         * For now we avoid that complexity since we need to define a better coverage operation framework anyway.
-         */
-        resampledImage = selectedDerivative.operation.apply(resampledImage);
-        if (selectedDerivative.styling != Stretching.NONE) {
+        if (selectedDerivative != Stretching.NONE) {
             final Map<String,Object> modifiers = new HashMap<>(4);
             /*
-             * If no operation is applied, select the original image as the source of statistics.
-             * It saves computation time (no need to recompute the statistics when the projection
-             * is changed) and provides more stable visual output (color ramp computed from same
-             * standard deviation in "automatic" mode). If an operation is applied, the resulting
-             * image can be anything so we let `stretchColorRamp(…)` uses statistics on that image.
+             * Select the original image as the source of statistics. It saves computation time (no need
+             * to recompute the statistics when the projection is changed) and provides more stable visual
+             * output (color ramp computed from same standard deviation in "automatic" mode).
              */
-            if (selectedDerivative.operation == ImageOperation.NONE) {
-                if (statistics == null) {
-                    statistics = processor.getStatistics(data, null);
-                }
-                modifiers.put("statistics", statistics);
-            } else {
-                /*
-                 * If an operation is applied, compute statistics only for currently visible region.
-                 * This is necessary because zoomed images may be very large. This is usually not a
-                 * problem because only requested tiles are computed, but statistics requested without
-                 * bounds would cause all those tiles to be computed.
-                 *
-                 * Inconvenient is that visual appareance is not stable: the color ramp may change
-                 * after every zoom, or may not fit data anymore after a pan. Since we need to revisit
-                 * the coverage operation framework anyway, we live with that problem for now.
-                 */
-                modifiers.put("areaOfInterest", displayBounds.getBounds());
+            if (statistics == null) {
+                statistics = processor.getStatistics(data, null);
             }
-            if (selectedDerivative.styling == Stretching.AUTOMATIC) {
+            modifiers.put("statistics", statistics);
+            if (selectedDerivative == Stretching.AUTOMATIC) {
                 modifiers.put("MultStdDev", 3);
             }
             return processor.stretchColorRamp(resampledImage, modifiers);

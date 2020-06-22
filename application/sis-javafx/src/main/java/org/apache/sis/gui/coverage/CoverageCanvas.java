@@ -17,12 +17,13 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Map;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Locale;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
-import javafx.scene.control.ListView;
+import java.awt.geom.NoninvertibleTransformException;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Background;
@@ -43,16 +44,18 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.ImageRenderer;
 import org.apache.sis.internal.gui.ExceptionReporter;
+import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
-import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -108,22 +111,20 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * The {@link #data} resampled to a CRS which can easily be mapped to {@linkplain #getDisplayCRS() display CRS}.
-     * The different values are variants of the values associated to {@link ImageDerivative#NONE}, with color ramp
-     * changed or other operation applied.
+     * The different values are variants with color ramp changed.
      */
-    private final Map<ImageDerivative,RenderedImage> resampledImages;
+    private final Map<Stretching,RenderedImage> resampledImages;
 
     /**
-     * Helper methods for configuring the {@link StatusBar} when the user selects an operation.
-     * This is non-null only if this {@link CoverageCanvas} is used together with a status bar.
+     * The explorer to notify when the image shown in this canvas has changed.
+     * This is non-null only if this {@link CoverageCanvas} is used together with {@link CoverageControls}.
      *
-     * <p>Consider as final after {@link #initialize(StatusBar, ListView)} invocation.
-     * This field may be removed in a future version if we define a good public API
-     * for coverage operations in replacement of {@link ImageOperation}.</p>
+     * <p>Consider as final after {@link #createPropertyExplorer()} invocation.
+     * This field may be removed in a future version if we revisit this API before making public.</p>
      *
-     * @see #initialize(StatusBar, ListView)
+     * @see #createPropertyExplorer
      */
-    private StatusBarSupport statusBar;
+    private ImagePropertyExplorer imageProperty;
 
     /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
@@ -131,7 +132,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     public CoverageCanvas() {
         super(Locale.getDefault());
         data                  = new RenderingData();
-        resampledImages       = new HashMap<>();
+        resampledImages       = new EnumMap<>(Stretching.class);
         coverageProperty      = new SimpleObjectProperty<>(this, "coverage");
         sliceExtentProperty   = new SimpleObjectProperty<>(this, "sliceExtent");
         interpolationProperty = new SimpleObjectProperty<>(this, "interpolation", data.getInterpolation());
@@ -141,14 +142,15 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Completes initialization of this canvas for use with the given status bar.
-     * The intent is to be notified when an {@link ImageOperation} is applied on the coverage.
-     * We do not yet have a public API for managing the display of image operations in a canvas.
-     * This method may be removed in a future SIS version if we have a clear API for creating a
-     * new {@link GridCoverage} from the result of an image operation.
+     * Completes initialization of this canvas for use with the returned property explorer.
+     * The intent is to be notified when the image used for showing the coverage changed.
+     * This method may be removed in a future SIS version if we revisit this API before
+     * to make public.
      */
-    final void initialize(final StatusBar bar, final ListView<ImageOperation> operations) {
-        statusBar = new StatusBarSupport(bar, operations);
+    final ImagePropertyExplorer createPropertyExplorer() {
+        imageProperty = new ImagePropertyExplorer(getLocale(), fixedPane.backgroundProperty());
+        imageProperty.setImage(resampledImages.get(data.selectedDerivative), getVisibleImageBounds());
+        return imageProperty;
     }
 
     /**
@@ -396,6 +398,21 @@ public class CoverageCanvas extends MapCanvasAWT {
         }
 
         /**
+         * Returns the bounds of the image part which is currently shown. This method can be invoked
+         * only after {@link #render()}. It returns {@code null} if the visible bounds are unknown.
+         *
+         * @see CoverageCanvas#getVisibleImageBounds()
+         */
+        final Rectangle getVisibleImageBounds() {
+            try {
+                return (Rectangle) AffineTransforms2D.inverseTransform(resampledToDisplay, displayBounds, new Rectangle());
+            } catch (NoninvertibleTransformException e) {
+                unexpectedException(e);                     // Should never happen.
+            }
+            return null;
+        }
+
+        /**
          * Invoked in background thread for resampling the image or stretching the color ramp.
          * This method performs some of the steps documented in class Javadoc, with possibility
          * to skip the first step if the required source image is already resampled.
@@ -430,8 +447,8 @@ public class CoverageCanvas extends MapCanvasAWT {
         }
 
         /**
-         * Invoked in JavaFX thread after {@link #paint(Graphics2D)} completion. This method stores
-         * the computation results.
+         * Invoked in JavaFX thread after {@link #paint(Graphics2D)} completion.
+         * This method stores the computation results.
          */
         @Override
         protected boolean commit(final MapCanvas canvas) {
@@ -447,37 +464,40 @@ public class CoverageCanvas extends MapCanvasAWT {
     private void cacheRenderingData(final Worker worker) {
         data = worker.data;
         final RenderedImage newValue = worker.resampledImage;
-        final RenderedImage oldValue = resampledImages.put(ImageDerivative.NONE, newValue);
+        final RenderedImage oldValue = resampledImages.put(Stretching.NONE, newValue);
         if (oldValue != newValue && oldValue != null) {
             /*
              * If resampled image changed, then all derivative images (with stretched color ramp
              * or other operation applied) are not valid anymore. We need to empty the cache.
              */
             resampledImages.clear();
-            resampledImages.put(ImageDerivative.NONE, newValue);
+            resampledImages.put(Stretching.NONE, newValue);
         }
         resampledImages.put(data.selectedDerivative, worker.filteredImage);
         /*
-         * If an operation has been applied, we may need to update the object used for computing
-         * the sample values shown on the status bar.
+         * Notify the "Image properties" tab that the image changed.
          */
-        if (statusBar != null) {
-            statusBar.notifyImageShown(data.selectedDerivative.operation, worker.filteredImage);
+        if (imageProperty != null) {
+            imageProperty.setImage(worker.filteredImage, worker.getVisibleImageBounds());
         }
     }
 
     /**
-     * Invoked by {@link CoverageControls} when the user selected a new operation.
-     * Execution of an image operation may produce sample values very different than the original ones.
-     * This change may require to update {@link StatusBar#sampleValuesProvider} accordingly.
-     * This update is applied by {@link #cacheRenderingData(Worker)}.
+     * Returns the bounds of the image part which is currently shown. This method performs the same work
+     * than {@link Worker#getVisibleImageBounds()} is a less efficient way. It is used when no worker is
+     * available.
+     *
+     * @see Worker#getVisibleImageBounds()
      */
-    final void setOperation(final ImageOperation selection) {
-        final ImageDerivative sd = data.selectedDerivative;
-        data.selectedDerivative = sd.setOperation(selection);
-        if (data.selectedDerivative != sd) {
-            requestRepaint();
+    private Rectangle getVisibleImageBounds() {
+        final Envelope2D displayBounds = getDisplayBounds();
+        final AffineTransform resampledToDisplay = data.getTransform(getObjectiveToDisplay());
+        try {
+            return (Rectangle) AffineTransforms2D.inverseTransform(resampledToDisplay, displayBounds, new Rectangle());
+        } catch (NoninvertibleTransformException e) {
+            unexpectedException(e);                     // Should never happen.
         }
+        return null;
     }
 
     /**
@@ -485,9 +505,8 @@ public class CoverageCanvas extends MapCanvasAWT {
      * The sample values are assumed the same; only the image appearance is modified.
      */
     final void setStyling(final Stretching selection) {
-        final ImageDerivative sd = data.selectedDerivative;
-        data.selectedDerivative = sd.setStyling(selection);
-        if (data.selectedDerivative != sd) {
+        if (data.selectedDerivative != selection) {
+            data.selectedDerivative = selection;
             requestRepaint();
         }
     }
@@ -519,6 +538,13 @@ public class CoverageCanvas extends MapCanvasAWT {
             ExceptionReporter.show(null, i18n.getString(Resources.Keys.CanNotUseRefSys_1,
                                    IdentifiedObjects.getDisplayName(crs, locale)), e);
         }
+    }
+
+    /**
+     * Invoked when an exception occurred while computing a transform but the painting process can continue.
+     */
+    private static void unexpectedException(final Exception e) {
+        Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), CoverageCanvas.class, "render", e);
     }
 
     /**
