@@ -203,6 +203,14 @@
               </compilerArgs>
             </configuration>
           </plugin>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <argLine>
+                --module-path ${env.PATH_TO_FX} --add-modules javafx.graphics,javafx.controls
+              </argLine>
+            </configuration>
+          </plugin>
         </plugins>
       </build>
     </profile>
