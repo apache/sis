@@ -62,8 +62,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * Different subtypes are defined for different data sources such as {@link GridCoverage}.
  * When the mouse cursor moves, {@link #evaluate(DirectPosition)} is invoked with the same
  * "real world" coordinates than the ones shown in the status bar.
- * If that method can not provide sample values, then {@link #evaluateAtPixel(double, double)}
- * is invoked as a fallback with pixel coordinates relative to the canvas.
  *
  * <h2>Multi-threading</h2>
  * Instances of {@code ValueUnderCursor} do not need to be thread-safe.
@@ -126,19 +124,6 @@ public abstract class ValuesUnderCursor {
      * @return string representation of data under given position, or {@code null} if none.
      */
     public abstract String evaluate(final DirectPosition point);
-
-    /**
-     * Returns a string representation of data under given pixel coordinates in the canvas.
-     * This method is invoked as a fallback if {@link #evaluate(DirectPosition)} returned {@code null}.
-     * Coordinates (0,0) are located in the upper-left canvas corner.
-     *
-     * @param  x  0-based column index in the canvas. May be negative for coordinates out of bounds.
-     * @param  y  0-based row index in the canvas. May be negative for coordinates out of bounds.
-     * @return string representation of data under given pixel, or {@code null} if none.
-     */
-    public String evaluateAtPixel(double x, double y) {
-        return null;
-    }
 
     /**
      * Invoked when a new source of values is known for computing the expected size.

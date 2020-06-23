@@ -1056,10 +1056,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             if (isSampleValuesVisible) {
                 text = null;
                 if (success) {
-                    final ValuesUnderCursor sp = sampleValuesProvider.get();
-                    if ((text = sp.evaluate(targetCoordinates)) == null) {
-                        text = sp.evaluateAtPixel(x, y);
-                    }
+                    text = sampleValuesProvider.get().evaluate(targetCoordinates);
                 }
                 sampleValues.setText(text);
             }
