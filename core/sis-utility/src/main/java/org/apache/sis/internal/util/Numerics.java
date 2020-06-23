@@ -26,6 +26,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Statistics;
 
 import static java.lang.Math.min;
@@ -610,13 +611,19 @@ public final class Numerics extends Static {
      */
     @Workaround(library="JDK", version="10")
     public static String useScientificNotationIfNeeded(final Format format, final Object value, final BiFunction<Format,Object,String> action) {
-        if (value instanceof Number) {
+        if (value instanceof Number && format instanceof DecimalFormat) {
+            final DecimalFormat df = (DecimalFormat) format;
+            final int maxFD = df.getMaximumFractionDigits();
             final double m = abs(((Number) value).doubleValue());
-            if (m > 0 && (m >= 1E+9 || m < 1E-4) && format instanceof DecimalFormat) {
-                final DecimalFormat df = (DecimalFormat) format;
+            if (m > 0 && (m >= 1E+9 || m < MathFunctions.pow10(-Math.min(maxFD, 6)))) {
+                final int minFD = df.getMinimumFractionDigits();
                 final String pattern = df.toPattern();
-                df.applyPattern("0.######E00");
                 try {
+                    df.applyPattern("0.######E00");
+                    if (maxFD > 0) {
+                        df.setMinimumFractionDigits(minFD);
+                        df.setMaximumFractionDigits(maxFD);
+                    }
                     return action.apply(format, value);
                 } finally {
                     df.applyPattern(pattern);
