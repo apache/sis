@@ -36,6 +36,7 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -88,7 +89,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * computation failed for some tiles, that computation will be redone again for the same property
      * every time it is requested, until it eventually fully succeeds and the result become cached.</p>
      */
-    private static final WeakHashMap<RenderedImage, Cache<String,Object>> CACHE = new WeakHashMap<>();
+    private static final WeakHashMap<RenderedImage, Cache<Object,Object>> CACHE = new WeakHashMap<>();
 
     /**
      * Cache of property values computed for the {@linkplain #source} image. This is an entry from the
@@ -98,8 +99,47 @@ abstract class AnnotatedImage extends ImageAdapter {
      *
      * <p>Note that {@code null} is a valid result. Since {@link Cache} can not store null values,
      * those results are replaced by {@link #NULL}.</p>
+     *
+     * <p>Keys are {@link String} instances containing directly the property name when {@link #areaOfInterest}
+     * is {@code null}, or {@link CacheKey} instances otherwise.</p>
      */
-    private final Cache<String,Object> cache;
+    private final Cache<Object,Object> cache;
+
+    /**
+     * Keys in the {@link AnnotatedImage#cache} when {@link AnnotatedImage#areaOfInterest} is non-null.
+     */
+    private static final class CacheKey {
+        /** The property name (never null). */
+        private final String property;
+
+        /** The area of interest (never null). */
+        private final Shape areaOfInterest;
+
+        /** Creates a new key for the given property and AOI. */
+        CacheKey(final String property, final Shape areaOfInterest) {
+            this.property       = property;
+            this.areaOfInterest = areaOfInterest;
+        }
+
+        /** Returns a hash code value for this key. */
+        @Override public int hashCode() {
+            return property.hashCode() + 19 * areaOfInterest.hashCode();
+        }
+
+        /** Compares this key with the given object for equality. */
+        @Override public boolean equals(final Object obj) {
+            if (obj instanceof CacheKey) {
+                final CacheKey other = (CacheKey) obj;
+                return property.equals(other.property) && areaOfInterest.equals(areaOfInterest);
+            }
+            return false;
+        }
+
+        /** Returns a string representation of this key for debugging purpose. */
+        @Override public String toString() {
+            return Strings.toString(getClass(), "property", property, "areaOfInterest", areaOfInterest);
+        }
+    }
 
     /**
      * Pixel coordinates of the region for which to compute the values, or {@code null} for the whole image.
@@ -177,8 +217,17 @@ abstract class AnnotatedImage extends ImageAdapter {
             source = ((ImageAdapter) source).source;
         }
         synchronized (CACHE) {
-            cache = CACHE.computeIfAbsent(source, (k) -> new Cache<>(8, 1000, true));
+            cache = CACHE.computeIfAbsent(source, (k) -> new Cache<>(8, 200, false));
         }
+    }
+
+    /**
+     * Returns the key to use for entries in the {@link #cache} map.
+     *
+     * @param  property  value of {@link #getPropertyNames()}.
+     */
+    private Object getCacheKey(final String property) {
+        return (areaOfInterest != null) ? new CacheKey(property, areaOfInterest) : property;
     }
 
     /**
@@ -232,13 +281,14 @@ abstract class AnnotatedImage extends ImageAdapter {
     @Override
     public final Object getProperty(final String name) {
         Object value;
-        final String key = getComputedPropertyName();
-        if (key.equals(name)) {
+        final String property = getComputedPropertyName();
+        if (property.equals(name)) {
             /*
              * Get the previously computed value. Note that the value may have been computed by another
              * `AnnotatedImage` instance of the same class wrapping the same image, which is why we do
              * not store the result in this class.
              */
+            final Object key = getCacheKey(property);
             value = cache.peek(key);
             if (value == null) try {
                 boolean success = false;
@@ -254,7 +304,7 @@ abstract class AnnotatedImage extends ImageAdapter {
                     handler.putAndUnlock(success ? value : null);       // Cache only if no error occurred.
                 }
                 if (value == NULL) value = null;
-                else value = cloneProperty(key, value);
+                else value = cloneProperty(property, value);
             } catch (Exception e) {
                 /*
                  * Stores the given exception in a log record. We use a log record in order to initialize
@@ -262,20 +312,20 @@ abstract class AnnotatedImage extends ImageAdapter {
                  */
                 if (failOnException) {
                     throw (ImagingOpException) new ImagingOpException(
-                            Errors.format(Errors.Keys.CanNotCompute_1, key)).initCause(e);
+                            Errors.format(Errors.Keys.CanNotCompute_1, property)).initCause(e);
                 }
                 synchronized (this) {
                     LogRecord record = errors;
                     if (record != null) {
                         record.getThrown().addSuppressed(e);
                     } else {
-                        record = Errors.getResources((Locale) null).getLogRecord(Level.WARNING, Errors.Keys.CanNotCompute_1, key);
+                        record = Errors.getResources((Locale) null).getLogRecord(Level.WARNING, Errors.Keys.CanNotCompute_1, property);
                         record.setThrown(e);
                         setError(record);
                     }
                 }
             }
-        } else if (isErrorProperty(key, name)) {
+        } else if (isErrorProperty(property, name)) {
             value = errors;
         } else {
             value = source.getProperty(name);
@@ -426,11 +476,11 @@ abstract class AnnotatedImage extends ImageAdapter {
      */
     @Override
     final Class<AnnotatedImage> appendStringContent(final StringBuilder buffer) {
-        final String key = getComputedPropertyName();
-        if (cache.containsKey(key)) {
+        final String property = getComputedPropertyName();
+        if (cache.containsKey(getCacheKey(property))) {
             buffer.append("Cached ");
         }
-        buffer.append('"').append(key).append('"');
+        buffer.append('"').append(property).append('"');
         return AnnotatedImage.class;
     }
 
