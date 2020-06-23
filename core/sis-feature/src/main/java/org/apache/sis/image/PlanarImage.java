@@ -130,7 +130,7 @@ public abstract class PlanarImage implements RenderedImage {
      * This information can be used for choosing the number of fraction digits to show when writing sample values
      * in text format.
      *
-     * <p>Values should be instances of {@code float[]} or {@code double[]}.
+     * <p>Values should be instances of {@code double[]}.
      * The array length should be the number of bands. This property may be computed automatically during
      * {@linkplain org.apache.sis.coverage.grid.GridCoverage#forConvertedValues(boolean) conversions from
      * integer values to floating point values}.</p>

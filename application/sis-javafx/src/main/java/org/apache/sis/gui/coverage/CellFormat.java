@@ -269,8 +269,7 @@ final class CellFormat extends SimpleStringProperty {
     private static OptionalInt getFractionDigits(final RenderedImage image, final int band) {
         final Object property = image.getProperty(PlanarImage.SAMPLE_RESOLUTIONS_KEY);
         if (property != null) {
-            final int c = Numbers.getEnumConstant(property.getClass().getComponentType());
-            if (c >= Numbers.BYTE && c <= Numbers.BIG_DECIMAL && band < Array.getLength(property)) {
+            if (Numbers.isNumber(property.getClass().getComponentType()) && band < Array.getLength(property)) {
                 final double resolution = Math.abs(((Number) Array.get(property, band)).doubleValue());
                 if (resolution > 0 && resolution <= Double.MAX_VALUE) {     // Non-zero, non-NaN and finite.
                     return OptionalInt.of(DecimalFunctions.fractionDigitsForDelta(resolution, false));

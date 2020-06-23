@@ -106,11 +106,7 @@ final class PositionalConsistencyImage extends ComputedImage {
     @Override
     public Object getProperty(final String key) {
         if (SAMPLE_RESOLUTIONS_KEY.equals(key)) {
-            /*
-             * Division by 8 is an arbitrary value for having one more digit
-             * and keep a number having an exact representation in base 2.
-             */
-            return new float[] {(float) (ResamplingGrid.TOLERANCE / 8)};
+            return new double[] {ResamplingGrid.TOLERANCE / 8};
         } else {
             return super.getProperty(key);
         }
