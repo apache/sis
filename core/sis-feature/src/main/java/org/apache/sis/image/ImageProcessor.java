@@ -530,7 +530,7 @@ public class ImageProcessor implements Cloneable {
      *     <th>Purpose</th>
      *     <th>Values</th>
      *   </tr><tr>
-     *     <td>{@code "MultStdDev"}</td>
+     *     <td>{@code "multStdDev"}</td>
      *     <td>Multiple of the standard deviation.</td>
      *     <td>{@link Number} (typical values: 1.5, 2 or 3)</td>
      *   </tr><tr>

@@ -117,10 +117,10 @@ final class RecoloredImage extends ImageAdapter {
         Statistics    statistics    = null;
         double        deviations    = Double.POSITIVE_INFINITY;
         if (modifiers != null) {
-            Object value = modifiers.get("MultStdDev");
+            Object value = modifiers.get("multStdDev");
             if (value instanceof Number) {
                 deviations = ((Number) value).doubleValue();
-                ArgumentChecks.ensureStrictlyPositive("MultStdDev", deviations);
+                ArgumentChecks.ensureStrictlyPositive("multStdDev", deviations);
             }
             value = modifiers.get("statistics");
             if (value instanceof RenderedImage) {

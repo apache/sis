@@ -285,7 +285,7 @@ final class RenderingData implements Cloneable {
             }
             modifiers.put("statistics", statistics);
             if (selectedDerivative == Stretching.AUTOMATIC) {
-                modifiers.put("MultStdDev", 3);
+                modifiers.put("multStdDev", 3);
             }
             return processor.stretchColorRamp(resampledImage, modifiers);
         }

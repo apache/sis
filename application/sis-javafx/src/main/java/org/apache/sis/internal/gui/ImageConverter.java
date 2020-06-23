@@ -111,7 +111,7 @@ final class ImageConverter extends Task<Statistics[]> {
 
         final ImageProcessor processor  = new ImageProcessor();
         final Statistics[]   statistics = processor.getStatistics(source, bounds);
-        final RenderedImage  image      = processor.stretchColorRamp(source, JDK9.mapOf("MultStdDev", 3, "statistics", statistics));
+        final RenderedImage  image      = processor.stretchColorRamp(source, JDK9.mapOf("multStdDev", 3, "statistics", statistics));
         final BufferedImage  buffer     = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
         final Graphics2D     graphics   = buffer.createGraphics();
         try {
