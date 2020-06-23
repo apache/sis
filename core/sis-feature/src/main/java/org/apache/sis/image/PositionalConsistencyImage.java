@@ -30,14 +30,14 @@ import org.apache.sis.util.Workaround;
 
 /**
  * Estimation of positional error for each pixel in an image computed by {@link ResampledImage}.
- * This is the implementation of {@link ResampledImage#POSITIONAL_ERRORS_KEY} property value.
+ * This is the implementation of {@link ResampledImage#POSITIONAL_CONSISTENCY_KEY} property value.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-final class PositionalErrorImage extends ComputedImage {
+final class PositionalConsistencyImage extends ComputedImage {
     /**
      * The color model for this image.
      * Arbitrarily configured for an error range from 0 to 1.
@@ -66,7 +66,7 @@ final class PositionalErrorImage extends ComputedImage {
     /**
      * Creates a new instance for the given image.
      */
-    PositionalErrorImage(final ResampledImage image, final MathTransform toSource) throws TransformException {
+    PositionalConsistencyImage(final ResampledImage image, final MathTransform toSource) throws TransformException {
         super(createSampleModel(image.getSampleModel()), image);
         this.toSource = toSource;
         this.toTarget = image.toSource.inverse();

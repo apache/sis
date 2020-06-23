@@ -86,7 +86,7 @@ public class ResampledImage extends ComputedImage {
 
     /**
      * Key of a property providing an estimation of positional error for each pixel.
-     * Values should be instances of {@link RenderedImage} with same size and origin than this image.
+     * Values shall be instances of {@link RenderedImage} with same size and origin than this image.
      * The image should contain a single band where all sample values are error estimations in pixel units
      * (relative to pixels of this image). The value should be small, for example between 0 and 0.2.
      *
@@ -94,7 +94,7 @@ public class ResampledImage extends ComputedImage {
      * then convert them back to pixel coordinates in this image. The result is compared with expected
      * coordinates and the distance is stored in the image.</p>
      */
-    public static final String POSITIONAL_ERRORS_KEY = "org.apache.sis.PositionalErrors";
+    public static final String POSITIONAL_CONSISTENCY_KEY = "org.apache.sis.PositionalConsistency";
 
     /**
      * The {@value} value for identifying code expecting exactly 2 dimensions.
@@ -142,12 +142,12 @@ public class ResampledImage extends ComputedImage {
     private final Object fillValues;
 
     /**
-     * {@link #POSITIONAL_ERRORS_KEY} value, computed when first requested.
+     * {@link #POSITIONAL_CONSISTENCY_KEY} value, computed when first requested.
      *
-     * @see #getPositionalErrors()
+     * @see #getPositionalConsistency()
      * @see #getProperty(String)
      */
-    private Reference<ComputedImage> positionalErrors;
+    private Reference<ComputedImage> positionalConsistency;
 
     /**
      * Creates a new image which will resample the given image. The resampling operation is defined
@@ -287,21 +287,21 @@ public class ResampledImage extends ComputedImage {
     }
 
     /**
-     * Computes the {@value #POSITIONAL_ERRORS_KEY} value. This method is invoked by {@link #getProperty(String)}
-     * when the {@link #POSITIONAL_ERRORS_KEY} property value is requested. The result is saved by weak reference
+     * Computes the {@value #POSITIONAL_CONSISTENCY_KEY} value. This method is invoked by {@link #getProperty(String)}
+     * when the {@link #POSITIONAL_CONSISTENCY_KEY} property value is requested. The result is saved by weak reference
      * since recomputing this image is rarely requested, and if needed can be recomputed easily.
      */
-    private synchronized RenderedImage getPositionalErrors() throws TransformException {
-        ComputedImage image = (positionalErrors != null) ? positionalErrors.get() : null;
+    private synchronized RenderedImage getPositionalConsistency() throws TransformException {
+        ComputedImage image = (positionalConsistency != null) ? positionalConsistency.get() : null;
         if (image == null) {
-            positionalErrors = null;
+            positionalConsistency = null;
             final Dimension s = interpolation.getSupportSize();
             final double[] offset = new double[toSource.getSourceDimensions()];
             offset[0] = -interpolationSupportOffset(s.width);
             offset[1] = -interpolationSupportOffset(s.height);
             final MathTransform tr = MathTransforms.concatenate(toSource, MathTransforms.translation(offset));
-            image = new PositionalErrorImage(this, tr);
-            positionalErrors = image.reference();
+            image = new PositionalConsistencyImage(this, tr);
+            positionalConsistency = image.reference();
         }
         return image;
     }
@@ -364,7 +364,7 @@ public class ResampledImage extends ComputedImage {
      * (more properties may be added to this list in future Apache SIS versions):
      *
      * <ul>
-     *   <li>{@value #POSITIONAL_ERRORS_KEY}</li>
+     *   <li>{@value #POSITIONAL_CONSISTENCY_KEY}</li>
      *   <li>{@value #SAMPLE_RESOLUTIONS_KEY} (forwarded to the source image)</li>
      * </ul>
      *
@@ -378,8 +378,8 @@ public class ResampledImage extends ComputedImage {
     public Object getProperty(final String key) {
         if (FILTERED_PROPERTIES.contains(key)) {
             return getSource().getProperty(key);
-        } else if (POSITIONAL_ERRORS_KEY.equals(key)) try {
-            return getPositionalErrors();
+        } else if (POSITIONAL_CONSISTENCY_KEY.equals(key)) try {
+            return getPositionalConsistency();
         } catch (TransformException | IllegalArgumentException e) {
             throw (ImagingOpException) new ImagingOpException(e.getMessage()).initCause(e);
         }
@@ -405,10 +405,10 @@ public class ResampledImage extends ComputedImage {
             }
         }
         if (n < names.length) {
-            names[n++] = POSITIONAL_ERRORS_KEY;
+            names[n++] = POSITIONAL_CONSISTENCY_KEY;
             return ArraysExt.resize(names, n);
         } else {
-            return ArraysExt.append(names, POSITIONAL_ERRORS_KEY);
+            return ArraysExt.append(names, POSITIONAL_CONSISTENCY_KEY);
         }
     }
 
