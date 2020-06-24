@@ -33,6 +33,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WritableValue;
 import javafx.concurrent.Task;
+import javax.measure.Quantity;
+import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.util.FactoryException;
@@ -53,9 +55,12 @@ import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
+import org.apache.sis.gui.map.StatusBar;
+import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -122,9 +127,15 @@ public class CoverageCanvas extends MapCanvasAWT {
      * <p>Consider as final after {@link #createPropertyExplorer()} invocation.
      * This field may be removed in a future version if we revisit this API before making public.</p>
      *
-     * @see #createPropertyExplorer
+     * @see #createPropertyExplorer()
      */
     private ImagePropertyExplorer imageProperty;
+
+    /**
+     * The status bar associated to this {@code MapCanvas}.
+     * This is non-null only if this {@link CoverageCanvas} is used together with {@link CoverageControls}.
+     */
+    StatusBar statusBar;
 
     /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
@@ -479,6 +490,21 @@ public class CoverageCanvas extends MapCanvasAWT {
          */
         if (imageProperty != null) {
             imageProperty.setImage(worker.filteredImage, worker.getVisibleImageBounds());
+        }
+        if (statusBar != null) {
+            final Object value = worker.filteredImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY);
+            Quantity<Length> accuracy = null;
+            if (value instanceof Quantity<?>[]) {
+                for (final Quantity<?> q : (Quantity<?>[]) value) {
+                    if (Units.isLinear(q.getUnit())) {
+                        accuracy = q.asType(Length.class);
+                        accuracy = GUIUtilities.shorter(accuracy, accuracy.getUnit().getConverterTo(Units.METRE)
+                                                                    .convert(accuracy.getValue().doubleValue()));
+                        break;
+                    }
+                }
+            }
+            statusBar.setLowestAccuracy(accuracy);
         }
     }
 

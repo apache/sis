@@ -48,6 +48,7 @@ import javafx.beans.property.ReadOnlyObjectPropertyBase;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -77,9 +78,9 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
-import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
+import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.referencing.CRS;
@@ -299,6 +300,14 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private double[] inflatePrecisions;
 
     /**
+     * The declared accuracy on ground, or {@code null} if unspecified.
+     *
+     * @see #getLowestAccuracy()
+     * @see #setLowestAccuracy(Quantity)
+     */
+    private Quantity<Length> lowestAccuracy;
+
+    /**
      * The object to use for formatting coordinate values.
      */
     private final CoordinateFormat format;
@@ -323,7 +332,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * The {@link #position} text to show when the mouse is outside the canvas area.
      * This text is set to the axis abbreviations, for example "(φ, λ)".
      *
-     * @see #setFormatCRS(CoordinateReferenceSystem, Length)
+     * @see #setFormatCRS(CoordinateReferenceSystem, Quantity)
      */
     private String outsideText;
 
@@ -733,7 +742,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                  * The accuracy to show on the status bar, or {@code null} if none.
                  * This is computed after {@link CoordinateOperation} has been determined.
                  */
-                private Length accuracy;
+                private Quantity<Length> accuracy;
 
                 /**
                  * Invoked in a background thread for fetching transformation to target CRS.
@@ -743,12 +752,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                     final MathTransform value = super.call();
                     double a = CRS.getLinearAccuracy(getOperation());
                     if (a > 0) {
-                        final Unit<Length> unit;
-                        if      (a < 1)    unit = Units.CENTIMETRE;
-                        else if (a < 1000) unit = Units.METRE;
-                        else               unit = Units.KILOMETRE;
-                        a = Units.METRE.getConverterTo(unit).convert(Math.max(a, Formulas.LINEAR_TOLERANCE));
-                        accuracy = Quantities.create(a, unit);
+                        accuracy = GUIUtilities.shorter(null, a);
                     }
                     return value;
                 }
@@ -806,7 +810,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @param  finder    the completed task with the new {@link #objectiveToPositionCRS}.
      * @param  accuracy  the accuracy to show on the status bar, or {@code null} if none.
      */
-    private void setPositionCRS(final OperationFinder finder, final Length accuracy) {
+    private void setPositionCRS(final OperationFinder finder, final Quantity<Length> accuracy) {
         setErrorMessage(null, null);
         setFormatCRS(finder.getTargetCRS(), accuracy);
         objectiveToPositionCRS = finder.getValue();
@@ -836,9 +840,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *
      * @see #positionReferenceSystem
      */
-    private void setFormatCRS(final CoordinateReferenceSystem crs, final Length accuracy) {
+    private void setFormatCRS(final CoordinateReferenceSystem crs, final Quantity<Length> accuracy) {
         format.setDefaultCRS(crs);
-        format.setGroundAccuracy(accuracy);
+        format.setGroundAccuracy(Quantities.max(accuracy, lowestAccuracy));
         String text = IdentifiedObjects.getDisplayName(crs, getLocale());
         Tooltip tp = null;
         if (text != null) {
@@ -957,6 +961,32 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             throw new MismatchedDimensionException(Errors.format(
                     Errors.Keys.MismatchedDimension_3, "newValue", expected, actual));
         }
+    }
+
+    /**
+     * Returns the lowest value appended as "± <var>accuracy</var>" after the coordinate values.
+     * This is the last value specified to {@link #setLowestAccuracy(Quantity)}.
+     *
+     * @return the lowest accuracy to append after the coordinate values, or {@code null} if none.
+     *
+     * @see CoordinateFormat#getGroundAccuracy()
+     */
+    public Quantity<Length> getLowestAccuracy() {
+        return lowestAccuracy;
+    }
+
+    /**
+     * Specifies an uncertainty to append as "± <var>accuracy</var>" after the coordinate values.
+     * If user has selected (e.g. by contextual menu) a CRS causing the use of a coordinate transformation,
+     * then the accuracy actually shown by {@code StatusBar} will be the greatest value between the accuracy
+     * specified to this method and the coordinate transformation accuracy.
+     *
+     * @param  accuracy  the lowest accuracy to append after the coordinate values, or {@code null} if none.
+     *
+     * @see CoordinateFormat#setGroundAccuracy(Quantity)
+     */
+    public void setLowestAccuracy(final Quantity<Length> accuracy) {
+        lowestAccuracy = accuracy;
     }
 
     /**

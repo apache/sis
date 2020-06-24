@@ -18,6 +18,8 @@ package org.apache.sis.internal.gui;
 
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Collection;
+import java.lang.reflect.Array;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -32,6 +34,7 @@ import javafx.concurrent.Task;
 import javafx.scene.Node;
 import javafx.scene.text.Font;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
@@ -72,6 +75,12 @@ public final class PropertyView extends CompoundFormat<Object> {
      * This is built only when first needed.
      */
     private TextArea textView;
+
+    /**
+     * Shows the {@linkplain #value} as a list.
+     * This is built only when first needed.
+     */
+    private ListView<String> listView;
 
     /**
      * Shows the {@linkplain #value} as an image.
@@ -207,6 +216,10 @@ public final class PropertyView extends CompoundFormat<Object> {
                 content = setImage((RenderedImage) newValue);
             } else if (newValue instanceof Throwable) {
                 content = setText((Throwable) newValue);
+            } else if (newValue instanceof Collection<?>) {
+                content = setList(((Collection<?>) newValue).toArray());
+            } else if (newValue.getClass().isArray()) {
+                content = setList(newValue);
             } else {
                 content = setText(formatValue(newValue));
             }
@@ -237,6 +250,23 @@ public final class PropertyView extends CompoundFormat<Object> {
         final StringWriter out = new StringWriter();
         ex.printStackTrace(new PrintWriter(out));
         return setText(out.toString());
+    }
+
+    /**
+     * Sets the property value to the given array.
+     */
+    private Node setList(final Object array) {
+        ListView<String> node = listView;
+        if (node == null) {
+            node = new ListView<>();
+            listView = node;
+        }
+        final String[] list = new String[Array.getLength(array)];
+        for (int i=0; i<list.length; i++) {
+            list[i] = formatValue(Array.get(array, i));
+        }
+        listView.getItems().setAll(list);
+        return node;
     }
 
     /**

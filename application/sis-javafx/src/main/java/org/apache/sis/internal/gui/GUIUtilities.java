@@ -29,6 +29,12 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.layout.Pane;
 import javafx.stage.Window;
+import javax.measure.Unit;
+import javax.measure.Quantity;
+import javax.measure.quantity.Length;
+import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
 
 
@@ -269,5 +275,28 @@ public final class GUIUtilities extends Static {
         lcs.addAll(0, prefix);
         lcs.addAll(   suffix);
         return lcs;
+    }
+
+    /**
+     * Modify the quantity unit for showing a smaller value.
+     *
+     * @param  quantity  the quantity to modify, or {@code null}.
+     * @param  m         the quantity value in metres.
+     * @return the simplified quantity.
+     */
+    public static Quantity<Length> shorter(final Quantity<Length> quantity, double m) {
+        final Unit<Length> unit;
+        if (m < 1) {
+            unit = Units.CENTIMETRE;
+        } else if (m < 1000) {
+            unit = Units.METRE;
+        } else {
+            unit = Units.KILOMETRE;
+        }
+        if (quantity != null && unit.equals(quantity.getUnit())) {
+            return quantity;
+        }
+        m = Units.METRE.getConverterTo(unit).convert(Math.max(m, Formulas.LINEAR_TOLERANCE));
+        return Quantities.create(m, unit);
     }
 }
