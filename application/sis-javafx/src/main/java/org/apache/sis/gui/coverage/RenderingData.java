@@ -36,12 +36,13 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
-import org.apache.sis.image.Interpolation;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.PreferredSize;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -140,7 +141,7 @@ final class RenderingData implements Cloneable {
     /**
      * The processor that we use for resampling image and stretching their color ramps.
      */
-    private ImageProcessor processor;
+    final ImageProcessor processor;
 
     /**
      * Creates a new instance initialized to no image.
@@ -196,25 +197,6 @@ final class RenderingData implements Cloneable {
     }
 
     /**
-     * Gets the interpolation method to use during resample operations.
-     *
-     * @see CoverageCanvas#getInterpolation()
-     */
-    final Interpolation getInterpolation() {
-        return processor.getInterpolation();
-    }
-
-    /**
-     * Sets the interpolation method to use during resample operations.
-     *
-     * @see CoverageCanvas#setInterpolation(Interpolation)
-     */
-    final void setInterpolation(final Interpolation newValue) {
-        processor = processor.clone();          // Previous processor may be in use by background thread.
-        processor.setInterpolation(newValue);
-    }
-
-    /**
      * Creates the resampled image. This method will compute the {@link MathTransform} steps from image
      * coordinate system to display coordinate system if those steps have not already been computed.
      */
@@ -232,6 +214,9 @@ final class RenderingData implements Cloneable {
             }
             try {
                 changeOfCRS = CRS.findOperation(dataGeometry.getCoordinateReferenceSystem(), objectiveCRS, areaOfInterest);
+                final double accuracy = CRS.getLinearAccuracy(changeOfCRS);
+                processor.setPositionalAccuracyHints(
+                        (accuracy > 0) ? Quantities.create(accuracy, Units.METRE) : null);
             } catch (FactoryException e) {
                 recoverableException(e);
                 // Leave `changeOfCRS` to null.
@@ -266,7 +251,8 @@ final class RenderingData implements Cloneable {
     }
 
     /**
-     * Applies the image operation (if any) on the given resampled image, than stretches the color ramp.
+     * Applies image operation on the given resampled image.
+     * In current implementation, the only operations are stretching the color ramp.
      *
      * @param  resampledImage  the image computed by {@link #resample(CoordinateReferenceSystem, LinearTransform)}.
      * @param  displayBounds   size and location of the display device, in pixel units.

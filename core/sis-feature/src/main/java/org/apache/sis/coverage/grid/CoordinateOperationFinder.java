@@ -18,6 +18,8 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import java.util.function.Supplier;
+import javax.measure.Quantity;
+import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.PixelInCell;
@@ -29,6 +31,10 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
@@ -198,5 +204,26 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
             }
         }
         return coordinates;
+    }
+
+    /**
+     * Configures the accuracy hints on the given processor.
+     */
+    final void setAccuracy(final ImageProcessor processor) {
+        final double accuracy = CRS.getLinearAccuracy(operation);
+        if (accuracy > 0) {
+            Length qm = Quantities.create(accuracy, Units.METRE);
+            Quantity<?>[] hints = processor.getPositionalAccuracyHints();       // Array is already a copy.
+            for (int i=0; i<hints.length; i++) {
+                if (Units.isLinear(hints[i].getUnit())) {
+                    hints[i] = qm;
+                    qm = null;
+                }
+            }
+            if (qm != null) {
+                hints = ArraysExt.append(hints, qm);
+            }
+            processor.setPositionalAccuracyHints(hints);                        // Null elements will be ignored.
+        }
     }
 }

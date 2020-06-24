@@ -199,6 +199,24 @@ public final class Numbers extends Static {
     }
 
     /**
+     * Returns {@code true} if the given number is NaN.
+     * Current implementation recognizes {@link Float} and {@link Double} types.
+     *
+     * @param  value  the number to test (may be {@code null}).
+     * @return {@code true} if the given number if non-null and NaN.
+     *
+     * @see Float#isNaN()
+     * @see Double#isNaN()
+     *
+     * @since 1.1
+     */
+    public static boolean isNaN(final Number value) {
+        if (value instanceof Double) return ((Double) value).isNaN();
+        if (value instanceof Float)  return ((Float)  value).isNaN();
+        return false;
+    }
+
+    /**
      * Returns the number of bits used by primitive of the specified type.
      * The given type must be a primitive type or its wrapper class.
      *

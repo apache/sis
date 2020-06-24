@@ -124,6 +124,23 @@ public abstract class PlanarImage implements RenderedImage {
     public static final String GRID_GEOMETRY_KEY = "org.apache.sis.GridGeometry";
 
     /**
+     * Estimation of positional accuracy, typically in metres or pixel units. Pixel positions may have limited accuracy
+     * in they are computed by {@linkplain org.opengis.referencing.operation.Transformation coordinate transformations}.
+     * The position may also be inaccurate because of approximation applied for faster rendering.
+     *
+     * <p>Values should be instances of <code>{@link javax.measure.Quantity[]}</code>. The array length
+     * is typically 1 or 2. If accuracy is limited by a coordinate transformation, then the array should contain an
+     * {@linkplain org.apache.sis.referencing.CRS#getLinearAccuracy accuracy expressed in a linear unit} such as meter.
+     * If accuracy is limited by an {@linkplain ImageProcessor#setPositionalAccuracyHints approximation applied during
+     * resampling operation}, then the array should contain an accuracy expressed in
+     * {@linkplain org.apache.sis.measure.Units#PIXEL pixel units}.</p>
+     *
+     * @see ResampledImage#POSITIONAL_CONSISTENCY_KEY
+     * @see org.opengis.referencing.operation.Transformation#getCoordinateOperationAccuracy()
+     */
+    public static final String POSITIONAL_ACCURACY_KEY = "org.apache.sis.PositionalAccuracy";
+
+    /**
      * Key of a property defining the resolutions of sample values in each band. This property is recommended
      * for images having sample values as floating point numbers. For example if sample values were computed by
      * <var>value</var> = <var>integer</var> × <var>scale factor</var>, then the resolution is the scale factor.
@@ -188,6 +205,9 @@ public abstract class PlanarImage implements RenderedImage {
      *     <td>{@value #GRID_GEOMETRY_KEY}</td>
      *     <td>Conversion from pixel coordinates to "real world" coordinates.</td>
      *   </tr><tr>
+     *     <td>{@value #POSITIONAL_ACCURACY_KEY}</td>
+     *     <td>Estimation of positional accuracy, typically in metres or pixel units.</td>
+     *   </tr><tr>
      *     <td>{@value #SAMPLE_RESOLUTIONS_KEY}</td>
      *     <td>Resolutions of sample values in each band.</td>
      *   </tr><tr>
@@ -210,6 +230,7 @@ public abstract class PlanarImage implements RenderedImage {
      */
     @Override
     public Object getProperty(String key) {
+        ArgumentChecks.ensureNonNull("key", key);
         return Image.UndefinedProperty;
     }
 

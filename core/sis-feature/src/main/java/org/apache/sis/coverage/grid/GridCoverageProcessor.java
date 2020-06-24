@@ -17,6 +17,7 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Objects;
+import java.security.AccessController;
 import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
@@ -26,13 +27,14 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.FinalFieldSetter;
 
 
 /**
  * A predefined set of operations on grid coverages as convenience methods.
  *
  * <h2>Thread-safety</h2>
- * {@code GridCoverageProcessor} is thread-safe if its configuration is not modified after construction.
+ * {@code GridCoverageProcessor} is safe for concurrent use in multi-threading environment.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -247,14 +249,19 @@ public class GridCoverageProcessor implements Cloneable {
     /**
      * Returns a coverage processor with the same configuration than this processor.
      *
-     * @return a clone of this image processor.
+     * @return a clone of this coverage processor.
      */
     @Override
     public GridCoverageProcessor clone() {
         try {
-            return (GridCoverageProcessor) super.clone();
+            final GridCoverageProcessor clone = (GridCoverageProcessor) super.clone();
+            AccessController.doPrivileged(new FinalFieldSetter<>(GridCoverageProcessor.class, "imageProcessor"))
+                            .set(clone, imageProcessor.clone());
+            return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
+        } catch (ReflectiveOperationException e) {
+            throw FinalFieldSetter.cloneFailure(e);
         }
     }
 }

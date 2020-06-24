@@ -31,7 +31,7 @@ import static org.opengis.test.Assert.*;
  * Tests {@link Quantities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -126,5 +126,19 @@ public final strictfp class QuantitiesTest extends TestCase {
         assertTrue (q1.hashCode() != 0);
         assertTrue (q1.equals(q2));
         assertFalse(q1.equals(q3));
+    }
+
+    /**
+     * Tests {@link Quantities#min(Quantity, Quantity)} and {@link Quantities#max(Quantity, Quantity)}.
+     */
+    @Test
+    public void testMinAndMax() {
+        Quantity<Length> q1 = Quantities.create(5,      Units.KILOMETRE);
+        Quantity<Length> q2 = Quantities.create(600,    Units.METRE);
+        Quantity<Length> q3 = Quantities.create(700000, Units.CENTIMETRE);
+        assertSame(q2, Quantities.min(q1, q2));
+        assertSame(q1, Quantities.max(q1, q2));
+        assertSame(q1, Quantities.min(q1, q3));
+        assertSame(q3, Quantities.max(q1, q3));
     }
 }

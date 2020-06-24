@@ -30,7 +30,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import javax.measure.Quantity;
-import javax.measure.Unit;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArraysExt;
@@ -87,7 +86,7 @@ import org.apache.sis.measure.Units;
  * </ul>
  *
  * <h2>Thread-safety</h2>
- * {@code ImageProcessor} is thread-safe if its configuration is not modified after construction.
+ * {@code ImageProcessor} is safe for concurrent use in multi-threading environment.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -125,6 +124,7 @@ public class ImageProcessor implements Cloneable {
     /**
      * The values to use for pixels that can not be computed.
      * This array may be {@code null} or may contain {@code null} elements.
+     * This is a "copy on write" array (elements are not modified).
      *
      * @see #getFillValues()
      * @see #setFillValues(Number...)
@@ -247,7 +247,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @see #resample(RenderedImage, Rectangle, MathTransform)
      */
-    public Interpolation getInterpolation() {
+    public synchronized Interpolation getInterpolation() {
         return interpolation;
     }
 
@@ -258,7 +258,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @see #resample(RenderedImage, Rectangle, MathTransform)
      */
-    public void setInterpolation(final Interpolation method) {
+    public synchronized void setInterpolation(final Interpolation method) {
         ArgumentChecks.ensureNonNull("method", method);
         interpolation = method;
     }
@@ -269,7 +269,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @return fill values to use for pixels that can not be computed, or {@code null} for the defaults.
      */
-    public Number[] getFillValues() {
+    public synchronized Number[] getFillValues() {
         return (fillValues != null) ? fillValues.clone() : null;
     }
 
@@ -282,7 +282,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @param  values  fill values to use for pixels that can not be computed, or {@code null} for the defaults.
      */
-    public void setFillValues(final Number... values) {
+    public synchronized void setFillValues(final Number... values) {
         fillValues = (values != null) ? values.clone() : null;
     }
 
@@ -293,7 +293,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @return whether the operations can be executed in parallel.
      */
-    public Mode getExecutionMode() {
+    public synchronized Mode getExecutionMode() {
         return executionMode;
     }
 
@@ -310,15 +310,17 @@ public class ImageProcessor implements Cloneable {
      *
      * @param  mode  whether the operations can be executed in parallel.
      */
-    public void setExecutionMode(final Mode mode) {
+    public synchronized void setExecutionMode(final Mode mode) {
         ArgumentChecks.ensureNonNull("mode", mode);
         executionMode = mode;
     }
 
     /**
      * Whether the operations can be executed in parallel for the specified image.
+     * This method shall be invoked in a method synchronized on {@code this}.
      */
     private boolean parallel(final RenderedImage source) {
+        assert Thread.holdsLock(this);
         switch (executionMode) {
             case PARALLEL:   return true;
             case SEQUENTIAL: return false;
@@ -334,7 +336,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @return desired accuracy in no particular order, or an empty array if none.
      */
-    public Quantity<?>[] getPositionalAccuracyHints() {
+    public synchronized Quantity<?>[] getPositionalAccuracyHints() {
         return (positionalAccuracyHints != null) ? positionalAccuracyHints.clone() : new Quantity<?>[0];
     }
 
@@ -359,7 +361,7 @@ public class ImageProcessor implements Cloneable {
      * @param  hints  desired accuracy in no particular order, or a {@code null} array if none.
      *                Null elements in the array are ignored.
      */
-    public void setPositionalAccuracyHints(final Quantity<?>... hints) {
+    public synchronized void setPositionalAccuracyHints(final Quantity<?>... hints) {
         if (hints != null) {
             final Quantity<?>[] copy = new Quantity<?>[hints.length];
             int n = 0;
@@ -375,31 +377,13 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Returns the smallest resolution in the given units.
-     * Current implementation checks only quantities having exactly the specified units
-     * because we look only for {@link Units#PIXEL}. A future version will need to apply
-     * unit conversions if we look for other kind of quantities such as metres.
-     */
-    private double getPositionalAccuracy(final Unit<?> unit) {
-        double accuracy = Double.POSITIVE_INFINITY;
-        if (positionalAccuracyHints != null) {
-            for (final Quantity<?> hint : positionalAccuracyHints) {
-                if (unit.equals(hint.getUnit())) {              // See comment in javadoc.
-                    accuracy = Math.min(accuracy, Math.abs(hint.getValue().doubleValue()));
-                }
-            }
-        }
-        return Double.isFinite(accuracy) ? accuracy : 0;
-    }
-
-    /**
      * Returns whether exceptions occurring during computation are propagated or logged.
      * If {@link ErrorAction#THROW} (the default), exceptions are wrapped in {@link ImagingOpException} and thrown.
      * If any other value, exceptions are wrapped in a {@link LogRecord}, filtered then eventually logged.
      *
      * @return whether exceptions occurring during computation are propagated or logged.
      */
-    public Filter getErrorAction() {
+    public synchronized Filter getErrorAction() {
         return errorAction;
     }
 
@@ -413,15 +397,17 @@ public class ImageProcessor implements Cloneable {
      * @param  action  filter to notify when an operation failed on one or more tiles,
      *                 or {@link ErrorAction#THROW} for propagating the exception.
      */
-    public void setErrorAction(final Filter action) {
+    public synchronized void setErrorAction(final Filter action) {
         ArgumentChecks.ensureNonNull("action", action);
         errorAction = action;
     }
 
     /**
      * Whether errors occurring during computation should be propagated instead than wrapped in a {@link LogRecord}.
+     * This method shall be invoked in a method synchronized on {@code this}.
      */
     private boolean failOnException() {
+        assert Thread.holdsLock(this);
         return errorAction == ErrorAction.THROW;
     }
 
@@ -429,8 +415,10 @@ public class ImageProcessor implements Cloneable {
      * Where to send exceptions (wrapped in {@link LogRecord}) if an operation failed on one or more tiles.
      * Only one log record is created for all tiles that failed for the same operation on the same image.
      * This is always {@code null} if {@link #failOnException()} is {@code true}.
+     * This method shall be invoked in a method synchronized on {@code this}.
      */
     private Filter errorListener() {
+        assert Thread.holdsLock(this);
         return (errorAction instanceof ErrorAction) ? null : errorAction;
     }
 
@@ -453,10 +441,17 @@ public class ImageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("source", source);
         Object property = source.getProperty(StatisticsCalculator.STATISTICS_KEY);
         if (!(property instanceof Statistics[])) {
+            final boolean parallel, failOnException;
+            final Filter errorListener;
+            synchronized (this) {
+                parallel        = parallel(source);
+                failOnException = failOnException();
+                errorListener   = errorListener();
+            }
             final StatisticsCalculator calculator = new StatisticsCalculator(
-                    source, areaOfInterest, parallel(source), failOnException());
+                    source, areaOfInterest, parallel, failOnException);
             property = calculator.getProperty(StatisticsCalculator.STATISTICS_KEY);
-            calculator.logAndClearError(ImageProcessor.class, "getStatistics", errorListener());
+            calculator.logAndClearError(ImageProcessor.class, "getStatistics", errorListener);
         }
         return (Statistics[]) property;
     }
@@ -476,8 +471,15 @@ public class ImageProcessor implements Cloneable {
      * @see StatisticsCalculator#STATISTICS_KEY
      */
     public RenderedImage statistics(final RenderedImage source, final Shape areaOfInterest) {
-        return (source == null) || ArraysExt.contains(source.getPropertyNames(), StatisticsCalculator.STATISTICS_KEY)
-                ? source : unique(new StatisticsCalculator(source, areaOfInterest, parallel(source), failOnException()));
+        if (source == null || ArraysExt.contains(source.getPropertyNames(), StatisticsCalculator.STATISTICS_KEY)) {
+            return source;
+        }
+        final boolean parallel, failOnException;
+        synchronized (this) {
+            parallel        = parallel(source);
+            failOnException = failOnException();
+        }
+        return unique(new StatisticsCalculator(source, areaOfInterest, parallel, failOnException));
     }
 
     /**
@@ -600,8 +602,20 @@ public class ImageProcessor implements Cloneable {
                     }
                 }
             }
-            resampled = unique(new ResampledImage(source, bounds, toSource, interpolation,
-                                (float) getPositionalAccuracy(Units.PIXEL), fillValues));
+            /*
+             * All accesses to ImageProcessor fields done by this method should be isolated in this single
+             * synchronized block. All arrays are "copy on write", so they do not need to be cloned.
+             */
+            final Interpolation interpolation;
+            final Number[]      fillValues;
+            final Quantity<?>[] positionalAccuracyHints;
+            synchronized (this) {
+                interpolation           = this.interpolation;
+                fillValues              = this.fillValues;
+                positionalAccuracyHints = this.positionalAccuracyHints;
+            }
+            resampled = unique(new ResampledImage(source, bounds, toSource,
+                    interpolation, fillValues, positionalAccuracyHints));
             break;
         }
         if (cm != null && !cm.equals(resampled.getColorModel())) {
@@ -632,7 +646,11 @@ public class ImageProcessor implements Cloneable {
         while (source instanceof PrefetchedImage) {
             source = ((PrefetchedImage) source).source;
         }
-        final PrefetchedImage image = new PrefetchedImage(source, areaOfInterest, parallel(source));
+        final boolean parallel;
+        synchronized (this) {
+            parallel = parallel(source);
+        }
+        final PrefetchedImage image = new PrefetchedImage(source, areaOfInterest, parallel);
         return image.isEmpty() ? source : image;
     }
 
@@ -647,10 +665,25 @@ public class ImageProcessor implements Cloneable {
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
             final ImageProcessor other = (ImageProcessor) object;
-            return errorAction.equals(other.errorAction)   &&
-                 executionMode.equals(other.executionMode) &&
-                 interpolation.equals(other.interpolation) &&
-                 Arrays.equals(fillValues, other.fillValues);
+            final Mode          executionMode;
+            final Filter        errorAction;
+            final Interpolation interpolation;
+            final Number[]      fillValues;
+            final Quantity<?>[] positionalAccuracyHints;
+            synchronized (this) {
+                executionMode           = this.executionMode;
+                errorAction             = this.errorAction;
+                interpolation           = this.interpolation;
+                fillValues              = this.fillValues;
+                positionalAccuracyHints = this.positionalAccuracyHints;
+            }
+            synchronized (other) {
+                return errorAction.equals(other.errorAction)     &&
+                     executionMode.equals(other.executionMode)   &&
+                     interpolation.equals(other.interpolation)   &&
+                     Arrays.equals(fillValues, other.fillValues) &&
+                     Arrays.equals(positionalAccuracyHints, other.positionalAccuracyHints);
+            }
         }
         return false;
     }
@@ -661,8 +694,10 @@ public class ImageProcessor implements Cloneable {
      * @return a hash code value for this processor.
      */
     @Override
-    public int hashCode() {
-        return Objects.hash(getClass(), errorAction, executionMode, interpolation) + 37*Arrays.hashCode(fillValues);
+    public synchronized int hashCode() {
+        return Objects.hash(getClass(), errorAction, executionMode, interpolation)
+                + 37 * Arrays.hashCode(fillValues)
+                + 39 * Arrays.hashCode(positionalAccuracyHints);
     }
 
     /**
@@ -671,7 +706,7 @@ public class ImageProcessor implements Cloneable {
      * @return a clone of this image processor.
      */
     @Override
-    public ImageProcessor clone() {
+    public synchronized ImageProcessor clone() {
         try {
             return (ImageProcessor) super.clone();
         } catch (CloneNotSupportedException e) {

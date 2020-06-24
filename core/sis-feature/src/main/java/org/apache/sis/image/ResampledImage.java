@@ -16,10 +16,8 @@
  */
 package org.apache.sis.image;
 
-import java.util.Set;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Collections;
 import java.lang.ref.Reference;
 import java.nio.DoubleBuffer;
 import java.awt.Dimension;
@@ -30,6 +28,9 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.ImagingOpException;
+import javax.measure.Quantity;
+import javax.measure.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
@@ -41,11 +42,12 @@ import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -77,14 +79,6 @@ import org.apache.sis.measure.NumberRange;
  */
 public class ResampledImage extends ComputedImage {
     /**
-     * The properties to forwards to source image in calls to {@link #getProperty(String)}.
-     * This list may be augmented in any future Apache SIS version.
-     *
-     * @see #getProperty(String)
-     */
-    private static final Set<String> FILTERED_PROPERTIES = Collections.singleton(SAMPLE_RESOLUTIONS_KEY);
-
-    /**
      * Key of a property providing an estimation of positional error for each pixel.
      * Values shall be instances of {@link RenderedImage} with same size and origin than this image.
      * The image should contain a single band where all sample values are error estimations in pixel units
@@ -93,6 +87,8 @@ public class ResampledImage extends ComputedImage {
      * <p>The default implementation transforms all pixel coordinates {@linkplain #toSource to source},
      * then convert them back to pixel coordinates in this image. The result is compared with expected
      * coordinates and the distance is stored in the image.</p>
+     *
+     * @see #POSITIONAL_ACCURACY_KEY
      */
     public static final String POSITIONAL_CONSISTENCY_KEY = "org.apache.sis.PositionalConsistency";
 
@@ -142,6 +138,14 @@ public class ResampledImage extends ComputedImage {
     private final Object fillValues;
 
     /**
+     * The largest accuracy declared in the {@code accuracy} argument given to constructor,
+     * or {@code null} if none. This is for information purpose only.
+     *
+     * @see #getPositionalAccuracy()
+     */
+    private final Quantity<Length> linearAccuracy;
+
+    /**
      * {@link #POSITIONAL_CONSISTENCY_KEY} value, computed when first requested.
      *
      * @see #getPositionalConsistency()
@@ -162,18 +166,20 @@ public class ResampledImage extends ComputedImage {
      * @param  bounds         domain of pixel coordinates of this resampled image.
      * @param  toSource       conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
      * @param  interpolation  the object to use for performing interpolations.
-     * @param  accuracy       desired positional accuracy in pixel units, or 0 for the best accuracy available.
-     *                        A value such as 0.125 pixel may enable the use of a slightly faster algorithm
-     *                        at the expense of accuracy. This is only a hint honored on a <em>best-effort</em> basis.
      * @param  fillValues     the values to use for pixels in this image that can not be mapped to pixels in source image.
      *                        May be {@code null} or contain {@code null} elements. If shorter than the number of bands,
      *                        missing values are assumed {@code null}. If longer than the number of bands, extraneous
      *                        values are ignored.
+     * @param  accuracy       values of {@value #POSITIONAL_ACCURACY_KEY} property, or {@code null} if none.
+     *                        This constructor may retain only a subset of specified values or replace some of them.
+     *                        If an accuracy is specified in {@linkplain Units#PIXEL pixel units}, then a value such as
+     *                        0.125 pixel may enable the use of a slightly faster algorithm at the expense of accuracy.
+     *                        This is only a hint honored on a <em>best-effort</em> basis.
      *
      * @see ImageProcessor#resample(RenderedImage, Rectangle, MathTransform)
      */
     protected ResampledImage(final RenderedImage source, final Rectangle bounds, final MathTransform toSource,
-                             final Interpolation interpolation, final float accuracy, final Number[] fillValues)
+            final Interpolation interpolation, final Number[] fillValues, final Quantity<?>[] accuracy)
     {
         super(ImageLayout.DEFAULT.createCompatibleSampleModel(source, bounds), source);
         if (source.getWidth() <= 0 || source.getHeight() <= 0) {
@@ -213,12 +219,29 @@ public class ResampledImage extends ComputedImage {
          * If the desired accuracy is large enough, try using a grid of precomputed values for faster operations.
          * This is optional; it is okay to abandon the grid if we can not compute it.
          */
-        if (accuracy >= ResamplingGrid.TOLERANCE) try {
+        Boolean          canUseGrid     = null;
+        Quantity<Length> linearAccuracy = null;
+        if (accuracy != null) {
+            for (final Quantity<?> hint : accuracy) {
+                if (hint != null) {
+                    final Unit<?> unit = hint.getUnit();
+                    if (Units.PIXEL.equals(unit)) {
+                        final boolean c = Math.abs(hint.getValue().doubleValue()) >= ResamplingGrid.TOLERANCE;
+                        if (canUseGrid == null) canUseGrid = c;
+                        else canUseGrid &= c;
+                    } else if (Units.isLinear(unit)) {
+                        linearAccuracy = Quantities.max(linearAccuracy, hint.asType(Length.class));
+                    }
+                }
+            }
+        }
+        if (canUseGrid != null && canUseGrid) try {
             toSourceSupport = ResamplingGrid.getOrCreate(MathTransforms.bidimensional(toSourceSupport), bounds);
         } catch (TransformException | ImagingOpException e) {
             recoverableException("<init>", e);
         }
         this.toSourceSupport = toSourceSupport;
+        this.linearAccuracy  = linearAccuracy;
         /*
          * Copy the `fillValues` either as an `int[]` or `double[]` array, depending on
          * whether the data type is an integer type or not. Null elements default to zero.
@@ -284,6 +307,33 @@ public class ResampledImage extends ComputedImage {
      */
     public boolean isLinear() {
         return toSourceSupport instanceof LinearTransform;
+    }
+
+    /**
+     * Returns the number of quantities in the array returned by {@link #getPositionalAccuracy()}.
+     */
+    private int getPositionalAccuracyCount() {
+        int n = 0;
+        if (linearAccuracy != null) n++;
+        if (toSourceSupport instanceof ResamplingGrid) n++;
+        return n;
+    }
+
+    /**
+     * Computes the {@value #POSITIONAL_ACCURACY_KEY} value. This method is invoked by {@link #getProperty(String)}
+     * when the {@link #POSITIONAL_ACCURACY_KEY} property value is requested.
+     */
+    @SuppressWarnings("rawtypes")
+    private Quantity<?>[] getPositionalAccuracy() {
+        final Quantity<?>[] accuracy = new Quantity[getPositionalAccuracyCount()];
+        int n = 0;
+        if (linearAccuracy != null) {
+            accuracy[n++] = linearAccuracy;
+        }
+        if (toSourceSupport instanceof ResamplingGrid) {
+            accuracy[n++] = Quantities.create(ResamplingGrid.TOLERANCE, Units.PIXEL);
+        }
+        return accuracy;
     }
 
     /**
@@ -376,14 +426,22 @@ public class ResampledImage extends ComputedImage {
      */
     @Override
     public Object getProperty(final String key) {
-        if (FILTERED_PROPERTIES.contains(key)) {
-            return getSource().getProperty(key);
-        } else if (POSITIONAL_CONSISTENCY_KEY.equals(key)) try {
-            return getPositionalConsistency();
-        } catch (TransformException | IllegalArgumentException e) {
-            throw (ImagingOpException) new ImagingOpException(e.getMessage()).initCause(e);
+        switch (key) {
+            case SAMPLE_RESOLUTIONS_KEY: {
+                return getSource().getProperty(key);
+            }
+            case POSITIONAL_ACCURACY_KEY: {
+                return getPositionalAccuracy();
+            }
+            case POSITIONAL_CONSISTENCY_KEY: try {
+                return getPositionalConsistency();
+            } catch (TransformException | IllegalArgumentException e) {
+                throw (ImagingOpException) new ImagingOpException(e.getMessage()).initCause(e);
+            }
+            default: {
+                return super.getProperty(key);
+            }
         }
-        return super.getProperty(key);
     }
 
     /**
@@ -395,21 +453,26 @@ public class ResampledImage extends ComputedImage {
      */
     @Override
     public String[] getPropertyNames() {
+        final String[] inherited = getSource().getPropertyNames();
+        final String[] names = {
+            SAMPLE_RESOLUTIONS_KEY,
+            POSITIONAL_ACCURACY_KEY,
+            POSITIONAL_CONSISTENCY_KEY
+        };
         int n = 0;
-        String[] names = getSource().getPropertyNames();    // Array should be a copy, so we don't copy again.
-        if (names == null) {
-            names = CharSequences.EMPTY_ARRAY;
-        } else for (final String name : names) {
-            if (FILTERED_PROPERTIES.contains(name)) {
-                names[n++] = name;
+        for (final String name : names) {
+            if (name != POSITIONAL_CONSISTENCY_KEY) {
+                if (name == POSITIONAL_ACCURACY_KEY) {
+                    if (getPositionalAccuracyCount() == 0) {
+                        continue;                   // Exclude PositionalAccuracy change.
+                    }
+                } else if (!ArraysExt.contains(inherited, name)) {
+                    continue;                       // Exclude inherited property not defined by source.
+                }
             }
+            names[n++] = name;
         }
-        if (n < names.length) {
-            names[n++] = POSITIONAL_CONSISTENCY_KEY;
-            return ArraysExt.resize(names, n);
-        } else {
-            return ArraysExt.append(names, POSITIONAL_CONSISTENCY_KEY);
-        }
+        return ArraysExt.resize(names, n);
     }
 
     /**

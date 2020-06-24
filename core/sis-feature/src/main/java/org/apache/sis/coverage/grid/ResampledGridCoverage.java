@@ -85,11 +85,13 @@ final class ResampledGridCoverage extends GridCoverage {
      * @param  domain          the grid extent, CRS and conversion from cell indices to CRS.
      * @param  toSourceCorner  transform from cell corner coordinates in this coverage to source coverage.
      * @param  toSourceCenter  transform from cell center coordinates in this coverage to source coverage.
+     * @param  changeOfCRS     encapsulate information about the change of CRS.
      * @param  processor       the image processor to use for resampling images.
      */
     private ResampledGridCoverage(final GridCoverage source, final GridGeometry domain,
                                   final MathTransform toSourceCorner,
                                   final MathTransform toSourceCenter,
+                                  final CoordinateOperationFinder changeOfCRS,
                                   ImageProcessor processor)
     {
         super(source, domain);
@@ -112,6 +114,7 @@ final class ResampledGridCoverage extends GridCoverage {
         }
         processor = processor.clone();
         processor.setFillValues(fillValues);
+        changeOfCRS.setAccuracy(processor);
         imageProcessor = GridCoverageProcessor.unique(processor);
     }
 
@@ -392,7 +395,7 @@ final class ResampledGridCoverage extends GridCoverage {
         return new ResampledGridCoverage(source, resampled,
                 MathTransforms.concatenate(targetCornerToCRS, sourceCornerToCRS.inverse()),
                 MathTransforms.concatenate(targetCenterToCRS, sourceCenterToCRS.inverse()),
-                processor).specialize(isGeometryExplicit);
+                changeOfCRS, processor).specialize(isGeometryExplicit);
     }
 
     /**

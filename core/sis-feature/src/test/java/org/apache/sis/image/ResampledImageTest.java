@@ -270,7 +270,7 @@ public final strictfp class ResampledImageTest extends TestCase {
         } catch (NoninvertibleTransformException e) {
             throw new AssertionError(e);
         }
-        target = new ResampledImage(source, new Rectangle(9, 9), toSource, interpolation, 0, null);
+        target = new ResampledImage(source, new Rectangle(9, 9), toSource, interpolation, null, null);
 
         assertEquals("numXTiles", 1, target.getNumXTiles());
         assertEquals("numYTiles", 1, target.getNumYTiles());

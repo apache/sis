@@ -135,7 +135,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         resampledImages       = new EnumMap<>(Stretching.class);
         coverageProperty      = new SimpleObjectProperty<>(this, "coverage");
         sliceExtentProperty   = new SimpleObjectProperty<>(this, "sliceExtent");
-        interpolationProperty = new SimpleObjectProperty<>(this, "interpolation", data.getInterpolation());
+        interpolationProperty = new SimpleObjectProperty<>(this, "interpolation", data.processor.getInterpolation());
         coverageProperty     .addListener((p,o,n) -> onImageSpecified());
         sliceExtentProperty  .addListener((p,o,n) -> onImageSpecified());
         interpolationProperty.addListener((p,o,n) -> onInterpolationSpecified(n));
@@ -313,7 +313,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Invoked when a new interpolation has been specified.
      */
     private void onInterpolationSpecified(final Interpolation interpolation) {
-        data.setInterpolation(interpolation);
+        data.processor.setInterpolation(interpolation);
         resampledImages.clear();
         requestRepaint();
     }
@@ -447,7 +447,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         }
 
         /**
-         * Invoked in JavaFX thread after {@link #paint(Graphics2D)} completion.
+         * Invoked in JavaFX thread after successful {@link #paint(Graphics2D)} completion.
          * This method stores the computation results.
          */
         @Override

@@ -190,7 +190,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
         protected abstract void paint(Graphics2D gr);
 
         /**
-         * Invoked in JavaFX thread after {@link #paint(Graphics2D)} completion. This method can update the
+         * Invoked in JavaFX thread after successful {@link #paint(Graphics2D)} completion. This method can update the
          * {@link #floatingPane} children with the nodes (images, shaped, <i>etc.</i>) created by {@link #render()}.
          * If this method detects that data has changed during the time {@code Renderer} was working in background,
          * then this method can return {@code true} for requesting a new repaint. In such case that repaint will use
