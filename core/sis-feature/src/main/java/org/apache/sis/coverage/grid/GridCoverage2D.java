@@ -618,12 +618,16 @@ public class GridCoverage2D extends GridCoverage {
              * upper-left point is inside the image.
              */
             if (data instanceof BufferedImage) {
-                // BufferedImage origin should be (0, 0), but for consistency with image API, we consider it variable.
-                final long ix = data.getMinX();
-                final long iy = data.getMinY();
+                BufferedImage result = (BufferedImage) data;
+                /*
+                 * BufferedImage origin should be (0, 0). But for consistency with image API,
+                 * we consider it as variable.
+                 */
+                final long ix = result.getMinX();
+                final long iy = result.getMinY();
                 if (xmin >= ix && ymin >= iy) {
-                    final int width  = data.getWidth();
-                    final int height = data.getHeight();
+                    final int width  = result.getWidth();
+                    final int height = result.getHeight();
                     /*
                      * Result of `ix + width` requires at most 33 bits for any `ix` value (same for y axis).
                      * Subtractions by `xmin` and `ymin` never overflow if `ix` and `iy` are zero or positive,
@@ -633,10 +637,19 @@ public class GridCoverage2D extends GridCoverage {
                      */
                     final int nx = toIntExact(min(xmax, ix + width  - 1) - xmin + 1);
                     final int ny = toIntExact(min(ymax, iy + height - 1) - ymin + 1);
-                    if ((xmin | ymin) == 0 && nx == width && ny == height) {
-                        return data;
+                    if ((xmin | ymin) != 0 || nx != width || ny != height) {
+                        result = result.getSubimage(toIntExact(xmin), toIntExact(ymin), nx, ny);
                     }
-                    return ((BufferedImage) data).getSubimage(toIntExact(xmin), toIntExact(ymin), nx, ny);
+                    /*
+                     * Workaround for https://bugs.openjdk.java.net/browse/JDK-8166038
+                     * If BufferedImage can not be used, fallback on ReshapedImage
+                     * at the cost of returning an image larger than necessary.
+                     *
+                     * See also GridCoverage2DTest.PENDING_JDK_FIX
+                     */
+                    if (result.getTileGridXOffset() == ix && result.getTileGridYOffset() == iy) {
+                        return result;
+                    }
                 }
             }
             /*
@@ -649,9 +662,9 @@ public class GridCoverage2D extends GridCoverage {
              * with Raster.createChild(…), but that would force us to invoke RenderedImage.getTile(…) which
              * may force data loading earlier than desired.
              */
-            final ReshapedImage r = new ReshapedImage(data, xmin, ymin, xmax, ymax);
-            String error; assert (error = r.verify()) == null : error;
-            return r.isIdentity() ? data : r;
+            final ReshapedImage result = new ReshapedImage(data, xmin, ymin, xmax, ymax);
+            String error; assert (error = result.verify()) == null : error;
+            return result.isIdentity() ? data : result;
         } catch (ArithmeticException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
         }

@@ -56,6 +56,13 @@ import static org.apache.sis.test.FeatureAssert.*;
  */
 public strictfp class GridCoverage2DTest extends TestCase {
     /**
+     * Disables tests that are pending <a href="https://bugs.openjdk.java.net/browse/JDK-8166038">JDK-8166038</a> fix.
+     * If {@link BufferedImage} can not be used, fallback on {@link ReshapedImage} at the cost of an image larger than
+     * necessary. In such case, the tests need to specify the sub-region of pixels to verify.
+     */
+    private static final boolean PENDING_JDK_FIX = false;
+
+    /**
      * Width and height of the grid tested in this class.
      */
     protected static final int GRID_SIZE = 2;
@@ -232,8 +239,13 @@ public strictfp class GridCoverage2DTest extends TestCase {
          */
         final GridExtent singleRow = new GridExtent(GRID_SIZE, 1).translate(0, 1);
         result = coverage.render(singleRow);
-        assertInstanceOf("render", BufferedImage.class, result);
-        assertPixelsEqual(coverage.render(null), new Rectangle(0, 1, GRID_SIZE, 1), result, null);
+        if (PENDING_JDK_FIX) {
+            assertInstanceOf("render", BufferedImage.class, result);
+            assertPixelsEqual(coverage.render(null), new Rectangle(0, 1, GRID_SIZE, 1), result, null);
+        } else {
+            assertPixelsEqual(coverage.render(null), new Rectangle(0, 1, GRID_SIZE, 1),
+                                             result, new Rectangle(0, 0, GRID_SIZE, 1));
+        }
         /*
          * Column extraction:
          *   - Expected size (1,2) is verified by `assertPixelsEqual(…)`.
@@ -243,8 +255,13 @@ public strictfp class GridCoverage2DTest extends TestCase {
          */
         final GridExtent singleCol = new GridExtent(1, GRID_SIZE).translate(1, 0);
         result = coverage.render(singleCol);
-        assertInstanceOf("render", BufferedImage.class, result);
-        assertPixelsEqual(coverage.render(null), new Rectangle(1, 0, 1, GRID_SIZE), result, null);
+        if (PENDING_JDK_FIX) {
+            assertInstanceOf("render", BufferedImage.class, result);
+            assertPixelsEqual(coverage.render(null), new Rectangle(1, 0, 1, GRID_SIZE), result, null);
+        } else {
+            assertPixelsEqual(coverage.render(null), new Rectangle(1, 0, 1, GRID_SIZE),
+                                             result, new Rectangle(0, 0, 1, GRID_SIZE));
+        }
     }
 
     /**
