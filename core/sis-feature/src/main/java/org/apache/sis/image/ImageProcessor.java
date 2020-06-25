@@ -428,8 +428,16 @@ public class ImageProcessor implements Cloneable {
      * extracting immediately the statistics property value, except that errors are handled by the
      * {@linkplain #getErrorAction() error handler}.
      *
+     * <p>If {@code areaOfInterest} is {@code null}, then the default is as below:</p>
+     * <ul>
+     *   <li>If the {@value StatisticsCalculator#STATISTICS_KEY} property value exists in the given image,
+     *       then that value is returned. Note that they are not necessarily statistics for the whole image.
+     *       They are whatever statistics the property provided considered as representative.</li>
+     *   <li>Otherwise statistics are computed for the whole image.</li>
+     * </ul>
+     *
      * @param  source          the image for which to compute statistics.
-     * @param  areaOfInterest  pixel coordinates of the area of interest, or {@code null} for the whole image.
+     * @param  areaOfInterest  pixel coordinates of the area of interest, or {@code null} for the default.
      * @return the statistics of sample values in each band.
      * @throws ImagingOpException if an error occurred during calculation
      *         and the error handler is {@link ErrorAction#THROW}.
@@ -448,8 +456,12 @@ public class ImageProcessor implements Cloneable {
                 failOnException = failOnException();
                 errorListener   = errorListener();
             }
-            final StatisticsCalculator calculator = new StatisticsCalculator(
-                    source, areaOfInterest, parallel, failOnException);
+            /*
+             * No need to check if the given source is already an instance of StatisticsCalculator.
+             * The way AnnotatedImage cache mechanism is implemented, if statistics result already
+             * exist, they will be used.
+             */
+            final AnnotatedImage calculator = new StatisticsCalculator(source, areaOfInterest, parallel, failOnException);
             property = calculator.getProperty(StatisticsCalculator.STATISTICS_KEY);
             calculator.logAndClearError(ImageProcessor.class, "getStatistics", errorListener);
         }
@@ -458,12 +470,20 @@ public class ImageProcessor implements Cloneable {
 
     /**
      * Returns an image with statistics (minimum, maximum, mean, standard deviation) on each bands.
-     * If the given image already contains an {@value StatisticsCalculator#STATISTICS_KEY} property,
-     * then that image is returned as-is. Otherwise this method returns a new image having that property.
      * The property value will be computed when first requested (it is not computed by this method).
      *
+     * <p>If {@code areaOfInterest} is {@code null}, then the default is as below:</p>
+     * <ul>
+     *   <li>If the {@value StatisticsCalculator#STATISTICS_KEY} property value exists in the given image,
+     *       then that image is returned as-is. Note that the existing property value is not necessarily
+     *       statistics for the whole image.
+     *       They are whatever statistics the property provided considered as representative.</li>
+     *   <li>Otherwise an image augmented with a {@value StatisticsCalculator#STATISTICS_KEY} property value
+     *       is returned.</li>
+     * </ul>
+     *
      * @param  source          the image for which to provide statistics (may be {@code null}).
-     * @param  areaOfInterest  pixel coordinates of the area of interest, or {@code null} for the whole image.
+     * @param  areaOfInterest  pixel coordinates of the area of interest, or {@code null} for the default.
      * @return an image with an {@value StatisticsCalculator#STATISTICS_KEY} property.
      *         May be {@code image} if the given argument is null or already has a statistics property.
      *
@@ -471,7 +491,9 @@ public class ImageProcessor implements Cloneable {
      * @see StatisticsCalculator#STATISTICS_KEY
      */
     public RenderedImage statistics(final RenderedImage source, final Shape areaOfInterest) {
-        if (source == null || ArraysExt.contains(source.getPropertyNames(), StatisticsCalculator.STATISTICS_KEY)) {
+        if (source == null || (areaOfInterest == null &&
+                ArraysExt.contains(source.getPropertyNames(), StatisticsCalculator.STATISTICS_KEY)))
+        {
             return source;
         }
         final boolean parallel, failOnException;
@@ -479,7 +501,7 @@ public class ImageProcessor implements Cloneable {
             parallel        = parallel(source);
             failOnException = failOnException();
         }
-        return unique(new StatisticsCalculator(source, areaOfInterest, parallel, failOnException));
+        return new StatisticsCalculator(source, areaOfInterest, parallel, failOnException).unique();
     }
 
     /**

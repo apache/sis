@@ -149,6 +149,9 @@ abstract class AnnotatedImage extends ImageAdapter {
      * <p>This shape should not be modified, either by this class or by the caller who provided the shape.
      * The {@code Shape} implementation shall be thread-safe, assuming its state stay unmodified, unless
      * the {@link #parallel} argument specified to the constructor was {@code false}.</p>
+     *
+     * <p>If {@code areaOfInterest} is {@code null}, then {@link #boundsOfInterest} is always {@code null}.
+     * However the converse is not necessarily true.</p>
      */
     protected final Shape areaOfInterest;
 
@@ -157,6 +160,9 @@ abstract class AnnotatedImage extends ImageAdapter {
      * If the area of interest fully contains those bounds, then {@link #areaOfInterest} is set to the same
      * reference than {@code boundsOfInterest}. Subclasses can use {@code areaOfInterest == boundsOfInterest}
      * for quickly testing if the area of interest is rectangular.
+     *
+     * <p>If {@link #areaOfInterest} is {@code null}, then {@code boundsOfInterest} is always {@code null}.
+     * However the converse is not necessarily true.</p>
      */
     protected final Rectangle boundsOfInterest;
 
@@ -190,18 +196,31 @@ abstract class AnnotatedImage extends ImageAdapter {
                              final boolean parallel, final boolean failOnException)
     {
         super(source);
+        Rectangle bounds = null;
         if (areaOfInterest != null) {
-            boundsOfInterest = areaOfInterest.getBounds();
-            ImageUtilities.clipBounds(source, boundsOfInterest);
-            if (areaOfInterest.contains(boundsOfInterest)) {
-                areaOfInterest = boundsOfInterest;
+            bounds = areaOfInterest.getBounds();
+            ImageUtilities.clipBounds(source, bounds);
+            if (areaOfInterest.contains(bounds)) {
+                areaOfInterest = bounds;
             }
-        } else {
-            boundsOfInterest = null;
+            /*
+             * If the rectangle contains the full image, replace them by a null value.
+             * It allows optimizations (avoid the need to check for point inclusion)
+             * and allows the cache to detect that a value already exist.
+             */
+            if (bounds.x == getMinX() && bounds.width  == getWidth() &&
+                bounds.y == getMinY() && bounds.height == getHeight())
+            {
+                if (bounds == areaOfInterest) {
+                    areaOfInterest = null;
+                }
+                bounds = null;
+            }
         }
-        this.areaOfInterest  = areaOfInterest;
-        this.parallel        = parallel;
-        this.failOnException = failOnException;
+        this.boundsOfInterest = bounds;
+        this.areaOfInterest   = areaOfInterest;
+        this.parallel         = parallel;
+        this.failOnException  = failOnException;
         /*
          * The `this.source` field should be as specified, even if it is another `AnnotatedImage`,
          * for allowing computation of properties managed by those other instances. However we try
@@ -218,6 +237,20 @@ abstract class AnnotatedImage extends ImageAdapter {
         }
         synchronized (CACHE) {
             cache = CACHE.computeIfAbsent(source, (k) -> new Cache<>(8, 200, false));
+        }
+    }
+
+    /**
+     * If the source image is the same operation for the same area of interest, returns that source.
+     * Otherwise returns {@code this} or a previous instance doing the same operation than {@code this}.
+     *
+     * @see #equals(Object)
+     */
+    final RenderedImage unique() {
+        if (source.getClass() == getClass() && equalParameters((AnnotatedImage) source)) {
+            return source;
+        } else {
+            return ImageProcessor.unique(this);
         }
     }
 
@@ -492,7 +525,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      */
     @Override
     public int hashCode() {
-        return super.hashCode() + Objects.hashCode(areaOfInterest);
+        return super.hashCode() + Objects.hashCode(areaOfInterest) + Boolean.hashCode(failOnException);
     }
 
     /**
@@ -504,7 +537,16 @@ abstract class AnnotatedImage extends ImageAdapter {
      */
     @Override
     public boolean equals(final Object object) {
-        return super.equals(object) && Objects.equals(areaOfInterest, ((AnnotatedImage) object).areaOfInterest);
-        // The `boundsOfInterest` is omitted because it is derived from `areaOfInterest`.
+        return super.equals(object) && equalParameters((AnnotatedImage) object);
+    }
+
+    /**
+     * Returns {@code true} if the area of interest and some other fields are equal.
+     * The {@link #boundsOfInterest} is omitted because it is derived from {@link #areaOfInterest}.
+     * The {@link #errors} is omitted because it is part of computation results.
+     */
+    private boolean equalParameters(final AnnotatedImage other) {
+        return Objects.equals(areaOfInterest, other.areaOfInterest) &&
+                parallel == other.parallel && failOnException == other.failOnException;
     }
 }
