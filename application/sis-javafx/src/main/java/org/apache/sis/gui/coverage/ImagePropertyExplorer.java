@@ -37,9 +37,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableCell;
@@ -349,7 +347,7 @@ public class ImagePropertyExplorer extends Widget {
      * The view containing all visual components.
      * The exact class may change in any future version.
      */
-    private final SplitPane view;
+    private final TabPane view;
 
     /**
      * Creates an initially empty explorer.
@@ -372,7 +370,6 @@ public class ImagePropertyExplorer extends Widget {
         final TableView<LayoutRow>    layout;
         final NumberFormat            integerFormat;
         final TableView<PropertyRow>  properties;
-        final TabPane                 tabPane;
 
         image            = new ImageProperty();
         imageUseBoundsCS = new IdentityHashMap<>(4);
@@ -457,18 +454,17 @@ public class ImagePropertyExplorer extends Widget {
             });
         }
         /*
-         * The view containing all visual components. A minimal height is given to `sources` tree
-         * because otherwise it appears with a height of 0 every time the `TitledPane` is expanded.
+         * The view containing all visual components. In current version the sources is a tab like others.
+         * A previous version was showing the sources on top (using SlidePane), so we could navigate easily
+         * in the properties of different sources. It has been removed for simplifying the layout, but the
+         * listeners are still updating layout and property panes immediately when a new source is selected.
          */
-        tabPane = new TabPane(
+        view = new TabPane(
+                new Tab(vocabulary.getString(Vocabulary.Keys.Source), sources),
                 new Tab(vocabulary.getString(Vocabulary.Keys.Layout), layout),
                 new Tab(vocabulary.getString(Vocabulary.Keys.Properties), properties),
                 detailsTab);
-        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        view = new SplitPane(sources, tabPane);
-        view.setOrientation(Orientation.VERTICAL);
-        SplitPane.setResizableWithParent(sources, false);
-        sources.setMinHeight(50);
+        view.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         updateOnChange.addListener((p,o,n) -> {if (n) startListening();});
     }
 
