@@ -469,7 +469,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         sampleValuesProvider.addListener((p,o,n) -> {
             ValuesUnderCursor.update(this, o, n);
             if (o != null) items.remove(o.valueChoices);
-            if (n != null) items.add(n.valueChoices);
+            if (n != null) items.add(0, n.valueChoices);
             setSampleValuesVisible(n != null && !n.isEmpty());
         });
         /*
@@ -980,6 +980,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * If user has selected (e.g. by contextual menu) a CRS causing the use of a coordinate transformation,
      * then the accuracy actually shown by {@code StatusBar} will be the greatest value between the accuracy
      * specified to this method and the coordinate transformation accuracy.
+     *
+     * <p>Note that the "± <var>accuracy</var>" text may be shown or hidden depending on the zoom level.
+     * If pixels on screen are larger than the accuracy, then the accuracy text is hidden.</p>
      *
      * @param  accuracy  the lowest accuracy to append after the coordinate values, or {@code null} if none.
      *

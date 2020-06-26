@@ -59,7 +59,6 @@ import org.apache.sis.util.resources.Vocabulary;
 
 /**
  * Provider of textual content to show in a {@link StatusBar} for values under cursor position.
- * Different subtypes are defined for different data sources such as {@link GridCoverage}.
  * When the mouse cursor moves, {@link #evaluate(DirectPosition)} is invoked with the same
  * "real world" coordinates than the ones shown in the status bar.
  *
@@ -205,7 +204,7 @@ public abstract class ValuesUnderCursor {
      * @since   1.1
      * @module
      */
-    public static class FromCoverage extends ValuesUnderCursor implements ChangeListener<GridCoverage> {
+    private static class FromCoverage extends ValuesUnderCursor implements ChangeListener<GridCoverage> {
         /**
          * The separator to insert between sample values. We use EM space.
          */
