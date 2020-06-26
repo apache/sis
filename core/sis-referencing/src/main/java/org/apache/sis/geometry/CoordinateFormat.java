@@ -192,6 +192,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
 
     /**
      * The desired precisions for each coordinate, or {@code null} if unspecified.
+     * The unit of measurement is given by {@link CoordinateSystemAxis#getUnit()}.
      * The length of this array does not need to be equal to the number of dimensions;
      * extraneous values are ignored and missing values are assumed equal to 0.
      * A value of 0 means to use the default precision for that dimension.
@@ -282,20 +283,49 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     private transient Format[] formats;
 
     /**
-     * The units for each dimension to be formatted as number.
-     * We do not store this information for dimensions to be formatted as angle or date.
+     * The units for each dimension to be formatted as a number with an unit of measurement.
+     * We do not store {@link Unit} instances for dimensions to be formatted as angles or dates
+     * because those quantities are formatted with specialized {@link Format} instances working
+     * in fixed units; no unit symbol should appear after dates or DD°MM′SS″ angles.
      *
-     * <p>This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
+     * <p>We use this {@code units} array at parsing time for converting numbers from the units
+     * of measurement in the parsed text to units expected by this {@code CoordinateFormat}.
+     * Whether an element is non-null determines whether an unit symbol is allowed to appear
+     * in the text to parse for the corresponding dimension.</p>
+     *
+     * <p>All non-null elements in this array are {@link CoordinateSystemAxis#getUnit()} return values.
+     * This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
      * parsing or formatting in a different CRS than last operation, and stay unmodified after creation.</p>
+     *
+     * @see #unitSymbolsUnscaled
      */
     private transient Unit<?>[] units;
 
     /**
      * Conversions from arbitrary units to the unit used by formatter, or {@code null} if none.
-     * For example in the case of dates, this is the conversions from temporal axis units to milliseconds.
+     * For example if coordinate at dimension <var>i</var> is formatted as an angle, then {@code toFormatUnit[i]}
+     * is the conversion from angular axis units to decimal degrees before those degrees are formatted as DD°MM′SS″
+     * with {@link AngleFormat}. Note that in this case, {@code units[i] == null} for telling that no unit symbol
+     * should appear after the coordinate formatted in dimension <var>i</var> (because degree, minute and second
+     * symbols are handled by {@link AngleFormat} instead).
+     *
+     * <p>In addition to conversions required by formatters expecting values in fixed units of measurement,
+     * {@code toFormatUnit[i]} may also be non-null for some coordinates formatted as numbers if a different
+     * unit of measurement is desired. For example the converter may be non-null if some coordinates in metres
+     * should be shown in kilometres. In those cases, {@code units[i] != null}.</p>
+     *
+     * <p>This array is used in slightly different ways at parsing time and formatting time. At formatting time,
+     * coordinate values and unconditionally converted using all converters and the {@link #units} array is ignored.
+     * At parsing time, {@code toFormatUnit[i]} converters are used only in dimensions <var>i</var> where the parser
+     * requires a fixed unit which is implicit in the text ({@code units[i] == null}). For other dimensions accepting
+     * various units ({@code units[i] != null}), the converter to use is determined by the unit of measurement written
+     * in the text.</p>
      *
      * <p>This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
-     * parsing or formatting in a different CRS than last operation, and stay unmodified after creation.</p>
+     * parsing or formatting in a different CRS than last operation. It may be modified after creation as a
+     * result of {@link #setPrecisions(double...)} calls, for example for replacing a "m" unit by "km".</p>
+     *
+     * @see #setConverter(int, int, UnitConverter)
      */
     private transient UnitConverter[] toFormatUnit;
 
@@ -310,9 +340,19 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * of this {@code unitSymbols} array.</p>
      *
      * <p>This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
-     * parsing or formatting in a different CRS than last operation, and stay unmodified after creation.</p>
+     * parsing or formatting in a different CRS than last operation. It may be modified after creation as a
+     * result of {@link #setPrecisions(double...)} calls, for example for replacing a "m" unit by "km".</p>
      */
     private transient String[] unitSymbols;
+
+    /**
+     * Same as {@link #unitSymbols} but without the changes applied by {@link #setPrecisions(double...)}.
+     * This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
+     * parsing or formatting in a different CRS than last operation, and stay unmodified after creation.
+     *
+     * @see #units
+     */
+    private transient String[] unitSymbolsUnscaled;
 
     /**
      * Directions symbols ("E", "N", "SW", <i>etc.</i>) to append after coordinate values for some dimensions,
@@ -445,17 +485,18 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @see #configure(CoordinateReferenceSystem)
      */
     private void createFormats(final CoordinateReferenceSystem crs) {
-        types              = null;
-        formats            = null;
-        sharedFormats      = null;
-        units              = null;
-        toFormatUnit       = null;
-        unitSymbols        = null;
-        directionSymbols   = null;
-        epochs             = null;
-        negate             = 0L;
-        lastCRS            = crs;
-        isPrecisionApplied = false;
+        types               = null;
+        formats             = null;
+        sharedFormats       = null;
+        units               = null;
+        toFormatUnit        = null;
+        unitSymbols         = null;
+        unitSymbolsUnscaled = null;
+        directionSymbols    = null;
+        epochs              = null;
+        negate              = 0L;
+        lastCRS             = crs;
+        isPrecisionApplied  = false;
         /*
          * If no CRS were specified, we will format everything as numbers. Working with null CRS
          * is sometime useful because null CRS are allowed in DirectPosition according ISO 19107.
@@ -540,7 +581,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 final String symbol = getFormat(Unit.class).format(unit);
                 if (!symbol.isEmpty()) {
                     if (unitSymbols == null) {
-                        unitSymbols = new String[dimension];
+                        unitSymbols = unitSymbolsUnscaled = new String[dimension];
                     }
                     unitSymbols[i] = QuantityFormat.SEPARATOR + symbol;
                 }
@@ -593,7 +634,11 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     }
 
     /**
-     * Sets the unit converter at the given index.
+     * Sets at the given index a conversion from CRS units to units used by this formatter.
+     *
+     * @param  dimension  number of dimensions of the coordinate system.
+     * @param  i          index of the dimension for which to set the converter.
+     * @param  c          the converter to set at the given dimension.
      */
     private void setConverter(final int dimension, final int i, final UnitConverter c) {
         if (!c.isIdentity()) {
@@ -601,6 +646,36 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 toFormatUnit = new UnitConverter[dimension];
             }
             toFormatUnit[i] = c;
+        }
+    }
+
+    /**
+     * Replaces the "m" or "Pa" units of measurement in the given dimension by "km" or "kPa" or other units.
+     * This is invoked for modifying the format created by {@link #createFormats(CoordinateReferenceSystem)}
+     * according the value given to {@link #setPrecisions(double...)}.
+     *
+     * <h4>Limitation</h4>
+     * Current implementation assumes that there is only one scale factor allowed by {@code CoordinateFormat},
+     * which is 1000. If a future SIS version allows different scale factors, then we would need to make the
+     * {@code if (toFormatUnit[i] == null)} check more accurate in {@link #applyPrecision(int)} method.
+     *
+     * @param  i      index of the dimension for which to change the unit.
+     * @param  unit   value of {@code units[dimension]}.
+     * @parma  scale  scale factor to apply on the unit.
+     */
+    private <Q extends Quantity<Q>> void scaleUnit(final int i, final Unit<Q> unit) {
+        if (toFormatUnit == null) {
+            toFormatUnit = new UnitConverter[formats.length];
+        }
+        if (toFormatUnit[i] == null) {
+            final Unit<Q> target = unit.multiply(1000);
+            toFormatUnit[i] = unit.getConverterTo(target);
+            if (unitSymbols == unitSymbolsUnscaled) {
+                unitSymbols = unitSymbols.clone();
+            }
+            unitSymbols[i] = QuantityFormat.SEPARATOR + getFormat(Unit.class).format(target);
+        } else {
+            // Dimension already scaled, assuming we allow only one scale factor.
         }
     }
 
@@ -740,6 +815,22 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 final DecimalFormat nf = (DecimalFormat) getFormatClone(dim);
                 nf.setMinimumFractionDigits(c);
                 nf.setMaximumFractionDigits(c);
+                if (unitSymbols != null) {
+                    /*
+                     * The `units` array can not be null if `unitSymbols` is non-null since unit symbols
+                     * are inferred from Unit instances. For now we scale only a small set of known units,
+                     * but more general scaling may be added in a future version.
+                     */
+                    final Unit<?> unit = units[dim];
+                    if (Units.METRE.equals(unit) || Units.PASCAL.equals(unit)) {
+                        if (precision >= 1000) {
+                            scaleUnit(dim, unit);
+                        } else if (toFormatUnit != null) {
+                            toFormatUnit[dim] = null;
+                            unitSymbols[dim] = unitSymbolsUnscaled[dim];
+                        }
+                    }
+                }
             } else if (format instanceof AngleFormat) {
                 ((AngleFormat) getFormatClone(dim)).setPrecision(precision, true);
             }
@@ -1552,6 +1643,7 @@ skipSep:    if (i != 0) {
              * change of sign.
              */
             final Unit<?> target;
+            UnitConverter toCRS = null;
 parseUnit:  if (units != null && (target = units[i]) != null) {
                 final int base = subPos.getIndex();
                 int index = base;                       // Will become start index of unit symbol.
@@ -1579,11 +1671,11 @@ parseUnit:  if (units != null && (target = units[i]) != null) {
                  */
                 int stopAt = index;                     // Will become stop index of unit symbol.
                 int nextAt = -1;                        // Will become start index of next coordinate.
-searchDir:      if (direction != null) {
+checkDirection: if (direction != null) {
                     do {
                         stopAt += Character.charCount(c);
                         if (stopAt >= asString.length()) {
-                            break searchDir;
+                            break checkDirection;
                         }
                         c = asString.codePointAt(stopAt);
                     } while (!Character.isSpaceChar(c));
@@ -1619,7 +1711,7 @@ searchDir:      if (direction != null) {
                         subPos.setIndex(base);
                         subPos.setErrorIndex(-1);
                     } else {
-                        value = ((Unit<?>) unit).getConverterToAny(target).convert(value);
+                        toCRS = ((Unit<?>) unit).getConverterToAny(target);
                     }
                 } catch (ParseException | IncommensurableException e) {
                     index += offset;
@@ -1629,6 +1721,18 @@ searchDir:      if (direction != null) {
                         throw (ParseException) e;
                     }
                     throw (ParseException) new ParseException(e.getMessage(), index).initCause(e);
+                }
+            } else {
+                /*
+                 * If we reach this point, the format at dimension `i` uses an implicit unit of measurement
+                 * such as degrees for `AngleFormat` or milliseconds for `DateFormat`. Only for those cases
+                 * (identified by `units[i] == null`), use the conversion declared in `toFormatUnit` array.
+                 */
+                if (toFormatUnit != null) {
+                    toCRS = toFormatUnit[i];
+                    if (toCRS != null) {
+                        toCRS = toCRS.inverse();
+                    }
                 }
             }
             /*
@@ -1647,13 +1751,10 @@ searchDir:      if (direction != null) {
             }
             /*
              * The conversions and sign reversal applied below shall be in reverse order
-             * than the operations applied by the 'format(…)' method.
+             * than the operations applied by the `format(…)` method.
              */
-            if (toFormatUnit != null) {
-                final UnitConverter c = toFormatUnit[i];
-                if (c != null) {
-                    value = c.inverse().convert(value);
-                }
+            if (toCRS != null) {
+                value = toCRS.convert(value);
             }
             if (isNegative(i)) {
                 value = -value;

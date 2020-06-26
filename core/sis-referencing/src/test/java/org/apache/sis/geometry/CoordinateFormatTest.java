@@ -338,6 +338,31 @@ public final strictfp class CoordinateFormatTest extends TestCase {
     }
 
     /**
+     * Tests the automatic change of units from "m" to "km" when the precision is low.
+     *
+     * @throws ParseException if parsing failed.
+     */
+    @Test
+    public void testAutomaticChangeOfUnits() throws ParseException {
+        final CoordinateFormat format = new CoordinateFormat(Locale.CANADA, null);
+        final DirectPosition2D pos = new DirectPosition2D(400000, -600000);
+        format.setDefaultCRS(HardCodedConversions.mercator());
+        /*
+         * Test with a precision larger than 1 km, which instruct
+         * CoordinateFormat to switch unit.
+         */
+        format.setPrecisions(1000, 2000);
+        assertEquals("400 km E 600 km S", format.format(pos));
+        assertArrayEquals(pos.getCoordinate(), format.parseObject("400 km E 600 km S").getCoordinate(), STRICT);
+        /*
+         * Test reverting back to unscaled units.
+         */
+        format.setPrecisions(100, 200);
+        assertEquals("400,000 m E 600,000 m S", format.format(pos));
+        assertArrayEquals(pos.getCoordinate(), format.parseObject("400,000 m E 600,000 m S").getCoordinate(), STRICT);
+    }
+
+    /**
      * Tests {@link CoordinateFormat#clone()}, then verifies that the clone has the same configuration
      * than the original object.
      */
