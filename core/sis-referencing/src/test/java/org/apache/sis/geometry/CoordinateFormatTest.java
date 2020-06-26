@@ -51,6 +51,14 @@ import static org.junit.Assert.*;
  */
 public final strictfp class CoordinateFormatTest extends TestCase {
     /**
+     * Compares coordinate values from the given positions.
+     */
+    private static void assertPositionEquals(final DirectPosition expected, final DirectPosition actual) {
+        assertNotSame(expected, actual);
+        assertArrayEquals(expected.getCoordinate(), actual.getCoordinate(), STRICT);
+    }
+
+    /**
      * Tests formatting a coordinate in unknown CRS.
      * The coordinate values are expected to be formatted as ordinary numbers.
      */
@@ -353,13 +361,15 @@ public final strictfp class CoordinateFormatTest extends TestCase {
          */
         format.setPrecisions(1000, 2000);
         assertEquals("400 km E 600 km S", format.format(pos));
-        assertArrayEquals(pos.getCoordinate(), format.parseObject("400 km E 600 km S").getCoordinate(), STRICT);
+        assertPositionEquals(pos, format.parseObject("400 km E 600 km S"));
+        assertPositionEquals(pos, format.parseObject("400,000 m E 600,000 m S"));
         /*
          * Test reverting back to unscaled units.
          */
         format.setPrecisions(100, 200);
         assertEquals("400,000 m E 600,000 m S", format.format(pos));
-        assertArrayEquals(pos.getCoordinate(), format.parseObject("400,000 m E 600,000 m S").getCoordinate(), STRICT);
+        assertPositionEquals(pos, format.parseObject("400,000 m E 600,000 m S"));
+        assertPositionEquals(pos, format.parseObject("400 km E 600 km S"));
     }
 
     /**
