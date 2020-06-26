@@ -64,7 +64,7 @@ public class ResourceExplorer extends WindowManager {
     /**
      * The currently selected resource.
      *
-     * @see #getSelectedResourceProperty()
+     * @see #selectedResourceProperty()
      */
     private final ReadOnlyObjectWrapper<Resource> selectedResource;
 
@@ -139,7 +139,7 @@ public class ResourceExplorer extends WindowManager {
          * Build the resource explorer. Must be first because `localized()` depends on it.
          */
         resources = new ResourceTree();
-        resources.getSelectionModel().getSelectedItems().addListener(this::selectResource);
+        resources.getSelectionModel().getSelectedItems().addListener(this::onResourceSelected);
         resources.setPrefWidth(400);
         selectedResource = new ReadOnlyObjectWrapper<>(this, "selectedResource");
         metadata = new MetadataSummary();
@@ -275,7 +275,7 @@ public class ResourceExplorer extends WindowManager {
      *
      * @param  change  a change event with the new resource to show.
      */
-    private void selectResource(final ListChangeListener.Change<? extends TreeItem<Resource>> change) {
+    private void onResourceSelected(final ListChangeListener.Change<? extends TreeItem<Resource>> change) {
         Resource resource = null;
         for (final TreeItem<Resource> item : change.getList()) {
             if (item != null) {
@@ -444,7 +444,7 @@ public class ResourceExplorer extends WindowManager {
      *
      * @return property for currently selected resource.
      */
-    public ReadOnlyProperty<Resource> getSelectedResourceProperty() {
+    public ReadOnlyProperty<Resource> selectedResourceProperty() {
         return selectedResource.getReadOnlyProperty();
     }
 }

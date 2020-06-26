@@ -102,7 +102,7 @@ final class CellFormat extends SimpleStringProperty {
     /**
      * Temporarily set to {@code true} when the user selects or enters a new pattern in a GUI control, then
      * reset to {@code false} after the new values has been set. This is a safety against recursive calls
-     * to {@link #patternSelected(ComboBox, String)} because of bi-directional change listeners.
+     * to {@link #onPatternSelected(ComboBox, String)} because of bi-directional change listeners.
      */
     private boolean isAdjusting;
 
@@ -160,7 +160,7 @@ final class CellFormat extends SimpleStringProperty {
      * @param  choices   the control where format pattern is selected.
      * @param  newValue  the new format pattern.
      */
-    private void patternSelected(final ComboBox<String> choices, final String newValue) {
+    private void onPatternSelected(final ComboBox<String> choices, final String newValue) {
         if (!isAdjusting) {
             Background background;
             String message;
@@ -219,7 +219,7 @@ final class CellFormat extends SimpleStringProperty {
         choices.setEditable(true);
         choices.getItems().setAll(patterns);
         choices.getSelectionModel().selectFirst();
-        choices.getSelectionModel().selectedItemProperty().addListener((e,o,n) -> patternSelected(choices, n));
+        choices.getSelectionModel().selectedItemProperty().addListener((e,o,n) -> onPatternSelected(choices, n));
         addListener((e,o,n) -> RecentChoices.setInList(choices, n));
         return choices;
     }

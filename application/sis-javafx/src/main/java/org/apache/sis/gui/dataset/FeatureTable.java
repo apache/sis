@@ -164,7 +164,7 @@ public class FeatureTable extends TableView<Feature> {
      * This is common code shared by both constructors.
      */
     private void initialize() {
-        featuresProperty.addListener(this::startFeaturesLoading);
+        featuresProperty.addListener((p,o,n) -> startFeaturesLoading(n));
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         setTableMenuButtonVisible(true);
     }
@@ -229,9 +229,7 @@ public class FeatureTable extends TableView<Feature> {
      * Invoked (indirectly) when the user sets a new {@link FeatureSet}.
      * See {@link #setFeatures(FeatureSet)} for method description.
      */
-    private void startFeaturesLoading(final ObservableValue<? extends FeatureSet> property,
-                                      final FeatureSet old, final FeatureSet features)
-    {
+    private void startFeaturesLoading(final FeatureSet features) {
         final FeatureList items;
         if (isSharingList) {
             items = new FeatureList();

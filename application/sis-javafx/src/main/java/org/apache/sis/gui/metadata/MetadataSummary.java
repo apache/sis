@@ -115,6 +115,7 @@ public class MetadataSummary extends Widget {
      *
      * @see #getMetadata()
      * @see #setMetadata(Metadata)
+     * @see #setMetadata(Resource)
      */
     public final ObjectProperty<Metadata> metadataProperty;
 

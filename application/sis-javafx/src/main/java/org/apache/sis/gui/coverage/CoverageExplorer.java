@@ -17,6 +17,7 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
+import javafx.beans.DefaultProperty;
 import javafx.scene.control.Control;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Separator;
@@ -51,6 +52,7 @@ import org.apache.sis.gui.Widget;
  * @since 1.1
  * @module
  */
+@DefaultProperty("coverage")
 public class CoverageExplorer extends Widget {
     /**
      * Type of view shown in the explorer.
@@ -96,6 +98,7 @@ public class CoverageExplorer extends Widget {
      *
      * @see #getCoverage()
      * @see #setCoverage(GridCoverage)
+     * @see #setCoverage(ImageRequest)
      */
     public final ObjectProperty<GridCoverage> coverageProperty;
 

@@ -205,7 +205,7 @@ public class RecentReferenceSystems {
      * {@code true} if the {@link #referenceSystems} list needs to be rebuilt from {@link #systemsOrCodes} content.
      * This field shall be read and modified in a block synchronized on {@link #systemsOrCodes}.
      *
-     * @see #modified()
+     * @see #listModified()
      */
     private boolean isModified;
 
@@ -238,10 +238,10 @@ public class RecentReferenceSystems {
         areaOfInterest       = new SimpleObjectProperty<>(this, "areaOfInterest");
         duplicationCriterion = new NonNullObjectProperty<>(this, "duplicationCriterion", ComparisonMode.ALLOW_VARIANT);
         controlValues        = new ArrayList<>();
-        duplicationCriterion.addListener((e) -> modified());
+        duplicationCriterion.addListener((e) -> listModified());
         areaOfInterest.addListener((e,o,n) -> {
             geographicAOI = Utils.toGeographic(RecentReferenceSystems.class, "areaOfInterest", n);
-            modified();
+            listModified();
         });
     }
 
@@ -262,7 +262,7 @@ public class RecentReferenceSystems {
         ArgumentChecks.ensureNonNull("system", system);
         synchronized (systemsOrCodes) {
             systemsOrCodes.add(0, replaceByAuthoritativeDefinition ? new Unverified(system) : system);
-            modified();
+            listModified();
         }
     }
 
@@ -282,7 +282,7 @@ public class RecentReferenceSystems {
         ArgumentChecks.ensureNonEmpty("code", code);
         synchronized (systemsOrCodes) {
             systemsOrCodes.add(0, code);
-            modified();
+            listModified();
         }
     }
 
@@ -309,7 +309,7 @@ public class RecentReferenceSystems {
                     systemsOrCodes.add(replaceByAuthoritativeDefinition ? new Unverified(system) : system);
                 }
             }
-            modified();
+            listModified();
         }
         // Check for duplication will be done in `filterReferenceSystems()` method.
     }
@@ -338,7 +338,7 @@ public class RecentReferenceSystems {
                     systemsOrCodes.add(code);
                 }
             }
-            modified();
+            listModified();
         }
         // Parsing will be done in `filterReferenceSystems()` method.
     }
@@ -483,7 +483,7 @@ public class RecentReferenceSystems {
      * some controls have been created ({@link ChoiceBox} or {@link MenuItem}s), then this method
      * updates their list of items. The update may happen at some time after this method returned.
      */
-    private void modified() {
+    private void listModified() {
         synchronized (systemsOrCodes) {
             isModified = true;
             if (referenceSystems != null) {

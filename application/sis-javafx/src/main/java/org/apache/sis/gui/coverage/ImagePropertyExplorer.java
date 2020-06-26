@@ -84,6 +84,10 @@ public class ImagePropertyExplorer extends Widget {
     /**
      * The root image to describe. This image will be the root of a tree;
      * children will be image {@linkplain RenderedImage#getSources() sources}.
+     *
+     * <div class="note"><b>API note:</b>
+     * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
      */
     public final ObjectProperty<RenderedImage> image;
 
@@ -137,6 +141,10 @@ public class ImagePropertyExplorer extends Widget {
      * Note that setting this property to {@code false} may have the effect of discarding current content
      * when the {@link #image} change. This is done for allowing the garbage collector to reclaim memory.
      * The content is reset to {@link #image} properties when {@code updateOnChange} become {@code true} again.
+     *
+     * <div class="note"><b>API note:</b>
+     * We do not provide getter/setter for this property; use {@link BooleanProperty#set(boolean)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
      */
     public final BooleanProperty updateOnChange;
 
@@ -146,7 +154,7 @@ public class ImagePropertyExplorer extends Widget {
      * and reset to {@code true} when {@code updateOnChange} become {@code true} again.
      *
      * @see #updateOnChange
-     * @see #setEnabled(boolean)
+     * @see #startListening()
      */
     private boolean listening;
 
@@ -461,22 +469,21 @@ public class ImagePropertyExplorer extends Widget {
         view.setOrientation(Orientation.VERTICAL);
         SplitPane.setResizableWithParent(sources, false);
         sources.setMinHeight(50);
-        updateOnChange.addListener((p,o,n) -> {setEnabled(n);});
+        updateOnChange.addListener((p,o,n) -> {if (n) startListening();});
     }
 
     /**
      * Invoked when {@link #updateOnChange} became {@code true}.
      * This method updates the visual components for current image.
+     *
+     * <p>Note: there is no {@code stopListening()} method because setting {@link #listening} flag
+     * to {@code false} will be done by the {@link #setImage(RenderedImage, Rectangle)} method.</p>
      */
-    private void setEnabled(final boolean enabled) {
-        if (enabled) {
-            listening = true;
-            if (sourcesRoot.getValue() == null) {
-                setTreeRoot(image.get());
-                refreshTables();
-            }
-        } else {
-            // Do not set `listening = false` now; it may be done by `setImage(…)` later.
+    private void startListening() {
+        listening = true;
+        if (sourcesRoot.getValue() == null) {
+            setTreeRoot(image.get());
+            refreshTables();
         }
     }
 

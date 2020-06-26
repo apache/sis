@@ -144,9 +144,9 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         flow.setCellFactory(GridRow::new);
         flow.setFocusTraversable(true);
         flow.setFixedCellSize(GridView.getSizeValue(view.cellHeight));
-        view.cellHeight .addListener(this::cellHeightChanged);
-        view.cellWidth  .addListener(this::cellWidthChanged);
-        view.headerWidth.addListener(this::cellWidthChanged);
+        view.cellHeight .addListener((p,o,n) -> cellHeightChanged(n));
+        view.cellWidth  .addListener((p,o,n) -> cellWidthChanged(n, true));
+        view.headerWidth.addListener((p,o,n) -> cellWidthChanged(n, false));
         /*
          * Rectangles for filling the background of the cells in the header row and header column.
          * Those rectangles will be resized and relocated by the `layout(…)` method.
@@ -168,7 +168,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         selection     .setVisible(false);
         selectedRow   .setVisible(false);
         selectedColumn.setVisible(false);
-        flow.setOnMouseExited(this::hideSelection);
+        flow.setOnMouseExited((e) -> hideSelection());
         /*
          * The status bar where to show coordinates of selected cell.
          * Mouse exit event is handled by `hideSelection(…)`.
@@ -221,7 +221,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
     /**
      * Hides the selection when the mouse moved outside the grid view area.
      */
-    private void hideSelection(final MouseEvent event) {
+    private void hideSelection() {
         selection     .setVisible(false);
         selectedRow   .setVisible(false);
         selectedColumn.setVisible(false);
@@ -232,7 +232,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
      * Invoked when the value of {@link GridView#cellHeight} property changed.
      * This method copies the new value into {@link VirtualFlow#fixedCellSizeProperty()} after bounds check.
      */
-    private void cellHeightChanged(ObservableValue<? extends Number> property, Number oldValue, Number newValue) {
+    private void cellHeightChanged(Number newValue) {
         final Flow flow = (Flow) getVirtualFlow();
         double value = newValue.doubleValue();
         if (!(value >= GridView.MIN_CELL_SIZE)) {           // Use ! for catching NaN values.
@@ -247,8 +247,11 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
     /**
      * Invoked when the cell width or header width changed.
      * This method notifies all children about the new width.
+     *
+     * @param  cell  {@code true} if modifying the width of cells, or
+     *               {@code false} if modifying the width of headers.
      */
-    private void cellWidthChanged(ObservableValue<? extends Number> property, Number oldValue, Number newValue) {
+    private void cellWidthChanged(Number newValue, final boolean cell) {
         final GridView view = getSkinnable();
         final double width = view.getContentWidth();
         for (final Node child : getChildren()) {
@@ -256,7 +259,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
                 ((GridRow) child).setPrefWidth(width);
             }
         }
-        if (property == view.cellWidth) {
+        if (cell) {
             selection.setVisible(false);
             selection.setWidth(newValue.doubleValue());
         }

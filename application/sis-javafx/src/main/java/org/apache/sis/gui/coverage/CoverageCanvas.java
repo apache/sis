@@ -28,10 +28,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.beans.DefaultProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WritableValue;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
@@ -74,6 +76,7 @@ import org.apache.sis.measure.Units;
  * @since 1.1
  * @module
  */
+@DefaultProperty("coverage")
 public class CoverageCanvas extends MapCanvasAWT {
     /**
      * The data shown in this canvas. Note that setting this property to a non-null value may not
@@ -197,6 +200,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see #coverageProperty
      */
     public final void setCoverage(final GridCoverage coverage) {
+        assert Platform.isFxApplicationThread();
         coverageProperty.set(coverage);
     }
 
@@ -323,8 +327,8 @@ public class CoverageCanvas extends MapCanvasAWT {
     /**
      * Invoked when a new interpolation has been specified.
      */
-    private void onInterpolationSpecified(final Interpolation interpolation) {
-        data.processor.setInterpolation(interpolation);
+    private void onInterpolationSpecified(final Interpolation newValue) {
+        data.processor.setInterpolation(newValue);
         resampledImages.clear();
         requestRepaint();
     }

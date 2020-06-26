@@ -19,7 +19,6 @@ package org.apache.sis.gui.coverage;
 import java.awt.Rectangle;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
-import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.TilePane;
@@ -98,8 +97,8 @@ final class GridError extends VBox {
         getChildren().addAll(message, buttons);
         setAlignment(Pos.CENTER);
         setPadding(new Insets(12, 18, 24, 18));
-        details.setOnAction(this::showDetails);
-        retry  .setOnAction(this::retry);
+        details.setOnAction((e) -> showDetails());
+        retry  .setOnAction((e) -> retry());
     }
 
     /**
@@ -116,14 +115,14 @@ final class GridError extends VBox {
     /**
      * Invoked when the user click on the "details" button.
      */
-    private void showDetails(final ActionEvent event) {
+    private void showDetails() {
         ExceptionReporter.show(Resources.format(Resources.Keys.ErrorDataAccess), header, exception);
     }
 
     /**
      * Invoked when the user asked to retry a tile computation.
      */
-    private void retry(final ActionEvent event) {
+    private void retry() {
         final GridView view = (GridView) getParent();
         ((GridViewSkin) view.getSkin()).removeError(this);
         tile.clear();

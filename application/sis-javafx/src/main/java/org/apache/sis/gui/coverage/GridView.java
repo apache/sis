@@ -93,6 +93,7 @@ public class GridView extends Control {
      *
      * @see #getImage()
      * @see #setImage(RenderedImage)
+     * @see #setImage(ImageRequest)
      */
     public final ObjectProperty<RenderedImage> imageProperty;
 

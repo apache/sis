@@ -29,7 +29,6 @@ import java.util.Optional;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.TreeCell;
@@ -102,9 +101,9 @@ public class ResourceTree extends TreeView<Resource> {
      */
     public ResourceTree() {
         localized = Resources.forLocale(null);
-        setCellFactory(ResourceTree::newCell);
+        setCellFactory((v) -> new Cell());
         setOnDragOver(ResourceTree::onDragOver);
-        setOnDragDropped(this::load);
+        setOnDragDropped(this::onDragDropped);
     }
 
     /**
@@ -209,7 +208,7 @@ public class ResourceTree extends TreeView<Resource> {
      *
      * @param  event  the "drag and drop" event.
      */
-    private void load(final DragEvent event) {
+    private void onDragDropped(final DragEvent event) {
         final Dragboard db = event.getDragboard();
         final List<File> files = db.getFiles();
         boolean success = false;
@@ -298,17 +297,6 @@ public class ResourceTree extends TreeView<Resource> {
             }
         }
         return false;
-    }
-
-    /**
-     * Invoked when a new cell needs to be created. This method creates a specialized instance
-     * which will get the cell text from a resource by a call to {@link #getTitle(Resource, boolean)}.
-     *
-     * @param  tree  the {@link ResourceTree} for which to create a cell.
-     * @return a new cell renderer for the given tree.
-     */
-    private static TreeCell<Resource> newCell(final TreeView<Resource> tree) {
-        return new Cell();
     }
 
     /**
@@ -409,7 +397,8 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * The visual appearance of an {@link Item} in a tree. Cells are initially empty;
+     * The visual appearance of an {@link Item} in a tree. This call gets the cell text from a resource
+     * by a call to {@link ResourceTree#getTitle(Resource, boolean)}. Cells are initially empty;
      * their content will be specified by {@link TreeView} after construction.
      * The same call may be recycled many times for different {@link Item} data.
      *
@@ -481,7 +470,7 @@ public class ResourceTree extends TreeView<Resource> {
                     if (menu == null) {
                         final Resources localized = tree.localized;
                         menu = new ContextMenu();
-                        menu.getItems().add(localized.menu(Resources.Keys.Close, this::close));
+                        menu.getItems().add(localized.menu(Resources.Keys.Close, (e) -> close()));
                     }
                 }
                 setContextMenu(menu);
@@ -491,7 +480,7 @@ public class ResourceTree extends TreeView<Resource> {
         /**
          * Invoked when user selected the "close" action in the contextual menu.
          */
-        private void close(final ActionEvent event) {
+        private void close() {
             ((ResourceTree) getTreeView()).removeAndClose(getItem());
         }
     }

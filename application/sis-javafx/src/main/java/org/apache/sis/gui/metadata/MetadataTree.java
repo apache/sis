@@ -212,15 +212,15 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
      *
      * @param  property  the property which has been modified.
      * @param  oldValue  the old tree table.
-     * @param  content   the tree table to use for building new content.
+     * @param  newValue  the tree table to use for building new content.
      */
     private static void applyChange(final ObservableValue<? extends TreeTable> property,
-                                    final TreeTable oldValue, final TreeTable  content)
+                                    final TreeTable oldValue, final TreeTable  newValue)
     {
         final MetadataTree s = (MetadataTree) ((ContentProperty) property).getBean();
         TreeItem<TreeTable.Node> root = null;
-        if (content != null) {
-            root = new Item(content.getRoot());
+        if (newValue != null) {
+            root = new Item(newValue.getRoot());
             root.setExpanded(true);
         }
         s.setRoot(root);

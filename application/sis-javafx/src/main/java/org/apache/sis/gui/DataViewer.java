@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
@@ -97,7 +96,7 @@ public class DataViewer extends Application {
     private FileChooser.ExtensionFilter[] saveFilters;
 
     /**
-     * The last filter used by the {@link #open(ActionEvent)} action.
+     * The last filter used by the {@link #showOpenFileDialog()} action.
      */
     private FileChooser.ExtensionFilter lastFilter;
 
@@ -128,7 +127,7 @@ public class DataViewer extends Application {
         {   // For keeping variables locale.
             final MenuItem open;
             file.getItems().addAll(
-                    open = localized.menu(Resources.Keys.Open, this::open),
+                    open = localized.menu(Resources.Keys.Open, (e) -> showOpenFileDialog()),
                     new SeparatorMenuItem(),
                     localized.menu(Resources.Keys.Exit, (event) -> Platform.exit()));
 
@@ -204,10 +203,8 @@ public class DataViewer extends Application {
      * Invoked when the user selects "File" ▶ "Open" menu.
      * Users can select an arbitrary amount of files or directories.
      * The effect is the same as dragging the files in the "resources tree" window.
-     *
-     * @param  event  ignored (can be {@code null}).
      */
-    private void open(final ActionEvent event) {
+    private void showOpenFileDialog() {
         if (openFilters == null) {
             createFileFilters();
             lastFilter = openFilters[1];
