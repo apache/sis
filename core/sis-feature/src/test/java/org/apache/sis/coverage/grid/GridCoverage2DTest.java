@@ -37,6 +37,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -59,7 +60,11 @@ public strictfp class GridCoverage2DTest extends TestCase {
      * Disables tests that are pending <a href="https://bugs.openjdk.java.net/browse/JDK-8166038">JDK-8166038</a> fix.
      * If {@link BufferedImage} can not be used, fallback on {@link ReshapedImage} at the cost of an image larger than
      * necessary. In such case, the tests need to specify the sub-region of pixels to verify.
+     *
+     * <p>If JDK-8166038 is fixed, remove the {@code if (result.getTileGridXOffset() == ix && ...)} test in
+     * {@link GridCoverage2D#render(GridExtent)}.</p>
      */
+    @Workaround(library="JDK", version="14")
     private static final boolean PENDING_JDK_FIX = false;
 
     /**
