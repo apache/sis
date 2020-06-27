@@ -357,7 +357,7 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Returns a tolerant index color model for the specified ARGB code.
+     * Returns a tolerant index color model for the specified ARGB codes.
      * This color model accepts image with the specified number of bands.
      *
      * <p>This methods caches previously created instances using weak references,

@@ -245,6 +245,14 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     }
 
     /**
+     * Returns the source at index 0 without any check. This method is invoked by subclasses who know that a
+     * single source exist. This method should not be in public API because of the absence of verification.
+     */
+    final RenderedImage getSource() {
+        return sources[0];
+    }
+
+    /**
      * Returns the immediate sources of image data for this image (may be {@code null}).
      * This method returns all sources specified at construction time.
      *

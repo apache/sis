@@ -16,16 +16,14 @@
  */
 package org.apache.sis.image;
 
-import java.awt.image.ColorModel;
+import java.util.Set;
 import java.awt.image.DataBuffer;
-import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
-import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
-import org.apache.sis.util.Workaround;
+import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -37,17 +35,23 @@ import org.apache.sis.util.Workaround;
  * @since   1.1
  * @module
  */
-final class PositionalConsistencyImage extends ComputedImage {
+final class PositionalConsistencyImage extends SourceAlignedImage {
     /**
-     * The color model for this image.
-     * Arbitrarily configured for an error range from 0 to 1.
+     * Properties inherited from the source image. Must be consistent with the <cite>switch case</cite>
+     * statement delegating to the source image in {@link #getProperty(String)}.
+     *
+     * @see #getPropertyNames()
      */
-    private final ColorModel colorModel;
+    private static final Set<String> INHERITED_PROPERTIES = JDK9.setOf(
+            GRID_GEOMETRY_KEY, POSITIONAL_ACCURACY_KEY, MASK_KEY);
 
     /**
-     * Domain of pixel coordinates in this image.
+     * Properties added by this image, no matter if present in source image or not. Must be consistent with
+     * the <cite>switch case</cite> statement doing its own calculation in {@link #getProperty(String)}.
+     *
+     * @see #getPropertyNames()
      */
-    private final int minX, minY, width, height;
+    private static final String[] ADDED_PROPERTIES = {SAMPLE_RESOLUTIONS_KEY};
 
     /**
      * A copy of {@link ResampledImage#toSourceSupport} with the support translation removed.
@@ -67,48 +71,28 @@ final class PositionalConsistencyImage extends ComputedImage {
      * Creates a new instance for the given image.
      */
     PositionalConsistencyImage(final ResampledImage image, final MathTransform toSource) throws TransformException {
-        super(createSampleModel(image.getSampleModel()), image);
+        super(image, ColorModelFactory.createGrayScale(DataBuffer.TYPE_FLOAT, 1, 0, 0, 1));
         this.toSource = toSource;
         this.toTarget = image.toSource.inverse();
-        this.minX     = image.getMinX();
-        this.minY     = image.getMinY();
-        this.width    = image.getWidth();
-        this.height   = image.getHeight();
-        colorModel    = ColorModelFactory.createGrayScale(DataBuffer.TYPE_FLOAT, 1, 0, 0, 1);
     }
 
     /**
-     * Creates the sample model. This is a workaround for RFE #4093999
-     * ("Relax constraint on placement of this()/super() call in constructors").
-     */
-    @Workaround(library="JDK", version="1.8")
-    private static SampleModel createSampleModel(final SampleModel origin) {
-        final int width = origin.getWidth();
-        return new PixelInterleavedSampleModel(DataBuffer.TYPE_FLOAT, width, origin.getHeight(), 1, width, new int[1]);
-    }
-
-    /**
-     * Returns an arbitrary color model for this image.
-     */
-    @Override
-    public ColorModel getColorModel() {
-        return colorModel;
-    }
-
-    /**
-     * Gets a property from this image. Current default implementation supports the following keys
-     * (more properties may be added to this list in future Apache SIS versions):
-     *
-     * <ul>
-     *   <li>{@value #SAMPLE_RESOLUTIONS_KEY}</li>
-     * </ul>
+     * Gets a property from this image.
      */
     @Override
     public Object getProperty(final String key) {
-        if (SAMPLE_RESOLUTIONS_KEY.equals(key)) {
-            return new double[] {ResamplingGrid.TOLERANCE / 8};
-        } else {
-            return super.getProperty(key);
+        switch (key) {
+            case SAMPLE_RESOLUTIONS_KEY: {
+                return new double[] {ResamplingGrid.TOLERANCE / 8};
+            }
+            case POSITIONAL_ACCURACY_KEY:
+            case GRID_GEOMETRY_KEY:
+            case MASK_KEY: {
+                return getSource().getProperty(key);
+            }
+            default: {
+                return super.getProperty(key);
+            }
         }
     }
 
@@ -119,41 +103,7 @@ final class PositionalConsistencyImage extends ComputedImage {
      */
     @Override
     public String[] getPropertyNames() {
-        return new String[] {
-            SAMPLE_RESOLUTIONS_KEY
-        };
-    }
-
-    /**
-     * Returns the minimum <var>x</var> coordinate (inclusive) of this image.
-     */
-    @Override
-    public final int getMinX() {
-        return minX;
-    }
-
-    /**
-     * Returns the minimum <var>y</var> coordinate (inclusive) of this image.
-     */
-    @Override
-    public final int getMinY() {
-        return minY;
-    }
-
-    /**
-     * Returns the number of columns in this image.
-     */
-    @Override
-    public final int getWidth() {
-        return width;
-    }
-
-    /**
-     * Returns the number of rows in this image.
-     */
-    @Override
-    public final int getHeight() {
-        return height;
+        return getPropertyNames(INHERITED_PROPERTIES, ADDED_PROPERTIES);
     }
 
     /**

@@ -172,6 +172,20 @@ public abstract class PlanarImage implements RenderedImage {
     public static final String STATISTICS_KEY = "org.apache.sis.Statistics";
 
     /**
+     * Key of property providing a mask for missing values. Values should be instances of {@link RenderedImage}
+     * with binary sample values and a color model of {@link java.awt.Transparency#BITMASK} type.
+     * The binary values 0 and 1 are alpha values: 0 for fully transparent pixels and 1 for fully opaque pixels.
+     * For every pixel (<var>x</var>,<var>y</var>) in this image, the pixel at the same coordinates in the mask
+     * is either fully transparent (sample value 0) if the sample value in this image is valid, or fully opaque
+     * (sample value 1) if the sample value in this image is invalid ({@link Float#NaN}).
+     *
+     * <p>Note that it is usually not necessary to use masks explicitly in Apache SIS because missing values
+     * are represented by {@link Float#NaN}. This property is provided for algorithms that can not work with
+     * NaN values.</p>
+     */
+    public static final String MASK_KEY = "org.apache.sis.Mask";
+
+    /**
      * Creates a new rendered image.
      */
     protected PlanarImage() {
@@ -215,6 +229,9 @@ public abstract class PlanarImage implements RenderedImage {
      *   </tr><tr>
      *     <td>{@value #STATISTICS_KEY}</td>
      *     <td>Minimum, maximum and mean values for each band.</td>
+     *   </tr><tr>
+     *     <td>{@value #MASK_KEY}</td>
+     *     <td>Image with transparent pixels at locations of valid values and opaque pixels elsewhere.</td>
      *   </tr><tr>
      *     <td>{@value ResampledImage#POSITIONAL_CONSISTENCY_KEY}</td>
      *     <td>Estimation of positional error for each pixel as a consistency check.</td>

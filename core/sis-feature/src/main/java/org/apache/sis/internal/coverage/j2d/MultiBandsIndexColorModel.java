@@ -24,6 +24,7 @@ import java.awt.image.WritableRaster;
 import java.awt.image.IndexColorModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
+import java.awt.image.SinglePixelPackedSampleModel;
 
 
 /**
@@ -198,7 +199,7 @@ final class MultiBandsIndexColorModel extends IndexColorModel {
      */
     @Override
     public WritableRaster createCompatibleWritableRaster(final int width, final int height) {
-        return Raster.createBandedRaster(transferType, width, height, numBands, null);
+        return Raster.createWritableRaster(createCompatibleSampleModel(width, height), null);
     }
 
     /**
@@ -207,7 +208,15 @@ final class MultiBandsIndexColorModel extends IndexColorModel {
      */
     @Override
     public SampleModel createCompatibleSampleModel(final int width, final int height) {
-        return RasterFactory.unique(new BandedSampleModel(transferType, width, height, numBands));
+        final SampleModel sm;
+        if (pixel_bits <= DataBuffer.getDataTypeSize(transferType) / numBands) {
+            final int[] bitMasks = new int[numBands];
+            Arrays.fill(bitMasks, pixel_bits);
+            sm = new SinglePixelPackedSampleModel(transferType, width, height, width, bitMasks);
+        } else {
+            sm = new BandedSampleModel(transferType, width, height, numBands);
+        }
+        return RasterFactory.unique(sm);
     }
 
     /**
@@ -228,7 +237,7 @@ final class MultiBandsIndexColorModel extends IndexColorModel {
      */
     @Override
     public boolean isCompatibleSampleModel(final SampleModel sm) {
-        return (sm instanceof ComponentSampleModel)                  &&
+        return (sm instanceof ComponentSampleModel || sm instanceof SinglePixelPackedSampleModel) &&
                 sm.getTransferType()                 == transferType &&
                 sm.getNumBands()                     == numBands     &&
                 (1 << sm.getSampleSize(visibleBand)) >= getMapSize();

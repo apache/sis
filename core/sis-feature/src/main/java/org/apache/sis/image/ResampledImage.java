@@ -154,6 +154,14 @@ public class ResampledImage extends ComputedImage {
     private Reference<ComputedImage> positionalConsistency;
 
     /**
+     * {@link #MASK_KEY} value, computed when first requested.
+     *
+     * @see #getMask()
+     * @see #getProperty(String)
+     */
+    private Reference<ComputedImage> mask;
+
+    /**
      * Creates a new image which will resample the given image. The resampling operation is defined
      * by a non-linear transform from <em>this</em> image to the specified <em>source</em> image.
      * That transform should map {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER pixel centers}.
@@ -357,6 +365,21 @@ public class ResampledImage extends ComputedImage {
     }
 
     /**
+     * Computes the {@value #MASK_KEY} value. This method is invoked by {@link #getProperty(String)} when the
+     * {@link #MASK_KEY} property value is requested. The result is saved by weak reference since recomputing
+     * this image is rarely requested, and if needed can be recomputed easily.
+     */
+    private synchronized RenderedImage getMask() {
+        ComputedImage image = (mask != null) ? mask.get() : null;
+        if (image == null) {
+            mask = null;                    // Cleared first in case an error occurs below.
+            image = new MaskImage(this);
+            mask = image.reference();
+        }
+        return image;
+    }
+
+    /**
      * Verifies whether image layout information are consistent. This method performs all verifications
      * {@linkplain ComputedImage#verify() documented in parent class}, then verifies that source coordinates
      * required by this image (computed by converting {@linkplain #getBounds() this image bounds} using the
@@ -393,13 +416,6 @@ public class ResampledImage extends ComputedImage {
     }
 
     /**
-     * Returns the unique source of this resampled image.
-     */
-    private RenderedImage getSource() {
-        return getSource(0);
-    }
-
-    /**
      * Returns the same color model than the source image.
      *
      * @return the color model, or {@code null} if unspecified.
@@ -414,8 +430,10 @@ public class ResampledImage extends ComputedImage {
      * (more properties may be added to this list in future Apache SIS versions):
      *
      * <ul>
+     *   <li>{@value #POSITIONAL_ACCURACY_KEY}</li>
      *   <li>{@value #POSITIONAL_CONSISTENCY_KEY}</li>
      *   <li>{@value #SAMPLE_RESOLUTIONS_KEY} (forwarded to the source image)</li>
+     *   <li>{@value #MASK_KEY} if the image uses floating point numbers.</li>
      * </ul>
      *
      * <div class="note"><b>Note:</b>
@@ -438,10 +456,12 @@ public class ResampledImage extends ComputedImage {
             } catch (TransformException | IllegalArgumentException e) {
                 throw (ImagingOpException) new ImagingOpException(e.getMessage()).initCause(e);
             }
-            default: {
-                return super.getProperty(key);
+            case MASK_KEY: {
+                if (ImageUtilities.isIntegerType(sampleModel.getDataType())) break;
+                return getMask();
             }
         }
+        return super.getProperty(key);
     }
 
     /**
@@ -457,14 +477,19 @@ public class ResampledImage extends ComputedImage {
         final String[] names = {
             SAMPLE_RESOLUTIONS_KEY,
             POSITIONAL_ACCURACY_KEY,
-            POSITIONAL_CONSISTENCY_KEY
+            POSITIONAL_CONSISTENCY_KEY,
+            MASK_KEY
         };
         int n = 0;
         for (final String name : names) {
-            if (name != POSITIONAL_CONSISTENCY_KEY) {
+            if (name != POSITIONAL_CONSISTENCY_KEY) {           // Identity comparisons are okay for this method.
                 if (name == POSITIONAL_ACCURACY_KEY) {
                     if (getPositionalAccuracyCount() == 0) {
-                        continue;                   // Exclude PositionalAccuracy change.
+                        continue;                               // Exclude PositionalAccuracy change.
+                    }
+                } else if (name == MASK_KEY) {
+                    if (ImageUtilities.isIntegerType(sampleModel.getDataType())) {
+                        continue;
                     }
                 } else if (!ArraysExt.contains(inherited, name)) {
                     continue;                       // Exclude inherited property not defined by source.
