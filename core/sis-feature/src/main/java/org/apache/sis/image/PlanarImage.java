@@ -173,11 +173,15 @@ public abstract class PlanarImage implements RenderedImage {
 
     /**
      * Key of property providing a mask for missing values. Values should be instances of {@link RenderedImage}
-     * with binary sample values and a color model of {@link java.awt.Transparency#BITMASK} type.
+     * with a single band, binary sample values and a color model of {@link java.awt.Transparency#BITMASK} type.
      * The binary values 0 and 1 are alpha values: 0 for fully transparent pixels and 1 for fully opaque pixels.
      * For every pixel (<var>x</var>,<var>y</var>) in this image, the pixel at the same coordinates in the mask
      * is either fully transparent (sample value 0) if the sample value in this image is valid, or fully opaque
      * (sample value 1) if the sample value in this image is invalid ({@link Float#NaN}).
+     *
+     * <p>If this {@code PlanarImage} has more than one band, then the value for this property is the overlay of
+     * masks of each band: pixels are 0 when sample values are valid in all bands, and 1 when sample value is
+     * invalid in at least one band.</p>
      *
      * <p>Note that it is usually not necessary to use masks explicitly in Apache SIS because missing values
      * are represented by {@link Float#NaN}. This property is provided for algorithms that can not work with

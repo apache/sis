@@ -49,7 +49,7 @@ final class MaskImage extends SourceAlignedImage {
      */
     MaskImage(final ResampledImage image) {
         super(image, ColorModelFactory.createIndexColorModel(new int[] {0, -1},
-                image.getSampleModel().getNumBands(), ImageUtilities.getVisibleBand(image), 0));
+                1, ImageUtilities.getVisibleBand(image), 0));
     }
 
     /**
@@ -82,14 +82,16 @@ final class MaskImage extends SourceAlignedImage {
     @Override
     protected Raster computeTile(final int tileX, final int tileY, WritableRaster tile) throws TransformException {
         final Raster source = getSource().getTile(tileX, tileY);
-        if (tile == null) {
-            tile = createTile(tileX, tileY);
-        }
+        /*
+         * Create a new tile unconditionally, without checking if a we can recycle a previous tile,
+         * because we need a tile will all sample values initialized to zero. It should not happen
+         * often that there is a tile to recycle anyway.
+         */
+        tile = createTile(tileX, tileY);
         final int tileMinX = tile.getMinX();
         final int tileMinY = tile.getMinY();
         final int tileMaxX = Math.addExact(tileMinX, tile.getWidth());
         final int tileMaxY = Math.addExact(tileMinY, tile.getHeight());
-        final int[] pixel  = new int[tile.getNumBands()];
         float[] values = null;
         /*
          * Following algorithm is inefficient; it would be much faster to read or write directly in the arrays.
@@ -98,10 +100,13 @@ final class MaskImage extends SourceAlignedImage {
         for (int y=tileMinY; y<tileMaxY; y++) {
             for (int x=tileMinX; x<tileMaxX; x++) {
                 values = source.getPixel(x, y, values);
-                for (int i=0; i<pixel.length; i++) {
-                    pixel[i] = Float.isNaN(values[i]) ? 1 : 0;
+                for (int i=0; i<values.length; i++) {
+                    if (Float.isNaN(values[i])) {
+                        tile.setSample(x, y, 0, 1);
+                        break;
+                    }
                 }
-                tile.setPixel(x, y, pixel);
+                // Otherwise leave the value to 0.
             }
         }
         return tile;
