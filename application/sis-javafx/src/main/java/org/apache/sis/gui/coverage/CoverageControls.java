@@ -68,7 +68,8 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
     private final BorderPane imageAndStatus;
 
     /**
-     * The coordinate reference system selected in the {@link ChoiceBox}.
+     * The selected reference system in the context menu, or {@code null} if there is no such property.
+     * This property is provided by {@link RecentReferenceSystems}.
      */
     private final ObjectProperty<ReferenceSystem> referenceSystem;
 
@@ -89,35 +90,25 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
         view.statusBar = statusBar;
         imageAndStatus = new BorderPane(view.getView());
         imageAndStatus.setBottom(statusBar.getView());
+        referenceSystem = view.createContextMenu(referenceSystems);
         /*
          * "Display" section with the following controls:
-         *    - Coordinate reference system
          *    - Interpolation
          *    - Color stretching
          *    - Background color
          */
         final VBox displayPane;
         {   // Block for making variables locale to this scope.
-            final GridPane referencing = createControlGrid(1,
+            final GridPane referencing = createControlGrid(0,
                 label(vocabulary, Vocabulary.Keys.Interpolation, createInterpolationButton(vocabulary.getLocale()))
             );
-            final ChoiceBox<ReferenceSystem> systemChoices = referenceSystems.createChoiceBox((p,o,n) -> {
-                if (n instanceof CoordinateReferenceSystem) {
-                    view.setObjectiveCRS((CoordinateReferenceSystem) n, p);
-                }
-            });
-            systemChoices.setMaxWidth(Double.POSITIVE_INFINITY);
-            GridPane.setConstraints(systemChoices, 0, 0, 2, 1);     // First row and column, span 2 columns.
-            referencing.getChildren().add(systemChoices);
-            referenceSystem = systemChoices.valueProperty();
-
             final GridPane colors = createControlGrid(0,
                 label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStyling(n))),
                 label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton(background))
             );
             displayPane = new VBox(
-                labelOfGroup(vocabulary, Vocabulary.Keys.ReferenceSystem, referencing, true), referencing,
-                labelOfGroup(vocabulary, Vocabulary.Keys.Colors,          colors,     false), colors);
+                labelOfGroup(vocabulary, Vocabulary.Keys.Values, referencing, true), referencing,
+                labelOfGroup(vocabulary, Vocabulary.Keys.Colors, colors,     false), colors);
         }
         /*
          * Put all sections together and have the first one expanded by default.

@@ -423,6 +423,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         view.setOnMousePressed((event) -> {
             if (event.isSecondaryButtonDown() && !menu.getItems().isEmpty()) {
                 menu.show((HBox) event.getSource(), event.getScreenX(), event.getScreenY());
+                event.consume();
             } else {
                 menu.hide();
             }

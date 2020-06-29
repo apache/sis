@@ -25,14 +25,20 @@ import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import javafx.scene.paint.Color;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.control.Menu;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.input.MouseEvent;
+import javafx.event.EventHandler;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WritableValue;
+import javafx.beans.value.ChangeListener;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javax.measure.Quantity;
@@ -52,12 +58,14 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.geometry.AbstractEnvelope;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.gui.map.StatusBar;
+import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.system.Modules;
@@ -165,6 +173,56 @@ public class CoverageCanvas extends MapCanvasAWT {
         imageProperty = new ImagePropertyExplorer(getLocale(), fixedPane.backgroundProperty());
         imageProperty.setImage(resampledImages.get(data.selectedDerivative), getVisibleImageBounds());
         return imageProperty;
+    }
+
+    /**
+     * Creates and register a contextual menu.
+     */
+    final ObjectProperty<ReferenceSystem> createContextMenu(final RecentReferenceSystems referenceSystems) {
+        final MenuHandler handler = new MenuHandler();
+        fixedPane.setOnMousePressed(handler);
+        final Menu systemChoices = referenceSystems.createMenuItems(handler);
+        handler.menu.getItems().setAll(systemChoices);
+        return RecentReferenceSystems.getSelectedProperty(systemChoices);
+    }
+
+    /**
+     * Shows or hides the contextual menu when right mouse button is clicked, with information about the
+     * location where the click occurred.
+     */
+    @SuppressWarnings("serial")                                         // Not intended to be serialized.
+    private final class MenuHandler extends DirectPosition2D
+            implements EventHandler<MouseEvent>, ChangeListener<ReferenceSystem>
+    {
+        /** The contextual menu to show or hide. */
+        final ContextMenu menu;
+
+        /** Creates a new handler. */
+        MenuHandler() {
+            super(getDisplayCRS());
+            menu = new ContextMenu();
+        }
+
+        /** Shows the menu on right mouse click, hide otherwise. */
+        @Override public void handle(final MouseEvent event) {
+            if (event.isSecondaryButtonDown()) {
+                x = event.getX();
+                y = event.getY();
+                menu.show((Pane) event.getSource(), event.getScreenX(), event.getScreenY());
+                event.consume();
+            } else {
+                menu.hide();
+            }
+        }
+
+        /** Invoked when user selected a new coordinate reference system among menu items. */
+        @Override public void changed(final ObservableValue<? extends ReferenceSystem> property,
+                                      final ReferenceSystem oldValue, final ReferenceSystem newValue)
+        {
+            if (newValue instanceof CoordinateReferenceSystem) {
+                setObjectiveCRS((CoordinateReferenceSystem) newValue, this, property);
+            }
+        }
     }
 
     /**
@@ -545,16 +603,20 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Invoked when the user changed the CRS from a JavaFX control. If the CRS can not be set to the specified
      * value, then an error message is shown in the status bar and the property is reset to its previous value.
      *
-     * @param  crs  the new Coordinate Reference System in which to transform all data before displaying.
+     * @param  crs       the new Coordinate Reference System in which to transform all data before displaying.
+     * @param  anchor    the point to keep at fixed display coordinates, or {@code null} for default value.
      * @param  property  the property to reset if the operation fails.
      */
-    final void setObjectiveCRS(final CoordinateReferenceSystem crs, final ObservableValue<? extends ReferenceSystem> property) {
+    private void setObjectiveCRS(final CoordinateReferenceSystem crs, DirectPosition anchor,
+                                 final ObservableValue<? extends ReferenceSystem> property)
+    {
         final CoordinateReferenceSystem previous = getObjectiveCRS();
         if (crs != previous) try {
-            DirectPosition anchor = null;
-            final Envelope2D bounds = getDisplayBounds();
-            if (bounds != null) {
-                anchor = AbstractEnvelope.castOrCopy(bounds).getMedian();
+            if (anchor == null) {
+                final Envelope2D bounds = getDisplayBounds();
+                if (bounds != null) {
+                    anchor = AbstractEnvelope.castOrCopy(bounds).getMedian();
+                }
             }
             setObjectiveCRS(crs, anchor);
             requestRepaint();
