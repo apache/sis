@@ -18,8 +18,6 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
 import java.util.Objects;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Control;
@@ -27,6 +25,7 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -38,8 +37,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.util.StringConverter;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.image.Interpolation;
@@ -55,7 +54,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @since   1.1
  * @module
  */
-final class CoverageControls extends Controls implements PropertyChangeListener {
+final class CoverageControls extends Controls {
     /**
      * The component for showing sample values.
      */
@@ -70,12 +69,6 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
      * The image together with the status bar.
      */
     private final BorderPane imageAndStatus;
-
-    /**
-     * The selected reference system in the context menu, or {@code null} if there is no such property.
-     * This property is provided by {@link RecentReferenceSystems}.
-     */
-    private final ObjectProperty<ReferenceSystem> referenceSystem;
 
     /**
      * Creates a new set of coverage controls.
@@ -94,26 +87,43 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
         view.statusBar = statusBar;
         imageAndStatus = new BorderPane(view.getView());
         imageAndStatus.setBottom(statusBar.getView());
-        referenceSystem = view.createContextMenu(referenceSystems);
+        final ObjectProperty<ReferenceSystem> referenceSystem = view.createContextMenu(referenceSystems);
+        final Locale locale = vocabulary.getLocale();
         /*
          * "Display" section with the following controls:
+         *    - Current CRS
          *    - Interpolation
          *    - Color stretching
          *    - Background color
          */
-        final GridPane displayPane;
+        final VBox displayPane;
         {   // Block for making variables locale to this scope.
+            final Font  font     = fontOfGroup();
+            final Label crsLabel = new Label(vocabulary.getString(Vocabulary.Keys.ReferenceSystem));
+            final Label crsShown = new Label();
+            crsLabel.setLabelFor(crsShown);
+            crsLabel.setFont(font);
+            crsLabel.setPadding(Styles.FORM_INSETS);
+            crsShown.setPadding(INDENT_OUTSIDE);
+            referenceSystem.addListener((p,o,n) -> {
+                crsShown.setText(IdentifiedObjects.getDisplayName(n, locale));
+            });
+            /*
+             * The pane containing controls will be divided in sections separated by labels:
+             * ones for values and one for colors.
+             */
             final int valuesHeader = 0;
             final int colorsHeader = 2;
-            displayPane = Styles.createControlGrid(valuesHeader + 1,
-                label(vocabulary, Vocabulary.Keys.Interpolation, createInterpolationButton(vocabulary.getLocale())),
+            final GridPane gp;
+            gp = Styles.createControlGrid(valuesHeader + 1,
+                label(vocabulary, Vocabulary.Keys.Interpolation, createInterpolationButton(locale)),
                 label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStyling(n))),
                 label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton(background)));
             /*
-             * Insert space (one row) betweeb "interpolation" and "stretching"
+             * Insert space (one row) between "interpolation" and "stretching"
              * so we can insert the "colors" section header.
              */
-            final ObservableList<Node> items = displayPane.getChildren();
+            final ObservableList<Node> items = gp.getChildren();
             for (final Node item : items) {
                 if (GridPane.getColumnIndex(item) == 0) {
                     ((Label) item).setPadding(INDENT);
@@ -123,7 +133,6 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
                     GridPane.setRowIndex(item, row + 1);
                 }
             }
-            final Font font = fontOfGroup();
             final Label values = new Label(vocabulary.getString(Vocabulary.Keys.Values));
             final Label colors = new Label(vocabulary.getString(Vocabulary.Keys.Colors));
             values.setFont(font);
@@ -131,6 +140,7 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
             GridPane.setConstraints(values, 0, valuesHeader, 2, 1);    // Span 2 columns.
             GridPane.setConstraints(colors, 0, colorsHeader, 2, 1);
             items.addAll(values, colors);
+            displayPane = new VBox(crsLabel, crsShown, gp);
         }
         /*
          * Put all sections together and have the first one expanded by default.
@@ -141,7 +151,6 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
         controls = new Accordion(p1, p2);
         controls.setExpandedPane(p1);
         view.coverageProperty.bind(coverage);
-        view.addPropertyChangeListener(CoverageCanvas.OBJECTIVE_CRS_PROPERTY, this);
         p2.expandedProperty().addListener(new PropertyPaneCreator(view, p2));
     }
 
@@ -259,19 +268,6 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
     @Override
     final void coverageChanged(final GridCoverage data) {
         // TODO
-    }
-
-    /**
-     * Invoked when a canvas property changed, typically after a new coverage has been selected.
-     * The property of interest is {@value CoverageCanvas#OBJECTIVE_CRS_PROPERTY}.
-     * This method updates the CRS selected in the {@link ChoiceBox}.
-     */
-    @Override
-    public void propertyChange(final PropertyChangeEvent event) {
-        final Object value = event.getNewValue();
-        if (value instanceof CoordinateReferenceSystem) {
-            referenceSystem.set((CoordinateReferenceSystem) value);
-        }
     }
 
     /**

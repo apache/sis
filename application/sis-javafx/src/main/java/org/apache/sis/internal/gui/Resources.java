@@ -66,6 +66,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Along_1 = 35;
 
         /**
+         * Azimuthal equidistant
+         */
+        public static final short AzimuthalEquidistant = 42;
+
+        /**
          * Can not close “{0}”. Data may be lost.
          */
         public static final short CanNotClose_1 = 2;
@@ -104,6 +109,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not use the “{0}” reference system.
          */
         public static final short CanNotUseRefSys_1 = 9;
+
+        /**
+         * Centered projection
+         */
+        public static final short CenteredProjection = 43;
 
         /**
          * Close

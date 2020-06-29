@@ -155,7 +155,7 @@ public final class Styles extends Static {
     /**
      * Space between a group of controls and the border encompassing the group.
      */
-    private static final Insets FORM_INSETS = new Insets(12);
+    public static final Insets FORM_INSETS = new Insets(12);
 
     /**
      * Creates a grid pane of two columns and an arbitrary number of rows.

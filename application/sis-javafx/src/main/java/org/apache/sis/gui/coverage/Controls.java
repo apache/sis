@@ -23,6 +23,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
@@ -48,9 +49,16 @@ abstract class Controls {
     private static final Insets NEXT_CAPTION_MARGIN = new Insets(30, 0, 6, 0);
 
     /**
-     * Margin for adding an indentation to a node.
+     * Margin for adding an indentation to a node when the node is inside a group
+     * created by {@link Styles#createControlGrid(int, Label...)}.
      */
     static final Insets INDENT = new Insets(0, 0, 0, 15);
+
+    /**
+     * Margin for adding an indentation to a node when the node is outside a group
+     * created by {@link Styles#createControlGrid(int, Label...)}.
+     */
+    static final Insets INDENT_OUTSIDE = new Insets(0, 0, 0, 15 + Styles.FORM_INSETS.getLeft());
 
     /**
      * The toolbar button for selecting this view.

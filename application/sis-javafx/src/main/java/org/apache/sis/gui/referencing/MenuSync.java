@@ -33,6 +33,8 @@ import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 
 
 /**
@@ -230,17 +232,23 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      * to invoke the potentially costly {@link #action}.
      */
     @Override
-    public void set(final ReferenceSystem system) {
+    public void set(ReferenceSystem system) {
         final ReferenceSystem old = get();
         if (old != system) {
-            super.set(system);
+            final ComparisonMode mode = owner.duplicationCriterion.get();
             for (final MenuItem item : menus) {
-                if (item instanceof RadioMenuItem && item.getProperties().get(REFERENCE_SYSTEM_KEY) == system) {
-                    ((RadioMenuItem) item).setSelected(true);
-                    action.changed(this, old, system);
-                    return;
+                if (item instanceof RadioMenuItem) {
+                    final Object current = item.getProperties().get(REFERENCE_SYSTEM_KEY);
+                    if (Utilities.deepEquals(current, system, mode)) {
+                        system = (ReferenceSystem) current;
+                        super.set(system);
+                        ((RadioMenuItem) item).setSelected(true);
+                        action.changed(this, old, system);
+                        return;
+                    }
                 }
             }
+            super.set(system);
             group.selectToggle(null);
             /*
              * Do not invoke action.changed(…) since we have no non-null value to provide.
