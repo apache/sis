@@ -438,6 +438,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnspecifiedTransform = 54;
 
         /**
+         * Unsupported color model. Expected ‘{0}’ but got ‘{1}’.
+         */
+        public static final short UnsupportedColorModel_2 = 76;
+
+        /**
          * Unsupported geometry {0}D object.
          */
         public static final short UnsupportedGeometryObject_1 = 20;

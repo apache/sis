@@ -19,13 +19,17 @@ package org.apache.sis.image;
 import java.util.Map;
 import java.awt.Shape;
 import java.awt.image.ColorModel;
+import java.awt.image.IndexColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -154,6 +158,33 @@ final class RecoloredImage extends ImageAdapter {
             }
         }
         return source;
+    }
+
+    /**
+     * Implementation of {@link ImageProcessor#recolor(RenderedImage, int[])}.
+     */
+    static RenderedImage recolor(final RenderedImage source, final int[] ARGB) {
+        String expected, actual;                                // To be used in case of error.
+        final ColorModel cm = source.getColorModel();
+        if (cm instanceof IndexColorModel) {
+            final IndexColorModel icm = (IndexColorModel) cm;
+            if (icm.getMapSize() == ARGB.length) {
+                final IndexColorModel newColors = ColorModelFactory.createIndexColorModel(ARGB,
+                                                    ImageUtilities.getNumBands(source),
+                                                    ImageUtilities.getVisibleBand(source), -1);
+                if (cm.equals(newColors)) {
+                    return source;
+                }
+                return ImageProcessor.unique(new RecoloredImage(source, newColors));
+            } else {
+                expected = Strings.toIndexed("IndexColorModel", icm.getMapSize());
+                actual   = Strings.toIndexed("IndexColorModel", ARGB.length);
+            }
+        } else {
+            expected = "IndexColorModel";
+            actual   = Classes.getShortClassName(cm.getClass());
+        }
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.UnsupportedColorModel_2, expected, actual));
     }
 
     /**

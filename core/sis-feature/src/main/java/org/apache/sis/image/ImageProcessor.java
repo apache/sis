@@ -29,6 +29,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
+import java.awt.image.IndexColorModel;
 import javax.measure.Quantity;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.math.Statistics;
@@ -578,6 +579,20 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * Changes the color ramp of the given image. The given image must use an {@link IndexColorModel}
+     * with the same number of colors than the given {@code ARGB} length.
+     *
+     * @param  source  the image for which to replace the color model.
+     * @param  ARGB    Alpha=Red=Green=Blue codes of new color map.
+     * @return image using the given color map.
+     */
+    public RenderedImage recolor(final RenderedImage source, final int[] ARGB) {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("ARGB", ARGB);
+        return RecoloredImage.recolor(source, ARGB);
+    }
+
+    /**
      * Creates a new image which will resample the given image. The resampling operation is defined
      * by a non-linear transform from the <em>new</em> image to the specified <em>source</em> image.
      * That transform should map {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER pixel centers}.
@@ -595,9 +610,9 @@ public class ImageProcessor implements Cloneable {
      * @return resampled image (may be {@code source}).
      */
     public RenderedImage resample(RenderedImage source, final Rectangle bounds, MathTransform toSource) {
+        ArgumentChecks.ensureNonNull("source",   source);
         ArgumentChecks.ensureNonNull("bounds",   bounds);
         ArgumentChecks.ensureNonNull("toSource", toSource);
-        ArgumentChecks.ensureNonNull("source",   source);
         final ColorModel  cm = source.getColorModel();
         final SampleModel sm = source.getSampleModel();
         boolean isIdentity = toSource.isIdentity();

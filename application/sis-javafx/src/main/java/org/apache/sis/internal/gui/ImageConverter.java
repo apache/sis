@@ -28,8 +28,11 @@ import javafx.scene.image.PixelFormat;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.image.PlanarImage;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.Statistics;
 
 
@@ -102,7 +105,6 @@ final class ImageConverter extends Task<Statistics[]> {
                                       height / (double) bounds.height);
         /*
          * Use a uniform scale. At least one of `width` or `height` will be unchanged.
-         * The image will be shown fully, at the cost of some space being unused.
          */
         width  = (int) Math.round(scale * bounds.width);
         height = (int) Math.round(scale * bounds.height);
@@ -112,15 +114,34 @@ final class ImageConverter extends Task<Statistics[]> {
         final ImageProcessor processor  = new ImageProcessor();
         final Statistics[]   statistics = processor.getStatistics(source, bounds);
         final RenderedImage  image      = processor.stretchColorRamp(source, JDK9.mapOf("multStdDev", 3, "statistics", statistics));
+        final RenderedImage  mask       = getMask(processor);
         final BufferedImage  buffer     = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
         final Graphics2D     graphics   = buffer.createGraphics();
         try {
             graphics.drawRenderedImage(image, toCanvas);
+            if (mask != null) {
+                graphics.drawRenderedImage(mask, toCanvas);
+            }
         } finally {
             graphics.dispose();
         }
         data = ((DataBufferInt) buffer.getRaster().getDataBuffer()).getData();
         return statistics;
+    }
+
+    /**
+     * If there is a mask that we can apply on the image, returns that mask. Otherwise returns 0.
+     * Current implementation returns the mask as a transparent yellow image.
+     */
+    private RenderedImage getMask(final ImageProcessor processor) {
+        final Object mask = source.getProperty(PlanarImage.MASK_KEY);
+        if (mask instanceof RenderedImage) try {
+            return processor.recolor((RenderedImage) mask, new int[] {0, 0x20FFFF00});
+        } catch (IllegalArgumentException e) {
+            // Ignore, we will not apply any mask. Declare PropertyView.setImage(…) as the public method.
+            Logging.recoverableException(Logging.getLogger(Loggers.APPLICATION), PropertyView.class, "setImage", e);
+        }
+        return null;
     }
 
     /**
