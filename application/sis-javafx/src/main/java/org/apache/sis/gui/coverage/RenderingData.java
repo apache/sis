@@ -216,6 +216,7 @@ final class RenderingData implements Cloneable {
                 changeOfCRS = CRS.findOperation(dataGeometry.getCoordinateReferenceSystem(), objectiveCRS, areaOfInterest);
                 final double accuracy = CRS.getLinearAccuracy(changeOfCRS);
                 processor.setPositionalAccuracyHints(
+                        Quantities.create(0.25, Units.PIXEL),
                         (accuracy > 0) ? Quantities.create(accuracy, Units.METRE) : null);
             } catch (FactoryException e) {
                 recoverableException(e);
