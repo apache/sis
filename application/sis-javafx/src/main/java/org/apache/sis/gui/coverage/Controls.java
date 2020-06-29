@@ -20,13 +20,10 @@ import javafx.geometry.Insets;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
 
@@ -43,18 +40,17 @@ abstract class Controls {
     /**
      * Margin to keep around captions on top of tables or lists.
      */
-    static final Insets CAPTION_MARGIN = new Insets(12, 0, 9, 0);
+    private static final Insets CAPTION_MARGIN = new Insets(12, 0, 6, 0);
 
     /**
      * Margin to keep around captions after the first one.
      */
-    private static final Insets NEXT_CAPTION_MARGIN = new Insets(30, 0, 9, 0);
+    private static final Insets NEXT_CAPTION_MARGIN = new Insets(30, 0, 6, 0);
 
     /**
-     * The border to use for grouping some controls together.
+     * Margin for adding an indentation to a node.
      */
-    private static final Border GROUP_BORDER = new Border(new BorderStroke(
-            Styles.GROUP_BORDER, BorderStrokeStyle.SOLID, null, null));
+    static final Insets INDENT = new Insets(0, 0, 0, 15);
 
     /**
      * The toolbar button for selecting this view.
@@ -66,23 +62,6 @@ abstract class Controls {
      * Creates a new control.
      */
     Controls() {
-    }
-
-    /**
-     * Creates a grid pane with one (label, control) per row and all rows with the same height.
-     * The controls must be associated to the given labels by {@link Label#getLabelFor()}.
-     * If a label is {@code null}, then no row is created for that label.
-     *
-     * @param  row       index of the first row. If different than 0, then it is caller responsibility
-     *                   to provide controls for all rows before the specified index.
-     * @param  controls  (label, control) pairs to layout in rows.
-     * @return a pane with each (label, control) pair on a row.
-     */
-    static GridPane createControlGrid(final int row, final Label... controls) {
-        final GridPane gp = Styles.createControlGrid(row, controls);
-        Styles.setAllRowToSameHeight(gp);
-        gp.setBorder(GROUP_BORDER);
-        return gp;
     }
 
     /**
@@ -114,10 +93,18 @@ abstract class Controls {
      * @return label associated to the given group of controls.
      */
     static Label labelOfGroup(final IndexedResourceBundle vocabulary, final short key, final Region group, final boolean isFirst) {
-        final Label label = new Label(vocabulary.getLabel(key));
+        final Label label = new Label(vocabulary.getString(key));
         label.setPadding(isFirst ? CAPTION_MARGIN : NEXT_CAPTION_MARGIN);
         label.setLabelFor(group);
+        label.setFont(fontOfGroup());
         return label;
+    }
+
+    /**
+     * Returns the font to assign to the label of a group of control.
+     */
+    static Font fontOfGroup() {
+        return Font.font(null, FontWeight.BOLD, -1);
     }
 
     /**

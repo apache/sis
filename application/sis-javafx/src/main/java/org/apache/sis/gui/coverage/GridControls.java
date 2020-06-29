@@ -31,6 +31,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.gui.Styles;
 
 
 /**
@@ -85,11 +86,12 @@ final class GridControls extends Controls {
          */
         final VBox displayPane;
         {   // Block for making variables locale to this scope.
-            final GridPane gp = createControlGrid(0,
+            final GridPane gp = Styles.createControlGrid(0,
                 label(vocabulary, Vocabulary.Keys.Width,  createSlider(view.cellWidth,  30, 200)),
                 label(vocabulary, Vocabulary.Keys.Height, createSlider(view.cellHeight, 10,  50)),
-                label(vocabulary, Vocabulary.Keys.Format, view.cellFormat.createEditor())
-            );
+                label(vocabulary, Vocabulary.Keys.Format, view.cellFormat.createEditor()));
+
+            Styles.setAllRowToSameHeight(gp);
             displayPane = new VBox(labelOfGroup(vocabulary, Vocabulary.Keys.Cells, gp, true), gp);
         }
         /*

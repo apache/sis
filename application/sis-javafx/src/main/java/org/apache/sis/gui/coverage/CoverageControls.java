@@ -27,12 +27,15 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.util.StringConverter;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -40,6 +43,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.image.Interpolation;
+import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -97,18 +101,36 @@ final class CoverageControls extends Controls implements PropertyChangeListener 
          *    - Color stretching
          *    - Background color
          */
-        final VBox displayPane;
+        final GridPane displayPane;
         {   // Block for making variables locale to this scope.
-            final GridPane referencing = createControlGrid(0,
-                label(vocabulary, Vocabulary.Keys.Interpolation, createInterpolationButton(vocabulary.getLocale()))
-            );
-            final GridPane colors = createControlGrid(0,
+            final int valuesHeader = 0;
+            final int colorsHeader = 2;
+            displayPane = Styles.createControlGrid(valuesHeader + 1,
+                label(vocabulary, Vocabulary.Keys.Interpolation, createInterpolationButton(vocabulary.getLocale())),
                 label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStyling(n))),
-                label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton(background))
-            );
-            displayPane = new VBox(
-                labelOfGroup(vocabulary, Vocabulary.Keys.Values, referencing, true), referencing,
-                labelOfGroup(vocabulary, Vocabulary.Keys.Colors, colors,     false), colors);
+                label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton(background)));
+            /*
+             * Insert space (one row) betweeb "interpolation" and "stretching"
+             * so we can insert the "colors" section header.
+             */
+            final ObservableList<Node> items = displayPane.getChildren();
+            for (final Node item : items) {
+                if (GridPane.getColumnIndex(item) == 0) {
+                    ((Label) item).setPadding(INDENT);
+                }
+                final int row = GridPane.getRowIndex(item);
+                if (row >= colorsHeader) {
+                    GridPane.setRowIndex(item, row + 1);
+                }
+            }
+            final Font font = fontOfGroup();
+            final Label values = new Label(vocabulary.getString(Vocabulary.Keys.Values));
+            final Label colors = new Label(vocabulary.getString(Vocabulary.Keys.Colors));
+            values.setFont(font);
+            colors.setFont(font);
+            GridPane.setConstraints(values, 0, valuesHeader, 2, 1);    // Span 2 columns.
+            GridPane.setConstraints(colors, 0, colorsHeader, 2, 1);
+            items.addAll(values, colors);
         }
         /*
          * Put all sections together and have the first one expanded by default.
