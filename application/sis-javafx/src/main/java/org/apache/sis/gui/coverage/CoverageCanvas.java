@@ -291,8 +291,10 @@ public class CoverageCanvas extends MapCanvasAWT {
                 } finally {
                     isPositionableProjection = false;
                 }
-            } catch (NoninvertibleTransformException | FactoryException | TransformException e) {
-                ExceptionReporter.show(null, null, e);
+            } catch (Exception e) {
+                errorOccurred(e);
+                final Resources i18n = Resources.forLocale(getLocale());
+                ExceptionReporter.show(null, i18n.getString(Resources.Keys.CanNotUseRefSys_1, projection), e);
             }
         }
 

@@ -354,10 +354,10 @@ public class ResampledImage extends ComputedImage {
         if (image == null) {
             positionalConsistency = null;
             final Dimension s = interpolation.getSupportSize();
-            final double[] offset = new double[toSource.getSourceDimensions()];
+            final double[] offset = new double[toSourceSupport.getSourceDimensions()];
             offset[0] = -interpolationSupportOffset(s.width);
             offset[1] = -interpolationSupportOffset(s.height);
-            final MathTransform tr = MathTransforms.concatenate(toSource, MathTransforms.translation(offset));
+            final MathTransform tr = MathTransforms.concatenate(toSourceSupport, MathTransforms.translation(offset));
             image = new PositionalConsistencyImage(this, tr);
             positionalConsistency = image.reference();
         }

@@ -29,6 +29,7 @@ import javafx.scene.layout.VBox;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.beans.binding.ObjectBinding;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;
@@ -105,8 +106,15 @@ final class CoverageControls extends Controls {
             crsLabel.setFont(font);
             crsLabel.setPadding(Styles.FORM_INSETS);
             crsShown.setPadding(INDENT_OUTSIDE);
-            referenceSystem.addListener((p,o,n) -> {
-                crsShown.setText(IdentifiedObjects.getDisplayName(n, locale));
+            crsShown.textProperty().bind(new ObjectBinding<String>() {
+                /* Constructor */ {
+                    bind(referenceSystem);
+                }
+
+                /** Invoked when the reference system changed. */
+                @Override protected String computeValue() {
+                    return IdentifiedObjects.getDisplayName(referenceSystem.get(), locale);
+                }
             });
             /*
              * The pane containing controls will be divided in sections separated by labels:

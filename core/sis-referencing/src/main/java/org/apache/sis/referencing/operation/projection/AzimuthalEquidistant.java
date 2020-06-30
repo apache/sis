@@ -178,7 +178,7 @@ public class AzimuthalEquidistant extends NormalizedProjection {
         final double  sinλ  = sin(λ);
         final double  cosφ  = cos(φ);
         final double  sinφ  = sin(φ);
-        final double  cosc  = sinφ0*sinφ + cosφ0*cosφ*cosλ;
+        final double  cosc  = min(1, max(-1, sinφ0*sinφ + cosφ0*cosφ*cosλ));
         final double  c     = acos(cosc);
         final boolean ind   = abs(c) < ANGULAR_TOLERANCE;
         final double  k     = ind ? 1 : c/sin(c);
@@ -229,6 +229,11 @@ public class AzimuthalEquidistant extends NormalizedProjection {
         final double sinD = sin(D);
         final double cosD = cos(D);
         dstPts[dstOff  ]  = atan2(x*sinD, (cosφ0*cosD*D - sinφ0*sinD*y));
-        dstPts[dstOff+1]  = asin(cosD*sinφ0 + sinD*cosφ0*y/D);
+        dstPts[dstOff+1]  = asin(D == 0 ? sinφ0 : sinφ0*cosD + cosφ0*sinD*(y/D));
+        /*
+         * Checking for strict equality (D == 0) is okay because even a very small value
+         * is sufficient for avoiding NaN. We get (y/D) ≤ 1 and sin(D) ≈ D, so the right
+         * term become close to zero.
+         */
     }
 }
