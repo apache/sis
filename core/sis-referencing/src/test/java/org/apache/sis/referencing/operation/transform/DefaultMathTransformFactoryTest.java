@@ -279,4 +279,19 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
             assertEquals(classification, projection.getMethod().getName().getCode());
         }
     }
+
+    /**
+     * Tests {@link DefaultMathTransformFactory#caching(boolean)}.
+     */
+    @Test
+    public void testCaching() {
+        final DefaultMathTransformFactory mtFactory = DefaultFactories.forBuildin(
+                    MathTransformFactory.class, DefaultMathTransformFactory.class);
+        final DefaultMathTransformFactory caching = mtFactory.caching(false);
+
+        assertNotSame(mtFactory, caching);
+        assertSame   (mtFactory, mtFactory.caching(true));
+        assertSame   (mtFactory,   caching.caching(true));
+        assertSame   (caching,     caching.caching(false));
+    }
 }

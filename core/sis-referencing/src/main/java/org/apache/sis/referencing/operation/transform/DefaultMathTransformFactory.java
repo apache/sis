@@ -163,7 +163,7 @@ import org.apache.sis.util.resources.Errors;
  * There is typically only one {@code MathTransformFactory} instance for the whole application.
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
- * @version 0.8
+ * @version 1.1
  *
  * @see MathTransformProvider
  * @see AbstractMathTransform
@@ -227,8 +227,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     private final ThreadLocal<OperationMethod> lastMethod;
 
     /**
-     * The math transforms created so far. This pool is used in order
-     * to return instances of existing math transforms when possible.
+     * The math transforms created so far. This pool is used in order to return instances of existing
+     * math transforms when possible. If {@code null}, then no pool should be used. A null value is
+     * preferable when the transforms are known to be short-lived, for avoiding the cost of caching them.
      */
     private final WeakHashSet<MathTransform> pool;
 
@@ -238,6 +239,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * the same instance in same time.
      */
     private final AtomicReference<Parser> parser;
+
+    /**
+     * The factory with opposite caching factory, or {@code null} if not yet created.
+     *
+     * @see #caching(boolean)
+     */
+    private DefaultMathTransformFactory oppositeCachingPolicy;
 
     /**
      * Creates a new factory which will discover operation methods with a {@link ServiceLoader}.
@@ -310,6 +318,74 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         lastMethod    = new ThreadLocal<>();
         pool          = new WeakHashSet<>(MathTransform.class);
         parser        = new AtomicReference<>();
+    }
+
+    /**
+     * Creates a new factory with the same configuration than given factory but without caching.
+     */
+    private DefaultMathTransformFactory(final DefaultMathTransformFactory parent) {
+        methods       = parent.methods;
+        methodsByName = parent.methodsByName;
+        methodsByType = parent.methodsByType;
+        lastMethod    = new ThreadLocal<>();
+        pool          = null;
+        parser        = parent.parser;
+        oppositeCachingPolicy = parent;
+    }
+
+    /**
+     * Returns a factory for the same transforms than this factory, but with caching potentially disabled.
+     * By default, {@code DefaultMathTransformFactory} caches the {@link MathTransform} instances for sharing
+     * existing instances when transforms are created many times with the same set of parameters.
+     * However this caching may be unnecessarily costly when the transforms to create are known to be short lived.
+     * This method allows to get a factory better suited for short-lived objects.
+     *
+     * <p>This method does not modify the state of this factory. Instead different factory instances for the
+     * different caching policy are returned.</p>
+     *
+     * @param  enabled  whether caching should be enabled.
+     * @return a factory for the given caching policy.
+     *
+     * @since 1.1
+     */
+    public DefaultMathTransformFactory caching(final boolean enabled) {
+        if (enabled) {
+            return this;
+        }
+        synchronized (this) {
+            if (oppositeCachingPolicy == null) {
+                oppositeCachingPolicy = new NoCache(this);
+            }
+            return oppositeCachingPolicy;
+        }
+    }
+
+    /**
+     * Accessor for {@link NoCache} implementation.
+     */
+    final DefaultMathTransformFactory oppositeCachingPolicy() {
+        return oppositeCachingPolicy;
+    }
+
+    /**
+     * A factory performing no caching.
+     * This factory shares the same operation methods than the parent factory.
+     */
+    private static final class NoCache extends DefaultMathTransformFactory {
+        /** Creates a new factory with the same configuration than given factory. */
+        NoCache(final DefaultMathTransformFactory parent) {
+            super(parent);
+        }
+
+        /** Returns a factory for the same transforms but given caching policy. */
+        @Override public DefaultMathTransformFactory caching(final boolean enabled) {
+            return enabled ? oppositeCachingPolicy() : this;
+        }
+
+        /** Notifies parent factory that the set of operation methods may have changed. */
+        @Override public void reload() {
+            oppositeCachingPolicy().reload();
+        }
     }
 
     /**
@@ -1417,7 +1493,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Replaces the given transform by a unique instance, if one already exists.
      */
     private MathTransform unique(final MathTransform tr) {
-        return pool.unique(tr);
+        return (pool != null) ? pool.unique(tr) : tr;
     }
 
     /**
@@ -1467,7 +1543,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     c.reset();
                 }
             }
-            pool.clear();
+            if (pool != null) {
+                pool.clear();
+            }
         }
     }
 }
