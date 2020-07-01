@@ -495,7 +495,7 @@ public final class IdentifiedObjects extends Static {
                 String c = toURN(candidate.getClass(), getIdentifier(candidate, authority));
                 if (c == null && authority == null) {
                     /*
-                     * If 'authority' was null, then getIdentifier(candidate, authority) returned the identifier
+                     * If `authority` was null, then getIdentifier(candidate, authority) returned the identifier
                      * for the first authority.  But not all authorities can be formatted as a URN. So try other
                      * authorities.
                      */
@@ -665,8 +665,10 @@ public final class IdentifiedObjects extends Static {
             return false;
         }
         if (object instanceof AbstractIdentifiedObject) {
-            // DefaultCoordinateSystemAxis overrides this method.
-            // We really need to delegate to the overridden method.
+            /*
+             * DefaultCoordinateSystemAxis overrides this method.
+             * We really need to delegate to the overridden method.
+             */
             return ((AbstractIdentifiedObject) object).isHeuristicMatchForName(name);
         } else {
             return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name,

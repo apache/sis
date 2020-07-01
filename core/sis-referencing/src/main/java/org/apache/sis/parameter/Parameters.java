@@ -25,7 +25,7 @@ import javax.measure.Unit;
 import org.opengis.util.MemberName;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.parameter.*; // We use almost all types from this package.
+import org.opengis.parameter.*;                                         // We use almost all types from this package.
 import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameter;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.measure.Range;
@@ -101,7 +101,7 @@ import org.apache.sis.util.Debug;
  * overriding one method has no impact on other methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -222,7 +222,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
         if (parameter != null) {
             final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
             final Class<?> actual = descriptor.getValueClass();
-            if (!valueClass.equals(actual)) {   // Same comment than cast(ParameterDescriptor).
+            if (!valueClass.equals(actual)) {       // Same comment than cast(ParameterDescriptor).
                 throw new ClassCastException(Resources.format(Resources.Keys.IllegalParameterType_2,
                         Verifier.getDisplayName(descriptor), actual));
             }
@@ -418,11 +418,16 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * This method tries to do the same work than {@link #parameter(String)} but without
      * instantiating optional parameters if that parameter was not already instantiated.
      *
+     * <div class="note"><b>Performance note:</b>
+     * profiling shows that this method is costly. To mitigate the problem, {@link DefaultParameterValueGroup}
+     * overrides this method with a quick comparisons of descriptor references before to fallback on this more
+     * generic implementation.</div>
+     *
      * @param  parameter  the parameter to search.
      * @return the requested parameter value, or {@code null} if none.
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      */
-    private ParameterValue<?> getParameter(final ParameterDescriptor<?> parameter) throws ParameterNotFoundException {
+    ParameterValue<?> getParameter(final ParameterDescriptor<?> parameter) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("parameter", parameter);
         /*
          * Search for an identifier matching this group's authority. For example if this ParameterValueGroup
@@ -430,15 +435,15 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
          */
         final String name = getName(parameter);
         /*
-         * We do not want to invoke 'parameter(name)' because we do not want to create a new parameter
+         * We do not want to invoke `parameter(name)` because we do not want to create a new parameter
          * if the user did not supplied one.  We search the parameter ourself (so we don't create any)
          * and return null if we do not find any.
          *
          * If we find a parameter, we can return it directly only if this object is an instance of a known
          * implementation (currently DefaultParameterValueGroup and MapProjectionParameters), otherwise we
-         * do not know if the user overrode the 'parameter' method in a way incompatible with this method.
+         * do not know if the user overrode the `parameter` method in a way incompatible with this method.
          * We do not use Class.getMethod(…).getDeclaringClass() because it is presumed not worth the cost.
-         * In case of doubt, we delegate to 'parameter(name)'.
+         * In case of doubt, we delegate to `parameter(name)`.
          */
         final ParameterValue<?> value = parameterIfExist(name);
         if (value == null || isKnownImplementation()) {
