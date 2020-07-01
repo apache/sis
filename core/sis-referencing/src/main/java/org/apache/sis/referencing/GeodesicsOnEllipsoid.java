@@ -993,4 +993,13 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         final double cosθ = (cosφ + sinφ) * (cosφ - sinφ);      // cos(2φ)  =  cos²φ - sin²φ
         return R0*φ + sinθ*(R2 + cosθ*(R4 + cosθ*R6));
     }
+
+    /**
+     * The operation method to use for creating a map projection. For the ellipsoidal case we use EPSG::9832.
+     * According EPSG documentation the precision is acceptable withing 800 km of projection natural origin.
+     */
+    @Override
+    final String getProjectionMethod() {
+        return "Modified Azimuthal Equidistant";
+    }
 }

@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilitiesExt;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -61,7 +63,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * This base class tests calculator using spherical formulas.
  * Subclass executes the same test but using ellipsoidal formulas.
  *
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -583,5 +585,36 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
         c.setEndGeographicPoint  (48+45.0/60,   5+13.2/60);
         assertEquals(4892987, c.getRhumblineLength(), 1);
         assertEquals(90, c.getConstantAzimuth(), STRICT);
+    }
+
+    /**
+     * Tests {@link GeodeticCalculator#createProjectionAroundStart()}.
+     * This method tests self-consistency.
+     *
+     * @throws TransformException if an error occurred while projection the test point.
+     */
+    @Test
+    public void test() throws TransformException {
+        final GeodeticCalculator c = create(false);
+        final double distance = 600000;                         // In metres.
+        final double azimuth  = 37;                             // Geographic angle (degrees relative to North).
+        final double theta    = Math.toRadians(90 - azimuth);   // Azimuth converted to arithmetic angle.
+        c.setStartGeographicPoint(60, 20);
+        /*
+         * Compute the end point using map projection instead than GeodeticCalculator.
+         * This is valid only for distance within 800 km when using ellipsoidal formulas.
+         */
+        final MathTransform projection = c.createProjectionAroundStart();
+        DirectPosition endPoint = new DirectPosition2D(distance*Math.cos(theta), distance*Math.sin(theta));
+        endPoint = projection.inverse().transform(endPoint, endPoint);
+        /*
+         * Compute the geodesic distance between the point compute by GeodeticCalculator
+         * and the point computed by the Azimuthal Equidistant projection.
+         */
+        c.setStartingAzimuth(azimuth);
+        c.setGeodesicDistance(distance);
+        c.moveToEndPoint();
+        c.setEndPoint(endPoint);
+        assertEquals(0, c.getGeodesicDistance(), 1);
     }
 }
