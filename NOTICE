@@ -39,7 +39,7 @@ http://junit.org/junit4/
 -------------------------------------------------------------
 The optional `non-free` group of modules contain geodetic data
 collected by the International Association of Oil and Gas Producers.
-http://www.epsg.org/TermsOfUse.aspx
+https://epsg.org/terms-of-use.html
 
 The optional `sis-javafx` module depends on JavaFX
 published under GPL 2 with classpath exception.
