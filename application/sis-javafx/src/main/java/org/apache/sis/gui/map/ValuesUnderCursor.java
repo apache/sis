@@ -264,10 +264,14 @@ public abstract class ValuesUnderCursor {
 
         /**
          * The text to show when cursor is outside coverage area. It should contain dimension names,
-         * for example "(SST)". A {@code null} value means that {@link #onBandSelectionChanged()}
-         * needs to be invoked.
+         * for example "(SST)". May be {@code null} if {@link #onBandSelectionChanged()} needs to be invoked.
          */
         private String outsideText;
+
+        /**
+         * {@code true} if {@link #onBandSelectionChanged()} needs to be invoked again.
+         */
+        private boolean needsBandRefresh;
 
         /**
          * Creates a new provider of textual values for a {@link GridCoverage}.
@@ -409,9 +413,7 @@ public abstract class ValuesUnderCursor {
                 });
             }
             valueChoices.getItems().setAll(menuItems);
-            if (!onBandSelectionChanged()) {
-                outsideText = null;             // For forcing a new computation after canvas is added to scene graph.
-            }
+            onBandSelectionChanged();
         }
 
         /**
@@ -466,9 +468,7 @@ public abstract class ValuesUnderCursor {
             item.setSelected(selectedBands.get(index));
             item.selectedProperty().addListener((p,o,n) -> {
                 selectedBands.set(index, n);
-                if (!onBandSelectionChanged()) {
-                    outsideText = null;                         // Will be recomputed on next `evaluate(…)` call.
-                }
+                onBandSelectionChanged();
             });
             return item;
         }
@@ -484,7 +484,7 @@ public abstract class ValuesUnderCursor {
          */
         @Override
         public String evaluate(final DirectPosition point) {
-            if (outsideText == null && evaluator != null) {
+            if (needsBandRefresh && evaluator != null) {
                 onBandSelectionChanged();
             }
             if (point != null) {
@@ -556,14 +556,12 @@ public abstract class ValuesUnderCursor {
          * when the bands selection changed, either because of selection in contextual menu or because
          * {@link ValuesUnderCursor} is providing data for a new coverage.
          *
-         * <p>We use {@link #outsideText} null value as a flag meaning meaning that this method needs
+         * <p>We use {@link #needsBandRefresh} as a flag meaning meaning that this method needs
          * to be invoked. This method invocation sometime needs to be delayed because calculation of
          * text width may be wrong (produce 0 values) if invoked before {@link StatusBar#sampleValues}
          * label is added in the scene graph.</p>
-         *
-         * @return {@code true} on success, or {@code false} if this method should be invoked again.
          */
-        private boolean onBandSelectionChanged() {
+        private void onBandSelectionChanged() {
             final ObservableList<MenuItem> menus = valueChoices.getItems();
             final List<SampleDimension>    bands = evaluator.getCoverage().getSampleDimensions();
             final StringBuilder            names = new StringBuilder().append('(');
@@ -607,7 +605,7 @@ public abstract class ValuesUnderCursor {
                     others.add(other.getValue());
                 }
             }
-            return prototype(text, others);
+            needsBandRefresh = !prototype(text, others);
         }
     }
 
