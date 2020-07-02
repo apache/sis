@@ -275,6 +275,11 @@ public abstract class MapCanvas extends PlanarCanvas {
     private final ReadOnlyObjectWrapper<Throwable> error;
 
     /**
+     * If a contextual menu is currently visible, that menu. Otherwise {@code null}.
+     */
+    private ContextMenu menuShown;
+
+    /**
      * Creates a new canvas for JavaFX application.
      *
      * @param  locale  the locale to use for labels and some messages, or {@code null} for default.
@@ -334,6 +339,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         final double y = event.getY();
         final EventType<? extends MouseEvent> type = event.getEventType();
         if (type == MouseEvent.MOUSE_PRESSED && event.isPrimaryButtonDown()) {
+            hideContextMenu();
             floatingPane.setCursor(Cursor.CLOSED_HAND);
             floatingPane.requestFocus();
             isDragging = true;
@@ -514,6 +520,16 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
+     * If a context menu is currently shown, hide that menu. Otherwise does nothing.
+     */
+    private void hideContextMenu() {
+        if (menuShown != null) {
+            menuShown.hide();
+            menuShown = null;
+        }
+    }
+
+    /**
      * Creates and register a contextual menu.
      *
      * @return the property for the selected value, or {@code null} if none.
@@ -587,10 +603,12 @@ public abstract class MapCanvas extends PlanarCanvas {
          */
         @Override
         public void handle(final MouseEvent event) {
+            hideContextMenu();
             if (event.isSecondaryButtonDown()) {
                 x = event.getX();
                 y = event.getY();
                 menu.show((Pane) event.getSource(), event.getScreenX(), event.getScreenY());
+                menuShown = menu;
                 event.consume();
             } else {
                 menu.hide();
