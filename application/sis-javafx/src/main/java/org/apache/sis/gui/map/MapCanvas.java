@@ -20,6 +20,8 @@ import java.util.Locale;
 import java.util.Arrays;
 import java.util.Objects;
 import java.awt.geom.AffineTransform;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
@@ -33,14 +35,25 @@ import javafx.scene.input.GestureEvent;
 import javafx.scene.Cursor;
 import javafx.event.EventType;
 import javafx.beans.Observable;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WritableValue;
 import javafx.concurrent.Task;
+import javafx.event.EventHandler;
+import javafx.scene.control.Menu;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.RadioMenuItem;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -50,20 +63,27 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.gui.referencing.PositionableProjection;
+import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
+import org.apache.sis.referencing.IdentifiedObjects;
 
 
 /**
@@ -494,10 +514,178 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Returns {@code true} if content changed since the last {@link #repaint()} execution.
+     * Creates and register a contextual menu.
+     *
+     * @return the property for the selected value, or {@code null} if none.
      */
-    final boolean contentsChanged() {
-        return contentChangeCount != renderedContentStamp;
+    final ObjectProperty<ReferenceSystem> createContextMenu(final ContextMenu menu,
+            final RecentReferenceSystems referenceSystems)
+    {
+        final Resources resources = Resources.forLocale(getLocale());
+        final MenuHandler handler = new MenuHandler(menu);
+        final Menu  systemChoices = referenceSystems.createMenuItems(handler);
+        final Menu   localSystems = new Menu(resources.getString(Resources.Keys.CenteredProjection));
+        for (final PositionableProjection projection : PositionableProjection.values()) {
+            final RadioMenuItem item = new RadioMenuItem(projection.toString());
+            item.setToggleGroup(handler.positionables);
+            item.setOnAction((e) -> handler.createProjectedCRS(projection));
+            localSystems.getItems().add(item);
+        }
+        menu.getItems().setAll(systemChoices, localSystems);
+        addPropertyChangeListener(OBJECTIVE_CRS_PROPERTY, handler);
+        fixedPane.setOnMousePressed(handler);
+        return handler.selectedProperty = RecentReferenceSystems.getSelectedProperty(systemChoices);
+    }
+
+    /**
+     * Shows or hides the contextual menu when the right mouse button is clicked. This handler can determine
+     * the geographic location where the click occurred. This information is used for changing the projection
+     * while preserving approximately the location, scale and rotation of pixels around the mouse cursor.
+     */
+    @SuppressWarnings("serial")                                         // Not intended to be serialized.
+    private final class MenuHandler extends DirectPosition2D
+            implements EventHandler<MouseEvent>, ChangeListener<ReferenceSystem>, PropertyChangeListener
+    {
+        /**
+         * The property to update if a change of CRS occurs in the enclosing canvas. This property is provided
+         * by {@link RecentReferenceSystems}, which listen to changes. Setting this property to a new value
+         * causes the "Referencing systems" radio menus to change the item where the check mark appear.
+         *
+         * <p>This field is initialized by {@link #createContextMenu(ContextMenu, RecentReferenceSystems)}
+         * and should be considered final after initialization.</p>
+         */
+        ObjectProperty<ReferenceSystem> selectedProperty;
+
+        /**
+         * The group of {@link PositionableProjection} items for projections created on-the-fly at mouse position.
+         * Those items are not managed by {@link RecentReferenceSystems} so they need to be handled there.
+         */
+        final ToggleGroup positionables;
+
+        /**
+         * The contextual menu to show or hide when mouse button is clicked on the canvas.
+         */
+        private final ContextMenu menu;
+
+        /**
+         * {@code true} if we are in the process of setting a CRS generated by {@link PositionableProjection}.
+         */
+        private boolean isPositionableProjection;
+
+        /**
+         * Creates a new handler for contextual menu in enclosing canvas.
+         */
+        MenuHandler(final ContextMenu menu) {
+            super(getDisplayCRS());
+            this.menu = menu;
+            positionables = new ToggleGroup();
+        }
+
+        /**
+         * Invoked when the user click on the canvas.
+         * Shows the menu on right mouse click, hide otherwise.
+         */
+        @Override
+        public void handle(final MouseEvent event) {
+            if (event.isSecondaryButtonDown()) {
+                x = event.getX();
+                y = event.getY();
+                menu.show((Pane) event.getSource(), event.getScreenX(), event.getScreenY());
+                event.consume();
+            } else {
+                menu.hide();
+            }
+        }
+
+        /**
+         * Invoked when user selected a new coordinate reference system among the choices of predefined CRS.
+         * Those CRS are the ones managed by {@link RecentReferenceSystems}, not the ones created on-the-fly.
+         */
+        @Override
+        public void changed(final ObservableValue<? extends ReferenceSystem> property,
+                            final ReferenceSystem oldValue, final ReferenceSystem newValue)
+        {
+            if (newValue instanceof CoordinateReferenceSystem) {
+                setObjectiveCRS((CoordinateReferenceSystem) newValue, this, property);
+            }
+        }
+
+        /**
+         * Invoked when user selected a projection centered on mouse position. Those CRS are generated on-the-fly
+         * and are generally not on the list of CRS managed by {@link RecentReferenceSystems}.
+         */
+        final void createProjectedCRS(final PositionableProjection projection) {
+            try {
+                DirectPosition2D center = new DirectPosition2D();
+                center = (DirectPosition2D) objectiveToDisplay.inverseTransform(this, center);
+                center.setCoordinateReferenceSystem(getObjectiveCRS());
+                CoordinateReferenceSystem crs = projection.createProjectedCRS(center);
+                try {
+                    isPositionableProjection = true;
+                    setObjectiveCRS(crs, this, null);
+                } finally {
+                    isPositionableProjection = false;
+                }
+            } catch (Exception e) {
+                errorOccurred(e);
+                final Resources i18n = Resources.forLocale(getLocale());
+                ExceptionReporter.show(null, i18n.getString(Resources.Keys.CanNotUseRefSys_1, projection), e);
+            }
+        }
+
+        /**
+         * Invoked when a canvas property changed, typically after new data are shown.
+         * The property of interest is {@value MapCanvas#OBJECTIVE_CRS_PROPERTY}.
+         * This method updates the CRS selected in the contextual menu.
+         */
+        @Override
+        public void propertyChange(final PropertyChangeEvent event) {
+            final Object value = event.getNewValue();
+            if (value instanceof CoordinateReferenceSystem) {
+                selectedProperty.set((CoordinateReferenceSystem) value);
+            }
+            if (!isPositionableProjection) {
+                positionables.selectToggle(null);
+            }
+        }
+    }
+
+    /**
+     * Invoked when the user changed the CRS from a JavaFX control. If the CRS can not be set to the specified
+     * value, then an error message is shown in the status bar and the property is reset to its previous value.
+     *
+     * @param  crs       the new Coordinate Reference System in which to transform all data before displaying.
+     * @param  anchor    the point to keep at fixed display coordinates, or {@code null} for default value.
+     * @param  property  the property to reset if the operation fails.
+     */
+    private void setObjectiveCRS(final CoordinateReferenceSystem crs, DirectPosition anchor,
+                                 final ObservableValue<? extends ReferenceSystem> property)
+    {
+        final CoordinateReferenceSystem previous = getObjectiveCRS();
+        if (crs != previous) try {
+            /*
+             * If no anchor is specified, the first default is the center of the region currently visible
+             * in the canvas. If that center can not be determined neither, null anchor defaults to the
+             * point of interest (POI) managed by the Canvas parent class.
+             */
+            if (anchor == null) {
+                final Envelope2D bounds = getDisplayBounds();
+                if (bounds != null) {
+                    anchor = AbstractEnvelope.castOrCopy(bounds).getMedian();
+                }
+            }
+            setObjectiveCRS(crs, anchor);
+            requestRepaint();
+        } catch (Exception e) {
+            if (property instanceof WritableValue<?>) {
+                ((WritableValue<ReferenceSystem>) property).setValue(previous);
+            }
+            errorOccurred(e);
+            final Locale locale = getLocale();
+            final Resources i18n = Resources.forLocale(locale);
+            ExceptionReporter.show(null, i18n.getString(Resources.Keys.CanNotUseRefSys_1,
+                                   IdentifiedObjects.getDisplayName(crs, locale)), e);
+        }
     }
 
     /**
@@ -638,6 +826,13 @@ public abstract class MapCanvas extends PlanarCanvas {
          *         (for example because a change has been detected in the data).
          */
         protected abstract boolean commit(MapCanvas canvas);
+    }
+
+    /**
+     * Returns {@code true} if content changed since the last {@link #repaint()} execution.
+     */
+    final boolean contentsChanged() {
+        return contentChangeCount != renderedContentStamp;
     }
 
     /**

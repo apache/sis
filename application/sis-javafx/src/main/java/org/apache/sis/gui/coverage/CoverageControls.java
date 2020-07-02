@@ -29,7 +29,6 @@ import javafx.scene.layout.VBox;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.beans.binding.ObjectBinding;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;
@@ -37,10 +36,9 @@ import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.util.StringConverter;
-import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
+import org.apache.sis.gui.map.MapMenu;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.internal.gui.Styles;
@@ -88,8 +86,8 @@ final class CoverageControls extends Controls {
         view.statusBar = statusBar;
         imageAndStatus = new BorderPane(view.getView());
         imageAndStatus.setBottom(statusBar.getView());
-        final ObjectProperty<ReferenceSystem> referenceSystem = view.createContextMenu(referenceSystems);
-        final Locale locale = vocabulary.getLocale();
+        final MapMenu menu = new MapMenu(view);
+        menu.addReferenceSystems(referenceSystems);
         /*
          * "Display" section with the following controls:
          *    - Current CRS
@@ -106,16 +104,7 @@ final class CoverageControls extends Controls {
             crsLabel.setFont(font);
             crsLabel.setPadding(Styles.FORM_INSETS);
             crsShown.setPadding(INDENT_OUTSIDE);
-            crsShown.textProperty().bind(new ObjectBinding<String>() {
-                /* Constructor */ {
-                    bind(referenceSystem);
-                }
-
-                /** Invoked when the reference system changed. */
-                @Override protected String computeValue() {
-                    return IdentifiedObjects.getDisplayName(referenceSystem.get(), locale);
-                }
-            });
+            menu.selectedReferenceSystem().ifPresent((text) -> crsShown.textProperty().bind(text));
             /*
              * The pane containing controls will be divided in sections separated by labels:
              * ones for values and one for colors.
@@ -124,7 +113,7 @@ final class CoverageControls extends Controls {
             final int colorsHeader = 2;
             final GridPane gp;
             gp = Styles.createControlGrid(valuesHeader + 1,
-                label(vocabulary, Vocabulary.Keys.Interpolation, createInterpolationButton(locale)),
+                label(vocabulary, Vocabulary.Keys.Interpolation, createInterpolationButton(vocabulary.getLocale())),
                 label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStyling(n))),
                 label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton(background)));
             /*
