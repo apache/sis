@@ -28,6 +28,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -37,6 +38,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -71,6 +73,48 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
             return newBuilder(latitude, longitude)
                     .setConversionMethod("Azimuthal Equidistant (Spherical)")
                     .setParameter("Latitude of natural origin",  latitude,  Units.DEGREE)
+                    .setParameter("Longitude of natural origin", longitude, Units.DEGREE)
+                    .createProjectedCRS(baseCRS, null);
+        }
+    };
+
+    /**
+     * Provides <cite>Universal Transverse Mercator</cite> projection for the zone in the point of interest.
+     *
+     * @see org.apache.sis.referencing.operation.projection.Mercator
+     */
+    public static final PositionableProjection UTM =
+            new PositionableProjection("UTM", Resources.Keys.UTM)
+    {
+        @Override protected ProjectedCRS createProjectedCRS(final GeographicCRS baseCRS,
+                final double latitude, final double longitude) throws FactoryException
+        {
+            CommonCRS cd;
+            try {
+                cd = CommonCRS.forDatum(baseCRS);
+            } catch (IllegalArgumentException e) {
+                Logging.recoverableException(Logging.getLogger(Modules.APPLICATION),
+                            PositionableProjection.class, "createProjectedCRS", e);
+                cd = CommonCRS.WGS84;
+            }
+            return cd.universal(latitude, longitude);
+        }
+    };
+
+    /**
+     * Provides <cite>Mercator (variant C)</cite> projection centered on a point of interest.
+     *
+     * @see org.apache.sis.referencing.operation.projection.Mercator
+     */
+    public static final PositionableProjection MERCATOR =
+            new PositionableProjection("MERCATOR", Resources.Keys.Mercator)
+    {
+        @Override protected ProjectedCRS createProjectedCRS(final GeographicCRS baseCRS,
+                final double latitude, final double longitude) throws FactoryException
+        {
+            return newBuilder(latitude, longitude)
+                    .setConversionMethod("Mercator (variant C)")
+                    .setParameter("Latitude of false origin",    latitude,  Units.DEGREE)
                     .setParameter("Longitude of natural origin", longitude, Units.DEGREE)
                     .createProjectedCRS(baseCRS, null);
         }

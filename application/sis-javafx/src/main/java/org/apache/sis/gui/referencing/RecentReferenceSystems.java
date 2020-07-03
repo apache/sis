@@ -287,6 +287,19 @@ public class RecentReferenceSystems {
     }
 
     /**
+     * Invoked when a new CRS is selected and that CRS has not been found in the list.
+     * The new CRS is added after the CRS and menu items will be added in background thread.
+     */
+    final void addSelected(final ReferenceSystem system) {
+        if (isAccepted(system)) {
+            synchronized (systemsOrCodes) {
+                systemsOrCodes.add(Math.min(systemsOrCodes.size(), NUM_CORE_ITEMS), system);
+                listModified();
+            }
+        }
+    }
+
+    /**
      * Adds the given reference systems to the list of alternative choices.
      * If there is duplicated values in the given list or with previously added systems,
      * then only the first occurrence of duplicated values is retained.
@@ -351,6 +364,14 @@ public class RecentReferenceSystems {
      */
     public void addUserPreferences() {
         addAlternatives(RecentChoices.getReferenceSystems());
+    }
+
+    /**
+     * Returns whether the given object is accepted for inclusion in the list of CRS choice.
+     * In current implementation we accept a CRS if it has an authority code (typically an EPSG code).
+     */
+    private static boolean isAccepted(final IdentifiedObject object) {
+        return IdentifiedObjects.getIdentifier(object, null) != null;
     }
 
     /**
@@ -437,9 +458,7 @@ public class RecentReferenceSystems {
                 while (--j > i) {
                     if (Utilities.deepEquals(item, systemsOrCodes.get(j), mode)) {
                         final Object removed = systemsOrCodes.remove(j);
-                        if (IdentifiedObjects.getIdentifier((IdentifiedObject) removed, null) != null &&
-                            IdentifiedObjects.getIdentifier((IdentifiedObject) item,    null) == null)
-                        {
+                        if (isAccepted((IdentifiedObject) removed) && !isAccepted((IdentifiedObject) item)) {
                             /*
                              * Keep the instance which has an identifier. The instance without identifier
                              * is typically a CRS with non-standard axis order. It happens when it is the
@@ -605,13 +624,18 @@ public class RecentReferenceSystems {
      * and the selected reference system is added to the list of choices. If the selected CRS is different than
      * the previous one, then {@link RecentChoices} is notified and the user-specified listener is notified.
      */
-    private final class Listener implements ChangeListener<ReferenceSystem> {
+    final class Listener implements ChangeListener<ReferenceSystem> {
         /** The user-specified action to execute when a reference system is selected. */
         private final ChangeListener<ReferenceSystem> action;
 
         /** Creates a new listener of reference system selection. */
-        Listener(final ChangeListener<ReferenceSystem> action) {
+        private Listener(final ChangeListener<ReferenceSystem> action) {
             this.action = action;
+        }
+
+        /** The manager of reference systems to synchronize with. */
+        final RecentReferenceSystems owner() {
+            return RecentReferenceSystems.this;
         }
 
         /** Invoked when the user selects a reference system or the "Other…" item. */
@@ -830,7 +854,7 @@ next:       for (int i=0; i<count; i++) {
     public Menu createMenuItems(final ChangeListener<ReferenceSystem> action) {
         ArgumentChecks.ensureNonNull("action", action);
         final Menu menu = new Menu(Vocabulary.getResources(locale).getString(Vocabulary.Keys.ReferenceSystem));
-        final MenuSync property = new MenuSync(this, updateItems(), menu, new Listener(action));
+        final MenuSync property = new MenuSync(updateItems(), menu, new Listener(action));
         menu.getProperties().put(SELECTED_ITEM_KEY, property);
         controlValues.add(property);
         return menu;

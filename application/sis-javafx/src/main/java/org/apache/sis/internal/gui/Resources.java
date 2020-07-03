@@ -211,6 +211,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MainWindow = 25;
 
         /**
+         * Mercator
+         */
+        public static final short Mercator = 44;
+
+        /**
          * New window
          */
         public static final short NewWindow = 26;
@@ -259,6 +264,11 @@ public final class Resources extends IndexedResourceBundle {
          * Tile index start
          */
         public static final short TileIndexStart = 37;
+
+        /**
+         * Universal Transverse Mercator
+         */
+        public static final short UTM = 45;
 
         /**
          * Visualize

@@ -19,9 +19,9 @@ package org.apache.sis.gui.referencing;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -60,11 +60,6 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     private static final String CHOOSER = "CHOOSER";
 
     /**
-     * The manager of reference systems to synchronize with.
-     */
-    private final RecentReferenceSystems owner;
-
-    /**
      * The list of menu items to keep up-to-date with an {@code ObservableList<ReferenceSystem>}.
      */
     private final ObservableList<MenuItem> menus;
@@ -75,23 +70,22 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     private final ToggleGroup group;
 
     /**
-     * The action to execute when a reference system is selected.
+     * The action to execute when a reference system is selected. This is not directly the user-specified action, but
+     * rather an {@link org.apache.sis.gui.referencing.RecentReferenceSystems.Listener} instance wrapping that action.
+     * This listener is invoked explicitly instead than using {@link SimpleObjectProperty} listeners because we do not
+     * invoke it in all cases.
      */
-    private final ChangeListener<ReferenceSystem> action;
+    private final RecentReferenceSystems.Listener action;
 
     /**
      * Creates a new synchronization for the given list of menu items.
      *
-     * @param  owner    the manager of reference systems to synchronize with.
      * @param  systems  the reference systems for which to build menu items.
      * @param  bean     the menu to keep synchronized with the list of reference systems.
      * @param  action   the user-specified action to execute when a reference system is selected.
      */
-    MenuSync(final RecentReferenceSystems owner, final ObservableList<ReferenceSystem> systems,
-             final Menu bean, final ChangeListener<ReferenceSystem> action)
-    {
+    MenuSync(final ObservableList<ReferenceSystem> systems, final Menu bean, final RecentReferenceSystems.Listener action) {
         super(bean, "value");
-        this.owner  = owner;
         this.menus  = bean.getItems();
         this.group  = new ToggleGroup();
         this.action = action;
@@ -126,14 +120,15 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      * Creates a new menu item for the given reference system.
      */
     private MenuItem createItem(final ReferenceSystem system) {
+        final Locale locale = action.owner().locale;
         if (system != RecentReferenceSystems.OTHER) {
-            final RadioMenuItem item = new RadioMenuItem(IdentifiedObjects.getDisplayName(system, owner.locale));
+            final RadioMenuItem item = new RadioMenuItem(IdentifiedObjects.getDisplayName(system, locale));
             item.getProperties().put(REFERENCE_SYSTEM_KEY, system);
             item.setToggleGroup(group);
             item.setOnAction(this);
             return item;
         } else {
-            final MenuItem item = new MenuItem(Vocabulary.getResources(owner.locale).getString(Vocabulary.Keys.Others) + '…');
+            final MenuItem item = new MenuItem(Vocabulary.getResources(locale).getString(Vocabulary.Keys.Others) + '…');
             item.getProperties().put(REFERENCE_SYSTEM_KEY, CHOOSER);
             item.setOnAction(this);
             return item;
@@ -156,6 +151,9 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      * scratch (with recycling of existing items) and inspect the differences.
      */
     final void notifyChanges(final ObservableList<? extends ReferenceSystem> systems) {
+        /*
+         * Build a map of current menu items. Key are CRS objects.
+         */
         final Map<Object,MenuItem> mapping = new IdentityHashMap<>();
         for (final Iterator<MenuItem> it = menus.iterator(); it.hasNext();) {
             final MenuItem item = it.next();
@@ -164,30 +162,45 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
                 dispose(item);
             }
         }
+        /*
+         * Prepare a list of menu items and assign a value to all elements where the menu item can be reused as-is.
+         * Other menu items are left to null for now; those null values may appear anywhere in the array. After this
+         * loop, the map will contain only menu items for CRS that are no longer in the list of CRS to offer.
+         */
         final MenuItem[] items = new MenuItem[systems.size()];
         for (int i=0; i<items.length; i++) {
-            final Object key = systems.get(i);
-            items[i] = mapping.remove(key == RecentReferenceSystems.OTHER ? CHOOSER : key);
+            Object key = systems.get(i);
+            if (key == RecentReferenceSystems.OTHER) key = CHOOSER;
+            items[i] = mapping.remove(key);
         }
         /*
-         * Previous loop copied all items that could be reused as-is. Now search for all items that are new.
-         * If there is some menu items available, recycle them.
+         * Previous loop took all items that could be reused as-is. Now search for all items that are new.
+         * For each new item to create, recycle an arbitrary `mapping` element (in any order) if some exist.
+         * When creating new items, it may happen that one of those items represent the currently selected CRS.
          */
+        ReferenceSystem selected = get();
         final Iterator<MenuItem> recycle = mapping.values().iterator();
         for (int i=0; i<items.length; i++) {
             if (items[i] == null) {
+                MenuItem item;
                 final ReferenceSystem system = systems.get(i);
                 if (system != RecentReferenceSystems.OTHER && recycle.hasNext()) {
-                    final MenuItem item = recycle.next();
+                    item = recycle.next();
                     recycle.remove();
                     if (item instanceof RadioMenuItem) {
-                        item.setText(IdentifiedObjects.getDisplayName(system, owner.locale));
+                        item.setText(IdentifiedObjects.getDisplayName(system, action.owner().locale));
                         item.getProperties().put(REFERENCE_SYSTEM_KEY, system);
-                        items[i] = item;
-                        continue;
+                    } else {
+                        item = createItem(system);
                     }
+                } else {
+                    item = createItem(system);
                 }
-                items[i] = createItem(system);
+                if (selected != null && system == selected) {
+                    ((RadioMenuItem) item).setSelected(true);       // ClassCastException should never occur here.
+                    selected = null;
+                }
+                items[i] = item;
             }
         }
         /*
@@ -235,7 +248,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     public void set(ReferenceSystem system) {
         final ReferenceSystem old = get();
         if (old != system) {
-            final ComparisonMode mode = owner.duplicationCriterion.get();
+            final ComparisonMode mode = action.owner().duplicationCriterion.get();
             for (final MenuItem item : menus) {
                 if (item instanceof RadioMenuItem) {
                     final Object current = item.getProperties().get(REFERENCE_SYSTEM_KEY);
@@ -250,6 +263,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
             }
             super.set(system);
             group.selectToggle(null);
+            action.owner().addSelected(system);
             /*
              * Do not invoke action.changed(…) since we have no non-null value to provide.
              * Invoking that method with a null value would cause the CRSChooser to popup.
