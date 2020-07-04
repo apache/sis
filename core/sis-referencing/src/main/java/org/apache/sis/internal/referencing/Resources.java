@@ -71,6 +71,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AzimuthAndDistanceNotSet = 87;
 
         /**
+         * Can not associate “{0}” transform to the given coordinate systems because of mismatched
+         * dimensions: {1}
+         */
+        public static final short CanNotAssociateToCS_2 = 95;
+
+        /**
          * Can not create objects of type ‘{0}’ from combined URI.
          */
         public static final short CanNotCombineUriAsType_1 = 79;

@@ -68,6 +68,7 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
+import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -424,8 +425,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
         if (set == null) {
             /*
-             * Implementation note: we are better to avoid holding a lock on 'methods' and 'methodsByType'
-             * in same time because the 'methods' iterator could be a user's implementation which callback
+             * Implementation note: we are better to avoid holding a lock on `methods` and `methodsByType`
+             * in same time because the `methods` iterator could be a user's implementation which callback
              * this factory.
              */
             synchronized (methods) {
@@ -960,7 +961,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
              * operation expects two-dimensional source and target CRS. If a given CRS is three-dimensional, we need
              * a provider variant which will not concatenate a "geographic 3D to 2D" operation before the Molodensky
              * one. It is worth to perform this check only if the provider is a subclass of DefaultOperationMethod,
-             * since it needs to override the 'redimension(int, int)' method.
+             * since it needs to override the `redimension(int, int)` method.
              */
             if (method instanceof DefaultOperationMethod && method.getClass() != DefaultOperationMethod.class) {
                 final Integer sourceDim = (sourceCS != null) ? sourceCS.getDimension() : method.getSourceDimensions();
@@ -972,7 +973,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     }
                 }
             }
-            ensureCompatibleParameters(false);      // Invoke only after we set 'provider' to its final instance.
+            ensureCompatibleParameters(false);      // Invoke only after we set `provider` to its final instance.
             /*
              * Get a mask telling us if we need to set parameters for the source and/or target ellipsoid.
              * This information should preferably be given by the provider. But if the given provider is
@@ -999,7 +1000,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     RuntimeException failure = null;
                     if (sourceCS != null) try {
                         ensureCompatibleParameters(true);
-                        final ParameterValue<?> p = parameters.parameter("dim");    // Really 'parameters', not 'userParams'.
+                        final ParameterValue<?> p = parameters.parameter("dim");    // Really `parameters`, not `userParams`.
                         if (p.getValue() == null) {
                             p.setValue(sourceCS.getDimension());
                         }
@@ -1185,15 +1186,14 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         ArgumentChecks.ensureNonNull("parameterized", parameterized);
         ArgumentChecks.ensureNonNull("context", context);
         /*
-         * Computes matrix for swapping axis and performing units conversion.
-         * There is one matrix to apply before projection on (longitude,latitude)
-         * coordinates, and one matrix to apply after projection on (easting,northing)
-         * coordinates.
+         * Compute matrices for swapping axis and performing units conversion.
+         * There is one matrix to apply before projection from (λ,φ) coordinates,
+         * and one matrix to apply after projection on (easting,northing) coordinates.
          */
         final Matrix swap1 = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
         final Matrix swap3 = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         /*
-         * Prepares the concatenation of the matrices computed above and the projection.
+         * Prepare the concatenation of the matrices computed above and the projection.
          * Note that at this stage, the dimensions between each step may not be compatible.
          * For example the projection (step2) is usually two-dimensional while the source
          * coordinate system (step1) may be three-dimensional if it has a height.
@@ -1210,24 +1210,54 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             step2 = VerticalOffset.postCreate(step2, swap3);
         }
         /*
-         * If the target coordinate system has a height, instructs the projection to pass
-         * the height unchanged from the base CRS to the target CRS. After this block, the
-         * dimensions of 'step2' and 'step3' should match.
+         * If the target coordinate system has a height, instruct the projection to pass the height unchanged from
+         * the base CRS to the target CRS. After this block, the dimensions of `step2` and `step3` should match.
+         *
+         * The height is always the last dimension in a normalized EllipdoidalCS. We accept only a hard-coded list
+         * of dimensions because it is not `MathTransformFactory` job to build a transform chain in a generic way.
+         * We handle only the cases that are necessary because of the way some operation methods are provided.
+         * In particular Apache SIS provides only 2D map projections, so 3D projections have to be "generated"
+         * on the fly. That use case is:
+         *
+         *     - Source CRS: a GeographicCRS (regardless its number of dimension – it will be addressed in next block)
+         *     - Target CRS: a 3D ProjectedCRS
+         *     - Parameterized transform: a 2D map projection. We need the ellipsoidal height to passthrough.
+         *
+         * The reverse order (projected source CRS and geographic target CRS) is also accepted but should be uncommon.
          */
-        final int numTrailingCoordinates = step3.getSourceDimensions() - step2.getTargetDimensions();
+        final int resultDim = step3.getSourceDimensions();
+        final int numTrailingCoordinates = resultDim - step2.getTargetDimensions();
         if (numTrailingCoordinates > 0) {
+            ensureDimensionChangeAllowed(parameterized, context, numTrailingCoordinates, resultDim);
             step2 = createPassThroughTransform(0, step2, numTrailingCoordinates);
         }
         /*
          * If the source CS has a height but the target CS doesn't, drops the extra coordinates.
-         * After this block, the dimensions of 'step1' and 'step2' should match.
+         * Conversely if the source CS is missing a height, add a height with NaN values.
+         * After this block, the dimensions of `step1` and `step2` should match.
+         *
+         * Note: when adding an ellipsoidal height, we set the height value to NaN instead than 0 (Earth surface)
+         * because the given `parameterized` transform may be a Molodensky transform or anything else that could
+         * use the height in its calculation. If we have to add a height, maybe the parameterized transform is a
+         * 2D Molodensky instead than a 3D Molodensky and the height is just propagated to the output CS by a
+         * "passthrough" transform. The result is not the same as if a 3D Molodensky was used in the first place.
+         * A NaN value avoid to give a false sense of accuracy.
          */
         final int sourceDim = step1.getTargetDimensions();
         final int targetDim = step2.getSourceDimensions();
-        if (sourceDim > targetDim) {
-            final Matrix drop = Matrices.createDiagonal(targetDim+1, sourceDim+1);
-            drop.setElement(targetDim, sourceDim, 1); // Element in the lower-right corner.
-            step1 = createConcatenatedTransform(createAffineTransform(drop), step1);
+        final int change    = targetDim - sourceDim;
+        if (change != 0) {
+            if (change > numTrailingCoordinates) {
+                // If we add dimensions, they must be passthrough dimensions.
+                throw new InvalidGeodeticParameterException(canNotAssociateToCS(parameterized, context));
+            }
+            ensureDimensionChangeAllowed(parameterized, context, change, targetDim);
+            final Matrix resize = Matrices.createZero(targetDim+1, sourceDim+1);
+            for (int j=0; j<targetDim; j++) {
+                resize.setElement(j, Math.min(j, sourceDim), (j < sourceDim) ? 1 : Double.NaN);
+            }
+            resize.setElement(targetDim, sourceDim, 1);     // Element in the lower-right corner.
+            step1 = createConcatenatedTransform(step1, createAffineTransform(resize));
         }
         MathTransform mt = createConcatenatedTransform(createConcatenatedTransform(step1, step2), step3);
         /*
@@ -1242,6 +1272,59 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             mt = ((ParameterizedAffine) parameterized).newTransform(mt);
         }
         return mt;
+    }
+
+    /**
+     * Checks whether {@link #swapAndScaleAxes(MathTransform, Context)} should accept to adjust the number of
+     * transform dimensions. Current implementation accepts only addition or removal of ellipsoidal height,
+     * but future version may expand the list of accepted cases. The intent for this method is to catch errors
+     * caused by wrong coordinate systems associated to a parameterized transform, keeping in mind that it is
+     * not {@link DefaultMathTransformFactory} job to handle changes between arbitrary CRS (those changes are
+     * handled by {@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory} instead).
+     *
+     * <div class="note"><b>Note:</b> the {@code parameterized} transform is a black box receiving inputs in
+     * any CS and producing outputs in any CS, not necessarily of the same kind. For that reason, we can not use
+     * {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)} between the normalized CS.
+     * We have to trust that the caller know that the coordinate systems (s)he provided are correct for the work
+     * done by the transform.</div>
+     *
+     * @param  parameterized  the parameterized transform, for producing an error message if needed.
+     * @param  context        the source and target coordinate system.
+     * @param  change         number of dimensions to add (if positive) or remove (if negative).
+     * @param  resultDim      number of dimensions after the change.
+     */
+    private static void ensureDimensionChangeAllowed(final MathTransform parameterized,
+            final Context context, final int change, final int resultDim) throws FactoryException
+    {
+        if (Math.abs(change) == 1 && resultDim >= 2 && resultDim <= 3) {
+            if (context.getSourceCS() instanceof EllipsoidalCS ||
+                context.getTargetCS() instanceof EllipsoidalCS)
+            {
+                return;
+            }
+        }
+        throw new InvalidGeodeticParameterException(canNotAssociateToCS(parameterized, context));
+    }
+
+    /**
+     * Creates the error message for a transform that can not be associated with given coordinate systems.
+     */
+    private static String canNotAssociateToCS(final MathTransform parameterized, final Context context) {
+        String name = null;
+        if (parameterized instanceof Parameterized) {
+            name = IdentifiedObjects.getDisplayName(((Parameterized) parameterized).getParameterDescriptors(), null);
+        }
+        if (name == null) {
+            name = Classes.getShortClassName(parameterized);
+        }
+        final StringBuilder b = new StringBuilder();
+        CoordinateSystem cs = context.getSourceCS();
+        if (cs != null) b.append(cs.getDimension()).append("D → ");
+        b.append("tr(").append(parameterized.getSourceDimensions()).append("D → ")
+                     .append(parameterized.getTargetDimensions()).append("D)");
+        cs = context.getTargetCS();
+        if (cs != null) b.append(" → ").append(cs.getDimension()).append('D');
+        return Resources.format(Resources.Keys.CanNotAssociateToCS_2, name, b);
     }
 
     /**

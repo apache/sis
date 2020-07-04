@@ -30,7 +30,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.parameter.Parameterized;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
@@ -42,7 +41,9 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -192,12 +193,12 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
          * Gets all map projections and creates a projection using the WGS84 ellipsoid
          * and default parameter values.
          */
+        final MathTransformFactory factory = factory();
         final Map<String,?> dummyName = Collections.singletonMap(DefaultProjectedCRS.NAME_KEY, "Test");
-        final MathTransformFactory mtFactory = DefaultFactories.forBuildin(MathTransformFactory.class);
-        final Collection<OperationMethod> methods = mtFactory.getAvailableMethods(Projection.class);
+        final Collection<OperationMethod> methods = factory.getAvailableMethods(Projection.class);
         for (final OperationMethod method : methods) {
             final String classification = method.getName().getCode();
-            ParameterValueGroup pg = mtFactory.getDefaultParameters(classification);
+            ParameterValueGroup pg = factory.getDefaultParameters(classification);
             pg.parameter("semi_major").setValue(6377563.396);
             pg.parameter("semi_minor").setValue(6356256.909237285);
             /*
@@ -244,7 +245,7 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
             }
             final MathTransform mt;
             try {
-                mt = mtFactory.createParameterizedTransform(pg);
+                mt = factory.createParameterizedTransform(pg);
             } catch (InvalidGeodeticParameterException e) {
                 fail(classification + ": " + e.getLocalizedMessage());
                 continue;
@@ -271,7 +272,7 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
              * the one that we specified.
              */
             final DefaultProjectedCRS crs = new DefaultProjectedCRS(dummyName,
-                    CommonCRS.WGS84.normalizedGeographic(),
+                    HardCodedCRS.WGS84,
                     new DefaultConversion(dummyName, method, mt, null),
                     HardCodedCS.PROJECTED);
             final Conversion projection = crs.getConversionFromBase();
@@ -281,17 +282,73 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
     }
 
     /**
+     * Tests {@link DefaultMathTransformFactory#swapAndScaleAxes(MathTransform, DefaultMathTransformFactory.Context)}
+     * with different number of dimensions.
+     *
+     * @throws FactoryException if the transform construction failed.
+     */
+    @Test
+    public void testSwapAndScaleAxes() throws FactoryException {
+        final DefaultMathTransformFactory factory = factory();
+        final DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
+        context.setSource(HardCodedCS.GEODETIC_3D);
+        context.setTarget(HardCodedCS.CARTESIAN_3D);
+        /*
+         * Simulate a case where the parameterized transform is a two-dimensional map projection,
+         * but the input and output CRS are three-dimensional geographic and projected CRS respectively.
+         */
+        MathTransform mt = factory.swapAndScaleAxes(MathTransforms.identity(2), context);
+        assertEquals(3, mt.getSourceDimensions());
+        assertEquals(3, mt.getTargetDimensions());
+        assertTrue(mt.isIdentity());
+        /*
+         * Transform from 3D to 2D. Height dimension is dropped.
+         */
+        context.setSource(HardCodedCS.GEODETIC_3D);
+        context.setTarget(HardCodedCS.GEODETIC_2D);
+        mt = factory.swapAndScaleAxes(MathTransforms.identity(2), context);
+        assertMatrixEquals("3D → 2D", Matrices.create(3, 4, new double[] {
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 0, 1
+        }), MathTransforms.getMatrix(mt), STRICT);
+        /*
+         * Transform from 2D to 3D. Coordinate values in the height dimension are unknown (NaN).
+         */
+        context.setSource(HardCodedCS.GEODETIC_2D);
+        context.setTarget(HardCodedCS.GEODETIC_3D);
+        mt = factory.swapAndScaleAxes(MathTransforms.identity(2), context);
+        assertMatrixEquals("2D → 3D", Matrices.create(4, 3, new double[] {
+            1, 0, 0,
+            0, 1, 0,
+            0, 0, Double.NaN,
+            0, 0, 1
+        }), MathTransforms.getMatrix(mt), STRICT);
+        /*
+         * Test error message when adding a dimension that is not ellipsoidal height.
+         */
+        context.setSource(HardCodedCS.CARTESIAN_2D);
+        context.setTarget(HardCodedCS.CARTESIAN_3D);
+        try {
+            factory.swapAndScaleAxes(MathTransforms.identity(2), context);
+            fail("Should not have accepted the given coordinate systems.");
+        } catch (InvalidGeodeticParameterException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("2D → tr(2D → 2D) → 3D"));
+        }
+    }
+
+    /**
      * Tests {@link DefaultMathTransformFactory#caching(boolean)}.
      */
     @Test
     public void testCaching() {
-        final DefaultMathTransformFactory mtFactory = DefaultFactories.forBuildin(
-                    MathTransformFactory.class, DefaultMathTransformFactory.class);
-        final DefaultMathTransformFactory caching = mtFactory.caching(false);
+        final DefaultMathTransformFactory factory = factory();
+        final DefaultMathTransformFactory caching = factory.caching(false);
 
-        assertNotSame(mtFactory, caching);
-        assertSame   (mtFactory, mtFactory.caching(true));
-        assertSame   (mtFactory,   caching.caching(true));
+        assertNotSame(factory, caching);
+        assertSame   (factory, factory.caching(true));
+        assertSame   (factory,   caching.caching(true));
         assertSame   (caching,     caching.caching(false));
     }
 }
