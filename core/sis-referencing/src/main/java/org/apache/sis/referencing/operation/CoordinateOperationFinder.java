@@ -585,11 +585,15 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
              *    - [Abridged] Molodensky          (as an approximation of geocentric translation)
              *    - Identity                       (if the desired accuracy is so large than we can skip datum shift)
              *
-             * TODO: if both CS are ellipsoidal but with different number of dimensions, then we should use
-             * an intermediate 3D geographic CRS in order to enable the use of Molodensky method if desired.
+             * If both CS are ellipsoidal but with different number of dimensions, then a three-dimensional
+             * operation is used and `DefaultMathTransformFactory` will add an ellipsoidal height on-the-fly.
+             * We let the transform factory do this work instead than adding an intermediate "geographic 2D
+             * to 3D" operation here because the transform factory works with normalized CS, which avoid the
+             * need the search in which dimension to add the ellipsoidal height (it should always be last,
+             * but SIS is tolerant to unusual axis order).
              */
-            final DatumShiftMethod preferredMethod = DatumShiftMethod.forAccuracy(desiredAccuracy);
-            parameters = GeocentricAffine.createParameters(sourceCS, targetCS, datumShift, preferredMethod);
+            parameters = GeocentricAffine.createParameters(sourceCS, targetCS, datumShift,
+                                            DatumShiftMethod.forAccuracy(desiredAccuracy));
             if (parameters == null) {
                 /*
                  * Failed to select a coordinate operation. Maybe because the coordinate system types are not the same.
@@ -634,18 +638,15 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
              */
             final int sourceDim = sourceCS.getDimension();
             final int targetDim = targetCS.getDimension();
-            if ((sourceDim & ~1) == 2                           // sourceDim == 2 or 3.
-                    && (sourceDim ^ targetDim) == 1             // abs(sourceDim - targetDim) == 1.
-                    && (sourceCS instanceof EllipsoidalCS)
-                    && (targetCS instanceof EllipsoidalCS))
-            {
-                parameters = (sourceDim == 2 ? Geographic2Dto3D.PARAMETERS
-                                             : Geographic3Dto2D.PARAMETERS).createValue();
+            if (sourceDim == 2 && targetDim == 3 && sourceCS instanceof EllipsoidalCS) {
+                parameters = Geographic2Dto3D.PARAMETERS.createValue();
+            } else if (sourceDim == 3 && targetDim == 2 && targetCS instanceof EllipsoidalCS) {
+                parameters = Geographic3Dto2D.PARAMETERS.createValue();
             } else {
                 /*
                  * TODO: instead than creating parameters for an identity operation, we should create the
                  *       CoordinateOperation directly from the MathTransform created by mtFactory below.
-                 *       The intent if to get the correct OperationMethod, which should not be "Affine"
+                 *       The intent is to get the correct OperationMethod, which should not be "Affine"
                  *       if there is a CS type change.
                  */
                 parameters = Affine.identity(targetDim);
@@ -758,7 +759,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                         .createVerticalCS(derivedFrom(heightCS), expectedAxis));
             }
         }
-        if (!isEllipsoidalHeight) {                     // 'false' if we need to change datum, unit or axis direction.
+        if (!isEllipsoidalHeight) {                     // `false` if we need to change datum, unit or axis direction.
             heightCRS = toAuthorityDefinition(VerticalCRS.class, factorySIS.getCRSFactory()
                     .createVerticalCRS(derivedFrom(heightCRS), CommonCRS.Vertical.ELLIPSOIDAL.datum(), heightCS));
         }
@@ -967,8 +968,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             } else if (stepComponents.length == 1) {
                 stepTargetCRS = target;                 // Slight optimization of the next block.
             } else {
-                final EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(factorySIS.getCRSFactory(), factorySIS.getCSFactory(), factory);
-                stepTargetCRS = toAuthorityDefinition(CoordinateReferenceSystem.class, c.createCompoundCRS(derivedFrom(target), stepComponents));
+                stepTargetCRS = createCompoundCRS(target, stepComponents);
             }
             int delta = source.getCoordinateSystem().getDimension();
             final int startAtDimension = endAtDimension;
@@ -1038,6 +1038,24 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     {
         final MathTransform transform  = factorySIS.getMathTransformFactory().createAffineTransform(matrix);
         return createFromMathTransform(properties(name), sourceCRS, targetCRS, transform, null, null, null);
+    }
+
+    /**
+     * Creates a compound CRS, but we special processing for (two-dimensional Geographic + ellipsoidal heights) tuples.
+     * If any such tuple is found, a three-dimensional geographic CRS is created instead than the compound CRS.
+     *
+     * @param  template    the CRS from which to inherit properties.
+     * @param  components  ordered array of {@code CoordinateReferenceSystem} objects.
+     * @return the coordinate reference system for the given properties.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see EllipsoidalHeightCombiner#createCompoundCRS(Map, CoordinateReferenceSystem...)
+     */
+    private CoordinateReferenceSystem createCompoundCRS(final CoordinateReferenceSystem template,
+            final CoordinateReferenceSystem[] components) throws FactoryException
+    {
+        EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(factorySIS.getCRSFactory(), factorySIS.getCSFactory(), factory);
+        return toAuthorityDefinition(CoordinateReferenceSystem.class, c.createCompoundCRS(derivedFrom(template), components));
     }
 
     /**

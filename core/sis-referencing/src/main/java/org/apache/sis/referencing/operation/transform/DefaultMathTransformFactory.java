@@ -1236,25 +1236,24 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * Conversely if the source CS is missing a height, add a height with NaN values.
          * After this block, the dimensions of `step1` and `step2` should match.
          *
-         * Note: when adding an ellipsoidal height, we set the height value to NaN instead than 0 (Earth surface)
-         * because the given `parameterized` transform may be a Molodensky transform or anything else that could
-         * use the height in its calculation. If we have to add a height, maybe the parameterized transform is a
-         * 2D Molodensky instead than a 3D Molodensky and the height is just propagated to the output CS by a
-         * "passthrough" transform. The result is not the same as if a 3D Molodensky was used in the first place.
+         * When adding an ellipsoidal height, there is two scenarios: the ellipsoidal height may be used by the
+         * parameterized operation, or it may be passed through (in which case the operation ignores the height).
+         * If the height is expected as operation input, set the height to 0. Otherwise (the pass through case),
+         * set the height to NaN. We do that way because the given `parameterized` transform may be a Molodensky
+         * transform or anything else that could use the height in its calculation. If we have to add a height as
+         * a pass through dimension, maybe the parameterized transform is a 2D Molodensky instead than a 3D Molodensky.
+         * The result of passing through the height is not the same as if a 3D Molodensky was used in the first place.
          * A NaN value avoid to give a false sense of accuracy.
          */
         final int sourceDim = step1.getTargetDimensions();
         final int targetDim = step2.getSourceDimensions();
-        final int change    = targetDim - sourceDim;
-        if (change != 0) {
-            if (change > numTrailingCoordinates) {
-                // If we add dimensions, they must be passthrough dimensions.
-                throw new InvalidGeodeticParameterException(canNotAssociateToCS(parameterized, context));
-            }
-            ensureDimensionChangeAllowed(parameterized, context, change, targetDim);
+        int insertCount = targetDim - sourceDim;
+        if (insertCount != 0) {
+            ensureDimensionChangeAllowed(parameterized, context, insertCount, targetDim);
             final Matrix resize = Matrices.createZero(targetDim+1, sourceDim+1);
             for (int j=0; j<targetDim; j++) {
-                resize.setElement(j, Math.min(j, sourceDim), (j < sourceDim) ? 1 : Double.NaN);
+                resize.setElement(j, Math.min(j, sourceDim), (j < sourceDim) ? 1 :
+                        ((--insertCount >= numTrailingCoordinates) ? 0 : Double.NaN));        // See above note.
             }
             resize.setElement(targetDim, sourceDim, 1);     // Element in the lower-right corner.
             step1 = createConcatenatedTransform(step1, createAffineTransform(resize));
@@ -1303,13 +1302,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 return;
             }
         }
-        throw new InvalidGeodeticParameterException(canNotAssociateToCS(parameterized, context));
-    }
-
-    /**
-     * Creates the error message for a transform that can not be associated with given coordinate systems.
-     */
-    private static String canNotAssociateToCS(final MathTransform parameterized, final Context context) {
+        /*
+         * Creates the error message for a transform that can not be associated with given coordinate systems.
+         */
         String name = null;
         if (parameterized instanceof Parameterized) {
             name = IdentifiedObjects.getDisplayName(((Parameterized) parameterized).getParameterDescriptors(), null);
@@ -1324,7 +1319,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                      .append(parameterized.getTargetDimensions()).append("D)");
         cs = context.getTargetCS();
         if (cs != null) b.append(" → ").append(cs.getDimension()).append('D');
-        return Resources.format(Resources.Keys.CanNotAssociateToCS_2, name, b);
+        throw new InvalidGeodeticParameterException(Resources.format(Resources.Keys.CanNotAssociateToCS_2, name, b));
     }
 
     /**

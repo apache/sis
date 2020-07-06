@@ -30,6 +30,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.ToggleGroup;
 import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.resources.Vocabulary;
@@ -102,16 +104,18 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     }
 
     /**
-     * Sets the initial value to the first item in the {@code systems} list, if any.
-     * This method is invoked in JavaFX thread at construction time or, if it didn't
-     * work, at some later time when the systems list may contain an element.
+     * Sets the initial value to the first two-dimensional item in the {@code systems} list, if any.
+     * This method is invoked in JavaFX thread at construction time or, if it didn't work,
+     * at some later time when the systems list may contain an element.
      * This method should not be invoked anymore after initialization succeeded.
      */
     private void initialize(final ObservableList<? extends ReferenceSystem> systems) {
         for (final ReferenceSystem system : systems) {
-            if (system != RecentReferenceSystems.OTHER) {
-                set(system);
-                break;
+            if (system instanceof CoordinateReferenceSystem) {
+                if (ReferencingUtilities.getDimension((CoordinateReferenceSystem) system) == 2) {
+                    set(system);
+                    break;
+                }
             }
         }
     }

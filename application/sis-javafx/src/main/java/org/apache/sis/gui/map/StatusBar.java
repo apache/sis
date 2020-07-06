@@ -78,6 +78,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
@@ -262,12 +263,14 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private Predicate<MapCanvas> fullOperationSearchRequired;
 
     /**
-     * The source local indices before conversion to geospatial coordinates.
-     * The number of dimensions is often {@value #BIDIMENSIONAL}.
-     * Shall never be {@code null}.
+     * The source local indices before conversion to geospatial coordinates (never {@code null}).
+     * The number of dimensions is often {@value #BIDIMENSIONAL}. May be the same array than
+     * <code>{@linkplain #targetCoordinates}.coordinates</code> because some transforms are
+     * faster when the source and destination arrays are the same.
      *
      * @see #targetCoordinates
      * @see #position
+     * @see #setTargetCRS(CoordinateReferenceSystem)
      */
     private double[] sourceCoordinates;
 
@@ -635,7 +638,11 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             }
         }
         final boolean sameCRS = Utilities.equalsIgnoreMetadata(objectiveCRS, crs);
-        ((LocalToObjective) localToObjectiveCRS).setNoCheck(localToCRS);
+        if (localToCRS == null) {
+            localToCRS = MathTransforms.identity(BIDIMENSIONAL);
+        }
+        final int srcDim = Math.max(localToCRS.getSourceDimensions(), BIDIMENSIONAL);
+        final int tgtDim = localToCRS.getTargetDimensions();
         /*
          * Remaining code should not fail, so we can start modifying the `StatusBar` fields.
          * The buffers for source and target coordinates are recreated because the number of
@@ -645,14 +652,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * So we can not use those values for updating the coordinates shown in status bar.
          * Instead we will wait for the next mouse event to provide new local coordinates.
          */
-        if (localToCRS != null) {
-            sourceCoordinates = new double[Math.max(localToCRS.getSourceDimensions(), BIDIMENSIONAL)];
-            targetCoordinates = new GeneralDirectPosition(localToCRS.getTargetDimensions());
-        } else {
-            localToCRS        = MathTransforms.identity(BIDIMENSIONAL);
-            targetCoordinates = new GeneralDirectPosition(BIDIMENSIONAL);
-            sourceCoordinates = targetCoordinates.coordinates;      // Okay to share array if same dimension.
-        }
+        ((LocalToObjective) localToObjectiveCRS).setNoCheck(localToCRS);
+        targetCoordinates   = new GeneralDirectPosition(tgtDim);
+        sourceCoordinates   = (srcDim == tgtDim) ? targetCoordinates.coordinates : new double[srcDim];
         objectiveCRS        = crs;
         localToPositionCRS  = localToCRS;                           // May be updated again below.
         inflatePrecisions   = inflate;
@@ -689,7 +691,24 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         if (objectiveToPositionCRS != null) {
             localToPositionCRS = MathTransforms.concatenate(localToObjectiveCRS.get(), objectiveToPositionCRS);
         }
-        targetCoordinates.setCoordinateReferenceSystem(format.getDefaultCRS());
+        setTargetCRS(format.getDefaultCRS());
+    }
+
+    /**
+     * Sets the CRS of {@link #targetCoordinates}.
+     * This method creates a new position if the number of dimensions changed.
+     */
+    private void setTargetCRS(final CoordinateReferenceSystem crs) {
+        final int tgtDim = ReferencingUtilities.getDimension(crs);
+        if (tgtDim != 0 && tgtDim != targetCoordinates.getDimension()) {
+            precisions = null;
+            targetCoordinates = new GeneralDirectPosition(tgtDim);
+            if (sourceCoordinates.length == tgtDim) {
+                // Sharing the same array make some transforms faster.
+                sourceCoordinates = targetCoordinates.coordinates;
+            }
+        }
+        targetCoordinates.setCoordinateReferenceSystem(crs);
     }
 
     /**
@@ -892,7 +911,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             position.setText(text);
         }
         outsideText = text;
-        targetCoordinates.setCoordinateReferenceSystem(crs);
+        setTargetCRS(crs);
         ((PositionSystem) positionReferenceSystem).fireValueChangedEvent();
     }
 
@@ -933,7 +952,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
         /**
          * Overwrite previous value without any check. This method is invoked when the {@link #objectiveCRS}
-         * is changed in same time the {@link #localToObjectiveCRS} transform.
+         * is changed in same time than the {@link #localToObjectiveCRS} transform, so the number of dimensions
+         * may be temporarily mismatched. This method does not invoke {@link #updateLocalToPositionCRS()};
+         * that call must be done by the caller when ready.
          */
         final void setNoCheck(final MathTransform newValue) {
             super.set(newValue);
