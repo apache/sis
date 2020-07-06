@@ -53,7 +53,10 @@ abstract class GeodeticOperation extends AbstractProvider {
      *
      * <strong>Do not modify this array after construction</strong>, since the same array is shared by many
      * objects and there is no synchronization.
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
+    @Deprecated
     final GeodeticOperation[] redimensioned;
 
     /**
@@ -100,8 +103,11 @@ abstract class GeodeticOperation extends AbstractProvider {
      * @param  sourceDimensions  the desired number of input dimensions.
      * @param  targetDimensions  the desired number of output dimensions.
      * @return the redimensioned operation method, or {@code null} if none.
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
     @Override
+    @Deprecated
     public final OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         if (redimensioned != null && (sourceDimensions & ~1) == 2 && (targetDimensions & ~1) == 2) {
             final GeodeticOperation m = redimensioned[((sourceDimensions & 1) << 1) | (targetDimensions & 1)];

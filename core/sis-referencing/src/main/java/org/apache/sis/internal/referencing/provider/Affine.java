@@ -212,8 +212,11 @@ public final class Affine extends AbstractProvider {
      * @param  sourceDimensions  the desired number of input dimensions.
      * @param  targetDimensions  the desired number of output dimensions.
      * @return the redimensioned operation method, or {@code this} if no change is needed.
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
     @Override
+    @Deprecated
     public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         return getProvider(sourceDimensions, targetDimensions, false);
     }

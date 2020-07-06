@@ -174,7 +174,10 @@ public abstract class MapProjection extends AbstractProvider {
      *
      * @see #redimension(int, int)
      * @see GeodeticOperation#redimensioned
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
+    @Deprecated
     private OperationMethod redimensioned;
 
     /**
@@ -204,8 +207,11 @@ public abstract class MapProjection extends AbstractProvider {
      * @return the redimensioned projection method, or {@code this} if no change is needed.
      *
      * @since 0.8
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
     @Override
+    @Deprecated
     public final OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         if (sourceDimensions != 3 || targetDimensions != 3) {
             return super.redimension(sourceDimensions, targetDimensions);

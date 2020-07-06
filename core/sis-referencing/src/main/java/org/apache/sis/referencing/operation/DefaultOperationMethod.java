@@ -117,7 +117,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.1
  *
  * @see DefaultConversion
  * @see DefaultTransformation
@@ -166,7 +166,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * This field is modified only at unmarshalling time by {@link #setSourceDimensions(Integer)}</p>
      *
      * @see #getSourceDimensions()
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
+    @Deprecated
     private Integer sourceDimensions;
 
     /**
@@ -178,7 +181,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * This field is modified only at unmarshalling time by {@link #setTargetDimensions(Integer)}</p>
      *
      * @see #getTargetDimensions()
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
+    @Deprecated
     private Integer targetDimensions;
 
     /**
@@ -232,6 +238,19 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *   </tr>
      * </table>
      *
+     * @param  properties  set of properties. Shall contain at least {@code "name"}.
+     * @param  parameters  description of parameters expected by this operation.
+     *
+     * @since 1.1
+     */
+    public DefaultOperationMethod(final Map<String,?> properties,
+                                  final ParameterDescriptorGroup parameters)
+    {
+        this(properties, null, null, parameters);
+    }
+
+    /**
+     * Constructs an operation method for the given number of dimensions.
      * The source and target dimensions may be {@code null} if this method can work
      * with any number of dimensions (e.g. <cite>Affine Transform</cite>).
      *
@@ -239,7 +258,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @param  sourceDimensions  number of dimensions in the source CRS of this operation method, or {@code null}.
      * @param  targetDimensions  number of dimensions in the target CRS of this operation method, or {@code null}.
      * @param  parameters        description of parameters expected by this operation.
+     *
+     * @deprecated ISO 19111:2019 removed "source dimensions" and "target dimensions" attributes.
      */
+    @Deprecated
     public DefaultOperationMethod(final Map<String,?> properties,
                                   final Integer sourceDimensions,
                                   final Integer targetDimensions,
@@ -450,7 +472,11 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @return the redimensioned operation method, or {@code null} if the given method was null,
      *         or {@code method} if no change is needed.
      * @throws IllegalArgumentException if the given dimensions are illegal for the given operation method.
+     *
+     * @deprecated Not needed anymore since ISO 19111:2019 removed the
+     *             "source dimensions" and "target dimensions" attributes.
      */
+    @Deprecated
     public static OperationMethod redimension(OperationMethod method,
             final int sourceDimensions, final int targetDimensions)
     {
@@ -489,7 +515,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @throws IllegalArgumentException if the given dimensions are illegal for this operation method.
      *
      * @since 0.6
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
+    @Deprecated
     public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         return redimension(this, sourceDimensions, this.sourceDimensions,
                                  targetDimensions, this.targetDimensions);
@@ -568,8 +597,11 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @return the dimension of source CRS, or {@code null} if unknown.
      *
      * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getSourceDimensions()
+     *
+     * @deprecated This attribute has been removed from ISO 19111:2019.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "sourceDimensions")
     @XmlSchemaType(name = "positiveInteger")
     public Integer getSourceDimensions() {
@@ -583,8 +615,11 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @return the dimension of target CRS, or {@code null} if unknown.
      *
      * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getTargetDimensions()
+     *
+     * @deprecated This attribute has been removed from ISO 19111:2019.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "targetDimensions")
     @XmlSchemaType(name = "positiveInteger")
     public Integer getTargetDimensions() {
