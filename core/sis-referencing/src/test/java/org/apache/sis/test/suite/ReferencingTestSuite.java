@@ -147,7 +147,6 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.SpecializableTransformTest.class,
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
-    org.apache.sis.referencing.operation.AbstractSingleOperationTest.class,
     org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
 
     // Registration of map projections and other math transforms.

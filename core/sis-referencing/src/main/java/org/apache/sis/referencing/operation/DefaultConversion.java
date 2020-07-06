@@ -207,10 +207,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                              final ParameterValueGroup parameters)
     {
         super(properties, method);
-        if (transform != null) {
-            this.transform = transform;
-            checkDimensions(method, 0, transform, properties);
-        } else if (parameters == null) {
+        this.transform = transform;
+        if (transform == null && parameters == null) {
             throw new IllegalArgumentException(Resources.forProperties(properties)
                     .getString(Resources.Keys.UnspecifiedParameterValues));
         }
