@@ -51,10 +51,13 @@ import org.apache.sis.math.Statistics;
  */
 final class ImageConverter extends Task<Statistics[]> {
     /**
-     * The maximal image width and height.
-     * This arbitrary value may change in any future version.
+     * The maximal image width and height, as an arbitrary value that may change in any future version.
+     * This size should be a typical size expected for the JavaFX control showing the image.
+     * If the {@link ImageView} is larger than this size, the image will be rescaled by JavaFX.
+     * The quality is lower than if we had let the "resample" operation do its work at full resolution,
+     * but {@link PropertyView} should be used only of overview anyway.
      */
-    private static final int MAX_SIZE = 400;
+    private static final int MAX_SIZE = 600;
 
     /**
      * The Java2D image to convert.
@@ -157,6 +160,8 @@ final class ImageConverter extends Task<Statistics[]> {
         writer.setPixels(0, 0, width, height, PixelFormat.getIntArgbPreInstance(), data, 0, width);
         data = null;
         canvas.setImage(destination);
+        canvas.setFitWidth (bounds.width);
+        canvas.setFitHeight(bounds.height);
     }
 
     /**

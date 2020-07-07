@@ -31,6 +31,7 @@ import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import javafx.beans.property.ObjectProperty;
 import javafx.concurrent.Task;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.text.Font;
 import javafx.scene.control.Label;
@@ -105,6 +106,12 @@ public final class PropertyView extends CompoundFormat<Object> {
      * Created when first needed.
      */
     private Label sampleValueRange;
+
+    /**
+     * Mean value and standard deviation found in the image wrapped by {@link #imageView}.
+     * Created when first needed.
+     */
+    private Label meanValue;
 
     /**
      * If the property is an image, bounds of currently visible region. May be {@code null} is unknown,
@@ -282,11 +289,25 @@ public final class PropertyView extends CompoundFormat<Object> {
             GridPane.setConstraints(imageCanvas, 0, 0, 2, 1);
             GridPane.setHgrow(imageCanvas, Priority.ALWAYS);
             GridPane.setVgrow(imageCanvas, Priority.ALWAYS);
+
             final Vocabulary vocabulary = Vocabulary.getResources(getLocale());
-            final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.ValueRange));
-            label.setLabelFor(sampleValueRange = new Label());
-            imagePane = Styles.createControlGrid(1, label);
+            final Label rangeLabel = new Label(vocabulary.getLabel(Vocabulary.Keys.ValueRange));
+            final Label meanLabel  = new Label(vocabulary.getLabel(Vocabulary.Keys.MeanValue));
+            rangeLabel.setLabelFor(sampleValueRange = new Label());
+            meanLabel .setLabelFor(meanValue = new Label());
+
+            Insets insets = new Insets(9, 0, 0, 9);
+            rangeLabel.setPadding(insets);
+            sampleValueRange.setPadding(insets);
+            insets = new Insets(3, 0, 9, 9);
+            meanLabel.setPadding(insets);
+            meanValue.setPadding(insets);
+
+            imagePane = Styles.createControlGrid(1, rangeLabel, meanLabel);
             imagePane.getChildren().add(imageCanvas);
+            imagePane.setPadding(Insets.EMPTY);
+            imagePane.setVgap(0);
+            imagePane.setHgap(0);
             imageView = node;
         }
         final ImageConverter converter = new ImageConverter(image, visibleImageBounds, node);
@@ -304,8 +325,9 @@ public final class PropertyView extends CompoundFormat<Object> {
      * Invoked when {@link #runningTask} completed its work, either successfully or with a failure.
      */
     private void taskCompleted(final Statistics[] statistics) {
-        runningTask = null;
-        String text = null;
+        runningTask  = null;
+        String range = null;
+        String mean  = null;
         if (statistics != null && statistics.length != 0) {
             final Statistics s = statistics[0];
             final FieldPosition pos = new FieldPosition(0);
@@ -313,9 +335,18 @@ public final class PropertyView extends CompoundFormat<Object> {
             final Format f = getFormat(Number.class);
             format(f, s.minimum(), buffer, pos); buffer.append(" … ");
             format(f, s.maximum(), buffer, pos);
-            text = buffer.toString();
+            range = buffer.toString();
+
+            buffer.setLength(0);
+            format(f, s.mean(), buffer, pos); buffer.append(" ± ");
+            format(f, s.standardDeviation(false), buffer, pos);
+
+            final Vocabulary vocabulary = Vocabulary.getResources(getLocale());
+            buffer.append(" (").append(vocabulary.getString(Vocabulary.Keys.StandardDeviation)).append(')');
+            mean = buffer.toString();
         }
-        sampleValueRange.setText(text);
+        sampleValueRange.setText(range);
+        meanValue.setText(mean);
     }
 
     /**
