@@ -56,6 +56,11 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * About…
+         */
+        public static final short About = 46;
+
+        /**
          * All files
          */
         public static final short AllFiles = 1;
@@ -191,6 +196,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short GeospatialFiles = 23;
 
         /**
+         * Help
+         */
+        public static final short Help = 47;
+
+        /**
          * Image start
          */
         public static final short ImageStart = 36;
@@ -274,6 +284,11 @@ public final class Resources extends IndexedResourceBundle {
          * Visualize
          */
         public static final short Visualize = 34;
+
+        /**
+         * Web site
+         */
+        public static final short WebSite = 48;
 
         /**
          * Windows

@@ -40,6 +40,7 @@ import org.apache.sis.internal.util.PropertyFormat;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -74,15 +75,21 @@ import org.apache.sis.util.logging.Logging;
 @DefaultProperty("content")
 public class MetadataTree extends TreeTableView<TreeTable.Node> {
     /**
-     * The column for metadata property name.
+     * The column for metadata property name in the view.
      */
     private final TreeTableColumn<TreeTable.Node, String> nameColumn;
 
     /**
-     * The column for metadata property value.
+     * The column for metadata property value in the view.
      * Values are typically {@link InternationalString}, {@link Number} or dates.
      */
     private final TreeTableColumn<TreeTable.Node, Object> valueColumn;
+
+    /**
+     * The column for metadata property value in the model.
+     * This is usually {@link TableColumn#VALUE} or {@link TableColumn#VALUE_AS_TEXT}.
+     */
+    TableColumn<?> valueSourceColumn;
 
     /**
      * The data shown in this tree table. The {@link ObjectProperty#set(Object)} method requires
@@ -98,6 +105,15 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
      * This class verifies the constraints documented in {@link MetadataTree#setContent(TreeTable)}.
      */
     private static final class ContentProperty extends SimpleObjectProperty<TreeTable> {
+        /**
+         * The columns where to search for values, in preference order.
+         */
+        private static final TableColumn<?>[] VALUES_COLUMNS = {
+            TableColumn.VALUE,
+            TableColumn.VALUE_AS_NUMBER,
+            TableColumn.VALUE_AS_TEXT
+        };
+
         /** Creates a new property. */
         ContentProperty(final MetadataTree bean) {
             super(bean, "content");
@@ -105,11 +121,17 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
 
         /** Invoked when the user wants to set new data. */
         @Override public void set(final TreeTable data) {
-            if (data != null) {
+check:      if (data != null) {
                 final List<TableColumn<?>> columns = data.getColumns();
-                if (!(columns.contains(TableColumn.NAME) && columns.contains(TableColumn.VALUE))) {
-                    throw new IllegalArgumentException();
+                if (columns.contains(TableColumn.NAME)) {
+                    for (final TableColumn<?> value : VALUES_COLUMNS) {
+                        if (columns.contains(value)) {
+                            ((MetadataTree) getBean()).valueSourceColumn = value;
+                            break check;
+                        }
+                    }
                 }
+                throw new IllegalArgumentException();
             }
             super.set(data);
         }
@@ -145,16 +167,16 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     MetadataTree(final MetadataSummary controller, final boolean standard) {
-        final Locale locale;
+        final Vocabulary vocabulary;
         if (controller != null) {
-            locale = controller.vocabulary.getLocale();
+            vocabulary = controller.vocabulary;
         } else {
-            locale = Locale.getDefault(Locale.Category.DISPLAY);
+            vocabulary = Vocabulary.getResources((Locale) null);
         }
-        formatter       = new Formatter(locale);
+        formatter       = new Formatter(vocabulary.getLocale());
         contentProperty = new ContentProperty(this);
-        nameColumn      = new TreeTableColumn<>(TableColumn.NAME .getHeader().toString(locale));
-        valueColumn     = new TreeTableColumn<>(TableColumn.VALUE.getHeader().toString(locale));
+        nameColumn      = new TreeTableColumn<>(vocabulary.getString(Vocabulary.Keys.Property));
+        valueColumn     = new TreeTableColumn<>(vocabulary.getString(Vocabulary.Keys.Value));
         nameColumn .setCellValueFactory(MetadataTree::getPropertyName);
         valueColumn.setCellValueFactory(formatter);
 
@@ -279,7 +301,7 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
      * @param  column   column of the desired value.
      * @return value in the specified column. May be {@code null}.
      */
-    private static <T> T getValue(final CellDataFeatures<TreeTable.Node, ? extends T> cell, final TableColumn<T> column) {
+    private static <T> T getValue(final CellDataFeatures<TreeTable.Node, ?> cell, final TableColumn<T> column) {
         final TreeTable.Node node = cell.getValue().getValue();
         return node.getValue(column);
     }
@@ -336,7 +358,7 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
         @Override
         public ObservableValue<Object> call(final CellDataFeatures<TreeTable.Node, Object> cell) {
             final MetadataTree view = (MetadataTree) cell.getTreeTableView();
-            Object value = getValue(cell, TableColumn.VALUE);
+            Object value = getValue(cell, view.valueSourceColumn);
             if (value instanceof IdentifiedObject) {
                 value = IdentifiedObjects.getDisplayName((IdentifiedObject) value, locale);
             }

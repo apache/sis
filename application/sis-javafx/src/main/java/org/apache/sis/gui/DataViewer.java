@@ -129,14 +129,20 @@ public class DataViewer extends Application {
             file.getItems().addAll(
                     open = localized.menu(Resources.Keys.Open, (e) -> showOpenFileDialog()),
                     new SeparatorMenuItem(),
-                    localized.menu(Resources.Keys.Exit, (event) -> Platform.exit()));
+                    localized.menu(Resources.Keys.Exit, (e) -> Platform.exit()));
 
             open.setAccelerator(KeyCombination.keyCombination("Shortcut+O"));
+        }
+        final Menu help = new Menu(localized.getString(Resources.Keys.Help));
+        {   // For keeping variables locale.
+            help.getItems().addAll(
+                    localized.menu(Resources.Keys.WebSite, (e) -> getHostServices().showDocument("https://sis.apache.org/")),
+                    localized.menu(Resources.Keys.About, (e) -> AboutDialog.show()));
         }
         final Menu windows = new Menu(localized.getString(Resources.Keys.Windows));
         windows.getItems().add(content.createNewWindowMenu());
         content.setWindowsItems(windows.getItems());
-        menus.getMenus().addAll(file, windows);
+        menus.getMenus().addAll(file, windows, help);
         /*
          * Set the main content and show.
          */

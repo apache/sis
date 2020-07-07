@@ -222,12 +222,12 @@ public class StandardMetadataTree extends MetadataTree {
                         } else if (MetadataStandard.ISO_19115.isMetadata(obj.getClass())) {
                             text = toTree(obj).toString();
                         } else {
-                            final Object value = node.getValue(TableColumn.VALUE);
+                            final Object value = node.getValue(((MetadataTree) getTreeTableView()).valueSourceColumn);
                             if (value == null) return;
                             text = value.toString();
                         }
                     } catch (Exception e) {
-                        final Resources localized = Resources.forLocale(((StandardMetadataTree) getTreeTableView()).getLocale());
+                        final Resources localized = Resources.forLocale(((MetadataTree) getTreeTableView()).getLocale());
                         ExceptionReporter.show(localized.getString(Resources.Keys.ErrorExportingData),
                                                localized.getString(Resources.Keys.CanNotCreateXML), e);
                         return;
