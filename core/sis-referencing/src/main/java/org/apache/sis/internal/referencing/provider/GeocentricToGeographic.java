@@ -28,7 +28,7 @@ import org.apache.sis.parameter.Parameters;
 
 
 /**
- * The provider for the <strong>inverse</strong> of "<cite>Geographic/geocentric conversions</cite>" (EPSG:9602).
+ * The provider for the <strong>inverse</strong> of <cite>"Geographic/geocentric conversions"</cite> (EPSG:9602).
  * This provider creates transforms from geocentric to geographic coordinate reference systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

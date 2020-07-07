@@ -1381,6 +1381,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
+        lastMethod.remove();                                // In case an exception is thrown before completion.
         if (ellipsoid != null) {
             final boolean isEllipsoidalSource = (source instanceof EllipsoidalCS);
             if (isEllipsoidalSource != (target instanceof EllipsoidalCS)) {
@@ -1408,7 +1409,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 }
             }
         }
-        return CoordinateSystemTransform.create(this, source, target);
+        return CoordinateSystemTransform.create(this, source, target, lastMethod);
         // No need to use unique(…) here.
     }
 

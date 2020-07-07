@@ -267,7 +267,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * Verify if some extension module handles this pair of CRS in a special way. For example it may
          * be the "sis-gdal" module checking if the given CRS are wrappers around Proj.4 data structure.
          */
-        {   // For keeping 'operations' list locale.
+        {   // For keeping `operations` list locale.
             final List<CoordinateOperation> operations = new ArrayList<>();
             for (final SpecializedOperationFactory sp : factorySIS.getSpecializedFactories()) {
                 for (final CoordinateOperation op : sp.findOperations(sourceCRS, targetCRS)) {
@@ -575,6 +575,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final DefaultMathTransformFactory mtFactory = factorySIS.getDefaultMathTransformFactory();
         MathTransform before = null, after = null;
         ParameterValueGroup parameters;
+        OperationMethod method = null;
         if (identifier == DATUM_SHIFT || identifier == ELLIPSOID_CHANGE) {
             /*
              * If the transform can be represented by a single coordinate operation, returns that operation.
@@ -598,11 +599,6 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 /*
                  * Failed to select a coordinate operation. Maybe because the coordinate system types are not the same.
                  * Convert unconditionally to XYZ geocentric coordinates and apply the datum shift in that CS space.
-                 *
-                 * TODO: operation name should not be "Affine" if 'before' or 'after' transforms are not identity.
-                 *       Reminder: the parameter group name here determines the OperationMethod later in this method.
-                 *
-                 *       See https://issues.apache.org/jira/browse/SIS-462
                  */
                 if (datumShift != null) {
                     parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE), datumShift);
@@ -614,6 +610,16 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 after  = mtFactory.createCoordinateSystemChange(normalized, targetCS, targetDatum.getEllipsoid());
                 context.setSource(normalized);
                 context.setTarget(normalized);
+                /*
+                 * The name of the `parameters` group determines the `OperationMethod` later in this method.
+                 * We can not leave that name to "Affine" if `before` or `after` transforms are not identity.
+                 * Note: we check for identity transforms instead than relaxing to general `LinearTransform`
+                 * because otherwise, we would have to update values declared in `parameters`. It is doable
+                 * but not done yet.
+                 */
+                if (!(before.isIdentity() && after.isIdentity())) {
+                    method = LooselyDefinedMethod.AFFINE_GEOCENTRIC;
+                }
             }
         } else if (identifier == GEOCENTRIC_CONVERSION) {
             /*
@@ -643,12 +649,6 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             } else if (sourceDim == 3 && targetDim == 2 && targetCS instanceof EllipsoidalCS) {
                 parameters = Geographic3Dto2D.PARAMETERS.createValue();
             } else {
-                /*
-                 * TODO: instead than creating parameters for an identity operation, we should create the
-                 *       CoordinateOperation directly from the MathTransform created by mtFactory below.
-                 *       The intent is to get the correct OperationMethod, which should not be "Affine"
-                 *       if there is a CS type change.
-                 */
                 parameters = Affine.identity(targetDim);
                 /*
                  * createCoordinateSystemChange(…) needs the ellipsoid associated to the ellipsoidal coordinate system,
@@ -658,6 +658,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 before = mtFactory.createCoordinateSystemChange(sourceCS, targetCS,
                         (sourceCS instanceof EllipsoidalCS ? sourceDatum : targetDatum).getEllipsoid());
                 context.setSource(targetCS);
+                method = mtFactory.getLastMethodUsed();
             }
         }
         /*
@@ -670,11 +671,14 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          *     normalized CRS with target datum  →
          *     target CRS
          *
-         * Those steps may be either explicit with the 'before' and 'after' transform, or implicit with the
-         * Context parameter.
+         * Those steps may be either explicit with the `before` and `after` transforms, or implicit with the
+         * Context parameter. The operation name is inferred from the parameters, unless a method has been
+         * specified in advance.
          */
         MathTransform transform = mtFactory.createParameterizedTransform(parameters, context);
-        final OperationMethod method = mtFactory.getLastMethodUsed();
+        if (method == null) {
+            method = mtFactory.getLastMethodUsed();
+        }
         if (before != null) {
             transform = mtFactory.createConcatenatedTransform(before, transform);
             if (after != null) {
@@ -773,7 +777,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * This part does nothing more than dropping the horizontal components,
          * like the "Geographic3D to 2D conversion" (EPSG:9659).
          * It is not the job of this block to perform unit conversions.
-         * Unit conversions, if needed, are done by 'step3' computed in above block.
+         * Unit conversions, if needed, are done by `step3` computed in above block.
          *
          * The "Geographic3DtoVertical.txt" file in the provider package is a reminder.
          * If this policy is changed, that file should be edited accordingly.
@@ -848,15 +852,15 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         /*
          * Compute the epoch shift.  The epoch is the time "0" in a particular coordinate reference system.
          * For example, the epoch for java.util.Date object is january 1, 1970 at 00:00 UTC. We compute how
-         * much to add to a time in 'sourceCRS' in order to get a time in 'targetCRS'. This "epoch shift" is
-         * in units of 'targetCRS'.
+         * much to add to a time in `sourceCRS` in order to get a time in `targetCRS`.
+         * This "epoch shift" is in units of `targetCRS`.
          */
         final Unit<Time> targetUnit = targetCS.getAxis(0).getUnit().asType(Time.class);
         double epochShift = sourceDatum.getOrigin().getTime() -
                             targetDatum.getOrigin().getTime();
         epochShift = Units.MILLISECOND.getConverterTo(targetUnit).convert(epochShift);
         /*
-         * Check axis directions. The method 'swapAndScaleAxes' should returns a matrix of size 2×2.
+         * Check axis directions. The method `swapAndScaleAxes` should returns a matrix of size 2×2.
          * The element at index (0,0) may be +1 if source and target axes are in the same direction,
          * or -1 if there are in opposite direction ("PAST" vs "FUTURE"). The value may be something
          * else than ±1 if a unit conversion is applied too.  For example the value is 60 if time in
@@ -934,7 +938,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             operation = null;
         } else {
             if (stepComponents.length == 1) {
-                stepSourceCRS = stepComponents[0];    // Slight optimization of the next block (in the 'else' case).
+                stepSourceCRS = stepComponents[0];    // Slight optimization of the next block (in the `else` case).
             } else {
                 stepSourceCRS = toAuthorityDefinition(CoordinateReferenceSystem.class,
                         factorySIS.getCRSFactory().createCompoundCRS(derivedFrom(sourceCRS), stepComponents));
