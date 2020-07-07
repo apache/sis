@@ -185,6 +185,15 @@ public class ResourceExplorer extends WindowManager {
          */
         viewTab .selectedProperty().addListener((p,o,n) -> dataTabShown(n, true));
         tableTab.selectedProperty().addListener((p,o,n) -> dataTabShown(n, false));
+        /*
+         * Optional execution in advance of a potentially slow operation. If `PRELOAD` is `false`,
+         * then the data tabs will be initialized only the first time that one of those tabs is
+         * visible in same time that a resource is selected in the resources explorer.
+         */
+        if (BackgroundThreads.PRELOAD) {
+            builder = new DataTabBuilder(null);
+            BackgroundThreads.execute(builder);
+        }
     }
 
     /**
