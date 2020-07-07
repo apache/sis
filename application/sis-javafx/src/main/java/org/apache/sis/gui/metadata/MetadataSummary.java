@@ -46,6 +46,7 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.Aggregate;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
@@ -145,6 +146,7 @@ public class MetadataSummary extends Widget {
     public MetadataSummary() {
         vocabulary  = Vocabulary.getResources((Locale) null);
         information = new TitledPane[] {
+            // If order is modified, revisit `getIdentificationInfo()`.
             new TitledPane(vocabulary.getString(Vocabulary.Keys.ResourceIdentification), new IdentificationInfo(this)),
             new TitledPane(vocabulary.getString(Vocabulary.Keys.SpatialRepresentation),  new RepresentationInfo(this))
         };
@@ -153,6 +155,14 @@ public class MetadataSummary extends Widget {
         metadataProperty = new SimpleObjectProperty<>(this, "metadata");
         metadataProperty.addListener(MetadataSummary::applyChange);
         nativeMetadataViews = new ArrayList<>();
+    }
+
+    /**
+     * Returns the identification information pane. This method is defined close to the constructor
+     * so we can verify that the array index matches the expected position of that pane.
+     */
+    private IdentificationInfo getIdentificationInfo() {
+        return (IdentificationInfo) information[0].getContent();
     }
 
     /**
@@ -226,6 +236,9 @@ public class MetadataSummary extends Widget {
                     for (final MetadataTree view : nativeMetadataViews) {
                         view.setContent(nativeMetadata);
                     }
+                    if (resource instanceof Aggregate) {
+                        getIdentificationInfo().completeMissingGeographicBounds((Aggregate) resource);
+                    }
                 }
 
                 /** Invoked in JavaFX thread if metadata loading failed. */
@@ -248,7 +261,7 @@ public class MetadataSummary extends Widget {
      */
     public final void setMetadata(final Metadata metadata) {
         assert Platform.isFxApplicationThread();
-        metadataProperty.setValue(metadata);
+        metadataProperty.set(metadata);
     }
 
     /**
@@ -261,7 +274,7 @@ public class MetadataSummary extends Widget {
      * @see #setMetadata(Metadata)
      */
     public final Metadata getMetadata() {
-        return metadataProperty.getValue();
+        return metadataProperty.get();
     }
 
     /**

@@ -17,7 +17,10 @@
 package org.apache.sis.gui.metadata;
 
 import java.util.Date;
+import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.StringJoiner;
+import javafx.concurrent.Task;
 import javafx.geometry.HPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -38,10 +41,15 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Vocabulary;
@@ -96,12 +104,30 @@ final class IdentificationInfo extends Section<Identification> {
     /**
      * The canvas where to draw geographic bounding boxes over a world map.
      * Shall never be null, but need to be recreated for each new map.
-     * A canvas of size (0,0) is available for drawing a new map.
+     * A canvas of size (0,0) is available at initialization time for drawing a new map.
      *
      * @see #isWorldMapEmpty()
      * @see #drawOnMap(GeographicBoundingBox)
      */
     private Canvas extentOnMap;
+
+    /**
+     * Whether the geographic bounding box covers the world.
+     */
+    private boolean isWorld;
+
+    /**
+     * Whether the map was visible with previous data, before {@link #buildContent(Identification)} call.
+     * We use this information for avoiding flicker effect when a map is removed, then added back after a
+     * slight delay by {@link #completeMissingGeographicBounds(Aggregate)}.
+     */
+    private boolean mapWasVisible;
+
+    /**
+     * The task which is running in background thread for searching bounding boxes in {@link Aggregate} children.
+     * We use this reference for cancelling the task if a new resource is selected before the previous task finished.
+     */
+    private Task<?> aggregateWalker;
 
     /**
      * Creates an initially empty view for identification information.
@@ -124,6 +150,7 @@ final class IdentificationInfo extends Section<Identification> {
      */
     @Workaround(library = "JavaFX", version = "13")
     private void clearWorldMap() {
+        // Do not clear `isWorld` because caller may want the clear the map because it is world map.
         if (!isWorldMapEmpty()) {
             final int p = linesStartIndex() - 1;
             assert getChildren().get(p) == extentOnMap;
@@ -149,10 +176,67 @@ final class IdentificationInfo extends Section<Identification> {
     }
 
     /**
+     * If this pane has no geographic bounds information, search for geographic bounds in the child resources.
+     * This method is used as a fallback when {@link #buildContent(Identification)} did not find bounding box
+     * in the metadata directly provided. If bounds has been found, then this method does nothing.
+     */
+    final void completeMissingGeographicBounds(final Aggregate resource) {
+        if (!isWorld && isWorldMapEmpty() && !super.isEmpty()) {
+            /*
+             * If a map was visible previously, add back an empty map for avoiding flicking effect.
+             * If it appears that the map has no bounding box to show, it will be removed after the
+             * background thread finished its work.
+             */
+            if (mapWasVisible) {
+                drawMapBackground();
+            }
+            BackgroundThreads.execute(aggregateWalker = new Task<Set<GeographicBoundingBox>>() {
+                /** Invoked in a background thread for fetching bounding boxes. */
+                @Override protected Set<GeographicBoundingBox> call() throws DataStoreException {
+                    final Set<GeographicBoundingBox> boxes = new LinkedHashSet<>();
+search:             for (final Resource child : resource.components()) {
+                        final Metadata metadata = child.getMetadata();
+                        if (metadata != null) {
+                            for (final Identification id : nonNull(metadata.getIdentificationInfo())) {
+                                if (id != null) {
+                                    for (final Extent extent : id.getExtents()) {
+                                        if (isCancelled()) break search;
+                                        final GeographicBoundingBox b = Extents.getGeographicBoundingBox(extent);
+                                        if (b != null) boxes.add(b);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return boxes;
+                }
+
+                /** Shows the result in JavaFX thread. */
+                @Override protected void succeeded() {
+                    aggregateWalker = null;
+                    if (!isCancelled()) {
+                        drawOnMap(getValue());
+                    }
+                }
+
+                /** Invoked in JavaFX thread if metadata loading failed. */
+                @Override protected void failed() {
+                    aggregateWalker = null;
+                    owner.setError(getException());
+                }
+            });
+        }
+    }
+
+    /**
      * Sets the identification information from the given metadata.
      */
     @Override
     void setInformation(final Metadata metadata) {
+        if (aggregateWalker != null) {
+            aggregateWalker.cancel();
+            aggregateWalker = null;
+        }
         setInformation(nonNull(metadata == null ? null : metadata.getIdentificationInfo()), Identification[]::new);
     }
 
@@ -163,6 +247,8 @@ final class IdentificationInfo extends Section<Identification> {
      */
     @Override
     void buildContent(final Identification info) {
+        mapWasVisible = !isWorldMapEmpty();
+        isWorld = false;
         clearWorldMap();
         String text = null;
         final Citation citation = info.getCitation();
@@ -258,7 +344,6 @@ final class IdentificationInfo extends Section<Identification> {
          */
         text = null;
         Identifier identifier = null;
-        boolean isWorld = false;
         for (final Extent extent : nonNull(info.getExtents())) {
             if (extent != null) {
                 if (text == null) {
@@ -285,6 +370,23 @@ final class IdentificationInfo extends Section<Identification> {
         }
         addLine(Vocabulary.Keys.Extent, text);
         setRowIndex(extentOnMap, nextRowIndex());
+    }
+
+    /**
+     * Draws all given geographic bounding boxes on the map.
+     */
+    private void drawOnMap(final Set<GeographicBoundingBox> boxes) {
+        if (boxes.isEmpty()) {
+            clearWorldMap();
+            return;
+        }
+        for (final GeographicBoundingBox box : boxes) {
+            isWorld = drawOnMap(box);
+            if (isWorld) {
+                clearWorldMap();
+                return;
+            }
+        }
     }
 
     /**
@@ -336,13 +438,7 @@ final class IdentificationInfo extends Section<Identification> {
              * the rectangle in two parts because of anti-meridian crossing.
              */
             if (isWorldMapEmpty()) {
-                final Image image = MetadataSummary.getWorldMap();
-                if (image == null) {
-                    return false;                   // Failed to load the image.
-                }
-                extentOnMap.setWidth (image.getWidth());
-                extentOnMap.setHeight(image.getHeight());
-                extentOnMap.getGraphicsContext2D().drawImage(image, 0, 0);
+                drawMapBackground();
             }
             final GraphicsContext gc = extentOnMap.getGraphicsContext2D();
             gc.setStroke(Color.DARKBLUE);
@@ -364,5 +460,19 @@ final class IdentificationInfo extends Section<Identification> {
             }
         }
         return false;
+    }
+
+    /**
+     * Draws the map where bounding boxes will be overlay.
+     */
+    private boolean drawMapBackground() {
+        final Image image = MetadataSummary.getWorldMap();
+        if (image == null) {
+            return false;
+        }
+        extentOnMap.setWidth (image.getWidth());
+        extentOnMap.setHeight(image.getHeight());
+        extentOnMap.getGraphicsContext2D().drawImage(image, 0, 0);
+        return true;
     }
 }
