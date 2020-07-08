@@ -138,6 +138,14 @@ abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> 
     }
 
     /**
+     * Returns the number of non-null items specified in last calls to
+     * {@link #setInformation(Collection, IntFunction)}.
+     */
+    final int numPages() {
+        return (information != null) ? information.length : 0;
+    }
+
+    /**
      * Sets the information from the given metadata. Subclasses extract the collection of interest
      * and delegate to the {@link #setInformation(Collection, IntFunction)} method.
      *

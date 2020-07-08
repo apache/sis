@@ -179,9 +179,12 @@ final class IdentificationInfo extends Section<Identification> {
      * If this pane has no geographic bounds information, search for geographic bounds in the child resources.
      * This method is used as a fallback when {@link #buildContent(Identification)} did not find bounding box
      * in the metadata directly provided. If bounds has been found, then this method does nothing.
+     *
+     * <p>The method does nothing if there is more than one {@link Identification} metadata element,
+     * because we would not know to which element to assign the extent of children resources.</p>
      */
     final void completeMissingGeographicBounds(final Aggregate resource) {
-        if (!isWorld && isWorldMapEmpty() && !super.isEmpty()) {
+        if (!isWorld && isWorldMapEmpty() && !super.isEmpty() && numPages() == 1) {
             /*
              * If a map was visible previously, add back an empty map for avoiding flicking effect.
              * If it appears that the map has no bounding box to show, it will be removed after the
@@ -194,13 +197,13 @@ final class IdentificationInfo extends Section<Identification> {
                 /** Invoked in a background thread for fetching bounding boxes. */
                 @Override protected Set<GeographicBoundingBox> call() throws DataStoreException {
                     final Set<GeographicBoundingBox> boxes = new LinkedHashSet<>();
-search:             for (final Resource child : resource.components()) {
+                    for (final Resource child : resource.components()) {
                         final Metadata metadata = child.getMetadata();
+                        if (isCancelled()) break;
                         if (metadata != null) {
                             for (final Identification id : nonNull(metadata.getIdentificationInfo())) {
                                 if (id != null) {
                                     for (final Extent extent : id.getExtents()) {
-                                        if (isCancelled()) break search;
                                         final GeographicBoundingBox b = Extents.getGeographicBoundingBox(extent);
                                         if (b != null) boxes.add(b);
                                     }
@@ -214,9 +217,7 @@ search:             for (final Resource child : resource.components()) {
                 /** Shows the result in JavaFX thread. */
                 @Override protected void succeeded() {
                     aggregateWalker = null;
-                    if (!isCancelled()) {
-                        drawOnMap(getValue());
-                    }
+                    drawOnMap(getValue());
                 }
 
                 /** Invoked in JavaFX thread if metadata loading failed. */
