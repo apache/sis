@@ -35,8 +35,10 @@ import javafx.stage.FileChooser;
 import javafx.scene.image.Image;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import org.apache.sis.gui.dataset.LogViewer;
 import org.apache.sis.gui.dataset.ResourceExplorer;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.RecentChoices;
 import org.apache.sis.internal.storage.Capability;
@@ -65,6 +67,7 @@ public class DataViewer extends Application {
      * @param args  ignored.
      */
     public static void main(final String[] args) {
+        LogHandler.register(true);
         launch(args);
     }
 
@@ -101,6 +104,13 @@ public class DataViewer extends Application {
     private FileChooser.ExtensionFilter lastFilter;
 
     /**
+     * The window showing system logs. Created when first requested.
+     *
+     * @see #showSystemLogsWindow()
+     */
+    private Stage systemLogsWindow;
+
+    /**
      * Creates a new Apache SIS application.
      */
     public DataViewer() {
@@ -135,8 +145,11 @@ public class DataViewer extends Application {
         }
         final Menu help = new Menu(localized.getString(Resources.Keys.Help));
         {   // For keeping variables locale.
+            final MenuItem logging = new MenuItem(vocabulary.getString(Vocabulary.Keys.Logs));
+            logging.setOnAction((e) -> showSystemLogsWindow());
             help.getItems().addAll(
                     localized.menu(Resources.Keys.WebSite, (e) -> getHostServices().showDocument("https://sis.apache.org/")),
+                    new SeparatorMenuItem(), logging,
                     localized.menu(Resources.Keys.About, (e) -> AboutDialog.show()));
         }
         final Menu windows = new Menu(localized.getString(Resources.Keys.Windows));
@@ -229,6 +242,25 @@ public class DataViewer extends Application {
     }
 
     /**
+     * Shows system logs in a separated window.
+     */
+    private void showSystemLogsWindow() {
+        if (systemLogsWindow == null) {
+            final LogViewer viewer = new LogViewer();
+            viewer.systemLogs.set(true);
+            final Stage w = new Stage();
+            w.setTitle(Vocabulary.format(Vocabulary.Keys.Logs) + " — Apache SIS");
+            w.getIcons().setAll(window.getIcons());
+            w.setScene(new Scene(viewer.getView()));
+            w.setWidth (800);
+            w.setHeight(600);
+            window.setOnHidden((e) -> w.hide());
+            systemLogsWindow = w;
+        }
+        systemLogsWindow.show();
+    }
+
+    /**
      * Invoked when the application should stop. No SIS application can be used after
      * this method has been invoked (i.e. the application can not be restarted).
      *
@@ -236,6 +268,7 @@ public class DataViewer extends Application {
      */
     @Override
     public void stop() throws Exception {
+        LogHandler.register(false);
         BackgroundThreads.stop();
         RecentChoices.saveReferenceSystems();
         super.stop();

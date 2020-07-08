@@ -26,6 +26,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.gui.map.StatusBar;
+import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.DataStoreException;
 
@@ -48,6 +49,7 @@ public class ImageRequest {
 
     /**
      * The source from where to read the image, specified at construction time.
+     * Can not be {@code null}.
      */
     final GridCoverageResource resource;
 
@@ -274,32 +276,37 @@ public class ImageRequest {
      * @throws DataStoreException if an error occurred while loading the grid coverage.
      */
     final synchronized RenderedImage load(final FutureTask<?> task, final boolean converted) throws DataStoreException {
-        if (coverage == null) {
-            GridGeometry domain = this.domain;
-            if (domain == null) {
-                domain = resource.getGridGeometry();
+        final Long id = LogHandler.loadingStart(resource);
+        try {
+            if (coverage == null) {
+                GridGeometry domain = this.domain;
+                if (domain == null) {
+                    domain = resource.getGridGeometry();
+                }
+                if (domain != null && domain.getDimension() > BIDIMENSIONAL) {
+                    domain = slice(domain).build();
+                }
+                /*
+                 * TODO: We restrict loading to a two-dimensional slice for now.
+                 * Future version will need to give user control over slices.
+                 */
+                coverage = resource.read(domain, range);                    // May be long to execute.
+                coverage = coverage.forConvertedValues(converted);
             }
-            if (domain != null && domain.getDimension() > BIDIMENSIONAL) {
-                domain = slice(domain).build();
+            if (task.isCancelled()) {
+                return null;
             }
-            /*
-             * TODO: We restrict loading to a two-dimensional slice for now.
-             * Future version will need to give user control over slices.
-             */
-            coverage = resource.read(domain, range);                    // May be long to execute.
-            coverage = coverage.forConvertedValues(converted);
-        }
-        if (task.isCancelled()) {
-            return null;
-        }
-        GridExtent se = sliceExtent;
-        if (se == null) {
-            final GridGeometry cd = coverage.getGridGeometry();
-            if (cd != null && cd.getDimension() > BIDIMENSIONAL) {      // Should never be null but we are paranoiac.
-                se = slice(cd).getIntersection();
+            GridExtent se = sliceExtent;
+            if (se == null) {
+                final GridGeometry cd = coverage.getGridGeometry();
+                if (cd != null && cd.getDimension() > BIDIMENSIONAL) {      // Should never be null but we are paranoiac.
+                    se = slice(cd).getIntersection();
+                }
             }
+            return coverage.render(se);
+        } finally {
+            LogHandler.loadingStop(id);
         }
-        return coverage.render(se);
     }
 
     /**
@@ -308,23 +315,28 @@ public class ImageRequest {
      * successfully loaded in background thread a new image.
      */
     final void configure(final StatusBar bar) {
-        final GridCoverage cv = coverage;
-        final GridExtent request = sliceExtent;
-        bar.applyCanvasGeometry(cv != null ? cv.getGridGeometry() : null);
-        /*
-         * By `GridCoverage.render(GridExtent)` contract, the `RenderedImage` pixel coordinates are relative
-         * to the requested `GridExtent`. Consequently we need to translate the image coordinates so that it
-         * become the coordinates of the original `GridGeometry` before to apply `gridToCRS`.  It is okay to
-         * modify `StatusBar.localToObjectiveCRS` because we do not associate it to a `MapCanvas`, so it will
-         * not be overwritten by gesture events (zoom, pan, etc).
-         */
-        if (request != null) {
-            final double[] origin = new double[request.getDimension()];
-            for (int i=0; i<origin.length; i++) {
-                origin[i] = request.getLow(i);
+        final Long id = LogHandler.loadingStart(resource);
+        try {
+            final GridCoverage cv = coverage;
+            final GridExtent request = sliceExtent;
+            bar.applyCanvasGeometry(cv != null ? cv.getGridGeometry() : null);
+            /*
+             * By `GridCoverage.render(GridExtent)` contract, the `RenderedImage` pixel coordinates are relative
+             * to the requested `GridExtent`. Consequently we need to translate the image coordinates so that it
+             * become the coordinates of the original `GridGeometry` before to apply `gridToCRS`.  It is okay to
+             * modify `StatusBar.localToObjectiveCRS` because we do not associate it to a `MapCanvas`, so it will
+             * not be overwritten by gesture events (zoom, pan, etc).
+             */
+            if (request != null) {
+                final double[] origin = new double[request.getDimension()];
+                for (int i=0; i<origin.length; i++) {
+                    origin[i] = request.getLow(i);
+                }
+                bar.localToObjectiveCRS.set(MathTransforms.concatenate(
+                        MathTransforms.translation(origin), bar.localToObjectiveCRS.get()));
             }
-            bar.localToObjectiveCRS.set(MathTransforms.concatenate(
-                    MathTransforms.translation(origin), bar.localToObjectiveCRS.get()));
+        } finally {
+            LogHandler.loadingStop(id);
         }
     }
 }

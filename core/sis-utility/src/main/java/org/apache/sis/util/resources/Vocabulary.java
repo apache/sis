@@ -190,6 +190,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Characteristics = 26;
 
         /**
+         * Class
+         */
+        public static final short Class = 240;
+
+        /**
          * Classpath
          */
         public static final short Classpath = 27;
@@ -328,6 +333,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Date
          */
         public static final short Date = 52;
+
+        /**
+         * Date and time
+         */
+        public static final short DateAndTime = 243;
 
         /**
          * Datum
@@ -685,9 +695,19 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short LocationType = 120;
 
         /**
+         * Logger
+         */
+        public static final short Logger = 241;
+
+        /**
          * Logging
          */
         public static final short Logging = 121;
+
+        /**
+         * Logs
+         */
+        public static final short Logs = 244;
 
         /**
          * Longitude
@@ -735,9 +755,19 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Measures = 130;
 
         /**
+         * Message
+         */
+        public static final short Message = 239;
+
+        /**
          * Metadata
          */
         public static final short Metadata = 131;
+
+        /**
+         * Method
+         */
+        public static final short Method = 242;
 
         /**
          * Methods

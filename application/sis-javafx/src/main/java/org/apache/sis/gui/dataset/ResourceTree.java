@@ -56,6 +56,7 @@ import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.internal.gui.ResourceLoader;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
+import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.util.Strings;
@@ -318,48 +319,53 @@ public class ResourceTree extends TreeView<Resource> {
     final String getTitle(final Resource resource, final boolean showError) {
         Throwable failure = null;
         if (resource != null) try {
-            /*
-             * The data store display name is typically the file name. We give precedence to that name
-             * instead than the citation title because the citation may be the same for many files of
-             * the same product, while the display name have better chances to be distinct for each file.
-             */
-            if (resource instanceof DataStore) {
-                final String name = Strings.trimOrNull(((DataStore) resource).getDisplayName());
-                if (name != null) return name;
-            }
-            /*
-             * Search for a title in metadata first because it has better chances
-             * to be human-readable compared to the resource identifier.
-             */
-            Collection<? extends Identification> identifications = null;
-            final Metadata metadata = resource.getMetadata();
-            if (metadata != null) {
-                identifications = metadata.getIdentificationInfo();
-                if (identifications != null) {
-                    for (final Identification identification : identifications) {
-                        final Citation citation = identification.getCitation();
-                        if (citation != null) {
-                            final String t = string(citation.getTitle());
-                            if (t != null) return t;
+            final Long logID = LogHandler.loadingStart(resource);
+            try {
+                /*
+                 * The data store display name is typically the file name. We give precedence to that name
+                 * instead than the citation title because the citation may be the same for many files of
+                 * the same product, while the display name have better chances to be distinct for each file.
+                 */
+                if (resource instanceof DataStore) {
+                    final String name = Strings.trimOrNull(((DataStore) resource).getDisplayName());
+                    if (name != null) return name;
+                }
+                /*
+                 * Search for a title in metadata first because it has better chances
+                 * to be human-readable compared to the resource identifier.
+                 */
+                Collection<? extends Identification> identifications = null;
+                final Metadata metadata = resource.getMetadata();
+                if (metadata != null) {
+                    identifications = metadata.getIdentificationInfo();
+                    if (identifications != null) {
+                        for (final Identification identification : identifications) {
+                            final Citation citation = identification.getCitation();
+                            if (citation != null) {
+                                final String t = string(citation.getTitle());
+                                if (t != null) return t;
+                            }
                         }
                     }
                 }
-            }
-            /*
-             * If we find no title in the metadata, use the resource identifier.
-             * We search of explicitly declared identifier first before to fallback
-             * on metadata, because the later is more subject to interpretation.
-             */
-            final Optional<GenericName> id = resource.getIdentifier();
-            if (id.isPresent()) {
-                final String t = string(id.get().toInternationalString());
-                if (t != null) return t;
-            }
-            if (identifications != null) {
-                for (final Identification identification : identifications) {
-                    final String t = Citations.getIdentifier(identification.getCitation());
+                /*
+                 * If we find no title in the metadata, use the resource identifier.
+                 * We search of explicitly declared identifier first before to fallback
+                 * on metadata, because the later is more subject to interpretation.
+                 */
+                final Optional<GenericName> id = resource.getIdentifier();
+                if (id.isPresent()) {
+                    final String t = string(id.get().toInternationalString());
                     if (t != null) return t;
                 }
+                if (identifications != null) {
+                    for (final Identification identification : identifications) {
+                        final String t = Citations.getIdentifier(identification.getCitation());
+                        if (t != null) return t;
+                    }
+                }
+            } finally {
+                LogHandler.loadingStop(logID);
             }
         } catch (DataStoreException | RuntimeException e) {
             if (showError) {
@@ -517,6 +523,7 @@ public class ResourceTree extends TreeView<Resource> {
         Item(final Resource resource) {
             super(resource);
             isLeaf = !(resource instanceof Aggregate);
+            LogHandler.installListener(resource);
         }
 
         /**
@@ -568,8 +575,13 @@ public class ResourceTree extends TreeView<Resource> {
             @Override
             protected List<TreeItem<Resource>> call() throws DataStoreException {
                 final List<TreeItem<Resource>> items = new ArrayList<>();
-                for (final Resource component : resource.components()) {
-                    items.add(new Item(component));
+                final Long id = LogHandler.loadingStart(resource);
+                try {
+                    for (final Resource component : resource.components()) {
+                        items.add(new Item(component));
+                    }
+                } finally {
+                    LogHandler.loadingStop(id);
                 }
                 return items;
             }

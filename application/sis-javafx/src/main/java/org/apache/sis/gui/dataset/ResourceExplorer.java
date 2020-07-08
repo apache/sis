@@ -152,6 +152,8 @@ public class ResourceExplorer extends WindowManager {
 
         tableTab = new Tab(vocabulary.getString(Vocabulary.Keys.Data));
         tableTab.setContextMenu(new ContextMenu(SelectedData.setTabularView(createNewWindowMenu())));
+        final LogViewer logging = new LogViewer(vocabulary);
+        logging.source.bind(selectedResource);
 
         final String nativeTabText = vocabulary.getString(Vocabulary.Keys.Format);
         final MetadataTree nativeMetadata = new MetadataTree(metadata);
@@ -163,10 +165,13 @@ public class ResourceExplorer extends WindowManager {
             nativeTab.setText(Objects.toString(label, nativeTabText));
         });
 
+        final Tab loggingTab = new Tab(vocabulary.getString(Vocabulary.Keys.Logs), logging.getView());
+        loggingTab.disableProperty().bind(logging.isEmptyProperty());
+
         final TabPane tabs = new TabPane(
             new Tab(vocabulary.getString(Vocabulary.Keys.Summary),  metadata.getView()), viewTab, tableTab,
             new Tab(vocabulary.getString(Vocabulary.Keys.Metadata), new StandardMetadataTree(metadata)),
-            nativeTab);
+            nativeTab, loggingTab);
 
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
