@@ -21,18 +21,23 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
+import javafx.geometry.Pos;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
@@ -51,6 +56,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.util.StringConverter;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.resources.Vocabulary;
@@ -58,11 +65,22 @@ import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.ImmutableObjectProperty;
+import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.CharSequences;
 
 
 /**
  * Shows a table of recent log records, optionally filtered to logs related to a specific resource.
+ * By default, {@code LogViewer} does not show any log entry.
+ * For viewing logs, one of the two following actions must be done:
+ *
+ * <ul>
+ *   <li>Set {@link #source} to a non-null {@link Resource} value.</li>
+ *   <li>Set {@link #systemLogs} to {@code true}.</li>
+ * </ul>
+ *
+ * When a {@link Resource} value is specified, {@code LogViewer} shows only some logs that occurred while
+ * using that resource, in particular {@linkplain Resource#addListener warnings emitted by the resource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -71,12 +89,28 @@ import org.apache.sis.util.CharSequences;
  */
 public class LogViewer extends Widget {
     /**
+     * Spaces between labels and controls, in pixels.
+     */
+    private static final int SPACE = 6;
+
+    /**
+     * Space between {@link #message} and the log record identification
+     * (the lines ending with {@link #method}).
+     */
+    private static final Insets MARGIN = new Insets(SPACE, 0, 0, 0);
+
+    /**
+     * Space around the button bar.
+     */
+    private static final Insets BAR_INSETS = new Insets(SPACE);
+
+    /**
      * Localized string representations of {@link Level}.
      * This map shall be read and written from JavaFX thread only.
      *
      * @see #toString(Level)
      */
-    private static final Map<Level,String> LEVEL_NAMES = new HashMap<>();
+    private static final Map<Level,String> LEVEL_NAMES = new HashMap<>(12);
 
     /**
      * The table of log records.
@@ -104,6 +138,8 @@ public class LogViewer extends Widget {
      * The data store or resource for which to show log records.
      * If this property value is {@code null}, then the system logs will be shown
      * if {@link #systemLogs} is {@code true}, or no logs will be shown otherwise.
+     *
+     * @see Resource#addListener(Class, StoreListener)
      */
     public final ObjectProperty<Resource> source;
 
@@ -143,6 +179,14 @@ public class LogViewer extends Widget {
     private final ToggleButton messageButton, traceButton;
 
     /**
+     * Filters log record according current settings in the button bar.
+     * May be {@code null} if there is no filter.
+     *
+     * @see FilteredList#predicateProperty()
+     */
+    private Predicate<LogRecord> filter;
+
+    /**
      * Creates an initially empty viewer of log records. For viewing logs, {@link #source}
      * must be set to a non-null value or {@link #systemLogs} must be set to {@code true}.
      */
@@ -169,38 +213,67 @@ public class LogViewer extends Widget {
                                   column(vocabulary, Vocabulary.Keys.Class),
                                   column(vocabulary, Vocabulary.Keys.Method),
                                   column(vocabulary, Vocabulary.Keys.Message));
+        /*
+         * Details pane to be shown below the table. Provides details about the selected record.
+         */
+        final GridPane    details;
+        final ToggleGroup buttonGroup;
+        {
+            final Font font = Font.font(null, FontWeight.SEMI_BOLD, -1);
+            details = Styles.createControlGrid(0,
+                    label(font, vocabulary, Vocabulary.Keys.Level,       level  = new Label()),
+                    label(font, vocabulary, Vocabulary.Keys.DateAndTime, time   = new Label()),
+                    label(font, vocabulary, Vocabulary.Keys.Logger,      logger = new Label()),
+                    label(font, vocabulary, Vocabulary.Keys.Class,       classe = new Label()),
+                    label(font, vocabulary, Vocabulary.Keys.Method,      method = new Label()));
 
-        final Font font = Font.font(null, FontWeight.SEMI_BOLD, -1);
-        final GridPane details = Styles.createControlGrid(0,
-                label(font, vocabulary, Vocabulary.Keys.Level,       level  = new Label()),
-                label(font, vocabulary, Vocabulary.Keys.DateAndTime, time   = new Label()),
-                label(font, vocabulary, Vocabulary.Keys.Logger,      logger = new Label()),
-                label(font, vocabulary, Vocabulary.Keys.Class,       classe = new Label()),
-                label(font, vocabulary, Vocabulary.Keys.Method,      method = new Label()));
+            messageButton = new ToggleButton(vocabulary.getString(Vocabulary.Keys.Message));
+            traceButton   = new ToggleButton(vocabulary.getString(Vocabulary.Keys.Trace));
+            messageButton.setSelected(true);
+            messageButton.setMaxWidth(Double.MAX_VALUE);
+            traceButton  .setMaxWidth(Double.MAX_VALUE);
+            buttonGroup = new ToggleGroup();
+            buttonGroup.getToggles().setAll(messageButton, traceButton);
+            final VBox textSelector = new VBox(SPACE, messageButton, traceButton);
 
-        messageButton = new ToggleButton(vocabulary.getString(Vocabulary.Keys.Message));
-        traceButton   = new ToggleButton(vocabulary.getString(Vocabulary.Keys.Trace));
-        messageButton.setSelected(true);
-        messageButton.setMaxWidth(Double.MAX_VALUE);
-        traceButton  .setMaxWidth(Double.MAX_VALUE);
-        final ToggleGroup buttonGroup = new ToggleGroup();
-        buttonGroup.getToggles().setAll(messageButton, traceButton);
-        final VBox textSelector = new VBox(6, messageButton, traceButton);
-        final Insets margin = new Insets(6, 0, 0, 0);
+            message = new TextArea();
+            message.setEditable(false);
+            GridPane.setConstraints(textSelector, 0, 5);
+            GridPane.setConstraints(message, 1, 5);
+            GridPane.setMargin(textSelector, MARGIN);
+            GridPane.setMargin(message, MARGIN);
+            details.getChildren().addAll(textSelector, message);
+            details.setVgap(0);
+        }
+        /*
+         * Buttons bar on top of the table. Provides filtering options.
+         */
+        final VBox tableAndBar;
+        {
+            final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Level));
+            final ChoiceBox<Level> levels = new ChoiceBox<>();
+            label.setLabelFor(levels);
+            final HBox bar = new HBox(SPACE, label, levels);
+            bar.setAlignment(Pos.CENTER_LEFT);
+            bar.setPadding(BAR_INSETS);
+            tableAndBar = new VBox(bar, table);
+            VBox.setVgrow(table, Priority.ALWAYS);
 
-        message = new TextArea();
-        message.setEditable(false);
-        GridPane.setConstraints(textSelector, 0, 5);
-        GridPane.setConstraints(message, 1, 5);
-        GridPane.setMargin(textSelector, margin);
-        GridPane.setMargin(message, margin);
-        details.getChildren().addAll(textSelector, message);
-        details.setVgap(0);
-
-        view = new SplitPane(table, new TitledPane(vocabulary.getString(Vocabulary.Keys.Details), details));
+            levels.getItems().setAll(Level.SEVERE, Level.WARNING, Level.INFO, Level.CONFIG,
+                        PerformanceLevel.PERFORMANCE, Level.FINE, Level.FINER, Level.ALL);
+            levels.setConverter(Converter.INSTANCE);
+            levels.getSelectionModel().select(Level.ALL);
+            levels.getSelectionModel().selectedItemProperty().addListener((p,o,n) -> setFilter(n));
+        }
+        /*
+         * Put all view components together.
+         */
+        view = new SplitPane(tableAndBar, new TitledPane(vocabulary.getString(Vocabulary.Keys.Details), details));
         view.setOrientation(Orientation.VERTICAL);
         SplitPane.setResizableWithParent(details, false);
-
+        /*
+         * Register all remaining listeners.
+         */
         source.addListener((p,o,n) -> {
             if (!isAdjusting) try {
                 isAdjusting = true;
@@ -214,7 +287,7 @@ public class LogViewer extends Widget {
             if (!isAdjusting) try {
                 isAdjusting = true;
                 source.set(null);
-                setItems(n ? LogHandler.getSystemRecords() : FXCollections.emptyObservableList());
+                setItems(n ? LogHandler.getSystemRecords() : null);
             } finally {
                 isAdjusting = false;
             }
@@ -248,13 +321,19 @@ public class LogViewer extends Widget {
 
     /**
      * Sets a new list of log records.
+     *
+     * @param  records  the new list of records, or {@code null} if none.
      */
     private void setItems(final ObservableList<LogRecord> records) {
-        final boolean e = records.isEmpty();
-        table.setItems(records);
-        isEmpty.set(e);
-        if (e) {
-            records.addListener(isEmpty);
+        if (records == null) {
+            table.setItems(FXCollections.emptyObservableList());
+        } else {
+            final boolean e = records.isEmpty();
+            table.setItems(new FilteredList<>(records, filter));
+            isEmpty.set(e);
+            if (e) {
+                records.addListener(isEmpty);
+            }
         }
     }
 
@@ -293,14 +372,47 @@ public class LogViewer extends Widget {
     }
 
     /**
+     * Converter from {@link Level} to localized string representation.
+     */
+    private static final class Converter extends StringConverter<Level> {
+        /** The unique instance. */
+        static final Converter INSTANCE = new Converter();
+
+        /** Constructs the unique instance. */
+        private Converter() {}
+
+        /** Returns the string representation of given level. */
+        @Override public String toString(Level level) {return LogViewer.toString(level);}
+
+        /** Converse of {@link #toString(Level)}. */
+        @Override public Level fromString(final String text) {
+            for (final Map.Entry<Level,String> entry : LEVEL_NAMES.entrySet()) {
+                if (entry.getValue().equals(text)) {
+                    return entry.getKey();
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
      * Returns the localized string representations of given {@link Level}.
      */
     private static String toString(final Level level) {
         if (level == null) {
             return null;
         }
-        return LEVEL_NAMES.computeIfAbsent(level,
-                (v) -> CharSequences.upperCaseToSentence(v.getLocalizedName()).toString());
+        return LEVEL_NAMES.computeIfAbsent(level, (v) -> {
+            final short key;
+            if (Level.INFO.equals(v)) {
+                key = Vocabulary.Keys.Information;
+            } else if (Level.CONFIG.equals(v)) {
+                key = Vocabulary.Keys.Configuration;
+            } else {
+                return CharSequences.upperCaseToSentence(v.getLocalizedName()).toString();
+            }
+            return Vocabulary.format(key);
+        });
     }
 
     /**
@@ -313,7 +425,7 @@ public class LogViewer extends Widget {
                 String text;
                 switch (type) {
                     case Vocabulary.Keys.Level: {
-                        text = toString(log.getLevel());
+                        text = log.getLevel().getLocalizedName();
                         break;
                     }
                     case Vocabulary.Keys.DateAndTime: {
@@ -379,17 +491,39 @@ public class LogViewer extends Widget {
      */
     private void setMessageOrTrace(final LogRecord log) {
         String text = null;
-        if (messageButton.isSelected()) {
-            message.setWrapText(true);
-            text = formatter.formatMessage(log);
-        } else if (traceButton.isSelected()) {
-            message.setWrapText(false);
-            final Throwable exception = log.getThrown();
-            if (exception != null) {
-                text = ExceptionReporter.getStackTrace(exception);
+        if (log != null) {
+            if (messageButton.isSelected()) {
+                message.setWrapText(true);
+                text = formatter.formatMessage(log);
+            } else if (traceButton.isSelected()) {
+                message.setWrapText(false);
+                final Throwable exception = log.getThrown();
+                if (exception != null) {
+                    text = ExceptionReporter.getStackTrace(exception);
+                }
             }
         }
         message.setText(text);
+    }
+
+    /**
+     * Sets the filter to the given setting. Currently sets only the logging level,
+     * but more configuration may be added in the future.
+     *
+     * @param  level  the new level, or {@code null} if unchanged/
+     */
+    private void setFilter(final Level level) {
+        if (level != null) {
+            if (Level.ALL.equals(level)) {
+                filter = null;
+            } else {
+                filter = (log) -> log != null && log.getLevel().intValue() >= level.intValue();
+            }
+            final ObservableList<LogRecord> items = table.getItems();
+            if (items instanceof FilteredList<?>) {
+                ((FilteredList<LogRecord>) items).setPredicate(filter);
+            }
+        }
     }
 
     /**

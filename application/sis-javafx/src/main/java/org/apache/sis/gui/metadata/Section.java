@@ -22,7 +22,6 @@ import java.util.function.IntFunction;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
@@ -37,6 +36,7 @@ import javafx.scene.layout.TilePane;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.gui.Styles;
 
 
 /**
@@ -54,11 +54,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @module
  */
 abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> {
-    /**
-     * Margin to keep around all forms.
-     */
-    private static final Insets PADDING = new Insets(12);
-
     /**
      * The pane which contains this section. Used for fetching information like number format
      * or localization resources.
@@ -117,7 +112,7 @@ abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> 
         pagination.setAlignment(Pos.TOP_RIGHT);
         pagination.setVgap(9);
         pagination.setHgap(9);
-        setPadding(PADDING);
+        setPadding(Styles.FORM_INSETS);
         setVgap(9);
         setHgap(9);
         add(pagination, NUM_CHILD_PER_LINE, 0);

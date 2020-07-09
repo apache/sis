@@ -225,6 +225,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Commands = 31;
 
         /**
+         * Configuration
+         */
+        public static final short Configuration = 246;
+
+        /**
          * Constant pressure surface
          */
         public static final short ConstantPressureSurface = 32;
@@ -613,6 +618,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Index
          */
         public static final short Index = 106;
+
+        /**
+         * Information
+         */
+        public static final short Information = 247;
 
         /**
          * Interpolation

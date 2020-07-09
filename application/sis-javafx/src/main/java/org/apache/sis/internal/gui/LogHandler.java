@@ -118,7 +118,7 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
      */
     public static Long loadingStart(final Resource source) {
         final Long id = Thread.currentThread().getId();
-        INSTANCE.inProgress.put(id, INSTANCE.getResourceRecords(source));
+        INSTANCE.inProgress.put(id, INSTANCE.getRecordsNonNull(source));
         return id;
     }
 
@@ -144,22 +144,23 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
     }
 
     /**
-     * Returns the list of log records for the given resource, or an empty list if the given source is null.
+     * Returns the list of log records for the given resource, or {@code null} if the given source is null.
      *
      * @param  source  the resource for which to get the list of log records, or {@code null}.
-     * @return the records for the given resource.
+     * @return the records for the given resource, or {@code null} if the given source is null.
      */
     public static ObservableList<LogRecord> getRecords(final Resource source) {
-        return (source != null) ? INSTANCE.getResourceRecords(source) : FXCollections.emptyObservableList();
+        return (source != null) ? INSTANCE.getRecordsNonNull(source) : null;
     }
 
     /**
      * Returns the list of log records for the given resource.
+     * The given resource shall not be null (the check is done by {@link ConcurrentHashMap}).
      *
      * @param  source  the resource for which to get the list of log records.
      * @return the records for the given resource.
      */
-    private ObservableList<LogRecord> getResourceRecords(final Resource source) {
+    private ObservableList<LogRecord> getRecordsNonNull(final Resource source) {
         synchronized (resourceLogs) {
             return resourceLogs.computeIfAbsent(source, (k) -> FXCollections.observableArrayList());
         }
@@ -175,7 +176,7 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
     public void eventOccured(final WarningEvent event) {
         final LogRecord log = event.getDescription();
         if (isLoggable(log)) {
-            final ObservableList<LogRecord> records = getResourceRecords(event.getSource());
+            final ObservableList<LogRecord> records = getRecordsNonNull(event.getSource());
             if (Platform.isFxApplicationThread()) {
                 records.add(log);
             } else {
