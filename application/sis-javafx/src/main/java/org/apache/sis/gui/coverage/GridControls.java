@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.lang.ref.Reference;
 import javafx.beans.property.DoubleProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Accordion;
@@ -27,6 +28,7 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
@@ -128,10 +130,11 @@ final class GridControls extends Controls {
      * Invoked after {@link CoverageExplorer#setCoverage(ImageRequest)} for updating the table of
      * sample dimensions when information become available. This method is invoked in JavaFX thread.
      *
-     * @param  data  the new coverage, or {@code null} if none.
+     * @param  data        the new coverage, or {@code null} if none.
+     * @param  originator  the resource from which the data has been read, or {@code null} if unknown.
      */
     @Override
-    final void coverageChanged(final GridCoverage data) {
+    final void coverageChanged(final GridCoverage data, final Reference<Resource> originator) {
         final ObservableList<SampleDimension> items = sampleDimensions.getItems();
         if (data != null) {
             items.setAll(data.getSampleDimensions());

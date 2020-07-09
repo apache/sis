@@ -17,6 +17,8 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javafx.beans.DefaultProperty;
 import javafx.scene.control.Control;
 import javafx.scene.control.SplitPane;
@@ -37,6 +39,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.Widget;
+import org.apache.sis.storage.Resource;
 
 
 /**
@@ -156,8 +159,7 @@ public class CoverageExplorer extends Widget {
          * Each visualization way is an entry in the `views` array.
          */
         final View[]     viewTypes  = View.values();
-        final Locale     locale     = null;
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary vocabulary = Vocabulary.getResources((Locale) null);
         views = new Controls[viewTypes.length];
         for (final View type : viewTypes) {
             final Controls c;
@@ -317,7 +319,7 @@ public class CoverageExplorer extends Widget {
     private void onCoverageSpecified(final GridCoverage coverage) {
         if (!isCoverageAdjusting) {
             startLoading(null);                                         // Clear data.
-            notifyCoverageChange(coverage);
+            notifyCoverageChange(coverage, null);
             if (coverage != null) {
                 startLoading(new ImageRequest(coverage, null));         // Start a background thread.
             }
@@ -327,10 +329,11 @@ public class CoverageExplorer extends Widget {
     /**
      * Invoked in JavaFX thread by {@link GridView} after the coverage has been read.
      *
-     * @param  coverage  the new coverage, or {@code null} if loading failed or has been cancelled.
+     * @param  coverage    the new coverage, or {@code null} if loading failed or has been cancelled.
+     * @param  originator  resource from which the data has been read, or {@code null} if unknown.
      */
-    final void onCoverageLoaded(final GridCoverage coverage) {
-        notifyCoverageChange(coverage);
+    final void onCoverageLoaded(final GridCoverage coverage, final Resource originator) {
+        notifyCoverageChange(coverage, (originator != null) ? new WeakReference<>(originator) : null);
         isCoverageAdjusting = true;
         try {
             setCoverage(coverage);
@@ -355,9 +358,10 @@ public class CoverageExplorer extends Widget {
      * about the coverage change. Controls should update the GUI with new information available,
      * in particular the coordinate reference system and the list of sample dimensions.
      *
-     * @param  data  the new coverage, or {@code null} if none.
+     * @param  data        the new coverage, or {@code null} if none.
+     * @param  originator  the resource from which the data has been read, or {@code null} if unknown.
      */
-    private void notifyCoverageChange(final GridCoverage data) {
+    private void notifyCoverageChange(final GridCoverage data, final Reference<Resource> originator) {
         if (data != null) {
             final GridGeometry gg = data.getGridGeometry();
             referenceSystems.areaOfInterest.set(gg.isDefined(GridGeometry.ENVELOPE) ? gg.getEnvelope() : null);
@@ -366,7 +370,7 @@ public class CoverageExplorer extends Widget {
             }
         }
         for (final Controls c : views) {
-            c.coverageChanged(data);
+            c.coverageChanged(data, originator);
         }
     }
 

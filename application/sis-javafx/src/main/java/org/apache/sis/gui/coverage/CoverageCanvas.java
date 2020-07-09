@@ -24,6 +24,7 @@ import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.lang.ref.Reference;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Background;
@@ -53,9 +54,11 @@ import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.internal.gui.GUIUtilities;
+import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.measure.Units;
+import org.apache.sis.storage.Resource;
 
 
 /**
@@ -134,10 +137,27 @@ public class CoverageCanvas extends MapCanvasAWT {
     StatusBar statusBar;
 
     /**
+     * The resource from which the data has been read, or {@code null} if unknown.
+     * This is used only for determining a target window for logging records.
+     *
+     * @see #setOriginator(Reference)
+     */
+    private Reference<Resource> originator;
+
+    /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
      */
     public CoverageCanvas() {
-        super(Locale.getDefault());
+        this(Locale.getDefault());
+    }
+
+    /**
+     * Creates a new two-dimensional canvas using the given locale.
+     *
+     * @param  locale  the locale to use for labels and some messages, or {@code null} for default.
+     */
+    CoverageCanvas(final Locale locale) {
+        super(locale);
         data                  = new RenderingData();
         resampledImages       = new EnumMap<>(Stretching.class);
         coverageProperty      = new SimpleObjectProperty<>(this, "coverage");
@@ -168,6 +188,16 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     final Region getView() {
         return fixedPane;
+    }
+
+    /**
+     * Sets the resource from which the data has been read.
+     * This is used only for determining a target window for logging records.
+     *
+     * @param  originator  the resource from which the data has been read, or {@code null} if unknown.
+     */
+    final void setOriginator(final Reference<Resource> originator) {
+        this.originator = originator;
     }
 
     /**
@@ -273,11 +303,16 @@ public class CoverageCanvas extends MapCanvasAWT {
                  * property is not provided, {@link ImageRenderer} is used as a fallback for computing it.
                  */
                 @Override protected RenderedImage call() throws FactoryException {
-                    final RenderedImage image = coverage.render(sliceExtent);
-                    final Object value = image.getProperty(PlanarImage.GRID_GEOMETRY_KEY);
-                    imageGeometry = (value instanceof GridGeometry) ? (GridGeometry) value
-                                  : new ImageRenderer(coverage, sliceExtent).getImageGeometry(BIDIMENSIONAL);
-                    return image;
+                    final Long id = LogHandler.loadingStart(originator);
+                    try {
+                        final RenderedImage image = coverage.render(sliceExtent);
+                        final Object value = image.getProperty(PlanarImage.GRID_GEOMETRY_KEY);
+                        imageGeometry = (value instanceof GridGeometry) ? (GridGeometry) value
+                                      : new ImageRenderer(coverage, sliceExtent).getImageGeometry(BIDIMENSIONAL);
+                        return image;
+                    } finally {
+                        LogHandler.loadingStop(id);
+                    }
                 }
 
                 /**
@@ -392,9 +427,16 @@ public class CoverageCanvas extends MapCanvasAWT {
         private final Envelope2D displayBounds;
 
         /**
+         * The resource from which the data has been read, or {@code null} if unknown.
+         * This is used only for determining a target window for logging records.
+         */
+        private final Reference<Resource> originator;
+
+        /**
          * Creates a new renderer.
          */
         Worker(final CoverageCanvas canvas) {
+            originator         = canvas.originator;
             data               = canvas.data.clone();
             objectiveCRS       = canvas.getObjectiveCRS();
             objectiveToDisplay = canvas.getObjectiveToDisplay();
@@ -428,22 +470,27 @@ public class CoverageCanvas extends MapCanvasAWT {
         @Override
         @SuppressWarnings("PointlessBitwiseExpression")
         protected void render() throws TransformException {
-            boolean isResampled = (resampledImage != null);
-            if (isResampled) {
-                resampledToDisplay = data.getTransform(objectiveToDisplay);
-                // Recompute if anything else than identity or translation.
-                isResampled = (resampledToDisplay.getType()
-                        & ~(AffineTransform.TYPE_IDENTITY | AffineTransform.TYPE_TRANSLATION)) == 0;
+            final Long id = LogHandler.loadingStart(originator);
+            try {
+                boolean isResampled = (resampledImage != null);
+                if (isResampled) {
+                    resampledToDisplay = data.getTransform(objectiveToDisplay);
+                    // Recompute if anything else than identity or translation.
+                    isResampled = (resampledToDisplay.getType()
+                            & ~(AffineTransform.TYPE_IDENTITY | AffineTransform.TYPE_TRANSLATION)) == 0;
+                }
+                if (!isResampled) {
+                    filteredImage = null;
+                    resampledImage = data.resample(objectiveCRS, objectiveToDisplay);
+                    resampledToDisplay = data.getTransform(objectiveToDisplay);
+                }
+                if (filteredImage == null) {
+                    filteredImage = data.filter(resampledImage, displayBounds);
+                }
+                prefetchedImage = data.prefetch(filteredImage, resampledToDisplay, displayBounds);
+            } finally {
+                LogHandler.loadingStop(id);
             }
-            if (!isResampled) {
-                filteredImage = null;
-                resampledImage = data.resample(objectiveCRS, objectiveToDisplay);
-                resampledToDisplay = data.getTransform(objectiveToDisplay);
-            }
-            if (filteredImage == null) {
-                filteredImage = data.filter(resampledImage, displayBounds);
-            }
-            prefetchedImage = data.prefetch(filteredImage, resampledToDisplay, displayBounds);
         }
 
         /**

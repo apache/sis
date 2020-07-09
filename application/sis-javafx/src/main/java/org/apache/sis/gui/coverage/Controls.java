@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.lang.ref.Reference;
 import javafx.geometry.Insets;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Control;
@@ -24,6 +25,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
@@ -132,7 +134,9 @@ abstract class Controls {
      * Implementation should update the GUI with new information available, in particular
      * the coordinate reference system and the list of sample dimensions.
      *
-     * @param  data  the new coverage, or {@code null} if none.
+     * @param  data        the new coverage, or {@code null} if none.
+     * @param  originator  the resource from which the data has been read, or {@code null} if unknown.
+     *                     This is used for determining a target window for logging records.
      */
-    abstract void coverageChanged(GridCoverage data);
+    abstract void coverageChanged(GridCoverage data, Reference<Resource> originator);
 }

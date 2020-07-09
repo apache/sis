@@ -406,7 +406,7 @@ public class GridView extends Control {
             final CoverageExplorer snapshot = request.listener;
             request.listener = null;                // Clear now in case an error happen.
             if (snapshot != null) {
-                snapshot.onCoverageLoaded(result);
+                snapshot.onCoverageLoaded(result, request.resource);
             }
         }
     }

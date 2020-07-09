@@ -18,6 +18,7 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
 import java.util.Objects;
+import java.lang.ref.Reference;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Control;
@@ -42,6 +43,7 @@ import org.apache.sis.gui.map.MapMenu;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -80,7 +82,7 @@ final class CoverageControls extends Controls {
                      final RecentReferenceSystems referenceSystems)
     {
         final Color background = Color.BLACK;
-        view = new CoverageCanvas();
+        view = new CoverageCanvas(vocabulary.getLocale());
         view.setBackground(background);
         final StatusBar statusBar = new StatusBar(referenceSystems, view);
         view.statusBar = statusBar;
@@ -260,11 +262,12 @@ final class CoverageControls extends Controls {
      * Invoked in JavaFX thread after {@link CoverageExplorer#setCoverage(ImageRequest)} completed.
      * This method updates the GUI with new information available.
      *
-     * @param  data  the new coverage, or {@code null} if none.
+     * @param  data        the new coverage, or {@code null} if none.
+     * @param  originator  the resource from which the data has been read, or {@code null} if unknown.
      */
     @Override
-    final void coverageChanged(final GridCoverage data) {
-        // TODO
+    final void coverageChanged(final GridCoverage data, final Reference<Resource> originator) {
+        view.setOriginator(originator);
     }
 
     /**

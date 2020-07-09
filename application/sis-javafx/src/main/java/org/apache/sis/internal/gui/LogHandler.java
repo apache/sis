@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.gui;
 
+import java.lang.ref.Reference;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -113,23 +114,37 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
      * Notifies this {@code LogHandler} that an operation is about to start on the given resource.
      * Call to this method must be followed by call to {@link #loadingStop(Long)} in a {@code finally} block.
      *
-     * @param  source  the resource on which an operation is about to start in current thread.
-     * @return key to use in call to {@link #loadingStop(Long)} when the operation is finished.
+     * @param  source  the resource on which an operation is about to start in current thread. May be {@code null}.
+     * @return key to use in call to {@link #loadingStop(Long)} when the operation is finished. May be {@code null}.
+     */
+    public static Long loadingStart(final Reference<Resource> source) {
+        return loadingStart(source != null ? source.get() : null);
+    }
+
+    /**
+     * Notifies this {@code LogHandler} that an operation is about to start on the given resource.
+     * Call to this method must be followed by call to {@link #loadingStop(Long)} in a {@code finally} block.
+     *
+     * @param  source  the resource on which an operation is about to start in current thread. May be {@code null}.
+     * @return key to use in call to {@link #loadingStop(Long)} when the operation is finished. May be {@code null}.
      */
     public static Long loadingStart(final Resource source) {
+        if (source == null) return null;
         final Long id = Thread.currentThread().getId();
         INSTANCE.inProgress.put(id, INSTANCE.getRecordsNonNull(source));
         return id;
     }
 
     /**
-     * Notifies this {@code LogHandler} than an operation done on a resource is finished, either successfully or
+     * Notifies this {@code LogHandler} that an operation done on a resource is finished, either successfully or
      * with an exception thrown. Must be invoked in a {@code finally} block after {@link #loadingStart(Resource)}.
      *
-     * @param  id  the value returned by {@link #loadingStart(Resource)}.
+     * @param  id  the value returned by {@link #loadingStart(Resource)}. May be {@code null}.
      */
     public static void loadingStop(final Long id) {
-        INSTANCE.inProgress.remove(id);
+        if (id != null) {
+            INSTANCE.inProgress.remove(id);
+        }
     }
 
     /**
