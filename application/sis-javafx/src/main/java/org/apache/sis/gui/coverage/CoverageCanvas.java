@@ -37,6 +37,7 @@ import javafx.concurrent.Task;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -53,6 +54,7 @@ import org.apache.sis.image.Interpolation;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.gui.map.StatusBar;
+import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.system.Modules;
@@ -265,7 +267,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     /**
      * Sets the interpolation method to use during resample operations.
      *
-     * @param interpolation the new interpolation method.
+     * @param  interpolation  the new interpolation method.
      *
      * @see #interpolationProperty
      */
@@ -278,6 +280,47 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     final void setBackground(final Color color) {
         fixedPane.setBackground(new Background(new BackgroundFill(color, null, null)));
+    }
+
+    /**
+     * Sets the Coordinate Reference System in which the coverage is resampled before displaying.
+     * The new CRS must be compatible with the previous CRS, i.e. a coordinate operation between
+     * the two CRSs shall exist.
+     *
+     * @param  newValue  the new Coordinate Reference System in which to resample the coverage before displaying.
+     * @param  anchor    the point to keep at fixed display coordinates, expressed in any compatible CRS.
+     *                   If {@code null}, defaults to {@linkplain #getPointOfInterest() point of interest}.
+     *                   If non-null, the anchor must be associated to a CRS.
+     * @throws RenderException if the objective CRS can not be set to the given value.
+     *
+     * @hidden
+     */
+    @Override
+    public void setObjectiveCRS(final CoordinateReferenceSystem newValue, DirectPosition anchor) throws RenderException {
+        final Long id = LogHandler.loadingStart(originator);
+        try {
+            super.setObjectiveCRS(newValue, anchor);
+        } finally {
+            LogHandler.loadingStop(id);
+        }
+    }
+
+    /**
+     * Sets canvas properties from the given grid geometry.
+     *
+     * @param  newValue  the grid geometry from which to get new canvas properties.
+     * @throws RenderException if the given grid geometry can not be converted to canvas properties.
+     *
+     * @hidden
+     */
+    @Override
+    public void setGridGeometry(final GridGeometry newValue) throws RenderException {
+        final Long id = LogHandler.loadingStart(originator);
+        try {
+            super.setGridGeometry(newValue);
+        } finally {
+            LogHandler.loadingStop(id);
+        }
     }
 
     /**

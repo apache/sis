@@ -34,16 +34,18 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.util.StringConverter;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.map.MapMenu;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.internal.gui.Styles;
-import org.apache.sis.storage.Resource;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -81,6 +83,7 @@ final class CoverageControls extends Controls {
     CoverageControls(final Vocabulary vocabulary, final ObjectProperty<GridCoverage> coverage,
                      final RecentReferenceSystems referenceSystems)
     {
+        final Resources resources = Resources.forLocale(vocabulary.getLocale());
         final Color background = Color.BLACK;
         view = new CoverageCanvas(vocabulary.getLocale());
         view.setBackground(background);
@@ -106,6 +109,7 @@ final class CoverageControls extends Controls {
             crsLabel.setFont(font);
             crsLabel.setPadding(Styles.FORM_INSETS);
             crsShown.setPadding(INDENT_OUTSIDE);
+            crsShown.setTooltip(new Tooltip(resources.getString(Resources.Keys.SelectCrsByContextMenu)));
             menu.selectedReferenceSystem().ifPresent((text) -> crsShown.textProperty().bind(text));
             /*
              * The pane containing controls will be divided in sections separated by labels:
