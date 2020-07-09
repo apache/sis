@@ -94,8 +94,11 @@ public final class ExceptionReporter {
 
     /**
      * Gets the stack trace of the given exception.
+     *
+     * @param  exception  the exception for which to get the stack trace.
+     * @return the stack trace.
      */
-    private static String getStackTrace(final Throwable exception) {
+    public static String getStackTrace(final Throwable exception) {
         final StringWriter buffer = new StringWriter();
         final PrintWriter  writer = new PrintWriter(buffer);
         exception.printStackTrace(writer);

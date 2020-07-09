@@ -1130,6 +1130,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short TopicCategory = 198;
 
         /**
+         * Trace
+         */
+        public static final short Trace = 245;
+
+        /**
          * Transformation
          */
         public static final short Transformation = 199;
