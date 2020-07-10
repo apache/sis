@@ -217,15 +217,29 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
                                     final double[] dstPts, final int dstOff)
             throws ProjectionException
     {
-        final double x    = srcPts[srcOff  ];
-        final double y    = srcPts[srcOff+1];
-        final double α    = atan2(x, y);                // Actually α′ in EPSG guidance notes.
-        final double sinα = sin(α);
-        final double cosα = cos(α);
-              double negA = Hp * cosα; negA *= negA;    // mA = −A  compared to EPSG guidance note.
+        final double x  = srcPts[srcOff  ];
+        final double y  = srcPts[srcOff+1];
+        final double D  = hypot(x, y);                  // D = c′/ν₀, but division by ν₀ is already done here.
+        final double D2 = D*D;
+        /*
+         * From ESPG guidance note:
+         *
+         *     α′    =  atan2(x, y)                     // x and y interchanged compared to usual atan2(y, x).
+         *     sinα  =  sin(α′)
+         *     cosα  =  cos(α′)
+         *
+         * But we rewrite in a way that avoid the use of trigonometric functions. We test (D != 0)
+         * exactly (without epsilon) because even a very small value is sufficient for avoiding NaN:
+         * Since D ≥ max(|x|, |y|) we get x/D and y/D close to zero.
+         */
+        double sinα = x;                                // x and y interchanged compared to usual atan2(y, x).
+        double cosα = y;
+        if (D != 0) {
+            sinα /= D;
+            cosα /= D;
+        }
+              double negA = Hp * cosα; negA *= negA;    // negA = −A  compared to EPSG guidance note.
         final double B    = Bp * (1 + negA) * cosα;
-        final double D2   = x*x + y*y;
-        final double D    = sqrt(D2);                   // D = c′/ν₀, but division by ν₀ is already done here.
         final double J    = D + (negA*(1 -   negA)*(D2*D )/6)
                               - (   B*(1 - 3*negA)*(D2*D2)/24);
         final double J2   = J*J;
