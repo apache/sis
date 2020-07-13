@@ -459,7 +459,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         {
             final double x = srcPts[srcOff  ];
             final double y = srcPts[srcOff+1];
-            final double ρ = hypot(x, y);
+            final double ρ = fastHypot(x, y);
             final double λ, φ;
             if (abs(ρ) < ANGULAR_TOLERANCE) {
                 φ = χ0;

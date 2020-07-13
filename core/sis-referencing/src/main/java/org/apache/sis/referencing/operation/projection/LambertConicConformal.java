@@ -473,8 +473,8 @@ public class LambertConicConformal extends ConformalProjection {
          * applied before the first non-linear one moved to the inverse of the "denormalize" transform, and the
          * linear operations applied after the last non-linear one moved to the inverse of the "normalize" transform.
          */
-        dstPts[dstOff  ] = atan2(x, y);                 // Really (x,y), not (y,x)
-        dstPts[dstOff+1] = -φ(pow(hypot(x, y), 1/n));   // Equivalent to φ(pow(hypot(x,y), -1/n)) but more accurate for n>0.
+        dstPts[dstOff  ] = atan2(x, y);                     // Really (x,y), not (y,x)
+        dstPts[dstOff+1] = -φ(pow(fastHypot(x, y), 1/n));   // Equivalent to φ(pow(hypot(x,y), -1/n)) but more accurate for n>0.
     }
 
 

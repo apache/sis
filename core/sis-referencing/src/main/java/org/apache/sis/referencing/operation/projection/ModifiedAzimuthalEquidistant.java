@@ -219,8 +219,9 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
     {
         final double x  = srcPts[srcOff  ];
         final double y  = srcPts[srcOff+1];
-        final double D  = hypot(x, y);                  // D = c′/ν₀, but division by ν₀ is already done here.
-        final double D2 = D*D;
+        final double D2 = x*x + y*y;
+        final double D  = max(sqrt(D2), max(abs(x), abs(y)));       // See `NormalizedProjection.fastHypot(…)`.
+        // D = c′/ν₀, but division by ν₀ is already done here.
         /*
          * From ESPG guidance note:
          *
@@ -232,11 +233,11 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
          * exactly (without epsilon) because even a very small value is sufficient for avoiding NaN:
          * Since D ≥ max(|x|, |y|) we get x/D and y/D close to zero.
          */
-        double sinα = x;                                // x and y interchanged compared to usual atan2(y, x).
-        double cosα = y;
+        double sinα = 0;
+        double cosα = 0;
         if (D != 0) {
-            sinα /= D;
-            cosα /= D;
+            sinα = x / D;                               // x and y interchanged compared to usual atan2(y, x).
+            cosα = y / D;
         }
               double negA = Hp * cosα; negA *= negA;    // negA = −A  compared to EPSG guidance note.
         final double B    = Bp * (1 + negA) * cosα;
