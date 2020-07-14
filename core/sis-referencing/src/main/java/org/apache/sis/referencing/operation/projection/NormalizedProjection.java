@@ -701,12 +701,21 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * The actual range may be greater (e.g. [−5 … +5]), but it still far from ranges requiring protection against
      * overflow.</p>
      *
-     * <p>We may not need the full {@code Math.hypot(x,y)} accuracy in the context of map projections on ellipsoids.
+     * <h4>Caution</h4>
+     * We may not need the full {@code Math.hypot(x,y)} accuracy in the context of map projections on ellipsoids.
      * However some projection formulas require that {@code fastHypot(x,y) ≥ max(|x|,|y|)}, otherwise normalizations
      * such as {@code x/hypot(x,y)} could result in values larger than 1, which in turn result in {@link Double#NaN}
      * when given to {@link Math#asin(double)}. The assumption on x, y and {@code sqrt(x²+y²)} relative magnitude is
-     * broken when x=0 and |y| ≤ 1.4914711209038602E-154 or conversely. This method contains a check for making sure
-     * that this assumption is true all times.</p>
+     * broken when x=0 and |y| ≤ 1.4914711209038602E-154 or conversely. This method does not a check for such cases;
+     * it is caller responsibility to add this check is necessary, for example as below:
+     *
+     * {@preformat java
+     *     double D = max(fastHypot(x, y), max(abs(x), abs(y)));
+     * }
+     *
+     * According JMH, above check is 1.65 time slower than {@code fastHypot} without checks.
+     * We define this {@code fastHypot(…)} method for tracing where {@code sqrt(x² + y²)} is used,
+     * so we can verify if it is used in context where the inaccuracy is acceptable.
      *
      * <h4>When to use</h4>
      * We reserve this method to ellipsoidal formulas where approximations are used anyway. Implementations using
@@ -717,7 +726,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *      there any point to using <code>hypot(1, c)</code> for <code>sqrt(1 + c²)</code>, 0 ≤ c ≤ 1</a>
      */
     static double fastHypot(final double x, final double y) {
-        return max(sqrt(x*x + y*y), max(abs(x), abs(y)));
+        return sqrt(x*x + y*y);
         // TODO: consider using Math.fma on JDK9.
         // Check also if we should do the same with plain x*x + y*y in subclasses.
     }

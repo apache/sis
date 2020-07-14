@@ -461,17 +461,16 @@ public class ObliqueStereographic extends NormalizedProjection {
             final double y = srcPts[srcOff+1];
             final double ρ = fastHypot(x, y);
             final double λ, φ;
-            if (abs(ρ) < ANGULAR_TOLERANCE) {
-                φ = χ0;
+            if (ρ == 0) {         // Exact comparison is okay here. Values > 0 (even tiny) work with complete formula.
                 λ = 0.0;
+                φ = χ0;
             } else {
                 final double c    = 2*atan(ρ);
                 final double cosc = cos(c);
                 final double sinc = sin(c);
-                final double ct   = ρ * cosχ0*cosc - y*sinχ0*sinc;
-                final double t    = x * sinc;
-                φ = asin(cosc*sinχ0 + y*sinc*cosχ0 / ρ);
-                λ = atan2(t, ct);
+                λ = atan2(x * sinc,
+                          cosc*cosχ0*ρ - y*sinc*sinχ0  );
+                φ = asin( cosc*sinχ0   + y*sinc*cosχ0/ρ);
             }
             dstPts[dstOff]   = λ;
             dstPts[dstOff+1] = φ;

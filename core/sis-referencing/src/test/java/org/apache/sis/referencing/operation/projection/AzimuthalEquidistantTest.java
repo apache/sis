@@ -20,6 +20,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -39,6 +40,19 @@ public strictfp class AzimuthalEquidistantTest extends MapProjectionTestCase {
      */
     MapProjection method() {
         return new org.apache.sis.internal.referencing.provider.AzimuthalEquidistantSpherical();
+    }
+
+    /**
+     * Creates a new instance of {@link AzimuthalEquidistant} for a sphere or an ellipsoid.
+     * The new instance is stored in the inherited {@link #transform} field.
+     */
+    private void createNormalizedProjection() {
+        final MapProjection op = method();
+        final Parameters p = Parameters.castOrWrap(op.getParameters().createValue());
+        p.parameter("semi_major").setValue(WGS84_A);
+        p.parameter("semi_minor").setValue(WGS84_B);
+        p.parameter("Latitude of natural origin").setValue(0);
+        transform = new ObliqueStereographic(op, p);
     }
 
     /**
@@ -158,5 +172,20 @@ public strictfp class AzimuthalEquidistantTest extends MapProjectionTestCase {
         verifyDerivative(30, 27);
         verifyDerivative(27, 20);
         verifyDerivative(40, 25);
+    }
+
+    /**
+     * Tests {@link AzimuthalEquidistant#inverseTransform(double[], int, double[], int)} with input
+     * coordinates close to zero. The tested method implementation has an indetermination at D = 0,
+     * so we test its behavior close to that indetermination point.
+     *
+     * @throws TransformException if an error occurred while projecting the coordinate.
+     */
+    @Test
+    public void testValuesNearZero() throws TransformException {
+        createNormalizedProjection();
+        transform = transform.inverse();
+        tolerance = 1E-15;
+        verifyValuesNearZero(0, 0);
     }
 }

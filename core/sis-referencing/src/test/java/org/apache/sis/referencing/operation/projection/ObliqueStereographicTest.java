@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -380,5 +380,21 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
                 DefaultFactories.forBuildin(MathTransformFactory.class));
         tolerance = 0.01;
         verifyTransform(new double[] {44, 73}, new double[] {3320416.75, 632668.43});
+    }
+
+    /**
+     * Tests {@link ObliqueStereographic.Spherical#inverseTransform(double[], int, double[], int)} with input
+     * coordinates close to zero. The tested method implementation has an indetermination at ρ = 0, so we test
+     * its behavior close to that indetermination point. We test both coordinates, but the main coordinate of
+     * interest is <var>y</var> because it is used in a formula containing y/ρ where y and ρ both tend to zero.
+     *
+     * @throws TransformException if an error occurred while projecting the coordinate.
+     */
+    @Test
+    public void testValuesNearZero() throws TransformException {
+        createNormalizedProjection(false);
+        transform = transform.inverse();
+        tolerance = 1E-15;
+        verifyValuesNearZero(0, φ0);
     }
 }

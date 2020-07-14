@@ -220,8 +220,7 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
         final double x  = srcPts[srcOff  ];
         final double y  = srcPts[srcOff+1];
         final double D2 = x*x + y*y;
-        final double D  = max(sqrt(D2), max(abs(x), abs(y)));       // See `NormalizedProjection.fastHypot(…)`.
-        // D = c′/ν₀, but division by ν₀ is already done here.
+        final double D  = sqrt(D2);                     // D = c′/ν₀, but division by ν₀ is already done here.
         /*
          * From ESPG guidance note:
          *
@@ -231,7 +230,12 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
          *
          * But we rewrite in a way that avoid the use of trigonometric functions. We test (D != 0)
          * exactly (without epsilon) because even a very small value is sufficient for avoiding NaN:
-         * Since D ≥ max(|x|, |y|) we get x/D and y/D close to zero.
+         * Since D ≥ max(|x|,|y|) we get x/D and y/D close to zero.
+         *
+         * Note: the D ≥ max(|x|,|y|) assumption may not be always true (see NormalizedProjection.fastHypot(…)).
+         * Consequently sin(α) or cos(α) may be slightly greater than 1. However they are multiplied by terms
+         * involving eccentricity, which are smaller than 1. An empirical verification is done with cos(φ₀) = 1
+         * in AzimuthalEquidistantTest.testValuesNearZero().
          */
         double sinα = 0;
         double cosα = 0;
