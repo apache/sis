@@ -146,7 +146,7 @@ public class ResourceExplorer extends WindowManager {
         /*
          * Build the tabs.
          */
-        final Vocabulary vocabulary = Vocabulary.getResources(localized().getLocale());
+        final Vocabulary vocabulary = Vocabulary.getResources(resources.locale);
         viewTab = new Tab(vocabulary.getString(Vocabulary.Keys.Visual));
         // TODO: add contextual menu for window showing directly the visual.
 
@@ -249,7 +249,7 @@ public class ResourceExplorer extends WindowManager {
      */
     @Override
     final Resources localized() {
-        return resources.localized;
+        return resources.localized();
     }
 
     /**
@@ -450,7 +450,7 @@ public class ResourceExplorer extends WindowManager {
         } else {
             return null;
         }
-        return new SelectedData(resources.getTitle(resource, false), table, grid, resources.localized);
+        return new SelectedData(resources.getTitle(resource, false), table, grid, localized());
     }
 
     /**

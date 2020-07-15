@@ -91,17 +91,16 @@ import org.apache.sis.internal.util.Strings;
  */
 public class ResourceTree extends TreeView<Resource> {
     /**
-     * The resources for localized strings. Stored because needed often
-     * (when loading data, when building a contextual menu, etc.).
+     * The locale to use for titles, messages, labels, contextual menu, <i>etc</i>.
      */
-    final Resources localized;
+    final Locale locale;
 
     /**
      * Creates a new tree of resources with initially no resource to show.
      * For showing a resource, invoke {@link #setResource(Resource)} after construction.
      */
     public ResourceTree() {
-        localized = Resources.forLocale(null);
+        locale = Locale.getDefault();
         setCellFactory((v) -> new Cell());
         setOnDragOver(ResourceTree::onDragOver);
         setOnDragDropped(this::onDragDropped);
@@ -301,10 +300,10 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * Returns the locale to use for titles, messages, labels, etc.
+     * Returns resources for current locale.
      */
-    final Locale getLocale() {
-        return localized.getLocale();
+    final Resources localized() {
+        return Resources.forLocale(locale);
     }
 
     /**
@@ -376,7 +375,7 @@ public class ResourceTree extends TreeView<Resource> {
          * If we failed to get the name, use "unnamed" with the exception message.
          * It may still be possible to select this resource, view it or expand the children nodes.
          */
-        String text = Vocabulary.getResources(getLocale()).getString(Vocabulary.Keys.Unnamed);
+        String text = Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed);
         if (failure != null) {
             text = text + " — " + string(failure);
         }
@@ -387,7 +386,7 @@ public class ResourceTree extends TreeView<Resource> {
      * Returns the given international string as a non-empty localized string, or {@code null} if none.
      */
     private String string(final InternationalString i18n) {
-        return (i18n != null) ? Strings.trimOrNull(i18n.toString(getLocale())) : null;
+        return (i18n != null) ? Strings.trimOrNull(i18n.toString(locale)) : null;
     }
 
     /**
@@ -395,7 +394,7 @@ public class ResourceTree extends TreeView<Resource> {
      * This method returns the message if one exist, or the exception class name otherwise.
      */
     private String string(final Throwable failure) {
-        String text = Strings.trimOrNull(Exceptions.getLocalizedMessage(failure, getLocale()));
+        String text = Strings.trimOrNull(Exceptions.getLocalizedMessage(failure, locale));
         if (text == null) {
             text = Classes.getShortClassName(failure);
         }
@@ -442,7 +441,7 @@ public class ResourceTree extends TreeView<Resource> {
                 if (resource == PseudoResource.LOADING) {
                     color = Styles.LOADING_TEXT;
                     if (tree != null) {
-                        text = tree.localized.getString(Resources.Keys.Loading);
+                        text = tree.localized().getString(Resources.Keys.Loading);
                     }
                 } else if (resource instanceof Unloadable) {
                     color = Styles.ERROR_TEXT;
@@ -450,9 +449,11 @@ public class ResourceTree extends TreeView<Resource> {
                         final Throwable failure = ((Unloadable) resource).failure;
                         text = tree.string(failure);
                         more = new Button(Styles.ERROR_DETAILS_ICON);
-                        more.setOnAction((e) -> ExceptionReporter.show(
-                                tree.localized.getString(Resources.Keys.ErrorDetails),
-                                tree.localized.getString(Resources.Keys.CanNotReadResource), failure));
+                        more.setOnAction((e) -> {
+                            final Resources localized = tree.localized();
+                            ExceptionReporter.show(localized.getString(Resources.Keys.ErrorDetails),
+                                                   localized.getString(Resources.Keys.CanNotReadResource), failure);
+                        });
                     }
                 } else {
                     if (tree != null) {
@@ -474,9 +475,8 @@ public class ResourceTree extends TreeView<Resource> {
                 if (tree.findOrRemove(resource, false)) {
                     menu = getContextMenu();
                     if (menu == null) {
-                        final Resources localized = tree.localized;
                         menu = new ContextMenu();
-                        menu.getItems().add(localized.menu(Resources.Keys.Close, (e) -> close()));
+                        menu.getItems().add(tree.localized().menu(Resources.Keys.Close, (e) -> close()));
                     }
                 }
                 setContextMenu(menu);
