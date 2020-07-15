@@ -276,6 +276,21 @@ public class ResourceTree extends TreeView<Resource> {
     private boolean findOrRemove(final Resource resource, final boolean remove) {
         assert Platform.isFxApplicationThread();
         if (resource != null) {
+            /*
+             * If the item to remove is selected, unselect it before to remove it.
+             * The `ResourceExplorer` will be notified by a change event.
+             */
+            if (remove) {
+                final ObservableList<TreeItem<Resource>> items = getSelectionModel().getSelectedItems();
+                for (int i=items.size(); --i >= 0;) {
+                    if (items.get(i).getValue() == resource) {
+                        getSelectionModel().clearSelection(i);
+                    }
+                }
+            }
+            /*
+             * Search for the resource from the root, and optionally remove it.
+             */
             final TreeItem<Resource> item = getRoot();
             if (item != null) {
                 final Resource root = item.getValue();

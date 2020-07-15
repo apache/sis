@@ -29,7 +29,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.concurrent.Worker;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TitledPane;
@@ -106,10 +105,10 @@ public class MetadataSummary extends Widget {
 
     /**
      * If this {@link MetadataSummary} is loading metadata, the worker doing this task.
-     * Otherwise {@code null}. This is used for cancelling the currently running loading
+     * Otherwise {@code null}. This is used for cancelling the currently running getter
      * process if {@link #setMetadata(Resource)} is invoked again before completion.
      */
-    private Worker<Metadata> loader;
+    private Getter getter;
 
     /**
      * The metadata shown in this pane.
@@ -152,9 +151,9 @@ public class MetadataSummary extends Widget {
         };
         content = new ScrollPane(new VBox());
         content.setFitToWidth(true);
+        nativeMetadataViews = new ArrayList<>();
         metadataProperty = new SimpleObjectProperty<>(this, "metadata");
         metadataProperty.addListener(MetadataSummary::applyChange);
-        nativeMetadataViews = new ArrayList<>();
     }
 
     /**
@@ -211,42 +210,62 @@ public class MetadataSummary extends Widget {
      */
     public void setMetadata(final Resource resource) {
         assert Platform.isFxApplicationThread();
-        if (loader != null) {
-            loader.cancel();
-            loader = null;
+        if (getter != null) {
+            getter.cancel();
+            getter = null;
         }
         if (resource == null) {
             setMetadata((Metadata) null);
         } else {
-            final class Getter extends Task<Metadata> {
-                /** The native metadata, or {@code null} if none or not requested. */
-                private TreeTable nativeMetadata;
+            BackgroundThreads.execute(getter = new Getter(resource));
+        }
+    }
 
-                /** Invoked in a background thread for fetching metadata. */
-                @Override protected Metadata call() throws DataStoreException {
-                    if (resource instanceof DataStore && !nativeMetadataViews.isEmpty()) {
-                        nativeMetadata = ((DataStore) resource).getNativeMetadata().orElse(null);
-                    }
-                    return resource.getMetadata();
-                }
+    /**
+     * The task getting metadata in a background thread. The call to {@link Resource#getMetadata()} is
+     * instantaneous with some resource implementations, but other implementations may have deferred
+     * metadata construction until first requested.
+     */
+    private final class Getter extends Task<Metadata> {
+        /** The resource from which to load metadata. */
+        private final Resource resource;
 
-                /** Shows the result in JavaFX thread. */
-                @Override protected void succeeded() {
-                    setMetadata(getValue());
-                    for (final MetadataTree view : nativeMetadataViews) {
-                        view.setContent(nativeMetadata);
-                    }
-                    if (resource instanceof Aggregate) {
-                        getIdentificationInfo().completeMissingGeographicBounds((Aggregate) resource);
-                    }
-                }
+        /** The native metadata, or {@code null} if none or not requested. */
+        TreeTable nativeMetadata;
 
-                /** Invoked in JavaFX thread if metadata loading failed. */
-                @Override protected void failed() {
-                    setError(getException());
-                }
+        /** Creates a new metadata getter. */
+        Getter(final Resource resource) {
+            this.resource = resource;
+        }
+
+        /** Invoked in a background thread for fetching metadata. */
+        @Override protected Metadata call() throws DataStoreException {
+            if (resource instanceof DataStore && !nativeMetadataViews.isEmpty()) {
+                nativeMetadata = ((DataStore) resource).getNativeMetadata().orElse(null);
             }
-            BackgroundThreads.execute(new Getter());
+            return resource.getMetadata();
+        }
+
+        /** Shows the result in JavaFX thread. */
+        @Override protected void succeeded() {
+            if (getter == this) try {
+                setMetadata(getValue());
+                if (resource instanceof Aggregate) {
+                    getIdentificationInfo().completeMissingGeographicBounds((Aggregate) resource);
+                }
+            } finally {
+                getter = null;
+            }
+        }
+
+        /* No need to override `canceled()` because `getter` is cleared at `cancel()` invocation time. */
+
+        /** Invoked in JavaFX thread if metadata loading failed. */
+        @Override protected void failed() {
+            if (getter == this) {
+                getter = null;
+                setError(getException());
+            }
         }
     }
 
@@ -305,8 +324,19 @@ public class MetadataSummary extends Widget {
                                     final Metadata oldValue, final Metadata metadata)
     {
         final MetadataSummary s = (MetadataSummary) ((SimpleObjectProperty<?>) property).getBean();
-        s.error = null;
+        final Getter getter = s.getter;
+        s.getter = null;                // In case this method is invoked before `Getter` completed.
+        s.error  = null;
         if (metadata != oldValue) {
+            /*
+             * The native metadata are handled in a special way by `setMetadata(Resource)`.
+             * Since we have no public API for setting native metadata in `MetadataSummary`,
+             * we set the value to null if this method is not invoked from `Getter.succeeded()`.
+             */
+            final TreeTable nativeMetadata = (getter != null && getter.isDone()) ? getter.nativeMetadata : null;
+            for (final MetadataTree view : s.nativeMetadataViews) {
+                view.setContent(nativeMetadata);
+            }
             final ObservableList<Node> children = s.getChildren();
             if (!children.isEmpty() && !(children.get(0) instanceof Section)) {
                 children.clear();       // If we were previously showing an error, clear all.

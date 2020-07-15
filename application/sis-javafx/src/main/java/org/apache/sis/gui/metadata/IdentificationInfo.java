@@ -18,6 +18,7 @@ package org.apache.sis.gui.metadata;
 
 import java.util.Date;
 import java.util.Set;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.StringJoiner;
 import javafx.concurrent.Task;
@@ -240,7 +241,14 @@ final class IdentificationInfo extends Section<Identification> {
             aggregateWalker.cancel();
             aggregateWalker = null;
         }
-        setInformation(nonNull(metadata == null ? null : metadata.getIdentificationInfo()), Identification[]::new);
+        final Collection<? extends Identification> info;
+        if (metadata == null) {
+            clearWorldMap();
+            info = null;
+        } else {
+            info = metadata.getIdentificationInfo();
+        }
+        setInformation(nonNull(info), Identification[]::new);
     }
 
     /**
