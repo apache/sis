@@ -124,6 +124,7 @@ final class RenderingData implements Cloneable {
      * The inverse of the {@linkplain CoverageCanvas#objectiveToDisplay objective to display} transform which was
      * active at the time resampled images have been computed. The concatenation of this transform with the actual
      * "objective to display" transform at the time the rendered image is drawn should be a translation.
+     * May be {@code null} if not yet computed.
      */
     private AffineTransform displayToObjective;
 
@@ -308,6 +309,9 @@ final class RenderingData implements Cloneable {
      * has an optimization which avoid to copy the whole data only for that case.
      */
     final AffineTransform getTransform(final LinearTransform objectiveToDisplay) {
+        if (displayToObjective == null) {
+            return new AffineTransform();
+        }
         AffineTransform resampledToDisplay = AffineTransforms2D.castOrCopy(objectiveToDisplay);
         if (resampledToDisplay == objectiveToDisplay) {
             resampledToDisplay = new AffineTransform(resampledToDisplay);

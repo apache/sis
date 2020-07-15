@@ -251,7 +251,7 @@ final class CoverageControls extends Controls {
             this.pane = pane;
         }
 
-        /** Creates the {@link ImagePropertyExplorer}. */
+        /** Creates the {@link ImagePropertyExplorer} when {@link TitledPane#expandedProperty()} changed. */
         @Override public void changed(ObservableValue<? extends Boolean> property, Boolean oldValue, Boolean newValue) {
             if (newValue) {
                 pane.expandedProperty().removeListener(this);
