@@ -731,6 +731,13 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         // Check also if we should do the same with plain x*x + y*y in subclasses.
     }
 
+    /*
+     * TODO: consider adding a sqrt1ms(x) method for sqrt(1 - x*x), which could be implemented as sqrt(fma(x, -x, 1)).
+     * The use of Math.fma(…) in this context would be valuable especially when x is close to 1 (to be verified).
+     * We may also add a method for sqrt(1 - eccentricitySquared*x*x). Maybe `eccentricitySquared` should be made
+     * package private and negative for easier use with fma.
+     */
+
     /**
      * Converts a single coordinate in {@code srcPts} at the given offset and stores the result
      * in {@code dstPts} at the given offset. In addition, opportunistically computes the
