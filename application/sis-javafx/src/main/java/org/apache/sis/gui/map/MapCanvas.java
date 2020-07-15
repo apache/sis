@@ -27,8 +27,6 @@ import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.ZoomEvent;
-import javafx.scene.input.RotateEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.GestureEvent;
@@ -298,8 +296,8 @@ public abstract class MapCanvas extends PlanarCanvas {
             }
         };
         view.getTransforms().add(transform);
-        view.setOnZoom(this::onZoom);
-        view.setOnRotate(this::onRotate);
+        view.setOnZoom  ((e) -> applyZoomOrRotate(e, e.getZoomFactor(), 0));
+        view.setOnRotate((e) -> applyZoomOrRotate(e, 1, e.getAngle()));
         view.setOnScroll(this::onScroll);
         view.setOnMousePressed(this::onDrag);
         view.setOnMouseDragged(this::onDrag);
@@ -338,14 +336,20 @@ public abstract class MapCanvas extends PlanarCanvas {
         final double x = event.getX();
         final double y = event.getY();
         final EventType<? extends MouseEvent> type = event.getEventType();
-        if (type == MouseEvent.MOUSE_PRESSED && event.isPrimaryButtonDown()) {
-            hideContextMenu();
-            floatingPane.setCursor(Cursor.CLOSED_HAND);
-            floatingPane.requestFocus();
-            isDragging = true;
-            xPanStart  = x;
-            yPanStart  = y;
-            event.consume();
+        if (type == MouseEvent.MOUSE_PRESSED) {
+            switch (event.getButton()) {
+                case PRIMARY: {
+                    hideContextMenu();
+                    floatingPane.setCursor(Cursor.CLOSED_HAND);
+                    floatingPane.requestFocus();
+                    isDragging = true;
+                    xPanStart  = x;
+                    yPanStart  = y;
+                    event.consume();
+                    break;
+                }
+                // Future version may add cases for FORWARD and BACK buttons.
+            }
         } else if (isDragging) {
             if (type != MouseEvent.MOUSE_DRAGGED) {
                 floatingPane.setCursor(renderingInProgress != null ? Cursor.WAIT : Cursor.CROSSHAIR);
@@ -399,20 +403,6 @@ public abstract class MapCanvas extends PlanarCanvas {
             zoom = 1/zoom;
         }
         applyZoomOrRotate(event, zoom, 0);
-    }
-
-    /**
-     * Invoked when the user performs a zoom on track pad or touch screen.
-     */
-    private void onZoom(final ZoomEvent event) {
-        applyZoomOrRotate(event, event.getZoomFactor(), 0);
-    }
-
-    /**
-     * Invoked when the user performs a rotation on track pad or touch screen.
-     */
-    private void onRotate(final RotateEvent event) {
-        applyZoomOrRotate(event, 1, event.getAngle());
     }
 
     /**
@@ -549,7 +539,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         }
         menu.getItems().setAll(systemChoices, localSystems);
         addPropertyChangeListener(OBJECTIVE_CRS_PROPERTY, handler);
-        fixedPane.setOnMousePressed(handler);
+        fixedPane.setOnMousePressed (handler);
+        fixedPane.setOnMouseReleased(handler);      // As recommended by MouseEvent.isPopupTrigger().
         return handler.selectedProperty = RecentReferenceSystems.getSelectedProperty(systemChoices);
     }
 
@@ -603,15 +594,13 @@ public abstract class MapCanvas extends PlanarCanvas {
          */
         @Override
         public void handle(final MouseEvent event) {
-            hideContextMenu();
-            if (event.isSecondaryButtonDown()) {
+            if (event.isPopupTrigger()) {
+                hideContextMenu();
                 x = event.getX();
                 y = event.getY();
                 menu.show((Pane) event.getSource(), event.getScreenX(), event.getScreenY());
                 menuShown = menu;
                 event.consume();
-            } else {
-                menu.hide();
             }
         }
 
