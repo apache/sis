@@ -39,6 +39,7 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicDescription;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.identification.Identification;
+import org.opengis.metadata.distribution.Format;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -70,6 +71,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  *   <li>Topic category.</li>
  *   <li>Release date, or publication date, or creation date, or any date (in this preference order).</li>
  *   <li>Type of resource.</li>
+ *   <li>Resource format.</li>
  *   <li>Spatiotemporal extent as a textual description.</li>
  *   <li>Extent shown as a rectangle on a world map.</li>
  * </ol>
@@ -337,6 +339,19 @@ final class IdentificationInfo extends Section<Identification> {
          * that next section, i.e. last in this section but just before the map.
          */
         addLine(Vocabulary.Keys.TypeOfResource, owner.string(nonNull(info.getSpatialRepresentationTypes())));
+        /*
+         * Resource format. Current implementation shows only the first format found.
+         */
+        for (final Format format : nonNull(info.getResourceFormats())) {
+            final Citation c = format.getFormatSpecificationCitation();
+            if (c != null) {
+                text = owner.string(c.getTitle());
+                if (text != null) {
+                    addLine(Vocabulary.Keys.Format, text);
+                    break;
+                }
+            }
+        }
         /*
          * Write the first description about the spatio-temporal extent, then draw all geographic bounding boxes
          * on a world map. If the bounding box encompasses the whole world, replace it by a "World" description.
