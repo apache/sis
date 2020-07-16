@@ -34,9 +34,9 @@ import org.apache.sis.util.Classes;
 
 /**
  * An image with the same sample values than the wrapped image but a different color model.
- * Current implementation can only apply a gray scale. Future implementations may detect
- * the existing color model and try to preserve colors (for example by building an indexed
- * color model).
+ * The only interesting member method is {@link #getColorModel()}, which returns the model
+ * specified at construction time. All other non-trivial methods are static helper methods
+ * for {@link ImageProcessor}, defined here for reducing {@link ImageProcessor} size.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -46,6 +46,8 @@ import org.apache.sis.util.Classes;
 final class RecoloredImage extends ImageAdapter {
     /**
      * The color model to associate with this recolored image.
+     *
+     * @see #getColorModel()
      */
     private final ColorModel colors;
 
@@ -58,110 +60,115 @@ final class RecoloredImage extends ImageAdapter {
     }
 
     /**
-     * Wraps the given image with its colors ramp scaled between the given bounds. If the given image is
-     * already using a color ramp for the given range of values, then that image is returned unchanged.
+     * Returns an image with the same sample values than the given image, but with its color ramp stretched
+     * between specified or inferred bounds. The mapping applied by this method is conceptually a linear
+     * transform applied on sample values before they are mapped to their colors.
      *
-     * @param  source       the image to recolor.
-     * @param  visibleBand  the band to make visible.
-     * @param  minimum      the sample value to display with the first color of the color ramp (black in a grayscale image).
-     * @param  maximum      the sample value to display with the last color of the color ramp (white in a grayscale image).
-     * @return the image with color ramp rescaled between the given bounds. May be the given image returned as-is.
-     */
-    private static RenderedImage create(RenderedImage source, final int visibleBand, final double minimum, final double maximum) {
-        final SampleModel sm = source.getSampleModel();
-        final int dataType = sm.getDataType();
-        final ColorModel colors = ColorModelFactory.createGrayScale(dataType, sm.getNumBands(), visibleBand, minimum, maximum);
-        for (;;) {
-            if (colors.equals(source.getColorModel())) {
-                return source;
-            } else if (source instanceof RecoloredImage) {
-                source = ((RecoloredImage) source).source;
-            } else {
-                break;
-            }
-        }
-        return ImageProcessor.unique(new RecoloredImage(source, colors));
-    }
-
-    /**
-     * Implementation of {@link ImageProcessor#stretchColorRamp(RenderedImage, double, double)}.
-     * Defined in this class for reducing {@link ImageProcessor} size.
-     *
-     * @param  source    the image to recolor (may be {@code null}).
-     * @param  minimum   the sample value to display with the first color of the color ramp (black in a grayscale image).
-     * @param  maximum   the sample value to display with the last color of the color ramp (white in a grayscale image).
-     * @return the image with color ramp stretched between the given bounds, or {@code image} unchanged if the operation
-     *         can not be applied on the given image.
-     */
-    static RenderedImage create(final RenderedImage source, final double minimum, final double maximum) {
-        if (!(minimum < maximum)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minimum, maximum));
-        }
-        final int visibleBand = ImageUtilities.getVisibleBand(source);
-        if (visibleBand >= 0) {
-            return create(source, visibleBand, minimum, maximum);
-        }
-        return source;
-    }
-
-    /**
-     * Implementation of {@link ImageProcessor#stretchColorRamp(RenderedImage, Map)}.
-     * Defined in this class for reducing {@link ImageProcessor} size.
-     * See above-cited public method for the list of modifier keys recognized by this method.
+     * <p>Current implementation can stretch only gray scale images (it may be extended to indexed color models
+     * in a future version). If this method can not stretch the color ramp, for example because the given image
+     * is an RGB image, then the image is returned unchanged.</p>
      *
      * @param  processor  the processor to use for computing statistics if needed.
-     * @param  source     the image to recolor (may be {@code null}).
+     * @param  source     the image to recolor (can be {@code null}).
      * @param  modifiers  modifiers for narrowing the range of values, or {@code null} if none.
      * @return the image with color ramp stretched between the automatic bounds,
      *         or {@code image} unchanged if the operation can not be applied on the given image.
+     *
+     * @see ImageProcessor#stretchColorRamp(RenderedImage, Map)
      */
-    static RenderedImage create(final ImageProcessor processor, final RenderedImage source, final Map<String,?> modifiers) {
-        RenderedImage statsSource   = source;
-        Statistics[]  statsAllBands = null;
-        Statistics    statistics    = null;
-        double        deviations    = Double.POSITIVE_INFINITY;
-        if (modifiers != null) {
-            Object value = modifiers.get("multStdDev");
-            if (value instanceof Number) {
-                deviations = ((Number) value).doubleValue();
-                ArgumentChecks.ensureStrictlyPositive("multStdDev", deviations);
-            }
-            value = modifiers.get("statistics");
-            if (value instanceof RenderedImage) {
-                statsSource = (RenderedImage) value;
-            } else if (value instanceof Statistics) {
-                statistics = (Statistics) value;
-            } else if (value instanceof Statistics[]) {
-                statsAllBands = (Statistics[]) value;
-            }
-        }
+    static RenderedImage stretchColorRamp(final ImageProcessor processor, final RenderedImage source, final Map<String,?> modifiers) {
         final int visibleBand = ImageUtilities.getVisibleBand(source);
         if (visibleBand >= 0) {
-            if (statistics == null) {
-                if (statsAllBands == null) {
-                    final Object areaOfInterest = modifiers.get("areaOfInterest");
-                    statsAllBands = processor.getStatistics(statsSource,
-                            (areaOfInterest instanceof Shape) ? (Shape) areaOfInterest : null);
+            RenderedImage statsSource   = source;
+            Statistics[]  statsAllBands = null;
+            Statistics    statistics    = null;
+            double        minimum       = Double.NaN;
+            double        maximum       = Double.NaN;
+            double        deviations    = Double.POSITIVE_INFINITY;
+            /*
+             * Extract and validate parameter values.
+             * No calculation started at this stage.
+             */
+            if (modifiers != null) {
+                final Object minValue = modifiers.get("minimum");
+                if (minValue instanceof Number) {
+                    minimum = ((Number) minValue).doubleValue();
                 }
-                if (statsAllBands != null && visibleBand < statsAllBands.length) {
-                    statistics = statsAllBands[visibleBand];
+                final Object maxValue = modifiers.get("maximum");
+                if (maxValue instanceof Number) {
+                    maximum = ((Number) maxValue).doubleValue();
+                }
+                if (minimum >= maximum) {
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minValue, maxValue));
+                }
+                Object value = modifiers.get("multStdDev");
+                if (value instanceof Number) {
+                    deviations = ((Number) value).doubleValue();
+                    ArgumentChecks.ensureStrictlyPositive("multStdDev", deviations);
+                }
+                value = modifiers.get("statistics");
+                if (value instanceof RenderedImage) {
+                    statsSource = (RenderedImage) value;
+                } else if (value instanceof Statistics) {
+                    statistics = (Statistics) value;
+                } else if (value instanceof Statistics[]) {
+                    statsAllBands = (Statistics[]) value;
                 }
             }
-            if (statistics != null) {
-                deviations *= statistics.standardDeviation(true);
-                final double mean    = statistics.mean();
-                final double minimum = Math.max(statistics.minimum(), mean - deviations);
-                final double maximum = Math.min(statistics.maximum(), mean + deviations);
-                if (minimum < maximum) {
-                    return create(source, visibleBand, minimum, maximum);
+            /*
+             * If minimum and maximum values were not explicitly specified,
+             * compute them from statistics.
+             */
+            if (Double.isNaN(minimum) || Double.isNaN(maximum)) {
+                if (statistics == null) {
+                    if (statsAllBands == null) {
+                        final Object areaOfInterest = modifiers.get("areaOfInterest");
+                        statsAllBands = processor.getStatistics(statsSource,
+                                (areaOfInterest instanceof Shape) ? (Shape) areaOfInterest : null);
+                    }
+                    if (statsAllBands != null && visibleBand < statsAllBands.length) {
+                        statistics = statsAllBands[visibleBand];
+                    }
                 }
+                if (statistics != null) {
+                    deviations *= statistics.standardDeviation(true);
+                    final double mean = statistics.mean();
+                    if (Double.isNaN(minimum)) minimum = Math.max(statistics.minimum(), mean - deviations);
+                    if (Double.isNaN(maximum)) maximum = Math.min(statistics.maximum(), mean + deviations);
+                }
+            }
+            /*
+             * Wraps the given image with its colors ramp scaled between the given bounds. If the given image is
+             * already using a color ramp for the given range of values, then that image is returned unchanged.
+             */
+            if (minimum < maximum) {
+                final SampleModel sm     = source.getSampleModel();
+                final ColorModel  colors = ColorModelFactory.createGrayScale(sm.getDataType(), sm.getNumBands(), visibleBand, minimum, maximum);
+                RenderedImage     parent = source;
+                for (;;) {
+                    if (colors.equals(parent.getColorModel())) {
+                        return parent;
+                    } else if (parent instanceof RecoloredImage) {
+                        parent = ((RecoloredImage) parent).source;
+                    } else {
+                        break;
+                    }
+                }
+                return ImageProcessor.unique(new RecoloredImage(parent, colors));
             }
         }
         return source;
     }
 
     /**
-     * Implementation of {@link ImageProcessor#recolor(RenderedImage, int[])}.
+     * Changes the color ramp of the given image. The given image must use an {@link IndexColorModel}
+     * with the same number of colors than the given {@code ARGB} array length.
+     *
+     * @param  source  the image for which to replace the color model.
+     * @param  ARGB    Alpha=Red=Green=Blue codes of new color map.
+     * @return image using the given color map.
+     *
+     * @see ImageProcessor#recolor(RenderedImage, int[])
      */
     static RenderedImage recolor(final RenderedImage source, final int[] ARGB) {
         String expected, actual;                                // To be used in case of error.

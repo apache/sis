@@ -17,9 +17,10 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Map;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
+import java.util.AbstractMap;
 import java.util.function.Function;
 import java.awt.Transparency;
 import java.awt.Color;
@@ -30,7 +31,6 @@ import java.awt.image.PackedColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import org.apache.sis.coverage.Category;
-import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
@@ -56,7 +56,7 @@ public final class ColorModelFactory {
 
     /**
      * Applies a gray scale to quantitative category and transparent colors to qualitative categories.
-     * This is a possible argument for {@link #createColorModel(SampleDimension[], int, int, Function)}.
+     * This is a possible argument for {@link #createColorModel(int, int, int, List, Function)}.
      */
     public static final Function<Category,Color[]> GRAYSCALE =
             (category) -> category.isQuantitative() ? new Color[] {Color.BLACK, Color.WHITE} : null;
@@ -101,6 +101,7 @@ public final class ColorModelFactory {
 
     /**
      * The minimum (inclusive) and maximum (exclusive) sample values.
+     * This is used only if {@link #type} is not {@link DataBuffer#TYPE_BYTE} or {@link DataBuffer#TYPE_USHORT}.
      */
     private final double minimum, maximum;
 
@@ -150,22 +151,22 @@ public final class ColorModelFactory {
      * Constructs a new {@code ColorModelFactory}. This object will be used as a key in a {@link Map},
      * so this is not really a {@code ColorModelFactory} but a kind of "{@code ColorModelKey}" instead.
      * However, since this constructor is private, user does not need to know that.
+     *
+     * @see #createColorModel(Map.Entry[], int, int, int)
      */
-    private ColorModelFactory(final Map<? extends NumberRange<?>, ? extends Color[]> categories,
+    private ColorModelFactory(final Map.Entry<NumberRange<?>, Color[]>[] colors,
                               final int visibleBand, final int numBands, final int type)
     {
         this.visibleBand = visibleBand;
         this.numBands    = numBands;
         this.type        = type;
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        final Map.Entry<NumberRange<?>, Color[]>[] entries = categories.entrySet().toArray(new Map.Entry[categories.size()]);
-        Arrays.sort(entries, RANGE_COMPARATOR);
+        Arrays.sort(colors, RANGE_COMPARATOR);
         int     count   = 0;
-        int[]   starts  = new int[entries.length + 1];
-        int[][] codes   = new int[entries.length][];
+        int[]   starts  = new int[colors.length + 1];
+        int[][] codes   = new int[colors.length][];
         double  minimum = Double.POSITIVE_INFINITY;
         double  maximum = Double.NEGATIVE_INFINITY;
-        for (final Map.Entry<NumberRange<?>, Color[]> entry : entries) {
+        for (final Map.Entry<NumberRange<?>, Color[]> entry : colors) {
             final NumberRange<?> range = entry.getKey();
             final double min = range.getMinDouble(true);
             final double max = range.getMaxDouble(false);
@@ -225,6 +226,9 @@ public final class ColorModelFactory {
         /*
          * If the requested type is any type not supported by IndexColorModel,
          * fallback on a generic (but very slow!) color model.
+         *
+         * TODO: current implementation ignores ARGB codes.
+         *       But a future implementation may use them.
          */
         if (type != DataBuffer.TYPE_BYTE && type != DataBuffer.TYPE_USHORT) {
             return createGrayScale(type, numBands, visibleBand, minimum, maximum);
@@ -303,27 +307,28 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Returns a color model interpolated for the ranges in the given sample dimensions.
-     * This method builds up the color model from each category in the visible sample dimension.
+     * Returns a color model interpolated for the ranges in the given categories.
      * Returned instances of {@link ColorModel} are shared among all callers in the running virtual machine.
      *
-     * @param  bands        the sample dimensions for which to create a color model.
-     * @param  visibleBand  the band to be made visible (usually 0). All other bands (if any) will be ignored.
      * @param  type         the color model type. One of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_USHORT},
-     *                      {@link DataBuffer#TYPE_INT}, {@link DataBuffer#TYPE_FLOAT} or {@link DataBuffer#TYPE_DOUBLE}.
+     *                      {@link DataBuffer#TYPE_SHORT}, {@link DataBuffer#TYPE_INT}, {@link DataBuffer#TYPE_FLOAT}
+     *                      or {@link DataBuffer#TYPE_DOUBLE}.
+     * @param  numBands     number of bands.
+     * @param  visibleBand  the band to be made visible (usually 0). All other bands (if any) will be ignored.
+     * @param  categories   description of value ranges in the visible band.
      * @param  colors       the colors to use for each category. The function may return {@code null}, which means transparent.
      * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
      */
-    public static ColorModel createColorModel(final SampleDimension[] bands,
-            final int visibleBand, final int type, Function<Category,Color[]> colors)
+    public static ColorModel createColorModel(final int type, final int numBands, final int visibleBand,
+                                final List<Category> categories, final Function<Category,Color[]> colors)
     {
-        ArgumentChecks.ensureNonNull("bands",  bands);
-        ArgumentChecks.ensureNonNull("colors", colors);
-        final Map<NumberRange<?>, Color[]> ranges = new LinkedHashMap<>();
-        for (final Category category : bands[visibleBand].getCategories()) {
-            ranges.put(category.getSampleRange(), colors.apply(category));
+        @SuppressWarnings({"unchecked", "rawtypes"})               // Generic array creation.
+        final Map.Entry<NumberRange<?>, Color[]>[] ranges = new Map.Entry[categories.size()];
+        for (int i=0; i<ranges.length; i++) {
+            final Category category = categories.get(i);
+            ranges[i] = new AbstractMap.SimpleImmutableEntry<>(category.getSampleRange(), colors.apply(category));
         }
-        return createColorModel(ranges, visibleBand, bands.length, type);
+        return createColorModel(ranges, visibleBand, numBands, type);
     }
 
     /**
@@ -331,28 +336,28 @@ public final class ColorModelFactory {
      * This method builds up the color model from each set of colors associated to ranges in the given map.
      * Returned instances of {@link ColorModel} are shared among all callers in the running virtual machine.
      *
-     * @param  categories   the colors associated to ranges of sample values.
+     * <p>The given ranges are rounded to nearest integers and clamped to the range of 32 bits integer values.
+     * The associated arrays of colors do not need to have a length equals to {@code upper} − {@code lower};
+     * color interpolations will be applied as needed.</p>
+     *
+     * @param  colors       the colors associated to ranges of sample values.
      * @param  visibleBand  the band to be made visible (usually 0). All other bands, if any will be ignored.
      * @param  numBands     the number of bands for the color model (usually 1). The returned color model will render only
      *                      the {@code visibleBand} and ignore the others, but the existence of all {@code numBands} will
      *                      be at least tolerated. Supplemental bands, even invisible, are useful for processing.
      * @param  type         the color model type. One of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_USHORT},
-     *                      {@link DataBuffer#TYPE_INT}, {@link DataBuffer#TYPE_FLOAT} or {@link DataBuffer#TYPE_DOUBLE}.
+     *                      {@link DataBuffer#TYPE_SHORT}, {@link DataBuffer#TYPE_INT}, {@link DataBuffer#TYPE_FLOAT}
+     *                      or {@link DataBuffer#TYPE_DOUBLE}.
      * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
      */
-    public static ColorModel createColorModel(final Map<? extends NumberRange<?>, ? extends Color[]> categories,
-            final int visibleBand, final int numBands, final int type)
+    public static ColorModel createColorModel(final Map.Entry<NumberRange<?>, Color[]>[] colors,
+                                              final int visibleBand, final int numBands, final int type)
     {
-        ArgumentChecks.ensureNonNull("categories", categories);
+        ArgumentChecks.ensureNonNull("colors", colors);
         ArgumentChecks.ensureBetween("visibleBand", 0, numBands - 1, visibleBand);
-        final ColorModelFactory key = new ColorModelFactory(categories, visibleBand, numBands, type);
+        final ColorModelFactory key = new ColorModelFactory(colors, visibleBand, numBands, type);
         synchronized (PIECEWISES) {
-            ColorModel model = PIECEWISES.get(key);
-            if (model == null) {
-                model = key.createColorModel();
-                PIECEWISES.put(key, model);
-            }
-            return model;
+            return PIECEWISES.computeIfAbsent(key, ColorModelFactory::createColorModel);
         }
     }
 

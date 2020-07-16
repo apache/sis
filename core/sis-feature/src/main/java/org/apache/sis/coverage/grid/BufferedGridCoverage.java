@@ -16,7 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.Collection;
+import java.util.List;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferDouble;
@@ -106,7 +106,7 @@ public class BufferedGridCoverage extends GridCoverage {
      * @throws IllegalGridGeometryException if the grid extent is larger than the data buffer capacity.
      * @throws ArithmeticException if the number of cells is larger than 64 bits integer capacity.
      */
-    public BufferedGridCoverage(final GridGeometry domain, final Collection<? extends SampleDimension> range, final DataBuffer data) {
+    public BufferedGridCoverage(final GridGeometry domain, final List<? extends SampleDimension> range, final DataBuffer data) {
         super(domain, range);
         this.data = data;
         ArgumentChecks.ensureNonNull("data", data);
@@ -147,7 +147,7 @@ public class BufferedGridCoverage extends GridCoverage {
      * @param  dataType  one of {@code DataBuffer.TYPE_*} constants, the native data type used to store the coverage values.
      * @throws ArithmeticException if the grid size is too large.
      */
-    public BufferedGridCoverage(final GridGeometry grid, final Collection<? extends SampleDimension> bands, final int dataType) {
+    public BufferedGridCoverage(final GridGeometry grid, final List<? extends SampleDimension> bands, final int dataType) {
         super(grid, bands);
         final int n = Math.toIntExact(getSampleCount(grid.getExtent(), bands.size()));
         switch (dataType) {

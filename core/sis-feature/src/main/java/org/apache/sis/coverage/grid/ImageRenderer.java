@@ -245,6 +245,7 @@ public class ImageRenderer {
      *
      * @see #addProperty(String, Object)
      */
+    @SuppressWarnings("UseOfObsoleteCollectionType")
     private Hashtable<String,Object> properties;
 
     /**
@@ -417,6 +418,7 @@ public class ImageRenderer {
      *
      * @since 1.1
      */
+    @SuppressWarnings("UseOfObsoleteCollectionType")
     public void addProperty(final String key, final Object value) {
         ArgumentChecks.ensureNonNull("key",   key);
         ArgumentChecks.ensureNonNull("value", value);
@@ -617,10 +619,11 @@ public class ImageRenderer {
      * @throws RasterFormatException if a call to a {@link WritableRaster} factory method failed.
      * @throws ArithmeticException if a property of the image to construct exceeds the capacity of 32 bits integers.
      */
+    @SuppressWarnings("UseOfObsoleteCollectionType")
     public RenderedImage image() {
         final WritableRaster raster = raster();
-        final ColorModel colors = ColorModelFactory.createColorModel(bands, visibleBand,
-                                    buffer.getDataType(), ColorModelFactory.GRAYSCALE);
+        final ColorModel colors = ColorModelFactory.createColorModel(buffer.getDataType(), bands.length, visibleBand,
+                                                    bands[visibleBand].getCategories(), ColorModelFactory.GRAYSCALE);
 
         SliceGeometry supplier = null;
         if (imageGeometry == null) {
@@ -663,6 +666,7 @@ public class ImageRenderer {
         /**
          * Creates a new buffered image wrapping the given raster.
          */
+        @SuppressWarnings("UseOfObsoleteCollectionType")
         Untiled(final ColorModel colors, final WritableRaster raster, final Hashtable<?,?> properties,
                 final GridGeometry geometry, final SliceGeometry supplier)
         {

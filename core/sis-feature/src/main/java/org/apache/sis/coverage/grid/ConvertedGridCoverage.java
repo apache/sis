@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
@@ -30,8 +29,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.internal.coverage.j2d.BandedSampleConverter;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.measure.NumberRange;
 
@@ -269,8 +266,7 @@ final class ConvertedGridCoverage extends GridCoverage {
          * That image should never be null. But if an implementation wants to do so, respect that.
          */
         if (image != null) {
-            final ColorModel colorModel = createColorModel(Math.max(0, ImageUtilities.getVisibleBand(image)), dataType);
-            image = BandedSampleConverter.create(image, null, dataType, colorModel, getRanges(), converters);
+            return convert(image, dataType, converters);
         }
         return image;
     }

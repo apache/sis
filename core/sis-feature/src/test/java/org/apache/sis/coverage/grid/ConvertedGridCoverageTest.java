@@ -63,7 +63,7 @@ public final strictfp class ConvertedGridCoverageTest extends TestCase {
                 new AffineTransform2D(1, 0, 0, 1, 1, 0), HardCodedCRS.WGS84);
 
         final BufferedGridCoverage coverage = new BufferedGridCoverage(
-                grid, Collections.singleton(sd), DataBuffer.TYPE_SHORT);
+                grid, Collections.singletonList(sd), DataBuffer.TYPE_SHORT);
 
         coverage.data.setElem(0, -1);
         coverage.data.setElem(1,  3);

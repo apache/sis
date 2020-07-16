@@ -447,9 +447,9 @@ public class CoverageCanvas extends MapCanvasAWT {
         private RenderedImage resampledImage;
 
         /**
-         * The resampled image after color ramp stretching or other operation applied.
+         * The resampled image after color ramp stretching and/or index color model applied.
          */
-        private RenderedImage filteredImage;
+        private RenderedImage recoloredImage;
 
         /**
          * The filtered image with tiles computed in advance. The set of prefetched
@@ -486,7 +486,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             displayBounds      = canvas.getDisplayBounds();
             if (data.validateCRS(objectiveCRS)) {
                 resampledImage = canvas.resampledImages.get(Stretching.NONE);
-                filteredImage  = canvas.resampledImages.get(data.selectedDerivative);
+                recoloredImage = canvas.resampledImages.get(data.selectedDerivative);
             }
         }
 
@@ -523,14 +523,14 @@ public class CoverageCanvas extends MapCanvasAWT {
                             & ~(AffineTransform.TYPE_IDENTITY | AffineTransform.TYPE_TRANSLATION)) == 0;
                 }
                 if (!isResampled) {
-                    filteredImage = null;
+                    recoloredImage = null;
                     resampledImage = data.resample(objectiveCRS, objectiveToDisplay);
                     resampledToDisplay = data.getTransform(objectiveToDisplay);
                 }
-                if (filteredImage == null) {
-                    filteredImage = data.filter(resampledImage, displayBounds);
+                if (recoloredImage == null) {
+                    recoloredImage = data.recolor(resampledImage);
                 }
-                prefetchedImage = data.prefetch(filteredImage, resampledToDisplay, displayBounds);
+                prefetchedImage = data.prefetch(recoloredImage, resampledToDisplay, displayBounds);
             } finally {
                 LogHandler.loadingStop(id);
             }
@@ -571,15 +571,15 @@ public class CoverageCanvas extends MapCanvasAWT {
             resampledImages.clear();
             resampledImages.put(Stretching.NONE, newValue);
         }
-        resampledImages.put(data.selectedDerivative, worker.filteredImage);
+        resampledImages.put(data.selectedDerivative, worker.recoloredImage);
         /*
          * Notify the "Image properties" tab that the image changed.
          */
         if (imageProperty != null) {
-            imageProperty.setImage(worker.filteredImage, worker.getVisibleImageBounds());
+            imageProperty.setImage(worker.recoloredImage, worker.getVisibleImageBounds());
         }
         if (statusBar != null) {
-            final Object value = worker.filteredImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY);
+            final Object value = worker.recoloredImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY);
             Quantity<Length> accuracy = null;
             if (value instanceof Quantity<?>[]) {
                 for (final Quantity<?> q : (Quantity<?>[]) value) {

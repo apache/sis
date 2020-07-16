@@ -24,7 +24,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import java.awt.geom.Rectangle2D;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -258,16 +257,15 @@ final class RenderingData implements Cloneable {
      * In current implementation, the only operations are stretching the color ramp.
      *
      * @param  resampledImage  the image computed by {@link #resample(CoordinateReferenceSystem, LinearTransform)}.
-     * @param  displayBounds   size and location of the display device, in pixel units.
      * @return image with operation applied and color ramp stretched. May be the same instance than given image.
      */
-    final RenderedImage filter(RenderedImage resampledImage, final Rectangle2D displayBounds) {
+    final RenderedImage recolor(final RenderedImage resampledImage) {
         if (selectedDerivative != Stretching.NONE) {
             final Map<String,Object> modifiers = new HashMap<>(4);
             /*
              * Select the original image as the source of statistics. It saves computation time (no need
              * to recompute the statistics when the projection is changed) and provides more stable visual
-             * output (color ramp computed from same standard deviation in "automatic" mode).
+             * output when standard deviations are used for configuring the color ramp.
              */
             if (statistics == null) {
                 statistics = processor.getStatistics(data, null);
@@ -285,20 +283,20 @@ final class RenderingData implements Cloneable {
      * Computes immediately, possibly using many threads, the tiles that are going to be displayed.
      * The returned instance should be used only for current rendering event; it should not be cached.
      *
-     * @param  filteredImage       the image computed by {@link #filter(RenderedImage, Rectangle2D)}.
+     * @param  recoloredImage      the image computed by {@link #recolor(RenderedImage)}.
      * @param  resampledToDisplay  the transform computed by {@link #getTransform(LinearTransform)}.
      * @param  displayBounds       size and location of the display device, in pixel units.
      * @return a temporary image with tiles intersecting the display region already computed.
      */
-    final RenderedImage prefetch(final RenderedImage filteredImage, final AffineTransform resampledToDisplay,
+    final RenderedImage prefetch(final RenderedImage recoloredImage, final AffineTransform resampledToDisplay,
                                  final Envelope2D displayBounds)
     {
         try {
-            return processor.prefetch(filteredImage, (Rectangle) AffineTransforms2D.transform(
+            return processor.prefetch(recoloredImage, (Rectangle) AffineTransforms2D.transform(
                         resampledToDisplay.createInverse(), displayBounds, new Rectangle()));
         } catch (NoninvertibleTransformException e) {
             recoverableException(e);
-            return filteredImage;
+            return recoloredImage;
         }
     }
 

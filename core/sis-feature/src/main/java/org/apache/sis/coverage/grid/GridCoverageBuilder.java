@@ -432,7 +432,7 @@ public class GridCoverageBuilder {
      */
     public GridCoverage build() throws IllegalStateException {
         GridGeometry grid = domain;                                 // May be replaced by an instance with extent.
-        Collection<? extends SampleDimension> bands = ranges;       // May be replaced by a non-null value.
+        List<? extends SampleDimension> bands = ranges;             // May be replaced by a non-null value.
         /*
          * If not already done, create the image from the raster. We try to create the most standard objects
          * when possible: a BufferedImage (from Java2D), then later a GridCoverage2D (from SIS public API).
@@ -462,9 +462,8 @@ public class GridCoverageBuilder {
                  */
                 bands = GridCoverage2D.defaultIfAbsent(bands, null, raster.getNumBands());
                 final int dataType = raster.getSampleModel().getDataType();
-                final ColorModel colors = ColorModelFactory.createColorModel(
-                        bands.toArray(new SampleDimension[bands.size()]),
-                        visibleBand, dataType, ColorModelFactory.GRAYSCALE);
+                final ColorModel colors = ColorModelFactory.createColorModel(dataType, bands.size(), visibleBand,
+                                            bands.get(visibleBand).getCategories(), ColorModelFactory.GRAYSCALE);
                 /*
                  * Create an image from the raster. We favor BufferedImage instance when possible,
                  * and fallback on TiledImage only if the BufferedImage can not be created.

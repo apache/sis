@@ -17,7 +17,6 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.List;
-import java.util.Collection;
 import java.util.Locale;
 import java.util.Optional;
 import java.awt.image.ColorModel;
@@ -26,12 +25,15 @@ import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.internal.coverage.j2d.BandedSampleConverter;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -91,7 +93,7 @@ public abstract class GridCoverage {
      * @throws NullPointerException if an argument is {@code null} or if the list contains a null element.
      * @throws IllegalArgumentException if the {@code range} list is empty.
      */
-    protected GridCoverage(final GridGeometry domain, final Collection<? extends SampleDimension> ranges) {
+    protected GridCoverage(final GridGeometry domain, final List<? extends SampleDimension> ranges) {
         ArgumentChecks.ensureNonNull ("domain", domain);
         ArgumentChecks.ensureNonEmpty("ranges", ranges);
         gridGeometry = domain;
@@ -157,7 +159,7 @@ public abstract class GridCoverage {
     /**
      * Returns the range of values in each sample dimension, or {@code null} if none.
      */
-    final NumberRange<?>[] getRanges() {
+    private NumberRange<?>[] getRanges() {
         NumberRange<?>[] ranges = null;
         for (int i=0; i<sampleDimensions.length; i++) {
             final Optional<NumberRange<?>> r = sampleDimensions[i].getSampleRange();
@@ -177,17 +179,6 @@ public abstract class GridCoverage {
      */
     int getDataType() {
         return DataBuffer.TYPE_UNDEFINED;
-    }
-
-    /**
-     * Creates a color model for the expected range of sample values.
-     *
-     * @param  visibleBand  the band to be made visible (usually 0). All other bands (if any) will be ignored.
-     * @param  dataType     the color model type as one {@link java.awt.image.DataBuffer} constants.
-     * @return proposed color model, or {@code null} if none.
-     */
-    final ColorModel createColorModel(final int visibleBand, final int dataType) {
-        return ColorModelFactory.createColorModel(sampleDimensions, visibleBand, dataType, ColorModelFactory.GRAYSCALE);
     }
 
     /**
@@ -242,6 +233,22 @@ public abstract class GridCoverage {
             throw new CannotEvaluateException(e.getMessage(), e);
         }
         return view;
+    }
+
+    /**
+     * Creates a new image of the given data type which will compute values using the given converters.
+     *
+     * @param  source      the image for which to convert sample values.
+     * @param  dataType    the type of this image resulting from conversion of given image.
+     * @param  converters  the transfer functions to apply on each band of the source image.
+     * @return the image which compute converted values from the given source.
+     */
+    final RenderedImage convert(final RenderedImage source, final int dataType, final MathTransform1D[] converters) {
+        final int visibleBands = Math.max(0, ImageUtilities.getVisibleBand(source));
+        final ColorModel cm = ColorModelFactory.createColorModel(dataType, sampleDimensions.length, visibleBands,
+                                    sampleDimensions[visibleBands].getCategories(), ColorModelFactory.GRAYSCALE);
+
+       return BandedSampleConverter.create(source, null, dataType, cm, getRanges(), converters);
     }
 
     /**

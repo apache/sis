@@ -448,53 +448,55 @@ public class ImageProcessor implements Cloneable {
      */
     public Statistics[] getStatistics(final RenderedImage source, final Shape areaOfInterest) {
         ArgumentChecks.ensureNonNull("source", source);
-        Object property = source.getProperty(StatisticsCalculator.STATISTICS_KEY);
-        if (!(property instanceof Statistics[])) {
-            final boolean parallel, failOnException;
-            final Filter errorListener;
-            synchronized (this) {
-                parallel        = parallel(source);
-                failOnException = failOnException();
-                errorListener   = errorListener();
+        if (areaOfInterest == null) {
+            final Object property = source.getProperty(StatisticsCalculator.STATISTICS_KEY);
+            if (property instanceof Statistics[]) {
+                return (Statistics[]) property;
             }
-            /*
-             * No need to check if the given source is already an instance of StatisticsCalculator.
-             * The way AnnotatedImage cache mechanism is implemented, if statistics result already
-             * exist, they will be used.
-             */
-            final AnnotatedImage calculator = new StatisticsCalculator(source, areaOfInterest, parallel, failOnException);
-            property = calculator.getProperty(StatisticsCalculator.STATISTICS_KEY);
-            calculator.logAndClearError(ImageProcessor.class, "getStatistics", errorListener);
         }
+        final boolean parallel, failOnException;
+        final Filter errorListener;
+        synchronized (this) {
+            parallel        = parallel(source);
+            failOnException = failOnException();
+            errorListener   = errorListener();
+        }
+        /*
+         * No need to check if the given source is already an instance of StatisticsCalculator.
+         * The way AnnotatedImage cache mechanism is implemented, if statistics results already
+         * exist, they will be used.
+         */
+        final AnnotatedImage calculator = new StatisticsCalculator(source, areaOfInterest, parallel, failOnException);
+        final Object property = calculator.getProperty(StatisticsCalculator.STATISTICS_KEY);
+        calculator.logAndClearError(ImageProcessor.class, "getStatistics", errorListener);
         return (Statistics[]) property;
     }
 
     /**
      * Returns an image with statistics (minimum, maximum, mean, standard deviation) on each bands.
-     * The property value will be computed when first requested (it is not computed by this method).
+     * The property value will be computed when first requested (it is not computed immediately by this method).
      *
      * <p>If {@code areaOfInterest} is {@code null}, then the default is as below:</p>
      * <ul>
      *   <li>If the {@value StatisticsCalculator#STATISTICS_KEY} property value exists in the given image,
      *       then that image is returned as-is. Note that the existing property value is not necessarily
      *       statistics for the whole image.
-     *       They are whatever statistics the property provided considered as representative.</li>
+     *       They are whatever statistics the property provider considers as representative.</li>
      *   <li>Otherwise an image augmented with a {@value StatisticsCalculator#STATISTICS_KEY} property value
      *       is returned.</li>
      * </ul>
      *
-     * @param  source          the image for which to provide statistics (may be {@code null}).
+     * @param  source          the image for which to provide statistics.
      * @param  areaOfInterest  pixel coordinates of the area of interest, or {@code null} for the default.
      * @return an image with an {@value StatisticsCalculator#STATISTICS_KEY} property.
-     *         May be {@code image} if the given argument is null or already has a statistics property.
+     *         May be {@code image} if the given argument already has a statistics property.
      *
      * @see #getStatistics(RenderedImage, Shape)
      * @see StatisticsCalculator#STATISTICS_KEY
      */
     public RenderedImage statistics(final RenderedImage source, final Shape areaOfInterest) {
-        if (source == null || (areaOfInterest == null &&
-                ArraysExt.contains(source.getPropertyNames(), StatisticsCalculator.STATISTICS_KEY)))
-        {
+        ArgumentChecks.ensureNonNull("source", source);
+        if (areaOfInterest == null && ArraysExt.contains(source.getPropertyNames(), StatisticsCalculator.STATISTICS_KEY)) {
             return source;
         }
         final boolean parallel, failOnException;
@@ -506,36 +508,18 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Returns an image with the same sample values than the given image, but with its color ramp stretched between the specified bounds.
-     * For example in a gray scale image, pixels with the minimum value will be black and pixels with the maximum value will be white.
-     * This operation is a kind of <cite>tone mapping</cite>, a technique used in image processing to map one set of colors to another.
-     * The mapping applied by this method is conceptually a simple linear transform (a scale and an offset)
-     * applied on sample values before they are mapped to their colors.
-     *
-     * <p>Current implementation can stretch only gray scale images (it may be extended to indexed color models
-     * in a future version). If this method can not stretch the color ramp, for example because the given image
-     * is an RGB image, then the image is returned unchanged.</p>
-     *
-     * @param  source    the image to recolor (may be {@code null}).
-     * @param  minimum   the sample value to display with the first color of the color ramp (black in a grayscale image).
-     * @param  maximum   the sample value to display with the last color of the color ramp (white in a grayscale image).
-     * @return the image with color ramp stretched between the given bounds, or {@code image} unchanged if the operation
-     *         can not be applied on the given image.
-     */
-    public RenderedImage stretchColorRamp(final RenderedImage source, final double minimum, final double maximum) {
-        ArgumentChecks.ensureFinite("minimum", minimum);
-        ArgumentChecks.ensureFinite("maximum", maximum);
-        return RecoloredImage.create(source, minimum, maximum);
-    }
-
-    /**
      * Returns an image with the same sample values than the given image, but with its color ramp stretched between
-     * automatically determined bounds. This is the same operation than {@link #stretchColorRamp(RenderedImage,
-     * double, double) stretchColorRamp(…)} except that the minimum and maximum values are determined by
-     * {@linkplain #getStatistics(RenderedImage, Shape) statistics} on the image:
-     * a range of value is determined first from the {@linkplain Statistics#minimum() minimum} and
-     * {@linkplain Statistics#maximum() maximum} values found in the image, optionally narrowed to an interval
-     * of some {@linkplain Statistics#standardDeviation(boolean) standard deviations} around the mean value.
+     * specified or inferred bounds. For example in a gray scale image, pixels with the minimum value will be black
+     * and pixels with the maximum value will be white. This operation is a kind of <cite>tone mapping</cite>,
+     * a technique used in image processing to map one set of colors to another. The mapping applied by this method
+     * is conceptually a simple linear transform (a scale and an offset) applied on sample values before they are
+     * mapped to their colors.
+     *
+     * <p>The minimum and maximum value can be either specified explicitly,
+     * or determined from {@linkplain #getStatistics(RenderedImage, Shape) statistics} on the image.
+     * In the later case a range of value is determined first from the {@linkplain Statistics#minimum() minimum}
+     * and {@linkplain Statistics#maximum() maximum} values found in the image, optionally narrowed to an interval
+     * of some {@linkplain Statistics#standardDeviation(boolean) standard deviations} around the mean value.</p>
      *
      * <p>Narrowing with standard deviations is useful for data having a Gaussian distribution, as often seen in nature.
      * In such distribution, 99.9% of the data are between the mean ± 3×<var>standard deviation</var>, but some values
@@ -555,6 +539,14 @@ public class ImageProcessor implements Cloneable {
      *     <th>Purpose</th>
      *     <th>Values</th>
      *   </tr><tr>
+     *     <td>{@code "minimum"}</td>
+     *     <td>Minimum value (omit for computing from statistics).</td>
+     *     <td>{@link Number}</td>
+     *   </tr><tr>
+     *     <td>{@code "maximum"}</td>
+     *     <td>Maximum value (omit for computing from statistics).</td>
+     *     <td>{@link Number}</td>
+     *   </tr><tr>
      *     <td>{@code "multStdDev"}</td>
      *     <td>Multiple of the standard deviation.</td>
      *     <td>{@link Number} (typical values: 1.5, 2 or 3)</td>
@@ -569,18 +561,24 @@ public class ImageProcessor implements Cloneable {
      *   </tr>
      * </table>
      *
-     * @param  source     the image to recolor (may be {@code null}).
+     * <h4>Limitation</h4>
+     * Current implementation can stretch only gray scale images (it may be extended to indexed color models
+     * in a future version). If this method can not stretch the color ramp, for example because the given image
+     * is an RGB image, then the image is returned unchanged.
+     *
+     * @param  source     the image to recolor.
      * @param  modifiers  modifiers for narrowing the range of values, or {@code null} if none.
      * @return the image with color ramp stretched between the automatic bounds,
      *         or {@code image} unchanged if the operation can not be applied on the given image.
      */
     public RenderedImage stretchColorRamp(final RenderedImage source, final Map<String,?> modifiers) {
-        return RecoloredImage.create(this, source, modifiers);
+        ArgumentChecks.ensureNonNull("source", source);
+        return RecoloredImage.stretchColorRamp(this, source, modifiers);
     }
 
     /**
      * Changes the color ramp of the given image. The given image must use an {@link IndexColorModel}
-     * with the same number of colors than the given {@code ARGB} length.
+     * with the same number of colors than the given {@code ARGB} array length.
      *
      * @param  source  the image for which to replace the color model.
      * @param  ARGB    Alpha=Red=Green=Blue codes of new color map.

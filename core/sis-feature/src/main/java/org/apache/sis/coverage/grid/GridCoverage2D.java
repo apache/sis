@@ -19,7 +19,6 @@ package org.apache.sis.coverage.grid;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import java.text.NumberFormat;
@@ -30,7 +29,6 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
-import java.awt.image.ColorModel;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.NameFactory;
@@ -44,7 +42,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.coverage.j2d.BandedSampleConverter;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.collection.TableColumn;
@@ -151,8 +148,7 @@ public class GridCoverage2D extends GridCoverage {
     {
         super(source.gridGeometry, range);
         final int dataType = ConvertedGridCoverage.getDataType(range, isConverted, source);
-        final ColorModel colorModel = createColorModel(Math.max(0, ImageUtilities.getVisibleBand(source.data)), dataType);
-        data           = BandedSampleConverter.create(source.data, null, dataType, colorModel, getRanges(), converters);
+        data           = convert(source.data, dataType, converters);
         gridToImageX   = source.gridToImageX;
         gridToImageY   = source.gridToImageY;
         xDimension     = source.xDimension;
@@ -208,7 +204,7 @@ public class GridCoverage2D extends GridCoverage {
      * @throws IllegalArgumentException if the image number of bands is not the same than the number of sample dimensions.
      * @throws ArithmeticException if the distance between grid location and image location exceeds the {@code long} capacity.
      */
-    public GridCoverage2D(GridGeometry domain, final Collection<? extends SampleDimension> range, RenderedImage data) {
+    public GridCoverage2D(GridGeometry domain, final List<? extends SampleDimension> range, RenderedImage data) {
         /*
          * The complex nesting of method calls below is a workaround for RFE #4093999
          * ("Relax constraint on placement of this()/super() call in constructors").
@@ -334,7 +330,7 @@ public class GridCoverage2D extends GridCoverage {
      *
      * @see GridGeometry#GridGeometry(GridExtent, Envelope)
      */
-    public GridCoverage2D(final Envelope domain, final Collection<? extends SampleDimension> range, final RenderedImage data) {
+    public GridCoverage2D(final Envelope domain, final List<? extends SampleDimension> range, final RenderedImage data) {
         super(createGridGeometry(data, domain), defaultIfAbsent(range, data, ImageUtilities.getNumBands(data)));
         this.data = data;   // Non-null verified by createGridGeometry(…, data).
         xDimension   = 0;
@@ -402,8 +398,8 @@ public class GridCoverage2D extends GridCoverage {
      * @param  numBands  the number of bands in the given image, or 0 if none.
      * @return the given list of sample dimensions if it was non-null, or a default list otherwise.
      */
-    static Collection<? extends SampleDimension> defaultIfAbsent(Collection<? extends SampleDimension> range,
-                                                                 final RenderedImage data, final int numBands)
+    static List<? extends SampleDimension> defaultIfAbsent(List<? extends SampleDimension> range,
+                                                           final RenderedImage data, final int numBands)
     {
         if (range == null) {
             final short[] names = (data != null) ? ImageUtilities.bandNames(data) : ArraysExt.EMPTY_SHORT;
@@ -430,7 +426,7 @@ public class GridCoverage2D extends GridCoverage {
      * However this class has a little bit of tolerance to missing sample model; it may happen
      * when the image is used only as a matrix storage.
      */
-    private static void verifyBandCount(final Collection<? extends SampleDimension> range, final RenderedImage data) {
+    private static void verifyBandCount(final List<? extends SampleDimension> range, final RenderedImage data) {
         if (range != null) {
             final SampleModel sm = data.getSampleModel();
             if (sm != null) {
