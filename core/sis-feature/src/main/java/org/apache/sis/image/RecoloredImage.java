@@ -60,6 +60,23 @@ final class RecoloredImage extends ImageAdapter {
     }
 
     /**
+     * Returns a recolored image with the given colors. This method may return
+     * an existing ancestor if one is found with the specified color model.
+     */
+    private static RenderedImage create(RenderedImage source, final ColorModel colors) {
+        for (;;) {
+            if (colors.equals(source.getColorModel())) {
+                return source;
+            } else if (source instanceof RecoloredImage) {
+                source = ((RecoloredImage) source).source;
+            } else {
+                break;
+            }
+        }
+        return ImageProcessor.unique(new RecoloredImage(source, colors));
+    }
+
+    /**
      * Returns an image with the same sample values than the given image, but with its color ramp stretched
      * between specified or inferred bounds. The mapping applied by this method is conceptually a linear
      * transform applied on sample values before they are mapped to their colors.
@@ -142,19 +159,9 @@ final class RecoloredImage extends ImageAdapter {
              * already using a color ramp for the given range of values, then that image is returned unchanged.
              */
             if (minimum < maximum) {
-                final SampleModel sm     = source.getSampleModel();
-                final ColorModel  colors = ColorModelFactory.createGrayScale(sm.getDataType(), sm.getNumBands(), visibleBand, minimum, maximum);
-                RenderedImage     parent = source;
-                for (;;) {
-                    if (colors.equals(parent.getColorModel())) {
-                        return parent;
-                    } else if (parent instanceof RecoloredImage) {
-                        parent = ((RecoloredImage) parent).source;
-                    } else {
-                        break;
-                    }
-                }
-                return ImageProcessor.unique(new RecoloredImage(parent, colors));
+                final SampleModel sm = source.getSampleModel();
+                return create(source, ColorModelFactory.createGrayScale(
+                        sm.getDataType(), sm.getNumBands(), visibleBand, minimum, maximum));
             }
         }
         return source;
@@ -176,13 +183,9 @@ final class RecoloredImage extends ImageAdapter {
         if (cm instanceof IndexColorModel) {
             final IndexColorModel icm = (IndexColorModel) cm;
             if (icm.getMapSize() == ARGB.length) {
-                final IndexColorModel newColors = ColorModelFactory.createIndexColorModel(ARGB,
-                                                    ImageUtilities.getNumBands(source),
-                                                    ImageUtilities.getVisibleBand(source), -1);
-                if (cm.equals(newColors)) {
-                    return source;
-                }
-                return ImageProcessor.unique(new RecoloredImage(source, newColors));
+                return create(source, ColorModelFactory.createIndexColorModel(
+                                        ImageUtilities.getNumBands(source),
+                                        ImageUtilities.getVisibleBand(source), ARGB, -1));
             } else {
                 expected = Strings.toIndexed("IndexColorModel", icm.getMapSize());
                 actual   = Strings.toIndexed("IndexColorModel", ARGB.length);

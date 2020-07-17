@@ -100,8 +100,33 @@ public final class ColorModelFactory {
                                        r2.getKey().getMinDouble(true));
 
     /**
+     * The color model type. One of the following types:
+     * <ul>
+     *   <li>{@link DataBuffer#TYPE_BYTE}  or {@link DataBuffer#TYPE_USHORT}: will create a {@link IndexColorModel} (unless grayscale).</li>
+     *   <li>{@link DataBuffer#TYPE_FLOAT} or {@link DataBuffer#TYPE_DOUBLE}: will create a {@link ComponentColorModel}.</li>
+     *   <li>{@link DataBuffer#TYPE_INT}: should create a {@link PackedColorModel} according {@link java.awt.image.Raster} javadoc
+     *        (for compatibility with {@code Raster.createPackedRaster(…)}), but we nevertheless create {@link ComponentColorModel}
+     *        for the 1-banded sample model created by {@link RasterFactory}.</li>
+     * </ul>
+     *
+     * @todo The user may want to set explicitly the number of bits each pixel occupies.
+     *       We need to think about an API to allows that.
+     */
+    private final int dataType;
+
+    /**
+     * The number of bands (usually 1) used for the construction of a single instance of a {@link ColorModel}.
+     */
+    private final int numBands;
+
+    /**
+     * The visible band (usually 0) used for the construction of a single instance of a {@link ColorModel}.
+     */
+    private final int visibleBand;
+
+    /**
      * The minimum (inclusive) and maximum (exclusive) sample values.
-     * This is used only if {@link #type} is not {@link DataBuffer#TYPE_BYTE} or {@link DataBuffer#TYPE_USHORT}.
+     * This is used only if {@link #dataType} is not {@link DataBuffer#TYPE_BYTE} or {@link DataBuffer#TYPE_USHORT}.
      */
     private final double minimum, maximum;
 
@@ -123,43 +148,18 @@ public final class ColorModelFactory {
     private final int[][] ARGB;
 
     /**
-     * The visible band (usually 0) used for the construction of a single instance of a {@link ColorModel}.
-     */
-    private final int visibleBand;
-
-    /**
-     * The number of bands (usually 1) used for the construction of a single instance of a {@link ColorModel}.
-     */
-    private final int numBands;
-
-    /**
-     * The color model type. One of the following types:
-     * <ul>
-     *   <li>{@link DataBuffer#TYPE_BYTE}  or {@link DataBuffer#TYPE_USHORT}: will create a {@link IndexColorModel} (unless grayscale).</li>
-     *   <li>{@link DataBuffer#TYPE_FLOAT} or {@link DataBuffer#TYPE_DOUBLE}: will create a {@link ComponentColorModel}.</li>
-     *   <li>{@link DataBuffer#TYPE_INT}: should create a {@link PackedColorModel} according {@link java.awt.image.Raster} javadoc
-     *        (for compatibility with {@code Raster.createPackedRaster(…)}), but we nevertheless create {@link ComponentColorModel}
-     *        for the 1-banded sample model created by {@link RasterFactory}.</li>
-     * </ul>
-     *
-     * @todo The user may want to set explicitly the number of bits each pixel occupies.
-     *       We need to think about an API to allows that.
-     */
-    private final int type;
-
-    /**
      * Constructs a new {@code ColorModelFactory}. This object will be used as a key in a {@link Map},
      * so this is not really a {@code ColorModelFactory} but a kind of "{@code ColorModelKey}" instead.
      * However, since this constructor is private, user does not need to know that.
      *
-     * @see #createColorModel(Map.Entry[], int, int, int)
+     * @see #createColorModel(int, int, int, Map.Entry[])
      */
-    private ColorModelFactory(final Map.Entry<NumberRange<?>, Color[]>[] colors,
-                              final int visibleBand, final int numBands, final int type)
+    private ColorModelFactory(final int dataType, final int numBands, final int visibleBand,
+                              final Map.Entry<NumberRange<?>,Color[]>[] colors)
     {
-        this.visibleBand = visibleBand;
+        this.dataType    = dataType;
         this.numBands    = numBands;
-        this.type        = type;
+        this.visibleBand = visibleBand;
         Arrays.sort(colors, RANGE_COMPARATOR);
         int     count   = 0;
         int[]   starts  = new int[colors.length + 1];
@@ -230,8 +230,8 @@ public final class ColorModelFactory {
          * TODO: current implementation ignores ARGB codes.
          *       But a future implementation may use them.
          */
-        if (type != DataBuffer.TYPE_BYTE && type != DataBuffer.TYPE_USHORT) {
-            return createGrayScale(type, numBands, visibleBand, minimum, maximum);
+        if (dataType != DataBuffer.TYPE_BYTE && dataType != DataBuffer.TYPE_USHORT) {
+            return createGrayScale(dataType, numBands, visibleBand, minimum, maximum);
         }
         /*
          * If there is no category, constructs a gray scale palette.
@@ -240,9 +240,9 @@ public final class ColorModelFactory {
         if (numBands == 1 && categoryCount <= 0) {
             final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
             final int[] nBits = {
-                DataBuffer.getDataTypeSize(type)
+                DataBuffer.getDataTypeSize(dataType)
             };
-            return unique(new ComponentColorModel(cs, nBits, false, true, Transparency.OPAQUE, type));
+            return unique(new ComponentColorModel(cs, nBits, false, true, Transparency.OPAQUE, dataType));
         }
         /*
          * Interpolates the colors in the color palette. Colors that do not fall
@@ -264,7 +264,7 @@ public final class ColorModelFactory {
                 expand(colors, colorMap, lower, upper);
             }
         }
-        return createIndexColorModel(colorMap, numBands, visibleBand, transparent);
+        return createIndexColorModel(numBands, visibleBand, colorMap, transparent);
     }
 
     /**
@@ -295,7 +295,7 @@ public final class ColorModelFactory {
         }
         if (other instanceof ColorModelFactory) {
             final ColorModelFactory that = (ColorModelFactory) other;
-            return this.type        == that.type
+            return this.dataType    == that.dataType
                 && this.numBands    == that.numBands
                 && this.visibleBand == that.visibleBand
                 && this.minimum     == that.minimum         // Should never be NaN.
@@ -310,7 +310,7 @@ public final class ColorModelFactory {
      * Returns a color model interpolated for the ranges in the given categories.
      * Returned instances of {@link ColorModel} are shared among all callers in the running virtual machine.
      *
-     * @param  type         the color model type. One of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_USHORT},
+     * @param  dataType     the color model type. One of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_USHORT},
      *                      {@link DataBuffer#TYPE_SHORT}, {@link DataBuffer#TYPE_INT}, {@link DataBuffer#TYPE_FLOAT}
      *                      or {@link DataBuffer#TYPE_DOUBLE}.
      * @param  numBands     number of bands.
@@ -319,7 +319,7 @@ public final class ColorModelFactory {
      * @param  colors       the colors to use for each category. The function may return {@code null}, which means transparent.
      * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
      */
-    public static ColorModel createColorModel(final int type, final int numBands, final int visibleBand,
+    public static ColorModel createColorModel(final int dataType, final int numBands, final int visibleBand,
                                 final List<Category> categories, final Function<Category,Color[]> colors)
     {
         @SuppressWarnings({"unchecked", "rawtypes"})               // Generic array creation.
@@ -328,7 +328,7 @@ public final class ColorModelFactory {
             final Category category = categories.get(i);
             ranges[i] = new AbstractMap.SimpleImmutableEntry<>(category.getSampleRange(), colors.apply(category));
         }
-        return createColorModel(ranges, visibleBand, numBands, type);
+        return createColorModel(dataType, numBands, visibleBand, ranges);
     }
 
     /**
@@ -340,22 +340,22 @@ public final class ColorModelFactory {
      * The associated arrays of colors do not need to have a length equals to {@code upper} − {@code lower};
      * color interpolations will be applied as needed.</p>
      *
-     * @param  colors       the colors associated to ranges of sample values.
-     * @param  visibleBand  the band to be made visible (usually 0). All other bands, if any will be ignored.
+     * @param  dataType     the color model type. One of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_USHORT},
+     *                      {@link DataBuffer#TYPE_SHORT}, {@link DataBuffer#TYPE_INT}, {@link DataBuffer#TYPE_FLOAT}
+     *                      or {@link DataBuffer#TYPE_DOUBLE}.
      * @param  numBands     the number of bands for the color model (usually 1). The returned color model will render only
      *                      the {@code visibleBand} and ignore the others, but the existence of all {@code numBands} will
      *                      be at least tolerated. Supplemental bands, even invisible, are useful for processing.
-     * @param  type         the color model type. One of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_USHORT},
-     *                      {@link DataBuffer#TYPE_SHORT}, {@link DataBuffer#TYPE_INT}, {@link DataBuffer#TYPE_FLOAT}
-     *                      or {@link DataBuffer#TYPE_DOUBLE}.
+     * @param  visibleBand  the band to be made visible (usually 0). All other bands, if any, will be ignored.
+     * @param  colors       the colors associated to ranges of sample values.
      * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
      */
-    public static ColorModel createColorModel(final Map.Entry<NumberRange<?>, Color[]>[] colors,
-                                              final int visibleBand, final int numBands, final int type)
+    public static ColorModel createColorModel(final int dataType, final int numBands, final int visibleBand,
+                                              final Map.Entry<NumberRange<?>, Color[]>[] colors)
     {
         ArgumentChecks.ensureNonNull("colors", colors);
         ArgumentChecks.ensureBetween("visibleBand", 0, numBands - 1, visibleBand);
-        final ColorModelFactory key = new ColorModelFactory(colors, visibleBand, numBands, type);
+        final ColorModelFactory key = new ColorModelFactory(dataType, numBands, visibleBand, colors);
         synchronized (PIECEWISES) {
             return PIECEWISES.computeIfAbsent(key, ColorModelFactory::createColorModel);
         }
@@ -368,26 +368,26 @@ public final class ColorModelFactory {
      * <p>This methods caches previously created instances using weak references,
      * because index color model may be big (up to 256 kb).</p>
      *
-     * @param  ARGB         an array of ARGB values.
      * @param  numBands     the number of bands.
      * @param  visibleBand  the band to display.
+     * @param  ARGB         an array of ARGB values.
      * @param  transparent  the transparent pixel, or -1 for auto-detection.
      * @return An index color model for the specified array.
      */
-    public static IndexColorModel createIndexColorModel(final int[] ARGB, final int numBands, final int visibleBand, int transparent) {
+    public static IndexColorModel createIndexColorModel(final int numBands, final int visibleBand, final int[] ARGB, int transparent) {
         /*
          * No need to scan the ARGB values in search of a transparent pixel;
          * the IndexColorModel constructor does that for us.
          */
-        final int length = ARGB.length;
-        final int bits = getBitCount(length);
-        final int type = getTransferType(length);
+        final int length   = ARGB.length;
+        final int bits     = getBitCount(length);
+        final int dataType = getTransferType(length);
         final IndexColorModel cm;
         if (numBands == 1) {
-            cm = new IndexColorModel(bits, length, ARGB, 0, true, transparent, type);
+            cm = new IndexColorModel(bits, length, ARGB, 0, true, transparent, dataType);
         } else {
             cm = new MultiBandsIndexColorModel(bits, length, ARGB, 0, true, transparent,
-                                               type, numBands, visibleBand);
+                                               dataType, numBands, visibleBand);
         }
         return unique(cm);
     }
