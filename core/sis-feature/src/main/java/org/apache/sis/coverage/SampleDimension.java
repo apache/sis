@@ -36,7 +36,9 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.Numbers;
@@ -517,7 +519,7 @@ public class SampleDimension implements Serializable {
      * After properties have been set, the sample dimension is created by invoking {@link #build()}.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 1.0
+     * @version 1.1
      * @since   1.0
      * @module
      */
@@ -799,6 +801,67 @@ public class SampleDimension implements Serializable {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.Nodata);
             }
             add(new Category(name, samples, null, null, toNaN));
+            return this;
+        }
+
+        /**
+         * Adds a qualitative category for the given sample value mapped to the specified converted NaN value.
+         * The given {@code converted} value must be {@linkplain Float#isNaN(float) a NaN value}
+         * (not necessarily the {@link Float#NaN} canonical value)
+         * and that value shall not have been used by another category.
+         *
+         * <div class="note"><b>Implementation note:</b>
+         * this convenience method delegates to {@link #mapQualitative(CharSequence, NumberRange, float)}.</div>
+         *
+         * @param  name       the category name as a {@link String} or {@link InternationalString} object,
+         *                    or {@code null} for a default "no data" name.
+         * @param  sample     the sample value as a real or integer number.
+         * @param  converted  the converted value to map to the given sample value.
+         *                    {@code Float.isNaN(converted)} must be {@code true}.
+         * @return {@code this}, for method call chaining.
+         * @throws IllegalArgumentException if {@code converted} is not a NaN value.
+         *
+         * @see MathFunctions#toNanFloat(int)
+         *
+         * @since 1.1
+         */
+        public Builder mapQualitative(CharSequence name, final Number sample, final float converted) {
+            ArgumentChecks.ensureNonNull("sample", sample);
+            return mapQualitative(name, range(sample.getClass(), sample, sample), converted);
+        }
+
+        /**
+         * Adds a qualitative category for the given samples values mapped to the specified converted NaN value.
+         * The given {@code converted} value must be {@linkplain Float#isNaN(float) a NaN value}
+         * (not necessarily the {@link Float#NaN} canonical value)
+         * and that value shall not have been used by another category.
+         *
+         * <p>The {@code addQualitative(…)} methods select automatically a converted value.
+         * The {@code mapQualitative(…)} methods are for the less common case where caller
+         * needs to control which converted NaN value is mapped to the samples values.</p>
+         *
+         * @param  name       the category name as a {@link String} or {@link InternationalString} object,
+         *                    or {@code null} for a default "no data" name.
+         * @param  samples    the minimum and maximum sample values in the category.
+         * @param  converted  the converted value to map to the given sample values.
+         *                    {@code Float.isNaN(converted)} must be {@code true}.
+         * @return {@code this}, for method call chaining.
+         * @throws IllegalArgumentException if {@code converted} is not a NaN value.
+         *
+         * @see MathFunctions#toNanFloat(int)
+         *
+         * @since 1.1
+         */
+        public Builder mapQualitative(CharSequence name, final NumberRange<?> samples, final float converted) {
+            ArgumentChecks.ensureNonNull("samples", samples);
+            final int ordinal = MathFunctions.toNanOrdinal(converted);
+            if (!toNaN.add(ordinal)) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, "NaN #" + ordinal));
+            }
+            if (name == null) {
+                name = Vocabulary.formatInternational(Vocabulary.Keys.Nodata);
+            }
+            add(new Category(name, samples, null, null, (v) -> ordinal));
             return this;
         }
 
