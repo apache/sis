@@ -56,7 +56,7 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
 
     /**
      * Creates a dummy image for testing purpose. This image will contain many small tiles
-     * of two bands. The first bands has deterministic values and the second band contains
+     * of two bands. The first band has deterministic values and the second band contains
      * random values.
      */
     private static TiledImageMock createImage() {

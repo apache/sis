@@ -61,7 +61,7 @@ final class ScaledColorSpace extends ColorSpace {
     final int visibleBand;
 
     /**
-     * Creates a color model for the given range of values.
+     * Creates a color space for the given range of values.
      * The given range does not need to be exact; values outside that range will be clamped.
      *
      * @param  numComponents  the number of components.
@@ -74,6 +74,22 @@ final class ScaledColorSpace extends ColorSpace {
         this.visibleBand = visibleBand;
         scale  = ScaledColorModel.RANGE / (maximum - minimum);
         offset = minimum;
+    }
+
+    /**
+     * Creates a color space for the same range of values than the given space, but a subset of the bands.
+     */
+    ScaledColorSpace(final ScaledColorSpace parent, final int[] bands) {
+        super(TYPE_GRAY, bands.length);
+        scale  = parent.scale;
+        offset = parent.offset;
+        for (int i=0; i<bands.length; i++) {
+            if (bands[i] == parent.visibleBand) {
+                visibleBand = i;
+                return;
+            }
+        }
+        visibleBand = 0;
     }
 
     /**

@@ -591,6 +591,25 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * Selects a subset of bands in the given image. This method can also be used for changing band order
+     * or repeating the same band from the source image. If the specified {@code bands} are the same than
+     * the source image bands in the same order, then {@code source} is returned directly.
+     *
+     * <p>This method returns an image sharing the same data buffer than the source image;
+     * pixel values are not copied. Consequently changes in the source image are reflected
+     * immediately in the returned image.</p>
+     *
+     * @param  source  the image in which to select bands.
+     * @param  bands   indices of bands to retain.
+     * @return image width selected bands.
+     * @throws IllegalArgumentException if a band index is invalid.
+     */
+    public RenderedImage selectBands(final RenderedImage source, final int... bands) {
+        ArgumentChecks.ensureNonNull("source", source);
+        return BandSelectImage.create(source, bands);
+    }
+
+    /**
      * Creates a new image which will resample the given image. The resampling operation is defined
      * by a non-linear transform from the <em>new</em> image to the specified <em>source</em> image.
      * That transform should map {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER pixel centers}.

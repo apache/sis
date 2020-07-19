@@ -244,9 +244,9 @@ public abstract class GridCoverage {
      * @return the image which compute converted values from the given source.
      */
     final RenderedImage convert(final RenderedImage source, final int dataType, final MathTransform1D[] converters) {
-        final int visibleBands = Math.max(0, ImageUtilities.getVisibleBand(source));
-        final ColorModel cm = ColorModelFactory.createColorModel(dataType, sampleDimensions.length, visibleBands,
-                                    sampleDimensions[visibleBands].getCategories(), ColorModelFactory.GRAYSCALE);
+        final int visibleBand = Math.max(0, ImageUtilities.getVisibleBand(source));
+        final ColorModel cm = ColorModelFactory.createColorModel(dataType, sampleDimensions.length, visibleBand,
+                                    sampleDimensions[visibleBand].getCategories(), ColorModelFactory.GRAYSCALE);
 
        return BandedSampleConverter.create(source, null, dataType, cm, getRanges(), converters);
     }

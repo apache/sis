@@ -470,6 +470,24 @@ public final class ColorModelFactory {
     }
 
     /**
+     * Creates a color model with only a subset of the bands of the given color model.
+     *
+     * @param  cm     the color model, or {@code null}.
+     * @param  bands  the bands to select.
+     * @return the subset color model, or {@code null} if it can not be created.
+     */
+    public static ColorModel createSubsetColorModel(final ColorModel cm, final int[] bands) {
+        if (cm instanceof MultiBandsIndexColorModel) {
+            return unique(((MultiBandsIndexColorModel) cm).createSubsetColorModel(bands));
+        }
+        if (cm instanceof ScaledColorModel) {
+            return unique(((ScaledColorModel) cm).createSubsetColorModel(bands));
+        }
+        // TODO: handle other color models.
+        return null;
+    }
+
+    /**
      * Appends a description of the given color space in the given buffer.
      * This is used for {@code toString()} method implementations.
      *
@@ -495,7 +513,7 @@ public final class ColorModelFactory {
      * @param  cm   the color model for which to get a unique instance.
      * @return a unique (shared) instance of the given color model.
      */
-    public static <T extends ColorModel> T unique(T cm) {
+    private static <T extends ColorModel> T unique(T cm) {
         ColorModelPatch<T> c = new ColorModelPatch<>(cm);
         c = CACHE.unique(c);
         return c.cm;

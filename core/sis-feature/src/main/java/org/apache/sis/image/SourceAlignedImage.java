@@ -39,6 +39,18 @@ abstract class SourceAlignedImage extends ComputedImage {
     private final ColorModel colorModel;
 
     /**
+     * Creates a new image with the given source, color model and sample model.
+     *
+     * @param  source       source of this image. Shall not be null.
+     * @param  colorModel   the color model of the new image.
+     * @param  sampleModel  the sample model of the new image.
+     */
+    SourceAlignedImage(final RenderedImage source, final ColorModel colorModel, final SampleModel sampleModel) {
+        super(sampleModel, source);
+        this.colorModel = colorModel;
+    }
+
+    /**
      * Creates a new image with the given source and a sample model derived from the color model.
      * The new image will have the same tile size than the given image.
      *
@@ -110,6 +122,8 @@ abstract class SourceAlignedImage extends ComputedImage {
     @Override public final int getMinTileY()        {return getSource().getMinTileY();}
     @Override public final int getNumXTiles()       {return getSource().getNumXTiles();}
     @Override public final int getNumYTiles()       {return getSource().getNumYTiles();}
+    @Override public final int getTileWidth()       {return getSource().getTileWidth();}
+    @Override public final int getTileHeight()      {return getSource().getTileHeight();}
     @Override public final int getTileGridXOffset() {return getSource().getTileGridXOffset();}
     @Override public final int getTileGridYOffset() {return getSource().getTileGridYOffset();}
 }

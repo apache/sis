@@ -83,6 +83,7 @@ import org.junit.runners.Suite;
     org.apache.sis.image.DefaultIteratorTest.class,
     org.apache.sis.image.LinearIteratorTest.class,
     org.apache.sis.image.StatisticsCalculatorTest.class,
+    org.apache.sis.image.BandSelectImageTest.class,
     org.apache.sis.image.InterpolationTest.class,
     org.apache.sis.image.ResamplingGridTest.class,
     org.apache.sis.image.ResampledImageTest.class,

@@ -151,7 +151,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      *
      * <ul>
      *   <li>+0 means to leave the NaN value as-is. In such case, casting the NaN value to an integer will
-     *     produce 0 (so the 0 value is not set explicitely, but obtained as a result of casting to integer).
+     *     produce 0 (so the 0 value is not set explicitly, but obtained as a result of casting to integer).
      *     This action can be taken only if no category include the 0 value, or if 0 is for the background.</li>
      *   <li>Any non-zero and non-NaN value means to use that value directly. In such case, the value should
      *     be {@link SampleDimension#background}.</li>

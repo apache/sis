@@ -67,6 +67,13 @@ final class ScaledColorModel extends ComponentColorModel {
     }
 
     /**
+     * Creates a new color model with only a subset of the bands in this color model.
+     */
+    final ScaledColorModel createSubsetColorModel(final int[] bands) {
+        return new ScaledColorModel(new ScaledColorSpace(cs, bands), transferType);
+    }
+
+    /**
      * Defined for consistency but should not be used.
      */
     @Override public int getRed  (int    value) {return (getRGB(value) >>> 2*Byte.SIZE) & MASK;}

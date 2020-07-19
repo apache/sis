@@ -30,17 +30,17 @@ import java.awt.image.SinglePixelPackedSampleModel;
 /**
  * An {@link IndexColorModel} tolerant with image having more than one band.
  * This class can support only the types supported by {@code IndexColorModel}
- * parent class. As of Java 10 they are restricted to {@link DataBuffer#TYPE_BYTE}
+ * parent class. As of Java 14 they are restricted to {@link DataBuffer#TYPE_BYTE}
  * and {@code DataBuffer#TYPE_USHORT}.
  *
- * <p><b>Reminder:</b> {@link #getNumComponents()} will returns 3 or 4 no matter
+ * <p><b>Reminder:</b> {@link #getNumComponents()} will return 3 or 4 no matter
  * how many bands were specified to the constructor. This is not specific to this class;
  * {@code IndexColorModel} behave that way. So we can't rely on this method for checking
  * the number of bands.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Andrea Aime (TOPP)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -86,6 +86,42 @@ final class MultiBandsIndexColorModel extends IndexColorModel {
         super(bits, size, cmap, start, hasAlpha, transparent, transferType);
         this.numBands    = numBands;
         this.visibleBand = visibleBand;
+    }
+
+    /**
+     * Creates a new color model with only a subset of the bands in this color model.
+     *
+     * <p><b>Note:</b> the new color model will use a copy of the color map of this color model.
+     * There is no way to share the {@code int[]} array of ARGB values between two {@link IndexColorModel}s.</p>
+     */
+    final IndexColorModel createSubsetColorModel(final int[] bands) {
+        final int     bits        = getPixelSize();
+        final int[]   cmap        = getARGB();
+        final boolean hasAlpha    = hasAlpha();
+        final int     transparent = getTransparentPixel();
+        if (bands.length == 1) {
+            return new IndexColorModel(bits, cmap.length, cmap, 0, hasAlpha, transparent, transferType);
+        }
+        int vb = 0;
+        for (int i=0; i<bands.length; i++) {
+            if (bands[i] == visibleBand) {
+                vb = i;
+                break;
+            }
+        }
+        return new MultiBandsIndexColorModel(bits, cmap.length, cmap, 0, hasAlpha, transparent, transferType, bands.length, vb);
+    }
+
+    /**
+     * Returns all ARGB colors in this color model.
+     * This is a copy of the {@code cmap} used by this color model.
+     */
+    private int[] getARGB() {
+        final int[] cmap = new int[getMapSize()];
+        for (int i=0; i<cmap.length; i++) {
+            cmap[i] = getRGB(i);
+        }
+        return cmap;
     }
 
     /**
