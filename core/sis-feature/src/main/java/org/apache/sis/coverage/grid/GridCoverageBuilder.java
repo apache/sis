@@ -29,11 +29,12 @@ import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.coverage.j2d.Colorizer;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -461,14 +462,19 @@ public class GridCoverageBuilder {
                  * will infer better names.
                  */
                 bands = GridCoverage2D.defaultIfAbsent(bands, null, raster.getNumBands());
-                final int dataType = raster.getSampleModel().getDataType();
-                final ColorModel colors = ColorModelFactory.createColorModel(dataType, bands.size(), visibleBand,
-                                            bands.get(visibleBand).getCategories(), ColorModelFactory.GRAYSCALE);
+                final SampleModel sm = raster.getSampleModel();
+                final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
+                final ColorModel colors;
+                if (colorizer.initialize(bands.get(visibleBand)) || colorizer.initialize(sm, visibleBand)) {
+                    colors = colorizer.createColorModel(sm.getDataType(), bands.size(), visibleBand);
+                } else {
+                    colors = Colorizer.NULL_COLOR_MODEL;
+                }
                 /*
                  * Create an image from the raster. We favor BufferedImage instance when possible,
                  * and fallback on TiledImage only if the BufferedImage can not be created.
                  */
-                if (raster instanceof WritableRaster && raster.getMinX() == 0 && raster.getMinY() == 0) {
+                if (colors != null && raster instanceof WritableRaster && (raster.getMinX() | raster.getMinY()) == 0) {
                     image = new BufferedImage(colors, (WritableRaster) raster, false, properties);
                 } else {
                     image = new TiledImage(properties, colors, raster.getWidth(), raster.getHeight(), 0, 0, raster);

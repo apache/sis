@@ -63,6 +63,11 @@ public final class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * ‘{0}’ is already initialized.
+         */
+        public static final short AlreadyInitialized_1 = 188;
+
+        /**
          * Name “{2}” is ambiguous because it can be understood as either “{0}” or “{1}”.
          */
         public static final short AmbiguousName_3 = 1;
@@ -874,6 +879,11 @@ public final class Errors extends IndexedResourceBundle {
          * Unexpected value “{1}” in “{0}” element.
          */
         public static final short UnexpectedValueInElement_2 = 144;
+
+        /**
+         * ‘{0}’ has not been initialized.
+         */
+        public static final short Uninitialized_1 = 189;
 
         /**
          * Command “{0}” is not recognized.

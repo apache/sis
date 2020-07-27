@@ -142,16 +142,17 @@ public final class ImageUtilities extends Static {
         if (image != null) {
             final ColorModel cm = image.getColorModel();
             if (cm != null) {
+                if (cm instanceof MultiBandsIndexColorModel) {
+                    return ((MultiBandsIndexColorModel) cm).visibleBand;
+                }
                 final ColorSpace cs = cm.getColorSpace();
                 if (cs instanceof ScaledColorSpace) {
                     return ((ScaledColorSpace) cs).visibleBand;
                 }
-                if (cm instanceof MultiBandsIndexColorModel) {
-                    return ((MultiBandsIndexColorModel) cm).visibleBand;
-                }
-                if (cm.getNumComponents() == 1) {
-                    return 0;
-                }
+            }
+            final SampleModel sm = image.getSampleModel();
+            if (sm != null && sm.getNumBands() == 1) {           // Should never be null, but we are paranoiac.
+                return 0;
             }
         }
         return -1;
@@ -186,7 +187,7 @@ public final class ImageUtilities extends Static {
     public static int getDataType(final Raster raster) {
         if (raster != null) {
             final DataBuffer buffer = raster.getDataBuffer();
-            if (buffer != null) {
+            if (buffer != null) {                               // Should never be null, but we are paranoiac.
                 return buffer.getDataType();
             }
         }

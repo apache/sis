@@ -339,6 +339,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NotStrictlyOrderedDimensions = 46;
 
         /**
+         * This operation requires an image with only one band.
+         */
+        public static final short OperationRequiresSingleBand = 77;
+
+        /**
          * The {0} optional library is not available. Geometric operations will ignore that library.
          * Cause is {1}.
          */
@@ -385,6 +390,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not convert grid coordinate {1} to type ‘{0}’.
          */
         public static final short UnconvertibleGridCoordinate_2 = 59;
+
+        /**
+         * Can not convert sample values.
+         */
+        public static final short UnconvertibleSampleValues = 76;
 
         /**
          * Expected {0} bands but got {1}.
@@ -436,11 +446,6 @@ public final class Resources extends IndexedResourceBundle {
          * Coordinates transform is unspecified.
          */
         public static final short UnspecifiedTransform = 54;
-
-        /**
-         * Unsupported color model. Expected ‘{0}’ but got ‘{1}’.
-         */
-        public static final short UnsupportedColorModel_2 = 76;
 
         /**
          * Unsupported geometry {0}D object.

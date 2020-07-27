@@ -351,6 +351,8 @@ public class Category implements Serializable {
      * The category that describes values after {@linkplain #getTransferFunction() transfer function} has been applied.
      * If the values are already converted (eventually to NaN values), returns {@code this}.  This method differs from
      * {@link #converse} field in being unidirectional: navigate from sample to converted values but never backward.
+     *
+     * @see #forConvertedValues(boolean)
      */
     Category converted() {
         return converse;        // Overridden in ConvertedCategory.
@@ -454,6 +456,32 @@ public class Category implements Serializable {
         } else {
             return Optional.of(toConverse);
         }
+    }
+
+    /**
+     * Returns a category that describes measurement values or packed values,
+     * depending if {@code converted} is {@code true} or {@code false} respectively.
+     * Notes:
+     *
+     * <ul class="verbose">
+     *   <li>The converted values of a qualitative category is a NaN value.</li>
+     *   <li>The converted values of a {@linkplain #isQuantitative() quantitative} category are real values.
+     *       Those values are computed by the {@linkplain #getTransferFunction() transfer function}.
+     *       That function may be identity, in which case this method returns {@code this}.</li>
+     * </ul>
+     *
+     * @param  converted  {@code true} for a category describing values in units of measurement,
+     *                    or {@code false} for a category describing packed values (usually as integers).
+     * @return a category describing converted or packed values, depending on {@code converted} argument value.
+     *         May be {@code this} but never {@code null}.
+     *
+     * @see #getMeasurementRange()
+     * @see SampleDimension#forConvertedValues(boolean)
+     *
+     * @since 1.1
+     */
+    public Category forConvertedValues(final boolean converted) {
+        return converted ? converse : this;                             // Overridden in ConvertedCategory.
     }
 
     /**

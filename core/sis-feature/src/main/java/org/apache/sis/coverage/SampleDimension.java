@@ -426,6 +426,7 @@ public class SampleDimension implements Serializable {
      * @return a sample dimension describing converted or packed values, depending on {@code converted} argument value.
      *         May be {@code this} but never {@code null}.
      *
+     * @see Category#forConvertedValues(boolean)
      * @see org.apache.sis.coverage.grid.GridCoverage#forConvertedValues(boolean)
      */
     public SampleDimension forConvertedValues(final boolean converted) {
@@ -746,11 +747,18 @@ public class SampleDimension implements Serializable {
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
-         * @param  sample  the sample value as a real number.
+         * @param  sample  the sample value as a real number or a NaN value.
          * @return {@code this}, for method call chaining.
          */
         public Builder addQualitative(final CharSequence name, final float sample) {
-            return addQualitative(name, NumberRange.create(sample, true, sample, true));
+            final NumberRange<Float> range;
+            if (Float.isNaN(sample)) {
+                final Float wrapper = sample;
+                range = new NumberRange<>(Float.class, wrapper, true, wrapper, true);
+            } else {
+                range = NumberRange.create(sample, true, sample, true);
+            }
+            return addQualitative(name, range);
         }
 
         /**
@@ -761,11 +769,18 @@ public class SampleDimension implements Serializable {
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
-         * @param  sample  the sample value as a real number.
+         * @param  sample  the sample value as a real number or a NaN value.
          * @return {@code this}, for method call chaining.
          */
         public Builder addQualitative(final CharSequence name, final double sample) {
-            return addQualitative(name, NumberRange.create(sample, true, sample, true));
+            final NumberRange<Double> range;
+            if (Double.isNaN(sample)) {
+                final Double wrapper = sample;
+                range = new NumberRange<>(Double.class, wrapper, true, wrapper, true);
+            } else {
+                range = NumberRange.create(sample, true, sample, true);
+            }
+            return addQualitative(name, range);
         }
 
         /**

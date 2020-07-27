@@ -34,8 +34,8 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.MismatchedCoverageRangeException;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.internal.coverage.j2d.Colorizer;
 import org.apache.sis.internal.coverage.j2d.DeferredProperty;
-import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.internal.feature.Resources;
@@ -622,9 +622,13 @@ public class ImageRenderer {
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public RenderedImage image() {
         final WritableRaster raster = raster();
-        final ColorModel colors = ColorModelFactory.createColorModel(buffer.getDataType(), bands.length, visibleBand,
-                                                    bands[visibleBand].getCategories(), ColorModelFactory.GRAYSCALE);
-
+        final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
+        final ColorModel colors;
+        if (colorizer.initialize(bands[visibleBand]) || colorizer.initialize(raster.getSampleModel(), visibleBand)) {
+            colors = colorizer.createColorModel(buffer.getDataType(), bands.length, visibleBand);
+        } else {
+            colors = Colorizer.NULL_COLOR_MODEL;
+        }
         SliceGeometry supplier = null;
         if (imageGeometry == null) {
             if (isSameGeometry(GridCoverage2D.BIDIMENSIONAL)) {
@@ -633,7 +637,7 @@ public class ImageRenderer {
                 supplier = new SliceGeometry(geometry, sliceExtent, gridDimensions, null);
             }
         }
-        if ((imageX | imageY) == 0) {
+        if (colors != null && (imageX | imageY) == 0) {
             return new Untiled(colors, raster, properties, imageGeometry, supplier);
         }
         if (properties == null) {

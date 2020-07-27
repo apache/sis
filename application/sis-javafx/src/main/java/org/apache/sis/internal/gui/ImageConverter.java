@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.gui;
 
+import java.util.Map;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
@@ -29,10 +31,12 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.PlanarImage;
+import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Statistics;
 
 
@@ -58,6 +62,13 @@ final class ImageConverter extends Task<Statistics[]> {
      * but {@link PropertyView} should be used only of overview anyway.
      */
     private static final int MAX_SIZE = 600;
+
+    /**
+     * Colors to apply on the mask image when that image is overlay on top of another image.
+     */
+    private static final Map<NumberRange<?>,Color[]> MASK_TRANSPARENCY = JDK9.mapOf(
+            NumberRange.create(0, true, 0, true), new Color[] {ColorModelFactory.TRANSPARENT},
+            NumberRange.create(1, true, 1, true), new Color[] {new Color(0x20FFFF00, true)});
 
     /**
      * The Java2D image to convert.
@@ -139,7 +150,7 @@ final class ImageConverter extends Task<Statistics[]> {
     private RenderedImage getMask(final ImageProcessor processor) {
         final Object mask = source.getProperty(PlanarImage.MASK_KEY);
         if (mask instanceof RenderedImage) try {
-            return processor.recolor((RenderedImage) mask, new int[] {0, 0x20FFFF00});
+            return processor.toIndexedColors((RenderedImage) mask, MASK_TRANSPARENCY);
         } catch (IllegalArgumentException e) {
             // Ignore, we will not apply any mask. Declare PropertyView.setImage(…) as the public method.
             Logging.recoverableException(Logging.getLogger(Loggers.APPLICATION), PropertyView.class, "setImage", e);

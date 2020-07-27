@@ -41,7 +41,7 @@ final class ScaledColorSpace extends ColorSpace {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -6635165959083590494L;
+    private static final long serialVersionUID = -5146474397268513490L;
 
     /**
      * The scaling factor from sample values to RGB values. The target RGB values will be in range 0
@@ -54,6 +54,11 @@ final class ScaledColorSpace extends ColorSpace {
      * The offset to subtract from sample values before to apply the {@linkplain #scale} factor.
      */
     final double offset;
+
+    /**
+     * The maximum value specified at construction time.
+     */
+    final double maximum;
 
     /**
      * Index of the band to display, from 0 inclusive to {@link #getNumComponents()} exclusive.
@@ -72,6 +77,7 @@ final class ScaledColorSpace extends ColorSpace {
     ScaledColorSpace(final int numComponents, final int visibleBand, final double minimum, final double maximum) {
         super(TYPE_GRAY, numComponents);
         this.visibleBand = visibleBand;
+        this.maximum = maximum;
         scale  = ScaledColorModel.RANGE / (maximum - minimum);
         offset = minimum;
     }
@@ -81,8 +87,9 @@ final class ScaledColorSpace extends ColorSpace {
      */
     ScaledColorSpace(final ScaledColorSpace parent, final int[] bands) {
         super(TYPE_GRAY, bands.length);
-        scale  = parent.scale;
-        offset = parent.offset;
+        scale   = parent.scale;
+        offset  = parent.offset;
+        maximum = parent.maximum;
         for (int i=0; i<bands.length; i++) {
             if (bands[i] == parent.visibleBand) {
                 visibleBand = i;
@@ -101,7 +108,7 @@ final class ScaledColorSpace extends ColorSpace {
     @Override
     public float[] toRGB(final float[] samples) {
         float value = Math.min(1, (float) ((samples[visibleBand] - offset) * (1d/ScaledColorModel.RANGE * scale)));
-        if (!(value >= 0)) value = 0;                   // Use '!' for replacing NaN.
+        if (!(value >= 0)) value = 0;                   // Use `!` for replacing NaN.
         return new float[] {value, value, value};
     }
 
@@ -166,7 +173,7 @@ final class ScaledColorSpace extends ColorSpace {
      */
     @Override
     public float getMaxValue(final int component) {
-        return (float) (ScaledColorModel.RANGE / scale + offset);
+        return (float) maximum;
     }
 
     /**
@@ -189,8 +196,8 @@ final class ScaledColorSpace extends ColorSpace {
      */
     @Debug
     final void formatRange(final StringBuilder buffer) {
-        buffer.append('[').append(getMinValue(visibleBand))
-            .append(" … ").append(getMaxValue(visibleBand))
+        buffer.append('[').append(offset)
+            .append(" … ").append(maximum)
             .append(" in band ").append(visibleBand).append(']');
     }
 
@@ -211,11 +218,12 @@ final class ScaledColorSpace extends ColorSpace {
     public boolean equals(final Object obj) {
         if (obj instanceof ScaledColorSpace) {
             final ScaledColorSpace that = (ScaledColorSpace) obj;
-            return Numerics.equals(scale,  that.scale)             &&
-                   Numerics.equals(offset, that.offset)            &&
-                   visibleBand         ==  that.visibleBand        &&
-                   getNumComponents()  ==  that.getNumComponents() &&
-                   getType()           ==  that.getType();
+            return Numerics.equals(scale,   that.scale)             &&
+                   Numerics.equals(offset,  that.offset)            &&
+                   Numerics.equals(maximum, that.maximum)           &&
+                   visibleBand          ==  that.visibleBand        &&
+                   getNumComponents()   ==  that.getNumComponents() &&
+                   getType()            ==  that.getType();
         }
         return false;
     }

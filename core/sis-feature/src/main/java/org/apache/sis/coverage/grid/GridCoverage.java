@@ -32,8 +32,8 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.internal.coverage.j2d.BandedSampleConverter;
-import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.coverage.j2d.Colorizer;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -245,10 +245,14 @@ public abstract class GridCoverage {
      */
     final RenderedImage convert(final RenderedImage source, final int dataType, final MathTransform1D[] converters) {
         final int visibleBand = Math.max(0, ImageUtilities.getVisibleBand(source));
-        final ColorModel cm = ColorModelFactory.createColorModel(dataType, sampleDimensions.length, visibleBand,
-                                    sampleDimensions[visibleBand].getCategories(), ColorModelFactory.GRAYSCALE);
-
-       return BandedSampleConverter.create(source, null, dataType, cm, getRanges(), converters);
+        final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
+        final ColorModel colors;
+        if (colorizer.initialize(sampleDimensions[visibleBand]) || colorizer.initialize(source.getColorModel())) {
+            colors = colorizer.createColorModel(dataType, sampleDimensions.length, visibleBand);
+        } else {
+            colors = Colorizer.NULL_COLOR_MODEL;
+        }
+        return BandedSampleConverter.create(source, null, dataType, colors, getRanges(), converters);
     }
 
     /**
