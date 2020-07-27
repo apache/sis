@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.util.Random;
+import java.util.Hashtable;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
@@ -83,13 +84,29 @@ public final strictfp class BandSelectImageTest extends TestCase {
         } else {
             cm = ColorModelFactory.createGrayScale(DataBuffer.TYPE_BYTE, numBands, checkedBand, Byte.MIN_VALUE, Byte.MAX_VALUE);
         }
-        bufferedImage = new BufferedImage(cm, (WritableRaster) image.getTile(0, 0), false, null);
+        @SuppressWarnings("UseOfObsoleteCollectionType")
+        final Hashtable<String,Object> properties = new Hashtable<>();
+        final double[] resolutions = new double[numBands];
+        for (int i=0; i<numBands; i++) resolutions[i] = resolution(i);
+        properties.put(PlanarImage.SAMPLE_RESOLUTIONS_KEY, resolutions);
+        bufferedImage = new BufferedImage(cm, (WritableRaster) image.getTile(0, 0), false, properties);
+    }
+
+    /**
+     * Computes a dummy resolution for the given band.
+     */
+    private static double resolution(final int band) {
+        return (band+1) * 10;
     }
 
     /**
      * Verifies that the given image contains the data expected for the {@code checkedBand}.
+     *
+     * @param  image        the image resulting from a call to {@link ImageProcessor#selectBands(RenderedImage, int...)}.
+     * @param  numBands     expected number of bands.
+     * @param  checkedBand  band in which to check values.
      */
-    private static void verify(final RenderedImage image, final int numBands, final int checkedBand) {
+    private static void verifySamples(final RenderedImage image, final int numBands, final int checkedBand) {
         final Raster tile = image.getTile(0,0);
         assertEquals("numBands", numBands, tile.getNumBands());
         assertEquals("numBands", numBands, ImageUtilities.getNumBands(image));
@@ -103,6 +120,22 @@ public final strictfp class BandSelectImageTest extends TestCase {
     }
 
     /**
+     * Verifies the property values.
+     *
+     * @param  image  the image resulting from a call to {@link ImageProcessor#selectBands(RenderedImage, int...)}.
+     * @param  bands  selected bands.
+     */
+    private static void verifyProperties(final RenderedImage image, final int... bands) {
+        assertArrayEquals("propertyNames", new String[] {PlanarImage.SAMPLE_RESOLUTIONS_KEY}, image.getPropertyNames());
+        final double[] resolutions = (double[]) image.getProperty(PlanarImage.SAMPLE_RESOLUTIONS_KEY);
+        final double[] expected = new double[bands.length];
+        for (int i=0; i<bands.length; i++) {
+            expected[i] = resolution(bands[i]);
+        }
+        assertArrayEquals(expected, resolutions, STRICT);
+    }
+
+    /**
      * Tests bands selection in an image using index color model.
      */
     @Test
@@ -113,20 +146,22 @@ public final strictfp class BandSelectImageTest extends TestCase {
         assertSame(bufferedImage,  processor.selectBands(bufferedImage, 0, 1, 2));
 
         RenderedImage test = processor.selectBands(image, 1);
-        verify(test, 1, 0);
+        verifySamples(test, 1, 0);
 
         test = processor.selectBands(image, 0, 1);
-        verify(test, 2, 1);
+        verifySamples(test, 2, 1);
 
         test = processor.selectBands(bufferedImage, 1);
         assertInstanceOf("image", BufferedImage.class, test);
         assertEquals("colorModel", IndexColorModel.class, test.getColorModel().getClass());
-        verify(test, 1, 0);
+        verifySamples(test, 1, 0);
+        verifyProperties(test, 1);
 
         test = processor.selectBands(bufferedImage, 0, 1);
         assertInstanceOf("image", BufferedImage.class, test);
         assertInstanceOf("colorModel", IndexColorModel.class, test.getColorModel());
-        verify(test, 2, 1);
+        verifySamples(test, 2, 1);
+        verifyProperties(test, 0, 1);
     }
 
     /**
@@ -140,11 +175,12 @@ public final strictfp class BandSelectImageTest extends TestCase {
         assertSame(bufferedImage, processor.selectBands(bufferedImage, 0, 1, 2, 3));
 
         RenderedImage test = processor.selectBands(image, 3, 0, 2);
-        verify(test, 3, 2);
+        verifySamples(test, 3, 2);
 
         test = processor.selectBands(bufferedImage, 3, 0, 2);
         assertInstanceOf("image", BufferedImage.class, test);
         assertNotNull("colorModel", test.getColorModel());
-        verify(test, 3, 2);
+        verifySamples(test, 3, 2);
+        verifyProperties(test, 3, 0, 2);
     }
 }

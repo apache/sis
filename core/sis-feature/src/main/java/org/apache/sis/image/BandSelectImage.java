@@ -16,6 +16,10 @@
  */
 package org.apache.sis.image;
 
+import java.util.Set;
+import java.util.Hashtable;
+import java.lang.reflect.Array;
+import java.awt.Image;
 import java.awt.image.Raster;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -25,6 +29,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -37,6 +42,15 @@ import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
  * @module
  */
 final class BandSelectImage extends SourceAlignedImage {
+    /**
+     * Properties to inherit from the source image, after bands reduction if applicable.
+     *
+     * @see #getProperty(String)
+     */
+    private static final Set<String> INHERITED_PROPERTIES = JDK9.setOf(
+            GRID_GEOMETRY_KEY, POSITIONAL_ACCURACY_KEY,         // Properties to forward as-is.
+            SAMPLE_RESOLUTIONS_KEY, STATISTICS_KEY);            // Properties to forward after band reduction.
+
     /**
      * The selected bands.
      */
@@ -72,15 +86,64 @@ final class BandSelectImage extends SourceAlignedImage {
         /*
          * If the image is an instance of `BufferedImage`, create the subset immediately
          * (reminder: this operation will not copy pixel data). It allows us to return a
-         * new instance of `BufferedImage`, which has optimization in Java2D.
+         * new instance of `BufferedImage`, which has optimizations in Java2D.
          */
         if (source instanceof BufferedImage) {
             final BufferedImage bi = (BufferedImage) source;
+            @SuppressWarnings("UseOfObsoleteCollectionType")
+            final Hashtable<String,Object> properties = new Hashtable<>(8);
+            for (final String key : INHERITED_PROPERTIES) {
+                final Object value = getProperty(bi, key, bands);
+                if (value != Image.UndefinedProperty) {
+                    properties.put(key, value);
+                }
+            }
             return new BufferedImage(cm,
                     bi.getRaster().createWritableChild(0, 0, bi.getWidth(), bi.getHeight(), 0, 0, bands),
-                    bi.isAlphaPremultiplied(), null);
+                    bi.isAlphaPremultiplied(), properties);
         }
         return new BandSelectImage(source, cm, bands.clone());
+    }
+
+    /**
+     * Returns the names of all recognized properties,
+     * or {@code null} if this image has no properties.
+     */
+    @Override
+    public String[] getPropertyNames() {
+        return getPropertyNames(INHERITED_PROPERTIES, null);
+    }
+
+    /**
+     * Gets a property from this image.
+     */
+    @Override
+    public Object getProperty(final String key) {
+        if (INHERITED_PROPERTIES.contains(key)) {
+            return getProperty(getSource(), key, bands);
+        } else {
+            return super.getProperty(key);
+        }
+    }
+
+    /**
+     * Gets a property from the given image, reducing the number of dimensions if needed.
+     * It is caller responsibility to verify that the given key is one of the keys enumerated
+     * in {@link #INHERITED_PROPERTIES}.
+     */
+    private static Object getProperty(final RenderedImage source, final String key, final int[] bands) {
+        final Object value = source.getProperty(key);
+        if (value != null && (key.equals(SAMPLE_RESOLUTIONS_KEY) || key.equals(STATISTICS_KEY))) {
+            final Class<?> componentType = value.getClass().getComponentType();
+            if (componentType != null) {
+                final Object reduced = Array.newInstance(componentType, bands.length);
+                for (int i=0; i<bands.length; i++) {
+                    Array.set(reduced, i, Array.get(value, bands[i]));
+                }
+                return reduced;
+            }
+        }
+        return value;
     }
 
     /**
