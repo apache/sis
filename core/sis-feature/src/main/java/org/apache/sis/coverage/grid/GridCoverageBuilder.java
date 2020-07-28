@@ -36,6 +36,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.Colorizer;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
+import org.apache.sis.internal.coverage.j2d.WritableTiledImage;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -474,8 +475,13 @@ public class GridCoverageBuilder {
                  * Create an image from the raster. We favor BufferedImage instance when possible,
                  * and fallback on TiledImage only if the BufferedImage can not be created.
                  */
-                if (colors != null && raster instanceof WritableRaster && (raster.getMinX() | raster.getMinY()) == 0) {
-                    image = new BufferedImage(colors, (WritableRaster) raster, false, properties);
+                if (raster instanceof WritableRaster) {
+                    final WritableRaster wr = (WritableRaster) raster;
+                    if (colors != null && (wr.getMinX() | wr.getMinY()) == 0) {
+                        image = new BufferedImage(colors, wr, false, properties);
+                    } else {
+                        image = new WritableTiledImage(properties, colors, wr.getWidth(), wr.getHeight(), 0, 0, wr);
+                    }
                 } else {
                     image = new TiledImage(properties, colors, raster.getWidth(), raster.getHeight(), 0, 0, raster);
                 }

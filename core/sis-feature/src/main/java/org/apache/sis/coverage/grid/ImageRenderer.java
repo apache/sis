@@ -29,6 +29,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.ImagingOpException;
 import java.awt.image.RasterFormatException;
+import java.awt.image.Raster;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
@@ -38,6 +39,7 @@ import org.apache.sis.internal.coverage.j2d.Colorizer;
 import org.apache.sis.internal.coverage.j2d.DeferredProperty;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
+import org.apache.sis.internal.coverage.j2d.WritableTiledImage;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.NullArgumentException;
@@ -571,13 +573,14 @@ public class ImageRenderer {
     /**
      * Creates a raster with the data specified by the last call to a {@code setData(…)} method.
      * The raster upper-left corner is located at the position given by {@link #getBounds()}.
+     * The returned raster is often an instance of {@link WritableRaster}, but read-only rasters are also allowed.
      *
-     * @return the raster.
+     * @return the raster, usually (but not necessarily) an instance of {@link WritableRaster}.
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
-     * @throws RasterFormatException if a call to a {@link WritableRaster} factory method failed.
+     * @throws RasterFormatException if a call to a {@link Raster} factory method failed.
      * @throws ArithmeticException if a property of the raster to construct exceeds the capacity of 32 bits integers.
      */
-    public WritableRaster raster() {
+    public Raster raster() {
         if (buffer == null) {
             throw new IllegalStateException(Resources.format(Resources.Keys.UnspecifiedRasterData));
         }
@@ -614,14 +617,18 @@ public class ImageRenderer {
      * The two-dimensional {@linkplain #getImageGeometry(int) image geometry} is stored as
      * a property associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
      *
+     * <p>The default implementation returns an instance of {@link java.awt.image.WritableRenderedImage}
+     * if the {@link #raster()} return value is an instance of {@link WritableRaster}, or a read-only
+     * {@link RenderedImage} otherwise.</p>
+     *
      * @return the image.
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
-     * @throws RasterFormatException if a call to a {@link WritableRaster} factory method failed.
+     * @throws RasterFormatException if a call to a {@link Raster} factory method failed.
      * @throws ArithmeticException if a property of the image to construct exceeds the capacity of 32 bits integers.
      */
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public RenderedImage image() {
-        final WritableRaster raster = raster();
+        final Raster raster = raster();
         final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
         final ColorModel colors;
         if (colorizer.initialize(bands[visibleBand]) || colorizer.initialize(raster.getSampleModel(), visibleBand)) {
@@ -637,14 +644,19 @@ public class ImageRenderer {
                 supplier = new SliceGeometry(geometry, sliceExtent, gridDimensions, null);
             }
         }
-        if (colors != null && (imageX | imageY) == 0) {
-            return new Untiled(colors, raster, properties, imageGeometry, supplier);
+        final WritableRaster wr = (raster instanceof WritableRaster) ? (WritableRaster) raster : null;
+        if (wr != null && colors != null && (imageX | imageY) == 0) {
+            return new Untiled(colors, wr, properties, imageGeometry, supplier);
         }
         if (properties == null) {
             properties = new Hashtable<>();
         }
         properties.putIfAbsent(GRID_GEOMETRY_KEY, (supplier != null) ? new DeferredProperty(supplier) : imageGeometry);
-        return new TiledImage(properties, colors, width, height, 0, 0, raster);
+        if (wr != null) {
+            return new WritableTiledImage(properties, colors, width, height, 0, 0, wr);
+        } else {
+            return new TiledImage(properties, colors, width, height, 0, 0, raster);
+        }
     }
 
     /**

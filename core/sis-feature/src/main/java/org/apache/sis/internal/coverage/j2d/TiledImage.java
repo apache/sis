@@ -25,6 +25,7 @@ import java.awt.image.SampleModel;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -41,7 +42,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @since   1.1
  * @module
  */
-public final class TiledImage extends PlanarImage {
+public class TiledImage extends PlanarImage {
     /**
      * The color model, or {@code null} if none.
      */
@@ -80,6 +81,7 @@ public final class TiledImage extends PlanarImage {
      * @param minTileX    minimum tile index in the X direction.
      * @param minTileY    minimum tile index in the Y direction.
      * @param tiles       the tiles. Must contains at least one element.
+     *                    This array is not cloned.
      */
     public TiledImage(final Map<String,Object> properties, final ColorModel colorModel,
                       final int width, final int height, final int minTileX, final int minTileY,
@@ -211,11 +213,20 @@ public final class TiledImage extends PlanarImage {
     public Raster getTile(int tileX, int tileY) {
         final int numXTiles = getNumXTiles();
         final int numYTiles = getNumYTiles();
-        if ((tileX -= minTileX) < 0 || tileX >= numXTiles ||
-            (tileY -= minTileY) < 0 || tileY >= numYTiles)
-        {
-            throw new IndexOutOfBoundsException();
-        }
+        tileX = verifyTileIndex("tileX", tileX, minTileX, numXTiles);
+        tileY = verifyTileIndex("tileY", tileY, minTileY, numYTiles);
         return tiles[tileX + tileY * numXTiles];
+    }
+
+    /**
+     * Verifies that the given tile index is inside expected bounds, then returns is zero-based value.
+     */
+    private static int verifyTileIndex(final String name, final int value, final int min, final int count) {
+        final int r = value - min;
+        if (r >= 0 && r < count) {
+            return r;
+        }
+        throw new IndexOutOfBoundsException(Errors.format(
+                Errors.Keys.ValueOutOfRange_4, name, min, min + count - 1, value));
     }
 }
