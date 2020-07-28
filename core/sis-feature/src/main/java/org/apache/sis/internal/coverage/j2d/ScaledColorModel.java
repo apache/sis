@@ -137,4 +137,22 @@ final class ScaledColorModel extends ComponentColorModel {
         final int c = Math.max(0, Math.min(MASK, (int) ((value - cs.offset) * cs.scale)));
         return c | (c << Byte.SIZE) | (c << 2*Byte.SIZE) | (MASK << 3*Byte.SIZE);
     }
+
+    /**
+     * Returns {@code true} if the given object is also an instance of {@link ScaledColorModel}
+     * with equals color space and same transfer type.
+     *
+     * <div class="note"><b>Note:</b>
+     * we have to override this method because the {@link ComponentColorModel#equals(Object)} implementation
+     * is confused by our overriding of {@link #getTransparency()} method. However we do not need to override
+     * {@link #hashCode()}.</div>
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof ScaledColorModel) {
+            final ScaledColorModel other = (ScaledColorModel) obj;
+            return transferType == other.getTransferType() && cs.equals(other.cs);
+        }
+        return false;
+    }
 }

@@ -18,12 +18,17 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.function.Function;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import org.apache.sis.coverage.Category;
+import org.apache.sis.coverage.SampleDimension;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -36,6 +41,8 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.internal.coverage.j2d.Colorizer;
+import org.apache.sis.internal.coverage.j2d.ColorModelType;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.PreferredSize;
 import org.apache.sis.internal.system.Modules;
@@ -83,6 +90,13 @@ import org.apache.sis.util.logging.Logging;
  */
 final class RenderingData implements Cloneable {
     /**
+     * Whether to allow the creation of {@link java.awt.image.IndexColorModel}. This flag may be temporarily set
+     * to {@code false} for testing or debugging. If {@code false}, images may be only grayscale and may be much
+     * slower to render, but should still be visible.
+     */
+    private static final boolean CREATE_INDEX_COLOR_MODEL = false;
+
+    /**
      * The data fetched from {@link GridCoverage#render(GridExtent)} for current {@code sliceExtent}.
      * This rendered image may be tiled and fetching those tiles may require computations to be performed
      * in background threads. Pixels in this {@code data} image are mapped to pixels in the display
@@ -93,6 +107,10 @@ final class RenderingData implements Cloneable {
      *   <li><code>{@linkplain #changeOfCRS}.getMathTransform()</code></li>
      *   <li>{@link CoverageCanvas#getObjectiveToDisplay()}</li>
      * </ol>
+     *
+     * @see #dataGeometry
+     * @see #dataRanges
+     * @see #setImage(RenderedImage, GridGeometry, List)
      */
     private RenderedImage data;
 
@@ -102,8 +120,22 @@ final class RenderingData implements Cloneable {
      * to two dimensions and with a translation added for taking in account the requested {@code sliceExtent}.
      * The coverage CRS is initially the same as the {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS},
      * but may become different later if user selects a different objective CRS.
+     *
+     * @see #data
+     * @see #dataRanges
+     * @see #setImage(RenderedImage, GridGeometry, List)
      */
     private GridGeometry dataGeometry;
+
+    /**
+     * Ranges of sample values in each band of {@link #data}. This is used for determining on which sample values
+     * to apply colors when user asked to apply a color ramp. May be {@code null}.
+     *
+     * @see #data
+     * @see #dataGeometry
+     * @see #setImage(RenderedImage, GridGeometry, List)
+     */
+    private List<SampleDimension> dataRanges;
 
     /**
      * Conversion or transformation from {@linkplain #data} CRS to {@linkplain CoverageCanvas#getObjectiveCRS()
@@ -137,6 +169,14 @@ final class RenderingData implements Cloneable {
      * There is one {@link Statistics} instance per band.
      */
     private Statistics[] statistics;
+
+    /**
+     * The colors to apply for given categories, or {@code null} if none.
+     * A null value means that the original colors specified in the {@link #data} image are used unmodified.
+     *
+     * @see Colorizer#GRAYSCALE
+     */
+    private Function<Category,Color[]> colors;
 
     /**
      * The processor that we use for resampling image and stretching their color ramps.
@@ -187,13 +227,16 @@ final class RenderingData implements Cloneable {
 
     /**
      * Sets the data to given image, which can be {@code null}.
+     * This method does not reset the {@link #colors} to null.
      */
-    final void setImage(final RenderedImage data, final GridGeometry dataGeometry) {
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
+    final void setImage(final RenderedImage data, final GridGeometry domain, final List<SampleDimension> ranges) {
         clearCRS();
         displayToObjective = null;
         statistics         = null;
         this.data          = data;
-        this.dataGeometry  = dataGeometry;
+        this.dataGeometry  = domain;
+        this.dataRanges    = ranges;        // Not cloned because already an unmodifiable list.
     }
 
     /**
@@ -253,13 +296,12 @@ final class RenderingData implements Cloneable {
     }
 
     /**
-     * Applies image operation on the given resampled image.
-     * In current implementation, the only operations are stretching the color ramp.
+     * Optionally stretches the color map, then optionally applies an index color model.
      *
      * @param  resampledImage  the image computed by {@link #resample(CoordinateReferenceSystem, LinearTransform)}.
      * @return image with operation applied and color ramp stretched. May be the same instance than given image.
      */
-    final RenderedImage recolor(final RenderedImage resampledImage) {
+    final RenderedImage recolor(RenderedImage resampledImage) {
         if (selectedDerivative != Stretching.NONE) {
             final Map<String,Object> modifiers = new HashMap<>(4);
             /*
@@ -274,7 +316,22 @@ final class RenderingData implements Cloneable {
             if (selectedDerivative == Stretching.AUTOMATIC) {
                 modifiers.put("multStdDev", 3);
             }
-            return processor.stretchColorRamp(resampledImage, modifiers);
+            resampledImage = processor.stretchColorRamp(resampledImage, modifiers);
+        }
+        /*
+         * Converts images of floating point values to integer values that we can use with IndexColorModel.
+         *
+         * TODO: if `colors` is null, instead than defaulting to `Colorizer.GRAYSCALE` we should get the colors
+         *       from the current ColorModel. This work should be done in Colorizer by converting the ranges of
+         *       sample values in source image to ranges of sample values in destination image, then query
+         *       ColorModel.getRGB(Object) for increasing integer values in that range.
+         */
+        if (CREATE_INDEX_COLOR_MODEL) {
+            final ColorModelType ct = ColorModelType.find(resampledImage.getColorModel());
+            if (ct.isSlow || (colors != null && ct.useColorRamp)) {
+                resampledImage = processor.toIndexedColors(resampledImage,
+                        dataRanges, (colors != null) ? colors : Colorizer.GRAYSCALE);
+            }
         }
         return resampledImage;
     }

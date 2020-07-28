@@ -64,7 +64,7 @@ final class RecoloredImage extends ImageAdapter {
     /**
      * Creates a new recolored image with the given colors.
      */
-    RecoloredImage(final RenderedImage source, final ColorModel colors) {
+    private RecoloredImage(final RenderedImage source, final ColorModel colors) {
         super(source);
         this.colors = colors;
     }
@@ -73,7 +73,10 @@ final class RecoloredImage extends ImageAdapter {
      * Returns a recolored image with the given colors. This method may return
      * an existing ancestor if one is found with the specified color model.
      */
-    private static RenderedImage create(RenderedImage source, final ColorModel colors) {
+    static RenderedImage create(RenderedImage source, final ColorModel colors) {
+        if (colors == null) {
+            return source;
+        }
         for (;;) {
             if (colors.equals(source.getColorModel())) {
                 return source;
@@ -264,7 +267,11 @@ final class RecoloredImage extends ImageAdapter {
         }
         /*
          * Sample values can not be reused as-is; we need to convert them to integers in [0 … 255] range.
+         * Skip any previous `RecoloredImage` since we are replacing the `ColorModel` by a new one.
          */
+        while (source instanceof RecoloredImage) {
+            source = ((RecoloredImage) source).source;
+        }
         final ColorModel      colorModel = colorizer.compactColorModel(1, 0);           // Must be first.
         final MathTransform1D converter  = colorizer.getSampleToIndexValues();
         final NumberRange<?>  range      = colorizer.getRepresentativeRange();

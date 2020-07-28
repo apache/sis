@@ -734,10 +734,7 @@ public class ImageProcessor implements Cloneable {
                     interpolation, fillValues, positionalAccuracyHints));
             break;
         }
-        if (cm != null && !cm.equals(resampled.getColorModel())) {
-            resampled = unique(new RecoloredImage(resampled, cm));
-        }
-        return resampled;                           // Do not cache user-provided image.
+        return RecoloredImage.create(resampled, cm);
     }
 
     /**

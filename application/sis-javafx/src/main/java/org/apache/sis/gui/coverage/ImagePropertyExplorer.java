@@ -385,7 +385,8 @@ public class ImagePropertyExplorer extends Widget {
             selectedImage = sources.getSelectionModel().selectedItemProperty();
             sources.setCellFactory(SourceCell::new);
             selectedImage.addListener((p,o,n) -> {
-                final RenderedImage selected = n.getValue();
+                RenderedImage selected = null;
+                if (n != null) selected = n.getValue();
                 imageSelected(selected != null ? selected : image.get());
             });
         }

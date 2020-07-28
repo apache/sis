@@ -18,6 +18,7 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Map;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Locale;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -41,6 +42,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -373,7 +375,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                  * Invoked in JavaFX thread for setting the image to the instance we just fetched.
                  */
                 @Override protected void succeeded() {
-                    setRawImage(getValue(), imageGeometry);
+                    setRawImage(getValue(), imageGeometry, coverage.getSampleDimensions());
                 }
             });
         }
@@ -383,13 +385,15 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Invoked when a new image has been successfully loaded. The given image must be the "raw" image,
      * without resampling and without color ramp stretching. The call to this method is followed by a
      * a repaint event, which will cause the image to be resampled in a background thread.
+     *
+     * <p>All arguments can be {@code null} for clearing the canvas.</p>
      */
-    private void setRawImage(final RenderedImage image, final GridGeometry imageGeometry) {
+    private void setRawImage(final RenderedImage image, final GridGeometry domain, final List<SampleDimension> ranges) {
         resampledImages.clear();
-        data.setImage(image, imageGeometry);
+        data.setImage(image, domain, ranges);
         Envelope bounds = null;
-        if (imageGeometry != null && imageGeometry.isDefined(GridGeometry.ENVELOPE)) {
-            bounds = imageGeometry.getEnvelope();
+        if (domain != null && domain.isDefined(GridGeometry.ENVELOPE)) {
+            bounds = domain.getEnvelope();
         }
         setObjectiveBounds(bounds);
         requestRepaint();                       // Cause `Worker` class to be executed.
@@ -442,9 +446,12 @@ public class CoverageCanvas extends MapCanvasAWT {
         private final LinearTransform objectiveToDisplay;
 
         /**
-         * The source image after resampling.
+         * Whether the {@linkplain RenderingData#resample resampling operation} applied is different
+         * than the one used the last time that the image has been rendered, ignoring translations.
+         * Translations do not require new resampling operations because we can manage translations
+         * by changing {@link RenderedImage} coordinates.
          */
-        private RenderedImage resampledImage;
+        private boolean resamplingChanged;
 
         /**
          * The resampled image after color ramp stretching and/or index color model applied.
@@ -459,8 +466,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         private RenderedImage prefetchedImage;
 
         /**
-         * Conversion from {@link #resampledImage} (also {@link #prefetchedImage})
-         * pixel coordinates to display coordinates.
+         * Conversion from {@link #prefetchedImage} pixel coordinates to display coordinates.
          */
         private AffineTransform resampledToDisplay;
 
@@ -485,7 +491,6 @@ public class CoverageCanvas extends MapCanvasAWT {
             objectiveToDisplay = canvas.getObjectiveToDisplay();
             displayBounds      = canvas.getDisplayBounds();
             if (data.validateCRS(objectiveCRS)) {
-                resampledImage = canvas.resampledImages.get(Stretching.NONE);
                 recoloredImage = canvas.resampledImages.get(data.selectedDerivative);
             }
         }
@@ -506,7 +511,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         }
 
         /**
-         * Invoked in background thread for resampling the image or stretching the color ramp.
+         * Invoked in background thread for resampling the image and stretching the color ramp.
          * This method performs some of the steps documented in class Javadoc, with possibility
          * to skip the first step if the required source image is already resampled.
          */
@@ -515,19 +520,19 @@ public class CoverageCanvas extends MapCanvasAWT {
         protected void render() throws TransformException {
             final Long id = LogHandler.loadingStart(originator);
             try {
-                boolean isResampled = (resampledImage != null);
-                if (isResampled) {
+                /*
+                 * A new resampling is needed if the change compared to last rendering
+                 * is anything else than identity or translation.
+                 */
+                resamplingChanged = (recoloredImage == null);
+                if (!resamplingChanged) {
                     resampledToDisplay = data.getTransform(objectiveToDisplay);
-                    // Recompute if anything else than identity or translation.
-                    isResampled = (resampledToDisplay.getType()
-                            & ~(AffineTransform.TYPE_IDENTITY | AffineTransform.TYPE_TRANSLATION)) == 0;
+                    resamplingChanged = (resampledToDisplay.getType() &
+                            ~(AffineTransform.TYPE_IDENTITY | AffineTransform.TYPE_TRANSLATION)) != 0;
                 }
-                if (!isResampled) {
-                    recoloredImage = null;
-                    resampledImage = data.resample(objectiveCRS, objectiveToDisplay);
+                if (resamplingChanged) {
+                    final RenderedImage resampledImage = data.resample(objectiveCRS, objectiveToDisplay);
                     resampledToDisplay = data.getTransform(objectiveToDisplay);
-                }
-                if (recoloredImage == null) {
                     recoloredImage = data.recolor(resampledImage);
                 }
                 prefetchedImage = data.prefetch(recoloredImage, resampledToDisplay, displayBounds);
@@ -561,15 +566,12 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     private void cacheRenderingData(final Worker worker) {
         data = worker.data;
-        final RenderedImage newValue = worker.resampledImage;
-        final RenderedImage oldValue = resampledImages.put(Stretching.NONE, newValue);
-        if (oldValue != newValue && oldValue != null) {
+        if (worker.resamplingChanged) {
             /*
              * If resampled image changed, then all derivative images (with stretched color ramp
              * or other operation applied) are not valid anymore. We need to empty the cache.
              */
             resampledImages.clear();
-            resampledImages.put(Stretching.NONE, newValue);
         }
         resampledImages.put(data.selectedDerivative, worker.recoloredImage);
         /*
@@ -636,7 +638,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     @Override
     protected void clear() {
-        setRawImage(null, null);
+        setRawImage(null, null, null);
         super.clear();
     }
 }
