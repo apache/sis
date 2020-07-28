@@ -156,9 +156,11 @@ public final class GCOM_C extends Convention {
     /**
      * Names of attributes for sample values having "no-data" meaning.
      * All those names have {@value #SUFFIX} suffix.
+     *
+     * @see #nodataValues(Variable)
      */
     private static final String[] NO_DATA = {
-        "Error_DN",
+        "Error_DN",                                 // Must be first: will be used as "no data" value.
         "Land_DN",
         "Cloud_error_DN",
         "Retrieval_error_DN"
@@ -459,13 +461,20 @@ public final class GCOM_C extends Convention {
     @Override
     public Map<Number,Object> nodataValues(final Variable data) {
         final Map<Number, Object> pads = super.nodataValues(data);
-        for (String name : NO_DATA) {
+        for (int i=0; i<NO_DATA.length; i++) {
+            String name = NO_DATA[i];
             final double value = data.getAttributeAsNumber(name);
             if (Double.isFinite(value)) {
-                if (name.endsWith(SUFFIX)) {
-                    name = name.substring(0, name.length() - SUFFIX.length());
+                final Object label;
+                if (i != 0) {
+                    if (name.endsWith(SUFFIX)) {
+                        name = name.substring(0, name.length() - SUFFIX.length());
+                    }
+                    label = name.replace('_', ' ');
+                } else {
+                    label = FILL_VALUE_MASK | MISSING_VALUE_MASK;
                 }
-                pads.put(value, name.replace('_', ' '));
+                pads.put(value, label);
             }
         }
         return pads;

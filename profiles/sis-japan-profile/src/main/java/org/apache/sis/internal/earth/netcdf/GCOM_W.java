@@ -206,7 +206,7 @@ public final class GCOM_W extends Convention {
     public Map<Number,Object> nodataValues(final Variable data) {
         final Map<Number, Object> pads = super.nodataValues(data);
         if (pads.isEmpty() && roleOf(data) == VariableRole.COVERAGE) {
-            pads.put(NO_DATA, 3);
+            pads.put(NO_DATA, FILL_VALUE_MASK | MISSING_VALUE_MASK);
             /*
              * Value 3 stands for:
              *   - bit 0 set: NO_DATA is a pad value (can be used as background).

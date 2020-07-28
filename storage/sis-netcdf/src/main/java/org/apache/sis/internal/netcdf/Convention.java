@@ -108,9 +108,21 @@ public class Convention {
      * map returned by {@link #nodataValues(Variable)}. The main bit is bit #0, which identifies the background value.
      */
     private static final String[] NODATA_ATTRIBUTES = {
-        CDM.FILL_VALUE,
-        CDM.MISSING_VALUE
+        CDM.FILL_VALUE,         // Must be at index i=0 in order to get (1 << i) == PAD_VALUE_MASK.
+        CDM.MISSING_VALUE       // Must be at index i=1 in order to get (1 << i) == MISSING_VALUE_MASK.
     };
+
+    /**
+     * Mask for pad values in the bits returned by {@link #nodataValues(Variable)}.
+     * The difference with {@link #MISSING_VALUE_MASK} is that pad values may be used as background
+     * values in regions outside the domain of validity, for example after a image reprojection.
+     */
+    protected static final int FILL_VALUE_MASK = 1;
+
+    /**
+     * Mask for missing values in the bits returned by {@link #nodataValues(Variable)}.
+     */
+    protected static final int MISSING_VALUE_MASK = 2;
 
     /**
      * For subclass constructors.
@@ -656,8 +668,8 @@ public class Convention {
      * the role of the pad/missing sample value:
      *
      * <ul>
-     *   <li>If bit 0 is set, then the value is a pad value. Those values can be used for background.</li>
-     *   <li>If bit 1 is set, then the value is a missing value.</li>
+     *   <li>If bit 0 is set (mask {@value #FILL_VALUE_MASK}), then the value is a pad value. Those values can be used for background.</li>
+     *   <li>If bit 1 is set (mask {@value #MISSING_VALUE_MASK}), then the value is a missing value.</li>
      * </ul>
      *
      * Pad values should be first in the map, followed by missing values.

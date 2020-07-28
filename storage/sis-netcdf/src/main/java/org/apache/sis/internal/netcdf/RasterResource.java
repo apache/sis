@@ -534,13 +534,13 @@ public final class RasterResource extends AbstractGridResource implements Resour
             final Object label = entry.getValue();
             if (label instanceof Integer) {
                 final int role = (Integer) label;               // Bit 0 set (value 1) = pad value, bit 1 set = missing value.
-                final int i = (role == 1) ? 1 : 0;              // i=1 if role is only pad value, i=0 otherwise.
+                final int i = (role == Convention.FILL_VALUE_MASK) ? 1 : 0;   // i=1 if role is only pad value, i=0 otherwise.
                 name = names[i];
                 if (name == null) {
                     name = Vocabulary.formatInternational(i == 0 ? Vocabulary.Keys.MissingValue : Vocabulary.Keys.FillValue);
                     names[i] = name;
                 }
-                if (setBackground & (role & 1) != 0) {
+                if (setBackground & (role & Convention.FILL_VALUE_MASK) != 0) {
                     setBackground = false;                      // Declare only one fill value.
                     builder.setBackground(name, n);
                     continue;
