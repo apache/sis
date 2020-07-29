@@ -107,7 +107,7 @@ final class PrefetchedImage extends PlanarImage {
             tileGridYOffset = source.getTileGridYOffset();
         }
 
-        /** Invoked in a when a tile have been computed, possibly in a background thread. */
+        /** Invoked when a tile has been computed, possibly in a background thread. */
         @Override protected void readFrom(final Raster source) {
             final long tx = Math.floorDiv(source.getMinX() - tileGridXOffset, tileWidth)  - minTileX;
             final long ty = Math.floorDiv(source.getMinY() - tileGridYOffset, tileHeight) - minTileY;

@@ -71,6 +71,14 @@ class BandedSampleConverter extends ComputedImage {
      */
 
     /**
+     * Properties potentially added by this image, no matter if present in source image or not. Must be consistent
+     * with the <cite>switch case</cite> statement doing its own calculation in {@link #getProperty(String)}.
+     *
+     * @see #getPropertyNames()
+     */
+    private static final String[] ADDED_PROPERTIES = {SAMPLE_RESOLUTIONS_KEY};
+
+    /**
      * The transfer functions to apply on each band of the source image.
      */
     private final MathTransform1D[] converters;
@@ -206,8 +214,14 @@ class BandedSampleConverter extends ComputedImage {
      */
     @Override
     public Object getProperty(final String key) {
-        if (SAMPLE_RESOLUTIONS_KEY.equals(key) && sampleResolutions != null) {
-            return sampleResolutions.clone();
+        if (SourceAlignedImage.POSITIONAL_PROPERTIES.contains(key)) {
+            if (SAMPLE_RESOLUTIONS_KEY.equals(key)) {
+                if (sampleResolutions != null) {
+                    return sampleResolutions.clone();
+                }
+            } else {
+                return getSource().getProperty(key);
+            }
         }
         return super.getProperty(key);
     }
@@ -217,12 +231,8 @@ class BandedSampleConverter extends ComputedImage {
      */
     @Override
     public String[] getPropertyNames() {
-        if (sampleResolutions != null) {
-            return new String[] {
-                SAMPLE_RESOLUTIONS_KEY
-            };
-        }
-        return super.getPropertyNames();
+        return SourceAlignedImage.filterPropertyNames(getSource().getPropertyNames(),
+                SourceAlignedImage.POSITIONAL_PROPERTIES, (sampleResolutions != null) ? ADDED_PROPERTIES : null);
     }
 
     /**

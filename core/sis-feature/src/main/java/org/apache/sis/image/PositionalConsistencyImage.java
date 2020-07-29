@@ -103,7 +103,7 @@ final class PositionalConsistencyImage extends SourceAlignedImage {
      */
     @Override
     public String[] getPropertyNames() {
-        return getPropertyNames(INHERITED_PROPERTIES, ADDED_PROPERTIES);
+        return filterPropertyNames(getSource().getPropertyNames(), INHERITED_PROPERTIES, ADDED_PROPERTIES);
     }
 
     /**

@@ -111,7 +111,7 @@ final class BandSelectImage extends SourceAlignedImage {
      */
     @Override
     public String[] getPropertyNames() {
-        return getPropertyNames(INHERITED_PROPERTIES, null);
+        return filterPropertyNames(getSource().getPropertyNames(), INHERITED_PROPERTIES, null);
     }
 
     /**

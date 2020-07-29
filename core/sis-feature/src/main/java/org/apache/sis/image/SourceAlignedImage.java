@@ -22,6 +22,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -29,12 +30,25 @@ import org.apache.sis.util.Workaround;
  * In addition of pixel coordinate system, images share also the same tile indices.
  * Tiles in this image have the same size than tiles in the source image.
  *
+ * <div class="note"><b>Relationship with other classes</b><br>
+ * This class is similar to {@link ImageAdapter} except that it extends {@link ComputedImage}
+ * and does not forward {@link #getTile(int, int)}, {@link #getData()} and other data methods
+ * to the source image.</div>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
 abstract class SourceAlignedImage extends ComputedImage {
+    /**
+     * Convenience collection for subclasses that inherit all properties related to positioning.
+     * May be used as the {@code inherit} argument in {@link #filterPropertyNames(String[], Set, String[])}.
+     * Inheriting those properties make sense for operations that do not change pixel coordinates.
+     */
+    static final Set<String> POSITIONAL_PROPERTIES = JDK9.setOf(GRID_GEOMETRY_KEY,
+            POSITIONAL_ACCURACY_KEY, ResampledImage.POSITIONAL_CONSISTENCY_KEY);
+
     /**
      * The color model for this image.
      */
@@ -88,16 +102,18 @@ abstract class SourceAlignedImage extends ComputedImage {
      * Returns the names of properties as a merge between source properties (after filtering) and properties added
      * by the subclass. This is a helper method for {@link #getPropertyNames()} implementations in subclasses.
      *
+     * <p>The {@code names} argument should be the result of invoking {@link RenderedImage#getPropertyNames()}
+     * on the source image. This method modifies directly that array returned by {@code getPropertyNames()} on
+     * the assumption that the array is already a copy. This assumption is okay when the source is known to be
+     * an Apache SIS implementation.</p>
+     *
+     * @param  names    names of properties to filter, or {@code null} if none.
+     *                  If non-null, this array will be modified in-place.
      * @param  inherit  properties to inherit from the source.
      * @param  append   properties to append, or {@code null} if none.
      * @return properties recognized by this image, or {@code null} if none.
      */
-    final String[] getPropertyNames(final Set<String> inherit, final String[] append) {
-        /*
-         * This method modifies directly the array returned by `getPropertyNames()` on the assumption that the array
-         * is already a copy. This assumption is okay when the source is known to be an Apache SIS implementation.
-         */
-        String[] names = getSource().getPropertyNames();
+    static String[] filterPropertyNames(String[] names, final Set<String> inherit, final String[] append) {
         if (names == null) {
             return (append != null) ? append.clone() : null;
         }

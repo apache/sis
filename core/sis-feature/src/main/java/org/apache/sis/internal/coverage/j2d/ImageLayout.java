@@ -79,6 +79,15 @@ public class ImageLayout {
     }
 
     /**
+     * Returns the preferred tile size. This is the dimension values specified at construction time.
+     *
+     * @return the preferred tile size.
+     */
+    public final Dimension getPreferredTileSize() {
+        return new Dimension(preferredTileWidth, preferredTileHeight);
+    }
+
+    /**
      * Suggests a tile size close to {@code tileSize} for the specified {@code imageSize}.
      * First, this method tries to return a tile size which is a divisor of the image size.
      * If no such divisor is found and {@code allowPartialTiles} is {@code true}, then this
@@ -213,7 +222,7 @@ public class ImageLayout {
             width  = singleXTile ? image.getWidth()  : image.getTileWidth();
             height = singleYTile ? image.getHeight() : image.getTileHeight();
         } else {
-            return new Dimension(preferredTileWidth, preferredTileHeight);
+            return getPreferredTileSize();
         }
         final Dimension tileSize = new Dimension(
                 toTileSize(width,  preferredTileWidth,  allowPartialTiles & singleXTile),

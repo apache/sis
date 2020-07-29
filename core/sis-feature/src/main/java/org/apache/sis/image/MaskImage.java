@@ -16,13 +16,11 @@
  */
 package org.apache.sis.image;
 
-import java.util.Set;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -36,15 +34,6 @@ import org.apache.sis.internal.jdk9.JDK9;
  */
 final class MaskImage extends SourceAlignedImage {
     /**
-     * Properties inherited from the source image. Must be consistent with the <cite>switch case</cite>
-     * statement delegating to the source image in {@link #getProperty(String)}.
-     *
-     * @see #getPropertyNames()
-     */
-    private static final Set<String> INHERITED_PROPERTIES = JDK9.setOf(
-            GRID_GEOMETRY_KEY, POSITIONAL_ACCURACY_KEY, ResampledImage.POSITIONAL_CONSISTENCY_KEY);
-
-    /**
      * Creates a new instance for the given image.
      */
     MaskImage(final ResampledImage image) {
@@ -57,7 +46,7 @@ final class MaskImage extends SourceAlignedImage {
      */
     @Override
     public Object getProperty(final String key) {
-        return INHERITED_PROPERTIES.contains(key) ? getSource().getProperty(key) : super.getProperty(key);
+        return POSITIONAL_PROPERTIES.contains(key) ? getSource().getProperty(key) : super.getProperty(key);
     }
 
     /**
@@ -67,7 +56,7 @@ final class MaskImage extends SourceAlignedImage {
      */
     @Override
     public String[] getPropertyNames() {
-        return getPropertyNames(INHERITED_PROPERTIES, null);
+        return filterPropertyNames(getSource().getPropertyNames(), POSITIONAL_PROPERTIES, null);
     }
 
     /**
