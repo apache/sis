@@ -33,7 +33,7 @@ import org.apache.sis.util.ArraysExt;
  * @since   1.1
  * @module
  */
-final class WriteSupport {
+public final class WriteSupport {
     /**
      * Do not allow (for now) instantiation of this class.
      */
@@ -48,7 +48,7 @@ final class WriteSupport {
      * @param  observer   the observer to add. Null values are ignored.
      * @return the updated array of observers.
      */
-    static TileObserver[] addTileObserver(TileObserver[] observers, final TileObserver observer) {
+    public static TileObserver[] addTileObserver(TileObserver[] observers, final TileObserver observer) {
         if (observer != null) {
             if (observers == null) {
                 return new TileObserver[] {observer};
@@ -69,7 +69,7 @@ final class WriteSupport {
      * @param  observer   the observer to remove.
      * @return the updated array of observers.
      */
-    static TileObserver[] removeTileObserver(final TileObserver[] observers, final TileObserver observer) {
+    public static TileObserver[] removeTileObserver(final TileObserver[] observers, final TileObserver observer) {
         if (observers != null) {
             for (int i=observers.length; --i >= 0;) {
                 if (observers[i] == observer) {
@@ -89,8 +89,8 @@ final class WriteSupport {
      * @param tileY           the <var>y</var> index of the tile that is being updated.
      * @param willBeWritable  if {@code true}, the tile will be grabbed for writing; otherwise it is being released.
      */
-    static void fireTileUpdate(final TileObserver[] observers, final WritableRenderedImage image,
-                               final int tileX, final int tileY, final boolean willBeWritable)
+    public static void fireTileUpdate(final TileObserver[] observers, final WritableRenderedImage image,
+                                      final int tileX, final int tileY, final boolean willBeWritable)
     {
         if (observers != null) {
             for (final TileObserver observer : observers) {

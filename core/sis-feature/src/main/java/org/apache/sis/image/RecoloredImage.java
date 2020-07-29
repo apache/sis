@@ -31,7 +31,6 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.internal.coverage.j2d.BandedSampleConverter;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.Colorizer;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
@@ -275,8 +274,8 @@ final class RecoloredImage extends ImageAdapter {
         final ColorModel      colorModel = colorizer.compactColorModel(1, 0);           // Must be first.
         final MathTransform1D converter  = colorizer.getSampleToIndexValues();
         final NumberRange<?>  range      = colorizer.getRepresentativeRange();
-        return BandedSampleConverter.create(source, null, Colorizer.TYPE_COMPACT, colorModel,
-                                            new NumberRange<?>[] {range}, converter);
+        return processor.convertSampleValues(source, new NumberRange<?>[] {range},
+                new MathTransform1D[] {converter}, Colorizer.TYPE_COMPACT, colorModel);
     }
 
     /**

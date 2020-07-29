@@ -23,6 +23,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
+import java.awt.image.BandedSampleModel;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.image.ComputedImage;
 import org.apache.sis.util.ArgumentChecks;
@@ -224,6 +225,20 @@ public class ImageLayout {
     }
 
     /**
+     * Creates a banded sample model of the given type with a {@linkplain #suggestTileSize(RenderedImage, Rectangle)
+     * the suggested size} for the given image.
+     *
+     * @param  type      desired data type as a {@link java.awt.image.DataBuffer} constant.
+     * @param  numBands  desired number of bands.
+     * @param  image     the image which will be the source of the image for which a sample model is created.
+     * @return a banded sample model of the given type with the given number of bands.
+     */
+    public BandedSampleModel createBandedSampleModel(final int type, final int numBands, final RenderedImage image) {
+        final Dimension tile = suggestTileSize(image, null);
+        return RasterFactory.unique(new BandedSampleModel(type, tile.width, tile.height, numBands));
+    }
+
+    /**
      * Creates a sample model compatible with the sample model of the given image
      * but with a size matching the preferred tile size. This method can be used
      * for determining the {@code sampleModel} argument of {@link ComputedImage}
@@ -241,6 +256,7 @@ public class ImageLayout {
         SampleModel sm = image.getSampleModel();
         if (sm.getWidth() != tile.width || sm.getHeight() != tile.height) {
             sm = sm.createCompatibleSampleModel(tile.width, tile.height);
+            sm = RasterFactory.unique(sm);
         }
         return sm;
     }

@@ -266,7 +266,7 @@ final class ConvertedGridCoverage extends GridCoverage {
          * That image should never be null. But if an implementation wants to do so, respect that.
          */
         if (image != null) {
-            return convert(image, dataType, converters);
+            image = convert(image, dataType, converters);
         }
         return image;
     }

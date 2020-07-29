@@ -31,7 +31,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
-import org.apache.sis.internal.coverage.j2d.BandedSampleConverter;
+import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.Colorizer;
 import org.apache.sis.util.collection.DefaultTreeTable;
@@ -59,6 +59,15 @@ import org.opengis.coverage.CannotEvaluateException;
  * @module
  */
 public abstract class GridCoverage {
+    /**
+     * The processor to use for {@link #convert(RenderedImage, int, MathTransform1D[])} operations.
+     * Wrapped in a class for lazy instantiation.
+     */
+    private static final class Lazy {
+        private Lazy() {}
+        private static final ImageProcessor PROCESSOR = new ImageProcessor();
+    }
+
     /**
      * The grid extent, coordinate reference system (CRS) and conversion from cell indices to CRS.
      *
@@ -252,7 +261,7 @@ public abstract class GridCoverage {
         } else {
             colors = Colorizer.NULL_COLOR_MODEL;
         }
-        return BandedSampleConverter.create(source, null, dataType, colors, getRanges(), converters);
+        return Lazy.PROCESSOR.convertSampleValues(source, getRanges(), converters, dataType, colors);
     }
 
     /**

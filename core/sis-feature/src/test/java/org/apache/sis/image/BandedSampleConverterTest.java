@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage.j2d;
+package org.apache.sis.image;
 
 import java.util.Random;
 import java.awt.image.DataBuffer;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.image.TiledImageMock;
+import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -70,8 +70,9 @@ public final strictfp class BandedSampleConverterTest extends TestCase {
                 random.nextInt(20) - 10);       // minTileY
         source.validate();
         source.initializeAllTiles(0);
-        image = BandedSampleConverter.create(source, null, targetType, null, null,
-                (MathTransform1D) MathTransforms.linear(scale, 0));
+        image = BandedSampleConverter.create(source, ImageLayout.DEFAULT, null,
+                new MathTransform1D[] {(MathTransform1D) MathTransforms.linear(scale, 0)},
+                targetType, null);
     }
 
     /**

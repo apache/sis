@@ -88,6 +88,7 @@ import org.junit.runners.Suite;
     org.apache.sis.image.InterpolationTest.class,
     org.apache.sis.image.ResamplingGridTest.class,
     org.apache.sis.image.ResampledImageTest.class,
+    org.apache.sis.image.BandedSampleConverterTest.class,
     org.apache.sis.coverage.CategoryTest.class,
     org.apache.sis.coverage.CategoryListTest.class,
     org.apache.sis.coverage.SampleDimensionTest.class,
@@ -103,7 +104,6 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.GridCoverageBuilderTest.class,
     org.apache.sis.coverage.grid.ConvertedGridCoverageTest.class,
     org.apache.sis.coverage.grid.ResampledGridCoverageTest.class,
-    org.apache.sis.internal.coverage.j2d.BandedSampleConverterTest.class,
 
     // Index
     org.apache.sis.index.tree.PointTreeNodeTest.class,

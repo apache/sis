@@ -26,6 +26,8 @@ import org.apache.sis.util.Workaround;
 
 /**
  * An image computed from a single source and sharing the same coordinate system.
+ * In addition of pixel coordinate system, images share also the same tile indices.
+ * Tiles in this image have the same size than tiles in the source image.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -48,6 +50,8 @@ abstract class SourceAlignedImage extends ComputedImage {
     SourceAlignedImage(final RenderedImage source, final ColorModel colorModel, final SampleModel sampleModel) {
         super(sampleModel, source);
         this.colorModel = colorModel;
+        assert source.getSampleModel().getWidth()  == sampleModel.getWidth() &&
+               source.getSampleModel().getHeight() == sampleModel.getHeight();
     }
 
     /**

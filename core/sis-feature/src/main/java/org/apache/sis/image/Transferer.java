@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage.j2d;
+package org.apache.sis.image;
 
 import java.awt.Rectangle;
 import java.awt.image.Raster;
@@ -25,9 +25,11 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferFloat;
 import java.awt.image.DataBufferDouble;
 import java.awt.image.RenderedImage;
-import org.apache.sis.internal.util.Numerics;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.coverage.j2d.ImageLayout;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**

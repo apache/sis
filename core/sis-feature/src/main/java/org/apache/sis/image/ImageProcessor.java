@@ -26,18 +26,23 @@ import java.util.logging.LogRecord;
 import java.awt.Color;
 import java.awt.Shape;
 import java.awt.Rectangle;
+import java.awt.image.DataBuffer;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import java.awt.image.IndexColorModel;
+import java.awt.image.WritableRenderedImage;
 import javax.measure.Quantity;
 import org.apache.sis.coverage.Category;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.internal.coverage.j2d.ImageLayout;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
@@ -669,6 +674,48 @@ public class ImageProcessor implements Cloneable {
     public RenderedImage selectBands(final RenderedImage source, final int... bands) {
         ArgumentChecks.ensureNonNull("source", source);
         return BandSelectImage.create(source, bands);
+    }
+
+    /**
+     * Returns an image with sample values converted by the given functions. The results can be stored as
+     * {@code byte}, {@code short}, {@code int}, {@code float} or {@code double} values, not necessarily
+     * the same type than the source values. If the result values are stored as integers, then they are
+     * {@linkplain Math#round(double) rounded to nearest integers} and clamped in the valid range of the
+     * target integer type.
+     *
+     * <p>If the source image is a {@link WritableRenderedImage} and the given converters are invertible, then
+     * the returned image will also be a {@link WritableRenderedImage} instance. In such case values written in
+     * the returned image will be reflected in the source image, with {@linkplain Math#round(double) rounding}
+     * and clamping if the source values are stored as integers.</p>
+     *
+     * <p>The number of bands in the returned image is the length of the {@code converters} array,
+     * which must be greater than 0 and not greater than the number of bands in the source image.
+     * If the {@code converters} array length is less than the number of source bands, all source
+     * bands at index ≥ {@code converters.length} will be ignored.</p>
+     *
+     * <p>The {@code sourceRanges} array is only a hint for this method. The array may be {@code null}
+     * or contain {@code null} elements, and may be of any length. Missing elements are considered null
+     * and extraneous elements are ignored.</p>
+     *
+     * @param  source        the image for which to convert sample values.
+     * @param  sourceRanges  approximate ranges of values for each band in source image, or {@code null} if unknown.
+     * @param  converters    the transfer functions to apply on each band of the source image.
+     * @param  targetType    the type of image resulting from conversions. Shall be one of {@link DataBuffer} constants.
+     * @param  colorModel    color model of resulting image, or {@code null}.
+     * @return the image which compute converted values from the given source.
+     */
+    public RenderedImage convertSampleValues(final RenderedImage source, final NumberRange<?>[] sourceRanges,
+                            MathTransform1D[] converters, final int targetType, final ColorModel colorModel)
+    {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("converters", converters);
+        ArgumentChecks.ensureSizeBetween("converters", 1, ImageUtilities.getNumBands(source), converters.length);
+        converters = converters.clone();
+        for (int i=0; i<converters.length; i++) {
+            ArgumentChecks.ensureNonNullElement("converters", i, converters[i]);
+        }
+        // No need to clone `sourceRanges` because it is not stored by `BandedSampleConverter`.
+        return unique(BandedSampleConverter.create(source, ImageLayout.DEFAULT, sourceRanges, converters, targetType, colorModel));
     }
 
     /**

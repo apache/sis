@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage.j2d;
+package org.apache.sis.image;
 
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
@@ -30,10 +29,12 @@ import java.lang.reflect.Array;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.image.ComputedImage;
+import org.apache.sis.internal.coverage.j2d.ImageLayout;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
+import org.apache.sis.internal.coverage.j2d.WriteSupport;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
@@ -63,7 +64,12 @@ import org.apache.sis.measure.NumberRange;
  * @since   1.1
  * @module
  */
-public class BandedSampleConverter extends ComputedImage {
+class BandedSampleConverter extends ComputedImage {
+    /*
+     * Do not extend `SourceAlignedImage` because we want to inherit the `getNumTiles()`
+     * and `getTileGridOffset()` methods defined by `PlanarImage`.
+     */
+
     /**
      * The transfer functions to apply on each band of the source image.
      */
@@ -87,6 +93,7 @@ public class BandedSampleConverter extends ComputedImage {
      * @param  colorModel   the color model for the expected range of values, or {@code null}.
      * @param  ranges       the expected range of values for each band, or {@code null} if unknown.
      * @param  converters   the transfer functions to apply on each band of the source image.
+     *                      If this array was a user-provided parameter, should be cloned by caller.
      */
     private BandedSampleConverter(final RenderedImage source,  final BandedSampleModel sampleModel,
                                   final ColorModel colorModel, final NumberRange<?>[] ranges,
@@ -110,7 +117,7 @@ public class BandedSampleConverter extends ComputedImage {
              * If no range was explicitly given, use the approximate average of all possible values.
              */
             double middle = Double.NaN;
-            if (ranges != null) {
+            if (ranges != null && i < ranges.length) {
                 final NumberRange<?> range = ranges[i];
                 if (range != null) {
                     middle = range.getMedian();
@@ -159,28 +166,22 @@ public class BandedSampleConverter extends ComputedImage {
      * The number of bands is the length of the {@code converters} array, which must be greater than 0
      * and not greater than the number of bands in the source image.
      *
-     * @param  source      the image for which to convert sample values.
-     * @param  layout      object to use for computing tile size, or {@code null} for the default.
-     * @param  targetType  the type of this image resulting from conversion of given image.
-     * @param  colorModel  the color model for the expected range of values, or {@code null}.
-     * @param  ranges      the expected range of values for each band, or {@code null} if unknown.
-     * @param  converters  the transfer functions to apply on each band of the source image.
+     * @param  source        the image for which to convert sample values.
+     * @param  layout        object to use for computing tile size.
+     * @param  sourceRanges  the expected range of values for each band in source image, or {@code null} if unknown.
+     * @param  converters    the transfer functions to apply on each band of the source image.
+     * @param  targetType    the type of this image resulting from conversion of given image.
+     * @param  colorModel    the color model for the expected range of values, or {@code null}.
      * @return the image which compute converted values from the given source.
+     *
+     * @see ImageProcessor#convertSampleValues(RenderedImage, NumberRange[], MathTransform1D[], int, ColorModel)
      */
-    public static BandedSampleConverter create(final RenderedImage source, ImageLayout layout,
-            final int targetType, final ColorModel colorModel, final NumberRange<?>[] ranges,
-            final MathTransform1D... converters)
+    static BandedSampleConverter create(final RenderedImage source, final ImageLayout layout,
+            final NumberRange<?>[] sourceRanges, final MathTransform1D[] converters,
+            final int targetType, final ColorModel colorModel)
     {
-        ArgumentChecks.ensureNonNull("source", source);
-        ArgumentChecks.ensureNonNull("converters", converters);
         final int numBands = converters.length;
-        ArgumentChecks.ensureSizeBetween("converters", 1, source.getSampleModel().getNumBands(), numBands);
-        if (layout == null) {
-            layout = ImageLayout.DEFAULT;
-        }
-        final Dimension tile = layout.suggestTileSize(source, null);
-        final BandedSampleModel sampleModel = RasterFactory.unique(
-                new BandedSampleModel(targetType, tile.width, tile.height, numBands));
+        final BandedSampleModel sampleModel = layout.createBandedSampleModel(targetType, numBands, source);
         /*
          * If the source image is writable, then changes in the converted image may be retro-propagated
          * to that source image. If we fail to compute the required inverse transforms, log a notice at
@@ -192,11 +193,11 @@ public class BandedSampleConverter extends ComputedImage {
             for (int i=0; i<numBands; i++) {
                 inverses[i] = converters[i].inverse();
             }
-            return new Writable((WritableRenderedImage) source, sampleModel, colorModel, ranges, converters, inverses);
+            return new Writable((WritableRenderedImage) source, sampleModel, colorModel, sourceRanges, converters, inverses);
         } catch (NoninvertibleTransformException e) {
-            Logging.recoverableException(Logging.getLogger(Modules.RASTER), BandedSampleConverter.class, "create", e);
+            Logging.recoverableException(Logging.getLogger(Modules.RASTER), ImageProcessor.class, "convertSampleValues", e);
         }
-        return new BandedSampleConverter(source, sampleModel, colorModel, ranges, converters);
+        return new BandedSampleConverter(source, sampleModel, colorModel, sourceRanges, converters);
     }
 
     /**
@@ -244,7 +245,7 @@ public class BandedSampleConverter extends ComputedImage {
      */
     @Override
     public int getWidth() {
-        return getSource(0).getWidth();
+        return getSource().getWidth();
     }
 
     /**
@@ -255,7 +256,7 @@ public class BandedSampleConverter extends ComputedImage {
      */
     @Override
     public int getHeight() {
-        return getSource(0).getHeight();
+        return getSource().getHeight();
     }
 
     /**
@@ -266,7 +267,7 @@ public class BandedSampleConverter extends ComputedImage {
      */
     @Override
     public int getMinX() {
-        return getSource(0).getMinX();
+        return getSource().getMinX();
     }
 
     /**
@@ -277,7 +278,7 @@ public class BandedSampleConverter extends ComputedImage {
      */
     @Override
     public int getMinY() {
-        return getSource(0).getMinY();
+        return getSource().getMinY();
     }
 
     /**
@@ -288,7 +289,7 @@ public class BandedSampleConverter extends ComputedImage {
      */
     @Override
     public int getMinTileX() {
-        return getSource(0).getMinTileX();
+        return getSource().getMinTileX();
     }
 
     /**
@@ -299,7 +300,7 @@ public class BandedSampleConverter extends ComputedImage {
      */
     @Override
     public int getMinTileY() {
-        return getSource(0).getMinTileY();
+        return getSource().getMinTileY();
     }
 
     /**
@@ -316,7 +317,7 @@ public class BandedSampleConverter extends ComputedImage {
         if (target == null) {
             target = createTile(tileX, tileY);
         }
-        Transferer.create(getSource(0), target).compute(converters);
+        Transferer.create(getSource(), target).compute(converters);
         return target;
     }
 
@@ -430,7 +431,7 @@ public class BandedSampleConverter extends ComputedImage {
         @Override
         public void setData(final Raster data) {
             final Rectangle bounds = data.getBounds();
-            final WritableRenderedImage target = (WritableRenderedImage) getSource(0);
+            final WritableRenderedImage target = (WritableRenderedImage) getSource();
             ImageUtilities.clipBounds(target, bounds);
             final TileOpExecutor executor = new TileOpExecutor(target, bounds) {
                 @Override protected void writeTo(final WritableRaster target) throws TransformException {
