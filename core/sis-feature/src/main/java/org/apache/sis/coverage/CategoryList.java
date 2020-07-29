@@ -638,11 +638,20 @@ main:   for (int peekOff = srcOff; /* numPts >= 0 */; peekOff += direction) {
     }
 
     /**
+     * Ensures that the given arrays are non-null.
+     */
+    private static void ensureNonNull(final Object srcPts, final Object dstPts) {
+        ArgumentChecks.ensureNonNull("srcPts", srcPts);
+        ArgumentChecks.ensureNonNull("dstPts", dstPts);
+    }
+
+    /**
      * Transforms a list of coordinate point ordinal values. This method can be invoked only if {@link #categories}
      * contains at least two elements, otherwise a {@code MathTransform} implementation from another package is used.
      */
     @Override
     public final void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {
+        ensureNonNull(srcPts, dstPts);
         transform(srcPts, null, srcOff, dstPts, null, dstOff, numPts);
     }
 
@@ -652,6 +661,7 @@ main:   for (int peekOff = srcOff; /* numPts >= 0 */; peekOff += direction) {
      */
     @Override
     public final void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) throws TransformException {
+        ensureNonNull(srcPts, dstPts);
         transform(null, srcPts, srcOff, null, dstPts, dstOff, numPts);
     }
 
@@ -661,6 +671,7 @@ main:   for (int peekOff = srcOff; /* numPts >= 0 */; peekOff += direction) {
      */
     @Override
     public final void transform(float[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {
+        ensureNonNull(srcPts, dstPts);
         transform(null, srcPts, srcOff, dstPts, null, dstOff, numPts);
     }
 
@@ -670,6 +681,7 @@ main:   for (int peekOff = srcOff; /* numPts >= 0 */; peekOff += direction) {
      */
     @Override
     public final void transform(double[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) throws TransformException {
+        ensureNonNull(srcPts, dstPts);
         transform(srcPts, null, srcOff, null, dstPts, dstOff, numPts);
     }
 

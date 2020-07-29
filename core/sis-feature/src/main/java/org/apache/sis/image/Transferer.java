@@ -168,8 +168,8 @@ abstract class Transferer {
 
         /** Copies source values directly in the target, then applies the conversion in-place. */
         @Override void computeStrip(final MathTransform1D converter) throws TransformException {
-            final double[] data = buffer.getData(band);
-            source.getSamples(region.x, region.y, region.width, region.height, band, data);
+            double[] data = buffer.getData(band);
+            data = source.getSamples(region.x, region.y, region.width, region.height, band, data);
             converter.transform(data, 0, data, 0, length());
         }
     }
@@ -194,8 +194,8 @@ abstract class Transferer {
 
         /** Copies source values directly in the target, then applies the conversion in-place. */
         @Override void computeStrip(final MathTransform1D converter) throws TransformException {
-            final float[] data = buffer.getData(band);
-            source.getSamples(region.x, region.y, region.width, region.height, band, data);
+            float[] data = buffer.getData(band);
+            data = source.getSamples(region.x, region.y, region.width, region.height, band, data);
             converter.transform(data, 0, data, 0, length());
         }
     }
