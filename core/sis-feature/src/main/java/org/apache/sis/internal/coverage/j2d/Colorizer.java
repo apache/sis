@@ -39,6 +39,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -97,7 +98,9 @@ public final class Colorizer {
     /**
      * Blue to red color palette with white in the middle. Useful for data with a clear 0 (white)
      * in the range center and negative and positive values (to appear blue and red respectively).
+     * Used for debugging purposes; production code should use a {@code PaletteFactory} instead.
      */
+    @Debug
     public static final Function<Category,Color[]> BELL =
             (category) -> category.isQuantitative() ? new Color[] {
                 Color.BLUE, Color.CYAN, Color.WHITE, Color.YELLOW, Color.RED} : null;

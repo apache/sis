@@ -589,75 +589,6 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Returns an image where all sample values are indices of colors in an {@link IndexColorModel}.
-     * If the given image stores sample values as unsigned bytes or short integers, then those values
-     * are used as-is (they are not copied or converted). Otherwise this operation will convert sample
-     * values to unsigned bytes in order to enable the use of {@link IndexColorModel}.
-     *
-     * <p>The given map specifies the color to use for different ranges of values in the source image.
-     * The ranges of values in the returned image may not be the same; this method is free to rescale them.
-     * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
-     * the ranges of values in the destination image.</p>
-     *
-     * <p>The resulting image is suitable for visualization purposes, but should not be used for computation
-     * purposes. There is no guarantees about the number of bands in returned image and the formulas used for
-     * converting floating point values to integer values.</p>
-     *
-     * @param  source  the image to recolor for visualization purposes.
-     * @param  colors  colors to use for each range of values in the source image.
-     * @return recolored image for visualization purposes only.
-     */
-    public RenderedImage toIndexedColors(final RenderedImage source, final Map<NumberRange<?>,Color[]> colors) {
-        ArgumentChecks.ensureNonNull("source", source);
-        ArgumentChecks.ensureNonNull("colors", colors);
-        try {
-            return RecoloredImage.toIndexedColors(this, source, null, null, colors.entrySet());
-        } catch (IllegalStateException | NoninvertibleTransformException e) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
-        }
-    }
-
-    /**
-     * Returns an image where all sample values are indices of colors in an {@link IndexColorModel}.
-     * If the given image stores sample values as unsigned bytes or short integers, then those values
-     * are used as-is (they are not copied or converted). Otherwise this operation will convert sample
-     * values to unsigned bytes in order to enable the use of {@link IndexColorModel}.
-     *
-     * <p>This method is similar to {@link #toIndexedColors(RenderedImage, Map)}
-     * except that the {@link Map} argument is splitted in two parts: the ranges (map keys) are
-     * {@linkplain Category#getSampleRange() encapsulated in <code>Category</code>} objects, themselves
-     * {@linkplain SampleDimension#getCategories() encapsulated in <code>SampleDimension</code>} objects.
-     * The colors (map values) are determined by a function receiving {@link Category} inputs.
-     * This separation makes easier to apply colors based on criterion other than numerical values.
-     * For example colors could be determined from {@linkplain Category#getName() category name} such as "Temperature",
-     * or {@linkplain org.apache.sis.measure.MeasurementRange#unit() units of measurement}.
-     * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
-     * the ranges of values in the destination image.</p>
-     *
-     * <p>The resulting image is suitable for visualization purposes, but should not be used for computation
-     * purposes. There is no guarantees about the number of bands in returned image and the formulas used for
-     * converting floating point values to integer values.</p>
-     *
-     * @param  source  the image to recolor for visualization purposes.
-     * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
-     *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
-     * @param  colors  the colors to use for given categories. This function can return {@code null} or
-     *                 empty arrays for some categories, which are interpreted as fully transparent pixels.
-     * @return recolored image for visualization purposes only.
-     */
-    public RenderedImage toIndexedColors(final RenderedImage source,
-            final List<SampleDimension> ranges, final Function<Category,Color[]> colors)
-    {
-        ArgumentChecks.ensureNonNull("source", source);
-        ArgumentChecks.ensureNonNull("colors", colors);
-        try {
-            return RecoloredImage.toIndexedColors(this, source, ranges, colors, null);
-        } catch (IllegalStateException | NoninvertibleTransformException e) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
-        }
-    }
-
-    /**
      * Selects a subset of bands in the given image. This method can also be used for changing band order
      * or repeating the same band from the source image. If the specified {@code bands} are the same than
      * the source image bands in the same order, then {@code source} is returned directly.
@@ -704,8 +635,8 @@ public class ImageProcessor implements Cloneable {
      * @param  colorModel    color model of resulting image, or {@code null}.
      * @return the image which compute converted values from the given source.
      */
-    public RenderedImage convertSampleValues(final RenderedImage source, final NumberRange<?>[] sourceRanges,
-                            MathTransform1D[] converters, final int targetType, final ColorModel colorModel)
+    public RenderedImage convert(final RenderedImage source, final NumberRange<?>[] sourceRanges,
+                MathTransform1D[] converters, final int targetType, final ColorModel colorModel)
     {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("converters", converters);
@@ -812,6 +743,75 @@ public class ImageProcessor implements Cloneable {
         }
         final PrefetchedImage image = new PrefetchedImage(source, areaOfInterest, parallel);
         return image.isEmpty() ? source : image;
+    }
+
+    /**
+     * Returns an image where all sample values are indices of colors in an {@link IndexColorModel}.
+     * If the given image stores sample values as unsigned bytes or short integers, then those values
+     * are used as-is (they are not copied or converted). Otherwise this operation will convert sample
+     * values to unsigned bytes in order to enable the use of {@link IndexColorModel}.
+     *
+     * <p>The given map specifies the color to use for different ranges of values in the source image.
+     * The ranges of values in the returned image may not be the same; this method is free to rescale them.
+     * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
+     * the ranges of values in the destination image.</p>
+     *
+     * <p>The resulting image is suitable for visualization purposes, but should not be used for computation
+     * purposes. There is no guarantees about the number of bands in returned image and the formulas used for
+     * converting floating point values to integer values.</p>
+     *
+     * @param  source  the image to recolor for visualization purposes.
+     * @param  colors  colors to use for each range of values in the source image.
+     * @return recolored image for visualization purposes only.
+     */
+    public RenderedImage visualize(final RenderedImage source, final Map<NumberRange<?>,Color[]> colors) {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("colors", colors);
+        try {
+            return RecoloredImage.toIndexedColors(this, source, null, null, colors.entrySet());
+        } catch (IllegalStateException | NoninvertibleTransformException e) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
+        }
+    }
+
+    /**
+     * Returns an image where all sample values are indices of colors in an {@link IndexColorModel}.
+     * If the given image stores sample values as unsigned bytes or short integers, then those values
+     * are used as-is (they are not copied or converted). Otherwise this operation will convert sample
+     * values to unsigned bytes in order to enable the use of {@link IndexColorModel}.
+     *
+     * <p>This method is similar to {@link #visualize(RenderedImage, Map)}
+     * except that the {@link Map} argument is splitted in two parts: the ranges (map keys) are
+     * {@linkplain Category#getSampleRange() encapsulated in <code>Category</code>} objects, themselves
+     * {@linkplain SampleDimension#getCategories() encapsulated in <code>SampleDimension</code>} objects.
+     * The colors (map values) are determined by a function receiving {@link Category} inputs.
+     * This separation makes easier to apply colors based on criterion other than numerical values.
+     * For example colors could be determined from {@linkplain Category#getName() category name} such as "Temperature",
+     * or {@linkplain org.apache.sis.measure.MeasurementRange#unit() units of measurement}.
+     * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
+     * the ranges of values in the destination image.</p>
+     *
+     * <p>The resulting image is suitable for visualization purposes, but should not be used for computation
+     * purposes. There is no guarantees about the number of bands in returned image and the formulas used for
+     * converting floating point values to integer values.</p>
+     *
+     * @param  source  the image to recolor for visualization purposes.
+     * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
+     *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
+     * @param  colors  the colors to use for given categories. This function can return {@code null} or
+     *                 empty arrays for some categories, which are interpreted as fully transparent pixels.
+     * @return recolored image for visualization purposes only.
+     */
+    public RenderedImage visualize(final RenderedImage source,
+            final List<SampleDimension> ranges, final Function<Category,Color[]> colors)
+    {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("colors", colors);
+        try {
+            return RecoloredImage.toIndexedColors(this, source, ranges, colors, null);
+        } catch (IllegalStateException | NoninvertibleTransformException e) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
+        }
     }
 
     /**

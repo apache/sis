@@ -150,7 +150,7 @@ final class ImageConverter extends Task<Statistics[]> {
     private RenderedImage getMask(final ImageProcessor processor) {
         final Object mask = source.getProperty(PlanarImage.MASK_KEY);
         if (mask instanceof RenderedImage) try {
-            return processor.toIndexedColors((RenderedImage) mask, MASK_TRANSPARENCY);
+            return processor.visualize((RenderedImage) mask, MASK_TRANSPARENCY);
         } catch (IllegalArgumentException e) {
             // Ignore, we will not apply any mask. Declare PropertyView.setImage(…) as the public method.
             Logging.recoverableException(Logging.getLogger(Loggers.APPLICATION), PropertyView.class, "setImage", e);

@@ -85,7 +85,7 @@ final class Raster extends BufferedGridCoverage {
             if (bandOffsets != null) {
                 renderer.setInterleavedPixelOffsets(pixelStride, bandOffsets);
             }
-            return renderer.image();
+            return renderer.createImage();
         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
             throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotRender_2, label, e), e);
         }

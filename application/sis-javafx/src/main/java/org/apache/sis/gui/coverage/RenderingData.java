@@ -329,7 +329,7 @@ final class RenderingData implements Cloneable {
         if (CREATE_INDEX_COLOR_MODEL) {
             final ColorModelType ct = ColorModelType.find(resampledImage.getColorModel());
             if (ct.isSlow || (colors != null && ct.useColorRamp)) {
-                resampledImage = processor.toIndexedColors(resampledImage,
+                resampledImage = processor.visualize(resampledImage,
                         dataRanges, (colors != null) ? colors : Colorizer.GRAYSCALE);
             }
         }

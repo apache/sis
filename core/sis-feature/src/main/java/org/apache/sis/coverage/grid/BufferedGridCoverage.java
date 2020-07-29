@@ -208,7 +208,7 @@ public class BufferedGridCoverage extends GridCoverage {
         final ImageRenderer renderer = new ImageRenderer(this, sliceExtent);
         try {
             renderer.setData(data);
-            return renderer.image();
+            return renderer.createImage();
         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
         }

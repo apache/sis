@@ -182,7 +182,7 @@ class BandedSampleConverter extends ComputedImage {
      * @param  colorModel    the color model for the expected range of values, or {@code null}.
      * @return the image which compute converted values from the given source.
      *
-     * @see ImageProcessor#convertSampleValues(RenderedImage, NumberRange[], MathTransform1D[], int, ColorModel)
+     * @see ImageProcessor#convert(RenderedImage, NumberRange[], MathTransform1D[], int, ColorModel)
      */
     static BandedSampleConverter create(final RenderedImage source, final ImageLayout layout,
             final NumberRange<?>[] sourceRanges, final MathTransform1D[] converters,
@@ -203,7 +203,7 @@ class BandedSampleConverter extends ComputedImage {
             }
             return new Writable((WritableRenderedImage) source, sampleModel, colorModel, sourceRanges, converters, inverses);
         } catch (NoninvertibleTransformException e) {
-            Logging.recoverableException(Logging.getLogger(Modules.RASTER), ImageProcessor.class, "convertSampleValues", e);
+            Logging.recoverableException(Logging.getLogger(Modules.RASTER), ImageProcessor.class, "convert", e);
         }
         return new BandedSampleConverter(source, sampleModel, colorModel, sourceRanges, converters);
     }

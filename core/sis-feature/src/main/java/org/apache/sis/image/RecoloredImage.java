@@ -206,7 +206,7 @@ final class RecoloredImage extends ImageAdapter {
      * @throws NoninvertibleTransformException if sample values in source image can not be converted
      *         to sample values in the recolored image.
      *
-     * @see ImageProcessor#toIndexedColors(RenderedImage, Map)
+     * @see ImageProcessor#visualize(RenderedImage, Map)
      */
     static RenderedImage toIndexedColors(final ImageProcessor processor, RenderedImage source,
             final List<SampleDimension> sourceBands, final Function<Category,Color[]> colors,
@@ -274,7 +274,7 @@ final class RecoloredImage extends ImageAdapter {
         final ColorModel      colorModel = colorizer.compactColorModel(1, 0);           // Must be first.
         final MathTransform1D converter  = colorizer.getSampleToIndexValues();
         final NumberRange<?>  range      = colorizer.getRepresentativeRange();
-        return processor.convertSampleValues(source, new NumberRange<?>[] {range},
+        return processor.convert(source, new NumberRange<?>[] {range},
                 new MathTransform1D[] {converter}, Colorizer.TYPE_COMPACT, colorModel);
     }
 

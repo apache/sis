@@ -261,7 +261,7 @@ public abstract class GridCoverage {
         } else {
             colors = Colorizer.NULL_COLOR_MODEL;
         }
-        return Lazy.PROCESSOR.convertSampleValues(source, getRanges(), converters, dataType, colors);
+        return Lazy.PROCESSOR.convert(source, getRanges(), converters, dataType, colors);
     }
 
     /**

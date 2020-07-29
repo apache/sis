@@ -76,7 +76,7 @@ import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
  *             ImageRenderer renderer = new ImageRenderer(this, sliceExtent);
  *             try {
  *                 renderer.setData(data);
- *                 return renderer.image();
+ *                 return renderer.createImage();
  *             } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
  *                 throw new CannotEvaluateException("Can not create an image.", e);
  *             }
@@ -412,7 +412,7 @@ public class ImageRenderer {
 
     /**
      * Adds a value associated to a property. This method can be invoked only once for each {@code key}.
-     * Those properties will be given to the image created by the {@link #image()} method.
+     * Those properties will be given to the image created by the {@link #createImage()} method.
      *
      * @param  key    key of the property to set.
      * @param  value  value to associate to the given key.
@@ -571,6 +571,14 @@ public class ImageRenderer {
     }
 
     /**
+     * @deprecated Renamed {@link #createRaster()}.
+     */
+    @Deprecated
+    public WritableRaster raster() {
+        return (WritableRaster) createRaster();
+    }
+
+    /**
      * Creates a raster with the data specified by the last call to a {@code setData(…)} method.
      * The raster upper-left corner is located at the position given by {@link #getBounds()}.
      * The returned raster is often an instance of {@link WritableRaster}, but read-only rasters are also allowed.
@@ -579,8 +587,10 @@ public class ImageRenderer {
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
      * @throws RasterFormatException if a call to a {@link Raster} factory method failed.
      * @throws ArithmeticException if a property of the raster to construct exceeds the capacity of 32 bits integers.
+     *
+     * @since 1.1
      */
-    public Raster raster() {
+    public Raster createRaster() {
         if (buffer == null) {
             throw new IllegalStateException(Resources.format(Resources.Keys.UnspecifiedRasterData));
         }
@@ -612,23 +622,33 @@ public class ImageRenderer {
     }
 
     /**
+     * @deprecated Renamed {@link #createImage()}.
+     */
+    @Deprecated
+    public RenderedImage image() {
+        return createImage();
+    }
+
+    /**
      * Creates an image with the data specified by the last call to a {@code setData(…)} method.
      * The image upper-left corner is located at the position given by {@link #getBounds()}.
      * The two-dimensional {@linkplain #getImageGeometry(int) image geometry} is stored as
      * a property associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
      *
      * <p>The default implementation returns an instance of {@link java.awt.image.WritableRenderedImage}
-     * if the {@link #raster()} return value is an instance of {@link WritableRaster}, or a read-only
+     * if the {@link #createRaster()} return value is an instance of {@link WritableRaster}, or a read-only
      * {@link RenderedImage} otherwise.</p>
      *
      * @return the image.
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
      * @throws RasterFormatException if a call to a {@link Raster} factory method failed.
      * @throws ArithmeticException if a property of the image to construct exceeds the capacity of 32 bits integers.
+     *
+     * @since 1.1
      */
     @SuppressWarnings("UseOfObsoleteCollectionType")
-    public RenderedImage image() {
-        final Raster raster = raster();
+    public RenderedImage createImage() {
+        final Raster raster = createRaster();
         final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
         final ColorModel colors;
         if (colorizer.initialize(bands[visibleBand]) || colorizer.initialize(raster.getSampleModel(), visibleBand)) {

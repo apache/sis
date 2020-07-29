@@ -35,7 +35,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.feature.Resources;
@@ -302,19 +301,6 @@ public class ResampledImage extends ComputedImage {
      */
     static double interpolationSupportOffset(final int span) {
         return -Math.max(0, (span - 1) / 2);        // Round toward 0.
-    }
-
-    /**
-     * Returns {@code true} if this resampling uses a linear transform. In such case, the use of this image could be
-     * replaced by {@linkplain java.awt.Graphics2D#drawRenderedImage(RenderedImage, java.awt.geom.AffineTransform)
-     * more efficient alternatives}.
-     *
-     * @return whether this resampling uses a linear transform.
-     *
-     * @see LinearTransform
-     */
-    public boolean isLinear() {
-        return toSourceSupport instanceof LinearTransform;
     }
 
     /**
