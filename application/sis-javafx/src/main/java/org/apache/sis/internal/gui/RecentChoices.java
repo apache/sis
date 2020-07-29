@@ -74,12 +74,20 @@ public final class RecentChoices {
 
     /**
      * Returns the directory to show in "Open" dialog.
+     * If the directory does not exist anymore, its parent directory is returned instead.
      *
      * @return the initial open directory, or {@code null} if none.
      */
     public static File getOpenDirectory() {
         final String value = NODE.get(OPEN, null);
-        return (value != null) ? new File(value) : null;
+        if (value != null) {
+            File file = new File(value);
+            do {
+                if (file.isDirectory()) return file;
+                file = file.getParentFile();
+            } while (file != null);
+        }
+        return null;
     }
 
     /**
