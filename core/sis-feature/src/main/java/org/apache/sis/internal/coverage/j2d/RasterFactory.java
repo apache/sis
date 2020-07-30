@@ -34,16 +34,13 @@ import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
 import java.nio.Buffer;
 import java.nio.ReadOnlyBufferException;
+import org.apache.sis.image.DataType;
 import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.WeakHashSet;
-
-import static org.apache.sis.internal.util.Numerics.MAX_INTEGER_CONVERTIBLE_TO_FLOAT;
 
 
 /**
@@ -203,98 +200,31 @@ public final class RasterFactory extends Static {
     }
 
     /**
-     * Returns the {@link DataBuffer} constant for the given type. The given {@code sample} class
-     * should be a primitive type such as {@link Float#TYPE}. Wrappers class are also accepted.
-     *
-     * @param  sample    the primitive type or its wrapper class. May be {@code null}.
-     * @param  unsigned  whether the type should be considered unsigned.
-     * @return the {@link DataBuffer} type, or {@link DataBuffer#TYPE_UNDEFINED}.
-     */
-    public static int getDataType(final Class<?> sample, final boolean unsigned) {
-        switch (Numbers.getEnumConstant(sample)) {
-            case Numbers.BYTE:    return unsigned ? DataBuffer.TYPE_BYTE      : DataBuffer.TYPE_SHORT;
-            case Numbers.SHORT:   return unsigned ? DataBuffer.TYPE_USHORT    : DataBuffer.TYPE_SHORT;
-            case Numbers.INTEGER: return unsigned ? DataBuffer.TYPE_UNDEFINED : DataBuffer.TYPE_INT;
-            case Numbers.FLOAT:   return DataBuffer.TYPE_FLOAT;
-            case Numbers.DOUBLE:  return DataBuffer.TYPE_DOUBLE;
-            default:              return DataBuffer.TYPE_UNDEFINED;
-        }
-    }
-
-    /**
-     * Returns the {@link DataBuffer} constant for the given range of values.
-     * If {@code keepFloat} is {@code false}, then this method tries to return
-     * an integer type regardless if the range uses a floating point type.
-     * Range checks for integers assume ties rounding to positive infinity.
-     *
-     * @param  range      the range of values, or {@code null}.
-     * @param  keepFloat  whether to avoid integer types if the range uses floating point numbers.
-     * @return the {@link DataBuffer} type or {@link DataBuffer#TYPE_UNDEFINED} if the given range was null.
-     */
-    public static int getDataType(final NumberRange<?> range, final boolean keepFloat) {
-        if (range == null) {
-            return DataBuffer.TYPE_UNDEFINED;
-        }
-        final byte nt = Numbers.getEnumConstant(range.getElementType());
-        if (keepFloat) {
-            if (nt >= Numbers.DOUBLE)   return DataBuffer.TYPE_DOUBLE;
-            if (nt >= Numbers.FRACTION) return DataBuffer.TYPE_FLOAT;
-        }
-        final double min = range.getMinDouble();
-        final double max = range.getMaxDouble();
-        if (nt < Numbers.BYTE || nt > Numbers.FLOAT || nt == Numbers.LONG) {
-            /*
-             * Value type is long, double, BigInteger, BigDecimal or unknown type.
-             * If conversions to 32 bits integers would lost integer digits, or if
-             * a bound is NaN, stick to the most conservative data buffer type.
-             *
-             * Range check assumes ties rounding to positive infinity.
-             */
-            if (!(min >= -MAX_INTEGER_CONVERTIBLE_TO_FLOAT - 0.5 && max < MAX_INTEGER_CONVERTIBLE_TO_FLOAT + 0.5)) {
-                return DataBuffer.TYPE_DOUBLE;
-            }
-        }
-        /*
-         * Check most common types first. If the range could be both signed and unsigned short,
-         * give precedence to unsigned short because it works better with IndexColorModel.
-         * If a bounds is NaN, fallback on TYPE_FLOAT.
-         */
-        if (min >= -0.5 && max < 0xFFFF + 0.5) {
-            return (max < 0xFF + 0.5) ? DataBuffer.TYPE_BYTE : DataBuffer.TYPE_USHORT;
-        } else if (min >= Short.MIN_VALUE - 0.5 && max < Short.MAX_VALUE + 0.5) {
-            return DataBuffer.TYPE_SHORT;
-        } else if (min >= Integer.MIN_VALUE - 0.5 && max < Integer.MAX_VALUE + 0.5) {
-            return DataBuffer.TYPE_INT;
-        }
-        return DataBuffer.TYPE_FLOAT;
-    }
-
-    /**
      * Wraps the backing arrays of given NIO buffers into Java2D buffers.
      * This method wraps the underlying array of primitive types; data are not copied.
      * For each buffer, the data starts at {@linkplain Buffer#position() buffer position}
      * and ends at {@linkplain Buffer#limit() limit}.
      *
-     * @param  dataType  type of buffer to create as one of {@link DataBuffer} constants.
+     * @param  dataType  type of buffer to create.
      * @param  data      the data, one for each band.
-     * @return buffer of the given type, or {@code null} if {@code dataType} is unrecognized.
+     * @return buffer of the given type (ever null).
      * @throws UnsupportedOperationException if a buffer is not backed by an accessible array.
      * @throws ReadOnlyBufferException if a buffer is backed by an array but is read-only.
      * @throws ArrayStoreException if the type of a backing array is not {@code dataType}.
      * @throws ArithmeticException if a buffer position overflows the 32 bits integer capacity.
      * @throws RasterFormatException if buffers do not have the same amount of remaining values.
      */
-    public static DataBuffer wrap(final int dataType, final Buffer... data) {
+    public static DataBuffer wrap(final DataType dataType, final Buffer... data) {
         final int numBands = data.length;
         final Object[] arrays;
         switch (dataType) {
-            case DataBuffer.TYPE_USHORT: // fall through
-            case DataBuffer.TYPE_SHORT:  arrays = new short [numBands][]; break;
-            case DataBuffer.TYPE_INT:    arrays = new int   [numBands][]; break;
-            case DataBuffer.TYPE_BYTE:   arrays = new byte  [numBands][]; break;
-            case DataBuffer.TYPE_FLOAT:  arrays = new float [numBands][]; break;
-            case DataBuffer.TYPE_DOUBLE: arrays = new double[numBands][]; break;
-            default: return null;
+            case USHORT: // fall through
+            case SHORT:  arrays = new short [numBands][]; break;
+            case INT:    arrays = new int   [numBands][]; break;
+            case BYTE:   arrays = new byte  [numBands][]; break;
+            case FLOAT:  arrays = new float [numBands][]; break;
+            case DOUBLE: arrays = new double[numBands][]; break;
+            default: throw new AssertionError(dataType);
         }
         final int[] offsets = new int[numBands];
         int length = 0;
@@ -310,13 +240,13 @@ public final class RasterFactory extends Static {
             }
         }
         switch (dataType) {
-            case DataBuffer.TYPE_BYTE:   return new DataBufferByte  (  (byte[][]) arrays, length, offsets);
-            case DataBuffer.TYPE_SHORT:  return new DataBufferShort ( (short[][]) arrays, length, offsets);
-            case DataBuffer.TYPE_USHORT: return new DataBufferUShort( (short[][]) arrays, length, offsets);
-            case DataBuffer.TYPE_INT:    return new DataBufferInt   (   (int[][]) arrays, length, offsets);
-            case DataBuffer.TYPE_FLOAT:  return new DataBufferFloat ( (float[][]) arrays, length, offsets);
-            case DataBuffer.TYPE_DOUBLE: return new DataBufferDouble((double[][]) arrays, length, offsets);
-            default: return null;
+            case BYTE:   return new DataBufferByte  (  (byte[][]) arrays, length, offsets);
+            case SHORT:  return new DataBufferShort ( (short[][]) arrays, length, offsets);
+            case USHORT: return new DataBufferUShort( (short[][]) arrays, length, offsets);
+            case INT:    return new DataBufferInt   (   (int[][]) arrays, length, offsets);
+            case FLOAT:  return new DataBufferFloat ( (float[][]) arrays, length, offsets);
+            case DOUBLE: return new DataBufferDouble((double[][]) arrays, length, offsets);
+            default: throw new AssertionError(dataType);
         }
     }
 

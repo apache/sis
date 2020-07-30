@@ -31,6 +31,7 @@ import java.awt.image.SampleModel;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.feature.Resources;
@@ -83,10 +84,9 @@ public final class Colorizer {
     private static final int MAX_VALUE = 0xFF;
 
     /**
-     * The {@link DataBuffer} type resulting from sample values conversion applied by
-     * {@link #compactColorModel(int, int)}.
+     * The type resulting from sample values conversion applied by {@link #compactColorModel(int, int)}.
      */
-    public static final int TYPE_COMPACT = DataBuffer.TYPE_BYTE;
+    public static final DataType TYPE_COMPACT = DataType.BYTE;
 
     /**
      * Applies a gray scale to quantitative category and transparent colors to qualitative categories.
@@ -496,7 +496,7 @@ reuse:  if (source != null) {
     public ColorModel compactColorModel(final int numBands, final int visibleBand) {
         checkInitializationStatus(true);
         compact();
-        return createColorModel(TYPE_COMPACT, numBands, visibleBand);
+        return createColorModel(TYPE_COMPACT.ordinal(), numBands, visibleBand);
     }
 
     /**

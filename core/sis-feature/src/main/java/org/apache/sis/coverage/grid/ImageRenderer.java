@@ -32,6 +32,7 @@ import java.awt.image.RasterFormatException;
 import java.awt.image.Raster;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.MismatchedCoverageRangeException;
 import org.apache.sis.coverage.SampleDimension;
@@ -480,32 +481,41 @@ public class ImageRenderer {
      * buffer position} and ends at that position + {@linkplain Buffer#remaining() remaining}.
      *
      * <p>The data type must be specified in order to distinguish between the signed and unsigned types.
-     * {@link DataBuffer#TYPE_BYTE} and {@link DataBuffer#TYPE_USHORT} are unsigned, all other supported
-     * types are signed.</p>
+     * {@link DataType#BYTE} and {@link DataType#USHORT} are unsigned, all other supported types are signed.</p>
      *
      * <p><b>Implementation note:</b> the Java2D buffer is set by a call to {@link #setData(DataBuffer)},
      * which can be overridden by subclasses if desired.</p>
      *
-     * @param  dataType  type of data as one of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_SHORT TYPE_SHORT}
-     *         {@link DataBuffer#TYPE_USHORT TYPE_USHORT}, {@link DataBuffer#TYPE_INT TYPE_INT},
-     *         {@link DataBuffer#TYPE_FLOAT TYPE_FLOAT} or {@link DataBuffer#TYPE_DOUBLE TYPE_DOUBLE} constants.
+     * @param  dataType  type of data.
      * @param  data  the buffers wrapping arrays of primitive type.
      * @throws NullArgumentException if {@code data} is null or one of {@code data} element is null.
-     * @throws IllegalArgumentException if {@code dataType} is not a supported value.
      * @throws MismatchedCoverageRangeException if the number of specified buffers is not equal to the number of bands.
      * @throws UnsupportedOperationException if a buffer is not backed by an accessible array or is read-only.
      * @throws ArrayStoreException if a buffer type is incompatible with {@code dataType}.
      * @throws RasterFormatException if buffers do not have the same amount of remaining values.
      * @throws ArithmeticException if a buffer position overflows the 32 bits integer capacity.
+     *
+     * @since 1.1
      */
-    public void setData(final int dataType, final Buffer... data) {
+    public void setData(final DataType dataType, final Buffer... data) {
+        ArgumentChecks.ensureNonNull("dataType", dataType);
         ArgumentChecks.ensureNonNull("data", data);
         ensureExpectedBandCount(data.length, true);
-        final DataBuffer banks = RasterFactory.wrap(dataType, data);
-        if (banks == null) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownDataType_1, dataType));
-        }
-        setData(banks);
+        setData(RasterFactory.wrap(dataType, data));
+    }
+
+    /**
+     * @deprecated Replaced by {@link #setData(DataType, Buffer...)}.
+     *
+     * @param  dataType  type of data as one of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_SHORT TYPE_SHORT}
+     *         {@link DataBuffer#TYPE_USHORT TYPE_USHORT}, {@link DataBuffer#TYPE_INT TYPE_INT},
+     *         {@link DataBuffer#TYPE_FLOAT TYPE_FLOAT} or {@link DataBuffer#TYPE_DOUBLE TYPE_DOUBLE} constants.
+     * @param  data  the buffers wrapping arrays of primitive type.
+     * @throws RasterFormatException if {@code dataType} is not a supported value.
+     */
+    @Deprecated
+    public void setData(final int dataType, final Buffer... data) {
+        setData(DataType.forDataBufferType(dataType), data);
     }
 
     /**
@@ -514,7 +524,7 @@ public class ImageRenderer {
      * the same {@linkplain Vector#size() size}.
      * This method wraps the underlying arrays of a primitive type into a Java2D buffer; data are not copied.
      *
-     * <p><b>Implementation note:</b> the NIO buffers are set by a call to {@link #setData(int, Buffer...)},
+     * <p><b>Implementation note:</b> the NIO buffers are set by a call to {@link #setData(DataType, Buffer...)},
      * which can be overridden by subclasses if desired.</p>
      *
      * @param  data  the vectors wrapping arrays of primitive type.
@@ -528,16 +538,15 @@ public class ImageRenderer {
         ArgumentChecks.ensureNonNull("data", data);
         ensureExpectedBandCount(data.length, true);
         final Buffer[] buffers = new Buffer[data.length];
-        int dataType = DataBuffer.TYPE_UNDEFINED;
+        DataType dataType = null;
         for (int i=0; i<data.length; i++) {
             final Vector v = data[i];
             ArgumentChecks.ensureNonNullElement("data", i, v);
-            final int t = RasterFactory.getDataType(v.getElementType(), v.isUnsigned());
-            if (dataType != t) {
-                if (i != 0) {
-                    throw new RasterFormatException(Resources.format(Resources.Keys.MismatchedDataType));
-                }
+            final DataType t = DataType.forPrimitiveType(v.getElementType(), v.isUnsigned());
+            if (dataType == null) {
                 dataType = t;
+            } else if (dataType != t) {
+                throw new RasterFormatException(Resources.format(Resources.Keys.MismatchedDataType));
             }
             buffers[i] = v.buffer().orElseThrow(UnsupportedOperationException::new);
         }

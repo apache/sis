@@ -179,10 +179,11 @@ class BandedSampleConverter extends ComputedImage {
      * @param  sourceRanges  the expected range of values for each band in source image, or {@code null} if unknown.
      * @param  converters    the transfer functions to apply on each band of the source image.
      * @param  targetType    the type of this image resulting from conversion of given image.
+     *                       Shall be one of {@link DataBuffer} constants.
      * @param  colorModel    the color model for the expected range of values, or {@code null}.
      * @return the image which compute converted values from the given source.
      *
-     * @see ImageProcessor#convert(RenderedImage, NumberRange[], MathTransform1D[], int, ColorModel)
+     * @see ImageProcessor#convert(RenderedImage, NumberRange[], MathTransform1D[], DataType, ColorModel)
      */
     static BandedSampleConverter create(final RenderedImage source, final ImageLayout layout,
             final NumberRange<?>[] sourceRanges, final MathTransform1D[] converters,

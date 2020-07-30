@@ -26,7 +26,6 @@ import java.util.logging.LogRecord;
 import java.awt.Color;
 import java.awt.Shape;
 import java.awt.Rectangle;
-import java.awt.image.DataBuffer;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.BufferedImage;
@@ -41,6 +40,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.internal.coverage.j2d.Colorizer;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.math.Statistics;
@@ -145,6 +145,26 @@ public class ImageProcessor implements Cloneable {
     private Number[] fillValues;
 
     /**
+     * Colors to use for arbitrary categories of sample values. This function can return {@code null}
+     * or empty arrays for some categories, which are interpreted as fully transparent pixels.
+     *
+     * @see #getCategoryColors()
+     * @see #setCategoryColors(Function)
+     */
+    private Function<Category,Color[]> colors;
+
+    /**
+     * Hints about the desired positional accuracy (in "real world" units or in pixel units),
+     * or {@code null} if unspecified. In order to avoid the need to clone this array in the
+     * {@link #clone()} method, the content of this array should not be modified.
+     * For setting new values, a new array should be created.
+     *
+     * @see #getPositionalAccuracyHints()
+     * @see #setPositionalAccuracyHints(Quantity...)
+     */
+    private Quantity<?>[] positionalAccuracyHints;
+
+    /**
      * Whether the operations can be executed in parallel.
      *
      * @see #getExecutionMode()
@@ -182,17 +202,6 @@ public class ImageProcessor implements Cloneable {
          */
         DEFAULT
     }
-
-    /**
-     * Hints about the desired positional accuracy (in "real world" units or in pixel units),
-     * or {@code null} if unspecified. In order to avoid the need to clone this array in the
-     * {@link #clone()} method, the content of this array should not be modified.
-     * For setting new values, a new array should be created.
-     *
-     * @see #getPositionalAccuracyHints()
-     * @see #setPositionalAccuracyHints(Quantity...)
-     */
-    private Quantity<?>[] positionalAccuracyHints;
 
     /**
      * Whether errors occurring during computation should be propagated or wrapped in a {@link LogRecord}.
@@ -300,45 +309,31 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Returns whether operations can be executed in parallel.
-     * If {@link Mode#SEQUENTIAL}, operations are executed sequentially in the caller thread.
-     * If {@link Mode#PARALLEL}, some operations may be parallelized using an arbitrary number of threads.
+     * Returns the colors to use for given categories of sample values, or {@code null} is unspecified.
+     * This method returns the function set by the last call to {@link #setCategoryColors(Function)}.
      *
-     * @return whether the operations can be executed in parallel.
+     * @return colors to use for arbitrary categories of sample values, or {@code null} for default.
      */
-    public synchronized Mode getExecutionMode() {
-        return executionMode;
+    public synchronized Function<Category,Color[]> getCategoryColors() {
+        return colors;
     }
 
     /**
-     * Sets whether operations can be executed in parallel.
-     * This value can be set to {@link Mode#PARALLEL} if the {@link RenderedImage} instances are thread-safe
-     * and provide a concurrent (or very fast) implementation of {@link RenderedImage#getTile(int, int)}.
-     * If {@link Mode#SEQUENTIAL}, only the caller thread is used. Sequential operations may be useful
-     * for processing {@link RenderedImage} implementations that may not be thread-safe.
+     * Sets the colors to use for given categories in image, or {@code null} is unspecified.
+     * This function provides a way to colorize images without knowing in advance the numerical values of pixels.
+     * For example instead of specifying <cite>"pixel value 0 in blue, 1 in green, 2 in yellow"</cite>,
+     * this function allows to specify <cite>"Lakes in blue, Forests in green, Sand in yellow"</cite>.
+     * It is still possible however to use numerical values if the function desires to do so,
+     * since this information is available with {@link Category#getSampleRange()}.
      *
-     * <p>It is safe to set this flag to {@link Mode#PARALLEL} with {@link java.awt.image.BufferedImage}
-     * (it will actually have no effect in this particular case) or with Apache SIS implementations of
-     * {@link RenderedImage}.</p>
+     * <p>This function is used by methods expecting {@link SampleDimension} arguments such as
+     * {@link #visualize(RenderedImage, List)}. The given function can return {@code null} or
+     * empty arrays for some categories, which are interpreted as fully transparent pixels.</p>
      *
-     * @param  mode  whether the operations can be executed in parallel.
+     * @param  colors  colors to use for arbitrary categories of sample values, or {@code null} for default.
      */
-    public synchronized void setExecutionMode(final Mode mode) {
-        ArgumentChecks.ensureNonNull("mode", mode);
-        executionMode = mode;
-    }
-
-    /**
-     * Whether the operations can be executed in parallel for the specified image.
-     * This method shall be invoked in a method synchronized on {@code this}.
-     */
-    private boolean parallel(final RenderedImage source) {
-        assert Thread.holdsLock(this);
-        switch (executionMode) {
-            case PARALLEL:   return true;
-            case SEQUENTIAL: return false;
-            default:         return source.getClass().getName().startsWith(Modules.CLASSNAME_PREFIX);
-        }
+    public synchronized void setCategoryColors(final Function<Category,Color[]> colors) {
+        this.colors = colors;
     }
 
     /**
@@ -387,6 +382,48 @@ public class ImageProcessor implements Cloneable {
             }
         }
         positionalAccuracyHints = null;
+    }
+
+    /**
+     * Returns whether operations can be executed in parallel.
+     * If {@link Mode#SEQUENTIAL}, operations are executed sequentially in the caller thread.
+     * If {@link Mode#PARALLEL}, some operations may be parallelized using an arbitrary number of threads.
+     *
+     * @return whether the operations can be executed in parallel.
+     */
+    public synchronized Mode getExecutionMode() {
+        return executionMode;
+    }
+
+    /**
+     * Sets whether operations can be executed in parallel.
+     * This value can be set to {@link Mode#PARALLEL} if the {@link RenderedImage} instances are thread-safe
+     * and provide a concurrent (or very fast) implementation of {@link RenderedImage#getTile(int, int)}.
+     * If {@link Mode#SEQUENTIAL}, only the caller thread is used. Sequential operations may be useful
+     * for processing {@link RenderedImage} implementations that may not be thread-safe.
+     *
+     * <p>It is safe to set this flag to {@link Mode#PARALLEL} with {@link java.awt.image.BufferedImage}
+     * (it will actually have no effect in this particular case) or with Apache SIS implementations of
+     * {@link RenderedImage}.</p>
+     *
+     * @param  mode  whether the operations can be executed in parallel.
+     */
+    public synchronized void setExecutionMode(final Mode mode) {
+        ArgumentChecks.ensureNonNull("mode", mode);
+        executionMode = mode;
+    }
+
+    /**
+     * Whether the operations can be executed in parallel for the specified image.
+     * This method shall be invoked in a method synchronized on {@code this}.
+     */
+    private boolean parallel(final RenderedImage source) {
+        assert Thread.holdsLock(this);
+        switch (executionMode) {
+            case PARALLEL:   return true;
+            case SEQUENTIAL: return false;
+            default:         return source.getClass().getName().startsWith(Modules.CLASSNAME_PREFIX);
+        }
     }
 
     /**
@@ -626,32 +663,35 @@ public class ImageProcessor implements Cloneable {
      *
      * <p>The {@code sourceRanges} array is only a hint for this method. The array may be {@code null}
      * or contain {@code null} elements, and may be of any length. Missing elements are considered null
-     * and extraneous elements are ignored.</p>
+     * and extraneous elements are ignored. Those ranges do not need to encompass all possible values;
+     * it is sufficient to provide only typical or "most interesting" ranges.</p>
      *
      * @param  source        the image for which to convert sample values.
      * @param  sourceRanges  approximate ranges of values for each band in source image, or {@code null} if unknown.
      * @param  converters    the transfer functions to apply on each band of the source image.
-     * @param  targetType    the type of image resulting from conversions. Shall be one of {@link DataBuffer} constants.
+     * @param  targetType    the type of image resulting from conversions.
      * @param  colorModel    color model of resulting image, or {@code null}.
      * @return the image which compute converted values from the given source.
      */
     public RenderedImage convert(final RenderedImage source, final NumberRange<?>[] sourceRanges,
-                MathTransform1D[] converters, final int targetType, final ColorModel colorModel)
+                MathTransform1D[] converters, final DataType targetType, final ColorModel colorModel)
     {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("converters", converters);
+        ArgumentChecks.ensureNonNull("targetType", targetType);
         ArgumentChecks.ensureSizeBetween("converters", 1, ImageUtilities.getNumBands(source), converters.length);
         converters = converters.clone();
         for (int i=0; i<converters.length; i++) {
             ArgumentChecks.ensureNonNullElement("converters", i, converters[i]);
         }
         // No need to clone `sourceRanges` because it is not stored by `BandedSampleConverter`.
-        return unique(BandedSampleConverter.create(source, ImageLayout.DEFAULT, sourceRanges, converters, targetType, colorModel));
+        return unique(BandedSampleConverter.create(source, ImageLayout.DEFAULT,
+                sourceRanges, converters, targetType.ordinal(), colorModel));
     }
 
     /**
      * Creates a new image which will resample the given image. The resampling operation is defined
-     * by a non-linear transform from the <em>new</em> image to the specified <em>source</em> image.
+     * by a potentially non-linear transform from the <em>new</em> image to the specified <em>source</em> image.
      * That transform should map {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER pixel centers}.
      * If that transform produces coordinates that are outside source envelope bounds, then the corresponding pixels
      * in the new image are set to {@linkplain #getFillValues() fill values}. Otherwise sample values are interpolated
@@ -659,7 +699,7 @@ public class ImageProcessor implements Cloneable {
      *
      * <p>If the given source is an instance of {@link ResampledImage},
      * then this method will use {@linkplain PlanarImage#getSources() the source} of the given source.
-     * The intent is to avoid resampling a resampled image; instead this method tries to work on the original data.</p>
+     * The intent is to avoid resampling a resampled image; instead this method works on the original data.</p>
      *
      * @param  source    the image to be resampled.
      * @param  bounds    domain of pixel coordinates of resampled image to create.
@@ -708,8 +748,9 @@ public class ImageProcessor implements Cloneable {
                 fillValues              = this.fillValues;
                 positionalAccuracyHints = this.positionalAccuracyHints;
             }
-            resampled = unique(new ResampledImage(source, bounds, toSource,
-                    interpolation, fillValues, positionalAccuracyHints));
+            resampled = unique(new ResampledImage(source,
+                    ImageLayout.DEFAULT.createCompatibleSampleModel(source, bounds),
+                    bounds, toSource, interpolation, fillValues, positionalAccuracyHints));
             break;
         }
         return RecoloredImage.create(resampled, cm);
@@ -798,15 +839,17 @@ public class ImageProcessor implements Cloneable {
      * @param  source  the image to recolor for visualization purposes.
      * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
      *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
-     * @param  colors  the colors to use for given categories. This function can return {@code null} or
-     *                 empty arrays for some categories, which are interpreted as fully transparent pixels.
      * @return recolored image for visualization purposes only.
      */
-    public RenderedImage visualize(final RenderedImage source,
-            final List<SampleDimension> ranges, final Function<Category,Color[]> colors)
-    {
+    public RenderedImage visualize(final RenderedImage source, final List<SampleDimension> ranges) {
         ArgumentChecks.ensureNonNull("source", source);
-        ArgumentChecks.ensureNonNull("colors", colors);
+        Function<Category,Color[]> colors;
+        synchronized (this) {
+            colors = this.colors;
+        }
+        if (colors == null) {
+            colors = Colorizer.GRAYSCALE;
+        }
         try {
             return RecoloredImage.toIndexedColors(this, source, ranges, colors, null);
         } catch (IllegalStateException | NoninvertibleTransformException e) {
@@ -829,18 +872,21 @@ public class ImageProcessor implements Cloneable {
             final Filter        errorAction;
             final Interpolation interpolation;
             final Number[]      fillValues;
+            final Function<Category,Color[]> colors;
             final Quantity<?>[] positionalAccuracyHints;
             synchronized (this) {
                 executionMode           = this.executionMode;
                 errorAction             = this.errorAction;
                 interpolation           = this.interpolation;
                 fillValues              = this.fillValues;
+                colors                  = this.colors;
                 positionalAccuracyHints = this.positionalAccuracyHints;
             }
             synchronized (other) {
                 return errorAction.equals(other.errorAction)     &&
                      executionMode.equals(other.executionMode)   &&
                      interpolation.equals(other.interpolation)   &&
+                     Objects.equals(colors, other.colors)        &&
                      Arrays.equals(fillValues, other.fillValues) &&
                      Arrays.equals(positionalAccuracyHints, other.positionalAccuracyHints);
             }
@@ -856,7 +902,7 @@ public class ImageProcessor implements Cloneable {
     @Override
     public synchronized int hashCode() {
         return Objects.hash(getClass(), errorAction, executionMode, interpolation)
-                + 37 * Arrays.hashCode(fillValues)
+                + 37 * Arrays.hashCode(fillValues) + 31 * Objects.hashCode(colors)
                 + 39 * Arrays.hashCode(positionalAccuracyHints);
     }
 

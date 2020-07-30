@@ -32,6 +32,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.image.DataType;
 
 // Branch-specific imports
 import org.apache.sis.internal.jdk9.JDK9;
@@ -177,12 +178,11 @@ public class BufferedGridCoverage extends GridCoverage {
     }
 
     /**
-     * Returns the {@link java.awt.image.DataBuffer} constant
-     * identifying the primitive type used for storing sample values.
+     * Returns the constant identifying the primitive type used for storing sample values.
      */
     @Override
-    final int getDataType() {
-        return data.getDataType();
+    final DataType getDataType() {
+        return DataType.forDataBufferType(data.getDataType());
     }
 
     /**

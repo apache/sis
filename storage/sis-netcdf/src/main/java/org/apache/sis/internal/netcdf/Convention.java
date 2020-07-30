@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.awt.image.DataBuffer;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -237,7 +236,7 @@ public class Convention {
         }
         if (numVectors >= Grid.MIN_DIMENSION) {
             final DataType dataType = variable.getDataType();
-            if (dataType.rasterDataType != DataBuffer.TYPE_UNDEFINED) {
+            if (dataType.rasterDataType != null) {
                 return VariableRole.COVERAGE;
             }
         }

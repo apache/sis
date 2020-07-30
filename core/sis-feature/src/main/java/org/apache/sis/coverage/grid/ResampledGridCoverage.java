@@ -28,6 +28,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -532,11 +533,10 @@ final class ResampledGridCoverage extends GridCoverage {
     }
 
     /**
-     * Returns the {@link java.awt.image.DataBuffer} constant
-     * identifying the primitive type used for storing sample values.
+     * Returns the constant identifying the primitive type used for storing sample values.
      */
     @Override
-    final int getDataType() {
+    final DataType getDataType() {
         return source.getDataType();
     }
 

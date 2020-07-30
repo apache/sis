@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.coverage.CannotEvaluateException;
@@ -29,8 +28,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.image.DataType;
 
 
 /**
@@ -71,10 +70,12 @@ final class ConvertedGridCoverage extends GridCoverage {
     private final boolean isConverted;
 
     /**
-     * One of {@link DataBuffer} constants the describe the sample values type
-     * of images produced by {@link #render(GridExtent)}.
+     * One of enumeration value that describe the sample values type of images
+     * produced by {@link #render(GridExtent)}. Shall not be {@code null}.
+     *
+     * @see #getDataType()
      */
-    private final int dataType;
+    private final DataType dataType;
 
     /**
      * Creates a new coverage with the same grid geometry than the given coverage but converted sample dimensions.
@@ -150,14 +151,14 @@ final class ConvertedGridCoverage extends GridCoverage {
     }
 
     /**
-     * Returns the {@link DataBuffer} constant for range of values of given sample dimensions.
+     * Returns the data type for range of values of given sample dimensions.
      *
      * @param  targets    the sample dimensions for which to get the data type.
      * @param  converted  whether the image will hold converted or packed values.
      * @param  source     if the type can not be determined, coverage from which to inherit the type as a fallback.
-     * @return the {@link DataBuffer} type.
+     * @return the data type (never null).
      */
-    static int getDataType(final List<SampleDimension> targets, final boolean converted, final GridCoverage source) {
+    static DataType getDataType(final List<SampleDimension> targets, final boolean converted, final GridCoverage source) {
         NumberRange<?> union = null;
         boolean allowsNaN = false;
         for (final SampleDimension dimension : targets) {
@@ -172,21 +173,21 @@ final class ConvertedGridCoverage extends GridCoverage {
             }
             if (!allowsNaN) allowsNaN = dimension.allowsNaN();
         }
-        int type = RasterFactory.getDataType(union, converted);
-        if (allowsNaN && type >= DataBuffer.TYPE_BYTE && type < DataBuffer.TYPE_FLOAT) {
-            type = (type < DataBuffer.TYPE_INT) ? DataBuffer.TYPE_FLOAT : DataBuffer.TYPE_DOUBLE;
+        if (union == null) {
+            return source.getDataType();
         }
-        if (type == DataBuffer.TYPE_UNDEFINED) {
-            type = source.getDataType();
+        DataType type = DataType.forRange(union, !converted);
+        if (allowsNaN) {
+            type = type.toFloat();
         }
         return type;
     }
 
     /**
-     * Returns the {@link DataBuffer} constant identifying the primitive type used for storing sample values.
+     * Returns the constant identifying the primitive type used for storing sample values.
      */
     @Override
-    final int getDataType() {
+    final DataType getDataType() {
         return dataType;
     }
 

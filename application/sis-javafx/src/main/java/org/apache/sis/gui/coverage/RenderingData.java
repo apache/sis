@@ -19,15 +19,12 @@ package org.apache.sis.gui.coverage;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Function;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.PixelInCell;
@@ -41,7 +38,6 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.internal.coverage.j2d.Colorizer;
 import org.apache.sis.internal.coverage.j2d.ColorModelType;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.PreferredSize;
@@ -171,14 +167,6 @@ final class RenderingData implements Cloneable {
     private Statistics[] statistics;
 
     /**
-     * The colors to apply for given categories, or {@code null} if none.
-     * A null value means that the original colors specified in the {@link #data} image are used unmodified.
-     *
-     * @see Colorizer#GRAYSCALE
-     */
-    private Function<Category,Color[]> colors;
-
-    /**
      * The processor that we use for resampling image and stretching their color ramps.
      */
     final ImageProcessor processor;
@@ -227,7 +215,6 @@ final class RenderingData implements Cloneable {
 
     /**
      * Sets the data to given image, which can be {@code null}.
-     * This method does not reset the {@link #colors} to null.
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     final void setImage(final RenderedImage data, final GridGeometry domain, final List<SampleDimension> ranges) {
@@ -328,9 +315,8 @@ final class RenderingData implements Cloneable {
          */
         if (CREATE_INDEX_COLOR_MODEL) {
             final ColorModelType ct = ColorModelType.find(resampledImage.getColorModel());
-            if (ct.isSlow || (colors != null && ct.useColorRamp)) {
-                resampledImage = processor.visualize(resampledImage,
-                        dataRanges, (colors != null) ? colors : Colorizer.GRAYSCALE);
+            if (ct.isSlow || (processor.getCategoryColors() != null && ct.useColorRamp)) {
+                resampledImage = processor.visualize(resampledImage, dataRanges);
             }
         }
         return resampledImage;

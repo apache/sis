@@ -28,6 +28,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.ImagingOpException;
+import java.awt.image.SampleModel;
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
@@ -35,7 +36,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
@@ -162,21 +162,30 @@ public class ResampledImage extends ComputedImage {
 
     /**
      * Creates a new image which will resample the given image. The resampling operation is defined
-     * by a non-linear transform from <em>this</em> image to the specified <em>source</em> image.
+     * by a potentially non-linear transform from <em>this</em> image to the specified <em>source</em> image.
      * That transform should map {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER pixel centers}.
+     *
+     * <p>The {@code sampleModel} determines the tile size and the target data type. This is often the same sample
+     * model than the one used by the {@code source} image, but may also be different for forcing a different tile
+     * size or a different data type (e.g. {@code byte} versus {@code float}) for storing resampled values.
+     * If the specified sample model is not the same than the one used by the source image,
+     * then subclass should override {@link #getColorModel()} for returning a color model which is
+     * {@linkplain ColorModel#isCompatibleSampleModel(SampleModel) compatible with the sample model}.</p>
      *
      * <p>If a pixel in this image can not be mapped to a pixel in the source image, then the sample values are set
      * to {@code fillValues}. If the given array is {@code null}, or if any element in the given array is {@code null},
-     * then the default fill value is NaN for floating point data types or zero for integer data types.</p>
+     * then the default fill value is NaN for floating point data types or zero for integer data types.
+     * If the array is shorter than the number of bands, then above-cited default values are used for missing values.
+     * If longer than the number of bands, extraneous values are ignored.</p>
      *
      * @param  source         the image to be resampled.
+     * @param  sampleModel    the sample model shared by all tiles in this resampled image.
      * @param  bounds         domain of pixel coordinates of this resampled image.
      * @param  toSource       conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
      * @param  interpolation  the object to use for performing interpolations.
      * @param  fillValues     the values to use for pixels in this image that can not be mapped to pixels in source image.
-     *                        May be {@code null} or contain {@code null} elements. If shorter than the number of bands,
-     *                        missing values are assumed {@code null}. If longer than the number of bands, extraneous
-     *                        values are ignored.
+     *                        May be {@code null} or contain {@code null} elements, and may have any length
+     *                        (see above for more details).
      * @param  accuracy       values of {@value #POSITIONAL_ACCURACY_KEY} property, or {@code null} if none.
      *                        This constructor may retain only a subset of specified values or replace some of them.
      *                        If an accuracy is specified in {@linkplain Units#PIXEL pixel units}, then a value such as
@@ -185,10 +194,11 @@ public class ResampledImage extends ComputedImage {
      *
      * @see ImageProcessor#resample(RenderedImage, Rectangle, MathTransform)
      */
-    protected ResampledImage(final RenderedImage source, final Rectangle bounds, final MathTransform toSource,
-            final Interpolation interpolation, final Number[] fillValues, final Quantity<?>[] accuracy)
+    protected ResampledImage(final RenderedImage source, final SampleModel sampleModel, final Rectangle bounds,
+            final MathTransform toSource, final Interpolation interpolation, final Number[] fillValues,
+            final Quantity<?>[] accuracy)
     {
-        super(ImageLayout.DEFAULT.createCompatibleSampleModel(source, bounds), source);
+        super(sampleModel, source);
         if (source.getWidth() <= 0 || source.getHeight() <= 0) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.EmptyImage));
         }
@@ -250,12 +260,11 @@ public class ResampledImage extends ComputedImage {
         this.toSourceSupport = toSourceSupport;
         this.linearAccuracy  = linearAccuracy;
         /*
-         * Copy the `fillValues` either as an `int[]` or `double[]` array, depending on
-         * whether the data type is an integer type or not. Null elements default to zero.
+         * Copy the `fillValues` either as an `int[]` or `double[]` array, depending on whether
+         * the target data type is an integer type or not. Null elements default to zero.
          */
         final int numBands = ImageUtilities.getNumBands(source);
-        final int dataType = ImageUtilities.getDataType(source);
-        if (ImageUtilities.isIntegerType(dataType)) {
+        if (ImageUtilities.isIntegerType(sampleModel.getDataType())) {
             final int[] fill = new int[numBands];
             if (fillValues != null) {
                 for (int i=Math.min(fillValues.length, numBands); --i >= 0;) {
@@ -402,7 +411,8 @@ public class ResampledImage extends ComputedImage {
     }
 
     /**
-     * Returns the same color model than the source image.
+     * Returns the color model of this resampled image.
+     * Default implementation assumes that this image has the same color model than the source image.
      *
      * @return the color model, or {@code null} if unspecified.
      */

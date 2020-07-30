@@ -29,6 +29,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.test.TestCase;
@@ -270,7 +271,10 @@ public final strictfp class ResampledImageTest extends TestCase {
         } catch (NoninvertibleTransformException e) {
             throw new AssertionError(e);
         }
-        target = new ResampledImage(source, new Rectangle(9, 9), toSource, interpolation, null, null);
+        final Rectangle bounds = new Rectangle(9, 9);
+        target = new ResampledImage(source,
+                ImageLayout.DEFAULT.createCompatibleSampleModel(source, bounds),
+                bounds, toSource, interpolation, null, null);
 
         assertEquals("numXTiles", 1, target.getNumXTiles());
         assertEquals("numYTiles", 1, target.getNumYTiles());

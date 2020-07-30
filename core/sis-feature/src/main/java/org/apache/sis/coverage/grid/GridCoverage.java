@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -31,6 +30,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.Colorizer;
@@ -60,7 +60,7 @@ import org.opengis.coverage.CannotEvaluateException;
  */
 public abstract class GridCoverage {
     /**
-     * The processor to use for {@link #convert(RenderedImage, int, MathTransform1D[])} operations.
+     * The processor to use for {@link #convert(RenderedImage, DataType, MathTransform1D[])} operations.
      * Wrapped in a class for lazy instantiation.
      */
     private static final class Lazy {
@@ -183,11 +183,10 @@ public abstract class GridCoverage {
     }
 
     /**
-     * Returns the {@link DataBuffer} constant identifying the primitive type used for storing sample values.
-     * If the type is unknown, returns {@link DataBuffer#TYPE_UNDEFINED}.
+     * Returns the data type identifying the primitive type used for storing sample values.
      */
-    int getDataType() {
-        return DataBuffer.TYPE_UNDEFINED;
+    DataType getDataType() {
+        return DataType.DOUBLE;     // Must conservative value, should be overridden by subclasses.
     }
 
     /**
@@ -248,16 +247,16 @@ public abstract class GridCoverage {
      * Creates a new image of the given data type which will compute values using the given converters.
      *
      * @param  source      the image for which to convert sample values.
-     * @param  dataType    the type of this image resulting from conversion of given image.
+     * @param  dataType    the type of the image resulting from conversion of given image.
      * @param  converters  the transfer functions to apply on each band of the source image.
      * @return the image which compute converted values from the given source.
      */
-    final RenderedImage convert(final RenderedImage source, final int dataType, final MathTransform1D[] converters) {
+    final RenderedImage convert(final RenderedImage source, final DataType dataType, final MathTransform1D[] converters) {
         final int visibleBand = Math.max(0, ImageUtilities.getVisibleBand(source));
         final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
         final ColorModel colors;
         if (colorizer.initialize(sampleDimensions[visibleBand]) || colorizer.initialize(source.getColorModel())) {
-            colors = colorizer.createColorModel(dataType, sampleDimensions.length, visibleBand);
+            colors = colorizer.createColorModel(dataType.ordinal(), sampleDimensions.length, visibleBand);
         } else {
             colors = Colorizer.NULL_COLOR_MODEL;
         }

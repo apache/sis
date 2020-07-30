@@ -34,8 +34,8 @@ import org.apache.sis.util.resources.Errors;
  * the same than the type used by the raster for storing data. In particular, {@code byte} and {@code short}
  * (both signed and unsigned) are converted to {@code int} during the transfer.
  *
- * {@link Raster} and {@link PixelIterator} transfer data in {@code int[]}, {@code float[]} and {@code double[]} arrays.
- * Additionally, {@code PixelIterator} uses also {@link IntBuffer}, {@link FloatBuffer} and {@link DoubleBuffer}.
+ * <p>{@link Raster} and {@link PixelIterator} transfer data in {@code int[]}, {@code float[]} and {@code double[]} arrays.
+ * Additionally, {@code PixelIterator} uses also {@link IntBuffer}, {@link FloatBuffer} and {@link DoubleBuffer}.</p>
  *
  * <div class="note"><b>Future evolution:</b>
  * this class may be refactored as an enumeration in a future Java version if

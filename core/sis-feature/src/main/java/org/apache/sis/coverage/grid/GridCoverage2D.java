@@ -40,6 +40,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.feature.Resources;
@@ -147,7 +148,7 @@ public class GridCoverage2D extends GridCoverage {
                            final MathTransform1D[] converters, final boolean isConverted)
     {
         super(source.gridGeometry, range);
-        final int dataType = ConvertedGridCoverage.getDataType(range, isConverted, source);
+        final DataType dataType = ConvertedGridCoverage.getDataType(range, isConverted, source);
         data           = convert(source.data, dataType, converters);
         gridToImageX   = source.gridToImageX;
         gridToImageY   = source.gridToImageY;
@@ -440,12 +441,11 @@ public class GridCoverage2D extends GridCoverage {
     }
 
     /**
-     * Returns the {@link java.awt.image.DataBuffer} constant
-     * identifying the primitive type used for storing sample values.
+     * Returns the constant identifying the primitive type used for storing sample values.
      */
     @Override
-    final int getDataType() {
-        return ImageUtilities.getDataType(data);
+    final DataType getDataType() {
+        return DataType.of(data);
     }
 
     /**
