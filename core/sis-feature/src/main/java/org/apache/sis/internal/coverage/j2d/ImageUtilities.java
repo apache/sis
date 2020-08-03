@@ -402,6 +402,20 @@ public final class ImageUtilities extends Static {
     }
 
     /**
+     * Returns whether {@code sourceType} can be converted to {@code targetType} without data lost.
+     *
+     * @param  sourceType  type of values to convert.
+     * @param  targetType  type of converted values.
+     * @return whether the the conversion from source type to target type is lossless.
+     */
+    public static boolean isLosslessConversion(final int sourceType, final int targetType) {
+        if (sourceType == DataBuffer.TYPE_USHORT && targetType == DataBuffer.TYPE_SHORT) {
+            return false;       // TYPE_SHORT > TYPE_USHORT but still of lossy conversion.
+        }
+        return sourceType >= DataBuffer.TYPE_BYTE && targetType <= DataBuffer.TYPE_DOUBLE && targetType >= sourceType;
+    }
+
+    /**
      * Converts a <var>x</var> pixel coordinates to a tile index.
      *
      * @param  image  the image containing tiles.

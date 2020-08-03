@@ -589,6 +589,13 @@ public class ResampledImage extends ComputedImage {
             yoff = interpolationSupportOffset(support.height) - 0.5;
         }
         /*
+         * In the special case of nearest-neighbor interpolation with no precision lost, the code inside the loop
+         * can take a shorter path were data are just copied. The lossless criterion allows us to omit the checks
+         * for minimal and maximal values. Shortcut may apply to both integer values and floating point values.
+         */
+        final boolean shortcut = (interpolation == Interpolation.NEAREST) &&
+                    ImageUtilities.isLosslessConversion(sampleModel.getDataType(), ImageUtilities.getDataType(tile));
+        /*
          * Prepare a buffer where to store a line of interpolated values. We use this buffer for transferring
          * many pixels in a single `WritableRaster.setPixels(…)` call, which is faster than invoking `setPixel(…)`
          * for each pixel. We use integer values if possible because `WritableRaster.setPixels(…)` implementations
@@ -602,24 +609,30 @@ public class ResampledImage extends ComputedImage {
         final long[] minValues, maxValues;
         final boolean isInteger = (fillValues instanceof int[]);
         if (isInteger) {
-            values      = new double[numBands];
-            minValues   = new long  [numBands];
-            maxValues   = new long  [numBands];
-            intValues   = new int[scanline * numBands];
-            valuesArray = intValues;
-            for (int b=0; b<numBands; b++) {
-                maxValues[b] = Numerics.bitmask(sampleModel.getSampleSize(b)) - 1;
-            }
-            if (!ImageUtilities.isUnsignedType(sampleModel.getDataType())) {
+            valuesArray = intValues = new int[scanline * numBands];
+            if (shortcut) {
+                values    = null;                                   // No floating point values to transfer.
+                minValues = null;                                   // Min/max checks are not needed in shortcut case.
+                maxValues = null;
+            } else {
+                values    = new double[numBands];
+                minValues = new long  [numBands];
+                maxValues = new long  [numBands];
+                final SampleModel sm = tile.getSampleModel();
                 for (int b=0; b<numBands; b++) {
-                    minValues[b] = ~(maxValues[b] >>>= 1);      // Convert unsigned type to signed type range.
+                    maxValues[b] = Numerics.bitmask(sm.getSampleSize(b)) - 1;
+                }
+                if (!ImageUtilities.isUnsignedType(sm.getDataType())) {
+                    for (int b=0; b<numBands; b++) {
+                        minValues[b] = ~(maxValues[b] >>>= 1);      // Convert unsigned type to signed type range.
+                    }
                 }
             }
         } else {
             intValues   = null;
             values      = new double[scanline * numBands];
             valuesArray = values;
-            minValues   = null;                         // Not used for floating point types.
+            minValues   = null;                                     // Not used for floating point types.
             maxValues   = null;
         }
         /*
@@ -642,9 +655,10 @@ public class ResampledImage extends ComputedImage {
             }
             toSourceSupport.transform(coordinates, 0, coordinates, 0, scanline);
             /*
-             * Special case for nearest-neighbor.
+             * Special case for nearest-neighbor interpolation without the need to check for min/max values.
+             * In this case values will be copied as `int` or `double` type without further processing.
              */
-            if (interpolation == Interpolation.NEAREST) {
+            if (shortcut) {
                 int ci = 0;     // Index in `coordinates` array.
                 int vi = 0;     // Index in `values` or `intValues` array.
                 for (int tx=tileMinX; tx<tileMaxX; tx++, ci+=tgtDim, vi+=numBands) {
@@ -652,7 +666,11 @@ public class ResampledImage extends ComputedImage {
                     if (x >= it.lowerX && x < it.upperX) {
                         final long y = Math.round(coordinates[ci+1]);
                         if (y >= it.lowerY && y < it.upperY) {
-                            it.moveTo((int) x, (int) y);
+                            if (sx != (sx = (int) x)  |                 // Really |, not ||.
+                                sy != (sy = (int) y))
+                            {
+                                it.moveTo(sx, sy);
+                            }
                             if (isInteger) {
                                 intTransfer = it.getPixel(intTransfer);
                                 System.arraycopy(intTransfer, 0, intValues, vi, numBands);
@@ -709,22 +727,21 @@ public class ResampledImage extends ComputedImage {
                                      * for NaN values because we want to keep them if output type is floating point,
                                      * and NaN values should not occur if data type (input and output) is integer.
                                      */
-                                    if (interpolation.interpolate(buffer.values, numBands, xf, yf, values, isInteger ? 0 : vi)) {
-                                        if (isInteger) {
-                                            for (int b=0; b<numBands; b++) {
-                                                intValues[vi+b] = (int) Math.max(minValues[b],
-                                                                        Math.min(maxValues[b], Math.round(values[b])));
-                                            }
+                                    interpolation.interpolate(buffer.values, numBands, xf, yf, values, isInteger ? 0 : vi);
+                                    if (isInteger) {
+                                        for (int b=0; b<numBands; b++) {
+                                            intValues[vi+b] = (int) Math.max(minValues[b],
+                                                                    Math.min(maxValues[b], Math.round(values[b])));
                                         }
-                                        continue;       // Values have been set, move to next pixel.
                                     }
+                                    continue;       // Values have been set, move to next pixel.
                                 }
                             }
                         }
                     }
                     /*
                      * If we reach this point then any of the "if" conditions above failed
-                     * (i.e. the point to interpolate are outside the source image bounds)
+                     * (i.e. the point to interpolate is outside the source image bounds)
                      * and no values have been set in the `values` or `intValues` array.
                      */
                     System.arraycopy(fillValues, 0, valuesArray, vi, numBands);

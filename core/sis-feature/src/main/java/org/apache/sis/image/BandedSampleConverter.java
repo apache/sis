@@ -185,10 +185,17 @@ class BandedSampleConverter extends ComputedImage {
      *
      * @see ImageProcessor#convert(RenderedImage, NumberRange[], MathTransform1D[], DataType, ColorModel)
      */
-    static BandedSampleConverter create(final RenderedImage source, final ImageLayout layout,
+    static BandedSampleConverter create(RenderedImage source, final ImageLayout layout,
             final NumberRange<?>[] sourceRanges, final MathTransform1D[] converters,
             final int targetType, final ColorModel colorModel)
     {
+        /*
+         * Since this operation applies its own ColorModel anyway, skip operation that was doing nothing else
+         * than changing the color model.
+         */
+        if (source instanceof RecoloredImage) {
+            source = ((RecoloredImage) source).source;
+        }
         final int numBands = converters.length;
         final BandedSampleModel sampleModel = layout.createBandedSampleModel(targetType, numBands, source);
         /*

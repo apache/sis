@@ -80,7 +80,7 @@ final class LanczosInterpolation implements Interpolation {
      * Applies Lanczos interpolation.
      */
     @Override
-    public boolean interpolate(final DoubleBuffer source, final int numBands,
+    public void interpolate(final DoubleBuffer source, final int numBands,
             final double xfrac, final double yfrac, final double[] writeTo, final int writeToOffset)
     {
         Arrays.fill(writeTo, writeToOffset, writeToOffset + numBands, 0);
@@ -101,7 +101,6 @@ final class LanczosInterpolation implements Interpolation {
             }
         }
         source.reset();
-        return true;
     }
 
     /**

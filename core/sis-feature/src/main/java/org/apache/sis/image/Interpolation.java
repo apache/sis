@@ -96,9 +96,8 @@ public interface Interpolation {
      * @param  yfrac          the Y subsample position, usually (but not always) in the range [0 … 1).
      * @param  writeTo        the array where this method shall write interpolated values.
      * @param  writeToOffset  index of the first value to put in the {@code writeTo} array.
-     * @return {@code true} on success, or {@code false} if the caller should paint some fill value instead.
      */
-    boolean interpolate(DoubleBuffer source, int numBands, double xfrac, double yfrac, double[] writeTo, int writeToOffset);
+    void interpolate(DoubleBuffer source, int numBands, double xfrac, double yfrac, double[] writeTo, int writeToOffset);
 
     /**
      * A nearest-neighbor interpolation using 1×1 pixel.
@@ -115,13 +114,12 @@ public interface Interpolation {
         }
 
         /** Applies nearest-neighbor interpolation on 1×1 window. */
-        @Override public boolean interpolate(final DoubleBuffer source, final int numBands,
+        @Override public void interpolate(final DoubleBuffer source, final int numBands,
                 final double xfrac, final double yfrac, final double[] writeTo, int writeToOffset)
         {
             source.mark();
             source.get(writeTo, writeToOffset, numBands);
             source.reset();
-            return true;
         }
     };
 
@@ -141,7 +139,7 @@ public interface Interpolation {
         }
 
         /** Applies bilinear interpolation on a 2×2 window. */
-        @Override public boolean interpolate(final DoubleBuffer source, final int numBands,
+        @Override public void interpolate(final DoubleBuffer source, final int numBands,
                 final double xfrac, final double yfrac, final double[] writeTo, int writeToOffset)
         {
             final double mx = (1 - xfrac);
@@ -159,7 +157,6 @@ public interface Interpolation {
                 }
                 writeTo[writeToOffset++] = y;
             }
-            return true;
         }
     };
 
