@@ -30,14 +30,14 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.SampleModel;
-import java.awt.image.SinglePixelPackedSampleModel;
-import java.awt.image.MultiPixelPackedSampleModel;
 import java.util.NoSuchElementException;
 import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
@@ -459,51 +459,59 @@ public abstract class PixelIterator {
      * If the samples are stored as floating point values, then the ranges are infinite (unbounded).
      *
      * <p>Usually, the range is the same for all bands. A situation where the ranges may differ is when an
-     * image uses {@link SinglePixelPackedSampleModel}, in which case the number of bits per pixel may vary
-     * for different bands.</p>
+     * image uses {@link java.awt.image.SinglePixelPackedSampleModel}, in which case the number of bits per
+     * pixel may vary for different bands.</p>
      *
      * @return the ranges of valid sample values for each band. Ranges may be {@linkplain NumberRange#isBounded() unbounded}.
      */
     public NumberRange<?>[] getSampleRanges() {
+        /*
+         * Take the sample model of current tile if possible. This details should be irrelevant (so we do not mention
+         * it in above javadoc) because the sample model shall be the same for all tiles. But if inconsistency happens,
+         * stay consistent at least with the fact that all getter methods in PixelIterator return information relative
+         * to current iterator position.
+         */
         final SampleModel model = (currentRaster != null) ? currentRaster.getSampleModel() : image.getSampleModel();
         final NumberRange<?>[] ranges = new NumberRange<?>[model.getNumBands()];
-        final NumberRange<?> range;
-        if (model instanceof MultiPixelPackedSampleModel) {
-            /*
-             * This model supports only unsigned integer types: DataBuffer.TYPE_BYTE, DataBuffer.TYPE_USHORT
-             * or DataBuffer.TYPE_INT (considered unsigned in the context of this sample model).  The number
-             * of bits per sample is defined by the "pixel bit stride".
-             */
-            final int numBits = ((MultiPixelPackedSampleModel) model).getPixelBitStride();
-            range = NumberRange.create(0, true, (1 << numBits) - 1, true);
-        } else if (model instanceof SinglePixelPackedSampleModel) {
-            /*
-             * This model supports only unsigned integer types: TYPE_BYTE, TYPE_USHORT, TYPE_INT (considered
-             * unsigned in the context of this sample model). The number of bits may vary for each band.
-             */
-            final int[] masks = ((SinglePixelPackedSampleModel) model).getBitMasks();
-            for (int i=0; i<masks.length; i++) {
-                final int numBits = Integer.bitCount(masks[i]);
-                ranges[i] = NumberRange.create(0, true, (1 << numBits) - 1, true);
-            }
-            return ranges;
-        } else {
-            /*
-             * For all other sample models, the range is determined by the data type.
-             * The following cases invoke the NumberRange constructor which best fit the data type.
-             */
-            final int type = model.getDataType();
-            switch (type) {
-                case DataBuffer.TYPE_BYTE:   range = NumberRange.create((short) 0,                 true,  (short)   0xFF,            true);  break;
-                case DataBuffer.TYPE_USHORT: range = NumberRange.create(        0,                 true,          0xFFFF,            true);  break;
-                case DataBuffer.TYPE_SHORT:  range = NumberRange.create(Short.  MIN_VALUE,         true,  Short.  MAX_VALUE,         true);  break;
-                case DataBuffer.TYPE_INT:    range = NumberRange.create(Integer.MIN_VALUE,         true,  Integer.MAX_VALUE,         true);  break;
-                case DataBuffer.TYPE_FLOAT:  range = NumberRange.create(Float.  NEGATIVE_INFINITY, false, Float.  POSITIVE_INFINITY, false); break;
-                case DataBuffer.TYPE_DOUBLE: range = NumberRange.create(Double. NEGATIVE_INFINITY, false, Double. POSITIVE_INFINITY, false); break;
-                default: throw new IllegalStateException(Errors.format(Errors.Keys.UnknownType_1, type));
+        if (ranges.length != 0) {
+            final int dataType = model.getDataType();
+            if (ImageUtilities.isIntegerType(dataType)) {
+                int bandToDefine = 0, lastDefinedBand;
+                do {
+                    final int size = model.getSampleSize(bandToDefine);
+                    long minimum = 0;
+                    long maximum = Numerics.bitmask(size) - 1;
+                    if (dataType >= DataBuffer.TYPE_SHORT) {
+                        maximum >>>= 1;                         // Convert unsigned range to signed range.
+                        minimum = ~maximum;
+                    }
+                    final NumberRange<?> range = (dataType == DataBuffer.TYPE_BYTE || dataType == DataBuffer.TYPE_SHORT)
+                                               ? NumberRange.create((short) minimum, true, (short) maximum, true)
+                                               : NumberRange.create((int)   minimum, true, (int)   maximum, true);
+                    ranges[bandToDefine] = range;
+                    /*
+                     * Usually all bands have the same number of bits, and consequently the same range of values.
+                     * For handling this common case, loop below shares the same `NumberRange` instance with all
+                     * bands having same characteristic. If at least one band has a different number of bits, the
+                     * `bandToDefine` index will point to the first occurrence and the computation is repeated.
+                     */
+                    lastDefinedBand = bandToDefine;
+                    for (int band = ranges.length; --band > lastDefinedBand;) {
+                        if (ranges[band] == null) {
+                            if (model.getSampleSize(band) == size) {
+                                ranges[band] = range;
+                            } else {
+                                bandToDefine = band;
+                            }
+                        }
+                    }
+                } while (bandToDefine > lastDefinedBand);
+            } else {
+                Arrays.fill(ranges, (dataType == DataBuffer.TYPE_FLOAT)
+                        ? NumberRange.create(Float. NEGATIVE_INFINITY, false, Float. POSITIVE_INFINITY, false)
+                        : NumberRange.create(Double.NEGATIVE_INFINITY, false, Double.POSITIVE_INFINITY, false));
             }
         }
-        Arrays.fill(ranges, range);
         return ranges;
     }
 

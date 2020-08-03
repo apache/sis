@@ -21,6 +21,7 @@ import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
+import java.awt.image.BandedSampleModel;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
@@ -28,6 +29,7 @@ import java.awt.image.WritableRenderedImage;
 import java.nio.FloatBuffer;
 import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.After;
@@ -367,6 +369,35 @@ public strictfp class DefaultIteratorTest extends TestCase {
     @After
     public void dispose() {
         iterator.close();
+    }
+
+    /**
+     * Tests {@link PixelIterator#getSampleRanges()}.
+     */
+    @Test
+    public void testGetSampleRanges() {
+        for (int type = DataBuffer.TYPE_BYTE; type <= DataBuffer.TYPE_DOUBLE; type++) {
+            createPixelIterator(WritableRaster.createWritableRaster(new BandedSampleModel(type, 1, 1, 3), null), null);
+            final NumberRange<?>[] ranges = iterator.getSampleRanges();
+            final Number min, max;
+            final Class<?> c;
+            switch (type) {
+                case DataBuffer.TYPE_BYTE:    c = Short.class;   min = (short) 0;         max = (short) 0xFF;      break;
+                case DataBuffer.TYPE_USHORT:  c = Integer.class; min = 0;                 max = 0xFFFF;            break;
+                case DataBuffer.TYPE_SHORT:   c = Short.class;   min = Short.MIN_VALUE;   max = Short.MAX_VALUE;   break;
+                case DataBuffer.TYPE_INT:     c = Integer.class; min = Integer.MIN_VALUE; max = Integer.MAX_VALUE; break;
+                case DataBuffer.TYPE_FLOAT:   c = Float.class;   min = null;              max = null;              break;
+                case DataBuffer.TYPE_DOUBLE:  c = Double.class;  min = null;              max = null;              break;
+                default: throw new AssertionError(type);
+            }
+            assertEquals(ranges.length, 3);
+            for (final NumberRange<?> r : ranges) {
+                assertEquals(c,   r.getElementType());
+                assertEquals(min, r.getMinValue());
+                assertEquals(max, r.getMaxValue());
+            }
+            iterator.close();
+        }
     }
 
     /**
