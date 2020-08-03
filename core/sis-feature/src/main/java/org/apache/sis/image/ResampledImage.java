@@ -39,12 +39,12 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.geometry.Shapes2D;
-import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
@@ -585,7 +585,7 @@ public class ResampledImage extends ComputedImage {
             ymax = domain.getMaxY() - 1;
             xlim = xmax + support.width  - 0.5;         // Limit of coordinates where we can interpolate.
             ylim = ymax + support.height - 0.5;
-            xoff = interpolationSupportOffset(support.width)  - 0.5;    // Always negative.
+            xoff = interpolationSupportOffset(support.width)  - 0.5;                  // Always negative.
             yoff = interpolationSupportOffset(support.height) - 0.5;
         }
         /*
@@ -603,15 +603,17 @@ public class ResampledImage extends ComputedImage {
         final boolean isInteger = (fillValues instanceof int[]);
         if (isInteger) {
             values      = new double[numBands];
+            minValues   = new long  [numBands];
+            maxValues   = new long  [numBands];
             intValues   = new int[scanline * numBands];
             valuesArray = intValues;
-            final NumberRange<?>[] ranges = it.getSampleRanges();   // Assumes source.sampleModel == this.sampleModel.
-            minValues = new long[ranges.length];
-            maxValues = new long[ranges.length];
-            for (int i=0; i<ranges.length; i++) {
-                final NumberRange<?> r = ranges[i];
-                minValues[i] = r.getMinValue().longValue();
-                maxValues[i] = r.getMaxValue().longValue();
+            for (int b=0; b<numBands; b++) {
+                maxValues[b] = Numerics.bitmask(sampleModel.getSampleSize(b)) - 1;
+            }
+            if (!ImageUtilities.isUnsignedType(sampleModel.getDataType())) {
+                for (int b=0; b<numBands; b++) {
+                    minValues[b] = ~(maxValues[b] >>>= 1);      // Convert unsigned type to signed type range.
+                }
             }
         } else {
             intValues   = null;

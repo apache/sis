@@ -387,6 +387,21 @@ public final class ImageUtilities extends Static {
     }
 
     /**
+     * Returns {@code true} if the given data buffer type is an unsigned integer type.
+     * Returns {@code false} if the type is a floating point type or in case of doubt
+     * (e.g. for {@link DataBuffer#TYPE_UNDEFINED}).
+     *
+     * @param  dataType  one of {@link DataBuffer} constants.
+     * @return whether the given constant is for an unsigned integer type.
+     *
+     * @see #getDataType(RenderedImage)
+     * @see #getDataType(Raster)
+     */
+    public static boolean isUnsignedType(final int dataType) {
+        return dataType >= DataBuffer.TYPE_BYTE && dataType <= DataBuffer.TYPE_USHORT;
+    }
+
+    /**
      * Converts a <var>x</var> pixel coordinates to a tile index.
      *
      * @param  image  the image containing tiles.
