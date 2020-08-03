@@ -117,8 +117,8 @@ public class BufferedGridCoverage extends GridCoverage {
          */
         final int numBands = range.size();
         final int numBanks = data.getNumBanks();
-        if (numBanks != 1 && numBands != numBands) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedBandCount_2, numBands, numBands));
+        if (numBanks != 1 && numBanks != numBands) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedBandCount_2, numBanks, numBands));
         }
         /*
          * Verify that the buffer has enough elements for all cells in grid extent.
