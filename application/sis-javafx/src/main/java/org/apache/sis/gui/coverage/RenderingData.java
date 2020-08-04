@@ -156,7 +156,7 @@ final class RenderingData implements Cloneable {
     private AffineTransform displayToObjective;
 
     /**
-     * Key of the currently selected alternative in {@link CoverageCanvas#resampledImages} map.
+     * Key of the currently selected alternative in {@link CoverageCanvas#derivedImages} map.
      */
     Stretching selectedDerivative;
 
@@ -227,14 +227,42 @@ final class RenderingData implements Cloneable {
     }
 
     /**
-     * Creates the resampled image, then optionally stretches the color map and applies an index color model.
-     * This method will compute the {@link MathTransform} steps from image coordinate system to display coordinate
-     * system if those steps have not already been computed.
+     * Stretch the color ramp of source image according the current value of {@link #selectedDerivative}.
+     * This method uses the original image as the source of statistics. It saves computation time
+     * (no need to recompute the statistics when the projection is changed) and provides more stable
+     * visual output when standard deviations are used for configuring the color ramp.
      *
+     * @return the given image with {@link #selectedDerivative} applied.
+     */
+    final RenderedImage recolor() {
+        RenderedImage image = data;
+        if (selectedDerivative != Stretching.NONE) {
+            final Map<String,Object> modifiers = new HashMap<>(4);
+            if (statistics == null) {
+                statistics = processor.getStatistics(image, null);
+            }
+            modifiers.put("statistics", statistics);
+            if (selectedDerivative == Stretching.AUTOMATIC) {
+                modifiers.put("multStdDev", 3);
+            }
+            image = processor.stretchColorRamp(image, modifiers);
+        }
+        return image;
+    }
+
+    /**
+     * Creates the resampled image, then optionally applies an index color model.
+     * This method will compute the {@link MathTransform} steps from image coordinate system
+     * to display coordinate system if those steps have not already been computed.
+     *
+     * @param  recoloredImage      the image computed by {@link #recolor()}.
+     * @param  objectiveCRS        value of {@link CoverageCanvas#getObjectiveCRS()}.
+     * @param  objectiveToDisplay  value of {@link CoverageCanvas#getObjectiveToDisplay()}.
      * @return image with operation applied and color ramp stretched.
      */
-    final RenderedImage resampleAndRecolor(final CoordinateReferenceSystem objectiveCRS,
-            final LinearTransform objectiveToDisplay) throws TransformException
+    final RenderedImage resampleAndConvert(final RenderedImage recoloredImage,
+            final CoordinateReferenceSystem objectiveCRS, final LinearTransform objectiveToDisplay)
+            throws TransformException
     {
         if (changeOfCRS == null && objectiveCRS != null && dataGeometry.isDefined(GridGeometry.CRS)) {
             DefaultGeographicBoundingBox areaOfInterest = null;
@@ -272,7 +300,7 @@ final class RenderingData implements Cloneable {
          * the result to 32 bit integer range). This is okay since only visible tiles will be created.
          *
          * TODO: if user pans the image close to integer range limit, we should create a new resampled image
-         *       shifted to new location (i.e. clear `CoverageCanvas.resampledImages` for forcing this method
+         *       shifted to new location (i.e. clear `CoverageCanvas.resampledImage` for forcing this method
          *       to be invoked again). The intent is to move away from integer overflow situation.
          */
         final LinearTransform inverse = objectiveToDisplay.inverse();
@@ -281,36 +309,17 @@ final class RenderingData implements Cloneable {
         final MathTransform displayToCenter = MathTransforms.concatenate(inverse, centerToObjective.inverse());
         final PreferredSize bounds = (PreferredSize) Shapes2D.transform(
                 MathTransforms.bidimensional(cornerToDisplay),
-                ImageUtilities.getBounds(data), new PreferredSize());
+                ImageUtilities.getBounds(recoloredImage), new PreferredSize());
         /*
-         * Apply a map projection on the image, then convert the result to an index color model.
-         */
-        RenderedImage resampledImage;
-        resampledImage = processor.resample(data, bounds, displayToCenter);
-        if (selectedDerivative != Stretching.NONE) {
-            final Map<String,Object> modifiers = new HashMap<>(4);
-            /*
-             * Select the original image as the source of statistics. It saves computation time (no need
-             * to recompute the statistics when the projection is changed) and provides more stable visual
-             * output when standard deviations are used for configuring the color ramp.
-             */
-            if (statistics == null) {
-                statistics = processor.getStatistics(data, null);
-            }
-            modifiers.put("statistics", statistics);
-            if (selectedDerivative == Stretching.AUTOMATIC) {
-                modifiers.put("multStdDev", 3);
-            }
-            resampledImage = processor.stretchColorRamp(resampledImage, modifiers);
-        }
-        /*
-         * Converts images of floating point values to integer values that we can use with IndexColorModel.
+         * Apply a map projection on the image, then convert the floating point results to integer values
+         * that we can use with IndexColorModel.
          *
          * TODO: if `colors` is null, instead than defaulting to `Colorizer.GRAYSCALE` we should get the colors
          *       from the current ColorModel. This work should be done in Colorizer by converting the ranges of
          *       sample values in source image to ranges of sample values in destination image, then query
          *       ColorModel.getRGB(Object) for increasing integer values in that range.
          */
+        RenderedImage resampledImage = processor.resample(recoloredImage, bounds, displayToCenter);
         if (CREATE_INDEX_COLOR_MODEL) {
             final ColorModelType ct = ColorModelType.find(resampledImage.getColorModel());
             if (ct.isSlow || (processor.getCategoryColors() != null && ct.useColorRamp)) {
@@ -324,7 +333,7 @@ final class RenderingData implements Cloneable {
      * Computes immediately, possibly using many threads, the tiles that are going to be displayed.
      * The returned instance should be used only for current rendering event; it should not be cached.
      *
-     * @param  resampledImage      the image computed by {@link #resampleAndRecolor resampleAndRecolor(…)}.
+     * @param  resampledImage      the image computed by {@link #resampleAndConvert resampleAndConvert(…)}.
      * @param  resampledToDisplay  the transform computed by {@link #getTransform(LinearTransform)}.
      * @param  displayBounds       size and location of the display device, in pixel units.
      * @return a temporary image with tiles intersecting the display region already computed.

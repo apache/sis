@@ -118,10 +118,17 @@ public class CoverageCanvas extends MapCanvasAWT {
     private RenderingData data;
 
     /**
-     * The {@link #data} resampled to a CRS which can easily be mapped to {@linkplain #getDisplayCRS() display CRS}.
-     * The different values are variants with color ramp changed.
+     * The {@link #data} with different operations applied on them. Currently the only supported operation is
+     * color ramp stretching. The coordinate system is the one of the original image (no resampling applied).
      */
-    private final Map<Stretching,RenderedImage> resampledImages;
+    private final Map<Stretching,RenderedImage> derivedImages;
+
+    /**
+     * Image resampled to a CRS which can easily be mapped to the {@linkplain #getDisplayCRS() display CRS}.
+     * May also include conversion to integer values for usage with index color model.
+     * This is the image which will be drawn in the canvas.
+     */
+    private RenderedImage resampledImage;
 
     /**
      * The explorer to notify when the image shown in this canvas has changed.
@@ -163,7 +170,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     CoverageCanvas(final Locale locale) {
         super(locale);
         data                  = new RenderingData();
-        resampledImages       = new EnumMap<>(Stretching.class);
+        derivedImages         = new EnumMap<>(Stretching.class);
         coverageProperty      = new SimpleObjectProperty<>(this, "coverage");
         sliceExtentProperty   = new SimpleObjectProperty<>(this, "sliceExtent");
         interpolationProperty = new SimpleObjectProperty<>(this, "interpolation", data.processor.getInterpolation());
@@ -175,12 +182,12 @@ public class CoverageCanvas extends MapCanvasAWT {
     /**
      * Completes initialization of this canvas for use with the returned property explorer.
      * The intent is to be notified when the image used for showing the coverage changed.
-     * This method may be removed in a future SIS version if we revisit this API before
-     * to make public.
+     * This method is invoked the first time that the "Properties" section in `CoverageControls`
+     * is being shown.
      */
     final ImagePropertyExplorer createPropertyExplorer() {
         imageProperty = new ImagePropertyExplorer(getLocale(), fixedPane.backgroundProperty());
-        imageProperty.setImage(resampledImages.get(data.selectedDerivative), getVisibleImageBounds());
+        imageProperty.setImage(resampledImage, getVisibleImageBounds());
         return imageProperty;
     }
 
@@ -252,6 +259,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see GridCoverage#render(GridExtent)
      */
     public final void setSliceExtent(final GridExtent sliceExtent) {
+        assert Platform.isFxApplicationThread();
         sliceExtentProperty.set(sliceExtent);
     }
 
@@ -274,6 +282,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see #interpolationProperty
      */
     public final void setInterpolation(final Interpolation interpolation) {
+        assert Platform.isFxApplicationThread();
         interpolationProperty.set(interpolation);
     }
 
@@ -389,7 +398,8 @@ public class CoverageCanvas extends MapCanvasAWT {
      * <p>All arguments can be {@code null} for clearing the canvas.</p>
      */
     private void setRawImage(final RenderedImage image, final GridGeometry domain, final List<SampleDimension> ranges) {
-        resampledImages.clear();
+        resampledImage = null;
+        derivedImages.clear();
         data.setImage(image, domain, ranges);
         Envelope bounds = null;
         if (domain != null && domain.isDefined(GridGeometry.ENVELOPE)) {
@@ -404,7 +414,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     private void onInterpolationSpecified(final Interpolation newValue) {
         data.processor.setInterpolation(newValue);
-        resampledImages.clear();
+        resampledImage = null;
         requestRepaint();
     }
 
@@ -425,7 +435,8 @@ public class CoverageCanvas extends MapCanvasAWT {
      *
      * <ol>
      *   <li>Compute statistics on sample values (if needed).</li>
-     *   <li>Resample the image (if needed).</li>
+     *   <li>Stretch the color ramp (if requested).</li>
+     *   <li>Resample the image and convert to integer values.</li>
      *   <li>Paint the image.</li>
      * </ol>
      */
@@ -436,30 +447,38 @@ public class CoverageCanvas extends MapCanvasAWT {
         private final RenderingData data;
 
         /**
-         * The coordinate reference system in which to reproject the data.
+         * Value of {@link CoverageCanvas#getObjectiveCRS()} at the time this worker has been initialized.
+         * This the coordinate reference system in which to reproject the data, in "real world" units.
          */
         private final CoordinateReferenceSystem objectiveCRS;
 
         /**
-         * The conversion from {@link #objectiveCRS} to the canvas display CRS.
+         * Value of {@link CoverageCanvas#getObjectiveToDisplay()} at the time this worker has been initialized.
+         * This is the conversion from {@link #objectiveCRS} to the canvas display CRS.
+         * Can be thought as a conversion from "real world" units to pixel units.
          */
         private final LinearTransform objectiveToDisplay;
 
         /**
-         * Whether the {@linkplain RenderingData#resampleAndRecolor resampling operation} applied is different
-         * than the one used the last time that the image has been rendered, ignoring translations.
-         * Translations do not require new resampling operations because we can manage translations
-         * by changing {@link RenderedImage} coordinates.
+         * Value of {@link CoverageCanvas#getDisplayBounds()} at the time this worker has been initialized.
+         * This is the size and location of the display device, in pixel units.
          */
-        private boolean resamplingChanged;
+        private final Envelope2D displayBounds;
 
         /**
-         * The resampled image after color ramp stretching and/or index color model applied.
+         * The {@link #data} image after color ramp stretching, before resampling is applied.
+         * May be {@code null} if not yet computed, in which case it will be computed by {@link #render()}.
          */
         private RenderedImage recoloredImage;
 
         /**
-         * The filtered image with tiles computed in advance. The set of prefetched
+         * The {@link #recoloredImage} after resampling is applied.
+         * May be {@code null} if not yet computed, in which case it will be computed by {@link #render()}.
+         */
+        private RenderedImage resampledImage;
+
+        /**
+         * The resampled image with tiles computed in advance. The set of prefetched
          * tiles may differ at each rendering event. This image should not be cached
          * after rendering operation is completed.
          */
@@ -469,11 +488,6 @@ public class CoverageCanvas extends MapCanvasAWT {
          * Conversion from {@link #prefetchedImage} pixel coordinates to display coordinates.
          */
         private AffineTransform resampledToDisplay;
-
-        /**
-         * Size and location of the display device, in pixel units.
-         */
-        private final Envelope2D displayBounds;
 
         /**
          * The resource from which the data has been read, or {@code null} if unknown.
@@ -490,8 +504,9 @@ public class CoverageCanvas extends MapCanvasAWT {
             objectiveCRS       = canvas.getObjectiveCRS();
             objectiveToDisplay = canvas.getObjectiveToDisplay();
             displayBounds      = canvas.getDisplayBounds();
+            recoloredImage     = canvas.derivedImages.get(data.selectedDerivative);
             if (data.validateCRS(objectiveCRS)) {
-                recoloredImage = canvas.resampledImages.get(data.selectedDerivative);
+                resampledImage = canvas.resampledImage;
             }
         }
 
@@ -513,7 +528,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         /**
          * Invoked in background thread for resampling the image and stretching the color ramp.
          * This method performs some of the steps documented in class Javadoc, with possibility
-         * to skip the first step if the required source image is already resampled.
+         * to skip some steps for example if the required source image is already resampled.
          */
         @Override
         @SuppressWarnings("PointlessBitwiseExpression")
@@ -521,20 +536,24 @@ public class CoverageCanvas extends MapCanvasAWT {
             final Long id = LogHandler.loadingStart(originator);
             try {
                 /*
-                 * A new resampling is needed if the change compared to last rendering
-                 * is anything else than identity or translation.
+                 * Find whether resampling to apply is different than the resampling used last time that the image
+                 * has been rendered, ignoring translations. Translations do not require new resampling operations
+                 * because we can manage translations by changing `RenderedImage` coordinates.
                  */
-                resamplingChanged = (recoloredImage == null);
+                boolean resamplingChanged = (resampledImage == null);
                 if (!resamplingChanged) {
                     resampledToDisplay = data.getTransform(objectiveToDisplay);
                     resamplingChanged = (resampledToDisplay.getType() &
                             ~(AffineTransform.TYPE_IDENTITY | AffineTransform.TYPE_TRANSLATION)) != 0;
                 }
                 if (resamplingChanged) {
-                    recoloredImage = data.resampleAndRecolor(objectiveCRS, objectiveToDisplay);
+                    if (recoloredImage == null) {
+                        recoloredImage = data.recolor();
+                    }
+                    resampledImage = data.resampleAndConvert(recoloredImage, objectiveCRS, objectiveToDisplay);
                     resampledToDisplay = data.getTransform(objectiveToDisplay);
                 }
-                prefetchedImage = data.prefetch(recoloredImage, resampledToDisplay, displayBounds);
+                prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);
             } finally {
                 LogHandler.loadingStop(id);
             }
@@ -565,22 +584,17 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     private void cacheRenderingData(final Worker worker) {
         data = worker.data;
-        if (worker.resamplingChanged) {
-            /*
-             * If resampled image changed, then all derivative images (with stretched color ramp
-             * or other operation applied) are not valid anymore. We need to empty the cache.
-             */
-            resampledImages.clear();
-        }
-        resampledImages.put(data.selectedDerivative, worker.recoloredImage);
+        derivedImages.put(data.selectedDerivative, worker.recoloredImage);
+        resampledImage = worker.resampledImage;
         /*
-         * Notify the "Image properties" tab that the image changed.
+         * Notify the "Image properties" tab that the image changed. The `imageProperty` field is non-null
+         * only if the "Properties" section in `CoverageControls` has been shown at least once.
          */
         if (imageProperty != null) {
-            imageProperty.setImage(worker.recoloredImage, worker.getVisibleImageBounds());
+            imageProperty.setImage(resampledImage, worker.getVisibleImageBounds());
         }
         if (statusBar != null) {
-            final Object value = worker.recoloredImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY);
+            final Object value = resampledImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY);
             Quantity<Length> accuracy = null;
             if (value instanceof Quantity<?>[]) {
                 for (final Quantity<?> q : (Quantity<?>[]) value) {
@@ -598,7 +612,7 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * Returns the bounds of the image part which is currently shown. This method performs the same work
-     * than {@link Worker#getVisibleImageBounds()} is a less efficient way. It is used when no worker is
+     * than {@link Worker#getVisibleImageBounds()} in a less efficient way. It is used when no worker is
      * available.
      *
      * @see Worker#getVisibleImageBounds()
@@ -621,6 +635,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     final void setStyling(final Stretching selection) {
         if (data.selectedDerivative != selection) {
             data.selectedDerivative = selection;
+            resampledImage = null;
             requestRepaint();
         }
     }

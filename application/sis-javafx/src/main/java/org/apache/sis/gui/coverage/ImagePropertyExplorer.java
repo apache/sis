@@ -489,7 +489,7 @@ public class ImagePropertyExplorer extends Widget {
      * If {@link #updateOnChange} is true, then the tree view is updated.
      * Otherwise we will wait for the tree view to become visible before to update it.
      *
-     * @param newValue       the new image.
+     * @param newValue       the new image, or {@code null} if none.
      * @param visibleBounds  image region which is currently visible, or {@code null} if unspecified.
      */
     final void setImage(final RenderedImage newValue, final Rectangle visibleBounds) {
