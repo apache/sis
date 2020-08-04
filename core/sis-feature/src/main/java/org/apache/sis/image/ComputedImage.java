@@ -374,7 +374,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
             int min;
             ArgumentChecks.ensureBetween("tileX", (min = getMinTileX()), min + getNumXTiles() - 1, tileX);
             ArgumentChecks.ensureBetween("tileY", (min = getMinTileY()), min + getNumYTiles() - 1, tileY);
-            Exception error = null;
+            Throwable error = null;
             final Cache.Handler<Raster> handler = cache.lock(key);
             try {
                 tile = handler.peek();
@@ -395,11 +395,10 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
                 handler.putAndUnlock(tile);     // Must be invoked even if an exception occurred.
             }
             if (tile == null) {                 // Null in case of exception or if `computeTile(…)` returned null.
-                if (error instanceof ImagingOpException) {
-                    throw (ImagingOpException) error;
-                } else {
-                    throw (ImagingOpException) new ImagingOpException(key.error(Resources.Keys.CanNotComputeTile_2)).initCause(error);
+                if (!(error instanceof ImagingOpException)) {
+                    error = new ImagingOpException(key.error(Resources.Keys.CanNotComputeTile_2)).initCause(error);
                 }
+                throw (ImagingOpException) error;
             }
         }
         return tile;

@@ -227,10 +227,13 @@ final class RenderingData implements Cloneable {
     }
 
     /**
-     * Creates the resampled image. This method will compute the {@link MathTransform} steps from image
-     * coordinate system to display coordinate system if those steps have not already been computed.
+     * Creates the resampled image, then optionally stretches the color map and applies an index color model.
+     * This method will compute the {@link MathTransform} steps from image coordinate system to display coordinate
+     * system if those steps have not already been computed.
+     *
+     * @return image with operation applied and color ramp stretched.
      */
-    final RenderedImage resample(final CoordinateReferenceSystem objectiveCRS,
+    final RenderedImage resampleAndRecolor(final CoordinateReferenceSystem objectiveCRS,
             final LinearTransform objectiveToDisplay) throws TransformException
     {
         if (changeOfCRS == null && objectiveCRS != null && dataGeometry.isDefined(GridGeometry.CRS)) {
@@ -279,16 +282,11 @@ final class RenderingData implements Cloneable {
         final PreferredSize bounds = (PreferredSize) Shapes2D.transform(
                 MathTransforms.bidimensional(cornerToDisplay),
                 ImageUtilities.getBounds(data), new PreferredSize());
-        return processor.resample(data, bounds, displayToCenter);
-    }
-
-    /**
-     * Optionally stretches the color map, then optionally applies an index color model.
-     *
-     * @param  resampledImage  the image computed by {@link #resample(CoordinateReferenceSystem, LinearTransform)}.
-     * @return image with operation applied and color ramp stretched. May be the same instance than given image.
-     */
-    final RenderedImage recolor(RenderedImage resampledImage) {
+        /*
+         * Apply a map projection on the image, then convert the result to an index color model.
+         */
+        RenderedImage resampledImage;
+        resampledImage = processor.resample(data, bounds, displayToCenter);
         if (selectedDerivative != Stretching.NONE) {
             final Map<String,Object> modifiers = new HashMap<>(4);
             /*
@@ -326,20 +324,20 @@ final class RenderingData implements Cloneable {
      * Computes immediately, possibly using many threads, the tiles that are going to be displayed.
      * The returned instance should be used only for current rendering event; it should not be cached.
      *
-     * @param  recoloredImage      the image computed by {@link #recolor(RenderedImage)}.
+     * @param  resampledImage      the image computed by {@link #resampleAndRecolor resampleAndRecolor(…)}.
      * @param  resampledToDisplay  the transform computed by {@link #getTransform(LinearTransform)}.
      * @param  displayBounds       size and location of the display device, in pixel units.
      * @return a temporary image with tiles intersecting the display region already computed.
      */
-    final RenderedImage prefetch(final RenderedImage recoloredImage, final AffineTransform resampledToDisplay,
+    final RenderedImage prefetch(final RenderedImage resampledImage, final AffineTransform resampledToDisplay,
                                  final Envelope2D displayBounds)
     {
         try {
-            return processor.prefetch(recoloredImage, (Rectangle) AffineTransforms2D.transform(
+            return processor.prefetch(resampledImage, (Rectangle) AffineTransforms2D.transform(
                         resampledToDisplay.createInverse(), displayBounds, new Rectangle()));
         } catch (NoninvertibleTransformException e) {
             recoverableException(e);
-            return recoloredImage;
+            return resampledImage;
         }
     }
 

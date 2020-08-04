@@ -197,7 +197,7 @@ class BandedSampleConverter extends ComputedImage {
             source = ((RecoloredImage) source).source;
         }
         final int numBands = converters.length;
-        final BandedSampleModel sampleModel = layout.createBandedSampleModel(targetType, numBands, source);
+        final BandedSampleModel sampleModel = layout.createBandedSampleModel(targetType, numBands, source, null);
         /*
          * If the source image is writable, then changes in the converted image may be retro-propagated
          * to that source image. If we fail to compute the required inverse transforms, log a notice at

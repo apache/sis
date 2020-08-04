@@ -31,7 +31,6 @@ import java.awt.image.SampleModel;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.feature.Resources;
@@ -85,8 +84,9 @@ public final class Colorizer {
 
     /**
      * The type resulting from sample values conversion applied by {@link #compactColorModel(int, int)}.
+     * Current value is {@link DataBuffer#TYPE_BYTE}.
      */
-    public static final DataType TYPE_COMPACT = DataType.BYTE;
+    public static final int TYPE_COMPACT = DataBuffer.TYPE_BYTE;
 
     /**
      * Applies a gray scale to quantitative category and transparent colors to qualitative categories.
@@ -149,12 +149,11 @@ public final class Colorizer {
      * Creates a new colorizer which will use the given function for determining the colors to apply.
      * Callers need to invoke an {@code initialize(…)} method after this constructor.
      *
-     * @param  colors  the colors to use for each category.
+     * @param  colors  the colors to use for each category, or {@code null} for default.
      *                 The function may return {@code null}, which means transparent.
      */
     public Colorizer(final Function<Category,Color[]> colors) {
-        ArgumentChecks.ensureNonNull("colors", colors);
-        this.colors = colors;
+        this.colors = (colors != null) ? colors : GRAYSCALE;
     }
 
     /**
@@ -496,32 +495,7 @@ reuse:  if (source != null) {
     public ColorModel compactColorModel(final int numBands, final int visibleBand) {
         checkInitializationStatus(true);
         compact();
-        return createColorModel(TYPE_COMPACT.ordinal(), numBands, visibleBand);
-    }
-
-    /**
-     * Returns the largest range of sample values in target image, ignoring all ranges for NaN values.
-     * This method does <strong>not</strong> compute the union of all ranges, because callers may take
-     * for example the {@linkplain NumberRange#getMedian() median} value as the most typical value.
-     * If the returned range was the union of distinct ranges, then we would have no guarantees
-     * that the median value is a valid value.
-     *
-     * @return largest range of sample values in target image, or {@code null} if unknown.
-     */
-    public NumberRange<?> getRepresentativeRange() {
-        checkInitializationStatus(true);
-        NumberRange<?> largest = null;
-        double span = 0;
-        for (final ColorsForRange entry : entries) {
-            if (entry.isData()) {
-                final double s = entry.sampleRange.getSpan();
-                if (s > span) {
-                    span = s;
-                    largest = entry.sampleRange;
-                }
-            }
-        }
-        return largest;
+        return createColorModel(TYPE_COMPACT, numBands, visibleBand);
     }
 
     /**

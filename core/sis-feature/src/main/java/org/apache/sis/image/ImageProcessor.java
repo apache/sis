@@ -40,7 +40,6 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.internal.coverage.j2d.Colorizer;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.math.Statistics;
@@ -611,9 +610,9 @@ public class ImageProcessor implements Cloneable {
      * </table>
      *
      * <h4>Limitation</h4>
-     * Current implementation can stretch only gray scale images (it may be extended to indexed color models
-     * in a future version). If this method can not stretch the color ramp, for example because the given image
-     * is an RGB image, then the image is returned unchanged.
+     * Current implementation can stretch only gray scale images (a future version may extend support to images
+     * using {@linkplain java.awt.image.IndexColorModel index color models}). If this method can not stretch the
+     * color ramp, for example because the given image is an RGB image, then the image is returned unchanged.
      *
      * @param  source     the image to recolor.
      * @param  modifiers  modifiers for narrowing the range of values, or {@code null} if none.
@@ -809,7 +808,7 @@ public class ImageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("colors", colors);
         try {
-            return RecoloredImage.toIndexedColors(this, source, null, null, colors.entrySet());
+            return Visualization.create(this, null, source, null, null, colors.entrySet());
         } catch (IllegalStateException | NoninvertibleTransformException e) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
         }
@@ -843,18 +842,69 @@ public class ImageProcessor implements Cloneable {
      */
     public RenderedImage visualize(final RenderedImage source, final List<SampleDimension> ranges) {
         ArgumentChecks.ensureNonNull("source", source);
-        Function<Category,Color[]> colors;
-        synchronized (this) {
-            colors = this.colors;
-        }
-        if (colors == null) {
-            colors = Colorizer.GRAYSCALE;
-        }
         try {
-            return RecoloredImage.toIndexedColors(this, source, ranges, colors, null);
+            return Visualization.create(this, null, source, null, ranges, null);
         } catch (IllegalStateException | NoninvertibleTransformException e) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
         }
+    }
+
+    /**
+     * Returns an image as the resampling of the given image followed by a conversion to integer sample values.
+     * This is a combination of the following methods, as a single image operation for avoiding creation of an
+     * intermediate image step:
+     *
+     * <ol>
+     *   <li><code>{@linkplain #resample(RenderedImage, Rectangle, MathTransform) resample}(source, bounds, toSource)</code></li>
+     *   <li><code>{@linkplain #visualize(RenderedImage, List) visualize}(resampled, ranges)</code></li>
+     * </ol>
+     *
+     * The resulting image is suitable for visualization purposes, but should not be used for computation
+     * purposes. There is no guarantees about the number of bands in returned image and the formulas used
+     * for converting floating point values to integer values.
+     *
+     * @param  source    the image to be resampled and recolored.
+     * @param  bounds    domain of pixel coordinates of resampled image to create.
+     * @param  toSource  conversion of pixel coordinates from resampled image to {@code source} image.
+     * @param  ranges    description of {@code source} bands, or {@code null} if none. This is typically
+     *                   obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
+     * @return resampled and recolored image for visualization purposes only.
+     */
+    public RenderedImage visualize(final RenderedImage source, final Rectangle bounds, final MathTransform toSource,
+                                   final List<SampleDimension> ranges)
+    {
+        ArgumentChecks.ensureNonNull("source",   source);
+        ArgumentChecks.ensureNonNull("bounds",   bounds);
+        ArgumentChecks.ensureNonNull("toSource", toSource);
+        try {
+            return Visualization.create(this, bounds, source, toSource, ranges, null);
+        } catch (IllegalStateException | NoninvertibleTransformException e) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnconvertibleSampleValues), e);
+        }
+    }
+
+    /**
+     * Callback method for {@link Visualization}.
+     *
+     * @param  source      image to be resampled and converted.
+     * @param  toSource    conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
+     * @param  converters  transfer functions to apply on each band of the source image. This array is not cloned.
+     * @param  bounds      domain of pixel coordinates of this image, or {@code null} if same as {@code source} image.
+     * @param  colorModel  color model of the image to create.
+     */
+    final RenderedImage resampleAndConvert(final RenderedImage source, final MathTransform toSource,
+            final MathTransform1D[] converters, final Rectangle bounds, final ColorModel colorModel)
+    {
+        final Interpolation interpolation;
+        final Number[]      fillValues;
+        final Quantity<?>[] positionalAccuracyHints;
+        synchronized (this) {
+            interpolation           = this.interpolation;
+            fillValues              = this.fillValues;
+            positionalAccuracyHints = this.positionalAccuracyHints;
+        }
+        return unique(new Visualization(source, ImageLayout.DEFAULT, bounds, toSource, toSource.isIdentity(),
+                      interpolation, converters, fillValues, colorModel, positionalAccuracyHints));
     }
 
     /**

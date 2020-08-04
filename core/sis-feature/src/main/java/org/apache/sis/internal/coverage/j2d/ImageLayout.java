@@ -187,7 +187,7 @@ public class ImageLayout {
      * method will not return a size that may result in the creation of partially empty tiles.</p>
      *
      * @param  image   the image for which to derive a tile size, or {@code null}.
-     * @param  bounds  the bounds of the image to create, or {@code null} is same as {@code image}.
+     * @param  bounds  the bounds of the image to create, or {@code null} if same as {@code image}.
      * @return suggested tile size for the given image.
      */
     public Dimension suggestTileSize(final RenderedImage image, final Rectangle bounds) {
@@ -240,10 +240,13 @@ public class ImageLayout {
      * @param  type      desired data type as a {@link java.awt.image.DataBuffer} constant.
      * @param  numBands  desired number of bands.
      * @param  image     the image which will be the source of the image for which a sample model is created.
+     * @param  bounds    the bounds of the image to create, or {@code null} if same as {@code image}.
      * @return a banded sample model of the given type with the given number of bands.
      */
-    public BandedSampleModel createBandedSampleModel(final int type, final int numBands, final RenderedImage image) {
-        final Dimension tile = suggestTileSize(image, null);
+    public BandedSampleModel createBandedSampleModel(final int type, final int numBands,
+            final RenderedImage image, final Rectangle bounds)
+    {
+        final Dimension tile = suggestTileSize(image, bounds);
         return RasterFactory.unique(new BandedSampleModel(type, tile.width, tile.height, numBands));
     }
 

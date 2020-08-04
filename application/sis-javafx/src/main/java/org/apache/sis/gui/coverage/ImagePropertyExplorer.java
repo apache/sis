@@ -282,7 +282,7 @@ public class ImagePropertyExplorer extends Widget {
      */
     private static final class PropertyRow extends ImmutableObjectProperty<String> {
         /**
-         * Image image property.
+         * Image property value.
          */
         final ObjectProperty<Object> value;
 
@@ -522,7 +522,7 @@ public class ImagePropertyExplorer extends Widget {
 
     /**
      * Refresh all visual components except the tree of sources. This includes the table of
-     * image layout, the table of property values and the details of selected property value.
+     * image layouts, the table of property values and the details of selected property value.
      */
     private void refreshTables() {
         imageSelected(getSelectedImage());
@@ -530,7 +530,7 @@ public class ImagePropertyExplorer extends Widget {
 
     /**
      * Invoked when an image is selected in the tree of image sources. The selected image
-     * is not necessarily {@link #image} property value; it may be one if its sources.
+     * is not necessarily {@link #image} property value; it may be one of its sources.
      * If no image is explicitly selected, defaults to the root image.
      */
     private void imageSelected(final RenderedImage selected) {

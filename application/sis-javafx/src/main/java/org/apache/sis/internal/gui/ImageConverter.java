@@ -144,7 +144,7 @@ final class ImageConverter extends Task<Statistics[]> {
     }
 
     /**
-     * If there is a mask that we can apply on the image, returns that mask. Otherwise returns 0.
+     * If there is a mask that we can apply on the image, returns that mask. Otherwise returns {@code null}.
      * Current implementation returns the mask as a transparent yellow image.
      */
     private RenderedImage getMask(final ImageProcessor processor) {

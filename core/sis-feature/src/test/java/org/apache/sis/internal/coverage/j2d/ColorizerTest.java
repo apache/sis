@@ -59,7 +59,6 @@ public final strictfp class ColorizerTest extends TestCase {
          * above-given ranges already fit in a 4-bits IndexColormodel.
          */
         assertTrue("isIdentity", colorizer.getSampleToIndexValues().isIdentity());
-        assertEquals("range", NumberRange.create(2, true, 15, true), colorizer.getRepresentativeRange());
         final IndexColorModel cm = (IndexColorModel) colorizer.createColorModel(DataBuffer.TYPE_BYTE, 1, 0);
         final int[] expected = {
             0xFF808080,     // Color.GRAY
@@ -104,11 +103,6 @@ public final strictfp class ColorizerTest extends TestCase {
         final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
         assertTrue("initialize", colorizer.initialize(sd));
         final IndexColorModel cm = (IndexColorModel) colorizer.compactColorModel(1, 0);     // Must be first.
-        /*
-         * There is two ranges of real values (excluding ranges for NaN values). But `getSampleToIndexValues()`
-         * intentionally returns only one of those ranges, not the union of them. See its javadoc for rational.
-         */
-        assertEquals("range", NumberRange.create(2, true, 169, false), colorizer.getRepresentativeRange());
         /*
          * Test conversion of a few sample values to packed values.
          */

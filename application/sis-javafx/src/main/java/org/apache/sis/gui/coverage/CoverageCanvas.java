@@ -446,7 +446,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         private final LinearTransform objectiveToDisplay;
 
         /**
-         * Whether the {@linkplain RenderingData#resample resampling operation} applied is different
+         * Whether the {@linkplain RenderingData#resampleAndRecolor resampling operation} applied is different
          * than the one used the last time that the image has been rendered, ignoring translations.
          * Translations do not require new resampling operations because we can manage translations
          * by changing {@link RenderedImage} coordinates.
@@ -531,9 +531,8 @@ public class CoverageCanvas extends MapCanvasAWT {
                             ~(AffineTransform.TYPE_IDENTITY | AffineTransform.TYPE_TRANSLATION)) != 0;
                 }
                 if (resamplingChanged) {
-                    final RenderedImage resampledImage = data.resample(objectiveCRS, objectiveToDisplay);
+                    recoloredImage = data.resampleAndRecolor(objectiveCRS, objectiveToDisplay);
                     resampledToDisplay = data.getTransform(objectiveToDisplay);
-                    recoloredImage = data.recolor(resampledImage);
                 }
                 prefetchedImage = data.prefetch(recoloredImage, resampledToDisplay, displayBounds);
             } finally {
