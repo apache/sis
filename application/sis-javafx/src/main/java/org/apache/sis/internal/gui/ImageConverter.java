@@ -68,7 +68,7 @@ final class ImageConverter extends Task<Statistics[]> {
      */
     private static final Map<NumberRange<?>,Color[]> MASK_TRANSPARENCY = JDK9.mapOf(
             NumberRange.create(0, true, 0, true), new Color[] {ColorModelFactory.TRANSPARENT},
-            NumberRange.create(1, true, 1, true), new Color[] {new Color(0x20FFFF00, true)});
+            NumberRange.create(1, true, 1, true), new Color[] {new Color(0x30FFFF00, true)});
 
     /**
      * The Java2D image to convert.

@@ -18,27 +18,47 @@ package org.apache.sis.image;
 
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
  * Mask of missing values.
- * This is the implementation of {@link ResampledImage#MASK_KEY} property value.
+ * This is the implementation of {@value ResampledImage#MASK_KEY} property value.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @see ResampledImage#getProperty(String)
+ * @see ResampledImage#MASK_KEY
+ *
+ * @since 1.1
  * @module
  */
 final class MaskImage extends SourceAlignedImage {
+    /**
+     * Convert integer values to floating point values, or {@code null} if none.
+     * This is needed since we use {@link Float#isNaN(float)} for identifying values to mask.
+     */
+    private MathTransform converter;
+
     /**
      * Creates a new instance for the given image.
      */
     MaskImage(final ResampledImage image) {
         super(image, ColorModelFactory.createIndexColorModel(
                 1, ImageUtilities.getVisibleBand(image), new int[] {0, -1}, 0));
+        if (image.interpolation instanceof Visualization.InterpConvert) try {
+            converter = ((Visualization.InterpConvert) image.interpolation).converter.inverse();
+        } catch (NoninvertibleTransformException e) {
+            // ResampledImage.getProperty("org.apache.sis.Mask") is the public caller of this constructor.
+            Logging.unexpectedException(Logging.getLogger(Modules.RASTER), ResampledImage.class, "getProperty", e);
+        }
     }
 
     /**
@@ -77,23 +97,21 @@ final class MaskImage extends SourceAlignedImage {
          * often that there is a tile to recycle anyway.
          */
         tile = createTile(tileX, tileY);
-        final int tileMinX = tile.getMinX();
-        final int tileMinY = tile.getMinY();
-        final int tileMaxX = Math.addExact(tileMinX, tile.getWidth());
-        final int tileMaxY = Math.addExact(tileMinY, tile.getHeight());
-        float[] values = null;
-        /*
-         * Following algorithm is inefficient; it would be much faster to read or write directly in the arrays.
-         * But it may not be worth to optimize it for now.
-         */
+        final int numBands  = tile.getNumBands();
+        final int tileMinX  = tile.getMinX();
+        final int tileMinY  = tile.getMinY();
+        final int tileMaxY  = Math.addExact(tileMinY, tile.getHeight());
+        final int tileWidth = tile.getWidth();
+        final float[] row   = new float[Math.multiplyExact(tileWidth, numBands)];
         for (int y=tileMinY; y<tileMaxY; y++) {
-            for (int x=tileMinX; x<tileMaxX; x++) {
-                values = source.getPixel(x, y, values);
-                for (int i=0; i<values.length; i++) {
-                    if (Float.isNaN(values[i])) {
-                        tile.setSample(x, y, 0, 1);
-                        break;
-                    }
+            source.getPixels(tileMinX, y, tileWidth, 1, row);
+            if (converter != null) {
+                converter.transform(row, 0, row, 0, tileWidth);
+            }
+            for (int i=0; i<row.length; i++) {
+                if (Float.isNaN(row[i])) {
+                    final int x = i / numBands + tileMinX;
+                    tile.setSample(x, y, 0, 1);
                 }
                 // Otherwise leave the value to 0.
             }

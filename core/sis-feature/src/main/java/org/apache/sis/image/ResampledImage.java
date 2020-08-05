@@ -375,6 +375,13 @@ public class ResampledImage extends ComputedImage {
     }
 
     /**
+     * Returns {@code true} if this image can not have mask.
+     */
+    boolean hasNoMask() {
+        return ImageUtilities.isIntegerType(sampleModel.getDataType());
+    }
+
+    /**
      * Verifies whether image layout information are consistent. This method performs all verifications
      * {@linkplain ComputedImage#verify() documented in parent class}, then verifies that source coordinates
      * required by this image (computed by converting {@linkplain #getBounds() this image bounds} using the
@@ -453,7 +460,7 @@ public class ResampledImage extends ComputedImage {
                 throw (ImagingOpException) new ImagingOpException(e.getMessage()).initCause(e);
             }
             case MASK_KEY: {
-                if (ImageUtilities.isIntegerType(sampleModel.getDataType())) break;
+                if (hasNoMask()) break;
                 return getMask();
             }
         }
@@ -484,7 +491,7 @@ public class ResampledImage extends ComputedImage {
                         continue;                               // Exclude PositionalAccuracy change.
                     }
                 } else if (name == MASK_KEY) {
-                    if (ImageUtilities.isIntegerType(sampleModel.getDataType())) {
+                    if (hasNoMask()) {
                         continue;
                     }
                 } else if (!ArraysExt.contains(inherited, name)) {

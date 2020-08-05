@@ -50,6 +50,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 
@@ -90,7 +91,8 @@ final class RenderingData implements Cloneable {
      * to {@code false} for testing or debugging. If {@code false}, images may be only grayscale and may be much
      * slower to render, but should still be visible.
      */
-    private static final boolean CREATE_INDEX_COLOR_MODEL = false;
+    @Debug
+    private static final boolean CREATE_INDEX_COLOR_MODEL = true;
 
     /**
      * The data fetched from {@link GridCoverage#render(GridExtent)} for current {@code sliceExtent}.
@@ -324,14 +326,13 @@ final class RenderingData implements Cloneable {
          *       sample values in source image to ranges of sample values in destination image, then query
          *       ColorModel.getRGB(Object) for increasing integer values in that range.
          */
-        RenderedImage resampledImage = processor.resample(recoloredImage, bounds, displayToCenter);
         if (CREATE_INDEX_COLOR_MODEL) {
-            final ColorModelType ct = ColorModelType.find(resampledImage.getColorModel());
+            final ColorModelType ct = ColorModelType.find(recoloredImage.getColorModel());
             if (ct.isSlow || (processor.getCategoryColors() != null && ct.useColorRamp)) {
-                resampledImage = processor.visualize(resampledImage, dataRanges);
+                return processor.visualize(recoloredImage, bounds, displayToCenter, dataRanges);
             }
         }
-        return resampledImage;
+        return processor.resample(recoloredImage, bounds, displayToCenter);
     }
 
     /**

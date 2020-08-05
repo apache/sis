@@ -97,7 +97,7 @@ final class Visualization extends ResampledImage {
               layout.createBandedSampleModel(Colorizer.TYPE_COMPACT, converters.length, source, bounds),
               (bounds != null) ? bounds : ImageUtilities.getBounds(source),
               toSource,
-              isIdentity ? Interpolation.NEAREST : new InterpConvert(interpolation, converters).simplify(),
+              isIdentity ? Interpolation.NEAREST : combine(interpolation, converters),
               fillValues,
               accuracy);
 
@@ -106,44 +106,51 @@ final class Visualization extends ResampledImage {
     }
 
     /**
+     * Combines the given interpolation method with the given sample conversion.
+     */
+    static Interpolation combine(final Interpolation interpolation, final MathTransform1D[] converters) {
+        final MathTransform converter = CompoundTransform.create(converters);
+        if (converter.isIdentity()) {
+            return interpolation;
+        } else if (converter instanceof MathTransform1D) {
+            return new InterpConvertOneBand(interpolation, (MathTransform1D) converter);
+        } else {
+            return new InterpConvert(interpolation, converter);
+        }
+    }
+
+    /**
      * Interpolation followed by conversion from floating point values to the values to store as integers in the
      * destination image. This class is used for combining {@link ResampledImage} and {@link BandedSampleConverter}
      * in a single operation.
      */
-    private static final class InterpConvert implements Interpolation {
+    static class InterpConvert implements Interpolation {
         /**
          * The object to use for performing interpolations.
          *
          * @see ResampledImage#interpolation
          */
-        private final Interpolation interpolation;
+        final Interpolation interpolation;
 
         /**
          * Conversion from floating point values resulting from interpolations to values to store as integers
          * in the destination image. This transform shall operate on all bands in one {@code transform(…)} call.
          */
-        private final MathTransform converter;
+        final MathTransform converter;
 
         /**
          * Creates a new object combining the given interpolation with the given conversion of sample values.
          */
-        InterpConvert(final Interpolation interpolation, final MathTransform1D[] converters) {
+        InterpConvert(final Interpolation interpolation, final MathTransform converter) {
             this.interpolation = interpolation;
-            converter = CompoundTransform.create(converters);
-        }
-
-        /**
-         * Returns a more direct {@code Interpolation} object if possible, or {@code this} otherwise.
-         */
-        Interpolation simplify() {
-            return converter.isIdentity() ? interpolation : this;
+            this.converter = converter;
         }
 
         /**
          * Delegates to {@link Interpolation#getSupportSize()}.
          */
         @Override
-        public Dimension getSupportSize() {
+        public final Dimension getSupportSize() {
             return interpolation.getSupportSize();
         }
 
@@ -165,6 +172,42 @@ final class Visualization extends ResampledImage {
                 throw new BackingStoreException(e);     // Will be unwrapped by computeTile(…).
             }
         }
+    }
+
+    /**
+     * Same as {@link InterpConvert} optimized for the single-band case.
+     * This class uses the more efficient {@link MathTransform1D#transform(double)} method.
+     */
+    private static final class InterpConvertOneBand extends InterpConvert {
+        /** Conversion from floating point values to values to store as integers in the destination image. */
+        private final MathTransform1D singleConverter;
+
+        /** Creates a new object combining the given interpolation with the given conversion of sample values. */
+        InterpConvertOneBand(final Interpolation interpolation, final MathTransform1D converter) {
+            super(interpolation, converter);
+            singleConverter = converter;
+        }
+
+        /** Delegates to {@link #interpolation}, then convert sample values in all bands. */
+        @Override public void interpolate(final DoubleBuffer source, final int numBands,
+                                          final double xfrac, final double yfrac,
+                                          final double[] writeTo, final int writeToOffset)
+        {
+            interpolation.interpolate(source, numBands, xfrac, yfrac, writeTo, writeToOffset);
+            try {
+                writeTo[writeToOffset] = singleConverter.transform(writeTo[writeToOffset]);
+            } catch (TransformException e) {
+                throw new BackingStoreException(e);     // Will be unwrapped by computeTile(…).
+            }
+        }
+    }
+
+    /**
+     * Returns {@code true} if this image can not have mask.
+     */
+    @Override
+    final boolean hasNoMask() {
+        return !(interpolation instanceof InterpConvert) && super.hasNoMask();
     }
 
     /**

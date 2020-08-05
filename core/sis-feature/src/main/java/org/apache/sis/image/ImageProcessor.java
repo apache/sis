@@ -796,9 +796,9 @@ public class ImageProcessor implements Cloneable {
      * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
      * the ranges of values in the destination image.</p>
      *
-     * <p>The resulting image is suitable for visualization purposes, but should not be used for computation
-     * purposes. There is no guarantees about the number of bands in returned image and the formulas used for
-     * converting floating point values to integer values.</p>
+     * <p>The resulting image is suitable for visualization purposes, but should not be used for computation purposes.
+     * There is no guarantees about the number of bands in returned image or about which formula is used for converting
+     * floating point values to integer values.</p>
      *
      * @param  source  the image to recolor for visualization purposes.
      * @param  colors  colors to use for each range of values in the source image.
@@ -831,9 +831,9 @@ public class ImageProcessor implements Cloneable {
      * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
      * the ranges of values in the destination image.</p>
      *
-     * <p>The resulting image is suitable for visualization purposes, but should not be used for computation
-     * purposes. There is no guarantees about the number of bands in returned image and the formulas used for
-     * converting floating point values to integer values.</p>
+     * <p>The resulting image is suitable for visualization purposes, but should not be used for computation purposes.
+     * There is no guarantees about the number of bands in returned image or about which formula is used for converting
+     * floating point values to integer values.</p>
      *
      * @param  source  the image to recolor for visualization purposes.
      * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
@@ -859,9 +859,13 @@ public class ImageProcessor implements Cloneable {
      *   <li><code>{@linkplain #visualize(RenderedImage, List) visualize}(resampled, ranges)</code></li>
      * </ol>
      *
-     * The resulting image is suitable for visualization purposes, but should not be used for computation
-     * purposes. There is no guarantees about the number of bands in returned image and the formulas used
-     * for converting floating point values to integer values.
+     * Combining above steps may be advantageous when the {@code resample(…)} result is not needed for anything
+     * else than visualization. If the same resampling may be needed for computational purposes, then it may be
+     * more advantageous to keep above method calls separated instead than using this {@code visualize(…)} method.
+     *
+     * <p>The resulting image is suitable for visualization purposes, but should not be used for computation purposes.
+     * There is no guarantees about the number of bands in returned image or about which formula is used for converting
+     * floating point values to integer values.</p>
      *
      * @param  source    the image to be resampled and recolored.
      * @param  bounds    domain of pixel coordinates of resampled image to create.
