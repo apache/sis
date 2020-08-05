@@ -555,7 +555,7 @@ public class ImagePropertyExplorer extends Widget {
      * Returns the pixel coordinates of the region shown on screen,
      * or {@code null} if none or does not apply to the currently selected image.
      */
-    private Rectangle getVisibleImageBounds(final RenderedImage selected) {
+    final Rectangle getVisibleImageBounds(final RenderedImage selected) {
         return Boolean.TRUE.equals(imageUseBoundsCS.get(selected)) ? visibleImageBounds : null;
     }
 

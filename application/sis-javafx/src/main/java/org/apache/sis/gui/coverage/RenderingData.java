@@ -152,17 +152,23 @@ final class RenderingData implements Cloneable {
      * active at the time resampled images have been computed. The concatenation of this transform with the actual
      * "objective to display" transform at the time the rendered image is drawn should be a translation.
      * May be {@code null} if not yet computed.
+     *
+     * @see #getTransform(LinearTransform)
      */
     private AffineTransform displayToObjective;
 
     /**
      * Key of the currently selected alternative in {@link CoverageCanvas#derivedImages} map.
+     *
+     * @see #recolor()
      */
     Stretching selectedDerivative;
 
     /**
      * Statistics on pixel values of current {@link #data}, or {@code null} if none or not yet computed.
      * There is one {@link Statistics} instance per band.
+     *
+     * @see #recolor()
      */
     private Statistics[] statistics;
 
@@ -299,9 +305,8 @@ final class RenderingData implements Cloneable {
          * will be very large, potentially larger than 32 bit integer capacity (calculation done below clamps
          * the result to 32 bit integer range). This is okay since only visible tiles will be created.
          *
-         * TODO: if user pans the image close to integer range limit, we should create a new resampled image
-         *       shifted to new location (i.e. clear `CoverageCanvas.resampledImage` for forcing this method
-         *       to be invoked again). The intent is to move away from integer overflow situation.
+         * NOTE: if user pans image close to integer range limit, a new resampled image will need to be computed
+         *       for shifting away from integer overflow risk situation. This check is done by the caller.
          */
         final LinearTransform inverse = objectiveToDisplay.inverse();
         displayToObjective = AffineTransforms2D.castOrCopy(inverse);

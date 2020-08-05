@@ -63,6 +63,7 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -78,6 +79,21 @@ import org.apache.sis.storage.Resource;
  */
 @DefaultProperty("coverage")
 public class CoverageCanvas extends MapCanvasAWT {
+    /**
+     * An arbitrary safety margin (in number of pixels) for avoiding integer overflow situation.
+     * This margin shall be larger than any reasonable widget width or height, and much smaller
+     * than {@link Integer#MAX_VALUE}.
+     */
+    private static final int OVERFLOW_SAFETY_MARGIN = 10_000_000;
+
+    /**
+     * Whether to print debug information to {@link System#out}. We use {@code stdout} instead than logging
+     * because the log messages are intercepted and rerouted to the "logging" tab in the explorer widget.
+     * This field should always be {@code false} except during debugging.
+     */
+    @Debug
+    private static final boolean TRACE = false;
+
     /**
      * The data shown in this canvas. Note that setting this property to a non-null value may not
      * modify the canvas content immediately. Instead, a background process will request the tiles.
@@ -397,6 +413,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      *
      * <p>All arguments can be {@code null} for clearing the canvas.</p>
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private void setRawImage(final RenderedImage image, final GridGeometry domain, final List<SampleDimension> ranges) {
         resampledImage = null;
         derivedImages.clear();
@@ -407,6 +424,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         }
         setObjectiveBounds(bounds);
         requestRepaint();                       // Cause `Worker` class to be executed.
+        if (TRACE) System.out.format("setRawImage: %s%n", image);
     }
 
     /**
@@ -455,13 +473,15 @@ public class CoverageCanvas extends MapCanvasAWT {
         /**
          * Value of {@link CoverageCanvas#getObjectiveToDisplay()} at the time this worker has been initialized.
          * This is the conversion from {@link #objectiveCRS} to the canvas display CRS.
-         * Can be thought as a conversion from "real world" units to pixel units.
+         * Can be thought as a conversion from "real world" units to pixel units
+         * and depends on the zoom and translation events that happened before rendering.
          */
         private final LinearTransform objectiveToDisplay;
 
         /**
          * Value of {@link CoverageCanvas#getDisplayBounds()} at the time this worker has been initialized.
          * This is the size and location of the display device, in pixel units.
+         * This value is usually constant when the widget is not resized.
          */
         private final Envelope2D displayBounds;
 
@@ -486,6 +506,11 @@ public class CoverageCanvas extends MapCanvasAWT {
 
         /**
          * Conversion from {@link #prefetchedImage} pixel coordinates to display coordinates.
+         * This transform usually contains only a translation, because we do not recompute a new {@link #prefetchedImage}
+         * when the only change is a translation. But this transform may also contain a rotation or scale factor during
+         * a short time if the rendering happens while {@link #prefetchedImage} is in need to be recomputed.
+         *
+         * @see RenderingData#displayToObjective
          */
         private AffineTransform resampledToDisplay;
 
@@ -531,7 +556,7 @@ public class CoverageCanvas extends MapCanvasAWT {
          * to skip some steps for example if the required source image is already resampled.
          */
         @Override
-        @SuppressWarnings("PointlessBitwiseExpression")
+        @SuppressWarnings({"PointlessBitwiseExpression", "UseOfSystemOutOrSystemErr"})
         protected void render() throws TransformException {
             final Long id = LogHandler.loadingStart(originator);
             try {
@@ -540,18 +565,33 @@ public class CoverageCanvas extends MapCanvasAWT {
                  * has been rendered, ignoring translations. Translations do not require new resampling operations
                  * because we can manage translations by changing `RenderedImage` coordinates.
                  */
-                boolean resamplingChanged = (resampledImage == null);
-                if (!resamplingChanged) {
+                boolean isValid = (resampledImage != null);
+                if (isValid) {
                     resampledToDisplay = data.getTransform(objectiveToDisplay);
-                    resamplingChanged = (resampledToDisplay.getType() &
-                            ~(AffineTransform.TYPE_IDENTITY | AffineTransform.TYPE_TRANSLATION)) != 0;
+                    isValid = (resampledToDisplay.getType() &
+                            ~(AffineTransform.TYPE_IDENTITY | AffineTransform.TYPE_TRANSLATION)) == 0;
+                    /*
+                     * If user pans the image close to integer range limit, create a new resampled image shifted to
+                     * new location (i.e. force `resampleAndConvert(…)` to be invoked again). The intent is to move
+                     * away from integer overflow situation.
+                     */
+                    if (isValid) {
+                        isValid = Math.max(Math.abs(resampledToDisplay.getTranslateX()),
+                                           Math.abs(resampledToDisplay.getTranslateY()))
+                                  < Integer.MAX_VALUE - OVERFLOW_SAFETY_MARGIN;
+                        if (TRACE && !isValid) {
+                            System.out.println("New resample for avoiding overflow caused by translation.");
+                        }
+                    }
                 }
-                if (resamplingChanged) {
+                if (!isValid) {
                     if (recoloredImage == null) {
                         recoloredImage = data.recolor();
+                        if (TRACE) System.out.format("Recolor by application of %s.%n", data.selectedDerivative.name());
                     }
                     resampledImage = data.resampleAndConvert(recoloredImage, objectiveCRS, objectiveToDisplay);
                     resampledToDisplay = data.getTransform(objectiveToDisplay);
+                    if (TRACE) System.out.format("Resampled image: %s%n", resampledImage);
                 }
                 prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);
             } finally {
@@ -582,6 +622,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Invoked after a paint event for caching rendering data.
      * If the resampled image changed, all previously cached images are discarded.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private void cacheRenderingData(final Worker worker) {
         data = worker.data;
         derivedImages.put(data.selectedDerivative, worker.recoloredImage);
@@ -592,6 +633,8 @@ public class CoverageCanvas extends MapCanvasAWT {
          */
         if (imageProperty != null) {
             imageProperty.setImage(resampledImage, worker.getVisibleImageBounds());
+            if (TRACE) System.out.format("Update image property view with visible area %s.%n",
+                                         imageProperty.getVisibleImageBounds(resampledImage));
         }
         if (statusBar != null) {
             final Object value = resampledImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY);
