@@ -788,6 +788,9 @@ public abstract class MapCanvas extends PlanarCanvas {
         /**
          * Sets the width and height to the size of the given view,
          * then returns {@code true} if the view is non-empty.
+         *
+         * <p>This method is invoked after {@link #createRenderer()}
+         * and before {@link #createWorker(Renderer)}.</p>
          */
         final boolean initialize(final Pane view) {
             width  = Numerics.clamp(Math.round(view.getWidth()));
@@ -818,10 +821,9 @@ public abstract class MapCanvas extends PlanarCanvas {
          * {@link MapCanvas} property; if some canvas properties are needed, they should have been
          * copied at construction time.
          *
-         * @throws TransformException if the rendering required coordinate transformation and that
-         *         operation failed.
+         * @throws Exception if an error occurred while preparing data or rendering them.
          */
-        protected abstract void render() throws TransformException;
+        protected abstract void render() throws Exception;
 
         /**
          * Invoked in JavaFX thread after {@link #render()} completion. This method can update the
@@ -989,7 +991,7 @@ public abstract class MapCanvas extends PlanarCanvas {
     Task<?> createWorker(final Renderer renderer) {
         return new Task<Void>() {
             /** Invoked in background thread. */
-            @Override protected Void call() throws TransformException {
+            @Override protected Void call() throws Exception {
                 renderer.render();
                 return null;
             }

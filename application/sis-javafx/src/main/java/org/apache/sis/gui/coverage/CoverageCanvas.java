@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -55,6 +56,7 @@ import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
+import org.apache.sis.gui.map.RenderingMode;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.internal.gui.GUIUtilities;
@@ -193,6 +195,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         coverageProperty     .addListener((p,o,n) -> onImageSpecified());
         sliceExtentProperty  .addListener((p,o,n) -> onImageSpecified());
         interpolationProperty.addListener((p,o,n) -> onInterpolationSpecified(n));
+        super.setRenderingMode(RenderingMode.DIRECT);
     }
 
     /**
@@ -600,10 +603,13 @@ public class CoverageCanvas extends MapCanvasAWT {
         }
 
         /**
-         * Draws the image in a background buffer after {@link #render()} finished to prepare data.
+         * Draws the image after {@link #render()} finished to prepare data.
+         * This method may be invoked in a background thread or in JavaFX thread,
+         * depending on {@link RenderingMode}.
          */
         @Override
         protected void paint(final Graphics2D gr) {
+            gr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             gr.drawRenderedImage(prefetchedImage, resampledToDisplay);
         }
 
