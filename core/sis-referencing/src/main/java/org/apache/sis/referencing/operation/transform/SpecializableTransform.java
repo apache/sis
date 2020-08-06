@@ -648,24 +648,24 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
             while (numPts > 0) {
                 SubArea domain = forward.locate(dst);
                 if (domain == null) {
-                    dst.offset += dstInc;
+                    dst.offset += dstInc;                           // Skip point for which there is no specialized transform.
                     numPts--;
                     continue;
                 }
                 do {
-                    RTreeNode next = domain;                        // Contains the specialized transform to use.
-                    int num = (dst.offset - dstOff) / dstInc;       // Number of points that are not retransformeD.
-                    srcOff += num * srcInc;                         // Skip the source coordinates that are not retransformed.
+                    RTreeNode next = domain;                        // The specialized transform to use in next iteration.
+                    int num = (dst.offset - dstOff) / dstInc;       // Number of points skipped before this loop.
+                    srcOff += num * srcInc;                         // Make source offset synchronized with target offset.
                     dstOff = dst.offset;                            // Destination index of the first coordinate to retransform.
                     do {
                         dst.offset += dstInc;                       // Destination index after the last coordinate to transform.
                         if (--numPts <= 0) {
-                            domain = null;
+                            next = null;                            // For telling the second `while` condition to stop.
                             break;
                         }
                         next = RTreeNode.locate(domain, dst);
-                    } while (next == domain);
-                    num = (dst.offset - dstOff) / dstInc;           // Number of points to retransform.
+                    } while (next == domain);                       // Continue until we find a change of specialized transform.
+                    num = (dst.offset - dstOff) / dstInc;           // Number of points to transform.
                     transform.apply(domain.inverse, srcOff, dstOff, num);
                     domain = (SubArea) next;
                     srcOff += srcInc * num;
