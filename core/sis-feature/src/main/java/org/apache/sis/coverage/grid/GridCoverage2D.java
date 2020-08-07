@@ -148,8 +148,8 @@ public class GridCoverage2D extends GridCoverage {
                            final MathTransform1D[] converters, final boolean isConverted)
     {
         super(source.gridGeometry, range);
-        final DataType dataType = ConvertedGridCoverage.getDataType(range, isConverted, source);
-        data           = convert(source.data, dataType, converters);
+        final DataType bandType = ConvertedGridCoverage.getBandType(range, isConverted, source);
+        data           = convert(source.data, bandType, converters);
         gridToImageX   = source.gridToImageX;
         gridToImageY   = source.gridToImageY;
         xDimension     = source.xDimension;
@@ -444,8 +444,8 @@ public class GridCoverage2D extends GridCoverage {
      * Returns the constant identifying the primitive type used for storing sample values.
      */
     @Override
-    final DataType getDataType() {
-        return DataType.of(data);
+    final DataType getBandType() {
+        return DataType.forBands(data);
     }
 
     /**

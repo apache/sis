@@ -297,7 +297,7 @@ final class Visualization extends ResampledImage {
          * If the source image uses unsigned integer types and there is no resampling operation, we can
          * update the color model without changing sample values. This is much cheaper and as accurate.
          */
-        final int dataType = ImageUtilities.getDataType(source);
+        final int dataType = source.getSampleModel().getDataType();
         if (dataType == DataBuffer.TYPE_BYTE || dataType == DataBuffer.TYPE_USHORT) {
             if (toSource != null && !toSource.isIdentity()) {
                 source = processor.resample(source, bounds, toSource);

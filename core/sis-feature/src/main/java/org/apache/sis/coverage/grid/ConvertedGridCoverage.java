@@ -70,12 +70,12 @@ final class ConvertedGridCoverage extends GridCoverage {
     private final boolean isConverted;
 
     /**
-     * One of enumeration value that describe the sample values type of images
-     * produced by {@link #render(GridExtent)}. Shall not be {@code null}.
+     * One of enumeration value that describe the sample values type in each band
+     * of images produced by {@link #render(GridExtent)}. Shall not be {@code null}.
      *
-     * @see #getDataType()
+     * @see #getBandType()
      */
-    private final DataType dataType;
+    private final DataType bandType;
 
     /**
      * Creates a new coverage with the same grid geometry than the given coverage but converted sample dimensions.
@@ -92,7 +92,7 @@ final class ConvertedGridCoverage extends GridCoverage {
         this.source      = source;
         this.converters  = converters;
         this.isConverted = isConverted;
-        this.dataType    = getDataType(range, isConverted, source);
+        this.bandType    = getBandType(range, isConverted, source);
     }
 
     /**
@@ -152,13 +152,17 @@ final class ConvertedGridCoverage extends GridCoverage {
 
     /**
      * Returns the data type for range of values of given sample dimensions.
+     * This data type applies to each band, not to a packed sample model
+     * (e.g. we assume no packing of 4 byte values in a single 32-bits integer).
      *
      * @param  targets    the sample dimensions for which to get the data type.
      * @param  converted  whether the image will hold converted or packed values.
      * @param  source     if the type can not be determined, coverage from which to inherit the type as a fallback.
      * @return the data type (never null).
+     *
+     * @see GridCoverage#getBandType()
      */
-    static DataType getDataType(final List<SampleDimension> targets, final boolean converted, final GridCoverage source) {
+    static DataType getBandType(final List<SampleDimension> targets, final boolean converted, final GridCoverage source) {
         NumberRange<?> union = null;
         boolean allowsNaN = false;
         for (final SampleDimension dimension : targets) {
@@ -174,7 +178,7 @@ final class ConvertedGridCoverage extends GridCoverage {
             if (!allowsNaN) allowsNaN = dimension.allowsNaN();
         }
         if (union == null) {
-            return source.getDataType();
+            return source.getBandType();
         }
         DataType type = DataType.forRange(union, !converted);
         if (allowsNaN) {
@@ -187,8 +191,8 @@ final class ConvertedGridCoverage extends GridCoverage {
      * Returns the constant identifying the primitive type used for storing sample values.
      */
     @Override
-    final DataType getDataType() {
-        return dataType;
+    final DataType getBandType() {
+        return bandType;
     }
 
     /**
@@ -267,7 +271,7 @@ final class ConvertedGridCoverage extends GridCoverage {
          * That image should never be null. But if an implementation wants to do so, respect that.
          */
         if (image != null) {
-            image = convert(image, dataType, converters);
+            image = convert(image, bandType, converters);
         }
         return image;
     }

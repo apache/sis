@@ -536,8 +536,8 @@ final class ResampledGridCoverage extends GridCoverage {
      * Returns the constant identifying the primitive type used for storing sample values.
      */
     @Override
-    final DataType getDataType() {
-        return source.getDataType();
+    final DataType getBandType() {
+        return source.getBandType();
     }
 
     /**

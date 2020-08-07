@@ -84,6 +84,8 @@ public class BufferedGridCoverage extends GridCoverage {
      * ({@linkplain java.awt.image.PixelInterleavedSampleModel pixel interleaved} image) or in different banks
      * ({@linkplain java.awt.image.BandedSampleModel banded} image). This class detects automatically
      * which of those two sample models is used when {@link #render(GridExtent)} is invoked.
+     *
+     * <p>Sample values in this buffer shall not be {@linkplain java.awt.image.SinglePixelPackedSampleModel packed}.</p>
      */
     protected final DataBuffer data;
 
@@ -181,7 +183,7 @@ public class BufferedGridCoverage extends GridCoverage {
      * Returns the constant identifying the primitive type used for storing sample values.
      */
     @Override
-    final DataType getDataType() {
+    final DataType getBandType() {
         return DataType.forDataBufferType(data.getDataType());
     }
 

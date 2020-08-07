@@ -19,9 +19,11 @@ package org.apache.sis.image;
 import java.util.Arrays;
 import java.util.Random;
 import java.nio.FloatBuffer;
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.Graphics2D;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferFloat;
 import java.awt.image.BufferedImage;
@@ -111,6 +113,14 @@ public final strictfp class ResampledImageTest extends TestCase {
         final AffineTransform tr = AffineTransform.getTranslateInstance(source.getMinX(), source.getMinY());
         tr.scale(0.5, 0.5);
         tr.translate(-bounds.x, -bounds.y);
+        resample(bounds, tr);
+    }
+
+    /**
+     * Creates the resampled image. The source image shall be specified in {@link #source} field.
+     * The interpolation result will be stored in {@link #target}.
+     */
+    private void resample(final Rectangle bounds, final AffineTransform tr) {
         final ImageProcessor processor = new ImageProcessor();
         processor.setInterpolation(interpolation);
         target = (ResampledImage) processor.resample(source, bounds, new AffineTransform2D(tr));
@@ -319,5 +329,30 @@ public final strictfp class ResampledImageTest extends TestCase {
             1.000000000f, 1f, 1.000000000f, 1.000000000f, 1.000000000f, 1.000000000f, 1.000000000f, 1f, 1.000000000f,
             1.111111111f, 1f, 0.888888888f, 0.777777777f, 0.666666666f, 0.777777777f, 0.888888888f, 1f, 1.111111111f
         }, resampleSimpleImage(3), (float) STRICT);
+    }
+
+    /**
+     * Tests resampling of a 4 banded image. This simple test uses a solid color on the whole image,
+     * but with a different value in each band. Interpolations should result in the same values in all bands.
+     */
+    @Test
+    public void testMultiBands() {
+        final BufferedImage image = new BufferedImage(6, 3, BufferedImage.TYPE_INT_ARGB);
+        final Graphics2D g = image.createGraphics();
+        g.setColor(Color.ORANGE);
+        g.fillRect(0, 0, image.getWidth(), image.getHeight());
+        g.dispose();
+
+        source = image;
+        interpolation = Interpolation.BILINEAR;
+        resample(new Rectangle(3, 2), new AffineTransform(0.5, 0, 0, 2/3d, 0, 0));
+
+        final PixelIterator it = PixelIterator.create(target);
+        final double[] expected = {255, 200, 0, 255};           // Alpha, Blue, Green, Red.
+        double[] actual = null;
+        while (it.next()) {
+            actual = it.getPixel(actual);
+            assertArrayEquals(actual, expected, STRICT);
+        }
     }
 }

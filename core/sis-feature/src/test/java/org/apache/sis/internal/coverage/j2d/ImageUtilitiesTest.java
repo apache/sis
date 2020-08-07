@@ -24,6 +24,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
+import java.awt.image.SinglePixelPackedSampleModel;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -70,6 +71,21 @@ public final strictfp class ImageUtilitiesTest extends TestCase {
         assertEquals(1, bounds.y);
         assertEquals(4, bounds.width);
         assertEquals(3, bounds.height);
+    }
+
+    /**
+     * Tests {@link ImageUtilities#getBandType(SampleModel)}.
+     */
+    @Test
+    public void testGetBandType() {
+        SampleModel sm = new BandedSampleModel(DataBuffer.TYPE_INT, 1, 1, 3);
+        assertEquals(DataBuffer.TYPE_INT, ImageUtilities.getBandType(sm));
+
+        sm = new SinglePixelPackedSampleModel(DataBuffer.TYPE_INT, 1, 1, new int[] {0x7F0000, 0x00FF00, 0x00007F});
+        assertEquals(DataBuffer.TYPE_BYTE, ImageUtilities.getBandType(sm));
+
+        sm = new SinglePixelPackedSampleModel(DataBuffer.TYPE_INT, 1, 1, new int[] {0x7F0000, 0x00FF80, 0x00007F});
+        assertEquals(DataBuffer.TYPE_USHORT, ImageUtilities.getBandType(sm));
     }
 
     /**

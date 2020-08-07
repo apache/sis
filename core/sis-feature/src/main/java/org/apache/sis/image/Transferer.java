@@ -525,7 +525,7 @@ abstract class Transferer {
      * @return object to use for applying the operation.
      */
     static Transferer create(final Raster source, final WritableRaster target, final Rectangle aoi) {
-        switch (ImageUtilities.getDataType(target)) {
+        switch (ImageUtilities.getBandType(target.getSampleModel())) {
             case DataBuffer.TYPE_DOUBLE: {
                 if (isDirect(target, aoi)) {
                     return new DoubleToDirect(source, target, aoi);
@@ -533,7 +533,7 @@ abstract class Transferer {
                 break;
             }
             case DataBuffer.TYPE_FLOAT: {
-                switch (ImageUtilities.getDataType(source)) {
+                switch (ImageUtilities.getBandType(source.getSampleModel())) {
                     case DataBuffer.TYPE_BYTE:
                     case DataBuffer.TYPE_SHORT:
                     case DataBuffer.TYPE_USHORT:        // TODO: consider using IntegerToDirect here.
@@ -551,10 +551,10 @@ abstract class Transferer {
                 }
                 break;
             }
-            case DataBuffer.TYPE_INT:    return isFloat(source) ? new FloatToInteger(source, target, aoi) : new DoubleToInteger(source, target, aoi);
-            case DataBuffer.TYPE_USHORT: return isFloat(source) ? new FloatToUShort (source, target, aoi) : new DoubleToUShort (source, target, aoi);
-            case DataBuffer.TYPE_SHORT:  return isFloat(source) ? new FloatToShort  (source, target, aoi) : new DoubleToShort  (source, target, aoi);
-            case DataBuffer.TYPE_BYTE:   return isFloat(source) ? new FloatToByte   (source, target, aoi) : new DoubleToByte   (source, target, aoi);
+            case DataBuffer.TYPE_INT:    return singlePrecision(source) ? new FloatToInteger(source, target, aoi) : new DoubleToInteger(source, target, aoi);
+            case DataBuffer.TYPE_USHORT: return singlePrecision(source) ? new FloatToUShort (source, target, aoi) : new DoubleToUShort (source, target, aoi);
+            case DataBuffer.TYPE_SHORT:  return singlePrecision(source) ? new FloatToShort  (source, target, aoi) : new DoubleToShort  (source, target, aoi);
+            case DataBuffer.TYPE_BYTE:   return singlePrecision(source) ? new FloatToByte   (source, target, aoi) : new DoubleToByte   (source, target, aoi);
         }
         /*
          * Most conservative fallback, also used for any unknown type.
@@ -568,8 +568,8 @@ abstract class Transferer {
      * method also returns {@code false} for {@link DataBuffer#TYPE_INT} because conversion of 32 bits integer
      * to the {@code float} type may lost precision digits.
      */
-    private static boolean isFloat(final Raster source) {
-        switch (ImageUtilities.getDataType(source)) {
+    private static boolean singlePrecision(final Raster source) {
+        switch (ImageUtilities.getBandType(source.getSampleModel())) {
             case DataBuffer.TYPE_BYTE:
             case DataBuffer.TYPE_USHORT:
             case DataBuffer.TYPE_SHORT:

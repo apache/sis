@@ -264,7 +264,7 @@ public class ResampledImage extends ComputedImage {
          * the target data type is an integer type or not. Null elements default to zero.
          */
         final int numBands = ImageUtilities.getNumBands(source);
-        if (ImageUtilities.isIntegerType(sampleModel.getDataType())) {
+        if (ImageUtilities.isIntegerType(sampleModel)) {
             final int[] fill = new int[numBands];
             if (fillValues != null) {
                 for (int i=Math.min(fillValues.length, numBands); --i >= 0;) {
@@ -378,7 +378,7 @@ public class ResampledImage extends ComputedImage {
      * Returns {@code true} if this image can not have mask.
      */
     boolean hasNoMask() {
-        return ImageUtilities.isIntegerType(sampleModel.getDataType());
+        return fillValues instanceof int[];
     }
 
     /**
@@ -601,7 +601,7 @@ public class ResampledImage extends ComputedImage {
          * for minimal and maximal values. Shortcut may apply to both integer values and floating point values.
          */
         final boolean shortcut = (interpolation == Interpolation.NEAREST) &&
-                    ImageUtilities.isLosslessConversion(sampleModel.getDataType(), ImageUtilities.getDataType(tile));
+                    ImageUtilities.isLosslessConversion(sampleModel, tile.getSampleModel());
         /*
          * Prepare a buffer where to store a line of interpolated values. We use this buffer for transferring
          * many pixels in a single `WritableRaster.setPixels(…)` call, which is faster than invoking `setPixel(…)`
@@ -629,7 +629,7 @@ public class ResampledImage extends ComputedImage {
                 for (int b=0; b<numBands; b++) {
                     maxValues[b] = Numerics.bitmask(sm.getSampleSize(b)) - 1;
                 }
-                if (!ImageUtilities.isUnsignedType(sm.getDataType())) {
+                if (!ImageUtilities.isUnsignedType(sm)) {
                     for (int b=0; b<numBands; b++) {
                         minValues[b] = ~(maxValues[b] >>>= 1);      // Convert unsigned type to signed type range.
                     }

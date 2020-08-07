@@ -22,7 +22,6 @@ import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
-import java.awt.image.DataBuffer;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -46,6 +45,7 @@ import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 
 
 /**
@@ -466,8 +466,7 @@ public class GridView extends Control {
                 if (getBand() >= numBands) {
                     ((BandProperty) bandProperty).setNoCheck(numBands - 1);
                 }
-                final int dataType = sm.getDataType();
-                cellFormat.dataTypeisInteger = (dataType >= DataBuffer.TYPE_BYTE && dataType <= DataBuffer.TYPE_INT);
+                cellFormat.dataTypeisInteger = ImageUtilities.isIntegerType(sm);
             }
             cellFormat.configure(image, getBand());
         }

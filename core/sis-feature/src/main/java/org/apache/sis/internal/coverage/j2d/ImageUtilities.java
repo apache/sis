@@ -29,6 +29,7 @@ import java.awt.image.Raster;
 import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
+import java.awt.image.MultiPixelPackedSampleModel;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
@@ -159,39 +160,44 @@ public final class ImageUtilities extends Static {
     }
 
     /**
-     * Returns the data type of the given image.
+     * Returns the data type of bands in rasters that use the given sample model.
+     * If each band is stored in its own {@link DataBuffer} element, then this method returns the same value
+     * as {@link SampleModel#getDataType()}. But if multiple sample values are packed in a single data element
+     * ({@link SinglePixelPackedSampleModel} or {@link MultiPixelPackedSampleModel}), then this method returns
+     * a smaller data type. As a general rule, this method returns the smallest data type capable to store all
+     * sample values with a {@link java.awt.image.BandedSampleModel}.
      *
-     * @param  image  the image for which to get the data type, or {@code null}.
+     * @param  sm  the sample model for which to get the band type, or {@code null}.
      * @return the data type, or {@link DataBuffer#TYPE_UNDEFINED} if unknown.
      *
-     * @see #getDataType(Raster)
      * @see #isIntegerType(int)
+     * @see #isUnsignedType(SampleModel)
      */
-    public static int getDataType(final RenderedImage image) {
-        if (image != null) {
-            final SampleModel sm = image.getSampleModel();
-            if (sm != null) return sm.getDataType();            // Should never be null, but we are paranoiac.
+    public static int getBandType(final SampleModel sm) {
+        if (sm == null) {
+            return DataBuffer.TYPE_UNDEFINED;
         }
-        return DataBuffer.TYPE_UNDEFINED;
-    }
-
-    /**
-     * Returns the data type of the given raster.
-     *
-     * @param  raster  the raster for which to get the data type, or {@code null}.
-     * @return the data type, or {@link DataBuffer#TYPE_UNDEFINED} if unknown.
-     *
-     * @see #getDataType(RenderedImage)
-     * @see #isIntegerType(int)
-     */
-    public static int getDataType(final Raster raster) {
-        if (raster != null) {
-            final DataBuffer buffer = raster.getDataBuffer();
-            if (buffer != null) {                               // Should never be null, but we are paranoiac.
-                return buffer.getDataType();
+        final int type = sm.getDataType();
+        if (!isIntegerType(type)) {
+            return type;
+        }
+        final int maxBits = Math.min(DataBuffer.getDataTypeSize(type), Short.SIZE + 1);
+        int numBits = 0;
+        for (int i=sm.getNumBands(); --i >= 0;) {
+            final int n = sm.getSampleSize(i);
+            if (n > numBits) {
+                if (n >= maxBits) {
+                    return type;
+                }
+                numBits = n;
             }
         }
-        return DataBuffer.TYPE_UNDEFINED;
+        final boolean isUnsignedType = (type <= DataBuffer.TYPE_USHORT)
+                        || (sm instanceof SinglePixelPackedSampleModel)
+                        || (sm instanceof MultiPixelPackedSampleModel);
+
+        return isUnsignedType ? (numBits <= Byte.SIZE ? DataBuffer.TYPE_BYTE : DataBuffer.TYPE_USHORT)
+                              : DataBuffer.TYPE_SHORT;
     }
 
     /**
@@ -378,41 +384,89 @@ public final class ImageUtilities extends Static {
      *
      * @param  dataType  one of {@link DataBuffer} constants.
      * @return whether the given constant is for an integer type.
-     *
-     * @see #getDataType(RenderedImage)
-     * @see #getDataType(Raster)
      */
     public static boolean isIntegerType(final int dataType) {
         return dataType >= DataBuffer.TYPE_BYTE && dataType <= DataBuffer.TYPE_INT;
     }
 
     /**
-     * Returns {@code true} if the given data buffer type is an unsigned integer type.
-     * Returns {@code false} if the type is a floating point type or in case of doubt
-     * (e.g. for {@link DataBuffer#TYPE_UNDEFINED}).
+     * Returns {@code true} if the given sample model use an integer type.
+     * Returns {@code false} if the type is a floating point type or in case
+     * of doubt (e.g. for {@link DataBuffer#TYPE_UNDEFINED}).
      *
-     * @param  dataType  one of {@link DataBuffer} constants.
-     * @return whether the given constant is for an unsigned integer type.
-     *
-     * @see #getDataType(RenderedImage)
-     * @see #getDataType(Raster)
+     * @param  sm  the sample model, or {@code null}.
+     * @return whether the given sample model is for integer values.
      */
-    public static boolean isUnsignedType(final int dataType) {
-        return dataType >= DataBuffer.TYPE_BYTE && dataType <= DataBuffer.TYPE_USHORT;
+    public static boolean isIntegerType(final SampleModel sm) {
+        return (sm != null) && isIntegerType(sm.getDataType());
     }
 
     /**
-     * Returns whether {@code sourceType} can be converted to {@code targetType} without data lost.
+     * Returns {@code true} if the type of sample values is an unsigned integer type.
+     * Returns {@code false} if the type is a floating point type or in case of doubt
+     * (e.g. for {@link DataBuffer#TYPE_UNDEFINED}).
      *
-     * @param  sourceType  type of values to convert.
-     * @param  targetType  type of converted values.
-     * @return whether the the conversion from source type to target type is lossless.
+     * @param  sm  the sample model, or {@code null}.
+     * @return whether the given sample model provides unsigned sample values.
      */
-    public static boolean isLosslessConversion(final int sourceType, final int targetType) {
-        if (sourceType == DataBuffer.TYPE_USHORT && targetType == DataBuffer.TYPE_SHORT) {
-            return false;       // TYPE_SHORT > TYPE_USHORT but still of lossy conversion.
+    public static boolean isUnsignedType(final SampleModel sm) {
+        if (sm != null) {
+            final int dataType = sm.getDataType();
+            if (dataType >= DataBuffer.TYPE_BYTE) {
+                if (dataType <= DataBuffer.TYPE_USHORT) return true;
+                if (dataType <= DataBuffer.TYPE_INT) {
+                    /*
+                     * Typical case: 4 bands (ARGB) stored in a single data element of type `int`.
+                     * The javadoc of those classes explain how to unpack the sample values,
+                     * and the result is always unsigned.
+                     */
+                    return (sm instanceof SinglePixelPackedSampleModel) ||
+                           (sm instanceof MultiPixelPackedSampleModel);
+                }
+            }
         }
-        return sourceType >= DataBuffer.TYPE_BYTE && targetType <= DataBuffer.TYPE_DOUBLE && targetType >= sourceType;
+        return false;
+    }
+
+    /**
+     * Returns whether samples values stored using {@code source} model can be converted to {@code target} model
+     * without data lost. This method verifies the number of bands and the size of data in each band.
+     *
+     * @param  source  model of sample values to convert.
+     * @param  target  model of converted sample values.
+     * @return whether the conversion from source model to target model is lossless.
+     */
+    public static boolean isLosslessConversion(final SampleModel source, final SampleModel target) {
+        if (source != target) {
+            final int numBands = source.getNumBands();
+            if (target.getNumBands() < numBands) {
+                return false;                           // Conversion would lost some bands.
+            }
+            final boolean sourceIsInteger = isIntegerType(source.getDataType());
+            final boolean targetIsInteger = isIntegerType(target.getDataType());
+            if (targetIsInteger && !sourceIsInteger) {
+                return false;                           // Conversion from floating point type to integer type.
+            }
+            boolean hasSameSize = false;
+            for (int i=0; i<numBands; i++) {
+                final double d = target.getSampleSize(i) - source.getSampleSize(i);
+                hasSameSize |= (d == 0);
+                if (d < 0) {
+                    return false;
+                }
+            }
+            if (hasSameSize) {
+                /*
+                 * Need more checks if at least one band uses the same amount of bits:
+                 *   - Conversion from `int` to `float` can loose significant digits.
+                 *   - Conversion from signed short to unsigned short (or conversely) can change values.
+                 */
+                if (sourceIsInteger != targetIsInteger || isUnsignedType(source) != isUnsignedType(target)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

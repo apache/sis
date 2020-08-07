@@ -16,7 +16,6 @@
  */
 package org.apache.sis.image;
 
-import java.awt.image.Raster;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.RasterFormatException;
@@ -88,25 +87,19 @@ public enum DataType {
     }
 
     /**
-     * Returns the data type of the given image.
+     * Returns the data type of the bands in the given image. This is often the
+     * {@linkplain java.awt.image.SampleModel#getDataType() storage data type}, but not necessarily.
+     * For example if an ARGB image uses a storage mode where the sample values in the 4 bands are
+     * {@linkplain java.awt.image.SinglePixelPackedSampleModel packed in a single 32-bits integer},
+     * then this method returns {@link #BYTE} (the type of a single band), not {@link #INT}
+     * (the type of a whole pixel).
      *
      * @param  image  the image for which to get the type.
      * @return type of the given image (never {@code null}).
      * @throws RasterFormatException if the image does not use a recognized data type.
      */
-    public static DataType of(final RenderedImage image) {
-        return forDataBufferType(ImageUtilities.getDataType(image));
-    }
-
-    /**
-     * Returns the data type of the given raster.
-     *
-     * @param  raster  the raster for which to get the type.
-     * @return type of the given raster (never {@code null}).
-     * @throws RasterFormatException if the raster does not use a recognized data type.
-     */
-    public static DataType of(final Raster raster) {
-        return forDataBufferType(ImageUtilities.getDataType(raster));
+    public static DataType forBands(final RenderedImage image) {
+        return forDataBufferType(ImageUtilities.getBandType(image.getSampleModel()));
     }
 
     /**

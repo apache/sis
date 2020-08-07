@@ -183,9 +183,12 @@ public abstract class GridCoverage {
     }
 
     /**
-     * Returns the data type identifying the primitive type used for storing sample values.
+     * Returns the data type identifying the primitive type used for storing sample values in each band.
+     * We assume no packed sample model (e.g. no packing of 4 byte ARGB values in a single 32-bits integer).
+     * If the sample model is packed, the value returned by this method should be as if the image has been
+     * converted to a banded sample model.
      */
-    DataType getDataType() {
+    DataType getBandType() {
         return DataType.DOUBLE;     // Must conservative value, should be overridden by subclasses.
     }
 
@@ -247,20 +250,20 @@ public abstract class GridCoverage {
      * Creates a new image of the given data type which will compute values using the given converters.
      *
      * @param  source      the image for which to convert sample values.
-     * @param  dataType    the type of the image resulting from conversion of given image.
+     * @param  bandType    the type of data in the bands resulting from conversion of given image.
      * @param  converters  the transfer functions to apply on each band of the source image.
      * @return the image which compute converted values from the given source.
      */
-    final RenderedImage convert(final RenderedImage source, final DataType dataType, final MathTransform1D[] converters) {
+    final RenderedImage convert(final RenderedImage source, final DataType bandType, final MathTransform1D[] converters) {
         final int visibleBand = Math.max(0, ImageUtilities.getVisibleBand(source));
         final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
         final ColorModel colors;
         if (colorizer.initialize(sampleDimensions[visibleBand]) || colorizer.initialize(source.getColorModel())) {
-            colors = colorizer.createColorModel(dataType.ordinal(), sampleDimensions.length, visibleBand);
+            colors = colorizer.createColorModel(bandType.ordinal(), sampleDimensions.length, visibleBand);
         } else {
             colors = Colorizer.NULL_COLOR_MODEL;
         }
-        return Lazy.PROCESSOR.convert(source, getRanges(), converters, dataType, colors);
+        return Lazy.PROCESSOR.convert(source, getRanges(), converters, bandType, colors);
     }
 
     /**

@@ -481,8 +481,8 @@ public abstract class PixelIterator {
                     final int size = model.getSampleSize(bandToDefine);
                     long minimum = 0;
                     long maximum = Numerics.bitmask(size) - 1;
-                    if (dataType >= DataBuffer.TYPE_SHORT) {
-                        maximum >>>= 1;                         // Convert unsigned range to signed range.
+                    if (!ImageUtilities.isUnsignedType(model)) {
+                        maximum >>>= 1;                                 // Convert unsigned range to signed range.
                         minimum = ~maximum;
                     }
                     final NumberRange<?> range = (dataType == DataBuffer.TYPE_BYTE || dataType == DataBuffer.TYPE_SHORT)

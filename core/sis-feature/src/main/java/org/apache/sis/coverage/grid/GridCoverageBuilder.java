@@ -35,6 +35,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.Colorizer;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.internal.coverage.j2d.WritableTiledImage;
 import org.apache.sis.internal.feature.Resources;
@@ -467,7 +468,7 @@ public class GridCoverageBuilder {
                 final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
                 final ColorModel colors;
                 if (colorizer.initialize(bands.get(visibleBand)) || colorizer.initialize(sm, visibleBand)) {
-                    colors = colorizer.createColorModel(sm.getDataType(), bands.size(), visibleBand);
+                    colors = colorizer.createColorModel(ImageUtilities.getBandType(sm), bands.size(), visibleBand);
                 } else {
                     colors = Colorizer.NULL_COLOR_MODEL;
                 }

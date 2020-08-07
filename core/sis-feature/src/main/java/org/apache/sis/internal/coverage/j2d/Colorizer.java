@@ -214,18 +214,15 @@ public final class Colorizer {
      */
     public boolean initialize(final SampleModel source, final int band) {
         checkInitializationStatus(false);
-        if (source != null) {
-            final int dataType = source.getDataType();
-            if (ImageUtilities.isIntegerType(dataType)) {
-                long minimum = 0;
-                long maximum = Numerics.bitmask(source.getSampleSize(band)) - 1;
-                if (dataType != DataBuffer.TYPE_BYTE && dataType != DataBuffer.TYPE_USHORT) {
-                    maximum >>>= 1;
-                    minimum = ~maximum;
-                }
-                initialize(minimum, maximum);
-                return true;
+        if (ImageUtilities.isIntegerType(source)) {
+            long minimum = 0;
+            long maximum = Numerics.bitmask(source.getSampleSize(band)) - 1;
+            if (!ImageUtilities.isUnsignedType(source)) {
+                maximum >>>= 1;
+                minimum = ~maximum;
             }
+            initialize(minimum, maximum);
+            return true;
         }
         return false;
     }

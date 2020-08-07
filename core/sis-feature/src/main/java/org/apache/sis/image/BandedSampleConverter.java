@@ -24,6 +24,7 @@ import java.awt.image.WritableRenderedImage;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.SampleModel;
 import java.awt.image.TileObserver;
 import java.lang.reflect.Array;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -132,10 +133,11 @@ class BandedSampleConverter extends ComputedImage {
                 }
             }
             if (!Double.isFinite(middle)) {
-                switch (ImageUtilities.getDataType(source)) {
-                    default:                     middle = 0;      break;
-                    case DataBuffer.TYPE_BYTE:   middle = 0x80;   break;
-                    case DataBuffer.TYPE_USHORT: middle = 0x8000; break;
+                final SampleModel sm = source.getSampleModel();
+                if (ImageUtilities.isUnsignedType(sm)) {
+                    middle = Math.scalb(0.5, sm.getSampleSize(i));
+                } else {
+                    middle = 0;
                 }
             }
             /*
