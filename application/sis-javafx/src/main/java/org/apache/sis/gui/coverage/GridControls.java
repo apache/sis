@@ -68,7 +68,7 @@ final class GridControls extends Controls {
      */
     GridControls(final RecentReferenceSystems referenceSystems, final Vocabulary vocabulary) {
         view = new GridView(referenceSystems);
-        sampleDimensions = new CategoryCellFactory(view.cellFormat).createSampleDimensionTable(vocabulary);
+        sampleDimensions = new BandRangeTable(view.cellFormat).create(vocabulary);
         sampleDimensions.getSelectionModel().selectedIndexProperty().addListener(new BandSelectionListener(view.bandProperty));
         view.bandProperty.addListener((p,o,n) -> onBandSpecified(n));
         /*

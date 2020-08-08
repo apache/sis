@@ -26,29 +26,32 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.Styles;
 
 
 /**
- * Factory methods for cell values to shown in the sample dimension or category table.
- *
- * <p>Current implementation handles only {@link SampleDimension} instances, but it
- * can be extended for handling also {@link Category} objects in a future version.
- * The class name is in anticipation for such extension.</p>
+ * Builder for a table of {@link SampleDimension} instances with their value ranges.
+ * The columns are: band name, minimum value, maximum value, unit of measurement.
+ * The {@link TableView} is provided indirectly by the {@link #create create(…)} method;
+ * the interfaces implemented by this class are implementation convenience that may change in any future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-final class CategoryCellFactory implements Callback<TableColumn<SampleDimension,Number>, TableCell<SampleDimension,Number>> {
+final class BandRangeTable implements Callback<TableColumn<SampleDimension,Number>, TableCell<SampleDimension,Number>> {
     /**
-     * Identifier of columns shown in the sample dimension or category table.
+     * Identifier of columns shown in the sample dimension table.
      */
     private static final String NAME = "name", MINIMUM = "minimum", MAXIMUM = "maximum", UNITS = "units";
+
+    /**
+     * Approximate amount of rows to make visible.
+     */
+    private static final int NUM_VISIBLE_ROW = 5;
 
     /**
      * The format to use for formatting minimum and maximum values.
@@ -56,9 +59,9 @@ final class CategoryCellFactory implements Callback<TableColumn<SampleDimension,
     private final CellFormat cellFormat;
 
     /**
-     * Creates a cell value factory.
+     * Creates a new instance which will format numbers using the given object.
      */
-    CategoryCellFactory(final CellFormat format) {
+    BandRangeTable(final CellFormat format) {
         cellFormat = format;
     }
 
@@ -67,9 +70,9 @@ final class CategoryCellFactory implements Callback<TableColumn<SampleDimension,
      *
      * @param  vocabulary  resources for the locale in use.
      */
-    TableView<SampleDimension> createSampleDimensionTable(final Vocabulary vocabulary) {
+    TableView<SampleDimension> create(final Vocabulary vocabulary) {
         final TableView<SampleDimension> table = new TableView<>();
-        table.setPrefHeight(5 * Styles.ROW_HEIGHT);                         // Show approximately 5 rows.
+        table.setPrefHeight(NUM_VISIBLE_ROW * Styles.ROW_HEIGHT);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.getColumns().setAll(
                 createStringColumn(vocabulary, Vocabulary.Keys.Name,    NAME),
@@ -82,9 +85,9 @@ final class CategoryCellFactory implements Callback<TableColumn<SampleDimension,
     /**
      * Creates a new column with a title identified by the given key.
      */
-    private TableColumn<SampleDimension,String> createStringColumn(final Vocabulary vocabulary, final short key, final String id) {
+    private static TableColumn<SampleDimension,String> createStringColumn(final Vocabulary vocabulary, final short key, final String id) {
         final TableColumn<SampleDimension,String> column = new TableColumn<>(vocabulary.getString(key));
-        column.setCellValueFactory(CategoryCellFactory::getStringValue);
+        column.setCellValueFactory(BandRangeTable::getStringValue);
         column.setId(id);
         return column;
     }
