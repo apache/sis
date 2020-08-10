@@ -553,7 +553,7 @@ next:   for (final CoordinateSystem cs : targets) {
      * it does not yet scan the EPSG database (this may change in future Apache SIS version).
      * The current list of known coordinate systems is given below.</p>
      *
-     * <table>
+     * <table class="sis">
      *   <caption>Known coordinate systems (CS)</caption>
      *   <tr><th>EPSG</th> <th>CS type</th> <th colspan="3">Axis directions</th> <th>Horizontal unit</th></tr>
      *   <tr><td>6424</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td></td>   <td>degree</td></tr>

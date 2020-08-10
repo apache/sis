@@ -917,7 +917,7 @@ public class Canvas extends Observable implements Localized {
      * <cite>supplemental dimension</cite>) for <var>t</var> is added to the CRS, {@link GridExtent}
      * and "grid to CRS" transform of the returned grid geometry.</p>
      *
-     * <table>
+     * <table class="sis">
      *   <caption>Canvas properties → grid geometry properties</caption>
      *   <tr>
      *     <th>Grid geometry element</th>

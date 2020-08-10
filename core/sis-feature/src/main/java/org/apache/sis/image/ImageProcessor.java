@@ -580,7 +580,7 @@ public class ImageProcessor implements Cloneable {
      * All unrecognized modifiers are silently ignored. If no modifier is specified, then the color ramp
      * will be stretched from minimum to maximum values found in specified image.</p>
      *
-     * <table>
+     * <table class="sis">
      *   <caption>Value range modifiers</caption>
      *   <tr>
      *     <th>Key</th>

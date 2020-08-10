@@ -48,7 +48,7 @@ import org.apache.sis.internal.util.Strings;
  * (it usually means that it does not hold any mutable state), then subclasses can override
  * and invoke the methods in one of the following rows:
  *
- * <table>
+ * <table class="sis">
  *   <caption>Methods to use in single-thread or with concurrent implementations</caption>
  *   <tr>
  *     <th>Override</th>

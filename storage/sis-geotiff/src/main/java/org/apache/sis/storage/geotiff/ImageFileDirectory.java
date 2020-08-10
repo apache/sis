@@ -249,7 +249,7 @@ final class ImageFileDirectory extends AbstractGridResource {
     /**
      * The color space of the image data, or -1 if unspecified.
      *
-     * <table>
+     * <table class="sis">
      *   <caption>Color space codes</caption>
      *   <tr><th>Value</th> <th>Label</th>        <th>Description</th></tr>
      *   <tr><td>0</td> <td>WhiteIsZero</td>      <td>For bilevel and grayscale images. 0 is imaged as white.</td></tr>
