@@ -18,6 +18,7 @@ package org.apache.sis.internal.gui;
 
 import java.util.Arrays;
 import java.util.List;
+import javafx.scene.paint.Color;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -41,5 +42,31 @@ public final strictfp class GUIUtilitiesTest extends TestCase {
         final List<Integer> x = Arrays.asList(1, 2, 4, 6, 7,    9);
         final List<Integer> y = Arrays.asList(1, 2,    3, 7, 8);
         assertEquals(Arrays.asList(1, 2, 7), GUIUtilities.longestCommonSubsequence(x, y));
+    }
+
+    /**
+     * Tests {@link GUIUtilities#fromARGB(int)}.
+     */
+    @Test
+    public void testFromARGB() {
+        final java.awt.Color reference = java.awt.Color.ORANGE;
+        final Color color = GUIUtilities.fromARGB(reference.getRGB());
+        assertEquals(reference.getRed(),   StrictMath.round(255 * color.getRed()));
+        assertEquals(reference.getGreen(), StrictMath.round(255 * color.getGreen()));
+        assertEquals(reference.getBlue(),  StrictMath.round(255 * color.getBlue()));
+        assertEquals(reference.getAlpha(), StrictMath.round(255 * color.getOpacity()));
+   }
+
+    /**
+     * Tests {@link GUIUtilities#toARGB(Color)}.
+     */
+    @Test
+    public void testToARGB() {
+        final int ARGB = GUIUtilities.toARGB(Color.ORANGE);
+        final java.awt.Color reference = new java.awt.Color(ARGB);
+        assertEquals(0xFF, reference.getRed());
+        assertEquals(0xA5, reference.getGreen());
+        assertEquals(0x00, reference.getBlue());
+        assertEquals(0xFF, reference.getAlpha());
     }
 }

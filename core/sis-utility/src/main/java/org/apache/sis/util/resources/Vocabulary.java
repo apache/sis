@@ -160,6 +160,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Cardinality = 20;
 
         /**
+         * Categories
+         */
+        public static final short Categories = 248;
+
+        /**
          * Caused by {0}
          */
         public static final short CausedBy_1 = 21;
@@ -558,6 +563,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Gray
          */
         public static final short Gray = 95;
+
+        /**
+         * Grayscale
+         */
+        public static final short Grayscale = 250;
 
         /**
          * Green
@@ -1158,6 +1168,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Transparency
          */
         public static final short Transparency = 201;
+
+        /**
+         * Transparent
+         */
+        public static final short Transparent = 249;
 
         /**
          * Truncated Julian

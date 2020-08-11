@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -54,6 +55,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
+import org.apache.sis.coverage.Category;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.gui.map.RenderingMode;
@@ -306,6 +308,25 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
+     * Returns the colors to use for given categories of sample values, or {@code null} is unspecified.
+     */
+    final Function<Category, java.awt.Color[]> getCategoryColors() {
+        return data.processor.getCategoryColors();
+    }
+
+    /**
+     * Sets the colors to use for given categories in image. Invoking this method causes a repaint event,
+     * so it should be invoked only if at least one color is known to have changed.
+     *
+     * @param  colors  colors to use for arbitrary categories of sample values, or {@code null} for default.
+     */
+    final void setCategoryColors(final Function<Category, java.awt.Color[]> colors) {
+        data.processor.setCategoryColors(colors);
+        resampledImage = null;
+        requestRepaint();
+    }
+
+    /**
      * Sets the background, as a color for now but more patterns may be allowed in a future version.
      */
     final void setBackground(final Color color) {
@@ -432,6 +453,8 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * Invoked when a new interpolation has been specified.
+     *
+     * @see #setInterpolation(Interpolation)
      */
     private void onInterpolationSpecified(final Interpolation newValue) {
         data.processor.setInterpolation(newValue);

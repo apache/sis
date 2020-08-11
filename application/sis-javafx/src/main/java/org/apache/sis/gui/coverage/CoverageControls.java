@@ -16,11 +16,11 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.lang.ref.Reference;
 import javafx.scene.control.Accordion;
-import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Control;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
@@ -30,15 +30,15 @@ import javafx.scene.layout.VBox;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.util.StringConverter;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.coverage.Category;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.map.MapMenu;
@@ -64,6 +64,11 @@ final class CoverageControls extends Controls {
     private final CoverageCanvas view;
 
     /**
+     * The control showing categories and their colors for the current coverage.
+     */
+    private final TableView<Category> categoryTable;
+
+    /**
      * The controls for changing {@link #view}.
      */
     private final Accordion controls;
@@ -84,9 +89,8 @@ final class CoverageControls extends Controls {
                      final RecentReferenceSystems referenceSystems)
     {
         final Resources resources = Resources.forLocale(vocabulary.getLocale());
-        final Color background = Color.BLACK;
         view = new CoverageCanvas(vocabulary.getLocale());
-        view.setBackground(background);
+        view.setBackground(Color.BLACK);
         final StatusBar statusBar = new StatusBar(referenceSystems, view);
         view.statusBar = statusBar;
         imageAndStatus = new BorderPane(view.getView());
@@ -97,64 +101,52 @@ final class CoverageControls extends Controls {
          * "Display" section with the following controls:
          *    - Current CRS
          *    - Interpolation
-         *    - Color stretching
-         *    - Background color
          */
         final VBox displayPane;
         {   // Block for making variables locale to this scope.
-            final Font  font     = fontOfGroup();
-            final Label crsLabel = new Label(vocabulary.getString(Vocabulary.Keys.ReferenceSystem));
-            final Label crsShown = new Label();
-            crsLabel.setLabelFor(crsShown);
-            crsLabel.setFont(font);
-            crsLabel.setPadding(Styles.FORM_INSETS);
-            crsShown.setPadding(INDENT_OUTSIDE);
-            crsShown.setTooltip(new Tooltip(resources.getString(Resources.Keys.SelectCrsByContextMenu)));
-            menu.selectedReferenceSystem().ifPresent((text) -> crsShown.textProperty().bind(text));
+            final Label crsControl = new Label();
+            final Label crsHeader  = labelOfGroup(vocabulary, Vocabulary.Keys.ReferenceSystem, crsControl, true);
+            crsControl.setPadding(CONTENT_MARGIN);
+            crsControl.setTooltip(new Tooltip(resources.getString(Resources.Keys.SelectCrsByContextMenu)));
+            menu.selectedReferenceSystem().ifPresent((text) -> crsControl.textProperty().bind(text));
             /*
-             * The pane containing controls will be divided in sections separated by labels:
-             * ones for values and one for colors.
+             * Creates a "Values" sub-section with the following controls:
+             *   - Interpolation
              */
-            final int valuesHeader = 0;
-            final int colorsHeader = 2;
-            final GridPane gp;
-            gp = Styles.createControlGrid(valuesHeader + 1,
-                label(vocabulary, Vocabulary.Keys.Interpolation, createInterpolationButton(vocabulary.getLocale())),
-                label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStyling(n))),
-                label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton(background)));
+            final GridPane valuesControl = Styles.createControlGrid(0,
+                label(vocabulary, Vocabulary.Keys.Interpolation, createInterpolationButton(vocabulary.getLocale())));
+            final Label valuesHeader = labelOfGroup(vocabulary, Vocabulary.Keys.Values, valuesControl, false);
             /*
-             * Insert space (one row) between "interpolation" and "stretching"
-             * so we can insert the "colors" section header.
+             * All sections put together.
              */
-            final ObservableList<Node> items = gp.getChildren();
-            for (final Node item : items) {
-                if (GridPane.getColumnIndex(item) == 0) {
-                    ((Label) item).setPadding(INDENT);
-                }
-                final int row = GridPane.getRowIndex(item);
-                if (row >= colorsHeader) {
-                    GridPane.setRowIndex(item, row + 1);
-                }
-            }
-            final Label values = new Label(vocabulary.getString(Vocabulary.Keys.Values));
-            final Label colors = new Label(vocabulary.getString(Vocabulary.Keys.Colors));
-            values.setFont(font);
-            colors.setFont(font);
-            GridPane.setConstraints(values, 0, valuesHeader, 2, 1);    // Span 2 columns.
-            GridPane.setConstraints(colors, 0, colorsHeader, 2, 1);
-            items.addAll(values, colors);
-            displayPane = new VBox(crsLabel, crsShown, gp);
+            displayPane = new VBox(crsHeader, crsControl, valuesHeader, valuesControl);
+        }
+        /*
+         * "Colors" section with the following controls:
+         *    - Colors for each category
+         *    - Color stretching
+         */
+        final VBox colorsPane;
+        {   // Block for making variables locale to this scope.
+            final CoverageStyling styling = new CoverageStyling(view);
+            categoryTable = CategoryColorsCell.createTable(styling, vocabulary);
+            final GridPane gp = Styles.createControlGrid(0,
+                label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStyling(n))));
+
+            colorsPane = new VBox(
+                    labelOfGroup(vocabulary, Vocabulary.Keys.Categories, categoryTable, true), categoryTable, gp);
         }
         /*
          * Put all sections together and have the first one expanded by default.
          * The "Properties" section will be built by `PropertyPaneCreator` only if requested.
          */
-        final TitledPane p1 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Display), displayPane);
-        final TitledPane p2 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null);
-        controls = new Accordion(p1, p2);
+        final TitledPane p1 = new TitledPane(vocabulary.getString(Vocabulary.Keys.SpatialRepresentation), displayPane);
+        final TitledPane p2 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Colors), colorsPane);
+        final TitledPane p3 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null);
+        controls = new Accordion(p1, p2, p3);
         controls.setExpandedPane(p1);
         view.coverageProperty.bind(coverage);
-        p2.expandedProperty().addListener(new PropertyPaneCreator(view, p2));
+        p3.expandedProperty().addListener(new PropertyPaneCreator(view, p3));
     }
 
     /**
@@ -223,17 +215,6 @@ final class CoverageControls extends Controls {
     }
 
     /**
-     * Creates the button for selecting a background color.
-     */
-    private ColorPicker createBackgroundButton(final Color background) {
-        final ColorPicker b = new ColorPicker(background);
-        b.setOnAction((e) -> {
-            view.setBackground(((ColorPicker) e.getSource()).getValue());
-        });
-        return b;
-    }
-
-    /**
      * Invoked the first time that the "Properties" pane is opened for building the JavaFX visual components.
      * We deffer the creation of this pane because it is often not requested at all, since this is more for
      * developers than users.
@@ -272,6 +253,13 @@ final class CoverageControls extends Controls {
     @Override
     final void coverageChanged(final GridCoverage data, final Reference<Resource> originator) {
         view.setOriginator(originator);
+        if (data != null) {
+            final int visibleBand = 0;          // TODO: provide a selector for the band to show.
+            final List<SampleDimension> bands = data.getSampleDimensions();
+            categoryTable.getItems().setAll(bands.get(visibleBand).getCategories());
+        } else {
+            categoryTable.getItems().clear();
+        }
     }
 
     /**

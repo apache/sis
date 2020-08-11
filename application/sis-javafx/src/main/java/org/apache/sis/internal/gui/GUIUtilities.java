@@ -28,6 +28,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.stage.Window;
 import javax.measure.Unit;
 import javax.measure.Quantity;
@@ -298,5 +299,37 @@ public final class GUIUtilities extends Static {
         }
         m = Units.METRE.getConverterTo(unit).convert(Math.max(m, Formulas.LINEAR_TOLERANCE));
         return Quantities.create(m, unit);
+    }
+
+    /**
+     * Returns a color from a ARGB value packed in an integer.
+     *
+     * @param  code  the ARGB value.
+     * @return color for the given ARGB value.
+     */
+    public static Color fromARGB(final int code) {
+        return Color.rgb(0xFF & (code >>> Byte.SIZE*2),     // Red
+                         0xFF & (code >>> Byte.SIZE),       // Green
+                         0xFF & (code));                    // Blue
+    }
+
+    /**
+     * Returns a ARGB value packed in an integer.
+     *
+     * @param  color  color for which to get the ARGB value.
+     * @return ARGB value for the given color.
+     */
+    public static int toARGB(final Color color) {
+        return (toByte(color.getOpacity()) << 3*Byte.SIZE)
+             | (toByte(color.getRed())     << 2*Byte.SIZE)
+             | (toByte(color.getGreen())   <<   Byte.SIZE)
+             |  toByte(color.getBlue());
+    }
+
+    /**
+     * Converts a floating point value in the 0 … 1 range to an integer value in the 0 … 255 range.
+     */
+    private static int toByte(final double value) {
+        return (int) Math.round(value * 255);
     }
 }
