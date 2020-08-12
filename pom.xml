@@ -592,6 +592,18 @@
         <maven.compiler.optimize>true</maven.compiler.optimize>
         <org.apache.sis.test.extensive>true</org.apache.sis.test.extensive>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <!-- Configuration of Javadoc attached to Maven artifacts (not aggregated javadoc). -->
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <nonavbar>true</nonavbar>         <!-- Navigation bar not used when Javadoc is browsed from IDE. -->
+              <doclint>-reference</doclint>     <!-- Cross-modules references are valid only in aggregated javadoc. -->
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
 
     <!-- ===================================================================
