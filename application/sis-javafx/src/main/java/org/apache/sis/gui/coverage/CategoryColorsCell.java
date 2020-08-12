@@ -334,6 +334,7 @@ final class CategoryColorsCell extends TableCell<Category,CategoryColors> implem
         colors.setCellValueFactory(styling);
         colors.setCellFactory((column) -> new CategoryColorsCell(styling));
         colors.setId("colors");
+        colors.setSortable(false);
 
         final TableView<Category> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);

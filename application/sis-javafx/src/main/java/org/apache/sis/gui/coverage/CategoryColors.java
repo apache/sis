@@ -41,8 +41,12 @@ final class CategoryColors {
     /**
      * Default color palette.
      */
-    static final CategoryColors GRAYSCALE = new CategoryColors(0xFF000000, 0xFFFFFFFF),
-            BELL = new CategoryColors(0xFF0000FF, 0xFF00FFFF, 0xFFFFFFFF, 0xFFFFFF00, 0xFFFF0000);
+    static final CategoryColors GRAYSCALE = new CategoryColors(0xFF000000, 0xFFFFFFFF);
+
+    /**
+     * Blue – Cyan – White – Yellow – Red.
+     */
+    static final CategoryColors BELL = new CategoryColors(0xFF0000FF, 0xFF00FFFF, 0xFFFFFFFF, 0xFFFFFF00, 0xFFFF0000);
 
     /**
      * ARGB codes of this single color or color ramp.
@@ -137,9 +141,9 @@ final class CategoryColors {
                 if (n > 1) {
                     final StringBuilder buffer = new StringBuilder(name);
                     if (n > 2) {
-                        buffer.append(" … ").append(ColorName.of(colors[n / 2]));
+                        buffer.append(" – ").append(ColorName.of(colors[n / 2]));
                     }
-                    name = buffer.append(" … ").append(ColorName.of(colors[n - 1])).toString();
+                    name = buffer.append(" – ").append(ColorName.of(colors[n - 1])).toString();
                 }
             }
         }

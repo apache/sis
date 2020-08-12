@@ -76,19 +76,19 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * </ul>
  *
  * <h2>Configuration from {@code logging.properties}</h2>
- * The format can also be set from the {@code jre/lib/logging.properties} file.
+ * The format can also be set from a {@code logging.properties} file.
  * For example, user can cut and paste the following properties into {@code logging.properties}:
  *
  * {@preformat text
  *     ###########################################################################
- *     # Properties for the apache.sis.org's MonolineFormatter.
- *     # By default, the monoline formatter display only the level
- *     # and the message. Additional fields can be specified here:
+ *     # Properties for the apache.sis.org MonolineFormatter.
+ *     # By default, MonolineFormatter displays only the log level
+ *     # and the message. Additional options can be specified here:
  *     #
- *     #  time:   If set, writes the time elapsed since the initialization.
- *     #          The argument specifies the output pattern. For example, the
- *     #          pattern "HH:mm:ss.SSSS" displays the hours, minutes, seconds
- *     #          and milliseconds.
+ *     #  time:   If set, writes the time elapsed since initialization.
+ *     #          The argument specifies the output pattern. For example,
+ *     #          the "HH:mm:ss.SSSS" pattern displays the hours, minutes,
+ *     #          seconds and milliseconds.
  *     #
  *     #  source: If set, writes the source logger name or the source class name.
  *     #          Valid argument values are "none", "logger:short", "logger:long",
