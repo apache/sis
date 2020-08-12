@@ -95,6 +95,12 @@
           <release>11</release>     <!-- Minimal version required by JavaFX. -->
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <release>11</release>
+        </configuration>
+      </plugin>
 
       <!-- Anticipation for Java 9 -->
       <plugin>
@@ -239,6 +245,17 @@
               <argLine>
                 --module-path ${env.PATH_TO_FX} --add-modules javafx.graphics,javafx.controls
               </argLine>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <additionalJOptions>
+                <additionalJOption>--module-path</additionalJOption>
+                <additionalJOption>${env.PATH_TO_FX}</additionalJOption>
+                <additionalJOption>--add-modules</additionalJOption>
+                <additionalJOption>javafx.graphics,javafx.controls</additionalJOption>
+              </additionalJOptions>
             </configuration>
           </plugin>
         </plugins>
