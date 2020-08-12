@@ -99,6 +99,12 @@
       <groupId>edu.ucar</groupId>
       <artifactId>cdm</artifactId>
       <scope>compile</scope>
+      <optional>false</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>          <!-- For UCAR library. -->
+      <artifactId>slf4j-jdk14</artifactId>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 

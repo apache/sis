@@ -522,13 +522,11 @@
         <groupId>edu.ucar</groupId>
         <artifactId>cdm</artifactId>
         <version>${netcdf.version}</version>
-        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-jdk14</artifactId>
         <version>1.7.22</version>               <!-- Must matches the version used by netCDF. -->
-        <scope>test</scope>                     <!-- Should never be needed at compile time.  -->
       </dependency>
     </dependencies>
   </dependencyManagement>
