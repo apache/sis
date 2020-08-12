@@ -147,10 +147,16 @@
     <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derby</artifactId>
       <scope>runtime</scope>
     </dependency>
 
@@ -165,6 +171,30 @@
   </dependencies>
 
   <profiles>
+    <!--
+      Create the binary distribution file. Can also be launch from the command-line with:
+      mvn package org.apache.sis.core:sis-build-helper:dist
+    -->
+    <profile>
+      <id>apache-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.sis.core</groupId>
+            <artifactId>sis-build-helper</artifactId>
+            <version>${sis.plugin.version}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>dist</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <!-- Dependencies under GPL + classpath exception included only if explicitly requested. -->
     <profile>
       <id>javafx</id>

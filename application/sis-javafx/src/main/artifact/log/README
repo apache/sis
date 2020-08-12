@@ -1,0 +1,3 @@
+This directory contains log messages produced by the system
+(Java + SIS + other applications), and a separated file for
+logs from Derby database.
