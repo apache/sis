@@ -449,7 +449,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
             }
             /*
              * Add some hard-coded links to EPSG resources, and finally add the JDBC driver name and version number.
-             * The list last OnlineResource looks like:
+             * The last OnlineResource looks like:
              *
              *    Linkage:      jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
              *    Function:     Connection
@@ -480,7 +480,9 @@ addURIs:    for (int i=0; ; i++) {
                 try {
                     r.setLinkage(new URI(url));
                 } catch (URISyntaxException exception) {
-                    unexpectedException("getAuthority", exception);
+                    // May happen if there is spaces in the URI.
+                    Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY),
+                                                 EPSGDataAccess.class, "getAuthority", exception);
                 }
                 r.setFunction(function);
                 r.setDescription(description);

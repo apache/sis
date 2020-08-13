@@ -157,11 +157,15 @@ public final class FXFinder {
      * @param  dir     directory selected by user.
      */
     private static void setDirectory(final Path setenv, final File dir) throws IOException {
+        String command = "PATH_TO_FX";
+        if (setenv.getFileName().toString().endsWith(".bat")) {
+            command = "SET " + command;                             // Microsoft Windows syntax.
+        }
         final ArrayList<String> content = new ArrayList<>();
         int insertAt = -1;
         for (String line : Files.readAllLines(setenv)) {
             line = line.trim();
-            if (line.startsWith("PATH_TO_FX")) {
+            if (line.startsWith(command)) {
                 insertAt = content.size();
             } else {
                 content.add(line);
@@ -170,7 +174,7 @@ public final class FXFinder {
         if (insertAt < 0) {
             insertAt = content.size();
         }
-        content.add(insertAt, "PATH_TO_FX=" + dir);
+        content.add(insertAt, command + '=' + dir);
         Files.write(setenv, content, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 }

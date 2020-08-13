@@ -20,7 +20,7 @@ set -o errexit
 
 BASE_DIR="`readlink --canonicalize-existing $0`"
 BASE_DIR="`dirname $BASE_DIR`/.."
-source $BASE_DIR/conf/setenv.sh
+source "$BASE_DIR/conf/setenv.sh"
 
 if [ -z "$PATH_TO_FX" ]
 then
@@ -29,7 +29,7 @@ then
     then
         exit
     fi
-    source $BASE_DIR/conf/setenv.sh
+    source "$BASE_DIR/conf/setenv.sh"
 fi
 
 SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"

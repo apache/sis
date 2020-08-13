@@ -19,6 +19,7 @@ package org.apache.sis.internal.setup;
 import java.util.logging.LogManager;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -67,11 +68,13 @@ public final class LoggingConfiguration {
                     if (line.startsWith(PROPERTY)) {
                         final int i = buffer.indexOf(PATTERN, base + PROPERTY.length());
                         if (i >= 0) {
-                            Path replacement = path;
-                            for (int j=Math.min(replacement.getNameCount(), 2); --j >= 0;) {
-                                replacement = replacement.getParent();
+                            Path parent = path;
+                            for (int j=Math.min(parent.getNameCount(), 2); --j >= 0;) {
+                                parent = parent.getParent();
                             }
-                            buffer.replace(i, i + PATTERN.length(), replacement.toString());
+                            String replacement = parent.toString();
+                            replacement = replacement.replace(File.separatorChar, '/');
+                            buffer.replace(i, i + PATTERN.length(), replacement);
                         }
                     }
                 }
