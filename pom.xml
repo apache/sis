@@ -84,7 +84,7 @@
 
   <ciManagement>
     <system>jenkins</system>
-    <url>https://builds.apache.org/job/sis</url>
+    <url>https://ci-builds.apache.org/job/SIS/</url>
   </ciManagement>
 
   <issueManagement>
