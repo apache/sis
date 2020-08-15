@@ -44,6 +44,33 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public final class FXFinder {
     /**
+     * The URL where to download JavaFX.
+     */
+    private static final String DOWNLOAD_URL = "https://openjfx.io/";
+
+    /**
+     * The {@value} directory in JavaFX installation directory.
+     * This is the directory where JAR files are expected to be found.
+     */
+    private static final String LIB_DIRECTORY = "lib";
+
+    /**
+     * A file to search in the {@value #LIB_DIRECTORY} directory for determining if JavaFX is present.
+     */
+    private static final String SENTINEL_FILE = "javafx.controls.jar";
+
+    /**
+     * The environment variable containing the path to JavaFX {@value #LIB_DIRECTORY} directory.
+     */
+    private static final String PATH_VARIABLE = "PATH_TO_FX";
+
+    /**
+     * File extension of Windows batch file. If the script file to edit does not have this extension,
+     * then it is assumed to be a Unix bash script.
+     */
+    private static final String WINDOWS_BATCH_EXTENSION = ".bat";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private FXFinder() {
@@ -110,9 +137,9 @@ public final class FXFinder {
 
         if (choice == 0) {
             if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create("https://openjfx.io/"));
+                Desktop.getDesktop().browse(URI.create(DOWNLOAD_URL));
             } else {
-                JOptionPane.showMessageDialog(null, "See https://openjfx.io/",
+                JOptionPane.showMessageDialog(null, "See " + DOWNLOAD_URL,
                         "JavaFX download", JOptionPane.INFORMATION_MESSAGE);
             }
         } else if (choice == 1) {
@@ -140,11 +167,11 @@ public final class FXFinder {
      * @return      the {@code lib} directory, or {@code null} if not found.
      */
     private static File findSubDirectory(final File dir) {
-        if (new File(dir, "javafx.controls.jar").exists()) {
+        if (new File(dir, SENTINEL_FILE).exists()) {
             return dir;
         }
-        final File lib = new File(dir, "lib");
-        if (new File(lib, "javafx.controls.jar").exists()) {
+        final File lib = new File(dir, LIB_DIRECTORY);
+        if (new File(lib, SENTINEL_FILE).exists()) {
             return lib;
         }
         return null;
@@ -157,8 +184,8 @@ public final class FXFinder {
      * @param  dir     directory selected by user.
      */
     private static void setDirectory(final Path setenv, final File dir) throws IOException {
-        String command = "PATH_TO_FX";
-        if (setenv.getFileName().toString().endsWith(".bat")) {
+        String command = PATH_VARIABLE;
+        if (setenv.getFileName().toString().endsWith(WINDOWS_BATCH_EXTENSION)) {
             command = "SET " + command;                             // Microsoft Windows syntax.
         }
         final ArrayList<String> content = new ArrayList<>();
