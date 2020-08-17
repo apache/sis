@@ -283,6 +283,19 @@ public class ResourceExplorer extends WindowManager {
     }
 
     /**
+     * Removes the given resource from the tree and eventually closes it.
+     * If the given resource is not in this tree explorer or can not be removed,
+     * then this method does nothing.
+     *
+     * @param  resource  the resource to remove, or {@code null}.
+     *
+     * @see ResourceTree#removeAndClose(Resource)
+     */
+    public void removeAndClose(final Resource resource) {
+        resources.removeAndClose(resource);
+    }
+
+    /**
      * Invoked in JavaFX thread when a new item is selected in the resource tree.
      * Normally, only one resource is selected since we use a single selection model.
      * We nevertheless loop over the items as a paranoiac check and take the first non-null resource.
@@ -383,7 +396,7 @@ public class ResourceExplorer extends WindowManager {
         if (selected) {
             if (!isDataTabSet) {
                 isDataTabSet = true;                    // Must be set before to invoke `updateDataTab(…)`.
-                updateDataTab(selectedResource.get());
+                updateDataTab(getSelectedResource());
             }
             if (coverage != null) {                     // May still be null if selected resource is not a coverage.
                 type = visual ? CoverageExplorer.View.IMAGE : CoverageExplorer.View.TABLE;
@@ -420,7 +433,7 @@ public class ResourceExplorer extends WindowManager {
      */
     @Override
     final SelectedData getSelectedData() {
-        final Resource resource = selectedResource.get();
+        final Resource resource = getSelectedResource();
         if (resource == null) {
             return null;
         }
@@ -454,11 +467,20 @@ public class ResourceExplorer extends WindowManager {
     }
 
     /**
+     * Returns the currently selected resource.
+     *
+     * @return the currently selected resource, or {@code null} if none.
+     */
+    public final Resource getSelectedResource() {
+        return selectedResource.get();
+    }
+
+    /**
      * Returns the property for currently selected resource.
      *
      * @return property for currently selected resource.
      */
-    public ReadOnlyProperty<Resource> selectedResourceProperty() {
+    public final ReadOnlyProperty<Resource> selectedResourceProperty() {
         return selectedResource.getReadOnlyProperty();
     }
 }

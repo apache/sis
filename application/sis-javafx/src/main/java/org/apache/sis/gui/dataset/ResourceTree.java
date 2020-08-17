@@ -135,7 +135,7 @@ public class ResourceTree extends TreeView<Resource> {
     /**
      * Adds a resource to this tree. If this tree is empty, then invoking this method
      * has the same effect than invoking {@link #setResource(Resource)}. Otherwise this
-     * method add the new resource below previously added resources if not already present.
+     * method adds the new resource below previously added resources if not already present.
      *
      * <p>This method updates the {@link #setRoot root} and {@link #setShowRoot showRoot}
      * properties of {@link TreeView}.</p>
@@ -257,6 +257,8 @@ public class ResourceTree extends TreeView<Resource> {
      * tree view or is not a root resource, then this method does nothing.
      *
      * @param  resource  the resource to remove, or {@code null}.
+     *
+     * @see ResourceExplorer#removeAndClose(Resource)
      */
     public void removeAndClose(final Resource resource) {
         if (findOrRemove(resource, true)) {
@@ -491,18 +493,13 @@ public class ResourceTree extends TreeView<Resource> {
                     menu = getContextMenu();
                     if (menu == null) {
                         menu = new ContextMenu();
-                        menu.getItems().add(tree.localized().menu(Resources.Keys.Close, (e) -> close()));
+                        menu.getItems().add(tree.localized().menu(Resources.Keys.Close, (e) -> {
+                            ((ResourceTree) getTreeView()).removeAndClose(getItem());
+                        }));
                     }
                 }
                 setContextMenu(menu);
             }
-        }
-
-        /**
-         * Invoked when user selected the "close" action in the contextual menu.
-         */
-        private void close() {
-            ((ResourceTree) getTreeView()).removeAndClose(getItem());
         }
     }
 

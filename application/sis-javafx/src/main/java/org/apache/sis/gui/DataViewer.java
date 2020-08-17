@@ -45,6 +45,7 @@ import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStores;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -135,13 +136,18 @@ public class DataViewer extends Application {
         final MenuBar menus = new MenuBar();
         final Menu file = new Menu(vocabulary.getString(Vocabulary.Keys.File));
         {   // For keeping variables locale.
-            final MenuItem open;
+            final MenuItem open, close;
             file.getItems().addAll(
-                    open = localized.menu(Resources.Keys.Open, (e) -> showOpenFileDialog()),
+                    open  = localized.menu(Resources.Keys.Open,  (e) -> showOpenFileDialog()),
+                    close = localized.menu(Resources.Keys.Close, (e) -> closeSelectedFile()),
                     new SeparatorMenuItem(),
                     localized.menu(Resources.Keys.Exit, (e) -> Platform.exit()));
 
             open.setAccelerator(KeyCombination.keyCombination("Shortcut+O"));
+            close.setDisable(true);
+            content.selectedResourceProperty().addListener((e,o,n) -> {
+                close.setDisable(!(n instanceof DataStore));
+            });
         }
         final Menu help = new Menu(localized.getString(Resources.Keys.Help));
         {   // For keeping variables locale.
@@ -258,6 +264,13 @@ public class DataViewer extends Application {
             systemLogsWindow = w;
         }
         systemLogsWindow.show();
+    }
+
+    /**
+     * Closes the currently selected file.
+     */
+    private void closeSelectedFile() {
+        content.removeAndClose(content.getSelectedResource());
     }
 
     /**
