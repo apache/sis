@@ -79,6 +79,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
@@ -1225,11 +1226,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * The reverse order (projected source CRS and geographic target CRS) is also accepted but should be uncommon.
          */
-        final int resultDim = step3.getSourceDimensions();
-        final int numTrailingCoordinates = resultDim - step2.getTargetDimensions();
-        if (numTrailingCoordinates > 0) {
+        final int resultDim = step3.getSourceDimensions();              // Final result (minus trivial changes).
+        final int kernelDim = step2.getTargetDimensions();              // Result of the core part of transform.
+        final int numTrailingCoordinates = resultDim - kernelDim;
+        if (numTrailingCoordinates != 0) {
             ensureDimensionChangeAllowed(parameterized, context, numTrailingCoordinates, resultDim);
-            step2 = createPassThroughTransform(0, step2, numTrailingCoordinates);
+            if (numTrailingCoordinates > 0) {
+                step2 = createPassThroughTransform(0, step2, numTrailingCoordinates);
+            } else {
+                step2 = createConcatenatedTransform(step2, createAffineTransform(
+                        Matrices.createDimensionSelect(kernelDim, ArraysExt.range(0, resultDim))));
+            }
         }
         /*
          * If the source CS has a height but the target CS doesn't, drops the extra coordinates.
