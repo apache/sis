@@ -69,6 +69,11 @@ public class DataViewer extends Application {
      */
     public static void main(final String[] args) {
         LogHandler.register(true);
+        /*
+         * Following line seems necessary for enabling input method framework
+         * (tested on Java 14 and JavaFX 14).
+         */
+        java.awt.im.InputContext.getInstance();
         launch(args);
     }
 
