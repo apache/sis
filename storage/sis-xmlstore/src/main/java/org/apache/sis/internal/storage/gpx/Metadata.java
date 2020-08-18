@@ -82,7 +82,7 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -258,10 +258,7 @@ public final class Metadata extends SimpleMetadata {
              * identificationInfo.extent.geographicElement   →   bounds
              */
             if (bounds == null) {
-                for (final Extent e : id.getExtents()) {
-                    bounds = Bounds.castOrCopy(Extents.getGeographicBoundingBox(e));
-                    if (bounds != null) break;
-                }
+                bounds = Bounds.castOrCopy(Extents.getGeographicBoundingBox(md));
             }
         }
     }
