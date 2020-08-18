@@ -35,7 +35,7 @@ import static org.apache.sis.test.Assert.*;
  * This class uses {@link DefaultMedium} as an arbitrary metadata implementation for running the tests.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -184,5 +184,45 @@ public final strictfp class ModifiableMetadataTest extends TestCase {
             verifyUnmodifiableException(e);
         }
         assertPropertiesEqual(null, "The original note.");
+    }
+
+    /**
+     * Tests {@link ModifiableMetadata#deepCopy(ModifiableMetadata.State)}.
+     */
+    @Test
+    public void testDeepCopy() {
+        /*
+         * Make one of `DefaultMedium` property unmodifiable
+         * for testing `deepCopy(…)` decision to copy or not.
+         */
+        assertTrue(((DefaultIdentifier) md.getIdentifier()).transitionTo(ModifiableMetadata.State.FINAL));
+        /*
+         * Test the request for an editable copy. All children
+         * should be copied, including the unmodifiable child.
+         */
+        DefaultMedium copy = (DefaultMedium) md.deepCopy(ModifiableMetadata.State.EDITABLE);
+        assertEquals (md, copy);
+        assertNotSame(md, copy);
+        assertNotSame(md.getIdentifier(), copy.getIdentifier());
+        assertSame   (md.getMediumNote(), copy.getMediumNote());                // Not a cloneable property.
+        assertEquals(ModifiableMetadata.State.FINAL, identifierState());
+        assertEquals(ModifiableMetadata.State.EDITABLE, ((DefaultIdentifier) copy.getIdentifier()).state());
+        /*
+         * Test the request for an unmodifiable copy. This time,
+         * the unmodifiable children should not be copied.
+         */
+        copy = (DefaultMedium) md.deepCopy(ModifiableMetadata.State.FINAL);
+        assertEquals (md, copy);
+        assertNotSame(md, copy);
+        assertSame   (md.getIdentifier(), copy.getIdentifier());                // Not copied because unmodifiable.
+        assertSame   (md.getMediumNote(), copy.getMediumNote());                // Not a cloneable property.
+        assertEquals(ModifiableMetadata.State.FINAL, identifierState());
+        assertEquals(ModifiableMetadata.State.FINAL, ((DefaultIdentifier) copy.getIdentifier()).state());
+        /*
+         * Special case when all metadata at play are unmodifiable.
+         */
+        md.transitionTo(ModifiableMetadata.State.FINAL);
+        copy = (DefaultMedium) md.deepCopy(ModifiableMetadata.State.FINAL);
+        assertSame(md, copy);
     }
 }

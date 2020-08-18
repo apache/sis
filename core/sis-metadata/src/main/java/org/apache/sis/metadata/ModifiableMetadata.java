@@ -86,7 +86,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -203,6 +203,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         private State(final byte code) {
             this.code = code;
         }
+
+        /**
+         * Whether this enumeration represents a state where data can not be modified anymore.
+         */
+        final boolean isUnmodifiable() {
+            return code >= ModifiableMetadata.FINAL;
+        }
     }
 
     /**
@@ -261,7 +268,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * The effect of invoking this method may be recursive. For example transitioning to {@link State#FINAL}
      * implies transitioning all children {@code ModifiableMetadata} instances to the final state too.
      *
-     * @param  target  the desired new state.
+     * @param  target  the desired new state (editable, completable or final).
      * @return {@code true} if the state of this {@code ModifiableMetadata} changed as a result of this method call.
      * @throws UnmodifiableMetadataException if a transition to a less restrictive state
      *         (e.g. from {@link State#FINAL} to {@link State#EDITABLE}) was attempted.
@@ -284,6 +291,63 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             state = result;
         }
         return true;
+    }
+
+    /**
+     * Copies (if necessary) this metadata and all its children.
+     * Changes in the returned metadata will not affect this {@code ModifiableMetadata} instance, and conversely.
+     * The returned metadata will be in the {@linkplain #state() state} specified by the {@code target} argument.
+     * The state of this {@code ModifiableMetadata} instance stay unchanged.
+     *
+     * <p>As a special case, this method returns {@code this} if and only if the specified target is {@link State#FINAL}
+     * and this {@code ModifiableMetadata} instance is already in final state. In that particular case, copies are not
+     * needed for protecting metadata against changes because neither {@code this} or the returned value can be modified.</p>
+     *
+     * <p>This method is typically invoked for getting a modifiable metadata from an unmodifiable one:</p>
+     *
+     * {@preformat java
+     *     Metadata source  = ...;          // Any implementation.
+     *     DefaultMetadata md = DefaultMetadata.castOrCopy(source);
+     *     md = (DefaultMetadata) md.deepCopy(DefaultMetadata.State.EDITABLE);
+     * }
+     *
+     * <h4>Alternative</h4>
+     * If unconditional copy is desired, or if the metadata to copy may be arbitrary implementations
+     * of GeoAPI interfaces (i.e. not necessarily a {@code ModifiableMetadata} subclass),
+     * then the following code can be used instead:
+     *
+     * {@preformat java
+     *     MetadataCopier copier = new MetadataCopier(MetadataStandard.ISO_19115);
+     *     Metadata source = ...;                           // Any implementation.
+     *     Metadata copy = copier.copy(Metadata.class, source);
+     * }
+     *
+     * The {@code Metadata} type in above example can be replaced by any other ISO 19115 type.
+     * Types from other standards can also be used if the {@link MetadataStandard#ISO_19115} constant
+     * is replaced accordingly.
+     *
+     * @param  target  the desired state (editable, completable or final).
+     * @return a copy (except in above-cited special case) of this metadata in the specified state.
+     *
+     * @see MetadataCopier
+     *
+     * @since 1.1
+     */
+    public ModifiableMetadata deepCopy(final State target) {
+        final MetadataCopier copier;
+        if (target.isUnmodifiable()) {
+            if (state >= FINAL) {
+                return this;
+            }
+            copier = MetadataCopier.forModifiable(getStandard());
+        } else {
+            copier = new MetadataCopier(getStandard());
+        }
+        final ModifiableMetadata md = (ModifiableMetadata) copier.copyRecursively(getInterface(), this);
+        if (target.code > EDITABLE) {
+            md.transitionTo(target);
+        }
+        return md;
     }
 
     /**

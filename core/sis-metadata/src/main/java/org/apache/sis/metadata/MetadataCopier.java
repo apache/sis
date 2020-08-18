@@ -114,7 +114,7 @@ public class MetadataCopier extends MetadataVisitor<Object> {
             @Override protected Object copyRecursively(final Class<?> type, final Object metadata) {
                 if (metadata instanceof ModifiableMetadata) {
                     final ModifiableMetadata.State state = ((ModifiableMetadata) metadata).state();
-                    if (state == ModifiableMetadata.State.FINAL) {
+                    if (state != null && state.isUnmodifiable()) {
                         return metadata;
                     }
                 }
