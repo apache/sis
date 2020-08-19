@@ -31,6 +31,7 @@ import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.CodeList;
+import org.opengis.metadata.Metadata;               // For javadoc
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.CodeListSet;
@@ -150,7 +151,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
-     * @since   1.0
+     *
+     * @see ModifiableMetadata#state()
+     *
+     * @since 1.0
      * @module
      */
     public enum State {
@@ -330,6 +334,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * @return a copy (except in above-cited special case) of this metadata in the specified state.
      *
      * @see MetadataCopier
+     * @see org.apache.sis.metadata.iso.DefaultMetadata#deepCopy(Metadata)
      *
      * @since 1.1
      */

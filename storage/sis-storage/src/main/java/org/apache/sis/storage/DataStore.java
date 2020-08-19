@@ -356,6 +356,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @throws DataStoreException if an error occurred while reading the metadata.
      *
      * @see #getIdentifier()
+     * @see org.apache.sis.metadata.iso.DefaultMetadata#deepCopy(Metadata)
      */
     @Override
     public abstract Metadata getMetadata() throws DataStoreException;
