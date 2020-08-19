@@ -63,6 +63,12 @@ import org.apache.sis.measure.Units;
  *   </li><li>
  *     {@linkplain #setFillValues(Number...) Fill values} to use for pixels that can not be computed.
  *   </li><li>
+ *     {@linkplain #setCategoryColors(Function) Category colors} for mapping sample values
+ *     (identified by their range, name or unit of measurement) to colors.
+ *   </li><li>
+ *     {@linkplain #setPositionalAccuracyHints(Quantity...) Positional accuracy hints}
+ *     for enabling the use of faster algorithm when a lower accuracy is acceptable.
+ *   </li><li>
  *     Whether operations can be executed in parallel. By default operations on unknown
  *     {@link RenderedImage} implementations are executed sequentially in the caller thread, for safety reasons.
  *     Some operations can be parallelized, but it should be enabled only if the {@link RenderedImage} is known
@@ -76,6 +82,18 @@ import org.apache.sis.measure.Units;
  *     in which case partial results may be available.
  *   </li>
  * </ul>
+ *
+ * For each image operations, above properties are combined with parameters given to the operation method.
+ * Each method in this {@code ImageProcessor} class documents the properties used in addition of method parameters.
+ *
+ * <div class="note"><b>API design:</b>
+ * properties (setter methods) are used for values that can be applied unchanged on many different images.
+ * For example the {@linkplain #getInterpolation() interpolation method} can be specified once and used
+ * unchanged for many {@link #resample resample(…)} operations.
+ * On the other hand, method arguments are used for values that are usually specific to the image to process.
+ * For example the {@link MathTransform} argument given to the {@link #resample resample(…)} operation depends
+ * tightly on the source image and destination bounds (also given in arguments); those information usually need
+ * to be recomputed for each image.</div>
  *
  * <h2>Area of interest</h2>
  * Some operations accept an optional <cite>area of interest</cite> argument specified as a {@link Shape} instance in
@@ -99,6 +117,8 @@ import org.apache.sis.measure.Units;
  *
  * <h2>Thread-safety</h2>
  * {@code ImageProcessor} is safe for concurrent use in multi-threading environment.
+ * Note however that {@code ImageProcessor} instances are mutable;
+ * consider {@linkplain #clone() cloning} if setter methods are invoked on a shared instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -485,6 +505,13 @@ public class ImageProcessor implements Cloneable {
      *   <li>Otherwise statistics are computed for the whole image.</li>
      * </ul>
      *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
+     *   <li>{@linkplain #getErrorAction() Error action} (custom action executed if an exception is thrown).</li>
+     * </ul>
+     *
      * @param  source          the image for which to compute statistics.
      * @param  areaOfInterest  pixel coordinates of the area of interest, or {@code null} for the default.
      * @return the statistics of sample values in each band.
@@ -532,6 +559,13 @@ public class ImageProcessor implements Cloneable {
      *       They are whatever statistics the property provider considers as representative.</li>
      *   <li>Otherwise an image augmented with a {@value StatisticsCalculator#STATISTICS_KEY} property value
      *       is returned.</li>
+     * </ul>
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
+     *   <li>{@linkplain #getErrorAction() Error action} (whether to fail if an exception is thrown).</li>
      * </ul>
      *
      * @param  source          the image for which to provide statistics.
@@ -609,6 +643,12 @@ public class ImageProcessor implements Cloneable {
      *   </tr>
      * </table>
      *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>(none)</li>
+     * </ul>
+     *
      * <h4>Limitation</h4>
      * Current implementation can stretch only gray scale images (a future version may extend support to images
      * using {@linkplain java.awt.image.IndexColorModel index color models}). If this method can not stretch the
@@ -632,6 +672,12 @@ public class ImageProcessor implements Cloneable {
      * <p>This method returns an image sharing the same data buffer than the source image;
      * pixel values are not copied. Consequently changes in the source image are reflected
      * immediately in the returned image.</p>
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>(none)</li>
+     * </ul>
      *
      * @param  source  the image in which to select bands.
      * @param  bands   indices of bands to retain.
@@ -664,6 +710,12 @@ public class ImageProcessor implements Cloneable {
      * or contain {@code null} elements, and may be of any length. Missing elements are considered null
      * and extraneous elements are ignored. Those ranges do not need to encompass all possible values;
      * it is sufficient to provide only typical or "most interesting" ranges.</p>
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>(none)</li>
+     * </ul>
      *
      * @param  source        the image for which to convert sample values.
      * @param  sourceRanges  approximate ranges of values for each band in source image, or {@code null} if unknown.
@@ -699,6 +751,15 @@ public class ImageProcessor implements Cloneable {
      * <p>If the given source is an instance of {@link ResampledImage},
      * then this method will use {@linkplain PlanarImage#getSources() the source} of the given source.
      * The intent is to avoid resampling a resampled image; instead this method works on the original data.</p>
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getInterpolation() Interpolation method} (nearest neighbor, bilinear, <i>etc</i>).</li>
+     *   <li>{@linkplain #getFillValues() Fill values} for pixels outside source image.</li>
+     *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
+     *       for enabling faster resampling at the cost of lower precision.</li>
+     * </ul>
      *
      * @param  source    the image to be resampled.
      * @param  bounds    domain of pixel coordinates of resampled image to create.
@@ -764,6 +825,12 @@ public class ImageProcessor implements Cloneable {
      * have a mechanism for specifying which tile to produce in replacement of tiles that can not be computed.
      * This behavior may be changed in a future version.</div>
      *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
+     * </ul>
+     *
      * @param  source          the image to compute immediately (may be {@code null}).
      * @param  areaOfInterest  pixel coordinates of the region to prefetch, or {@code null} for the whole image.
      * @return image with all tiles intersecting the AOI computed, or {@code null} if the given image was null.
@@ -800,6 +867,12 @@ public class ImageProcessor implements Cloneable {
      * There is no guarantees about the number of bands in returned image or about which formula is used for converting
      * floating point values to integer values.</p>
      *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>(none)</li>
+     * </ul>
+     *
      * @param  source  the image to recolor for visualization purposes.
      * @param  colors  colors to use for each range of values in the source image.
      * @return recolored image for visualization purposes only.
@@ -835,6 +908,12 @@ public class ImageProcessor implements Cloneable {
      * There is no guarantees about the number of bands in returned image or about which formula is used for converting
      * floating point values to integer values.</p>
      *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getCategoryColors() Category colors}.</li>
+     * </ul>
+     *
      * @param  source  the image to recolor for visualization purposes.
      * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
      *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
@@ -866,6 +945,16 @@ public class ImageProcessor implements Cloneable {
      * <p>The resulting image is suitable for visualization purposes, but should not be used for computation purposes.
      * There is no guarantees about the number of bands in returned image or about which formula is used for converting
      * floating point values to integer values.</p>
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getInterpolation() Interpolation method} (nearest neighbor, bilinear, <i>etc</i>).</li>
+     *   <li>{@linkplain #getFillValues() Fill values} for pixels outside source image.</li>
+     *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
+     *       for enabling faster resampling at the cost of lower precision.</li>
+     *   <li>{@linkplain #getCategoryColors() Category colors}.</li>
+     * </ul>
      *
      * @param  source    the image to be resampled and recolored.
      * @param  bounds    domain of pixel coordinates of resampled image to create.
