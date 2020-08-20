@@ -89,7 +89,7 @@ public strictfp class FeatureAssert extends ReferencingAssert {
      */
     public static void assertValuesEqual(final RenderedImage image, final int band, final double[][] expected) {
         assertEquals("Height", expected.length, image.getHeight());
-        final PixelIterator it = PixelIterator.create(image);
+        final PixelIterator it = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR).create(image);
         for (int j=0; j<expected.length; j++) {
             final double[] row = expected[j];
             assertEquals("Width", row.length, image.getWidth());

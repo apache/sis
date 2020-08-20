@@ -37,6 +37,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
 import org.apache.sis.internal.feature.Resources;
 
@@ -161,6 +162,39 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     private final RenderedImage[] sources;
 
     /**
+     * If the computed image shall be written in an existing image, that image. Otherwise {@code null}.
+     * If non-null, the sample model of this image shall be equal to {@link #sampleModel} and the tile
+     * indices &amp; pixel coordinate systems shall be aligned.
+     *
+     * <p>The destination image may be larger or smaller than this {@code ComputedImage}, by containing
+     * more or less tiles (the presence or absence of a tile is a "all or nothing" decision). When this
+     * class needs to compute a tile, one of the following choices is executed:</p>
+     *
+     * <ul class="verbose">
+     *   <li>If the ({@code tileX}, {@code tileY}) indices of the tile to compute are valid tile indices of
+     *       {@code destination} image, then the {@linkplain WritableRenderedImage#getWritableTile(int,int)
+     *       destination tile is acquired}, given to {@link #computeTile(int, int, WritableRaster)} method
+     *       and finally {@linkplain WritableRenderedImage#releaseWritableTile(int,int) released}.</li>
+     *   <li>Otherwise {@link #computeTile(int, int, WritableRaster)} is invoked with a {@code null} tile.</li>
+     * </ul>
+     *
+     * If this field is set to a non-null value, then this assignment should be done
+     * soon after construction time before any tile computation started.
+     *
+     * <div class="note"><b>Note on interaction with tile cache</b><br>
+     * The use of a destination image may produce unexpected result if {@link #computeTile(int, int, WritableRaster)}
+     * is invoked two times or more for the same destination tile. It may look like a problem because computed tiles
+     * can be discarded and recomputed at any time. However this problem should not happen because tiles computed by
+     * this {@code ComputedImage} will not be discarded as long as {@code destination} has a reference to that tile.
+     * If a {@code ComputedImage} tile has been discarded, then it implies that the corresponding {@code destination}
+     * tile has been discarded as well, in which case the tile computation will restart from scratch; it will not be
+     * a recomputation of only this {@code ComputedImage} on top of an old {@code destination} tile.</div>
+     *
+     * @see #setDestination(WritableRenderedImage)
+     */
+    private WritableRenderedImage destination;
+
+    /**
      * The sample model shared by all tiles in this image.
      * The {@linkplain SampleModel#getWidth() sample model width}
      * determines this {@linkplain #getTileWidth() image tile width},
@@ -230,6 +264,39 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      */
     final Reference<ComputedImage> reference() {
         return reference;
+    }
+
+    /**
+     * Sets an existing image where to write the computation result. The sample model of specified image shall
+     * be equal to {@link #sampleModel} and the tile indices &amp; pixel coordinate systems shall be aligned.
+     * However the target image may be larger or smaller than this {@code ComputedImage}, by containing more
+     * or less tiles (the presence or absence of a tile is a "all or nothing" decision). When this class needs
+     * to compute a tile, one of the following choices is executed:
+     *
+     * <ul class="verbose">
+     *   <li>If the ({@code tileX}, {@code tileY}) indices of the tile to compute are valid tile indices
+     *       of {@code target} image, then the {@linkplain WritableRenderedImage#getWritableTile(int,int)
+     *       destination tile is acquired}, given to {@link #computeTile(int, int, WritableRaster)} method
+     *       and finally {@linkplain WritableRenderedImage#releaseWritableTile(int,int) released}.</li>
+     *   <li>Otherwise {@link #computeTile(int, int, WritableRaster)} is invoked with a {@code null} tile.</li>
+     * </ul>
+     *
+     * If this method is invoked, then is should be done soon after construction time
+     * before any tile computation starts.
+     */
+    final void setDestination(final WritableRenderedImage target) {
+        if (destination != null) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.AlreadyInitialized_1, "destination"));
+        }
+        if (!sampleModel.equals(target.getSampleModel())) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedSampleModel));
+        }
+        if (target.getTileGridXOffset() != getTileGridXOffset() ||
+            target.getTileGridYOffset() != getTileGridYOffset())
+        {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedTileGrid));
+        }
+        destination = target;
     }
 
     /**
@@ -371,6 +438,12 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
         final Cache<TileCache.Key,Raster> cache = TileCache.GLOBAL;
         Raster tile = cache.peek(key);
         if (tile == null || reference.isTileDirty(key)) {
+            /*
+             * Tile not found in the cache or in need to be recomputed. Validate given arguments
+             * only now (if the tile was found, it would have implied that the indices are valid).
+             * We will need to check the cache again after we got the lock in case computation has
+             * happened in the short time between above check and lock acquisition.
+             */
             int min;
             ArgumentChecks.ensureBetween("tileX", (min = getMinTileX()), min + getNumXTiles() - 1, tileX);
             ArgumentChecks.ensureBetween("tileY", (min = getMinTileY()), min + getNumYTiles() - 1, tileY);
@@ -380,12 +453,37 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
                 tile = handler.peek();
                 final boolean marked = reference.trySetComputing(key);              // May throw ImagingOpException.
                 if (marked || tile == null) {
-                    final WritableRaster previous = (tile instanceof WritableRaster) ? (WritableRaster) tile : null;
+                    /*
+                     * The requested tile needs to be computed. If a destination image has been specified
+                     * and the tile indices are valid for that destination, we will use the tile provided
+                     * by that destination. The write operation shall happen between `getWritableTile(…)`
+                     * and `releaseWritableTile(…)` method calls.
+                     */
+                    final WritableRenderedImage destination = this.destination;     // Protect from change (paranoiac).
+                    final boolean writeInDestination = (destination != null)
+                            && (tileX >= (min = destination.getMinTileX()) && tileX < min + destination.getNumXTiles())
+                            && (tileY >= (min = destination.getMinTileY()) && tileY < min + destination.getNumYTiles());
+
+                    final WritableRaster previous;
+                    if (writeInDestination) {
+                        previous = destination.getWritableTile(tileX, tileY);
+                    } else if (tile instanceof WritableRaster) {
+                        previous = (WritableRaster) tile;
+                    } else {
+                        previous = null;
+                    }
+                    /*
+                     * Actual computation.
+                     */
                     try {
                         tile = computeTile(tileX, tileY, previous);
                     } catch (Exception e) {
                         tile = null;
                         error = Exceptions.unwrap(e);
+                    } finally {
+                        if (writeInDestination) {
+                            destination.releaseWritableTile(tileX, tileY);
+                        }
                     }
                     if (marked) {
                         reference.endWrite(key, error == null);

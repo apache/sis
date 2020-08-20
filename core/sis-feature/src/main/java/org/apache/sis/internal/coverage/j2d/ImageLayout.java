@@ -17,6 +17,7 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Arrays;
+import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
@@ -271,6 +272,16 @@ public class ImageLayout {
             sm = RasterFactory.unique(sm);
         }
         return sm;
+    }
+
+    /**
+     * Returns indices of the first tile ({@code minTileX}, {@code minTileY}), or {@code null} for (0,0).
+     * The default implementation returns {@code null}.
+     *
+     * @return indices of the first tile ({@code minTileX}, {@code minTileY}), or {@code null} for (0,0).
+     */
+    public Point getMinTile() {
+        return null;
     }
 
     /**

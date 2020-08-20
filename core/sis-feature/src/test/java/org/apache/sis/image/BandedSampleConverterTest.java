@@ -22,7 +22,6 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.FeatureAssert.assertValuesEqual;
@@ -36,17 +35,12 @@ import static org.apache.sis.test.FeatureAssert.assertValuesEqual;
  * @since   1.1
  * @module
  */
-public final strictfp class BandedSampleConverterTest extends TestCase {
+public final strictfp class BandedSampleConverterTest extends ImageTestCase {
     /**
      * Size of tiles in this test. The width should be different than the height
      * for increasing the chances to detect errors in index calculations.
      */
     private static final int TILE_WIDTH = 4, TILE_HEIGHT = 3;
-
-    /**
-     * The image to test.
-     */
-    private BandedSampleConverter image;
 
     /**
      * Creates a converted image with arbitrary tiles.

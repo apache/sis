@@ -146,6 +146,14 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * Properties (size, tile size, sample model, <i>etc.</i>) of destination images.
+     *
+     * @see #getImageLayout()
+     * @see #setImageLayout(ImageLayout)
+     */
+    private ImageLayout layout;
+
+    /**
      * Interpolation to use during resample operations.
      *
      * @see #getInterpolation()
@@ -276,9 +284,27 @@ public class ImageProcessor implements Cloneable {
      * The execution mode is initialized to {@link Mode#DEFAULT} and the error action to {@link ErrorAction#THROW}.
      */
     public ImageProcessor() {
+        layout        = ImageLayout.DEFAULT;
         executionMode = Mode.DEFAULT;
         errorAction   = ErrorAction.THROW;
         interpolation = Interpolation.BILINEAR;
+    }
+
+    /**
+     * Returns the properties (size, tile size, sample model, <i>etc.</i>) of destination images.
+     * This method is not yet public because {@link ImageLayout} is not a public class.
+     */
+    final synchronized ImageLayout getImageLayout() {
+        return layout;
+    }
+
+    /**
+     * Sets the properties (size, tile size, sample model, <i>etc.</i>) of destination images.
+     * This method is not yet public because {@link ImageLayout} is not a public class.
+     */
+    final synchronized void setImageLayout(final ImageLayout layout) {
+        ArgumentChecks.ensureNonNull("layout", layout);
+        this.layout = layout;
     }
 
     /**
@@ -735,8 +761,12 @@ public class ImageProcessor implements Cloneable {
         for (int i=0; i<converters.length; i++) {
             ArgumentChecks.ensureNonNullElement("converters", i, converters[i]);
         }
+        final ImageLayout   layout;
+        synchronized (this) {
+            layout = this.layout;
+        }
         // No need to clone `sourceRanges` because it is not stored by `BandedSampleConverter`.
-        return unique(BandedSampleConverter.create(source, ImageLayout.DEFAULT,
+        return unique(BandedSampleConverter.create(source, layout,
                 sourceRanges, converters, targetType.ordinal(), colorModel));
     }
 
@@ -800,16 +830,18 @@ public class ImageProcessor implements Cloneable {
              * All accesses to ImageProcessor fields done by this method should be isolated in this single
              * synchronized block. All arrays are "copy on write", so they do not need to be cloned.
              */
+            final ImageLayout   layout;
             final Interpolation interpolation;
             final Number[]      fillValues;
             final Quantity<?>[] positionalAccuracyHints;
             synchronized (this) {
+                layout                  = this.layout;
                 interpolation           = this.interpolation;
                 fillValues              = this.fillValues;
                 positionalAccuracyHints = this.positionalAccuracyHints;
             }
             resampled = unique(new ResampledImage(source,
-                    ImageLayout.DEFAULT.createCompatibleSampleModel(source, bounds),
+                    layout.createCompatibleSampleModel(source, bounds), layout.getMinTile(),
                     bounds, toSource, interpolation, fillValues, positionalAccuracyHints));
             break;
         }
@@ -988,15 +1020,17 @@ public class ImageProcessor implements Cloneable {
     final RenderedImage resampleAndConvert(final RenderedImage source, final MathTransform toSource,
             final MathTransform1D[] converters, final Rectangle bounds, final ColorModel colorModel)
     {
+        final ImageLayout   layout;
         final Interpolation interpolation;
         final Number[]      fillValues;
         final Quantity<?>[] positionalAccuracyHints;
         synchronized (this) {
+            layout                  = this.layout;
             interpolation           = this.interpolation;
             fillValues              = this.fillValues;
             positionalAccuracyHints = this.positionalAccuracyHints;
         }
-        return unique(new Visualization(source, ImageLayout.DEFAULT, bounds, toSource, toSource.isIdentity(),
+        return unique(new Visualization(source, layout, bounds, toSource, toSource.isIdentity(),
                       interpolation, converters, fillValues, colorModel, positionalAccuracyHints));
     }
 

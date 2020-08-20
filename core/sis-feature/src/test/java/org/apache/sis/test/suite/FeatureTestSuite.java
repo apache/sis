@@ -90,6 +90,7 @@ import org.junit.runners.Suite;
     org.apache.sis.image.ResamplingGridTest.class,
     org.apache.sis.image.ResampledImageTest.class,
     org.apache.sis.image.BandedSampleConverterTest.class,
+    org.apache.sis.image.ImageCombinerTest.class,
     org.apache.sis.coverage.CategoryTest.class,
     org.apache.sis.coverage.CategoryListTest.class,
     org.apache.sis.coverage.SampleDimensionTest.class,

@@ -284,7 +284,7 @@ public final strictfp class ResampledImageTest extends TestCase {
         final Rectangle bounds = new Rectangle(9, 9);
         target = new ResampledImage(source,
                 ImageLayout.DEFAULT.createCompatibleSampleModel(source, bounds),
-                bounds, toSource, interpolation, null, null);
+                null, bounds, toSource, interpolation, null, null);
 
         assertEquals("numXTiles", 1, target.getNumXTiles());
         assertEquals("numYTiles", 1, target.getNumYTiles());

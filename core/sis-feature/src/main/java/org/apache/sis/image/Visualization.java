@@ -95,7 +95,7 @@ final class Visualization extends ResampledImage {
     {
         super(source,
               layout.createBandedSampleModel(Colorizer.TYPE_COMPACT, converters.length, source, bounds),
-              (bounds != null) ? bounds : ImageUtilities.getBounds(source),
+              layout.getMinTile(), (bounds != null) ? bounds : ImageUtilities.getBounds(source),
               toSource,
               isIdentity ? Interpolation.NEAREST : combine(interpolation, converters),
               fillValues,

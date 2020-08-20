@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.lang.ref.Reference;
 import java.nio.DoubleBuffer;
+import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -102,6 +103,11 @@ public class ResampledImage extends ComputedImage {
     private final int minX, minY, width, height;
 
     /**
+     * Index of the first tile.
+     */
+    private final int minTileX, minTileY;
+
+    /**
      * Conversion from pixel center coordinates of <em>this</em> image to pixel center coordinates of <em>source</em>
      * image. This transform should be an instance of {@link MathTransform2D}, but this is not required by this class
      * (a future version may allow interpolations in a <var>n</var>-dimensional cube).
@@ -180,6 +186,7 @@ public class ResampledImage extends ComputedImage {
      *
      * @param  source         the image to be resampled.
      * @param  sampleModel    the sample model shared by all tiles in this resampled image.
+     * @param  minTile        indices of the first tile ({@code minTileX}, {@code minTileY}), or {@code null} for (0,0).
      * @param  bounds         domain of pixel coordinates of this resampled image.
      * @param  toSource       conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
      * @param  interpolation  the object to use for performing interpolations.
@@ -194,9 +201,9 @@ public class ResampledImage extends ComputedImage {
      *
      * @see ImageProcessor#resample(RenderedImage, Rectangle, MathTransform)
      */
-    protected ResampledImage(final RenderedImage source, final SampleModel sampleModel, final Rectangle bounds,
-            final MathTransform toSource, final Interpolation interpolation, final Number[] fillValues,
-            final Quantity<?>[] accuracy)
+    protected ResampledImage(final RenderedImage source, final SampleModel sampleModel, final Point minTile,
+            final Rectangle bounds, final MathTransform toSource, final Interpolation interpolation,
+            final Number[] fillValues, final Quantity<?>[] accuracy)
     {
         super(sampleModel, source);
         if (source.getWidth() <= 0 || source.getHeight() <= 0) {
@@ -207,6 +214,13 @@ public class ResampledImage extends ComputedImage {
         ArgumentChecks.ensureStrictlyPositive("height", height = bounds.height);
         minX = bounds.x;
         minY = bounds.y;
+        if (minTile != null) {
+            minTileX = minTile.x;
+            minTileY = minTile.y;
+        } else {
+            minTileX = 0;
+            minTileY = 0;
+        }
         /*
          * The transform from this image to source image must have exactly two coordinates in input
          * (otherwise we would not know what to put in extra coordinates), but may have more values
@@ -501,6 +515,28 @@ public class ResampledImage extends ComputedImage {
             names[n++] = name;
         }
         return ArraysExt.resize(names, n);
+    }
+
+    /**
+     * Returns the minimum tile index in the <var>x</var> direction.
+     * This is often 0.
+     *
+     * @return the minimum tile index in the <var>x</var> direction.
+     */
+    @Override
+    public final int getMinTileX() {
+        return minTileX;
+    }
+
+    /**
+     * Returns the minimum tile index in the <var>y</var> direction.
+     * This is often 0.
+     *
+     * @return the minimum tile index in the <var>y</var> direction.
+     */
+    @Override
+    public final int getMinTileY() {
+        return minTileY;
     }
 
     /**
