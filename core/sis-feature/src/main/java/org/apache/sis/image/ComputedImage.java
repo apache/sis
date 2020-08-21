@@ -300,6 +300,21 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     }
 
     /**
+     * Returns the destination, or {@code null} if none.
+     */
+    final WritableRenderedImage getDestination() {
+        return destination;
+    }
+
+    /**
+     * Returns the source at index 0 without any check. This method is invoked by subclasses who know that a
+     * single source exist. This method should not be in public API because of the absence of verification.
+     */
+    final RenderedImage getSource() {
+        return sources[0];
+    }
+
+    /**
      * Returns the source at the given index.
      *
      * @param  index  index of the desired source.
@@ -309,14 +324,6 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     protected final RenderedImage getSource(final int index) {
         if (sources != null) return sources[index];
         else throw new IndexOutOfBoundsException();
-    }
-
-    /**
-     * Returns the source at index 0 without any check. This method is invoked by subclasses who know that a
-     * single source exist. This method should not be in public API because of the absence of verification.
-     */
-    final RenderedImage getSource() {
-        return sources[0];
     }
 
     /**

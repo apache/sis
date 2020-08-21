@@ -439,7 +439,9 @@ public class ResampledImage extends ComputedImage {
      */
     @Override
     public ColorModel getColorModel() {
-        return getSource().getColorModel();
+        RenderedImage image = getDestination();
+        if (image == null) image = getSource();
+        return image.getColorModel();
     }
 
     /**
@@ -816,10 +818,12 @@ public class ResampledImage extends ComputedImage {
     public boolean equals(final Object object) {
         if (object != null && object.getClass().equals(getClass())) {
             final ResampledImage other = (ResampledImage) object;
-            return minX   == other.minX &&
-                   minY   == other.minY &&
-                   width  == other.width &&
-                   height == other.height &&
+            return minX     == other.minX &&
+                   minY     == other.minY &&
+                   width    == other.width &&
+                   height   == other.height &&
+                   minTileX == other.minTileX &&
+                   minTileY == other.minTileY &&
                    interpolation.equals(other.interpolation) &&
                    Objects.deepEquals(fillValues, other.fillValues) &&
                    toSource.equals(other.toSource) &&
