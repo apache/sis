@@ -638,7 +638,8 @@ public class ResampledImage extends ComputedImage {
          * can take a shorter path were data are just copied. The lossless criterion allows us to omit the checks
          * for minimal and maximal values. Shortcut may apply to both integer values and floating point values.
          */
-        final boolean shortcut = (interpolation == Interpolation.NEAREST) &&
+        final boolean useFillValues = (getDestination() == null);
+        final boolean shortcut = useFillValues && (interpolation == Interpolation.NEAREST) &&
                     ImageUtilities.isLosslessConversion(sampleModel, tile.getSampleModel());
         /*
          * Prepare a buffer where to store a line of interpolated values. We use this buffer for transferring
@@ -700,10 +701,17 @@ public class ResampledImage extends ComputedImage {
             }
             toSourceSupport.transform(coordinates, 0, coordinates, 0, scanline);
             /*
-             * Special case for nearest-neighbor interpolation without the need to check for min/max values.
-             * In this case values will be copied as `int` or `double` type without further processing.
+             * Pixel coordinate along X axis where to start writing the `values` or `intValues` array.
+             * This is usually the first column of the tile, and the number of pixels to write is the
+             * tile width (i.e. we write a full tile row). However those values may be modified below
+             * if we avoid writing pixels that are outside the source image.
              */
+            int posX = tileMinX;
             if (shortcut) {
+                /*
+                 * Special case for nearest-neighbor interpolation without the need to check for min/max values.
+                 * In this case values will be copied as `int` or `double` type without further processing.
+                 */
                 int ci = 0;     // Index in `coordinates` array.
                 int vi = 0;     // Index in `values` or `intValues` array.
                 for (int tx=tileMinX; tx<tileMaxX; tx++, ci+=tgtDim, vi+=numBands) {
@@ -743,7 +751,7 @@ public class ResampledImage extends ComputedImage {
                  */
                 int ci = 0;     // Index in `coordinates` array.
                 int vi = 0;     // Index in `values` or `intValues` array.
-                for (int tx=tileMinX; tx<tileMaxX; tx++, ci+=tgtDim, vi+=numBands) {
+                for (int tx=tileMinX; tx<tileMaxX; tx++, ci+=tgtDim) {
                     double x = coordinates[ci];
                     if (x <= xlim) {
                         // Separate integer and fractional parts with 0 ≤ xf < 1 except on borders.
@@ -779,6 +787,7 @@ public class ResampledImage extends ComputedImage {
                                                                     Math.min(maxValues[b], Math.round(values[b])));
                                         }
                                     }
+                                    vi += numBands;
                                     continue;       // Values have been set, move to next pixel.
                                 }
                             }
@@ -788,18 +797,38 @@ public class ResampledImage extends ComputedImage {
                      * If we reach this point then any of the "if" conditions above failed
                      * (i.e. the point to interpolate is outside the source image bounds)
                      * and no values have been set in the `values` or `intValues` array.
+                     * If we are writing in an existing image, do not write anything
+                     * (i.e. keep the existing value). Otherwise write the fill values.
                      */
-                    System.arraycopy(fillValues, 0, valuesArray, vi, numBands);
+                    if (useFillValues) {
+                        System.arraycopy(fillValues, 0, valuesArray, vi, numBands);
+                        vi += numBands;
+                    } else {
+                        if (vi != 0) {
+                            final int numX = vi / numBands;
+                            if (isInteger) {
+                                tile.setPixels(posX, ty, numX, 1, intValues);
+                            } else {
+                                tile.setPixels(posX, ty, numX, 1, values);
+                            }
+                            posX += numX;
+                            vi = 0;
+                        }
+                        posX++;
+                    }
                 }
             }
             /*
              * At this point we finished to compute the value of a scanline.
              * Copy to its final destination then move to next line.
              */
-            if (isInteger) {
-                tile.setPixels(tileMinX, ty, scanline, 1, intValues);
-            } else {
-                tile.setPixels(tileMinX, ty, scanline, 1, values);
+            final int numX = scanline - (posX - tileMinX);
+            if (numX != 0) {
+                if (isInteger) {
+                    tile.setPixels(posX, ty, numX, 1, intValues);
+                } else {
+                    tile.setPixels(posX, ty, numX, 1, values);
+                }
             }
         }
         return tile;

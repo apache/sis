@@ -92,7 +92,7 @@ public final strictfp class ImageCombinerTest extends ImageTestCase {
             {400, 401, 402, 403, 500, 501, 502, 503, 600, 601, 602, 603},
             {410, 411, 412, 413, 510, 511, 512, 513, 610, 611, 612, 613},
             {420, 421, 422, 423, 520, 521, 522, 523, 620, 621, 622, 623},
-            {430, 431, 432, 433, 530, 531, 532, 533, 630, 631, 632, 633},
+            {430, 431, 432, 433, 530, 531, 532, 533, 630, 631, 632, 633}
         });
         /*
          * Verify source image, before combine operation.
@@ -122,14 +122,14 @@ public final strictfp class ImageCombinerTest extends ImageTestCase {
          */
         combiner.accept(toAdd);
         assertValuesEqual(image = combiner.result(), 0, new double[][] {
-            { 100,  101, +110, +111, +112, +210, +211, +212, +310, +311, +312, +303},
-            { 110,  111, +400, +401, +402, +500, +501, +502, +600, +601, +602, +313},
-            { 120,  121, +410, +411, +412, +510, +511, +512, +610, +611, +612, +323},
-            { 130,  131, +700, +701, +702, +800, +801, +802, +900, +901, +902, +333},
-            { 400,  401, +710, +711, +712, +810, +811, +812, +910, +911, +912, +603},
+            { 100,  101, +110, +111, +112, +210, +211, +212, +310, +311, +312,  303},
+            { 110,  111, +400, +401, +402, +500, +501, +502, +600, +601, +602,  313},
+            { 120,  121, +410, +411, +412, +510, +511, +512, +610, +611, +612,  323},
+            { 130,  131, +700, +701, +702, +800, +801, +802, +900, +901, +902,  333},
+            { 400,  401, +710, +711, +712, +810, +811, +812, +910, +911, +912,  603},
             { 410,  411,  412,  413,  510,  511,  512,  513,  610,  611,  612,  613},
             { 420,  421,  422,  423,  520,  521,  522,  523,  620,  621,  622,  623},
-            { 430,  431,  432,  433,  530,  531,  532,  533,  630,  631,  632,  633},
+            { 430,  431,  432,  433,  530,  531,  532,  533,  630,  631,  632,  633}
         });
     }
 
@@ -138,24 +138,53 @@ public final strictfp class ImageCombinerTest extends ImageTestCase {
      * The transform used in this test is a simple translation. The expected result is
      * similar to the {@link #testAccept()} one, with the new pixel values (identified
      * by a + sign in source code) shifted by 2 rows and 2 columns.
+     *
+     * <p>In this test, the X coordinate of the first pixel to write is at the beginning of a tile.
+     * This alignment creates a situation where each row in {@link #toAdd} is either copied in full
+     * or not copied at all. This characteristics help to isolate the problem if a test fails.</p>
      */
     @Test
-    public void testResample() {
+    public void testResampleAligned() {
         final ImageCombiner combiner = initialize();
         final Rectangle bounds = toAdd.getBounds();
         bounds.translate(2, 2);
         final MathTransform toSource = MathTransforms.translation(-2, -2);
         combiner.resample(toAdd, bounds, toSource);
         assertValuesEqual(image = combiner.result(), 0, new double[][] {
-            { 100,  101,  102,  103,    0,    0,    0,    0,    0,    0,    0,    0},
+            { 100,  101,  102,  103,  200,  201,  202,  203,  300,  301,  302,  303},
             { 110,  111,  112,  113, +100, +101, +102, +200, +201, +202, +300, +301},
             { 120,  121,  122,  123, +110, +111, +112, +210, +211, +212, +310, +311},
             { 130,  131,  132,  133, +400, +401, +402, +500, +501, +502, +600, +601},
             { 400,  401,  402,  403, +410, +411, +412, +510, +511, +512, +610, +611},
             { 410,  411,  412,  413, +700, +701, +702, +800, +801, +802, +900, +901},
             { 420,  421,  422,  423, +710, +711, +712, +810, +811, +812, +910, +911},
-            { 430,  431,  432,  433,    0,    0,    0,    0,    0,    0,    0,    0},
+            { 430,  431,  432,  433,  530,  531,  532,  533,  630,  631,  632,  633}
         });
-        // TODO: value 0 above should not overwrite previous values.
+    }
+
+    /**
+     * Same as {@link #testResampleAligned()}, but with a "more difficult" translation.
+     * In this test, {@link #toAdd} rows are only partially copied.
+     *
+     * <p><b>Tip:</b> if this test fails, it is easier to first make sure that
+     * {@link #testResampleAligned()} pass before to debug this test.</p>
+     */
+    @Test
+    public void testResample() {
+        final ImageCombiner combiner = initialize();
+        final Rectangle bounds = toAdd.getBounds();
+        bounds.translate(-1, 2);
+        final MathTransform toSource = MathTransforms.translation(1, -2);
+        combiner.resample(toAdd, bounds, toSource);
+        assertValuesEqual(image = combiner.result(), 0, new double[][] {
+            { 100,  101,  102,  103,  200,  201,  202,  203,  300,  301,  302,  303},
+            { 110, +100, +101, +102, +200, +201, +202, +300, +301, +302,  312,  313},
+            { 120, +110, +111, +112, +210, +211, +212, +310, +311, +312,  322,  323},
+            { 130, +400, +401, +402, +500, +501, +502, +600, +601, +602,  332,  333},
+            { 400, +410, +411, +412, +510, +511, +512, +610, +611, +612,  602,  603},
+            { 410, +700, +701, +702, +800, +801, +802, +900, +901, +902,  612,  613},
+            { 420, +710, +711, +712, +810, +811, +812, +910, +911, +912,  622,  623},
+            { 430,  431,  432,  433,  530,  531,  532,  533,  630,  631,  632,  633}
+        });
     }
 }
