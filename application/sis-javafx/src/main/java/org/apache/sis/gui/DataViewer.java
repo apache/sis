@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.awt.SplashScreen;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
@@ -74,7 +75,7 @@ public class DataViewer extends Application {
          * (tested on Java 14 and JavaFX 14).
          */
         java.awt.im.InputContext.getInstance();
-        launch(args);
+        launch(DataViewer.class, args);
     }
 
     /**
@@ -181,6 +182,13 @@ public class DataViewer extends Application {
         window.setWidth (0.75 * bounds.getWidth());
         window.setHeight(0.75 * bounds.getHeight());
         window.show();
+        /*
+         * Hide splash screen after the main window became visible.
+         */
+        final SplashScreen sp = SplashScreen.getSplashScreen();
+        if (sp != null) {
+            sp.close();
+        }
     }
 
     /**
