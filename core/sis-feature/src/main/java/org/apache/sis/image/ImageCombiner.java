@@ -94,7 +94,7 @@ public class ImageCombiner implements Consumer<RenderedImage> {
 
         /** Creates a new layout which will request the specified sample model. */
         Layout(final SampleModel sampleModel) {
-            super(null);
+            super(null, false);
             ArgumentChecks.ensureNonNull("sampleModel", sampleModel);
             this.sampleModel = sampleModel;
             minTile = new Point();

@@ -55,7 +55,12 @@ public class ImageLayout {
      * The default instance which will target {@value ImageUtilities#DEFAULT_TILE_SIZE} pixels as tile
      * width and height.
      */
-    public static final ImageLayout DEFAULT = new ImageLayout(null);
+    public static final ImageLayout DEFAULT = new ImageLayout(null, false);
+
+    /**
+     * Same as {@link #DEFAULT}, but makes image size an integer amount of tiles.
+     */
+    public static final ImageLayout SIZE_ADJUST = new ImageLayout(null, true);
 
     /**
      * Preferred size for tiles.
@@ -65,11 +70,23 @@ public class ImageLayout {
     private final int preferredTileWidth, preferredTileHeight;
 
     /**
+     * Whether image size can be modified if needed. Changes are applied only if an image can not be tiled
+     * because {@link #suggestTileSize(int, int, boolean)} can not find a tile size close to the desired size.
+     * For example if the image width is a prime number, there is no way to divide the image horizontally with
+     * an integer number of tiles. The only way to get an integer number of tiles is to change the image size.
+     *
+     * <p>If this flag is {@code true}, then the {@code bounds} argument given to the
+     * {@link #suggestTileSize(RenderedImage, Rectangle, boolean)} will be modified in-place.</p>
+     */
+    public final boolean isBoundsAdjustmentAllowed;
+
+    /**
      * Creates a new image layout.
      *
-     * @param  preferredTileSize  the preferred tile size, or {@code null} for the default size.
+     * @param  preferredTileSize          the preferred tile size, or {@code null} for the default size.
+     * @param  isBoundsAdjustmentAllowed  whether image size can be modified if needed.
      */
-    public ImageLayout(final Dimension preferredTileSize) {
+    public ImageLayout(final Dimension preferredTileSize, final boolean isBoundsAdjustmentAllowed) {
         if (preferredTileSize != null) {
             preferredTileWidth  = preferredTileSize.width;
             preferredTileHeight = preferredTileSize.height;
@@ -77,6 +94,7 @@ public class ImageLayout {
             preferredTileWidth  = ImageUtilities.DEFAULT_TILE_SIZE;
             preferredTileHeight = ImageUtilities.DEFAULT_TILE_SIZE;
         }
+        this.isBoundsAdjustmentAllowed = isBoundsAdjustmentAllowed;
     }
 
     /**
@@ -189,11 +207,12 @@ public class ImageLayout {
      *
      * @param  image   the image for which to derive a tile size, or {@code null}.
      * @param  bounds  the bounds of the image to create, or {@code null} if same as {@code image}.
+     * @param  allowPartialTiles  whether to allow tiles that are only partially filled.
+     *         This argument is ignored (reset to {@code false}) if the given image is opaque.
      * @return suggested tile size for the given image.
      */
-    public Dimension suggestTileSize(final RenderedImage image, final Rectangle bounds) {
-        boolean allowPartialTiles = (bounds instanceof PreferredSize);
-        if (allowPartialTiles && image != null) {
+    public Dimension suggestTileSize(final RenderedImage image, final Rectangle bounds, boolean allowPartialTiles) {
+        if (allowPartialTiles && image != null && !isBoundsAdjustmentAllowed) {
             final ColorModel cm = image.getColorModel();
             allowPartialTiles = (cm != null);
             if (allowPartialTiles) {
@@ -228,15 +247,33 @@ public class ImageLayout {
         final Dimension tileSize = new Dimension(
                 toTileSize(width,  preferredTileWidth,  allowPartialTiles & singleXTile),
                 toTileSize(height, preferredTileHeight, allowPartialTiles & singleYTile));
-        if (allowPartialTiles) {
-            ((PreferredSize) bounds).makeDivisible(tileSize);
+        /*
+         * Optionally adjust the image bounds for making it divisible by the tile size.
+         */
+        if (isBoundsAdjustmentAllowed && bounds != null && !bounds.isEmpty()) {
+            final int sx = sizeToAdd(bounds.width,  tileSize.width);
+            final int sy = sizeToAdd(bounds.height, tileSize.height);
+            if ((bounds.width  += sx) < 0) bounds.width  -= tileSize.width;     // if (overflow) reduce to valid range.
+            if ((bounds.height += sy) < 0) bounds.height -= tileSize.height;
+            bounds.translate(-sx/2, -sy/2);
         }
         return tileSize;
     }
 
     /**
-     * Creates a banded sample model of the given type with a {@linkplain #suggestTileSize(RenderedImage, Rectangle)
-     * the suggested size} for the given image.
+     * Computes the size to add to the width or height for making it divisible by the given tile size.
+     */
+    private static int sizeToAdd(int size, final int tileSize) {
+        size %= tileSize;
+        if (size != 0) {
+            size = tileSize - size;
+        }
+        return size;
+    }
+
+    /**
+     * Creates a banded sample model of the given type with
+     * {@linkplain #suggestTileSize(RenderedImage, Rectangle, boolean) the suggested tile size} for the given image.
      *
      * @param  type      desired data type as a {@link java.awt.image.DataBuffer} constant.
      * @param  numBands  desired number of bands.
@@ -247,7 +284,7 @@ public class ImageLayout {
     public BandedSampleModel createBandedSampleModel(final int type, final int numBands,
             final RenderedImage image, final Rectangle bounds)
     {
-        final Dimension tile = suggestTileSize(image, bounds);
+        final Dimension tile = suggestTileSize(image, bounds, isBoundsAdjustmentAllowed);
         return RasterFactory.unique(new BandedSampleModel(type, tile.width, tile.height, numBands));
     }
 
@@ -265,7 +302,7 @@ public class ImageLayout {
      */
     public SampleModel createCompatibleSampleModel(final RenderedImage image, final Rectangle bounds) {
         ArgumentChecks.ensureNonNull("image", image);
-        final Dimension tile = suggestTileSize(image, bounds);
+        final Dimension tile = suggestTileSize(image, bounds, isBoundsAdjustmentAllowed);
         SampleModel sm = image.getSampleModel();
         if (sm.getWidth() != tile.width || sm.getHeight() != tile.height) {
             sm = sm.createCompatibleSampleModel(tile.width, tile.height);
@@ -292,6 +329,7 @@ public class ImageLayout {
     @Override
     public String toString() {
         return Strings.toString(getClass(),
-                "preferredTileSize", new StringBuilder().append(preferredTileWidth).append('×').append(preferredTileHeight));
+                "preferredTileSize", new StringBuilder().append(preferredTileWidth).append('×').append(preferredTileHeight),
+                "isBoundsAdjustmentAllowed", isBoundsAdjustmentAllowed);
     }
 }

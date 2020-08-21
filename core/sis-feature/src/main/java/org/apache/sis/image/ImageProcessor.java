@@ -66,6 +66,9 @@ import org.apache.sis.measure.Units;
  *     {@linkplain #setCategoryColors(Function) Category colors} for mapping sample values
  *     (identified by their range, name or unit of measurement) to colors.
  *   </li><li>
+ *     {@linkplain #setImageResizingPolicy(Resizing) Image resizing policy} to apply
+ *     if a requested image size prevent the image to be tiled.
+ *   </li><li>
  *     {@linkplain #setPositionalAccuracyHints(Quantity...) Positional accuracy hints}
  *     for enabling the use of faster algorithm when a lower accuracy is acceptable.
  *   </li><li>
@@ -152,6 +155,33 @@ public class ImageProcessor implements Cloneable {
      * @see #setImageLayout(ImageLayout)
      */
     private ImageLayout layout;
+
+    /**
+     * Whether {@code ImageProcessor} can produce an image of different size compared to requested size.
+     * An image may be resized if the requested size can not be subdivided into tiles of reasonable size.
+     * For example if the image width is a prime number, there is no way to divide the image horizontally with
+     * an integer number of tiles. The only way to get an integer number of tiles is to change the image size.
+     *
+     * <p>The image resizing policy may be used by any operation that involve a {@linkplain #resample resampling}.
+     * If a resizing is applied, the new size will be written in the {@code bounds} argument (a {@link Rectangle}).</p>
+     *
+     * @see #getImageResizingPolicy()
+     * @see #setImageResizingPolicy(Resizing)
+     */
+    public enum Resizing {
+        /**
+         * Image size is unmodified; the requested value is used unconditionally.
+         * It may result in big tiles (potentially a single tile for the whole image)
+         * if the image size is not divisible by a tile size.
+         */
+        NONE,
+
+        /**
+         * Image size can be increased. {@code ImageProcessor} will try to increase
+         * by the smallest amount of pixels allowing the image to be subdivided in tiles.
+         */
+        EXPAND
+    }
 
     /**
      * Interpolation to use during resample operations.
@@ -379,6 +409,26 @@ public class ImageProcessor implements Cloneable {
      */
     public synchronized void setCategoryColors(final Function<Category,Color[]> colors) {
         this.colors = colors;
+    }
+
+    /**
+     * Returns whether {@code ImageProcessor} can produce an image of different size compared to requested size.
+     * If this processor can use a different size, the enumeration value specifies what kind of changes may be applied.
+     *
+     * @return the image resizing policy.
+     */
+    public synchronized Resizing getImageResizingPolicy() {
+        return layout.isBoundsAdjustmentAllowed ? Resizing.EXPAND : Resizing.NONE;
+    }
+
+    /**
+     * Sets whether {@code ImageProcessor} can produce an image of different size compared to requested size.
+     *
+     * @param  policy   the new image resizing policy.
+     */
+    public synchronized void setImageResizingPolicy(final Resizing policy) {
+        ArgumentChecks.ensureNonNull("policy", policy);
+        layout = (policy == Resizing.EXPAND) ? ImageLayout.SIZE_ADJUST : ImageLayout.DEFAULT;
     }
 
     /**
@@ -787,12 +837,15 @@ public class ImageProcessor implements Cloneable {
      * <ul>
      *   <li>{@linkplain #getInterpolation() Interpolation method} (nearest neighbor, bilinear, <i>etc</i>).</li>
      *   <li>{@linkplain #getFillValues() Fill values} for pixels outside source image.</li>
+     *   <li>{@linkplain #getImageResizingPolicy() Image resizing policy} to apply
+     *       if {@code bounds} size is not divisible by a tile size.</li>
      *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
      *       for enabling faster resampling at the cost of lower precision.</li>
      * </ul>
      *
      * @param  source    the image to be resampled.
      * @param  bounds    domain of pixel coordinates of resampled image to create.
+     *                   Updated by this method if {@link Resizing#EXPAND} policy is applied.
      * @param  toSource  conversion of pixel coordinates from resampled image to {@code source} image.
      * @return resampled image (may be {@code source}).
      */
@@ -983,6 +1036,8 @@ public class ImageProcessor implements Cloneable {
      * <ul>
      *   <li>{@linkplain #getInterpolation() Interpolation method} (nearest neighbor, bilinear, <i>etc</i>).</li>
      *   <li>{@linkplain #getFillValues() Fill values} for pixels outside source image.</li>
+     *   <li>{@linkplain #getImageResizingPolicy() Image resizing policy} to apply
+     *       if {@code bounds} size is not divisible by a tile size.</li>
      *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
      *       for enabling faster resampling at the cost of lower precision.</li>
      *   <li>{@linkplain #getCategoryColors() Category colors}.</li>
@@ -990,6 +1045,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @param  source    the image to be resampled and recolored.
      * @param  bounds    domain of pixel coordinates of resampled image to create.
+     *                   Updated by this method if {@link Resizing#EXPAND} policy is applied.
      * @param  toSource  conversion of pixel coordinates from resampled image to {@code source} image.
      * @param  ranges    description of {@code source} bands, or {@code null} if none. This is typically
      *                   obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.

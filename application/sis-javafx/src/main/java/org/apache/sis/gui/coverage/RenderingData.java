@@ -40,7 +40,6 @@ import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.internal.coverage.j2d.ColorModelType;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.coverage.j2d.PreferredSize;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;
@@ -188,6 +187,7 @@ final class RenderingData implements Cloneable {
         selectedDerivative = Stretching.NONE;
         processor = new ImageProcessor();
         processor.setErrorAction(ImageProcessor.ErrorAction.LOG);
+        processor.setImageResizingPolicy(ImageProcessor.Resizing.EXPAND);
     }
 
     /**
@@ -314,9 +314,9 @@ final class RenderingData implements Cloneable {
         displayToObjective = AffineTransforms2D.castOrCopy(inverse);
         final MathTransform cornerToDisplay = MathTransforms.concatenate(cornerToObjective, objectiveToDisplay);
         final MathTransform displayToCenter = MathTransforms.concatenate(inverse, centerToObjective.inverse());
-        final PreferredSize bounds = (PreferredSize) Shapes2D.transform(
+        final Rectangle bounds = (Rectangle) Shapes2D.transform(
                 MathTransforms.bidimensional(cornerToDisplay),
-                ImageUtilities.getBounds(recoloredImage), new PreferredSize());
+                ImageUtilities.getBounds(recoloredImage), new Rectangle());
         /*
          * Apply a map projection on the image, then convert the floating point results to integer values
          * that we can use with IndexColorModel.
