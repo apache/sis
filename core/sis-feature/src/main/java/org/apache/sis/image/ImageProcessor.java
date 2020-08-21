@@ -597,7 +597,7 @@ public class ImageProcessor implements Cloneable {
      * @see #statistics(RenderedImage, Shape)
      * @see StatisticsCalculator#STATISTICS_KEY
      */
-    public Statistics[] getStatistics(final RenderedImage source, final Shape areaOfInterest) {
+    public Statistics[] valueOfStatistics(final RenderedImage source, final Shape areaOfInterest) {
         ArgumentChecks.ensureNonNull("source", source);
         if (areaOfInterest == null) {
             final Object property = source.getProperty(StatisticsCalculator.STATISTICS_KEY);
@@ -619,7 +619,7 @@ public class ImageProcessor implements Cloneable {
          */
         final AnnotatedImage calculator = new StatisticsCalculator(source, areaOfInterest, parallel, failOnException);
         final Object property = calculator.getProperty(StatisticsCalculator.STATISTICS_KEY);
-        calculator.logAndClearError(ImageProcessor.class, "getStatistics", errorListener);
+        calculator.logAndClearError(ImageProcessor.class, "valueOfStatistics", errorListener);
         return (Statistics[]) property;
     }
 
@@ -649,7 +649,7 @@ public class ImageProcessor implements Cloneable {
      * @return an image with an {@value StatisticsCalculator#STATISTICS_KEY} property.
      *         May be {@code image} if the given argument already has a statistics property.
      *
-     * @see #getStatistics(RenderedImage, Shape)
+     * @see #valueOfStatistics(RenderedImage, Shape)
      * @see StatisticsCalculator#STATISTICS_KEY
      */
     public RenderedImage statistics(final RenderedImage source, final Shape areaOfInterest) {
@@ -674,7 +674,7 @@ public class ImageProcessor implements Cloneable {
      * mapped to their colors.
      *
      * <p>The minimum and maximum value can be either specified explicitly,
-     * or determined from {@linkplain #getStatistics(RenderedImage, Shape) statistics} on the image.
+     * or determined from {@link #valueOfStatistics(RenderedImage, Shape) statistics} on the image.
      * In the later case a range of value is determined first from the {@linkplain Statistics#minimum() minimum}
      * and {@linkplain Statistics#maximum() maximum} values found in the image, optionally narrowed to an interval
      * of some {@linkplain Statistics#standardDeviation(boolean) standard deviations} around the mean value.</p>

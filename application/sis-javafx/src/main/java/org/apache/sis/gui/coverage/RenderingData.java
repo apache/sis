@@ -247,7 +247,7 @@ final class RenderingData implements Cloneable {
         if (selectedDerivative != Stretching.NONE) {
             final Map<String,Object> modifiers = new HashMap<>(4);
             if (statistics == null) {
-                statistics = processor.getStatistics(image, null);
+                statistics = processor.valueOfStatistics(image, null);
             }
             modifiers.put("statistics", statistics);
             if (selectedDerivative == Stretching.AUTOMATIC) {

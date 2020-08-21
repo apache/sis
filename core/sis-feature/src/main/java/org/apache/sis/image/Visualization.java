@@ -290,7 +290,7 @@ final class Visualization extends ResampledImage {
              * If none of above Colorizer configurations worked, use statistics in last resort. We do that
              * after we reduced the image to a single band, in order to reduce the amount of calculations.
              */
-            final Statistics statistics = processor.getStatistics(source, null)[0];
+            final Statistics statistics = processor.valueOfStatistics(source, null)[0];
             colorizer.initialize(statistics.minimum(), statistics.maximum());
         }
         /*

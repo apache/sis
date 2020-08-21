@@ -161,7 +161,7 @@ final class RecoloredImage extends ImageAdapter {
             if (statistics == null) {
                 if (statsAllBands == null) {
                     final Object areaOfInterest = modifiers.get("areaOfInterest");
-                    statsAllBands = processor.getStatistics(statsSource,
+                    statsAllBands = processor.valueOfStatistics(statsSource,
                             (areaOfInterest instanceof Shape) ? (Shape) areaOfInterest : null);
                 }
                 if (statsAllBands != null && visibleBand < statsAllBands.length) {
