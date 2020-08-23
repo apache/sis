@@ -183,7 +183,9 @@ public class DataViewer extends Application {
         window.setHeight(0.75 * bounds.getHeight());
         window.show();
         /*
-         * Hide splash screen after the main window became visible.
+         * Hide splash screen when the application it ready to show. Despite above call to `window.show()`,
+         * the window will become really visible only after this method returned. Consequently the splash
+         * screen will be hidden before the main window become visible.
          */
         final SplashScreen sp = SplashScreen.getSplashScreen();
         if (sp != null) {
