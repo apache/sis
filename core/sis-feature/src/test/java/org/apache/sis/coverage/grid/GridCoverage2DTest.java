@@ -64,7 +64,7 @@ public strictfp class GridCoverage2DTest extends TestCase {
      * <p>If JDK-8166038 is fixed, remove the {@code if (result.getTileGridXOffset() == ix && ...)} test in
      * {@link GridCoverage2D#render(GridExtent)}.</p>
      */
-    @Workaround(library="JDK", version="14")
+    @Workaround(library="JDK", version="14", fixed="16")
     private static final boolean PENDING_JDK_FIX = false;
 
     /**

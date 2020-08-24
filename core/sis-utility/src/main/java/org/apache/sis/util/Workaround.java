@@ -58,4 +58,12 @@ public @interface Workaround {
      * @return the library version on which the bug has been observed.
      */
     String version();
+
+    /**
+     * If the bug has been fixed, the version on which the fix has been applied.
+     * Otherwise an empty string.
+     *
+     * @return the library version on which the fix has been applied.
+     */
+    String fixed() default "";
 }
