@@ -252,7 +252,8 @@ final class ResampledGridCoverage extends GridCoverage {
             /*
              * We will try to preserve resolution at the point of interest, which is typically in the center.
              * We will also try to align the grids in such a way that integer coordinates close to the point
-             * of interest are integers in both grids. This correction is given by the `translation` vector.
+             * of interest are integers in both grids. This correction is given by the fractional digits of
+             * `originToPOI` vector (the integer digits do not matter; they will be cancelled later).
              */
             final GridExtent sourceExtent = sourceGG.getExtent();
             final double[]   sourcePOI    = sourceExtent.getPointOfInterest();
@@ -261,7 +262,7 @@ final class ResampledGridCoverage extends GridCoverage {
                                                         sourceCenterToCRS, sourcePOI, 0, targetPOI, 0));
             final double[]   originToPOI  = vectors.multiply(sourcePOI);
             /*
-             * The first column above gives the displacement in target CRS when moving is the source grid by one cell
+             * The first `vectors` column gives the displacement in target CRS when moving in source grid by one cell
              * toward right, and the second column gives the displacement when moving one cell toward up (positive y).
              * More columns may exist in 3D, 4D, etc. cases. We retain only the magnitudes of those vectors, in order
              * to build new vectors with directions parallel with target grid axes. There is one magnitude value for
@@ -269,7 +270,7 @@ final class ResampledGridCoverage extends GridCoverage {
              * (unusual, but not forbidden), some grid dimensions will be ignored provided that their size is 1
              * (otherwise a SubspaceNotSpecifiedException is thrown).
              */
-            final MatrixSIS magnitudes = vectors.normalizeColumns();          // Length is dimension  of source grid.
+            final MatrixSIS magnitudes = vectors.normalizeColumns();          // Length in dimension  of source grid.
             final int       crsDim     = vectors.getNumRow();                 // Number of dimensions of target CRS.
             final int       gridDim    = target.getDimension();               // Number of dimensions of target grid.
             final int       mappedDim  = Math.min(magnitudes.getNumCol(), Math.min(crsDim, gridDim));
@@ -294,14 +295,14 @@ final class ResampledGridCoverage extends GridCoverage {
              * vectors, values in different columns are comparable).
              */
             for (;;) {
-                double max = 0;
-                int tgDim = -1;                         // Grid dimension of maximal value.
-                int tcDim = -1;                         // CRS dimension of maximal value.
+                double max = -1;
+                int tgDim  = -1;                        // Grid dimension of maximal value.
+                int tcDim  = -1;                        // CRS dimension of maximal value.
                 for (int i=0; i<mappedDim; i++) {
                     // `ci` differs from `i` only if the source grid has "too much" dimensions.
                     final int ci = (dimSelect != null) ? dimSelect[i] : i;
                     for (int j=0; j<crsDim; j++) {
-                        final double m = Math.abs(vectors.getElement(j,ci));
+                        final double m = Math.abs(vectors.getElement(j, ci));
                         if (m > max) {
                             max   = m;
                             tcDim = j;
@@ -309,13 +310,16 @@ final class ResampledGridCoverage extends GridCoverage {
                         }
                     }
                 }
-                if (tgDim < 0) break;                   // No more non-zero value in the `vectors` matrix.
+                if (tgDim < 0) break;                           // No more non-zero value in the `vectors` matrix.
                 for (int j=0; j<crsDim; j++) {
-                    vectors.setElement(j, tgDim, 0);    // For preventing this column to be selected again.
+                    vectors.setElement(j, tgDim, Double.NaN);   // For preventing this column to be selected again.
+                }
+                for (int i=0; i<gridDim; i++) {
+                    vectors.setElement(tcDim, i, Double.NaN);   // For preventing this row to be selected again.
                 }
                 final DoubleDouble m = DoubleDouble.castOrCopy(magnitudes.getNumber(0, tgDim));
                 m.inverseDivide(1);
-                crsToGrid.setNumber(tgDim, tcDim, m);   // Scale factor from CRS coordinates to grid coordinates.
+                crsToGrid.setNumber(tgDim, tcDim, m);           // Scale factor from CRS coordinates to grid coordinates.
                 /*
                  * Move the point of interest in a place where conversion to source grid coordinates
                  * will be close to integer. The exact location does not matter; an additional shift
