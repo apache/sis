@@ -175,8 +175,8 @@ final class ResampledGridCoverage extends GridCoverage {
                 || Utilities.equalsIgnoreMetadata(sourceGG.getGridToCRS(PixelInCell.CELL_CENTER),   // Its okay if only one is equal.
                                                   targetGG.getGridToCRS(PixelInCell.CELL_CENTER)))
             && (!isDefined(sourceGG, targetGG, GridGeometry.ENVELOPE)
-              || isDefined(sourceGG, targetGG, GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS)      // Compare only if not inferred.
-              || sourceGG.equalsApproximately(targetGG.envelope));
+                || isDefined(sourceGG, targetGG, GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS)    // Compare only if not inferred.
+                || sourceGG.equalsApproximately(targetGG.envelope));
     }
 
     /**
