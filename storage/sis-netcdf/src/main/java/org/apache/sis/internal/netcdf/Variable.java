@@ -16,9 +16,7 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import java.util.Set;
 import java.util.Map;
-import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -348,157 +346,6 @@ public abstract class Variable extends Node {
     protected abstract boolean isCoordinateSystemAxis();
 
     /**
-     * Contains information computed together with {@link Variable#getGrid(Adjustment)} but are still specific to
-     * the enclosing variable. Those information are kept in a class separated from {@link Grid} because the same
-     * {@code Grid} instance may apply to many variables while {@code Adjustment} may contain amendments that are
-     * specific to a particular {@link Variable} instance.
-     *
-     * <p>An instance of this class is created by {@link #getGridGeometry()} and updated by {@link #getGrid(Adjustment)}.
-     * Subclasses of {@link Variable} do not need to know the details of this class; they just need to pass it verbatim
-     * to their parent class.</p>
-     */
-    protected static final class Adjustment {
-        /**
-         * Factors by which to multiply a grid index in order to get the corresponding data index, or {@code null} if none.
-         * This is usually null, meaning that there is an exact match between grid indices and data indices. This array may
-         * be non-null if the localization grid has shorter dimensions than the dimensions of the variable, as documented
-         * in {@link Convention#nameOfDimension(Variable, int)} javadoc.
-         *
-         * <p>This array may be created by {@link #getGrid(Adjustment)} and is consumed by {@link #getGridGeometry()}.
-         * Some values in this array may be {@link Double#NaN} if the {@code "resampling_interval"} attribute was not found.
-         * This array may be longer than necessary.</p>
-         *
-         * @see #dataToGridIndices()
-         */
-        private double[] gridToDataIndices;
-
-        /**
-         * Maps grid dimensions to variable dimensions when those dimensions are not the same. This map should always be empty,
-         * except in the case described in {@link #mapLabelToGridDimensions mapLabelToGridDimensions(…)} method. If non-empty,
-         * then the keys are dimensions in the {@link Grid} and values are corresponding dimensions in the {@link Variable}.
-         */
-        final Map<Dimension,Dimension> gridToVariable;
-
-        /**
-         * Only {@link Variable#getGridGeometry()} should instantiate this class.
-         */
-        private Adjustment() {
-            gridToVariable = new HashMap<>();
-        }
-
-        /**
-         * Builds a map of "dimension labels" to the actual {@link Dimension} instances of the grid.
-         * The dimension labels are not the dimension names, but some other convention-dependent identifiers.
-         * The mechanism is documented in {@link Convention#nameOfDimension(Variable, int)}.
-         * For example given a file with the following netCDF variables:
-         *
-         * {@preformat text
-         *     float Latitude(grid_y, grid_x)
-         *       dim0 = "Line grids"
-         *       dim1 = "Pixel grids"
-         *       resampling_interval = 10
-         *     float Longitude(grid_y, grid_x)
-         *       dim0 = "Line grids"
-         *       dim1 = "Pixel grids"
-         *       resampling_interval = 10
-         *     ushort SST(data_y, data_x)
-         *       dim0 = "Line grids"
-         *       dim1 = "Pixel grids"
-         * }
-         *
-         * this method will add the following entries in the {@code toGridDimensions} map, provided that
-         * the dimensions are not already keys in that map:
-         *
-         * {@preformat text
-         *     "Line grids"   →  Dimension[grid_x]
-         *     "Pixel grids"  →  Dimension[grid_y]
-         * }
-         *
-         * @param  variable          the variable for which a "label to grid dimensions" mapping is desired.
-         * @param  axes              all axes in the netCDF file (not only the variable axes).
-         * @param  toGridDimensions  in input, the dimensions to accept. In output, "label → grid dimension" entries.
-         * @param  convention        convention for getting dimension labels.
-         * @return {@code true} if the {@code Variable.getGrid(…)} caller should abort.
-         *
-         * @see Convention#nameOfDimension(Variable, int)
-         */
-        boolean mapLabelToGridDimensions(final Variable variable, final List<Variable> axes,
-                final Map<Object,Dimension> toGridDimensions, final Convention convention)
-        {
-            final Set<Dimension> requestedByConvention = new HashSet<>();                       // Only in case of ambiguities.
-            final String[] namesOfAxisVariables = convention.namesOfAxisVariables(variable);    // Only in case of ambiguities.
-            for (final Variable axis : axes) {
-                final boolean isRequested = ArraysExt.containsIgnoreCase(namesOfAxisVariables, axis.getName());
-                final List<Dimension> candidates = axis.getGridDimensions();
-                for (int j=candidates.size(); --j >= 0;) {
-                    final Dimension dim = candidates.get(j);
-                    if (toGridDimensions.containsKey(dim)) {
-                        /*
-                         * Found a dimension that has not already be taken by the 'dimensions' array.
-                         * If this dimension has a name defined by an attribute like "Dim0" or "Dim1",
-                         * make this dimension available for consideration by 'dimensions[i] = …' later.
-                         */
-                        final String name = convention.nameOfDimension(axis, j);
-                        if (name != null) {
-                            if (gridToDataIndices == null) {
-                                gridToDataIndices = new double[axes.size()];    // Conservatively use longest possible length.
-                            }
-                            gridToDataIndices[j] = convention.gridToDataIndices(axis);
-                            final boolean overwrite = isRequested && requestedByConvention.add(dim);
-                            final Dimension previous = toGridDimensions.put(name, dim);
-                            if (previous != null && !previous.equals(dim)) {
-                                /*
-                                 * The same name maps to two different dimensions. Given the ambiguity, we should give up.
-                                 * However we make an exception if only one dimension is part of a variable that has been
-                                 * explicitly requested. We identify this disambiguation in the following ways:
-                                 *
-                                 *   isRequested = true   →  ok if overwrite = true  →  keep the newly added dimension.
-                                 *   isRequested = false  →  if was previously in requestedByConvention, restore previous.
-                                 */
-                                if (!overwrite) {
-                                    if (!isRequested && requestedByConvention.contains(dim)) {
-                                        toGridDimensions.put(name, previous);
-                                    } else {
-                                        // Variable.getGridGeometry() is (indirectly) the caller of this method.
-                                        variable.error(Variable.class, "getGridGeometry", null, Errors.Keys.DuplicatedIdentifier_1, name);
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        /**
-         * Returns the factors by which to multiply a data index in order to get the corresponding grid index,
-         * or {@code null} if none. This array may be non-null if the localization grid has shorter dimensions
-         * than the ones of the variable (see {@link #mapLabelToGridDimensions mapLabelToGridDimensions(…)}).
-         * Caller needs to verify that the returned array, if non-null, is long enough.
-         */
-        double[] dataToGridIndices() {
-            double[] dataToGridIndices = null;
-            if (gridToDataIndices != null) {
-                for (int i=gridToDataIndices.length; --i >= 0;) {
-                    final double s = gridToDataIndices[i];
-                    if (s > 0 && s != Double.POSITIVE_INFINITY) {
-                        if (dataToGridIndices == null) {
-                            dataToGridIndices = new double[i + 1];
-                        }
-                        dataToGridIndices[i] = 1 / s;
-                    } else {
-                        dataToGridIndices = null;
-                        // May return a shorter array.
-                    }
-                }
-            }
-            return dataToGridIndices;
-        }
-    }
-
-    /**
      * Returns a builder for the grid geometry of this variable, or {@code null} if this variable is not a data cube.
      * Not all variables have a grid geometry. For example collections of features do not have such grid.
      * This method should be invoked only once per variable, but the same builder may be returned by different variables.
@@ -543,7 +390,7 @@ public abstract class Variable extends Node {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    protected Grid getGrid(final Adjustment adjustment) throws IOException, DataStoreException {
+    protected Grid getGrid(final GridAdjustment adjustment) throws IOException, DataStoreException {
         final Convention convention = decoder.convention();
         /*
          * Collect all axis dimensions, in no particular order. We use this map for determining
@@ -594,7 +441,7 @@ public abstract class Variable extends Node {
                     if (isIncomplete) {
                         isIncomplete = false;                                           // Execute this block only once.
                         if (adjustment.mapLabelToGridDimensions(this, axes, domain, convention)) {
-                            return null;                               // Warning message already emitted by Adjustment.
+                            return null;                           // Warning message already emitted by GridAdjustment.
                         }
                     }
                     /*
@@ -667,7 +514,7 @@ public abstract class Variable extends Node {
         if (!gridDetermined) {
             gridDetermined = true;                      // Set first so we don't try twice in case of failure.
             final GridMapping gridMapping = GridMapping.forVariable(this);
-            final Adjustment adjustment = new Adjustment();
+            final GridAdjustment adjustment = new GridAdjustment();
             final Grid info = getGrid(adjustment);
             if (info != null) {
                 /*
@@ -739,7 +586,7 @@ public abstract class Variable extends Node {
                                 return null;
                             }
                             extent = extent.resize(sizes);
-                            grid = grid.derive().resize(extent, dataToGridIndices).build();
+                            grid = GridAdjustment.scale(grid, extent, info.getAnchor(), dataToGridIndices);
                         }
                     }
                     /*
@@ -783,10 +630,10 @@ public abstract class Variable extends Node {
      * this information is used for completing ISO 19115 metadata, providing a default implementation of
      * {@link Convention#roleOf(Variable)} method or for building string representation of this variable
      * among others. Those tasks are mostly for information purpose, except if {@code Variable} subclass
-     * failed to create a grid and we must rely on {@link #getGrid(Adjustment)} default implementation.
+     * failed to create a grid and we must rely on {@link #getGrid(GridAdjustment)} default implementation.
      * For actual georeferencing, use {@link #getGridGeometry()} instead.</div>
      *
-     * If {@link #getGrid(Adjustment)} returns a non-null value, then the list returned by this method should
+     * If {@link #getGrid(GridAdjustment)} returns a non-null value, then the list returned by this method should
      * contain all dimensions returned by {@link Grid#getDimensions()}. It may contain more dimension however.
      * Those additional dimensions can be considered as bands. Furthermore the dimensions of the {@code Grid}
      * may have a different {@linkplain Dimension#length() length} than the dimensions returned by this method.

@@ -36,6 +36,7 @@ import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Resources;
+import org.apache.sis.internal.netcdf.GridAdjustment;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.io.Region;
@@ -144,9 +145,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * The grid geometry associated to this variable, computed by {@link ChannelDecoder#getGrids()} when first needed.
      * May stay {@code null} if the variable is not a data cube. We do not need disambiguation between the case where
      * the grid has not yet been computed and the case where the computation has been done with {@code null} result,
-     * because {@link #getGrid(Adjustment)} should be invoked only once per variable.
+     * because {@link #getGrid(GridAdjustment)} should be invoked only once per variable.
      *
-     * @see #getGrid(Adjustment)
+     * @see #getGrid(GridAdjustment)
      */
     GridInfo grid;
 
@@ -474,7 +475,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @see ChannelDecoder#getGrids()
      */
     @Override
-    protected Grid getGrid(final Adjustment adjustment) throws IOException, DataStoreException {
+    protected Grid getGrid(final GridAdjustment adjustment) throws IOException, DataStoreException {
         if (grid == null) {
             decoder.getGrids();                               // Force calculation of grid geometries if not already done.
             if (grid == null) {                               // May have been computed as a side-effect of decoder.getGrids().

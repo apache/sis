@@ -41,6 +41,7 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Grid;
+import org.apache.sis.internal.netcdf.GridAdjustment;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
@@ -239,7 +240,7 @@ final class VariableWrapper extends Variable {
      * @see DecoderWrapper#getGrids()
      */
     @Override
-    protected Grid getGrid(final Adjustment adjustment) throws IOException, DataStoreException {
+    protected Grid getGrid(final GridAdjustment adjustment) throws IOException, DataStoreException {
         /*
          * In some netCDF files, more than one grid could be associated to a variable. If the names of the
          * variables to use as coordinate system axes have been specified, use those names for filtering.

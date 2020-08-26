@@ -792,9 +792,9 @@ public final class Axis extends NamedElement {
                  * There is usually a one-to-one relationship between localization grid cells and image pixels.
                  * Consequently an accuracy set to a fraction of cell should be enough.
                  *
-                 * TODO: take in account the case where Variable.Adjustment.dataToGridIndices() returns a value
-                 * smaller than 1. For now we set the desired precision to a value 10 times smaller in order to
-                 * take in account the case where dataToGridIndices() returns 0.1.
+                 * TODO: take in account the case where GridAdjustment.dataToGridIndices() returns a value
+                 * smaller than 1. For now we set the desired precision to a value 10 times smaller in order
+                 * to take in account the case where dataToGridIndices() returns 0.1.
                  */
                 grid.setDesiredPrecision(0.001);
                 tr = grid.create(factory);
