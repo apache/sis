@@ -453,19 +453,21 @@ class BandedSampleConverter extends ComputedImage {
             final Rectangle bounds = data.getBounds();
             final WritableRenderedImage target = (WritableRenderedImage) getSource();
             ImageUtilities.clipBounds(target, bounds);
-            final TileOpExecutor executor = new TileOpExecutor(target, bounds) {
-                @Override protected void writeTo(final WritableRaster target) throws TransformException {
-                    final Rectangle aoi = target.getBounds().intersection(bounds);
-                    Transferer.create(data, target, aoi).compute(inverses);
-                }
-            };
-            executor.writeTo(target);
-            /*
-             * Request to recompute the tiles of this `BandedSampleConverter` because if the values
-             * in the source image are integers, then converting back to floating point values may
-             * produce slightly different results.
-             */
-            markDirtyTiles(executor.getTileIndices());
+            if (!bounds.isEmpty()) {
+                final TileOpExecutor executor = new TileOpExecutor(target, bounds) {
+                    @Override protected void writeTo(final WritableRaster target) throws TransformException {
+                        final Rectangle aoi = target.getBounds().intersection(bounds);
+                        Transferer.create(data, target, aoi).compute(inverses);
+                    }
+                };
+                executor.writeTo(target);
+                /*
+                 * Request to recompute the tiles of this `BandedSampleConverter` because if the values
+                 * in the source image are integers, then converting back to floating point values may
+                 * produce slightly different results.
+                 */
+                markDirtyTiles(executor.getTileIndices());
+            }
         }
     }
 }

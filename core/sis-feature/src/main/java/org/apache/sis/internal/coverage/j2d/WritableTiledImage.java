@@ -208,11 +208,13 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
     public void setData(final Raster data) {
         final Rectangle bounds = data.getBounds();
         ImageUtilities.clipBounds(this, bounds);
-        final TileOpExecutor op = new TileOpExecutor(this, bounds) {
-            @Override protected void writeTo(final WritableRaster target) {
-                target.setRect(data);
-            }
-        };
-        op.writeTo(this);
+        if (!bounds.isEmpty()) {
+            final TileOpExecutor op = new TileOpExecutor(this, bounds) {
+                @Override protected void writeTo(final WritableRaster target) {
+                    target.setRect(data);
+                }
+            };
+            op.writeTo(this);
+        }
     }
 }

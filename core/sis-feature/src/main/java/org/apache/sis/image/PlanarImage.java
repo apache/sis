@@ -462,7 +462,9 @@ public abstract class PlanarImage implements RenderedImage {
             aoi = getBounds();
             raster = createWritableRaster(aoi);
         }
-        copyData(aoi, raster);
+        if (!aoi.isEmpty()) {
+            copyData(aoi, raster);
+        }
         return raster;
     }
 
@@ -604,7 +606,7 @@ colors: if (cm != null) {
         }
         final String error = verify();
         if (error != null) {
-            buffer.append("; ⚠ mismatched ").append(error);
+            buffer.append("; ⚠ inconsistency in `").append(error).append("` property");
         }
         return buffer.append(']').toString();
     }

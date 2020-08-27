@@ -76,6 +76,14 @@ final class PrefetchedImage extends PlanarImage {
         if (areaOfInterest != null) {
             areaOfInterest = new Rectangle(areaOfInterest);
             ImageUtilities.clipBounds(source, areaOfInterest);
+            if (areaOfInterest.isEmpty()) {
+                minTileX  = 0;
+                minTileY  = 0;
+                numXTiles = 0;
+                numYTiles = 0;
+                tiles = null;
+                return;
+            }
         }
         final Worker worker = new Worker(source, areaOfInterest);
         final Rectangle ti = worker.getTileIndices();

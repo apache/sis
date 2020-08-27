@@ -347,13 +347,14 @@ final class RenderingData implements Cloneable {
     final RenderedImage prefetch(final RenderedImage resampledImage, final AffineTransform resampledToDisplay,
                                  final Envelope2D displayBounds)
     {
+        final Rectangle areaOfInterest;
         try {
-            return processor.prefetch(resampledImage, (Rectangle) AffineTransforms2D.transform(
-                        resampledToDisplay.createInverse(), displayBounds, new Rectangle()));
+            areaOfInterest = (Rectangle) AffineTransforms2D.transform(resampledToDisplay.createInverse(), displayBounds, new Rectangle());
         } catch (NoninvertibleTransformException e) {
             recoverableException(e);
             return resampledImage;
         }
+        return processor.prefetch(resampledImage, areaOfInterest);
     }
 
     /**

@@ -536,7 +536,7 @@ public class Canvas extends Observable implements Localized {
                     final DirectPosition poiInNew = poiToNew.transform(pointOfInterest, allocatePosition());
                     /*
                      * We need anchor in new CRS. If no anchor was specified, `poiInNew` is already what we need.
-                     * Otherwise convert the anchor to coordinates in the new CRS. There is good change that the
+                     * Otherwise convert the anchor to coordinates in the new CRS. There is good chances that the
                      * anchor CRS is the objective CRS, so we can reuse `poiToNew`.
                      */
                     if (anchor == null) {
@@ -557,7 +557,7 @@ public class Canvas extends Observable implements Localized {
                      * and the Jacobian matrix around POI to be approximately the same. Conceptually, this is as if we
                      * wanted to convert from new CRS to old CRS before to apply the old `objectiveToCRS` transform.
                      * We get this effect by pre-concatenating a linear approximation of "new to old CRS" transform
-                     * before `objectiveToCRS`. That approximation contain only uniform scale, rotation or axis flips
+                     * before `objectiveToCRS`. That approximation contains only uniform scale, rotation or axis flips
                      * in order to preserve pixel ratios (otherwise the map projection would appear deformed).
                      */
                     oldObjectiveToDisplay = getObjectiveToDisplay();

@@ -184,12 +184,14 @@ public class ImageCombiner implements Consumer<RenderedImage> {
         final WritableRenderedImage destination = this.destination;
         final Rectangle bounds = ImageUtilities.getBounds(source);
         ImageUtilities.clipBounds(destination, bounds);
-        final TileOpExecutor executor = new TileOpExecutor(source, bounds) {
-            @Override protected void readFrom(final Raster tile) {
-                destination.setData(tile);
-            }
-        };
-        executor.readFrom(processor.prefetch(source, bounds));
+        if (!bounds.isEmpty()) {
+            final TileOpExecutor executor = new TileOpExecutor(source, bounds) {
+                @Override protected void readFrom(final Raster tile) {
+                    destination.setData(tile);
+                }
+            };
+            executor.readFrom(processor.prefetch(source, bounds));
+        }
     }
 
     /**

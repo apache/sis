@@ -200,6 +200,12 @@ abstract class AnnotatedImage extends ImageAdapter {
         if (areaOfInterest != null) {
             bounds = areaOfInterest.getBounds();
             ImageUtilities.clipBounds(source, bounds);
+            if (bounds.isEmpty()) {
+                bounds.x = getMinX();
+                bounds.y = getMinY();
+                bounds.width  = 0;
+                bounds.height = 0;
+            }
             if (areaOfInterest.contains(bounds)) {
                 areaOfInterest = bounds;
             }

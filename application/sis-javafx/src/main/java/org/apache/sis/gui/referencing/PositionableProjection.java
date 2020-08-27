@@ -204,15 +204,17 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
         if (!Utilities.equalsIgnoreMetadata(normalizedCRS, inherit)) {
             center = CRS.findOperation(inherit, normalizedCRS, null).getMathTransform().transform(center, null);
         }
-        return createProjectedCRS(normalizedCRS, center.getOrdinate(0), center.getOrdinate(1));
+        return createProjectedCRS(normalizedCRS,
+                Latitude .clamp    (center.getOrdinate(0)),
+                Longitude.normalize(center.getOrdinate(1)));
     }
 
     /**
      * Creates a map projection centered on the given latitude and longitude.
      *
      * @param  baseCRS    the base CRS of the projection to create.
-     * @param  latitude   latitude of projection center.
-     * @param  longitude  longitude of projection center.
+     * @param  latitude   latitude of projection center in degrees.
+     * @param  longitude  longitude of projection center in degrees.
      * @return projection centered on the given position.
      * @throws FactoryException if an error occurred while creating the projection.
      */
