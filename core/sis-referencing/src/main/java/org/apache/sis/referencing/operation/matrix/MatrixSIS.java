@@ -548,7 +548,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * <h4>Relationship with coordinate operations</h4>
      * In the context of coordinate operations, {@code Matrix.multiply(other)} is equivalent to
      * <code>{@linkplain AffineTransform#concatenate AffineTransform.concatenate}(other)</code>:
-     * first transforms by the supplied transform and then transform the result by the original transform.
+     * first transforms by the {@code other} transform and then transform the result by {@code this} transform.
      *
      * @param  matrix  the matrix to multiply to this matrix.
      * @return the result of {@code this} × {@code matrix}.
