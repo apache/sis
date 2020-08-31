@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage.query;
 
+import java.util.Arrays;
 import java.util.List;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -80,7 +81,10 @@ final class CoverageSubset extends AbstractGridResource {
      */
     @Override
     public GridGeometry getGridGeometry() throws DataStoreException {
-        return clip(source.getGridGeometry(), query.getDomain(), GridRoundingMode.NEAREST);
+        return clip(source.getGridGeometry(),
+                query.getDomain(),
+                GridRoundingMode.NEAREST,
+                query.getSourceDomainExpansion());
     }
 
     /**
@@ -89,16 +93,23 @@ final class CoverageSubset extends AbstractGridResource {
      * @param  domain          the domain to clip, or {@code null}.
      * @param  areaOfInterest  the area of interest, or {@code null}.
      * @param  rounding        whether to clip to nearest box or an enclosing box.
+     * @param  expansion       domain expansion, applied only if domain extent is defined.
      * @return intersection of the given grid geometry.
      * @throws DataStoreException if the intersection can not be computed.
      */
     private GridGeometry clip(final GridGeometry domain, final GridGeometry areaOfInterest,
-            final GridRoundingMode rounding) throws DataStoreException
+            final GridRoundingMode rounding, int expansion) throws DataStoreException
     {
         if (domain == null) return areaOfInterest;
         if (areaOfInterest == null) return domain;
         try {
-            return domain.derive().rounding(rounding).subgrid(areaOfInterest).build();
+            if (expansion > 0 && domain.isDefined(GridGeometry.EXTENT)) {
+                final int[] margins = new int[domain.getDimension()];
+                Arrays.fill(margins, expansion);
+                return domain.derive().rounding(rounding).margin(margins).subgrid(areaOfInterest).build();
+            } else {
+                return domain.derive().rounding(rounding).subgrid(areaOfInterest).build();
+            }
         } catch (IllegalArgumentException | IllegalStateException e) {
             final String msg = Resources.forLocale(getLocale())
                     .getString(Resources.Keys.CanNotIntersectDataWithQuery_1, getSourceName());
@@ -149,7 +160,11 @@ final class CoverageSubset extends AbstractGridResource {
      */
     @Override
     public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
-        domain = clip(domain, query.getDomain(), GridRoundingMode.ENCLOSING);
+        domain = clip(domain, query.getDomain(), GridRoundingMode.ENCLOSING, 0);
+        if (domain != null && query.getSourceDomainExpansion() > 0) {
+            domain = clip(getGridGeometry(), domain, GridRoundingMode.ENCLOSING, query.getSourceDomainExpansion());
+        }
+
         final int[] qr = query.getRange();
         if (range == null) {
             range = qr;

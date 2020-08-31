@@ -145,15 +145,15 @@ public final class CoverageQuery extends Query implements Cloneable {
     /**
      * Applies this query on the given coverage.
      *
+     * Current implementation apply the source domain expansion when the source
+     * grid geometry extent is defined, otherwise it is ignored.
+     *
      * @param  source  the coverage resource to filter.
      * @return a view over the given coverage resource containing only the given domain and range.
      * @throws UnsupportedQueryException if this query contains filtering options not yet supported.
      */
     public GridCoverageResource execute(final GridCoverageResource source) throws UnsupportedQueryException {
         ArgumentChecks.ensureNonNull("source", source);
-        if (getSourceDomainExpansion() != 0) {
-            throw new UnsupportedQueryException("Source domain expansion not yet supported.");
-        }
         return new CoverageSubset(source, clone());
     }
 
