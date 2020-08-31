@@ -43,7 +43,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * Pre-defined positional accuracy resulting from some coordinate operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.1
  *
  * @see org.opengis.referencing.operation.Transformation#getCoordinateOperationAccuracy()
  *
@@ -80,6 +80,14 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
     private static final double DATUM_SHIFT_ACCURACY = 25;
 
     /**
+     * Default accuracy of datum shifts when using an intermediate datum (typically WGS 84).
+     * Since this is a concatenation of two datum shifts, we use twice {@link #DATUM_SHIFT_ACCURACY}.
+     * The result is multiplied by 2 again as a margin because we have no guarantees that the domain
+     * of validity of the two datum are close enough for making this concatenation valid.
+     */
+    public static final double INDIRECT_SHIFT_ACCURACY = 100;
+
+    /**
      * Indicates that a {@linkplain org.opengis.referencing.operation.Transformation transformation}
      * requires a datum shift and some method has been applied. Datum shift methods often use
      * {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa Wolf parameters},
@@ -94,11 +102,19 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      * been found. Such datum shifts are approximations and may have 1 kilometer error.
      */
     public static final PositionalAccuracy DATUM_SHIFT_OMITTED;
+
+    /**
+     * Indicates that a {@linkplain org.opengis.referencing.operation.Transformation transformation}
+     * requires a datum shift, but only an indirect method has been found. The indirect method uses
+     * an intermediate datum, typically WGS 84.
+     */
+    public static final PositionalAccuracy INDIRECT_SHIFT_APPLIED;
     static {
         final InternationalString desc = Vocabulary.formatInternational(Vocabulary.Keys.TransformationAccuracy);
         final InternationalString eval = Resources .formatInternational(Resources.Keys.ConformanceMeansDatumShift);
-        DATUM_SHIFT_APPLIED = new PositionalAccuracyConstant(desc, eval, true);
-        DATUM_SHIFT_OMITTED = new PositionalAccuracyConstant(desc, eval, false);
+        DATUM_SHIFT_APPLIED    = new PositionalAccuracyConstant(desc, eval, true);
+        DATUM_SHIFT_OMITTED    = new PositionalAccuracyConstant(desc, eval, false);
+        INDIRECT_SHIFT_APPLIED = new PositionalAccuracyConstant(desc, eval, true);
     }
 
     /**
@@ -122,8 +138,9 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      * @throws ObjectStreamException if the serialized object defines an unknown data type.
      */
     private Object readResolve() throws ObjectStreamException {
-        if (equals(DATUM_SHIFT_APPLIED)) return DATUM_SHIFT_APPLIED;
-        if (equals(DATUM_SHIFT_OMITTED)) return DATUM_SHIFT_OMITTED;
+        if (equals(DATUM_SHIFT_APPLIED))    return DATUM_SHIFT_APPLIED;
+        if (equals(DATUM_SHIFT_OMITTED))    return DATUM_SHIFT_OMITTED;
+        if (equals(INDIRECT_SHIFT_APPLIED)) return INDIRECT_SHIFT_APPLIED;
         return this;
     }
 
@@ -194,11 +211,14 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
              * about the return values chosen.
              */
             if (operation instanceof Transformation) {
-                if (accuracies.contains(DATUM_SHIFT_APPLIED)) {
-                    return DATUM_SHIFT_ACCURACY;
-                }
-                if (accuracies.contains(DATUM_SHIFT_OMITTED)) {
-                    return UNKNOWN_ACCURACY;
+                for (final PositionalAccuracy element : accuracies) {
+                    /*
+                     * Really need identity comparisons, not Object.equals(Object), because the later
+                     * does not distinguish between DATUM_SHIFT_APPLIED and INDIRECT_SHIFT_APPLIED.
+                     */
+                    if (element == DATUM_SHIFT_APPLIED)    return DATUM_SHIFT_ACCURACY;
+                    if (element == DATUM_SHIFT_OMITTED)    return UNKNOWN_ACCURACY;
+                    if (element == INDIRECT_SHIFT_APPLIED) return INDIRECT_SHIFT_ACCURACY;
                 }
             }
             /*
