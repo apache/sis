@@ -38,12 +38,14 @@ import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.OperationNotFoundException;
+import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.io.wkt.WKTFormat;
 
 import static org.apache.sis.internal.referencing.Formulas.LINEAR_TOLERANCE;
@@ -70,7 +72,7 @@ import static org.apache.sis.test.Assert.*;
  * Contrarily to {@link CoordinateOperationRegistryTest}, tests in this class are run without EPSG geodetic dataset.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -530,7 +532,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * @see <a href="https://issues.apache.org/jira/browse/SIS-364">SIS-364</a>
      */
     static String AGD66() {
-        return "PROJCS[“AGD66 / AMG zone 49”,"
+        return "PROJCS[“AGD66 / AMG zone 49”, "
                 + "GEOGCS[“AGD66”, "
                 +   "DATUM[“Australian_Geodetic_Datum_1966”, "
                 +     "SPHEROID[“Australian National Spheroid”,6378160, 298.25, AUTHORITY[“EPSG”,“7003”]],"
@@ -548,6 +550,74 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
                 +   "AXIS[“Easting”,EAST],"
                 +   "AXIS[“Northing”,NORTH],"
                 + "AUTHORITY[“EPSG”,“20249”]]";
+    }
+
+    /**
+     * Tests a transformation between two CRS for which no direct bursa-wolf parameters are defined.
+     * However a transformation should still be possible indirectly, through WGS 84.
+     *
+     * @throws ParseException if a CRS used in this test can not be parsed.
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    public void testIndirectDatumShift() throws ParseException, FactoryException, TransformException {
+        final CoordinateReferenceSystem sourceCRS = parse(
+                "PROJCS[“RGF93 / Lambert-93”, "
+                + "GEOGCS[“RGF93”, "
+                +   "DATUM[“Reseau Geodesique Francais 1993”, "
+                +     "SPHEROID[“GRS 1980”, 6378137, 298.257222101], "
+                +     "TOWGS84[0,0,0,0,0,0,0]], "
+                +     "PRIMEM[“Greenwich”,0], "
+                +     "UNIT[“degree”, 0.0174532925199433]], "
+                +   "PROJECTION[“Lambert_Conformal_Conic_2SP”], "
+                +   "PARAMETER[“standard_parallel_1”, 49], "
+                +   "PARAMETER[“standard_parallel_2”, 44], "
+                +   "PARAMETER[“latitude_of_origin”, 46.5], "
+                +   "PARAMETER[“central_meridian”, 3], "
+                +   "PARAMETER[“false_easting”, 700000], "
+                +   "PARAMETER[“false_northing”, 6600000], "
+                +   "UNIT[“metre”,1], "
+                +   "AUTHORITY[“EPSG”,“2154”]]");
+
+        final CoordinateReferenceSystem targetCRS = parse(
+                "PROJCS[“Amersfoort / RD New”, "
+                + "GEOGCS[“Amersfoort”, "
+                +   "DATUM[“Amersfoort”, "
+                +     "SPHEROID[“Bessel 1841”, 6377397.155, 299.1528128], "
+                +     "TOWGS84[565.417, 50.3319, 465.552, -0.398957, 0.343988, -1.8774, 4.0725]], "
+                +     "PRIMEM[“Greenwich”,0], "
+                +     "UNIT[“degree”,0.0174532925199433]], "
+                +   "PROJECTION[“Oblique_Stereographic”], "
+                +   "PARAMETER[“latitude_of_origin”, 52.15616055555555], "
+                +   "PARAMETER[“central_meridian”, 5.38763888888889], "
+                +   "PARAMETER[“scale_factor”, 0.9999079], "
+                +   "PARAMETER[“false_easting”, 155000], "
+                +   "PARAMETER[“false_northing”, 463000], "
+                +   "UNIT[“metre”,1], "
+                +   "AUTHORITY[“EPSG”,“28992”]]");
+        /*
+         * Transform a point as a way to verify that a datum shift is applied.
+         * If no datum shift is applied, the point will be at 191 metres from
+         * expected value.
+         */
+        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        tolerance = LINEAR_TOLERANCE;
+        transform = operation.getMathTransform();
+        verifyTransform(new double[] {926713.702, 7348947.026},
+                        new double[] {220798.684,  577583.801});        // With datum shift through WGS84.
+                        //            220762.487,  577396.040           // Without datum shift.
+        validate();
+        /*
+         * The accuracy should tell that the datum shift is indirect (through WGS 84).
+         * However the value may differ depending on whether EPSG database has been
+         * used or not, because it depends on whether the datum have been completed
+         * with domain of validity.
+         */
+        final double accuracy = CRS.getLinearAccuracy(operation);
+        if (accuracy != PositionalAccuracyConstant.UNKNOWN_ACCURACY) {
+            assertEquals("accuracy", PositionalAccuracyConstant.INDIRECT_SHIFT_ACCURACY, accuracy, STRICT);
+        }
     }
 
     /**

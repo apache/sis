@@ -32,10 +32,12 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.AnnotatedMatrix;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -680,7 +682,18 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 transform = mtFactory.createConcatenatedTransform(transform, after);
             }
         }
-        return asList(createFromMathTransform(properties(identifier), sourceCRS, targetCRS, transform, method, parameters, null));
+        /*
+         * Adjust the accuracy information if the datum shift has been computed by an indirect path.
+         * The indirect path uses a third datum (typically WGS84) as an intermediate between the two
+         * specified datum.
+         */
+        final Map<String, Object> properties = properties(identifier);
+        if (datumShift instanceof AnnotatedMatrix) {
+            properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, new PositionalAccuracy[] {
+                ((AnnotatedMatrix) datumShift).accuracy
+            });
+        }
+        return asList(createFromMathTransform(properties, sourceCRS, targetCRS, transform, method, parameters, null));
     }
 
     /**

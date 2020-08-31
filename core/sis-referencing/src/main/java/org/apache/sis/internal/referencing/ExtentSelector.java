@@ -27,7 +27,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
  * This may be extended to other kind of extent in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.1
  *
  * @param <T>  the type of object to be selected.
  *
@@ -37,8 +37,9 @@ import org.apache.sis.metadata.iso.extent.Extents;
 public final class ExtentSelector<T> {
     /**
      * The area of interest, or {@code null} if none.
+     * This is specified at construction time, but can be modified later.
      */
-    private final GeographicBoundingBox areaOfInterest;
+    private GeographicBoundingBox areaOfInterest;
 
     /**
      * The best object found so far.
@@ -59,6 +60,25 @@ public final class ExtentSelector<T> {
      */
     public ExtentSelector(final Extent areaOfInterest) {
         this.areaOfInterest = Extents.getGeographicBoundingBox(areaOfInterest);
+    }
+
+    /**
+     * Returns the area of interest.
+     *
+     * @return area of interest, or {@code null} if none.
+     */
+    public final GeographicBoundingBox getAreaOfInterest() {
+        return areaOfInterest;
+    }
+
+    /**
+     * Sets the area of interest to the intersection of the two given arguments.
+     *
+     * @param  a1  first area of interest as a bounding box, or {@code null}.
+     * @param  a2  second area of interest as an extent, or {@code null}.
+     */
+    public final void setAreaOfInterest(final GeographicBoundingBox a1, final Extent a2) {
+        areaOfInterest = Extents.intersection(a1, Extents.getGeographicBoundingBox(a2));
     }
 
     /**
@@ -96,5 +116,14 @@ public final class ExtentSelector<T> {
      */
     public T best() {
         return best;
+    }
+
+    /**
+     * Returns {@code true} if an intersection has been found.
+     *
+     * @return whether an intersection has been found.
+     */
+    public boolean hasIntersection() {
+        return largestArea > 0;
     }
 }
