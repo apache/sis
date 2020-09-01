@@ -414,15 +414,14 @@ public final class GCOM_C extends Convention {
 
     /**
      * Returns the default prime meridian, ellipsoid, datum or CRS to use if no information is found in the netCDF file.
-     * While GCOM documentation said that the datum is WGS 84, we have found that the map projection applied use spherical
-     * formulas.
+     * GCOM documentation said that the datum is WGS 84.
      *
      * @param  spherical  ignored, since we assume a sphere in all cases.
      * @return information about geodetic objects to use if no explicit information is found in the file.
      */
     @Override
     public CommonCRS defaultHorizontalCRS(final boolean spherical) {
-        return CommonCRS.SPHERE;
+        return CommonCRS.WGS84;
     }
 
 
