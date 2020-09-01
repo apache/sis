@@ -29,7 +29,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * Collection of coordinate systems for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -254,6 +254,13 @@ public final strictfp class HardCodedCS {
      */
     public static final DefaultVerticalCS DEPTH = new DefaultVerticalCS(
             getProperties(HardCodedAxes.DEPTH), HardCodedAxes.DEPTH);
+
+    /**
+     * A parametric CRS for day of year, without any particular year.
+     * The axis is cyclic: after day 365 we restart at day 1.
+     */
+    public static final DefaultParametricCS DAY_OF_YEAR = new DefaultParametricCS(
+            getProperties(HardCodedAxes.DAY_OF_YEAR), HardCodedAxes.DAY_OF_YEAR);
 
     /**
      * A one-dimensional temporal CS with

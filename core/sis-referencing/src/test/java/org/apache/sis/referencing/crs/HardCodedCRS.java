@@ -83,9 +83,34 @@ public final strictfp class HardCodedCRS {
      * with the 3 first dimensions specified by {@link #WGS84_3D} and the fourth dimension specified
      * by {@link #TIME}.
      *
-     * @see #TIME_WGS84
+     * @see #WGS84_4D_TIME_FIRST
      */
     public static final DefaultCompoundCRS WGS84_4D;
+
+    /**
+     * A (λ,φ,t) CRS where <var>t</var> is the {@link #TIME}.
+     *
+     * @since 1.1
+     */
+    public static final DefaultCompoundCRS WGS84_3D_TIME;
+
+    /**
+     * A (λ,φ,t) CRS where <var>t</var> is the {@link #DAY_OF_YEAR}.
+     * This CRS has two wraparound axes: <var>λ</var> and <var>t</var>.
+     *
+     * @since 1.1
+     */
+    public static final DefaultCompoundCRS WGS84_3D_TIME_CYCLIC;
+
+    /**
+     * A four-dimensional geographic coordinate reference system with time as the first axis.
+     * This CRS uses (<var>time</var>, <var>longitude</var>, <var>latitude</var>, <var>height</var>)
+     * with the first dimension specified by {@link #TIME} and the 3 last dimensions specified by {@link #WGS84_3D}.
+     * Such axis order is unusual but we use it as a way to verify that SIS is robust to arbitrary axis order.
+     *
+     * @since 1.1
+     */
+    public static final DefaultCompoundCRS WGS84_4D_TIME_FIRST;
 
     /**
      * A two-dimensional geographic coordinate reference system using the Paris prime meridian.
@@ -243,17 +268,23 @@ public final strictfp class HardCodedCRS {
     public static final DefaultTemporalCRS TIME = new DefaultTemporalCRS(
             getProperties(HardCodedCS.DAYS), HardCodedDatum.MODIFIED_JULIAN, HardCodedCS.DAYS);
 
-    /**
-     * A four-dimensional geographic coordinate reference system with time as the first axis.
-     * This CRS uses (<var>time</var>, <var>longitude</var>, <var>latitude</var>, <var>height</var>)
-     * with the first dimension specified by {@link #TIME} and the 3 last dimensions specified by {@link #WGS84_3D}.
-     * Such axis order is unusual but we use it as a way to verify that SIS is robust to arbitrary axis order.
-     */
-    public static final DefaultCompoundCRS TIME_WGS84 = new DefaultCompoundCRS(
-            properties("time + WGS 84 (3D)", null), TIME, WGS84_3D);;
-
     static {
         WGS84_4D = new DefaultCompoundCRS(properties("WGS 84 (3D) + time", null), WGS84_3D, TIME);
+        WGS84_4D_TIME_FIRST = new DefaultCompoundCRS(properties("time + WGS 84 (3D)", null), TIME, WGS84_3D);
+    }
+
+    /**
+     * A parametric CRS for day of year, without any particular year.
+     * The axis is cyclic: after day 365 we restart at day 1.
+     *
+     * @since 1.1
+     */
+    public static final DefaultParametricCRS DAY_OF_YEAR = new DefaultParametricCRS(
+            getProperties(HardCodedCS.DAY_OF_YEAR), HardCodedDatum.DAY_OF_YEAR, HardCodedCS.DAY_OF_YEAR);
+
+    static {
+        WGS84_3D_TIME = new DefaultCompoundCRS(properties("WGS 84 + time", null), WGS84, TIME);
+        WGS84_3D_TIME_CYCLIC = new DefaultCompoundCRS(properties("WGS 84 + day of year", null), WGS84, DAY_OF_YEAR);
     }
 
     /**

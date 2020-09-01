@@ -66,13 +66,13 @@ public final strictfp class HardCodedCRSTest extends TestCase {
         assertEquals("TIME",         1, TIME        .getCoordinateSystem().getDimension());
         assertEquals("DEPTH",        1, DEPTH       .getCoordinateSystem().getDimension());
         assertEquals("WGS84",        2, WGS84       .getCoordinateSystem().getDimension());
-        assertEquals("WGS84_φλ",     2, WGS84_φλ   .getCoordinateSystem().getDimension());
+        assertEquals("WGS84_φλ",     2, WGS84_φλ    .getCoordinateSystem().getDimension());
         assertEquals("WGS84_3D",     3, WGS84_3D    .getCoordinateSystem().getDimension());
         assertEquals("CARTESIAN_2D", 2, CARTESIAN_2D.getCoordinateSystem().getDimension());
         assertEquals("CARTESIAN_3D", 3, CARTESIAN_3D.getCoordinateSystem().getDimension());
         assertEquals("GEOCENTRIC",   3, GEOCENTRIC  .getCoordinateSystem().getDimension());
         assertEquals("SPHERICAL",    3, SPHERICAL   .getCoordinateSystem().getDimension());
-        assertEquals("GEOID_4D",     4, GEOID_4D     .getCoordinateSystem().getDimension());
+        assertEquals("GEOID_4D",     4, GEOID_4D    .getCoordinateSystem().getDimension());
     }
 
     /**

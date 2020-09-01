@@ -34,7 +34,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * Collection of datum for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -151,6 +151,12 @@ public final strictfp class HardCodedDatum {
     public static final DefaultTemporalDatum MODIFIED_JULIAN = new DefaultTemporalDatum(
             properties("Modified Julian", null, null),
             new Date(-40587L * MILLISECONDS_PER_DAY));
+
+    /**
+     * A parametric datum for day of year, without any particular year.
+     */
+    public static final DefaultParametricDatum DAY_OF_YEAR = new DefaultParametricDatum(
+            properties("Day of year", null, null));
 
     /**
      * Image with {@link PixelInCell#CELL_CENTER}.

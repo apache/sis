@@ -358,7 +358,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     @Test
     public void testTemporalAxisMoved() throws TransformException {
         final GridCoverage source = createCoverageND(true);
-        final GridGeometry target = createGridGeometryND(HardCodedCRS.TIME_WGS84, 1, 2, 3, 0, false);
+        final GridGeometry target = createGridGeometryND(HardCodedCRS.WGS84_4D_TIME_FIRST, 1, 2, 3, 0, false);
         final GridCoverage result = resample(source, target);
         assertAxisDirectionsEqual("Expected (t,λ,φ,H) axes.",
                 result.getGridGeometry().getCoordinateReferenceSystem().getCoordinateSystem(),

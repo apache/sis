@@ -903,8 +903,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             }
         }
         /*
-         * Do not invoke super.tryConcatenate(applyOtherFirst, other, factory); the test of whether 'this'
-         * is the inverse of 'other' has been done indirectly by the calls to 'createOptimized'.
+         * Do not invoke super.tryConcatenate(applyOtherFirst, other, factory); the test of whether `this`
+         * is the inverse of `other` has been done indirectly by the calls to `createOptimized(…)`.
          */
         return null;
     }

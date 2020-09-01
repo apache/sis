@@ -27,6 +27,9 @@ import org.opengis.test.Validators;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.referencing.operation.matrix.Matrix4;
+import org.apache.sis.internal.referencing.AnnotatedMatrix;
+import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.test.xml.TestCase;
@@ -43,7 +46,7 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * Tests the {@link DefaultGeodeticDatum} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -182,6 +185,45 @@ public final strictfp class DefaultGeodeticDatumTest extends TestCase {
         assertEquals("tX", expected.tX, actual.getElement(0, 3), tolerance);
         assertEquals("tY", expected.tY, actual.getElement(1, 3), tolerance);
         assertEquals("tZ", expected.tZ, actual.getElement(2, 3), tolerance);
+    }
+
+    /**
+     * Tests {@link DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum, Extent)}
+     * going through an indirect transformation. The main purpose of this test is to verify that
+     * the matrix is associated with {@link PositionalAccuracyConstant#INDIRECT_SHIFT_APPLIED}.
+     */
+    @Test
+    @DependsOnMethod("testGetPositionVectorTransformation")
+    public void testIndirectTransformation() {
+        final Map<String,Object> properties = new HashMap<>();
+        assertNull(properties.put(DefaultGeodeticDatum.NAME_KEY, "Invalid dummy datum"));
+        assertNull(properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, BursaWolfParametersTest.createWGS72_to_WGS84()));
+        final DefaultGeodeticDatum global = new DefaultGeodeticDatum(properties,
+                GeodeticDatumMock.WGS72.getEllipsoid(),
+                GeodeticDatumMock.WGS72.getPrimeMeridian());
+        /*
+         * Create a datum valid only in a specific region of the world and with no direct transformation to WGS72.
+         * However an indirect transformation to WGS72 is available through WGS84.
+         */
+        properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, BursaWolfParametersTest.createED87_to_WGS84());
+        final DefaultGeodeticDatum local = new DefaultGeodeticDatum(properties,
+                GeodeticDatumMock.ED50.getEllipsoid(),
+                GeodeticDatumMock.ED50.getPrimeMeridian());
+        /*
+         * Main test: verify that the transformation found is associated with accuracy information.
+         */
+        final Matrix m = local.getPositionVectorTransformation(global, null);
+        assertInstanceOf("Should have accuracy information.", AnnotatedMatrix.class, m);
+        assertSame(PositionalAccuracyConstant.INDIRECT_SHIFT_APPLIED, ((AnnotatedMatrix) m).accuracy);
+        /*
+         * Following is an anti-regression test only (no authoritative values).
+         * Verified only opportunistically.
+         */
+        assertMatrixEquals("getPositionVectorTransformation", new Matrix4(
+                   1,   7.961E-7,  7.287E-7,   -82.981,
+           -7.961E-7,          1,  2.461E-6,   -99.719,
+           -7.287E-7,  -2.461E-6,         1,  -115.209,
+                   0,          0,         0,         1), m, 0.01);
     }
 
     /**
