@@ -1043,46 +1043,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             boolean success = false;
             String text;
             try {
-                Matrix derivative;
-                try {
-                    derivative = MathTransforms.derivativeAndTransform(localToPositionCRS,
-                            sourceCoordinates, 0, targetCoordinates.coordinates, 0);
-                } catch (TransformException ignore) {
-                    /*
-                     * If above operation failed, it may be because the MathTransform does not support
-                     * derivative calculation. Try again without derivative (the precision will be set
-                     * to the default resolution computed in `setCanvasGeometry(…)`).
-                     */
-                    localToPositionCRS.transform(sourceCoordinates, 0, targetCoordinates.coordinates, 0, 1);
-                    derivative = null;
-                }
-                if (derivative == null) {
-                    precisions = null;
-                } else {
-                    if (precisions == null) {
-                        precisions = new double[targetCoordinates.getDimension()];
-                    }
-                    /*
-                     * Estimate the precision by looking at the maximal displacement in the CRS caused by
-                     * a displacement of one cell (i.e. when moving by one row or column).  We search for
-                     * maximal displacement instead than minimal because we expect the displacement to be
-                     * zero along some axes (e.g. one row down does not change longitude value in a Plate
-                     * Carrée projection).
-                     */
-                    for (int j=derivative.getNumRow(); --j >= 0;) {
-                        double p = 0;
-                        for (int i=derivative.getNumCol(); --i >= 0;) {
-                            double e = Math.abs(derivative.getElement(j, i));
-                            if (inflatePrecisions != null) {
-                                e *= inflatePrecisions[i];
-                            }
-                            if (e > p) p = e;
-                        }
-                        precisions[j] = p;
-                    }
-                }
-                format.setPrecisions(precisions);
-                text = format.format(targetCoordinates);
+                text = formatCoordinates();
                 success = true;
             } catch (TransformException | RuntimeException e) {
                 /*
@@ -1115,6 +1076,70 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 }
                 sampleValues.setText(text);
             }
+        }
+    }
+
+    /**
+     * Converts and formats the local coordinates currently stored in {@link #sourceCoordinates} array.
+     */
+    private String formatCoordinates() throws TransformException {
+        Matrix derivative;
+        try {
+            derivative = MathTransforms.derivativeAndTransform(localToPositionCRS,
+                    sourceCoordinates, 0, targetCoordinates.coordinates, 0);
+        } catch (TransformException ignore) {
+            /*
+             * If above operation failed, it may be because the MathTransform does not support
+             * derivative calculation. Try again without derivative (the precision will be set
+             * to the default resolution computed in `setCanvasGeometry(…)`).
+             */
+            localToPositionCRS.transform(sourceCoordinates, 0, targetCoordinates.coordinates, 0, 1);
+            derivative = null;
+        }
+        if (derivative == null) {
+            precisions = null;
+        } else {
+            if (precisions == null) {
+                precisions = new double[targetCoordinates.getDimension()];
+            }
+            /*
+             * Estimate the precision by looking at the maximal displacement in the CRS caused by
+             * a displacement of one cell (i.e. when moving by one row or column).  We search for
+             * maximal displacement instead than minimal because we expect the displacement to be
+             * zero along some axes (e.g. one row down does not change longitude value in a Plate
+             * Carrée projection).
+             */
+            for (int j=derivative.getNumRow(); --j >= 0;) {
+                double p = 0;
+                for (int i=derivative.getNumCol(); --i >= 0;) {
+                    double e = Math.abs(derivative.getElement(j, i));
+                    if (inflatePrecisions != null) {
+                        e *= inflatePrecisions[i];
+                    }
+                    if (e > p) p = e;
+                }
+                precisions[j] = p;
+            }
+        }
+        format.setPrecisions(precisions);
+        return format.format(targetCoordinates);
+    }
+
+    /**
+     * Converts and formats the given local coordinates, but without modifying text shown in this status bar.
+     *
+     * @param  x  the <var>x</var> coordinate local to the view.
+     * @param  y  the <var>y</var> coordinate local to the view.
+     */
+    final String formatCoordinates(final double x, final double y) throws TransformException {
+        sourceCoordinates[0] = x;
+        sourceCoordinates[1] = y;
+        final String separator = format.getSeparator();
+        try {
+            format.setSeparator("\t");
+            return formatCoordinates();
+        } finally {
+            format.setSeparator(separator);
         }
     }
 

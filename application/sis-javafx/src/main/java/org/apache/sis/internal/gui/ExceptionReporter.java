@@ -18,6 +18,7 @@ package org.apache.sis.internal.gui;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
@@ -195,12 +196,17 @@ public final class ExceptionReporter {
 
     /**
      * Constructs and shows the exception reporter.
+     * This method can be invoked from any thread.
      *
      * @param title      the window the title, or {@code null} if none.
      * @param text       the text in the dialog box, or {@code null} if none.
      * @param exception  the exception to report.
      */
     public static void show(final String title, final String text, final Throwable exception) {
+        if (!Platform.isFxApplicationThread()) {
+            Platform.runLater(() -> show(title, text, exception));
+            return;
+        }
         String message = exception.getLocalizedMessage();
         if (message == null) {
             message = Classes.getShortClassName(exception);

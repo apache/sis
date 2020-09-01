@@ -97,6 +97,7 @@ final class CoverageControls extends Controls {
         imageAndStatus.setBottom(statusBar.getView());
         final MapMenu menu = new MapMenu(view);
         menu.addReferenceSystems(referenceSystems);
+        menu.addCopyOptions(statusBar);
         /*
          * "Display" section with the following controls:
          *    - Current CRS

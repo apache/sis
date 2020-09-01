@@ -126,6 +126,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Close = 10;
 
         /**
+         * Coordinates of here
+         */
+        public static final short CoordinatesOfHere = 50;
+
+        /**
          * Copy
          */
         public static final short Copy = 11;
