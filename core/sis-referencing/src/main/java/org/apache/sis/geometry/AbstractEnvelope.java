@@ -41,6 +41,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.Vector;
 
 import static java.lang.Double.doubleToLongBits;
@@ -112,7 +113,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -153,8 +154,14 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * Weakly asserts that the given CRS are equal. This method may return {@code false} without throwing
      * {@link AssertionError}, so callers should still test the returned value in their {@code assert} statement.
      */
-    static boolean assertEquals(final CoordinateReferenceSystem crs1, final CoordinateReferenceSystem crs2) {
-        return equals(crs1, crs2, ComparisonMode.DEBUG);
+    static boolean assertEquals(final CoordinateReferenceSystem expected, final CoordinateReferenceSystem actual) {
+        if (equals(expected, actual, ComparisonMode.DEBUG)) return true;
+        final String title = IdentifiedObjects.getDisplayName(actual, null);
+        if (title != null && !title.equalsIgnoreCase(IdentifiedObjects.getDisplayName(expected, null))) {
+            throw new AssertionError(Errors.format(Errors.Keys.IllegalCoordinateSystem_1, title));
+        }
+        // Error message not informative enough. Let caller makes its own.
+        return false;
     }
 
     /**
