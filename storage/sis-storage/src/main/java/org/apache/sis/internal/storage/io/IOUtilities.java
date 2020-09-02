@@ -59,7 +59,7 @@ import org.apache.sis.internal.storage.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -68,6 +68,21 @@ public final class IOUtilities extends Static {
      * Do not allow instantiation of this class.
      */
     private IOUtilities() {
+    }
+
+    /**
+     * Returns {@code true} if the given object is a {@link Path}, {@link File}, {@link URL} or {@link URI}.
+     * Note that this method does not returns {@code true} for {@link CharSequence}; that type needs to be
+     * verified by the caller if desired.
+     *
+     * @param  path  the object to verify.
+     * @return whether the given object is of known type.
+     *
+     * @since 1.1
+     */
+    public static boolean isKindOfPath(final Object path) {
+        return (path instanceof URI)  || (path instanceof URL) ||       // Test final classes first.
+               (path instanceof Path) || (path instanceof File);
     }
 
     /**

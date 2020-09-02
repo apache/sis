@@ -126,11 +126,6 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Close = 10;
 
         /**
-         * Coordinates of here
-         */
-        public static final short CoordinatesOfHere = 50;
-
-        /**
          * Copy
          */
         public static final short Copy = 11;
@@ -139,6 +134,16 @@ public final class Resources extends IndexedResourceBundle {
          * Copy as
          */
         public static final short CopyAs = 12;
+
+        /**
+         * Copy coordinates
+         */
+        public static final short CopyCoordinates = 50;
+
+        /**
+         * Copy file path
+         */
+        public static final short CopyFilePath = 51;
 
         /**
          * Display start

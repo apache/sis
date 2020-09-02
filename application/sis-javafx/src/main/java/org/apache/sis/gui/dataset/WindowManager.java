@@ -106,8 +106,7 @@ abstract class WindowManager extends Widget {
      * @see #hasWindowsProperty
      */
     public final MenuItem createNewWindowMenu() {
-        final MenuItem menu = new MenuItem(localized().getString(Resources.Keys.NewWindow));
-        menu.setOnAction(this::newDataWindow);
+        final MenuItem menu = localized().menu(Resources.Keys.NewWindow, this::newDataWindow);
         menu.setDisable(true);
         newWindowMenus.add(menu);
         return menu;

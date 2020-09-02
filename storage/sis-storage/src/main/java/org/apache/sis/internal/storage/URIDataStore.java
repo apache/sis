@@ -28,6 +28,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
@@ -36,6 +37,8 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -45,7 +48,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -99,7 +102,6 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
         }
         return new Path[] {path};
     }
-
 
     /**
      * Returns the parameters used to open this data store.
@@ -248,6 +250,44 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
             throw new IllegalOpenParameterException(Resources.format(Resources.Keys.UndefinedParameter_2,
                         provider.getShortName(), LOCATION), cause);
         }
+    }
+
+    /**
+     * Returns the location (path, URL, URI, <i>etc.</i>) of the given resource.
+     * The type of the returned object can be any of the types documented in {@link DataStoreProvider#LOCATION}.
+     * The main ones are {@link java.net.URI}, {@link java.nio.file.Path} and JDBC {@linkplain javax.sql.DataSource}.
+     *
+     * @param  resource  the resource for which to get the location, or {@code null}.
+     * @return location of the given resource, or {@code null} if none.
+     * @throws DataStoreException if an error on the file system prevent the creation of the path.
+     *
+     * @since 1.1
+     */
+    public static Object location(final Resource resource) throws DataStoreException {
+        if (resource instanceof DataStore) {
+            final Optional<ParameterValueGroup> p = ((DataStore) resource).getOpenParameters();
+            if (p.isPresent()) try {
+                return p.get().parameter(DataStoreProvider.LOCATION).getValue();
+            } catch (ParameterNotFoundException e) {
+                /*
+                 * This exception should not happen often since the "location" parameter is recommended.
+                 * Note that it does not mean the same thing than "parameter provided but value is null".
+                 * In that later case we want to return the null value as specified in the parameters.
+                 */
+                Logging.recoverableException(Logging.getLogger(Modules.STORAGE), URIDataStore.class, "location", e);
+            }
+        }
+        /*
+         * This fallback should not happen with `URIDataStore` implementation because the "location" parameter
+         * is always present even if null. This fallback is for resources implementated by different classes.
+         */
+        if (resource instanceof ResourceOnFileSystem) {
+            final Path[] paths = ((ResourceOnFileSystem) resource).getComponentFiles();
+            if (paths != null && paths.length != 0) {
+                return paths[0];                                    // First path is presumed the main file.
+            }
+        }
+        return null;
     }
 
     /**

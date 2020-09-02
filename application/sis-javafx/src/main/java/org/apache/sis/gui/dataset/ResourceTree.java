@@ -17,6 +17,8 @@
 package org.apache.sis.gui.dataset;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.AbstractList;
@@ -31,12 +33,15 @@ import javafx.concurrent.Task;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.paint.Color;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -53,13 +58,17 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.gui.ResourceLoader;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -248,6 +257,46 @@ public class ResourceTree extends TreeView<Resource> {
             event.acceptTransferModes(TransferMode.COPY);
         }
         event.consume();
+    }
+
+    /**
+     * Performs a "copy" action on the given resource. Current implementation performs only
+     * a "copy file path" action, but future versions may add more kinds of copy actions.
+     *
+     * @param  resource  the resource to copy.
+     */
+    private static void copy(final Resource resource) {
+        Object path;
+        try {
+            path = URIDataStore.location(resource);
+        } catch (DataStoreException e) {
+            ExceptionReporter.show(null, null, e);
+            return;
+        }
+        final ClipboardContent content = new ClipboardContent();
+        final boolean isKindOfPath = IOUtilities.isKindOfPath(path);
+        if (isKindOfPath || path instanceof CharSequence) {
+            String uri  = path.toString();
+            String text = uri;
+            try {
+                if (path instanceof URI) {
+                    path = new File((URI) path);
+                } else if (path instanceof Path) {
+                    path = ((Path) path).toFile();
+                }
+            } catch (IllegalArgumentException | UnsupportedOperationException e) {
+                // Ignore
+            }
+            if (path instanceof File) {
+                content.putFiles(Collections.singletonList((File) path));
+                text = path.toString();
+            }
+            if (isKindOfPath) {
+                content.putUrl(uri);
+            }
+            content.putString(text);
+        }
+        Clipboard.getSystemClipboard().setContent(content);
     }
 
     /**
@@ -481,9 +530,7 @@ public class ResourceTree extends TreeView<Resource> {
             setTextFill(isSelected() ? Styles.SELECTED_TEXT : color);
             /*
              * If the resource is at the root, add a menu for removing it.
-             * If we find that the cell already has a menu, we do not need
-             * to build it again (it may change in a future SIS version if
-             * the menu is not always the same).
+             * If we find that the cell already has a menu, we do not need to build it again.
              */
             if (tree != null) {
                 setText(text);
@@ -493,14 +540,38 @@ public class ResourceTree extends TreeView<Resource> {
                     menu = getContextMenu();
                     if (menu == null) {
                         menu = new ContextMenu();
-                        menu.getItems().add(tree.localized().menu(Resources.Keys.Close, (e) -> {
+                        final Resources localized = tree.localized();
+                        final MenuItem[] items = new MenuItem[CLOSE + 1];
+                        items[COPY_PATH] = localized.menu(Resources.Keys.CopyFilePath, (e) -> {
+                            copy(getItem());
+                        });
+                        items[CLOSE] = localized.menu(Resources.Keys.Close, (e) -> {
                             ((ResourceTree) getTreeView()).removeAndClose(getItem());
-                        }));
+                        });
+                        menu.getItems().setAll(items);
                     }
+                    /*
+                     * "Copy file path" menu item should be enabled only if we can
+                     * get some kind of file path or URI from the specified resource.
+                     */
+                    Object path;
+                    try {
+                        path = URIDataStore.location(resource);
+                    } catch (DataStoreException e) {
+                        path = null;
+                        Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), URIDataStore.class, "location", e);
+                    }
+                    menu.getItems().get(COPY_PATH).setDisable(!(IOUtilities.isKindOfPath(path) || path instanceof CharSequence));
                 }
                 setContextMenu(menu);
             }
         }
+
+        /**
+         * Position of menu items in the contextual menu built by {@link #updateItem(Resource, boolean)}.
+         * Above method assumes that {@link #CLOSE} is the last menu item.
+         */
+        private static final int COPY_PATH = 0, CLOSE = 1;
     }
 
     /**

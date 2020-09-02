@@ -159,8 +159,7 @@ public class MapMenu extends ContextMenu {
         ArgumentChecks.ensureNonNull("format", format);
         final MapCanvas.MenuHandler handler = startNewMenuItems(COPY);
         final Resources resources = Resources.forLocale(canvas.getLocale());
-        final MenuItem coordinates = new MenuItem(resources.getString(Resources.Keys.CoordinatesOfHere));
-        coordinates.setOnAction((event) -> {
+        final MenuItem coordinates = resources.menu(Resources.Keys.CopyCoordinates, (event) -> {
             try {
                 final String text = format.formatCoordinates(handler.x, handler.y);
                 final ClipboardContent content = new ClipboardContent();
@@ -170,9 +169,7 @@ public class MapMenu extends ContextMenu {
                 ExceptionReporter.show(((MenuItem) event.getSource()).getText(), null, e);
             }
         });
-        final Menu group = new Menu(resources.getString(Resources.Keys.Copy));
-        group.getItems().setAll(coordinates);
-        getItems().add(group);
+        getItems().add(coordinates);
     }
 
 
