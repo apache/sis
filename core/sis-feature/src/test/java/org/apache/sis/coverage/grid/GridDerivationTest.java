@@ -189,6 +189,9 @@ public final strictfp class GridDerivationTest extends TestCase {
                 0,   0.5, -90,
                 0.5, 0,  -180,
                 0,   0,     1));
+        /*
+         * Consistency checks before to test the `subgrid(…)` operation.
+         */
         GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope, GridRoundingMode.NEAREST);
         assertExtentEquals(new long[] {370, 40}, new long[] {389, 339}, grid.getExtent());
         assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
@@ -224,6 +227,47 @@ public final strictfp class GridDerivationTest extends TestCase {
         DirectPosition2D exp = new DirectPosition2D();
         src.x = 94; src.y = 13; exp.x = -50; exp.y =  8; assertEquals("Lower corner", exp, cornerToCRS.transform(src, tgt));
         src.x = 96; src.y = 40; exp.x = +31; exp.y = 12; assertEquals("Upper corner", exp, cornerToCRS.transform(src, tgt));
+    }
+
+    /**
+     * Tests {@link GridDerivation#subgrid(Envelope, double...)} using an envelope in a CRS different than the
+     * grid geometry CRS. This test constructs the same grid geometry than {@link #testSubgridFromEnvelope()}
+     * and tests the same request with only axis order flipped.
+     *
+     * @throws TransformException if an error occurred during computation.
+     */
+    @Test
+    @DependsOnMethod("testSubgridFromEnvelope")
+    public void testSubgridFromEnvelopeDifferentCRS() throws TransformException {
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
+        envelope.setRange(0, -70, +80);
+        envelope.setRange(1,   5,  15);
+        final MathTransform gridToCRS = MathTransforms.linear(new Matrix3(
+                0,   0.5, -90,
+                0.5, 0,  -180,
+                0,   0,     1));
+        /*
+         * Same grid geometry than `testSubgridFromEnvelope()` with consistency checks omitted.
+         */
+        GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope, GridRoundingMode.NEAREST);
+        /*
+         * Same request than the one used by `testSubgridFromEnvelope()` but with different axis order.
+         * The resulting subgrid should have the same extent than the one in `testSubgridFromEnvelope()`.
+         */
+        envelope.setCoordinateReferenceSystem(HardCodedCRS.WGS84);
+        envelope.setRange(1, -50, +30);
+        envelope.setRange(0,   8,  12);
+        grid = grid.derive().subgrid(envelope, 2, 1).build();
+        assertSame(HardCodedCRS.WGS84_φλ, grid.getCoordinateReferenceSystem());
+        assertExtentEquals(new long[] {94, 40}, new long[] {95, 119}, grid.getExtent());
+        /*
+         * Before to check envelope, we need to restore the same axis order as specified in the grid geometry.
+         * The envelope below is identical to the one used in `testSubgridFromEnvelope()`.
+         */
+        envelope.setCoordinateReferenceSystem(HardCodedCRS.WGS84_φλ);
+        envelope.setRange(0, -50, +30);
+        envelope.setRange(1,   8,  12);
+        assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
     }
 
     /**
@@ -462,15 +506,29 @@ public final strictfp class GridDerivationTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridDerivation#subgrid(GridGeometry)} when the two envelopes contain only an envelope.
+     * Tests {@link GridDerivation#subgrid(GridGeometry)} when the two grid geometries contain only an envelope.
      */
     @Test
     public void testWithEnvelopeOnly() {
-        final GridGeometry g1 = new GridGeometry(null, new Envelope2D(null, 10, 20, 110, 70));
-        final GridGeometry g2 = new GridGeometry(null, new Envelope2D(null, -5, 25, 100, 90));
-        final GridGeometry r  = g1.derive().subgrid(g2).build();
-        assertTrue(r.isEnvelopeOnly());
-        assertEnvelopeEquals(new Envelope2D(null, 10, 25, 85, 65), r.getEnvelope(), STRICT);
+        Envelope2D   domain   = new Envelope2D(HardCodedCRS.WGS84, 10, 20, 110, 70);
+        Envelope2D   request  = new Envelope2D(HardCodedCRS.WGS84, -5, 25, 100, 90);
+        Envelope2D   expected = new Envelope2D(HardCodedCRS.WGS84, 10, 25,  85, 65);
+        GridGeometry grid1    = new GridGeometry(null, domain);
+        GridGeometry grid2    = new GridGeometry(null, request);
+        GridGeometry subgrid  = grid1.derive().subgrid(grid2).build();
+        assertTrue(subgrid.isEnvelopeOnly());
+        assertEnvelopeEquals(expected, subgrid.getEnvelope(), STRICT);
+        /*
+         * Test same envelope but with different axis order. The request uses a different CRS,
+         * but the result shall stay in the same CRS than the initial grid geometry.
+         */
+        request.setCoordinateReferenceSystem(HardCodedCRS.WGS84_φλ);
+        request.setRect(25, -5, 90, 100);
+        grid2   = new GridGeometry(null, request);
+        subgrid = grid1.derive().subgrid(grid2).build();
+        assertSame(HardCodedCRS.WGS84, subgrid.getCoordinateReferenceSystem());
+        assertTrue(subgrid.isEnvelopeOnly());
+        assertEnvelopeEquals(expected, subgrid.getEnvelope(), STRICT);
     }
 
     /**

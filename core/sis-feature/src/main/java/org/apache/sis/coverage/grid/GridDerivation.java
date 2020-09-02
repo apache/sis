@@ -514,7 +514,7 @@ public class GridDerivation {
      * @see #getIntersection()
      * @see #getSubsamplings()
      */
-    public GridDerivation subgrid(final Envelope areaOfInterest, double... resolution) {
+    public GridDerivation subgrid(Envelope areaOfInterest, double... resolution) {
         ensureSubgridNotSet();
         final boolean isEnvelopeOnly = base.isEnvelopeOnly() && (resolution == null || resolution.length == 0);
         MathTransform cornerToCRS = isEnvelopeOnly ? MathTransforms.identity(base.envelope.getDimension())
@@ -550,6 +550,9 @@ public class GridDerivation {
             if (isEnvelopeOnly) {
                 if (areaOfInterest != null) {
                     intersection = new GeneralEnvelope(base.envelope);
+                    if (baseToAOI != null && !baseToAOI.isIdentity()) {
+                        areaOfInterest = Envelopes.transform(baseToAOI.inverse(), areaOfInterest);
+                    }
                     intersection.intersect(areaOfInterest);
                 }
                 return this;
@@ -936,7 +939,7 @@ public class GridDerivation {
             /*
              * Intersection should be non-null only if we have not been able to compute more reliable properties
              * (grid extent and "grid to CRS" transform). It should happen only if `gridToCRS` is null, but we
-             * nevertheless pass it to the constructor as a matter of principle.
+             * nevertheless pass that transform to the constructor as a matter of principle.
              */
             if (intersection != null) {
                 return new GridGeometry(PixelInCell.CELL_CENTER, base.gridToCRS, intersection, rounding);
