@@ -521,7 +521,9 @@ public abstract class PlanarImage implements RenderedImage {
      *   <li>{@code "tileWidth"}   — tile width is greater than sample model width.</li>
      *   <li>{@code "tileHeight"}  — tile height is greater than sample model height.</li>
      *   <li>{@code "numXTiles"}   — number of tiles on the X axis is inconsistent with image width.</li>
+     *   <li>{@code "width"}       — image width is not an integer multiple of tile width.</li>
      *   <li>{@code "numYTiles"}   — number of tiles on the Y axis is inconsistent with image height.</li>
+     *   <li>{@code "height"}      — image height is not an integer multiple of tile height.</li>
      *   <li>{@code "tileX"}       — {@ode minTileX} and/or {@code tileGridXOffset} is inconsistent.</li>
      *   <li>{@code "tileY"}       — {@ode minTileY} and/or {@code tileGridYOffset} is inconsistent.</li>
      * </ul>
@@ -548,8 +550,16 @@ public abstract class PlanarImage implements RenderedImage {
             if (sm.getWidth()  < tileWidth)  return "tileWidth";
             if (sm.getHeight() < tileHeight) return "tileHeight";
         }
-        if (JDK9.multiplyFull(getNumXTiles(), tileWidth)  != getWidth())  return "numXTiles";
-        if (JDK9.multiplyFull(getNumYTiles(), tileHeight) != getHeight()) return "numYTiles";
+        long size = getWidth();
+        long remainder = size - JDK9.multiplyFull(getNumXTiles(), tileWidth);
+        if (remainder != 0) {
+            return (remainder >= 0 && remainder < size) ? "width" : "numXTiles";
+        }
+        size = getHeight();
+        remainder = size - JDK9.multiplyFull(getNumYTiles(), tileHeight);
+        if (remainder != 0) {
+            return (remainder >= 0 && remainder < size) ? "height" : "numYTiles";
+        }
         if (JDK9.multiplyFull(getMinTileX(),  tileWidth)  + getTileGridXOffset() != getMinX()) return "tileX";
         if (JDK9.multiplyFull(getMinTileY(),  tileHeight) + getTileGridYOffset() != getMinY()) return "tileY";
         return null;
