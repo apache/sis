@@ -117,6 +117,7 @@ public interface Interpolation {
         @Override public void interpolate(final DoubleBuffer source, final int numBands,
                 final double xfrac, final double yfrac, final double[] writeTo, int writeToOffset)
         {
+            // TODO: use `get(position(), …)` with JDK13 for avoiding mark/reset.
             source.mark();
             source.get(writeTo, writeToOffset, numBands);
             source.reset();

@@ -327,6 +327,7 @@ public class ResampledImage extends ComputedImage {
      * @see #toSourceSupport
      */
     static double interpolationSupportOffset(final int span) {
+        if (span <= 1) return 0.5;                  // Nearest-neighbor (special case).
         return -Math.max(0, (span - 1) / 2);        // Round toward 0.
     }
 
@@ -634,7 +635,7 @@ public class ResampledImage extends ComputedImage {
             ymax = domain.getMaxY() - 1;
             xlim = xmax + support.width  - 0.5;         // Limit of coordinates where we can interpolate.
             ylim = ymax + support.height - 0.5;
-            xoff = interpolationSupportOffset(support.width)  - 0.5;                  // Always negative.
+            xoff = interpolationSupportOffset(support.width)  - 0.5;    // Always negative (or 0 for nearest-neighbor).
             yoff = interpolationSupportOffset(support.height) - 0.5;
         }
         /*
@@ -643,7 +644,7 @@ public class ResampledImage extends ComputedImage {
          * for minimal and maximal values. Shortcut may apply to both integer values and floating point values.
          */
         final boolean useFillValues = (getDestination() == null);
-        final boolean shortcut = useFillValues && (interpolation == Interpolation.NEAREST) &&
+        final boolean shortcut = useFillValues && Interpolation.NEAREST.equals(interpolation) &&
                     ImageUtilities.isLosslessConversion(sampleModel, tile.getSampleModel());
         /*
          * Prepare a buffer where to store a line of interpolated values. We use this buffer for transferring
@@ -719,9 +720,9 @@ public class ResampledImage extends ComputedImage {
                 int ci = 0;     // Index in `coordinates` array.
                 int vi = 0;     // Index in `values` or `intValues` array.
                 for (int tx=tileMinX; tx<tileMaxX; tx++, ci+=tgtDim, vi+=numBands) {
-                    final long x = Math.round(coordinates[ci]);
+                    final long x = (long) Math.floor(coordinates[ci]);
                     if (x >= it.lowerX && x < it.upperX) {
-                        final long y = Math.round(coordinates[ci+1]);
+                        final long y = (long) Math.floor(coordinates[ci+1]);
                         if (y >= it.lowerY && y < it.upperY) {
                             if (sx != (sx = (int) x)  |                 // Really |, not ||.
                                 sy != (sy = (int) y))
