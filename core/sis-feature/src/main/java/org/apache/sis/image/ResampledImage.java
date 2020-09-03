@@ -126,6 +126,11 @@ public class ResampledImage extends ComputedImage {
      * That transform may be non-invertible. Consequently this transform should not be used for inverse operations
      * and should not be made accessible to the user.</p>
      *
+     * <p>This transform maps pixel centers of both images, except in the case of nearest-neighbor interpolation.
+     * In that special case only, the transform maps target pixel <em>center</em> to source pixel <em>corner</em>.
+     * We have to map corners in source images because source pixel coordinates are computed by taking the integer
+     * parts of {@code toSourceSupport} results, without rounding.</p>
+     *
      * @see #interpolationSupportOffset(int)
      */
     private final MathTransform toSourceSupport;

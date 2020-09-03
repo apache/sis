@@ -32,6 +32,7 @@ import java.awt.image.RasterFormatException;
 import java.awt.image.Raster;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.MismatchedCoverageRangeException;
@@ -252,6 +253,15 @@ public class ImageRenderer {
     private Hashtable<String,Object> properties;
 
     /**
+     * The factory to use for {@link org.opengis.referencing.operation.MathTransform} creations,
+     * or {@code null} for a default factory.
+     *
+     * <p>For now this is fixed to {@code null}. But it may become a non-static, non-final field
+     * in a future version if we want to make this property configurable.</p>
+     */
+    private static final MathTransformFactory mtFactory = null;
+
+    /**
      * Creates a new image renderer for the given slice extent.
      *
      * @param  coverage     the source coverage for which to build an image.
@@ -382,7 +392,7 @@ public class ImageRenderer {
             if (isSameGeometry(dimCRS)) {
                 ig = geometry;
             } else try {
-                ig = new SliceGeometry(geometry, sliceExtent, gridDimensions, null)
+                ig = new SliceGeometry(geometry, sliceExtent, gridDimensions, mtFactory)
                         .reduce(new GridExtent(imageX, imageY, width, height), dimCRS);
             } catch (FactoryException e) {
                 throw SliceGeometry.canNotCompute(e);
@@ -670,7 +680,7 @@ public class ImageRenderer {
             if (isSameGeometry(GridCoverage2D.BIDIMENSIONAL)) {
                 imageGeometry = geometry;
             } else {
-                supplier = new SliceGeometry(geometry, sliceExtent, gridDimensions, null);
+                supplier = new SliceGeometry(geometry, sliceExtent, gridDimensions, mtFactory);
             }
         }
         final WritableRaster wr = (raster instanceof WritableRaster) ? (WritableRaster) raster : null;

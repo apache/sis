@@ -49,7 +49,7 @@ import org.apache.sis.util.logging.Logging;
  * <p>{@code WraparoundTransform}s are not created automatically by {@link org.apache.sis.referencing.CRS#findOperation
  * CRS.findOperation(…)} because they introduce a discontinuity in coordinate transformations. Such discontinuities are
  * hurtless when transforming only a cloud of points, but produce undesirable artifacts when transforming geometries.
- * Callers need to invoke {@link #create create} explicitly if discontinuities are acceptable.</p>
+ * Callers need to invoke {@link #forTargetCRS forTargetCRS(…)} explicitly if discontinuities are acceptable.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -97,15 +97,14 @@ public final class WraparoundTransform extends AbstractMathTransform {
      * @return the math transform for the given coordinate operation.
      * @throws FactoryException if an error occurred while creating the math transform.
      */
-    public static MathTransform create(final MathTransformFactory factory, final CoordinateOperation op)
+    public static MathTransform forTargetCRS(final MathTransformFactory factory, final CoordinateOperation op)
             throws FactoryException
     {
         MathTransform tr = op.getMathTransform();
         final CoordinateSystem cs = op.getTargetCRS().getCoordinateSystem();
-        final int dimension = cs.getDimension();
         for (final int wraparoundDimension : CoordinateOperations.wrapAroundChanges(op)) {
             final CoordinateSystemAxis axis = cs.getAxis(wraparoundDimension);
-            final MathTransform wraparound  = create(factory, dimension, wraparoundDimension,
+            final MathTransform wraparound  = create(factory, cs.getDimension(), wraparoundDimension,
                                                      axis.getMinimumValue(), axis.getMaximumValue());
             tr = factory.createConcatenatedTransform(tr, wraparound);
         }
