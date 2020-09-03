@@ -29,6 +29,7 @@ import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.Units;
 
@@ -211,22 +212,27 @@ public class ImageCombiner implements Consumer<RenderedImage> {
      * Destination pixels that can not be mapped to source pixels are left unchanged.
      *
      * @param  source    the image to be resampled.
-     * @param  bounds    domain of pixel coordinates in the destination image.
+     * @param  bounds    domain of pixel coordinates in the destination image, or {@code null} for the whole image.
      * @param  toSource  conversion of pixel coordinates from destination image to {@code source} image.
      *
      * @see ImageProcessor#resample(RenderedImage, Rectangle, MathTransform)
      */
     public void resample(final RenderedImage source, Rectangle bounds, final MathTransform toSource) {
+        ArgumentChecks.ensureNonNull("source",   source);
+        ArgumentChecks.ensureNonNull("toSource", toSource);
+        if (bounds == null) {
+            bounds = ImageUtilities.getBounds(destination);
+        }
         final int  tileWidth       = destination.getTileWidth();
         final int  tileHeight      = destination.getTileHeight();
         final long tileGridXOffset = destination.getTileGridXOffset();
         final long tileGridYOffset = destination.getTileGridYOffset();
         final int  minTileX        = Math.toIntExact(Math.floorDiv((bounds.x - tileGridXOffset), tileWidth));
         final int  minTileY        = Math.toIntExact(Math.floorDiv((bounds.y - tileGridYOffset), tileHeight));
-        final int  minX            = Math.toIntExact((minTileX * (long) tileWidth)  + tileGridXOffset);
-        final int  minY            = Math.toIntExact((minTileY * (long) tileHeight) + tileGridYOffset);
+        final int  minX            = Math.toIntExact(JDK9.multiplyFull(minTileX, tileWidth)  + tileGridXOffset);
+        final int  minY            = Math.toIntExact(JDK9.multiplyFull(minTileY, tileHeight) + tileGridYOffset);
         /*
-         * Exand the target bounds until it contains an integer number of tiles, computed using the size
+         * Expand the target bounds until it contains an integer number of tiles, computed using the size
          * of destination tiles. We have to do that because the resample operation below is not free to
          * choose a tile size suiting the given bounds.
          */
