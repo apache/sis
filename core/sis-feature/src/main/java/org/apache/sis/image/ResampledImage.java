@@ -202,7 +202,7 @@ public class ResampledImage extends ComputedImage {
      * @see ImageProcessor#resample(RenderedImage, Rectangle, MathTransform)
      */
     protected ResampledImage(final RenderedImage source, final SampleModel sampleModel, final Point minTile,
-            final Rectangle bounds, final MathTransform toSource, final Interpolation interpolation,
+            final Rectangle bounds, final MathTransform toSource, Interpolation interpolation,
             final Number[] fillValues, final Quantity<?>[] accuracy)
     {
         super(sampleModel, source);
@@ -240,8 +240,12 @@ public class ResampledImage extends ComputedImage {
          * point will be between the second and third pixel, so there is one more pixel on the left
          * to grab. We shift to the left because we need the coordinates of the first pixel.
          */
+        Dimension s = interpolation.getSupportSize();
+        if (s.width > width || s.height > height) {
+            interpolation = Interpolation.NEAREST;
+            s = interpolation.getSupportSize();
+        }
         this.interpolation = interpolation;
-        final Dimension s = interpolation.getSupportSize();
         final double[] offset = new double[numDim];
         offset[0] = interpolationSupportOffset(s.width);
         offset[1] = interpolationSupportOffset(s.height);
