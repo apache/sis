@@ -71,9 +71,8 @@ public final class IOUtilities extends Static {
     }
 
     /**
-     * Returns {@code true} if the given object is a {@link Path}, {@link File}, {@link URL} or {@link URI}.
-     * Note that this method does not returns {@code true} for {@link CharSequence}; that type needs to be
-     * verified by the caller if desired.
+     * Returns {@code true} if the given object is a {@link Path}, {@link File}, {@link URL}, {@link URI}
+     * or {@link CharSequence}. They are the types accepted by methods such as {@link #filename(Object)}.
      *
      * @param  path  the object to verify.
      * @return whether the given object is of known type.
@@ -81,8 +80,9 @@ public final class IOUtilities extends Static {
      * @since 1.1
      */
     public static boolean isKindOfPath(final Object path) {
-        return (path instanceof URI)  || (path instanceof URL) ||       // Test final classes first.
-               (path instanceof Path) || (path instanceof File);
+        return (path instanceof URI)  || (path instanceof URL)  ||      // Test final classes first.
+               (path instanceof Path) || (path instanceof File) ||
+               (path instanceof CharSequence);
     }
 
     /**

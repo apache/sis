@@ -17,8 +17,6 @@
 package org.apache.sis.gui.dataset;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.AbstractList;
@@ -40,8 +38,6 @@ import javafx.scene.control.TreeView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.paint.Color;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -260,46 +256,6 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * Performs a "copy" action on the given resource. Current implementation performs only
-     * a "copy file path" action, but future versions may add more kinds of copy actions.
-     *
-     * @param  resource  the resource to copy.
-     */
-    private static void copy(final Resource resource) {
-        Object path;
-        try {
-            path = URIDataStore.location(resource);
-        } catch (DataStoreException e) {
-            ExceptionReporter.show(null, null, e);
-            return;
-        }
-        final ClipboardContent content = new ClipboardContent();
-        final boolean isKindOfPath = IOUtilities.isKindOfPath(path);
-        if (isKindOfPath || path instanceof CharSequence) {
-            String uri  = path.toString();
-            String text = uri;
-            try {
-                if (path instanceof URI) {
-                    path = new File((URI) path);
-                } else if (path instanceof Path) {
-                    path = ((Path) path).toFile();
-                }
-            } catch (IllegalArgumentException | UnsupportedOperationException e) {
-                // Ignore
-            }
-            if (path instanceof File) {
-                content.putFiles(Collections.singletonList((File) path));
-                text = path.toString();
-            }
-            if (isKindOfPath) {
-                content.putUrl(uri);
-            }
-            content.putString(text);
-        }
-        Clipboard.getSystemClipboard().setContent(content);
-    }
-
-    /**
      * Removes the given resource from the tree and closes it if it is a {@link DataStore}.
      * It is caller's responsibility to ensure that the given resource is not used anymore.
      * A resource can be removed only if it is a root. If the given resource is not in this
@@ -468,6 +424,13 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
+     * Reports an unexpected but non-fatal exception in the given method.
+     */
+    static void unexpectedException(final String method, final Exception e) {
+        Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), ResourceTree.class, method, e);
+    }
+
+    /**
      * The visual appearance of an {@link Item} in a tree. This call gets the cell text from a resource
      * by a call to {@link ResourceTree#getTitle(Resource, boolean)}. Cells are initially empty;
      * their content will be specified by {@link TreeView} after construction.
@@ -542,9 +505,7 @@ public class ResourceTree extends TreeView<Resource> {
                         menu = new ContextMenu();
                         final Resources localized = tree.localized();
                         final MenuItem[] items = new MenuItem[CLOSE + 1];
-                        items[COPY_PATH] = localized.menu(Resources.Keys.CopyFilePath, (e) -> {
-                            copy(getItem());
-                        });
+                        items[COPY_PATH] = localized.menu(Resources.Keys.CopyFilePath, new CopyAction(this));
                         items[CLOSE] = localized.menu(Resources.Keys.Close, (e) -> {
                             ((ResourceTree) getTreeView()).removeAndClose(getItem());
                         });
@@ -559,9 +520,9 @@ public class ResourceTree extends TreeView<Resource> {
                         path = URIDataStore.location(resource);
                     } catch (DataStoreException e) {
                         path = null;
-                        Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), URIDataStore.class, "location", e);
+                        unexpectedException("updateItem", e);
                     }
-                    menu.getItems().get(COPY_PATH).setDisable(!(IOUtilities.isKindOfPath(path) || path instanceof CharSequence));
+                    menu.getItems().get(COPY_PATH).setDisable(!IOUtilities.isKindOfPath(path));
                 }
                 setContextMenu(menu);
             }
