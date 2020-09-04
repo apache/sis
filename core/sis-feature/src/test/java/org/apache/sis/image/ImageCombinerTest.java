@@ -19,8 +19,11 @@ package org.apache.sis.image;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
+import java.awt.image.BufferedImage;
 import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.apache.sis.test.FeatureAssert.*;
@@ -30,10 +33,12 @@ import static org.apache.sis.test.FeatureAssert.*;
  * Tests {@link ImageCombiner}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
+@DependsOn(ResampledImageTest.class)
 public final strictfp class ImageCombinerTest extends ImageTestCase {
     /**
      * The image to add to the {@link ImageCombiner}.
@@ -186,5 +191,25 @@ public final strictfp class ImageCombinerTest extends ImageTestCase {
             { 420, +710, +711, +712, +810, +811, +812, +910, +911, +912,  622,  623},
             { 430,  431,  432,  433,  530,  531,  532,  533,  630,  631,  632,  633}
         });
+    }
+
+    /**
+     * Tests a resampling which requires a correct {@link ResampledImage#interpolationLimit(double, int)} computation.
+     * The source image has only one row while the target image has two rows. But the {@code toSource} transform has
+     * translation terms of -0.25 pixel, which causes the two destination rows to map to the single source row.
+     */
+    @Test
+    public void testResampleOneToTwo() {
+        final double[] inputs   = {3,    5,    1   };
+        final double[] expected = {3, 3, 5, 5, 1, 1};
+        final BufferedImage source = new BufferedImage(inputs.length,   1, BufferedImage.TYPE_BYTE_GRAY);
+        final BufferedImage target = new BufferedImage(expected.length, 2, BufferedImage.TYPE_BYTE_GRAY);
+        source.getRaster().setPixels(0, 0, inputs.length, 1, inputs);
+        final ImageCombiner combiner = new ImageCombiner(target);
+        combiner.setInterpolation(Interpolation.NEAREST);
+        combiner.resample(source, null, new AffineTransform2D(0.5, 0, 0, 0.5, -0.25, -0.25));
+        assertSame(target, combiner.result());
+        assertValuesEqual(source, 0, new double[][] {inputs});
+        assertValuesEqual(target, 0, new double[][] {expected, expected});
     }
 }

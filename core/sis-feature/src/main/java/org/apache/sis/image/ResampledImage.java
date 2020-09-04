@@ -132,6 +132,7 @@ public class ResampledImage extends ComputedImage {
      * parts of {@code toSourceSupport} results, without rounding.</p>
      *
      * @see #interpolationSupportOffset(int)
+     * @see Interpolation#interpolate(DoubleBuffer, int, double, double, double[], int)
      */
     private final MathTransform toSourceSupport;
 
@@ -246,7 +247,7 @@ public class ResampledImage extends ComputedImage {
          * to grab. We shift to the left because we need the coordinates of the first pixel.
          */
         Dimension s = interpolation.getSupportSize();
-        if (s.width > width || s.height > height) {
+        if (s.width > source.getWidth() || s.height > source.getHeight()) {
             interpolation = Interpolation.NEAREST;
             s = interpolation.getSupportSize();
         }
@@ -326,14 +327,54 @@ public class ResampledImage extends ComputedImage {
      * sample[-1] … sample[0] … (position where to interpolate) … sample[1] … sample[2]
      * </blockquote>
      *
+     * <h4>Nearest-neighbor special case</h4>
+     * The nearest-neighbor interpolation (identified by {@code span == 1}) is handled in a special way.
+     * The return value should be 0 according above contract, but this method returns 0.5 instead.
+     * This addition of a 0.5 offset allows the following substitution:
+     *
+     * {@preformat java
+     *     Math.round(x) ≈ (long) Math.floor(x + 0.5)
+     * }
+     *
+     * {@link Math#round(double)} is the desired behavior for nearest-neighbor interpolation, but the buffer given
+     * to {@link Interpolation#interpolate(DoubleBuffer, int, double, double, double[], int)} is filled with values
+     * at coordinates determined by {@link Math#floor(double)} semantic. Because the buffer has only one value,
+     * {@code interpolate(…)} has no way to look at neighbor values for the best match (contrarily to what other
+     * interpolation implicitly do, through mathematics). The 0.5 offset is necessary for compensating.
+     *
      * @param  span  the width or height of the support region for interpolations.
-     * @return relative index of the first pixel needed on the left or top sides, as a value ≤ 0.
+     * @return relative index of the first pixel needed on the left or top sides,
+     *         as a value ≤ 0 (except in nearest-neighbor special case).
      *
      * @see #toSourceSupport
+     * @see Interpolation#interpolate(DoubleBuffer, int, double, double, double[], int)
      */
     static double interpolationSupportOffset(final int span) {
         if (span <= 1) return 0.5;                  // Nearest-neighbor (special case).
-        return -Math.max(0, (span - 1) / 2);        // Round toward 0.
+        return -((span - 1) / 2);                   // Round toward 0.
+    }
+
+    /**
+     * Returns the upper limit (inclusive) where an interpolation is possible. The given {@code max} value is
+     * the maximal coordinate value (inclusive) traversed by {@link PixelIterator}. Note that this is not the
+     * image size because of margin required by interpolation methods.
+     *
+     * <p>Since interpolator will receive data at coordinates {@code max} to {@code max + span - 1} inclusive
+     * and since those coordinates are pixel centers, the points to interpolate are on the surface of a valid
+     * pixel until {@code (max + span - 1) + 0.5}. Consequently this method computes {@code max + span - 0.5}.
+     * An additional 0.5 offset is added in the special case of nearest-neighbor interpolation for consistency
+     * with {@link #interpolationSupportOffset(int)}.</p>
+     *
+     * @param  max   the maximal coordinate value, inclusive.
+     * @param  span  the width or height of the support region for interpolations.
+     * @return {@code max + span - 0.5} (except in nearest-neighbor special case).
+     *
+     * @see PixelIterator#getDomain()
+     */
+    private static double interpolationLimit(double max, final int span) {
+        max += span;
+        if (span > 1) max -= 0.5;           // Must be consistent with `interpolationSupportOffset(int)`.
+        return max;
     }
 
     /**
@@ -638,8 +679,8 @@ public class ResampledImage extends ComputedImage {
             ymin = domain.getMinY();
             xmax = domain.getMaxX() - 1;                // Iterator limit (inclusive) because of interpolation support.
             ymax = domain.getMaxY() - 1;
-            xlim = xmax + support.width  - 0.5;         // Limit of coordinates where we can interpolate.
-            ylim = ymax + support.height - 0.5;
+            xlim = interpolationLimit(xmax, support.width);     // Upper limit of coordinates where we can interpolate.
+            ylim = interpolationLimit(ymax, support.height);
             xoff = interpolationSupportOffset(support.width)  - 0.5;    // Always negative (or 0 for nearest-neighbor).
             yoff = interpolationSupportOffset(support.height) - 0.5;
         }
