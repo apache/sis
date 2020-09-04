@@ -95,6 +95,7 @@ import static org.apache.sis.internal.util.Constants.CRS84;
 public class DefaultGeographicCRS extends DefaultGeodeticCRS implements GeographicCRS {
     /**
      * Some codes in the EPSG namespace, in ascending order.
+     * Used for mapping to {@link #CRS_CODES}.
      */
     private static final short[] EPSG_CODES = {4267, 4269, 4326};
 
@@ -256,7 +257,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     final AbstractCRS createSameType(Map<String,?> properties, final CoordinateSystem cs) {
         final CoordinateSystemAxis axis = cs.getAxis(0);
         if (axis.getMinimumValue() == Longitude.MIN_VALUE &&
-            axis.getMaximumValue() == Longitude.MAX_VALUE) // For excluding the AxesConvention.POSITIVE_RANGE case.
+            axis.getMaximumValue() == Longitude.MAX_VALUE)    // For excluding the AxesConvention.POSITIVE_RANGE case.
         {
             for (final Identifier identifier : super.getIdentifiers()) {
                 if (EPSG.equals(identifier.getCodeSpace())) try {

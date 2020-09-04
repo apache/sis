@@ -1526,7 +1526,7 @@ public class GridGeometry implements LenientComparable, Serializable {
                 if (id != null) {
                     buffer.append(IdentifiedObjects.toString(id)).append(" — ");
                 }
-                buffer.append(crs.getName());
+                buffer.append(crs.getName().getCode());
                 writeNode();
             }
             /*

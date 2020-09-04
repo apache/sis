@@ -18,12 +18,14 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.ConcurrentModificationException;
 import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
@@ -35,6 +37,7 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.util.ComparisonMode;
@@ -78,7 +81,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.1
  *
  * @see AbstractCS
  * @see org.apache.sis.referencing.datum.AbstractDatum
@@ -336,7 +339,21 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             if (candidate == cs) {
                 crs = this;
             } else {
-                crs = createSameType(IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY), candidate);
+                /*
+                 * Copy properties (scope, domain of validity) except the identifier (e.g. "EPSG:4326")
+                 * because the modified CRS is no longer conform to the authoritative definition.
+                 * If name contains a namespace (e.g. "EPSG"), remove that namespace for the same reason.
+                 * For example "EPSG:WGS 84" will become simply "WGS 84".
+                 */
+                Map<String,?> properties = IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY);
+                Identifier name = getName();
+                if (name.getCodeSpace() != null || name.getAuthority() != null) {
+                    name = new NamedIdentifier(null, name.getCode());
+                    final Map<String,Object> copy = new HashMap<>(properties);
+                    copy.put(NAME_KEY, name);
+                    properties = copy;
+                }
+                crs = createSameType(properties, candidate);
             }
             crs = setCached(convention, crs);
         }
