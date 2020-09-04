@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing;
 import java.util.List;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -50,6 +51,16 @@ import org.apache.sis.util.logging.Logging;
  * CRS.findOperation(…)} because they introduce a discontinuity in coordinate transformations. Such discontinuities are
  * hurtless when transforming only a cloud of points, but produce undesirable artifacts when transforming geometries.
  * Callers need to invoke {@link #forTargetCRS forTargetCRS(…)} explicitly if discontinuities are acceptable.</p>
+ *
+ * <h2>Wraparound with more than one lap</h2>
+ * Current implementation assumes that data cover only one lap. For wraparound on the longitude axis, it means that
+ * raster or geometry data should be less than 360° width. Larger data exist, for example images with time varying
+ * together with longitude, in which case the points at 0°, 360°, 720°, <i>etc.</i> represent the same spatial location
+ * on Earth but at different times. It may not be possible to handle such cases with a wider wraparound range if the
+ * {@link MathTransform} chain includes a map projection. If we want to support "multiple laps" scenario in a future
+ * version, a strategy could be to define a new transform implementation which wraps a {@code WraparoundTransform}
+ * and the map projection together. That implementation would inspect the source coordinates before map projection
+ * for determining how many multiples of wraparound range to add to the output coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -92,6 +103,10 @@ public final class WraparoundTransform extends AbstractMathTransform {
      * The wraparound is applied on target coordinates and aims to clamp coordinate values inside the range of target
      * coordinate system axes.
      *
+     * <p>This method tries to avoid unnecessary wraparounds on a best-effort basis. It makes its decision based
+     * on an inspection of source and target CRS axes. For a method making decision based on a domain of use,
+     * see {@link #forDomainOfUse forDomainOfUse(…)} instead.</p>
+     *
      * @param  factory  the factory to use for creating math transforms.
      * @param  op       the coordinate operation for which to get the math transform.
      * @return the math transform for the given coordinate operation.
@@ -101,12 +116,42 @@ public final class WraparoundTransform extends AbstractMathTransform {
             throws FactoryException
     {
         MathTransform tr = op.getMathTransform();
-        final CoordinateSystem cs = op.getTargetCRS().getCoordinateSystem();
+        final CoordinateSystem targetCS = op.getTargetCRS().getCoordinateSystem();
         for (final int wraparoundDimension : CoordinateOperations.wrapAroundChanges(op)) {
-            final CoordinateSystemAxis axis = cs.getAxis(wraparoundDimension);
-            final MathTransform wraparound  = create(factory, cs.getDimension(), wraparoundDimension,
-                                                     axis.getMinimumValue(), axis.getMaximumValue());
-            tr = factory.createConcatenatedTransform(tr, wraparound);
+            tr = factory.createConcatenatedTransform(tr, create(factory, targetCS.getDimension(),
+                    wraparoundDimension, targetCS.getAxis(wraparoundDimension), Double.NaN));
+        }
+        return tr;
+    }
+
+    /**
+     * Returns the given transform augmented with a "wrap around" behavior if applicable.
+     * The wraparound is applied on target coordinates and aims to clamp coordinate values
+     * in a range centered on the given median.
+     *
+     * <p>The centered ranges may be different than the range declared by the coordinate system axes.
+     * In such case, the wraparound range applied by this method will have a translation compared to
+     * the range declared by the axis. This translation is useful when the target domain is known
+     * (e.g. when transforming a raster) and we want that output coordinates to be continuous
+     * in that domain, independently of axis ranges.</p>
+     *
+     * @param  factory   the factory to use for creating math transforms.
+     * @param  tr        the transform to augment with "wrap around" behavior.
+     * @param  targetCS  the target coordinate system.
+     * @param  median    the coordinates to put at the center of new ranges.
+     * @return the math transform with wraparound if needed.
+     * @throws FactoryException if an error occurred while creating the math transform.
+     */
+    public static MathTransform forDomainOfUse(final MathTransformFactory factory, MathTransform tr,
+            final CoordinateSystem targetCS, final DirectPosition median) throws FactoryException
+    {
+        final int dimension = targetCS.getDimension();
+        for (int i=0; i<dimension; i++) {
+            final CoordinateSystemAxis axis = targetCS.getAxis(i);
+            if (RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
+                tr = factory.createConcatenatedTransform(tr,
+                        create(factory, dimension, i, targetCS.getAxis(i), median.getOrdinate(i)));
+            }
         }
         return tr;
     }
@@ -117,22 +162,26 @@ public final class WraparoundTransform extends AbstractMathTransform {
      * @param  factory              the factory to use for creating math transforms.
      * @param  dimension            the number of source and target dimensions.
      * @param  wraparoundDimension  the dimension where "wrap around" behavior apply.
-     * @param  minimum              minimal value in the "wrap around" dimension.
-     * @param  maximum              maximal value in the "wrap around" dimension.
+     * @param  axis                 the coordinate system axis in the "wrap around" dimension.
+     * @param  median               the coordinate to put at the center of new range,
+     *                              or {@link Double#NaN} for standard center of given axis.
      * @return the math transform with "wrap around" behavior in the specified dimension.
      * @throws FactoryException in an error occurred while creating the math transform.
      */
     private static MathTransform create(final MathTransformFactory factory, final int dimension,
-            final int wraparoundDimension, final double minimum, final double maximum) throws FactoryException
+            final int wraparoundDimension, final CoordinateSystemAxis axis, final double median)
+            throws FactoryException
     {
         ArgumentChecks.ensureStrictlyPositive("dimension", dimension);
         ArgumentChecks.ensureBetween("wraparoundDimension", 0, dimension - 1, wraparoundDimension);
         NoninvertibleTransformException cause = null;
+        final double minimum = axis.getMinimumValue();
+        final double maximum = axis.getMaximumValue();
         final double span = maximum - minimum;
         if (span > 0 && span != Double.POSITIVE_INFINITY) {
             final MatrixSIS m = Matrices.createIdentity(dimension + 1);
             m.setElement(wraparoundDimension, wraparoundDimension, span);
-            m.setElement(wraparoundDimension, dimension, minimum);
+            m.setElement(wraparoundDimension, dimension, Double.isNaN(median) ? minimum : median - span/2);
             final MathTransform denormalize = factory.createAffineTransform(m);
             final WraparoundTransform wraparound = new WraparoundTransform(dimension, wraparoundDimension);
             try {
@@ -285,6 +334,7 @@ public final class WraparoundTransform extends AbstractMathTransform {
                 final MathTransform middle = steps.get(1);
                 Matrix matrix = MathTransforms.getMatrix(middle);
                 if (matrix != null) try {
+                    boolean modified = false;
                     MathTransform step2 = this;
                     final MathTransform after = movable(matrix, factory);
                     if (after != null) {
@@ -299,6 +349,7 @@ public final class WraparoundTransform extends AbstractMathTransform {
                         if (redim != null) {
                             step2 = factory.createConcatenatedTransform(redim, after);
                             matrix = remaining;
+                            modified = true;
                         }
                     }
                     /*
@@ -315,6 +366,7 @@ public final class WraparoundTransform extends AbstractMathTransform {
                             if (wb != null) {
                                 step1 = factory.createConcatenatedTransform(before, wb);
                                 matrix = remaining;
+                                modified = true;
                             }
                         }
                     }
@@ -322,9 +374,11 @@ public final class WraparoundTransform extends AbstractMathTransform {
                      * Done moving the linear operations that we can move.
                      * Put everything together.
                      */
-                    return factory.createConcatenatedTransform(
-                           factory.createConcatenatedTransform(step1,
-                           factory.createAffineTransform(matrix)), step2);
+                    if (modified) {
+                        return factory.createConcatenatedTransform(
+                               factory.createConcatenatedTransform(step1,
+                               factory.createAffineTransform(matrix)), step2);
+                    }
                 } catch (NoninvertibleTransformException e) {
                     // Should not happen. But if it is the case, just abandon the optimization effort.
                     Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), getClass(), "tryConcatenate", e);
