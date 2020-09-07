@@ -115,7 +115,7 @@ final class ResampledGridCoverage extends GridCoverage {
         }
         processor = processor.clone();
         processor.setFillValues(fillValues);
-        changeOfCRS.setAccuracy(processor);
+        changeOfCRS.setAccuracyOf(processor);
         imageProcessor = GridCoverageProcessor.unique(processor);
     }
 
@@ -232,7 +232,9 @@ final class ResampledGridCoverage extends GridCoverage {
          * transform is missing, we can not continue (we have no way to guess it).
          */
         final MathTransform sourceCornerToCRS = changeOfCRS.gridToCRS(PixelInCell.CELL_CORNER);
+        final MathTransform crsToSourceCorner = changeOfCRS.inverse(sourceCornerToCRS);
         final MathTransform sourceCenterToCRS = changeOfCRS.gridToCRS(PixelInCell.CELL_CENTER);
+        final MathTransform crsToSourceCenter = changeOfCRS.inverse(null);
         /*
          * Compute the transform from target grid to target CRS. This transform may be unspecified,
          * in which case we need to compute a default transform trying to preserve resolution at the
@@ -398,8 +400,8 @@ final class ResampledGridCoverage extends GridCoverage {
          */
         final MathTransform targetCornerToCRS = resampled.getGridToCRS(PixelInCell.CELL_CORNER);
         return new ResampledGridCoverage(source, resampled,
-                MathTransforms.concatenate(targetCornerToCRS, sourceCornerToCRS.inverse()),
-                MathTransforms.concatenate(targetCenterToCRS, sourceCenterToCRS.inverse()),
+                MathTransforms.concatenate(targetCornerToCRS, crsToSourceCorner),
+                MathTransforms.concatenate(targetCenterToCRS, crsToSourceCenter),
                 changeOfCRS, processor).specialize(isGeometryExplicit);
     }
 

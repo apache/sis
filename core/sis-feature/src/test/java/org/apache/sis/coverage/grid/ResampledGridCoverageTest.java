@@ -18,6 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.IntStream;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -39,6 +40,7 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -559,11 +561,46 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         final GridGeometry targetGrid = new GridGeometry(new GridExtent(4, 4), CELL_CENTER, gridToCRS, crs);
         final GridCoverage source     = new GridCoverage2D(sourceGrid, null, image);
         final GridCoverage target     = resample(source, targetGrid);
-        assertValuesEqual(target.render(null).getData(), 0, new int[][] {
+        assertValuesEqual(target.render(null), 0, new double[][] {
             {10, 12, 0, 0},
             {16, 14, 0, 0},
             { 0,  0, 0, 0},
             { 0,  0, 0, 0}
+        });
+    }
+
+    /**
+     * Tests resampling of an image associated to a coordinate system using the 0 to 360° range of longitude.
+     * The image crosses the 180° longitude.
+     *
+     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     */
+    @Test
+    public void testLongitude360() throws TransformException {
+        final int width = 32;
+        final int height = 3;
+        final GridGeometry source = new GridGeometry(
+                new GridExtent(width, height), CELL_CENTER,
+                new AffineTransform2D(1, 0, 0, -1, 164, 0),
+                HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE));
+        /*
+         * Above grid extent is [164 … 195]° in longitude. The part that exceed 180° is equivalent to
+         * a [-180 … -165]° range. The extent below requests only a part of it, namely [-173 … -167]°.
+         * The first pixel of resampled image is the 23th pixel of original image.
+         */
+        final GridGeometry target = new GridGeometry(
+                new GridExtent(7, height), CELL_CENTER,
+                new AffineTransform2D(1, 0, 0, -1, -173, 0),
+                HardCodedCRS.WGS84);
+
+        final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        image.getRaster().setPixels(0, 0, width, height, IntStream.range(100, 100 + width*height).toArray());
+        final GridCoverage2D coverage = new GridCoverage2D(source, null, image);
+        final GridCoverage resampled = resample(coverage, target);
+        assertValuesEqual(resampled.render(null), 0, new double[][] {
+            {123, 124, 125, 126, 127, 128, 129},
+            {155, 156, 157, 158, 159, 160, 161},
+            {187, 188, 189, 190, 191, 192, 193}
         });
     }
 

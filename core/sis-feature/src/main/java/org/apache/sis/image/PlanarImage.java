@@ -574,7 +574,7 @@ public abstract class PlanarImage implements RenderedImage {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(100).append(Classes.getShortClassName(this))
-                .append('[').append(getWidth()).append(" × ").append(getHeight()).append(" pixels");
+                .append("[(").append(getWidth()).append(" × ").append(getHeight()).append(") pixels");
         final SampleModel sm = getSampleModel();
         if (sm != null) {
             buffer.append(" × ").append(sm.getNumBands()).append(" bands");
