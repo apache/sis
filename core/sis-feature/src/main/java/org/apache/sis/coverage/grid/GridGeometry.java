@@ -1199,6 +1199,35 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
+     * Creates a transform from cell coordinates in this grid to cell coordinates in the given grid.
+     * The returned transform handles change of Coordinate Reference System and wraparound axes
+     * (e.g. longitude axis crossing the ±180° meridian) if applicable.
+     *
+     * <p><b>Note:</b> the transform created by this method may be non-invertible.</p>
+     *
+     * @param  target  the grid which will be the target of returned transform.
+     * @param  anchor  {@linkplain PixelInCell#CELL_CENTER Cell center} for OGC conventions or
+     *                 {@linkplain PixelInCell#CELL_CORNER cell corner} for Java2D/JAI conventions.
+     * @return transform from cell coordinates in this grid to cell coordinates in the given grid.
+     * @throws TransformException if the math transform can not be created.
+     *
+     * @since 1.1
+     */
+    public MathTransform createTransformTo(final GridGeometry target, final PixelInCell anchor) throws TransformException {
+        ArgumentChecks.ensureNonNull("target", target);
+        ArgumentChecks.ensureNonNull("anchor", anchor);
+        final CoordinateOperationFinder finder = new CoordinateOperationFinder(target, this);
+        MathTransform tr;
+        try {
+            tr = finder.gridToCRS(anchor);
+            tr = finder.inverse(tr);
+        } catch (FactoryException e) {
+            throw new TransformException(e);
+        }
+        return MathTransforms.concatenate(tr, target.getGridToCRS(anchor).inverse());
+    }
+
+    /**
      * Returns a hash value for this grid geometry. This value needs not to remain
      * consistent between different implementations of the same class.
      */
