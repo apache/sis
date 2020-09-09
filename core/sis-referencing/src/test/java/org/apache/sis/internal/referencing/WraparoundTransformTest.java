@@ -45,6 +45,26 @@ import static org.opengis.test.Assert.*;
  */
 public final strictfp class WraparoundTransformTest extends TestCase {
     /**
+     * Tests {@link WraparoundTransform} cache.
+     */
+    @Test
+    public void testCache() {
+        final WraparoundTransform t1, t2, t3, t4;
+        assertSame   (WraparoundTransform.create(3, 0), t1 = WraparoundTransform.create(3, 0));
+        assertNotSame(WraparoundTransform.create(3, 0), t2 = WraparoundTransform.create(3, 1));
+        assertNotSame(WraparoundTransform.create(3, 0), t3 = WraparoundTransform.create(2, 0));
+        assertNotSame(WraparoundTransform.create(3, 0), t4 = WraparoundTransform.create(3, 2));
+        assertEquals(3, t1.getSourceDimensions());
+        assertEquals(3, t2.getSourceDimensions());
+        assertEquals(2, t3.getSourceDimensions());
+        assertEquals(3, t4.getSourceDimensions());
+        assertEquals(0, t1.wraparoundDimension);
+        assertEquals(1, t2.wraparoundDimension);
+        assertEquals(0, t3.wraparoundDimension);
+        assertEquals(2, t4.wraparoundDimension);
+    }
+
+    /**
      * Tests wraparound on one axis.
      *
      * @throws FactoryException if the transform can not be created.

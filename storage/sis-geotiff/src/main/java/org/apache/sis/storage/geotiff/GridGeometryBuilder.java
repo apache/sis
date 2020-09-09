@@ -46,7 +46,7 @@ import org.apache.sis.math.Vector;
  * The coordinate reference system part is built by {@link CRSBuilder}.
  *
  * <h2>Pixel center versus pixel corner</h2>
- * The policy about whether the conversion map pixel corner or pixel center if GeoTIFF files does not seem
+ * The policy about whether the conversion maps pixel corner or pixel center in GeoTIFF files does not seem
  * totally clear. But the practice at least with GDAL seems to consider the following as equivalent:
  *
  * {@preformat text

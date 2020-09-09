@@ -17,6 +17,8 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.List;
+import java.util.function.Supplier;
+import java.util.function.IntToDoubleFunction;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.RangeMeaning;
@@ -27,6 +29,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -39,6 +42,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
@@ -69,6 +73,38 @@ import org.apache.sis.util.logging.Logging;
  */
 public final class WraparoundTransform extends AbstractMathTransform {
     /**
+     * Number of dimensions of the first cached {@link WraparoundTransform} instance.
+     */
+    private static final int FIRST_CACHED_DIMENSION = 2;
+
+    /**
+     * Frequently used {@link WraparoundTransform} instances.
+     * The {@link #dimension} value ranges from {@value #FIRST_CACHED_DIMENSION} to 4 inclusive,
+     * and the {@link #wraparoundDimension} value alternates between 0 and 1.
+     */
+    private static final WraparoundTransform[] CACHE = new WraparoundTransform[6];
+    static {
+        for (int i=0; i<CACHE.length; i++) {
+            final int dimension = (i >>> 1) + FIRST_CACHED_DIMENSION;
+            CACHE[i] = new WraparoundTransform(dimension, i & 1);
+        }
+    }
+
+    /**
+     * Returns a transform with a wraparound behavior in the given dimension.
+     * Input and output values in the wraparound dimension shall be normalized in the [0 … 1] range.
+     */
+    static WraparoundTransform create(final int dimension, final int wraparoundDimension) {
+        if ((wraparoundDimension & ~1) == 0) {
+            final int i = ((dimension - FIRST_CACHED_DIMENSION) << 1) | wraparoundDimension;
+            if (i >= 0 && i < CACHE.length) {
+                return CACHE[i];
+            }
+        }
+        return new WraparoundTransform(dimension, wraparoundDimension);
+    }
+
+    /**
      * The dimension of source and target coordinates.
      */
     private final int dimension;
@@ -95,7 +131,7 @@ public final class WraparoundTransform extends AbstractMathTransform {
     private WraparoundTransform redim(final int n) {
         if (n == dimension) return this;
         if (n >= wraparoundDimension) return null;
-        return new WraparoundTransform(n, wraparoundDimension);
+        return create(n, wraparoundDimension);
     }
 
     /**
@@ -158,6 +194,8 @@ public final class WraparoundTransform extends AbstractMathTransform {
 
     /**
      * Creates a transform with a "wrap around" behavior in the given dimension.
+     * The wraparound is implemented by a concatenation of affine transform before
+     * and after the {@link WraparoundTransform} instance.
      *
      * @param  factory              the factory to use for creating math transforms.
      * @param  dimension            the number of source and target dimensions.
@@ -183,7 +221,7 @@ public final class WraparoundTransform extends AbstractMathTransform {
             m.setElement(wraparoundDimension, wraparoundDimension, span);
             m.setElement(wraparoundDimension, dimension, Double.isNaN(median) ? minimum : median - span/2);
             final MathTransform denormalize = factory.createAffineTransform(m);
-            final WraparoundTransform wraparound = new WraparoundTransform(dimension, wraparoundDimension);
+            final WraparoundTransform wraparound = create(dimension, wraparoundDimension);
             try {
                 return factory.createConcatenatedTransform(denormalize.inverse(),
                        factory.createConcatenatedTransform(wraparound, denormalize));
@@ -193,6 +231,79 @@ public final class WraparoundTransform extends AbstractMathTransform {
             }
         }
         throw new InvalidGeodeticParameterException(Errors.format(Errors.Keys.IllegalRange_2, minimum, maximum), cause);
+    }
+
+    /**
+     * Verifies whether wraparound is needed for a "CRS to grid" transform.
+     * This method converts coordinates of all corners of a grid to an arbitrary CRS, then back to the grid.
+     * The forward and backward transforms are not exactly the inverse of each other: the forward transform
+     * applies wraparounds while the backward transform does not. By checking whether or not the roundtrip
+     * result is equal to the original coordinates, we determine if wraparound is necessary or not.
+     *
+     * <p>The coordinates to test are provided by {@code gridExtent} using the following convention.
+     * For function argument {@code int} <var>i</var>:</p>
+     * <ul>
+     *   <li>If <var>i</var> ≥ 0, return the upper value at dimension {@code i}.</li>
+     *   <li>If <var>i</var> &lt; 0, return the lower value at dimension {@code ~i} (tild operator, not minus).</li>
+     * </ul>
+     *
+     * @param  gridToCRS       a transform to an arbitrary CRS with handling of wraparound axes.
+     * @param  crsToGrid       inverse of {@code gridToCRS} but without handling of wraparound axes.
+     * @param  withWraparound  provider of a transform equivalent to {@code crsToGrid} but with wraparound applied.
+     * @param  gridExtent      provider of grid corner coordinates (see above javadoc).
+     * @return whether wraparound transform seems needed.
+     * @throws TransformException if an error occurred while transforming coordinates.
+     */
+    public static boolean isNeeded(final MathTransform gridToCRS, final MathTransform crsToGrid,
+            final Supplier<MathTransform> withWraparound, final IntToDoubleFunction gridExtent)
+            throws TransformException
+    {
+        MathTransform  watr = null;                     // Transform with wraparound (fetched only if needed).
+        final int dimension = gridToCRS.getSourceDimensions();
+        final double[]  src = new double[dimension];    // Coordinates of a corner.
+        final double[]  nwp = new double[dimension];    // Roundtrip result without wraparound.
+        final double[]  tgt = new double[Math.max(gridToCRS.getTargetDimensions(), dimension)];
+        long  maskOfUppers  = Numerics.bitmask(dimension);
+        long  maskOfChanges = 0;
+        do {
+            maskOfChanges ^= --maskOfUppers;            // Source coordinates that changed since last iteration.
+            do {
+                final int i = Long.numberOfTrailingZeros(maskOfChanges);
+                final long bit = 1L << i;
+                src[i] = gridExtent.applyAsDouble((maskOfUppers & bit) == 0 ? ~i : i);
+                maskOfChanges &= ~bit;
+            } while (maskOfChanges != 0);               // Iterate only over the coordinates that changed.
+            maskOfChanges = maskOfUppers;
+            /*
+             * Transform corner from the source extent to the destination CRS, then back to source grid coordinates.
+             * We do not concatenate the forward and inverse transforms because we do not want MathTransformFactory
+             * to simplify the transformation chain (e.g. replacing "Mercator → Inverse of Mercator" by an identity
+             * transform), because such simplification would erase wraparound effects.
+             */
+            boolean watrApplied = false;
+            gridToCRS.transform(src, 0, tgt, 0, 1);
+            crsToGrid.transform(tgt, 0, nwp, 0, 1);
+            for (int i=0; i<dimension; i++) {
+                final double error = Math.abs(nwp[i] - src[i]);
+                if (!(error <= 1)) {                                // Use `!` for catching NaN.
+                    if (!watrApplied) try {
+                        watrApplied = true;
+                        if (watr == null) watr = withWraparound.get();
+                        watr.transform(tgt, 0, tgt, 0, 1);
+                    } catch (BackingStoreException e) {
+                        throw e.unwrapOrRethrow(TransformException.class);
+                    }
+                    /*
+                     * Do not consider NaN in `tgt` as a need for wraparound because NaN values
+                     * occur when an operation between two CRS reduces the number of dimensions.
+                     */
+                    if (Math.abs(tgt[i] - src[i]) < (error <= Double.MAX_VALUE ? error : 1)) {
+                        return true;
+                    }
+                }
+            }
+        } while (maskOfUppers != 0);
+        return false;
     }
 
     /**

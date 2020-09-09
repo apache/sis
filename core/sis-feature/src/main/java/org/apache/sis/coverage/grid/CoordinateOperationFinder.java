@@ -32,7 +32,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.WraparoundTransform;
@@ -44,19 +43,34 @@ import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
- * Finds a transform from points expressed in the CRS of a source coverage to points in the CRS of a target coverage.
+ * Finds a transform from grid cells in a source coverage to geospatial positions in the CRS of a target coverage.
  * This class differs from {@link CRS#findOperation CRS#findOperation(…)} because of the gridded aspect of inputs.
  * {@linkplain GridGeometry grid geometries} give more information about how referencing is applied on datasets.
- * With them, we can detect dimensions where target coordinates are constrained to constant values
- * because the {@linkplain GridExtent#getSize(int) grid size} is only one cell in those dimensions.
- * This is an important difference because it allows us to find operations normally impossible,
- * where we still can produce an operation to a target CRS even if some dimensions have no corresponding source CRS.
+ * With them, this class provides three additional benefits:
  *
- * <p><b>Note:</b> this class does not provide complete chain of transformation from grid to grid.
- * It provides only the operation from the CRS of source to the CRS of destination.</p>
+ * <ul class="verbose">
+ *   <li>Detect dimensions where target coordinates are constrained to constant values because
+ *     the {@linkplain GridExtent#getSize(int) grid size} is only one cell in those dimensions.
+ *     This is an important because it makes possible to find operations normally impossible:
+ *     we can still produce an operation to a target CRS even if some dimensions have no corresponding
+ *     source CRS.</li>
+ *
+ *   <li>Detect how to handle wraparound axes. For example if a raster spans 150° to 200° of longitude,
+ *     this class understands that -170° of longitude should be translated to 190° for thar particular
+ *     raster. This will work even if the minimum and maximum values declared in the longitude axis do
+ *     not match that range.</li>
+ *
+ *   <li>Use the area of interest and grid resolution for refining the coordinate operation between two CRS.</li>
+ * </ul>
+ *
+ * <b>Note:</b> this class does not provide the complete chain of operations from grid to grid.
+ * It provides only the operation from <em>cell indices</em> in source grid to <em>coordinates in the CRS</em>
+ * of destination grid. Callers must add the last step (conversion from target CRS to cell indices) themselves.
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -78,26 +92,51 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     /**
      * The target coordinate values, computed only if needed. This is computed by {@link #get()}, which is
      * itself invoked indirectly by {@link org.apache.sis.referencing.operation.CoordinateOperationFinder}.
-     * The value is cached in case {@code get()} is invoked multiple times during the same finder execution.
+     * The value is cached in case {@code get()} is invoked many times during the same finder execution.
+     *
+     * @see #get()
      */
     private double[] coordinates;
 
     /**
      * The coordinate operation from source to target CRS, computed when first needed.
+     *
+     * @see #gridToCRS(PixelInCell)
      */
     private CoordinateOperation operation;
 
     /**
      * The {@link #operation} transform together with {@link WraparoundTransform} if needed.
      * The wraparound is used for handling images crossing the anti-meridian.
+     *
+     * @see #gridToCRS(PixelInCell)
      */
     private MathTransform forwardOp;
 
     /**
      * Inverse of {@link #operation} transform together with {@link WraparoundTransform} if needed.
      * The wraparound is used for handling images crossing the anti-meridian.
+     *
+     * <p>Contrarily to other {@link MathTransform} fields, determination of this {@code inverseOp}
+     * transform should make an effort for checking if wraparound is really needed. This is because
+     * {@code inverseOp} will be used much more extensively (for every pixels) than other transforms.</p>
+     *
+     * @see #isWraparoundNeeded
+     * @see #isWraparoundApplied
+     * @see #inverse(MathTransform)
      */
     private MathTransform inverseOp;
+
+    /**
+     * Transform from the target CRS to the source grid, with {@link WraparoundTransform} applied if needed.
+     * This is the concatenation of {@code inverseOp} with inverse of {@link #source} "grid to CRS", except
+     * for more conservative application of wraparound (i.e. determination of this transform should not do
+     * the simplification effort mentioned in {@link #inverseOp}).
+     *
+     * @see #inverse(MathTransform)
+     * @see #applyWraparound(MathTransform)
+     */
+    private MathTransform crsToGrid;
 
     /**
      * Whether {@link #inverseOp} needs to include a {@link WraparoundTransform} step. We do this check
@@ -107,6 +146,20 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * this {@code isWraparoundNeeded} flag.
      */
     private boolean isWraparoundNeeded;
+
+    /**
+     * Whether {@link WraparoundTransform} has been applied on {@link #inverseOp}. This field complements
+     * {@link #isWraparoundNeeded} because a delay may exist between the time we detected that wraparound
+     * is needed and the time we added the necessary operation steps.
+     *
+     * <p>Note that despite this field name, a {@code true} value does not mean that {@link #inverseOp}
+     * and {@link #crsToGrid} really contains some {@link WraparoundTransform} steps. It only means that
+     * {@link WraparoundTransform#forDomainOfUse WraparoundTransform.forDomainOfUse(…)} has been invoked.
+     * That method may have decided to not insert any wraparound steps.</p>
+     *
+     * @see #applyWraparound(MathTransform)
+     */
+    private boolean isWraparoundApplied;
 
     /**
      * The factory to use for {@link MathTransform} creations. For now this is fixed to SIS implementation.
@@ -155,26 +208,33 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     }
 
     /**
-     * Computes the transform from the grid coordinates of the source to geospatial coordinates of the target.
+     * Computes the transform from “grid coordinates of the source” to “geospatial coordinates of the target”.
      * It may be the identity operation. We try to take envelopes in account because the operation choice may
      * depend on the geographic area.
      *
-     * <p>The transform returned by this method always apply wraparounds on every axes having wraparound range.
-     * This method does not check if wraparounds actually happen. This is okay because this transform is used
-     * only for transforming envelopes; it is not used for transforming pixel coordinates. By contrast pixel
-     * transform (computed by {@link #inverse(MathTransform)}) will need to perform more extensive check.</p>
+     * <p>The transform returned by this method applies wraparound checks systematically on every axes having
+     * wraparound range. This method does not verify whether those checks are needed (i.e. whether wraparound
+     * can possibly happen). This is okay because this transform is used only for transforming envelopes;
+     * it is not used for transforming pixel coordinates.<p>
+     *
+     * <h4>Implementation note</h4>
+     * After invocation of this method, the following fields are valid:
+     * <ul>
+     *   <li>{@link #operation} — cached for {@link #inverse(MathTransform)} usage.</li>
+     *   <li>{@link #forwardOp} — cached for next invocation of this {@code gridToCRS(…)} method.</li>
+     * </ul>
      *
      * @param  anchor  whether the operation is between cell centers or cell corners.
-     * @return operation from source CRS to target CRS, or {@code null} if CRS are unspecified or equivalent.
+     * @return operation from source grid indices to target geospatial coordinates.
      * @throws FactoryException if no operation can be found between the source and target CRS.
      * @throws TransformException if some coordinates can not be transformed to the specified target.
      * @throws IncompleteGridGeometryException if required CRS or a "grid to CRS" information is missing.
      */
     final MathTransform gridToCRS(final PixelInCell anchor) throws FactoryException, TransformException {
         /*
-         * If `coordinates` is non-null, it means that the `get()` method has been invoked during previous
-         * call to this `gridToCRS(…)` method, which implies that `operation` depends on the `anchor` value.
-         * In such case we need to discard the previous `operation` value and recompute it.
+         * If `coordinates` is non-null, it means that `CoordinateOperationContext.getConstantCoordinates()`
+         * has been invoked during previous `gridToCRS(…)` execution, which implies that `operation` depends
+         * on the`anchor` value. In such case we will need to recompute all fields that depend on `operation`.
          */
         this.anchor = anchor;
         if (coordinates != null) {
@@ -182,6 +242,8 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
             operation   = null;
             forwardOp   = null;
             inverseOp   = null;
+            crsToGrid   = null;
+            // Do not clear `isWraparoundNeeded`; its value is still valid.
         }
         /*
          * Get the operation performing the change of CRS. If more than one operation is defined for
@@ -207,13 +269,18 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
                          * the check for wraparound axes, which is necessary even if the transform is identity.
                          */
                         DefaultGeographicBoundingBox areaOfInterest = null;
-                        if (sourceEnvelope != null || targetEnvelope != null) {
+                        if (sourceEnvelope != null || targetEnvelope != null) try {
                             areaOfInterest = new DefaultGeographicBoundingBox();
                             areaOfInterest.setBounds(targetEnvelope != null ? targetEnvelope : sourceEnvelope);
+                        } catch (TransformException e) {
+                            areaOfInterest = null;
+                            recoverableException("gridToCRS", e);
                         }
                         operation = CRS.findOperation(sourceCRS, target.getCoordinateReferenceSystem(), areaOfInterest);
                     }
                 }
+            } catch (BackingStoreException e) {                         // May be thrown by getConstantCoordinates().
+                throw e.unwrapOrRethrow(TransformException.class);
             } finally {
                 CoordinateOperations.CONSTANT_COORDINATES.remove();
             }
@@ -252,71 +319,106 @@ wraparound: if (mayRequireWraparound(cs)) {
      * This is equivalent to invoking {@link MathTransform#inverse()} on the transform returned by
      * {@link #gridToCRS(PixelInCell)}, except in the way wraparounds are handled.
      *
-     * <p>The {@code gridToCRS} argument is the value returned by last call to {@link #gridToCRS(PixelInCell)}.
-     * That transform is used for testing whether wraparound is needed for calculation of source coordinates.
-     * This method performs a more extensive check than {@code gridToCRS(…)} because
-     * the transform returned by {@code inverse(…)} will be applied on every pixels of destination image.
-     * The argument should be non-null only the first time that this {@code inverse(…)} method is invoked,
-     * preferably with a transform mapping {@link PixelInCell#CELL_CORNER}.
-     * Subsequent invocations will use the {@link #isWraparoundNeeded} status determined by first invocation.</p>
+     * <p>The {@code gridToCRS} argument controls whether to perform a more extensive check of wraparound occurrence.
+     * If {@code null}, the result of last check is reused. If non-null, then it shall be the value returned by last
+     * call to {@link #gridToCRS(PixelInCell)}, preferably with a transform mapping {@link PixelInCell#CELL_CORNER}.
+     * The argument should be non-null the first time that {@code inverse(…)} is invoked and {@code null} next time.</p>
+     *
+     * @param  gridToCRS  result of previous call to {@link #gridToCRS(PixelInCell)}, or {@code null}
+     *                    for reusing the {@link #isWraparoundNeeded} result of previous invocation.
+     * @return operation from target geospatial coordinates to source grid indices.
+     * @throws FactoryException if some transform steps can not be concatenated.
+     * @throws TransformException if some coordinates can not be transformed.
      */
     final MathTransform inverse(final MathTransform gridToCRS) throws FactoryException, TransformException {
         final MathTransform tr = source.getGridToCRS(anchor).inverse();
         if (operation == null) {
             return tr;
         }
-        if (inverseOp == null) {
-            inverseOp = operation.getMathTransform().inverse();
-check:      if (gridToCRS != null) {
-                /*
-                 * Transform all corners of source extent to the destination CRS, then back to source grid coordinates.
-                 * We do not concatenate the forward and inverse transforms because we do not want MathTransformFactory
-                 * to simplify the transformation chain (e.g. replacing "Mercator → Inverse of Mercator" by an identity
-                 * transform), because such simplification would erase wraparound effects.
-                 */
-                final MathTransform crsToGrid = mtFactory.createConcatenatedTransform(inverseOp, tr);
-                final GridExtent extent = source.getExtent();
-                final int dimension = extent.getDimension();
-                final double[] src = new double[dimension];
-                final double[] tgt = new double[Math.max(dimension, gridToCRS.getTargetDimensions())];
-                for (long maskOfUppers = Numerics.bitmask(dimension); --maskOfUppers != 0;) {
-                    long bit = 1;
-                    for (int i=0; i<dimension; i++) {
-                        src[i] = (maskOfUppers & bit) != 0 ? extent.getHigh(i) + 1d : extent.getLow(i);
-                        bit <<= 1;
-                    }
-                    gridToCRS.transform(src, 0, tgt, 0, 1);
-                    crsToGrid.transform(tgt, 0, tgt, 0, 1);
-                    for (int i=0; i<dimension; i++) {
-                        /*
-                         * Do not consider NaN as a need for wraparound because NaN values occur when
-                         * the operation between the two CRS reduce the number of dimensions.
-                         *
-                         * TODO: we may require a more robust check for NaN values.
-                         */
-                        if (Math.abs(tgt[i] - src[i]) > 1) {
-                            isWraparoundNeeded = true;
-                            break check;
-                        }
-                    }
-                }
-                return crsToGrid;
-            }
+        if (inverseOp != null) {
+            // Here, `inverseOp` contains the wraparound step if needed.
+            return mtFactory.createConcatenatedTransform(inverseOp, tr);
+        }
+        /*
+         * Need to compute transform with wraparound checks, but contrarily to `gridToCRS(…)` we do not want
+         * `WraparoundTransform` to be systematically inserted. This is for performance reasons, because the
+         * transform returned by this method will be applied on every pixels of destination image.  We start
+         * with transforms without wraparound, and modify those fields later depending on whether wraparound
+         * appears to be necessary or not.
+         */
+        final MathTransform inverseNoWrap   = operation.getMathTransform().inverse();
+        final MathTransform crsToGridNoWrap = mtFactory.createConcatenatedTransform(inverseNoWrap, tr);
+        inverseOp = inverseNoWrap;
+        crsToGrid = crsToGridNoWrap;
+        isWraparoundApplied = false;
+check:  if (gridToCRS != null) try {
             /*
-             * Potentially append a wraparound if we determined (either in this method invocation
-             * or in a previous invocation of this method) that it is necessary.
+             * We will do a more extensive check by converting all corners of source grid to the target CRS,
+             * then convert back to the source grid and see if coordinates match. Only if coordinates do not
+             * match, `WraparoundTransform.isNeeded(…)` will request a `crsToGrid` transform which includes
+             * wraparound steps in order to check if it improves the results. By using a `Supplier`,
+             * we avoid creating `WraparoundTransform` in the common case where it is not needed.
              */
-            if (isWraparoundNeeded) {
-                final CoordinateSystem cs = operation.getSourceCRS().getCoordinateSystem();
-                if (mayRequireWraparound(cs)) {
-                    final DirectPosition median = median(source);
-                    if (median != null) {
-                        inverseOp = WraparoundTransform.forDomainOfUse(mtFactory, inverseOp, cs, median);
-                    }
+            final Supplier<MathTransform> withWraparound = () -> {
+                try {
+                    return applyWraparound(tr);
+                } catch (FactoryException | TransformException e) {
+                    throw new BackingStoreException(e);
+                }
+            };
+            final GridExtent extent = source.getExtent();
+            final boolean isCorner = (anchor == PixelInCell.CELL_CORNER);
+            isWraparoundNeeded = WraparoundTransform.isNeeded(gridToCRS, crsToGridNoWrap, withWraparound, (dim) -> {
+                long cc;                                          // Coordinate of a corner.
+                if (dim < 0) {
+                    cc = extent.getLow(~dim);
+                } else {
+                    cc = extent.getHigh(dim);                     // Inclusive.
+                    if (isCorner && cc != Long.MAX_VALUE) cc++;   // Make exclusive.
+                }
+                return cc;
+            });
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
+            // TransformException is handled in `WraparoundTransform.isNeeded(…)` instead of here.
+        }
+        /*
+         * At this point we determined whether wraparound is needed. The `inverseOp` and `crsToGrid` fields
+         * may have been updated as part of this determination process, but not necessarily. If wraparounds
+         * are needed, reuse available calculation results (completing them if needed).  Otherwise rollback
+         * any change that `applyWraparound(…)` may have done to `inverseOp` and `crsToGrid`.
+         */
+        if (isWraparoundNeeded) {
+            return applyWraparound(tr);
+        } else {
+            inverseOp = inverseNoWrap;
+            crsToGrid = crsToGridNoWrap;
+            return crsToGridNoWrap;
+        }
+    }
+
+    /**
+     * If not already done, inserts {@link WraparoundTransform} steps into {@link #inverseOp} and {@link #crsToGrid}
+     * transforms. The transform from geospatial target coordinates to source grid indices is returned for convenience.
+     *
+     * @param  tr  value of {@code source.getGridToCRS(anchor).inverse()}.
+     * @return transform from geospatial target coordinates to source grid indices.
+     * @throws FactoryException if some transform steps can not be concatenated.
+     * @throws TransformException if some coordinates can not be transformed.
+     */
+    private MathTransform applyWraparound(final MathTransform tr) throws FactoryException, TransformException {
+        if (!isWraparoundApplied) {
+            isWraparoundApplied = true;
+            final CoordinateSystem cs = operation.getSourceCRS().getCoordinateSystem();
+            if (mayRequireWraparound(cs)) {
+                final DirectPosition median = median(source);
+                if (median != null) {
+                    inverseOp = WraparoundTransform.forDomainOfUse(mtFactory, inverseOp, cs, median);
+                    crsToGrid = mtFactory.createConcatenatedTransform(inverseOp, tr);
                 }
             }
         }
-        return mtFactory.createConcatenatedTransform(inverseOp, tr);
+        return crsToGrid;
     }
 
     /**
@@ -415,5 +517,15 @@ check:      if (gridToCRS != null) {
             }
             processor.setPositionalAccuracyHints(hints);                        // Null elements will be ignored.
         }
+    }
+
+    /**
+     * Invoked when an ignorable exception occurred.
+     *
+     * @param  caller  the method where the exception occurred.
+     * @param  e       the ignorable exception.
+     */
+    private static void recoverableException(final String caller, final Exception e) {
+        Logging.recoverableException(Logging.getLogger(Modules.RASTER), CoordinateOperationFinder.class, caller, e);
     }
 }
