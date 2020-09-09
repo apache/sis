@@ -34,8 +34,9 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
@@ -144,6 +145,15 @@ public final class CoordinateOperations extends SystemListener {
             factory = c = DefaultFactories.forBuildin(CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
         }
         return c;
+    }
+
+    /**
+     * Returns the SIS implementation of {@link MathTransformFactory}.
+     *
+     * @return SIS implementation of transform factory.
+     */
+    public static DefaultMathTransformFactory factoryMT() {
+        return DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class);
     }
 
     /**

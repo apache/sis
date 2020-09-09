@@ -32,7 +32,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.WraparoundTransform;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -178,8 +177,7 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     CoordinateOperationFinder(final GridGeometry source, final GridGeometry target) {
         this.source = source;
         this.target = target;
-        mtFactory = DefaultFactories.forBuildin(MathTransformFactory.class,
-                org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.class).caching(false);
+        mtFactory = CoordinateOperations.factoryMT().caching(false);
     }
 
     /**

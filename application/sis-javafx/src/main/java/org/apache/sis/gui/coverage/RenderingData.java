@@ -146,7 +146,15 @@ final class RenderingData implements Cloneable {
      * objective CRS}. This is {@link GridGeometry#getGridToCRS(PixelInCell)} on {@link #dataGeometry}
      * concatenated with {@link #changeOfCRS}. May be {@code null} if not yet computed.
      */
-    private MathTransform cornerToObjective, centerToObjective;
+    private MathTransform cornerToObjective;
+
+    /**
+     * The conversion from {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS} to {@link #data}
+     * pixel coordinates. This is the inverse of {@link #changeOfCRS} concatenated with the inverse of
+     * {@link GridGeometry#getGridToCRS(PixelInCell)} on {@link #dataGeometry}.
+     * May be {@code null} if not yet computed.
+     */
+    private MathTransform objectiveToCenter;
 
     /**
      * The inverse of the {@linkplain CoverageCanvas#objectiveToDisplay objective to display} transform which was
@@ -218,7 +226,7 @@ final class RenderingData implements Cloneable {
     private void clearCRS() {
         changeOfCRS       = null;
         cornerToObjective = null;
-        centerToObjective = null;
+        objectiveToCenter = null;
     }
 
     /**
@@ -293,13 +301,14 @@ final class RenderingData implements Cloneable {
                 // Leave `changeOfCRS` to null.
             }
         }
-        if (cornerToObjective == null || centerToObjective == null) {
+        if (cornerToObjective == null || objectiveToCenter == null) {
             cornerToObjective = dataGeometry.getGridToCRS(PixelInCell.CELL_CORNER);
-            centerToObjective = dataGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
+            objectiveToCenter = dataGeometry.getGridToCRS(PixelInCell.CELL_CENTER).inverse();
             if (changeOfCRS != null) {
-                final MathTransform tr = changeOfCRS.getMathTransform();
-                cornerToObjective = MathTransforms.concatenate(cornerToObjective, tr);
-                centerToObjective = MathTransforms.concatenate(centerToObjective, tr);
+                MathTransform forward = changeOfCRS.getMathTransform();
+                MathTransform inverse = forward.inverse();
+                cornerToObjective = MathTransforms.concatenate(cornerToObjective, forward);
+                objectiveToCenter = MathTransforms.concatenate(inverse, objectiveToCenter);
             }
         }
         /*
@@ -313,7 +322,7 @@ final class RenderingData implements Cloneable {
         final LinearTransform inverse = objectiveToDisplay.inverse();
         displayToObjective = AffineTransforms2D.castOrCopy(inverse);
         final MathTransform cornerToDisplay = MathTransforms.concatenate(cornerToObjective, objectiveToDisplay);
-        final MathTransform displayToCenter = MathTransforms.concatenate(inverse, centerToObjective.inverse());
+        final MathTransform displayToCenter = MathTransforms.concatenate(inverse, objectiveToCenter);
         final Rectangle bounds = (Rectangle) Shapes2D.transform(
                 MathTransforms.bidimensional(cornerToDisplay),
                 ImageUtilities.getBounds(recoloredImage), new Rectangle());

@@ -1040,22 +1040,24 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         if (x != lastX || y != lastY) {
             sourceCoordinates[0] = lastX = x;
             sourceCoordinates[1] = lastY = y;
-            boolean success = false;
-            String text;
+            String text, values = null;
             try {
-                text = formatCoordinates();
-                success = true;
+                convertCoordinates();
+                if (isSampleValuesVisible) {
+                    values = sampleValuesProvider.get().evaluate(targetCoordinates);
+                }
+                targetCoordinates.normalize();
+                text = format.format(targetCoordinates);
             } catch (TransformException | RuntimeException e) {
-                /*
-                 * If even the fallback without derivative failed, show the error message.
-                 */
                 Throwable cause = Exceptions.unwrap(e);
                 text = cause.getLocalizedMessage();
                 if (text == null) {
                     text = Classes.getShortClassName(cause);
                 }
+                values = null;
             }
             position.setText(text);
+            sampleValues.setText(values);
             /*
              * Make sure that there is enough space for keeping the coordinates always visible.
              * This is the needed if there is an error message on the left which may be long.
@@ -1064,25 +1066,21 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 maximalPositionLength = text.length();
                 position.setMinWidth(Math.min(view.getWidth() / 2, Math.ceil(position.prefWidth(position.getHeight()))));
             }
-            /*
-             * Format the values under cursor if the coordinates are valid. First try to use coordinates
-             * in the CRS used by this status bar. If `ValuesUnderCursor` can not use those "real world"
-             * coordinates, fallback on pixel coordinates.
-             */
-            if (isSampleValuesVisible) {
-                text = null;
-                if (success) {
-                    text = sampleValuesProvider.get().evaluate(targetCoordinates);
-                }
-                sampleValues.setText(text);
-            }
         }
     }
 
     /**
-     * Converts and formats the local coordinates currently stored in {@link #sourceCoordinates} array.
+     * Converts the local coordinates currently stored in {@link #sourceCoordinates} array.
+     * The conversion result is stored in {@link #targetCoordinates} and the {@link #format}
+     * is configured with suggested precision. Callers can use this method as below:
+     *
+     * {@preformat java
+     *     convertCoordinates();
+     *     targetCoordinates.normalize();
+     *     String text = format.format(targetCoordinates);
+     * }
      */
-    private String formatCoordinates() throws TransformException {
+    private void convertCoordinates() throws TransformException {
         Matrix derivative;
         try {
             derivative = MathTransforms.derivativeAndTransform(localToPositionCRS,
@@ -1122,7 +1120,6 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             }
         }
         format.setPrecisions(precisions);
-        return format.format(targetCoordinates);
     }
 
     /**
@@ -1137,7 +1134,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         final String separator = format.getSeparator();
         try {
             format.setSeparator("\t");
-            return formatCoordinates();
+            convertCoordinates();
+            return format.format(targetCoordinates);
         } finally {
             format.setSeparator(separator);
         }
