@@ -248,6 +248,8 @@ public class GridDerivation {
      * @throws IllegalArgumentException if a value is negative.
      * @throws IllegalStateException if {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)}
      *         has already been invoked.
+     *
+     * @see GridExtent#grow(boolean, boolean, long...)
      */
     public GridDerivation margin(final int... cellCounts) {
         ArgumentChecks.ensureNonNull("cellCounts", cellCounts);
@@ -373,7 +375,8 @@ public class GridDerivation {
      * }
      * </div>
      *
-     * The following information are mandatory:
+     * If {@code gridExtent} contains only an envelope, then this method delegates to {@link #subgrid(Envelope, double...)}.
+     * Otherwise the following information are mandatory:
      * <ul>
      *   <li>{@linkplain GridGeometry#getExtent() Extent} in {@code gridOfInterest}.</li>
      *   <li>{@linkplain GridGeometry#getGridToCRS(PixelInCell) Grid to CRS} conversion in {@code gridOfInterest}.</li>
@@ -631,6 +634,7 @@ public class GridDerivation {
                             final int i = (modifiedDimensions != null) ? modifiedDimensions[k] : k;
                             m.setElement(i, i, s);
                             m.setElement(i, dimension, baseExtent.getLow(i) - scaledExtent.getLow(i) * s);
+                            // TODO: use Math.fma with JDK9.
                         }
                     }
                     toBase = MathTransforms.linear(m);
@@ -950,7 +954,7 @@ public class GridDerivation {
              * required information for applying a margin anyway (no `GridExtent`, no `gridToCRS`).
              */
             if (margin != null && baseExtent != null) {
-                return new GridGeometry(base, baseExtent.expand(ArraysExt.copyAsLongs(margin)), null);
+                return new GridGeometry(base, baseExtent.grow(true, true, ArraysExt.copyAsLongs(margin)), null);
             }
         } catch (TransformException e) {
             throw new IllegalGridGeometryException(e, "envelope");

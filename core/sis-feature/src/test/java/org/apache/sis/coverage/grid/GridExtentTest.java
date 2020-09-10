@@ -166,12 +166,12 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#expand(long...)}.
+     * Tests {@link GridExtent#grow(boolean, boolean, long...)}.
      */
     @Test
     public void testExpand() {
         GridExtent extent = create3D();
-        extent = extent.expand(20, -10);
+        extent = extent.grow(true, true, 20, -10);
         assertExtentEquals(extent, 0,  80, 519);
         assertExtentEquals(extent, 1, 210, 789);
         assertExtentEquals(extent, 2,  40,  49);
@@ -322,24 +322,9 @@ public final strictfp class GridExtentTest extends TestCase {
     @Test
     public void empty_translation_returns_same_extent_instance() {
         final GridExtent extent = new GridExtent(10, 10);
-        assertSame("Same instance returned in case of no-op", extent, extent.translate(null));
         assertSame("Same instance returned in case of no-op", extent, extent.translate());
         assertSame("Same instance returned in case of no-op", extent, extent.translate(0));
         assertSame("Same instance returned in case of no-op", extent, extent.translate(0, 0));
-    }
-
-    /**
-     * Verifies that {@link GridExtent#translate(long...)} does not accept a vector with too many dimensions.
-     */
-    @Test
-    public void translation_fails_if_given_array_contains_too_many_elements() {
-        try {
-            new GridExtent(2, 1).translate(2, 1, 2);
-            fail("A translation with too many dimensions shall fail.");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("translation"));
-            // Expected behavior.
-        }
     }
 
     /**

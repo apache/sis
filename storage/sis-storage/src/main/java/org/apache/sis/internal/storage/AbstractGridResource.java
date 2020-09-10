@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
 import org.opengis.geometry.Envelope;
@@ -104,8 +105,10 @@ public abstract class AbstractGridResource extends AbstractResource implements G
             for (int i=1; i<numSampleDimensions; i++) {
                 packed[i] = (((long) i) << Integer.SIZE) | i;
             }
-            return new RangeArgument(packed);
         } else {
+            /*
+             * Pattern: [specified `range` value | index in `range` where the value was specified]
+             */
             packed = new long[range.length];
             for (int i=0; i<range.length; i++) {
                 final int r = range[i];
@@ -115,9 +118,14 @@ public abstract class AbstractGridResource extends AbstractResource implements G
                 }
                 packed[i] = (((long) r) << Integer.SIZE) | i;
             }
+            /*
+             * Sort by increasing `range` value, but keep together with index in `range` where each
+             * value was specified. After sorting, it become easy to check for duplicated values.
+             */
             Arrays.sort(packed);
             int previous = -1;
             for (int i=0; i<packed.length; i++) {
+                // Never negative because of check in previous loop.
                 final int r = (int) (packed[i] >>> Integer.SIZE);
                 if (r == previous) {
                     throw new IllegalArgumentException(Resources.forLocale(getLocale()).getString(
@@ -139,8 +147,10 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         private static final DimensionNameType BAND = DimensionNameType.valueOf("BAND");
 
         /**
-         * The user-specified range indices in high bits, together with indices order in the low bits.
-         * This packing is used for making easier to sort this array in user-specified order.
+         * The range indices specified by user in high bits, together (in the low bits)
+         * with the position in the {@code ranges} array where each index was specified.
+         * This packing is used for making easier to sort this array in increasing order
+         * of user-specified range index.
          */
         private final long[] packed;
 
@@ -159,9 +169,24 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         /**
          * Encapsulates the given {@code range} argument packed in high bits.
          */
-        RangeArgument(final long[] packed) {
+        private RangeArgument(final long[] packed) {
             this.packed = packed;
             interval = 1;
+        }
+
+        /**
+         * Returns {@code true} if user specified all bands in increasing order and no subsampling is applied.
+         *
+         * @return whether user specified all bands in increasing order without subsampling.
+         */
+        public boolean isIdentity() {
+            if (interval != 1) return false;
+            for (int i=0; i<packed.length; i++) {
+                if (packed[i] != ((((long) i) << Integer.SIZE) | i)) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /**
@@ -175,7 +200,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
 
         /**
          * Returns the value of the first index specified by the user. This is not necessarily equal to
-         * {@code getBandIndex(0)} if the user specified the bands out of order.
+         * {@code getSourceIndex(0)} if the user specified the bands out of order.
          *
          * @return index of the first value in the user-specified {@code range} array.
          */
@@ -201,10 +226,10 @@ public abstract class AbstractGridResource extends AbstractResource implements G
 
         /**
          * Returns the i<sup>th</sup> band position. This is the index in the user-supplied {@code range} array
-         * where was specified the {@code getBandIndex(i)} value.
+         * where the {@code getSourceIndex(i)} value was specified.
          *
          * @param  i  index of the range index to get, from 0 inclusive to {@link #getNumBands()} exclusive.
-         * @return index in user-supplied {@code range} array where was specified the {@code getBandIndex(i)} value.
+         * @return index in user-supplied {@code range} array where was specified the {@code getSourceIndex(i)} value.
          */
         public int getTargetIndex(final int i) {
             return (int) packed[i];
@@ -279,6 +304,21 @@ public abstract class AbstractGridResource extends AbstractResource implements G
             subsamplings = ArraysExt.insert(subsamplings, bandDimension, 1);
             subsamplings[bandDimension] = interval;
             return subsamplings;
+        }
+
+        /**
+         * Returns sample dimensions selected by the user. This is a convenience method for situations where
+         * sample dimensions are already in memory and there is no advantage to read them in "physical" order.
+         *
+         * @param  sourceBands  bands in the source coverage.
+         * @return bands selected by user, in user-specified order.
+         */
+        public SampleDimension[] select(final List<? extends SampleDimension> sourceBands) {
+            final SampleDimension[] bands = new SampleDimension[getNumBands()];
+            for (int i=0; i<bands.length; i++) {
+                bands[getTargetIndex(i)] = sourceBands.get(getSourceIndex(i));
+            }
+            return bands;
         }
 
         /**

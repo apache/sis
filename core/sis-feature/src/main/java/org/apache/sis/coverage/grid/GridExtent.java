@@ -27,7 +27,6 @@ import java.io.UncheckedIOException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -1068,31 +1067,71 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @param  margins amount of cells to add or subtract.
      * @return a grid extent expanded by the given amount, or {@code this} if there is no change.
      * @throws ArithmeticException if expanding this extent by the given margins overflows {@code long} capacity.
+     *
+     * @deprecated Replaced by {@link #grow(boolean, boolean, long...)}.
      */
+    @Deprecated
     public GridExtent expand(final long... margins) {
-        ArgumentChecks.ensureNonNull("margins", margins);
-        final int m = getDimension();
-        final int length = Math.min(m, margins.length);
-        final GridExtent resize = new GridExtent(this);
-        final long[] c = resize.coordinates;
-        for (int i=0; i<length; i++) {
-            final long margin = margins[i];
-            c[i] = Math.subtractExact(c[i], margin);
-            c[i+m] = Math.addExact(c[i+m], margin);
-        }
-        return Arrays.equals(c, coordinates) ? this : resize;
+        return grow(true, true, margins);
     }
 
     /**
-     * Sets the size of this grid extent to the given values. This method modifies grid coordinates as if they were multiplied
-     * by (given size) / ({@linkplain #getSize(int) current size}), rounded toward zero and with the value farthest from zero
-     * adjusted by ±1 for having a size exactly equals to the specified value.
+     * Returns a grid extent expanded by the given amount of cells on the specified sides along each dimension.
+     * This method can modify the low coordinates, the high coordinates or both.
+     * <ul>
+     *   <li>If {@code low} is true, subtracts the given margin from {@linkplain #getLow(int) low coordinates}.</li>
+     *   <li>If {@code high} is true, adds the same margin to {@linkplain #getHigh(int) high coordinates}.</li>
+     * </ul>
+     * If a negative margin is supplied, the extent size decreases accordingly.
+     *
+     * <h4>Number of arguments</h4>
+     * The {@code margins} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing values default to 0 (i.e. sizes in unspecified dimensions are unchanged).
+     * If the array is longer, extraneous values are ignored.
+     *
+     * @param  low      whether to subtract the specified margin from low coordinates.
+     * @param  high     whether to add the specified margin to high coordinates.
+     * @param  margins  amount of cells to add or subtract on specified sides of each dimension.
+     * @return a grid extent expanded by the given amount, or {@code this} if there is no change.
+     * @throws ArithmeticException if expanding this extent by the given margin overflows {@code long} capacity.
+     *
+     * @see GridDerivation#margin(int...)
+     *
+     * @since 1.1
+     */
+    public GridExtent grow(final boolean low, final boolean high, final long... margins) {
+        ArgumentChecks.ensureNonNull("margins", margins);
+        final int m = getDimension();
+        final int length = Math.min(m, margins.length);
+        if ((low | high) && !isZero(margins, length)) {
+            final GridExtent resized = new GridExtent(this);
+            final long[] c = resized.coordinates;
+            for (int i=0; i<length; i++) {
+                final long p = margins[i];
+                if (low)  c[i] = Math.subtractExact(c[i], p);
+                if (high) c[i+m] = Math.addExact(c[i+m], p);
+            }
+            return resized;
+        }
+        return this;
+    }
+
+    /**
+     * Sets the size of grid extent to the given values by moving low and high coordinates.
+     * This method modifies grid coordinates as if they were multiplied by
+     *
+     *     <var>(given size)</var> / <var>({@linkplain #getSize(int) current size})</var>,
+     *
+     * rounded toward zero and with the value farthest from zero adjusted by ±1 for having a size
+     * exactly equals to the specified value.
+     *
      * In the common case where the {@linkplain #getLow(int) low value} is zero,
      * this is equivalent to setting the {@linkplain #getHigh(int) high value} to {@code size} - 1.
      *
-     * <p>The length of the given array should be equal to {@link #getDimension()}.
-     * If the array is shorter, missing dimensions have their size unchanged.
-     * If the array is longer, extra sizes are ignored.</p>
+     * <h4>Number of arguments</h4>
+     * The {@code sizes} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, sizes in unspecified dimensions are unchanged.
+     * If the array is longer, extraneous values are ignored.
      *
      * @param  sizes  the new grid sizes for each dimension.
      * @return a grid extent having the given sizes, or {@code this} if there is no change.
@@ -1129,8 +1168,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns a grid envelope that encompass only some dimensions of this grid envelope.
-     * This method copies the specified dimensions of this grid envelope into a new grid envelope.
+     * Returns a grid extent that encompass only some dimensions of this grid extent.
+     * This method copies the specified dimensions of this grid extent into a new grid extent.
      * The given dimensions must be in strictly ascending order without duplicated values.
      * The number of dimensions of the sub grid envelope will be {@code dimensions.length}.
      *
@@ -1184,6 +1223,11 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * This method does not reduce the number of dimensions of the grid extent.
      * For dimensionality reduction, see {@link #reduce(int...)}.
      *
+     * <h4>Number of arguments</h4>
+     * The {@code periods} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing values default to 1 (i.e. samplings in unspecified dimensions are unchanged).
+     * If the array is longer, extraneous values are ignored.
+     *
      * @param  periods  the subsamplings. Length shall be equal to the number of dimension and all values shall be greater than zero.
      * @return the subsampled extent, or {@code this} is subsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
@@ -1193,9 +1237,9 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     public GridExtent subsample(final int... periods) {
         ArgumentChecks.ensureNonNull("periods", periods);
         final int m = getDimension();
-        ArgumentChecks.ensureDimensionMatches("periods", m, periods);
+        final int length = Math.min(m, periods.length);
         final GridExtent sub = new GridExtent(this);
-        for (int i=0; i<m; i++) {
+        for (int i=0; i<length; i++) {
             final int s = periods[i];
             if (s > 1) {
                 final int j = i + m;
@@ -1216,7 +1260,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns a slice of this given grid extent computed by a ratio between 0 and 1 inclusive.
+     * Returns a slice of this grid extent computed by a ratio between 0 and 1 inclusive.
      * This is a helper method for {@link GridDerivation#sliceByRatio(double, int...)} implementation.
      *
      * @param  slicePoint        a pre-allocated direct position to be overwritten by this method.
@@ -1330,11 +1374,14 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * for an extent (x: [0…10], y: [2…4], z: [0…1]) and a translation {-2, 2},
      * the resulting extent would be (x: [-2…8], y: [4…6], z: [0…1]).</div>
      *
+     * <h4>Number of arguments</h4>
+     * The {@code translation} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing values default to 0 (i.e. no translation in unspecified dimensions).
+     * If the array is longer, extraneous values are ignored.
+     *
      * @param  translation  translation to apply on each axis in order, or {@code null} if none.
      * @return a grid-extent whose coordinates (both low and high ones) have been translated by given amounts.
      *         If the given translation is a no-op (no value or only 0 ones), then this extent is returned as is.
-     * @throws MismatchedDimensionException if given translation vector is longer than
-     *         {@linkplain #getDimension() this extent dimension}.
      * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
      *
      * @see #startsAtZero()
@@ -1342,23 +1389,19 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @since 1.1
      */
     public GridExtent translate(final long... translation) {
-        if (translation != null) {
-            final int dimension = getDimension();
-            if (translation.length > dimension) {
-                throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
-                                                       "translation", translation.length, dimension));
+        ArgumentChecks.ensureNonNull("translation", translation);
+        final int m = getDimension();
+        final int length = Math.min(m, translation.length);
+        if (!isZero(translation, length)) {
+            final GridExtent translated = new GridExtent(this);
+            final long[] c = translated.coordinates;
+            for (int i=0; i < length; i++) {
+                final int  j = i + m;
+                final long t = translation[i];
+                c[i] = Math.addExact(c[i], t);
+                c[j] = Math.addExact(c[j], t);
             }
-            if (!isZero(translation, translation.length)) {
-                final GridExtent translated = new GridExtent(this);
-                final long[] c = translated.coordinates;
-                for (int i=0; i < translation.length; i++) {
-                    final int  j = i + dimension;
-                    final long t = translation[i];
-                    c[i] = Math.addExact(c[i], t);
-                    c[j] = Math.addExact(c[j], t);
-                }
-                return translated;
-            }
+            return translated;
         }
         return this;
     }

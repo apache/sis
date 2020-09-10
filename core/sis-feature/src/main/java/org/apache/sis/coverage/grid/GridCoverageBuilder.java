@@ -80,6 +80,7 @@ import org.apache.sis.util.resources.Errors;
  * }
  * </div>
  *
+ * <h2>Limitations</h2>
  * Current implementation creates only two-dimensional coverages.
  * A future version may extend this builder API for creating <var>n</var>-dimensional coverages.
  *

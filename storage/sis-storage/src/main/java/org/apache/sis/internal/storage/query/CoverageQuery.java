@@ -151,9 +151,6 @@ public final class CoverageQuery extends Query implements Cloneable {
      */
     public GridCoverageResource execute(final GridCoverageResource source) throws UnsupportedQueryException {
         ArgumentChecks.ensureNonNull("source", source);
-        if (getSourceDomainExpansion() != 0) {
-            throw new UnsupportedQueryException("Source domain expansion not yet supported.");
-        }
         return new CoverageSubset(source, clone());
     }
 
