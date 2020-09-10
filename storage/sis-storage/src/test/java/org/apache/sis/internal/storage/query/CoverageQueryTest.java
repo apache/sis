@@ -64,8 +64,8 @@ public final strictfp class CoverageQueryTest extends TestCase {
     public CoverageQueryTest() {
         crs = HardCodedCRS.WGS84;
         gridToCRS = new AffineTransform2D(2, 0, 0, 3, 0, 0);
-        final int width  = 50;
-        final int height = 53;
+        final int width  = 32;
+        final int height = 37;
         final GridGeometry grid = new GridGeometry(new GridExtent(width, height), PixelInCell.CELL_CENTER, gridToCRS, crs);
         final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_BINARY);
         resource = new MemoryGridResource(null, new GridCoverage2D(grid, null, image));
@@ -133,13 +133,17 @@ public final strictfp class CoverageQueryTest extends TestCase {
      * Verifies that the read operation adds the expected margins.
      * This is an anti-regression test; in current implementation,
      * {@link GridCoverage2D} returns a larger area then requested.
-     *
-     * @todo May need to be revisited after https://bugs.openjdk.java.net/browse/JDK-8166038 is fixed.
      */
     private void verifyRead(final GridCoverageResource subset) throws DataStoreException {
         final GridGeometry request  = createSubGrid(-4);
         final GridCoverage coverage = subset.read(request);
-        final GridGeometry expected = resource.getGridGeometry();
-        assertEquals(expected, coverage.getGridGeometry());
+        /*
+         * PENDING_JDK_FIX: replace following lines by new tests
+         * after https://bugs.openjdk.java.net/browse/JDK-8166038 is fixed.
+         */
+        if (coverage.render(null) instanceof BufferedImage) {
+            final GridGeometry expected = resource.getGridGeometry();
+            assertEquals(expected, coverage.getGridGeometry());
+        }
     }
 }
