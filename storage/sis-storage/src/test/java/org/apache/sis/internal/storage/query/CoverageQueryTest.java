@@ -16,16 +16,13 @@
  */
 package org.apache.sis.internal.storage.query;
 
-import java.awt.image.BufferedImage;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
-import org.apache.sis.internal.storage.MemoryGridResource;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
@@ -67,8 +64,7 @@ public final strictfp class CoverageQueryTest extends TestCase {
         final int width  = 32;
         final int height = 37;
         final GridGeometry grid = new GridGeometry(new GridExtent(width, height), PixelInCell.CELL_CENTER, gridToCRS, crs);
-        final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_BINARY);
-        resource = new MemoryGridResource(null, new GridCoverage2D(grid, null, image));
+        resource = new GridResourceMock(grid);
     }
 
     /**
@@ -81,7 +77,7 @@ public final strictfp class CoverageQueryTest extends TestCase {
         final CoverageQuery query = new CoverageQuery();
         final GridCoverageResource subset = resource.subset(query);
         assertSame(resource.getGridGeometry(), subset.getGridGeometry());
-        verifyRead(subset);
+        verifyRead(subset, 0);
     }
 
     /**
@@ -109,7 +105,7 @@ public final strictfp class CoverageQueryTest extends TestCase {
 
         final GridCoverageResource subset = resource.subset(query);
         assertEquals(subGrid, subset.getGridGeometry());
-        verifyRead(subset);
+        verifyRead(subset, 0);
     }
 
     /**
@@ -119,31 +115,36 @@ public final strictfp class CoverageQueryTest extends TestCase {
      */
     @Test
     public void testWithExpansion() throws DataStoreException {
+        final int expansion = 3;
         final GridGeometry subGrid = createSubGrid(0);
         final CoverageQuery query = new CoverageQuery();
         query.setDomain(subGrid);
-        query.setSourceDomainExpansion(3);
+        query.setSourceDomainExpansion(expansion);
 
         final GridCoverageResource subset = resource.subset(query);
-        assertEquals(createSubGrid(3), subset.getGridGeometry());
-        verifyRead(subset);
+        assertEquals(createSubGrid(expansion), subset.getGridGeometry());
+        verifyRead(subset, expansion);
     }
 
     /**
      * Verifies that the read operation adds the expected margins.
-     * This is an anti-regression test; in current implementation,
-     * {@link GridCoverage2D} returns a larger area then requested.
      */
-    private void verifyRead(final GridCoverageResource subset) throws DataStoreException {
-        final GridGeometry request  = createSubGrid(-4);
-        final GridCoverage coverage = subset.read(request);
+    private void verifyRead(final GridCoverageResource subset, final int expansion) throws DataStoreException {
         /*
-         * PENDING_JDK_FIX: replace following lines by new tests
-         * after https://bugs.openjdk.java.net/browse/JDK-8166038 is fixed.
+         * Test reading the whole image. The grid geometry of returned coverage
+         * must be the same than the grid geometry of the GridCoverageResource,
+         * which has been verified by the caller to contain the expansion.
          */
-        if (coverage.render(null) instanceof BufferedImage) {
-            final GridGeometry expected = resource.getGridGeometry();
-            assertEquals(expected, coverage.getGridGeometry());
+        assertEquals(subset.getGridGeometry(), subset.read(null).getGridGeometry());
+        /*
+         * Request for a smaller area and verify that the request has the expected size,
+         * including expansion.
+         */
+        GridGeometry request = createSubGrid(-4);
+        final GridCoverage coverage = subset.read(request);
+        if (expansion != 0) {
+            request = createSubGrid(-4 + expansion);
         }
+        assertEquals(request, coverage.getGridGeometry());
     }
 }

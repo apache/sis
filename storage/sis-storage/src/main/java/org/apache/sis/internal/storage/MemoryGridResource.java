@@ -86,7 +86,7 @@ public class MemoryGridResource extends AbstractGridResource {
      * In current implementation this is either a {@link org.apache.sis.coverage.grid.GridCoverage2D} or
      * the original grid coverage.
      *
-     * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
+     * @param  domain  desired grid extent and resolution, or {@code null} for the whole domain.
      * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
      * @return the grid coverage for the specified domain and range.
      */

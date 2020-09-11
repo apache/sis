@@ -161,6 +161,9 @@ final class CoverageSubset extends AbstractGridResource {
      */
     @Override
     public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
+        if (domain == null) {
+            domain = source.getGridGeometry();
+        }
         domain = clip(domain, query.getDomain(), GridRoundingMode.ENCLOSING, query.getSourceDomainExpansion());
         final int[] qr = query.getRange();
         if (range == null) {
