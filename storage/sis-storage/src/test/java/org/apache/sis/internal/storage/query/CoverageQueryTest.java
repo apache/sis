@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.storage.query;
 
-import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
@@ -25,7 +25,6 @@ import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
-import org.apache.sis.internal.storage.MemoryGridResource;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
@@ -67,8 +66,7 @@ public final strictfp class CoverageQueryTest extends TestCase {
         final int width  = 32;
         final int height = 37;
         final GridGeometry grid = new GridGeometry(new GridExtent(width, height), PixelInCell.CELL_CENTER, gridToCRS, crs);
-        final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_BINARY);
-        resource = new MemoryGridResource(null, new GridCoverage2D(grid, null, image));
+        resource = new MockGridResource(grid);
     }
 
     /**
@@ -127,6 +125,14 @@ public final strictfp class CoverageQueryTest extends TestCase {
         final GridCoverageResource subset = resource.subset(query);
         assertEquals(createSubGrid(3), subset.getGridGeometry());
         verifyRead(subset);
+
+        /*
+        Current implementation returns the full image
+        but still, the expansion should be visible in the image offset
+        */
+        GridCoverage coverage = subset.read(null);
+        RenderedImage image = coverage.render(null);
+        System.out.println(image);
     }
 
     /**
@@ -135,15 +141,16 @@ public final strictfp class CoverageQueryTest extends TestCase {
      * {@link GridCoverage2D} returns a larger area then requested.
      */
     private void verifyRead(final GridCoverageResource subset) throws DataStoreException {
-        final GridGeometry request  = createSubGrid(-4);
-        final GridCoverage coverage = subset.read(request);
-        /*
-         * PENDING_JDK_FIX: replace following lines by new tests
-         * after https://bugs.openjdk.java.net/browse/JDK-8166038 is fixed.
-         */
-        if (coverage.render(null) instanceof BufferedImage) {
-            final GridGeometry expected = resource.getGridGeometry();
-            assertEquals(expected, coverage.getGridGeometry());
+
+        { //must be the same as subset grid geometry
+            final GridCoverage coverage = subset.read(null);
+            assertEquals(subset.getGridGeometry(), coverage.getGridGeometry());
+        }
+
+        {
+            final GridGeometry request  = createSubGrid(-4);
+            final GridCoverage coverage = subset.read(request);
+            assertEquals(request, coverage.getGridGeometry());
         }
     }
 }
