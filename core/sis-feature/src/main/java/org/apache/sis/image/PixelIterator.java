@@ -139,11 +139,11 @@ public abstract class PixelIterator {
         tileHeight      = data.getHeight();
         tileGridXOffset = data.getMinX();
         tileGridYOffset = data.getMinY();
+        bounds          = intersection(tileGridXOffset, tileGridYOffset, tileWidth, tileHeight, subArea, window);
         tileLowerX      = 0;                    // In this case only one raster: tile index is fixed to 0.
         tileLowerY      = 0;
-        tileUpperX      = 1;
-        tileUpperY      = 1;
-        bounds          = intersection(tileGridXOffset, tileGridYOffset, tileWidth, tileHeight, subArea, window);
+        tileUpperX      = (bounds.width  == 0) ? 0 : 1;
+        tileUpperY      = (bounds.height == 0) ? 0 : 1;
         lowerX          = bounds.x;
         lowerY          = bounds.y;
         upperX          = Math.addExact(lowerX, bounds.width);
@@ -198,8 +198,8 @@ public abstract class PixelIterator {
         Rectangle bounds = new Rectangle(x, y, width, height);
         if (subArea != null) {
             bounds = bounds.intersection(subArea);
-            if (bounds.width  < 0) bounds.width  = 0;
-            if (bounds.height < 0) bounds.height = 0;
+            if (bounds.width  < 0) {bounds.x = x; bounds.width  = 0;}
+            if (bounds.height < 0) {bounds.y = y; bounds.height = 0;}
         }
         return bounds;
     }
@@ -245,8 +245,12 @@ public abstract class PixelIterator {
          *
          * @param  subArea  region where to iterator, or {@code null} for iterating over all image domain.
          * @return {@code this} for method call chaining.
+         * @throws IllegalArgumentException if the given rectangle is empty.
          */
         public Builder setRegionOfInterest(final Rectangle subArea) {
+            if (subArea != null && subArea.isEmpty()) {
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.EmptyTileOrImageRegion));
+            }
             this.subArea = subArea;
             return this;
         }

@@ -45,7 +45,7 @@ import static org.junit.Assert.*;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -425,7 +425,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
      * Iterates over all values returned by the current {@link #iterator} and compares with expected values.
      *
      * @param  verifyIndices  whether to verify also iterator {@code getPosition()} return values.
-     *                        This is usually {@code true} if an only if the iterator cover the full raster area.
+     *                        This is usually {@code true} if and only if the iterator covers the full raster area.
      *
      * @see #verifyIterationAfterMove(int, int)
      * @see #verifyWindow(Dimension)
@@ -1275,5 +1275,19 @@ public strictfp class DefaultIteratorTest extends TestCase {
     public void testOnWritableImage() {
         isWritable = true;
         testOnImageSubArea();
+    }
+
+    /**
+     * Tests iterator on an area.
+     */
+    @Test
+    public void testEmpty() {
+        tileWidth  = width  = 3;
+        tileHeight = height = 2;
+        numBands            = 1;
+        final Rectangle subArea = new Rectangle(5, 1, 3, 2);    // No intersection with image bounds.
+        createPixelIterator(createImage(subArea), subArea);
+        assertEquals(0, expected.length);
+        verifyIteration(true);
     }
 }
