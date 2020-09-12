@@ -25,6 +25,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ColorModel;
+import java.awt.image.IndexColorModel;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -239,6 +240,20 @@ public class ResampledImage extends ComputedImage {
         if (numDim != BIDIMENSIONAL || (numDim = toSource.getTargetDimensions()) < BIDIMENSIONAL) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.MismatchedDimension_3, "toSource", BIDIMENSIONAL, numDim));
+        }
+        /*
+         * If the image uses an index color model, interpolating the indexed values does not produce
+         * the expected colors. Safest approach is to disable completely interpolations in that case.
+         *
+         * Note: we could interpolate if we knew that all index values, without exception (i.e. no index for
+         * missing values), are related to measurements by a linear function. It practice it rarely happens,
+         * because there is usually at least one index value reserved for missing values. Scientific data in
+         * SIS are usually stored as floating point type (with missing values mapped to NaN), which can not
+         * be associated to `IndexColorModel`. For now we don't try to perform a more sophisticated detection
+         * of which interpolations are allowed, but a future SIS version may revisit this policy if needed.
+         */
+        if (source.getColorModel() instanceof IndexColorModel) {
+            interpolation = Interpolation.NEAREST;
         }
         /*
          * If the interpolation requires more than 2×2 pixels, we will need to shift the transform
