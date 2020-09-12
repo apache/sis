@@ -140,7 +140,7 @@ public class MemoryGridResource extends AbstractGridResource {
             intersection  = intersection.translate(changes);
             changes[dimX] = Math.subtractExact(data.getWidth(),  intersection.getSize(dimX));
             changes[dimY] = Math.subtractExact(data.getHeight(), intersection.getSize(dimY));
-            intersection  = intersection.grow(false, true, changes);
+            intersection  = intersection.expand(null, changes);
             if (intersection.equals(source.getExtent())) {
                 if (sameBands) {
                     return coverage;

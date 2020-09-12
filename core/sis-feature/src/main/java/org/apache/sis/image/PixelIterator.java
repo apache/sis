@@ -241,9 +241,11 @@ public abstract class PixelIterator {
 
         /**
          * Sets the region (in pixel coordinates) where to perform the iteration.
-         * By default, iterators will traverse all pixels in the given image or raster.
+         * If this method is not invoked, then  by default iterators will traverse all pixels in the image or raster.
+         * If a sub-area is specified, then the traversed area is the {@linkplain Rectangle#intersection(Rectangle)
+         * intersection} of {@code subArea} with the image or {@linkplain Raster#getBounds() raster bounds}.
          *
-         * @param  subArea  region where to iterator, or {@code null} for iterating over all image domain.
+         * @param  subArea  region to intersect, or {@code null} for iterating over all image domain.
          * @return {@code this} for method call chaining.
          * @throws IllegalArgumentException if the given rectangle is empty.
          */

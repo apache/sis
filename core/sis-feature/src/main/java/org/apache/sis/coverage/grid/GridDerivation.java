@@ -954,7 +954,7 @@ public class GridDerivation {
              * required information for applying a margin anyway (no `GridExtent`, no `gridToCRS`).
              */
             if (margin != null && baseExtent != null) {
-                return new GridGeometry(base, baseExtent.grow(true, true, ArraysExt.copyAsLongs(margin)), null);
+                return new GridGeometry(base, baseExtent.expand(ArraysExt.copyAsLongs(margin)), null);
             }
         } catch (TransformException e) {
             throw new IllegalGridGeometryException(e, "envelope");

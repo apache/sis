@@ -166,14 +166,29 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#grow(boolean, boolean, long...)}.
+     * Tests {@link GridExtent#expand(long...)}.
      */
     @Test
     public void testExpand() {
         GridExtent extent = create3D();
-        extent = extent.grow(true, true, 20, -10);
+        assertSame(extent, extent.expand(new long[3]));
+        extent = extent.expand(20, -10);            // One less dimension than `exent` dimension.
         assertExtentEquals(extent, 0,  80, 519);
         assertExtentEquals(extent, 1, 210, 789);
+        assertExtentEquals(extent, 2,  40,  49);
+    }
+
+    /**
+     * Tests {@link GridExtent#expand(long[], long[])}.
+     */
+    @Test
+    public void testExpand2() {
+        GridExtent extent = create3D();
+        assertSame(extent, extent.expand(new long[2], null));
+        assertSame(extent, extent.expand(null, new long[] {0,0,0,5}));      // Extraneous dimension should be ignored.
+        extent = extent.expand(new long[] {30}, new long[] {20, -10});
+        assertExtentEquals(extent, 0,  70, 519);
+        assertExtentEquals(extent, 1, 200, 789);
         assertExtentEquals(extent, 2,  40,  49);
     }
 

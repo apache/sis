@@ -1060,38 +1060,53 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Expands or shrinks this grid extent by the given amount of cells along each dimension.
+     * Returns a grid extent expanded by the given amount of cells on both sides along each dimension.
      * This method adds the given margins to the {@linkplain #getHigh(int) high coordinates}
-     * and subtracts the same margins to the {@linkplain #getLow(int) low coordinates}.
-     *
-     * @param  margins amount of cells to add or subtract.
-     * @return a grid extent expanded by the given amount, or {@code this} if there is no change.
-     * @throws ArithmeticException if expanding this extent by the given margins overflows {@code long} capacity.
-     *
-     * @deprecated Replaced by {@link #grow(boolean, boolean, long...)}.
-     */
-    @Deprecated
-    public GridExtent expand(final long... margins) {
-        return grow(true, true, margins);
-    }
-
-    /**
-     * Returns a grid extent expanded by the given amount of cells on the specified sides along each dimension.
-     * This method can modify the low coordinates, the high coordinates or both.
-     * <ul>
-     *   <li>If {@code low} is true, subtracts the given margin from {@linkplain #getLow(int) low coordinates}.</li>
-     *   <li>If {@code high} is true, adds the same margin to {@linkplain #getHigh(int) high coordinates}.</li>
-     * </ul>
+     * and subtracts the same margins from the {@linkplain #getLow(int) low coordinates}.
      * If a negative margin is supplied, the extent size decreases accordingly.
+     *
+     * <p>Invoking this method is equivalent to invoking
+     * <code>{@linkplain #expand(long[], long[]) expand}(margins, margins)</code>.
      *
      * <h4>Number of arguments</h4>
      * The {@code margins} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
      * If the array is shorter, missing values default to 0 (i.e. sizes in unspecified dimensions are unchanged).
      * If the array is longer, extraneous values are ignored.
      *
-     * @param  low      whether to subtract the specified margin from low coordinates.
-     * @param  high     whether to add the specified margin to high coordinates.
-     * @param  margins  amount of cells to add or subtract on specified sides of each dimension.
+     * @param  margins  amount of cells to add or subtract on both sides for each dimension.
+     * @return a grid extent expanded by the given amount, or {@code this} if there is no change.
+     * @throws ArithmeticException if expanding this extent by the given margins overflows {@code long} capacity.
+     */
+    public GridExtent expand(final long... margins) {
+        ArgumentChecks.ensureNonNull("margins", margins);
+        final int m = getDimension();
+        final int length = Math.min(m, margins.length);
+        if (isZero(margins, length)) {
+            return this;
+        }
+        final GridExtent resized = new GridExtent(this);
+        final long[] c = resized.coordinates;
+        for (int i=0; i<length; i++) {
+            final long p = margins[i];
+            c[i] = Math.subtractExact(c[i], p);
+            c[i+m] = Math.addExact(c[i+m], p);
+        }
+        return resized;
+    }
+
+    /**
+     * Returns a grid extent expanded by the given amount of cells along each dimension.
+     * This method adds {@code addToHigh} to the {@linkplain #getHigh(int) high coordinates}
+     * and subtracts {@code subtractFromLow} from the {@linkplain #getLow(int) low coordinates}.
+     * If a negative value is supplied, the extent size decreases accordingly.
+     *
+     * <h4>Number of arguments</h4>
+     * The array lengths should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If an array is shorter, missing values default to 0 (i.e. sizes in unspecified dimensions are unchanged).
+     * If an array is longer, extraneous values are ignored.
+     *
+     * @param  subtractFromLow  amount of cells to subtract from low coordinates in each dimension, or {@code null} if none.
+     * @param  addToHigh        amount of cells to add to high coordinates for each dimension, or {@code null} if none.
      * @return a grid extent expanded by the given amount, or {@code this} if there is no change.
      * @throws ArithmeticException if expanding this extent by the given margin overflows {@code long} capacity.
      *
@@ -1099,21 +1114,27 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @since 1.1
      */
-    public GridExtent grow(final boolean low, final boolean high, final long... margins) {
-        ArgumentChecks.ensureNonNull("margins", margins);
+    public GridExtent expand(final long[] subtractFromLow, final long[] addToHigh) {
         final int m = getDimension();
-        final int length = Math.min(m, margins.length);
-        if ((low | high) && !isZero(margins, length)) {
-            final GridExtent resized = new GridExtent(this);
-            final long[] c = resized.coordinates;
-            for (int i=0; i<length; i++) {
-                final long p = margins[i];
-                if (low)  c[i] = Math.subtractExact(c[i], p);
-                if (high) c[i+m] = Math.addExact(c[i+m], p);
-            }
-            return resized;
+        int nlo = 0;
+        if (subtractFromLow != null) {
+            nlo = Math.min(m, subtractFromLow.length);
+            if (isZero(subtractFromLow, nlo)) nlo = 0;
         }
-        return this;
+        int nhi = 0;
+        if (addToHigh != null) {
+            nhi = Math.min(m, addToHigh.length);
+            if (isZero(addToHigh, nhi)) nhi = 0;
+        }
+        final int length = Math.max(nlo, nhi);
+        if (length == 0) {
+            return this;
+        }
+        final GridExtent resized = new GridExtent(this);
+        final long[] c = resized.coordinates;
+        for (int i=0; i<nlo; i++) c[i] = Math.subtractExact(c[i], subtractFromLow[i]);
+        for (int i=0; i<nhi; i++) c[i+m] = Math.addExact(c[i+m], addToHigh[i]);
+        return resized;
     }
 
     /**
