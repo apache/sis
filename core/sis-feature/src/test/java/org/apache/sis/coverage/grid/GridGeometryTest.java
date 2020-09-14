@@ -348,4 +348,36 @@ public final strictfp class GridGeometryTest extends TestCase {
         //              0,   0,     3,  // All scale coefficients set to 0.
                         0,   0,     1), MathTransforms.getMatrix(tr), STRICT);
     }
+
+    /**
+     * Tests {@link GridGeometry#createTransformTo(GridGeometry, PixelInCell)}.
+     *
+     * @throws TransformException if the transform can not be computed.
+     */
+    @Test
+    public void testCreateTransformTo() throws TransformException {
+        final GridGeometry source = new GridGeometry(
+                new GridExtent(17, 10),
+                PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix3(
+                    1,   0,  -7.0,
+                    0,  -1,  50.0,
+                    0,   0,   1)),
+                HardCodedCRS.WGS84);
+
+        final GridGeometry target = new GridGeometry(
+                new GridExtent(200, 300),
+                PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix3(
+                   -0.05,  0,    53.0,
+                    0,     0.1,  -8.0,
+                    0,     0,     1)),
+                HardCodedCRS.WGS84_φλ);
+
+        final MathTransform tr = source.createTransformTo(target, PixelInCell.CELL_CENTER);
+        assertMatrixEquals("createTransformTo", new Matrix3(
+                    0,  20,  60,
+                   10,   0,  10,
+                    0,   0,   1), MathTransforms.getMatrix(tr), STRICT);
+    }
 }

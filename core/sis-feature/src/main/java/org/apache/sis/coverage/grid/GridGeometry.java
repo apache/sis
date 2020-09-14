@@ -1224,7 +1224,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         } catch (FactoryException e) {
             throw new TransformException(e);
         }
-        return MathTransforms.concatenate(tr, target.getGridToCRS(anchor).inverse());
+        return MathTransforms.concatenate(getGridToCRS(anchor), tr);
     }
 
     /**
