@@ -18,10 +18,8 @@ package org.apache.sis.internal.referencing;
 
 import java.util.List;
 import java.util.Collections;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
@@ -67,11 +65,10 @@ public final strictfp class WraparoundTransformTest extends TestCase {
     /**
      * Tests wraparound on one axis.
      *
-     * @throws FactoryException if the transform can not be created.
      * @throws NoninvertibleMatrixException if the expected matrix can not be inverted.
      */
     @Test
-    public void testOneAxis() throws FactoryException, NoninvertibleMatrixException {
+    public void testOneAxis() throws NoninvertibleMatrixException {
         final AbstractCoordinateOperation op = new AbstractCoordinateOperation(
                 Collections.singletonMap(AbstractCoordinateOperation.NAME_KEY, "Wrapper"),
                 HardCodedCRS.WGS84_φλ.forConvention(AxesConvention.POSITIVE_RANGE),
@@ -82,7 +79,7 @@ public final strictfp class WraparoundTransformTest extends TestCase {
          * Wrararound is often (but not always) unnecessary on source coordinates if the operation
          * uses trigonometric functions.
          */
-        final MathTransform wt = WraparoundTransform.forTargetCRS(DefaultFactories.forClass(MathTransformFactory.class), op);
+        final MathTransform wt = WraparoundTransform.forTargetCRS(op);
         final List<MathTransform> steps = MathTransforms.getSteps(wt);
         assertEquals(3, steps.size());
         assertEquals(1, ((WraparoundTransform) steps.get(1)).wraparoundDimension);
@@ -111,11 +108,10 @@ public final strictfp class WraparoundTransformTest extends TestCase {
      * transform between them. The absence of separation between the two {@link WraparoundTransform}s is an
      * indirect test of {@link WraparoundTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)}.
      *
-     * @throws FactoryException if the transform can not be created.
      * @throws NoninvertibleMatrixException if the expected matrix can not be inverted.
      */
     @Test
-    public void testTwoAxes() throws FactoryException, NoninvertibleMatrixException {
+    public void testTwoAxes() throws NoninvertibleMatrixException {
         final AbstractCoordinateOperation op = new AbstractCoordinateOperation(
                 Collections.singletonMap(AbstractCoordinateOperation.NAME_KEY, "Wrapper"),
                 HardCodedCRS.WGS84_3D_TIME.forConvention(AxesConvention.POSITIVE_RANGE),
@@ -126,7 +122,7 @@ public final strictfp class WraparoundTransformTest extends TestCase {
          * should have been moved by `WraparoundTransform.tryConcatenate(…)` in order to combine them with initial
          * [normalization} and final {denormalization].
          */
-        final MathTransform wt = WraparoundTransform.forTargetCRS(DefaultFactories.forClass(MathTransformFactory.class), op);
+        final MathTransform wt = WraparoundTransform.forTargetCRS(op);
         final List<MathTransform> steps = MathTransforms.getSteps(wt);
         assertEquals(4, steps.size());
         assertEquals(0, ((WraparoundTransform) steps.get(1)).wraparoundDimension);

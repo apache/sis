@@ -29,12 +29,12 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.WraparoundTransform;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.image.ImageProcessor;
@@ -161,14 +161,6 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     private boolean isWraparoundApplied;
 
     /**
-     * The factory to use for {@link MathTransform} creations. For now this is fixed to SIS implementation.
-     * But it may become a configurable reference in a future version if useful.
-     *
-     * @see org.apache.sis.coverage.grid.ImageRenderer#mtFactory
-     */
-    private final MathTransformFactory mtFactory;
-
-    /**
      * Creates a new finder.
      *
      * @param  source  the grid geometry which is the source of the coordinate operation to find.
@@ -177,7 +169,6 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     CoordinateOperationFinder(final GridGeometry source, final GridGeometry target) {
         this.source = source;
         this.target = target;
-        mtFactory = CoordinateOperations.factoryMT().caching(false);
     }
 
     /**
@@ -213,7 +204,7 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * <p>The transform returned by this method applies wraparound checks systematically on every axes having
      * wraparound range. This method does not verify whether those checks are needed (i.e. whether wraparound
      * can possibly happen). This is okay because this transform is used only for transforming envelopes;
-     * it is not used for transforming pixel coordinates.<p>
+     * it is not used for transforming pixel coordinates.</p>
      *
      * <h4>Implementation note</h4>
      * After invocation of this method, the following fields are valid:
@@ -306,10 +297,10 @@ wraparound: if (mayRequireWraparound(cs)) {
                     if (median == null) break wraparound;
                     median = forwardOp.transform(median, null);
                 }
-                forwardOp = WraparoundTransform.forDomainOfUse(mtFactory, forwardOp, cs, median);
+                forwardOp = WraparoundTransform.forDomainOfUse(forwardOp, cs, median);
             }
         }
-        return mtFactory.createConcatenatedTransform(tr, forwardOp);
+        return MathTransforms.concatenate(tr, forwardOp);
     }
 
     /**
@@ -325,17 +316,16 @@ wraparound: if (mayRequireWraparound(cs)) {
      * @param  gridToCRS  result of previous call to {@link #gridToCRS(PixelInCell)}, or {@code null}
      *                    for reusing the {@link #isWraparoundNeeded} result of previous invocation.
      * @return operation from target geospatial coordinates to source grid indices.
-     * @throws FactoryException if some transform steps can not be concatenated.
      * @throws TransformException if some coordinates can not be transformed.
      */
-    final MathTransform inverse(final MathTransform gridToCRS) throws FactoryException, TransformException {
+    final MathTransform inverse(final MathTransform gridToCRS) throws TransformException {
         final MathTransform tr = source.getGridToCRS(anchor).inverse();
         if (operation == null) {
             return tr;
         }
         if (inverseOp != null) {
             // Here, `inverseOp` contains the wraparound step if needed.
-            return mtFactory.createConcatenatedTransform(inverseOp, tr);
+            return MathTransforms.concatenate(inverseOp, tr);
         }
         /*
          * Need to compute transform with wraparound checks, but contrarily to `gridToCRS(…)` we do not want
@@ -345,11 +335,11 @@ wraparound: if (mayRequireWraparound(cs)) {
          * appears to be necessary or not.
          */
         final MathTransform inverseNoWrap   = operation.getMathTransform().inverse();
-        final MathTransform crsToGridNoWrap = mtFactory.createConcatenatedTransform(inverseNoWrap, tr);
+        final MathTransform crsToGridNoWrap = MathTransforms.concatenate(inverseNoWrap, tr);
         inverseOp = inverseNoWrap;
         crsToGrid = crsToGridNoWrap;
         isWraparoundApplied = false;
-check:  if (gridToCRS != null) try {
+check:  if (gridToCRS != null) {
             /*
              * We will do a more extensive check by converting all corners of source grid to the target CRS,
              * then convert back to the source grid and see if coordinates match. Only if coordinates do not
@@ -360,7 +350,7 @@ check:  if (gridToCRS != null) try {
             final Supplier<MathTransform> withWraparound = () -> {
                 try {
                     return applyWraparound(tr);
-                } catch (FactoryException | TransformException e) {
+                } catch (TransformException e) {
                     throw new BackingStoreException(e);
                 }
             };
@@ -376,9 +366,6 @@ check:  if (gridToCRS != null) try {
                 }
                 return cc;
             });
-        } catch (BackingStoreException e) {
-            throw e.unwrapOrRethrow(FactoryException.class);
-            // TransformException is handled in `WraparoundTransform.isNeeded(…)` instead of here.
         }
         /*
          * At this point we determined whether wraparound is needed. The `inverseOp` and `crsToGrid` fields
@@ -401,18 +388,17 @@ check:  if (gridToCRS != null) try {
      *
      * @param  tr  value of {@code source.getGridToCRS(anchor).inverse()}.
      * @return transform from geospatial target coordinates to source grid indices.
-     * @throws FactoryException if some transform steps can not be concatenated.
      * @throws TransformException if some coordinates can not be transformed.
      */
-    private MathTransform applyWraparound(final MathTransform tr) throws FactoryException, TransformException {
+    private MathTransform applyWraparound(final MathTransform tr) throws TransformException {
         if (!isWraparoundApplied) {
             isWraparoundApplied = true;
             final CoordinateSystem cs = operation.getSourceCRS().getCoordinateSystem();
             if (mayRequireWraparound(cs)) {
                 final DirectPosition median = median(source);
                 if (median != null) {
-                    inverseOp = WraparoundTransform.forDomainOfUse(mtFactory, inverseOp, cs, median);
-                    crsToGrid = mtFactory.createConcatenatedTransform(inverseOp, tr);
+                    inverseOp = WraparoundTransform.forDomainOfUse(inverseOp, cs, median);
+                    crsToGrid = MathTransforms.concatenate(inverseOp, tr);
                 }
             }
         }
