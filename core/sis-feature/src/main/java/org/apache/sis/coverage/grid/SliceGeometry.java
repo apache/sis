@@ -32,6 +32,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.internal.referencing.MathTransformsOrFactory;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
@@ -239,8 +240,9 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
                     offset[i] = extent.getLow(gridDimensions[i]);
                 }
                 final LinearTransform translation = MathTransforms.translation(offset);
-                gridToCRS   = concatenate(translation, gridToCRS);
-                cornerToCRS = concatenate(translation, cornerToCRS);
+                final MathTransformsOrFactory f = MathTransformsOrFactory.wrap(factory);
+                gridToCRS   = f.concatenate(translation, gridToCRS);
+                cornerToCRS = f.concatenate(translation, cornerToCRS);
             }
             extent = relativeExtent;
         }
@@ -352,17 +354,6 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
             selected &= ~(1L << j);
         }
         return crsDimensions;
-    }
-
-    /**
-     * Returns the concatenation of given transforms.
-     */
-    private MathTransform concatenate(final MathTransform tr1, final MathTransform tr2) throws FactoryException {
-        if (factory != null) {
-            return factory.createConcatenatedTransform(tr1, tr2);
-        } else {
-            return MathTransforms.concatenate(tr1, tr2);
-        }
     }
 
     /**

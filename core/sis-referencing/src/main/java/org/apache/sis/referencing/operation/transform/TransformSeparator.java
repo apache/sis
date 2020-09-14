@@ -23,6 +23,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.referencing.MathTransformsOrFactory;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
