@@ -28,7 +28,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
@@ -249,7 +248,7 @@ public class GridDerivation {
      * @throws IllegalStateException if {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)}
      *         has already been invoked.
      *
-     * @see GridExtent#grow(boolean, boolean, long...)
+     * @see GridExtent#expand(long...)
      */
     public GridDerivation margin(final int... cellCounts) {
         ArgumentChecks.ensureNonNull("cellCounts", cellCounts);
@@ -426,10 +425,9 @@ public class GridDerivation {
             final MathTransform mapCorners, mapCenters;
             final GridExtent domain = gridOfInterest.getExtent();                  // May throw IncompleteGridGeometryException.
             try {
-                final CoordinateOperation crsChange;
-                crsChange  = Envelopes.findOperation(gridOfInterest.envelope, base.envelope);       // Any envelope may be null.
-                mapCorners = path(gridOfInterest, crsChange, base, PixelInCell.CELL_CORNER);
-                mapCenters = path(gridOfInterest, crsChange, base, PixelInCell.CELL_CENTER);
+                final CoordinateOperationFinder finder = new CoordinateOperationFinder(gridOfInterest, base);
+                mapCorners = finder.gridToGrid(PixelInCell.CELL_CORNER);
+                mapCenters = finder.gridToGrid(PixelInCell.CELL_CENTER);
                 clipExtent(domain.toCRS(mapCorners, mapCenters, null));
             } catch (FactoryException | TransformException e) {
                 throw new IllegalGridGeometryException(e, "gridOfInterest");
@@ -449,30 +447,6 @@ public class GridDerivation {
             subsample(getSubsamplings());
         }
         return this;
-    }
-
-    /**
-     * Returns the concatenation of all transformation steps from the given source to the given target.
-     * The transform maps grid coordinates (not envelopes).
-     *
-     * @param  source     the source grid geometry.
-     * @param  crsChange  the change of coordinate reference system, or {@code null} if none.
-     * @param  target     the target grid geometry.
-     * @param  anchor     whether we want the transform for cell corner or cell center.
-     */
-    private static MathTransform path(final GridGeometry source, final CoordinateOperation crsChange,
-            final GridGeometry target, final PixelInCell anchor) throws NoninvertibleTransformException
-    {
-        MathTransform step1 = source.getGridToCRS(anchor);
-        MathTransform step2 = target.getGridToCRS(anchor);
-        if (crsChange != null) {
-            step1 = MathTransforms.concatenate(step1, crsChange.getMathTransform());
-        }
-        if (step1.equals(step2)) {                                          // Optimization for a common case.
-            return MathTransforms.identity(step1.getSourceDimensions());
-        } else {
-            return MathTransforms.concatenate(step1, step2.inverse());
-        }
     }
 
     /**

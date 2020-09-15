@@ -67,7 +67,8 @@ import org.apache.sis.internal.system.Modules;
  *   <li>Use the area of interest and grid resolution for refining the coordinate operation between two CRS.</li>
  * </ul>
  *
- * <b>Note:</b> this class does not provide the complete chain of operations from grid to grid.
+ * <b>Note:</b> except for the {@link #gridToGrid(PixelInCell)} convenience method,
+ * this class does not provide the complete chain of operations from grid to grid.
  * It provides only the operation from <em>cell indices</em> in source grid to <em>coordinates in the CRS</em>
  * of destination grid. Callers must add the last step (conversion from target CRS to cell indices) themselves.
  *
@@ -194,6 +195,26 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      */
     final CoordinateReferenceSystem getTargetCRS() {
         return (operation != null) ? operation.getTargetCRS() : getSourceCRS();
+    }
+
+    /**
+     * Computes the transform from “grid coordinates of the source” to “grid coordinates of the target”.
+     * This is a concatenation of {@link #gridToCRS(PixelInCell)} with target "CRS to grid" transform.
+     *
+     * @param  anchor  whether the operation is between cell centers or cell corners.
+     * @return operation from source grid indices to target grid indices.
+     * @throws FactoryException if no operation can be found between the source and target CRS.
+     * @throws TransformException if some coordinates can not be transformed to the specified target.
+     * @throws IncompleteGridGeometryException if required CRS or a "grid to CRS" information is missing.
+     */
+    final MathTransform gridToGrid(final PixelInCell anchor) throws FactoryException, TransformException {
+        final MathTransform step1 = gridToCRS(anchor);
+        final MathTransform step2 = target.getGridToCRS(anchor);
+        if (step1.equals(step2)) {                                          // Optimization for a common case.
+            return MathTransforms.identity(step1.getSourceDimensions());
+        } else {
+            return MathTransforms.concatenate(step1, step2.inverse());
+        }
     }
 
     /**

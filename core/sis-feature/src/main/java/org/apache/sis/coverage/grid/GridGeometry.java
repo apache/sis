@@ -1216,6 +1216,10 @@ public class GridGeometry implements LenientComparable, Serializable {
     public MathTransform createTransformTo(final GridGeometry target, final PixelInCell anchor) throws TransformException {
         ArgumentChecks.ensureNonNull("target", target);
         ArgumentChecks.ensureNonNull("anchor", anchor);
+        /*
+         * Inverse `source` and `target` because `CoordinateOperationFinder.inverse(…)` does an
+         * effort for using `WraparoundTransform` only if needed (contrarily to `gridToCRS(…)`).
+         */
         final CoordinateOperationFinder finder = new CoordinateOperationFinder(target, this);
         MathTransform tr;
         try {

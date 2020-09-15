@@ -26,12 +26,15 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
@@ -392,7 +395,9 @@ public final strictfp class GridDerivationTest extends TestCase {
     }
 
     /**
-     * Tests deriving a grid geometry with an envelope crossing the antimeridian.
+     * Tests deriving a grid geometry with a request crossing the antimeridian.
+     * The {@link GridGeometry} crossing the anti-meridian is the one given in
+     * argument to {@link GridDerivation#subgrid(GridGeometry)}.
      */
     @Test
     public void testSubgridCrossingAntiMeridian() {
@@ -411,6 +416,52 @@ public final strictfp class GridDerivationTest extends TestCase {
         final Envelope subEnv = subgrid.getEnvelope();
         areaOfInterest.setRange(0, 140, 181);
         assertEnvelopeEquals(areaOfInterest, subEnv);
+    }
+
+    /**
+     * Tests deriving a grid geometry from a grid crossing the antimeridian.
+     * The {@link GridGeometry} crossing the anti-meridian is the one given
+     * to {@link GridDerivation} constructor.
+     */
+    @Test
+    public void testBasegridCrossingAntiMeridian() {
+        /*
+         * Longitudes from 100°E to 240°E (in WGS84 geographic CRS), which is equivalent to 100°E to 120°W.
+         * That [100 … 240]°E range is compatible with the [0 … 360]° longitude range declared in the CRS.
+         * Latitude range is from 21°S to 60°N, but this is secondary for this test.
+         */
+        final GridGeometry grid = new GridGeometry(
+                new GridExtent(null, null, new long[] {8400, 4860}, true), PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix3(
+                        0.016664682775860015,  0,  100.00833234138793,
+                    0,  0.016663238016868958,      -20.991668380991566,
+                    0, 0, 1)),
+                HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE));
+        /*
+         * 180°W to 180″E (the world) and 80°S to 80°N in Mercator projection.
+         * Only the longitudes are of interest for this test.
+         */
+        final GridGeometry areaOfInterest = new GridGeometry(
+                new GridExtent(null, null, new long[] {256, 256}, false), PixelInCell.CELL_CORNER,
+                MathTransforms.linear(new Matrix3(
+                        156543.03392804097,  0,  -2.0037508342789244E7,
+                    0, -121066.95890409155,       1.5496570739723722E7,
+                    0, 0, 1)),
+                HardCodedConversions.mercator());
+        /*
+         * Since the area of interest covers the world (in longitude), the intersection should
+         * have the same range of longitudes than the source grid, which is [100 … 240]°E.
+         * Latitude range is also unchanged: 21°S to 60°N.
+         */
+        final GridGeometry result = grid.derive().subgrid(areaOfInterest).build();
+        assertEnvelopeEquals(new Envelope2D(null, 100, -21, 240 - 100, 60 - -21),
+                             result.getEnvelope(), Formulas.ANGULAR_TOLERANCE);
+        /*
+         * Following is empirical values provided as an anti-regression test.
+         * The longitude span is about (240° − 100°) ÷ 360° × 256 px  ≈  99.56 px.
+         * The latitude span is more complicated because of adjustement for resolution.
+         */
+        assertExtentEquals(new long[2], new long[] {100, 73}, result.getExtent());
     }
 
     /**

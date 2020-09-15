@@ -39,9 +39,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * This implementation merges the domain and range specified by the query with
  * arguments of {@link GridCoverageResource#read(GridGeometry, int...)} method.
  *
- * <p>Current version does not yet support non-zero value for
- * {@link CoverageQuery#getSourceDomainExpansion()}.</p>
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1

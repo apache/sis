@@ -319,14 +319,27 @@ public final class WraparoundTransform extends AbstractMathTransform {
     }
 
     /**
+     * Whether to allow discontinuities in transform derivatives. Strictly speaking the derivative
+     * at 1, 2, 3… should be infinite because the coordinate value jumps "instantaneously" from an
+     * integer value to 0.  However in practice we use derivatives as linear approximations around
+     * small regions, not for calculations requiring strict mathematical values. An infinite value
+     * goes against the approximation goal.  Furthermore whether a source coordinate is an integer
+     * value or not is subject to rounding errors, which may cause unpredictable behavior if
+     * discontinuities are allowed.
+     */
+    private static final boolean ALLOW_DISCONTINUITIES = false;
+
+    /**
      * Gets the derivative of this transform at a point.
      */
     @Override
     public Matrix derivative(final DirectPosition point) {
         final MatrixSIS derivative = Matrices.createIdentity(dimension);
-        final double v = point.getOrdinate(wraparoundDimension);
-        if (v == Math.floor(v)) {
-            derivative.setElement(wraparoundDimension, wraparoundDimension, Double.NEGATIVE_INFINITY);
+        if (ALLOW_DISCONTINUITIES) {
+            final double v = point.getOrdinate(wraparoundDimension);
+            if (v == Math.floor(v)) {
+                derivative.setElement(wraparoundDimension, wraparoundDimension, Double.NEGATIVE_INFINITY);
+            }
         }
         return derivative;
     }
@@ -349,7 +362,7 @@ public final class WraparoundTransform extends AbstractMathTransform {
             return null;
         }
         final MatrixSIS derivative = Matrices.createIdentity(dimension);
-        if (v == 0) {
+        if (ALLOW_DISCONTINUITIES && v == 0) {
             derivative.setElement(wraparoundDimension, wraparoundDimension, Double.NEGATIVE_INFINITY);
         }
         return derivative;

@@ -24,7 +24,6 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.internal.storage.AbstractGridResource;
 
 import static org.junit.Assert.*;
@@ -94,10 +93,7 @@ final strictfp class GridResourceMock extends AbstractGridResource {
         if (domain == null) {
             domain = gridGeometry;
         } else {
-            domain = gridGeometry.derive()
-                    .rounding(GridRoundingMode.ENCLOSING)
-                    .subgrid(domain)
-                    .build();
+            domain = gridGeometry.derive().subgrid(domain).build();
         }
         final GridExtent extent = domain.getExtent();
         final BufferedImage img = new BufferedImage(
