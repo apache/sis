@@ -20,13 +20,13 @@ import java.util.List;
 import java.util.Collections;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
-import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -65,10 +65,10 @@ public final strictfp class WraparoundTransformTest extends TestCase {
     /**
      * Tests wraparound on one axis.
      *
-     * @throws NoninvertibleMatrixException if the expected matrix can not be inverted.
+     * @throws TransformException if a coordinate can not be computed.
      */
     @Test
-    public void testOneAxis() throws NoninvertibleMatrixException {
+    public void testOneAxis() throws TransformException {
         final AbstractCoordinateOperation op = new AbstractCoordinateOperation(
                 Collections.singletonMap(AbstractCoordinateOperation.NAME_KEY, "Wrapper"),
                 HardCodedCRS.WGS84_φλ.forConvention(AxesConvention.POSITIVE_RANGE),
@@ -108,10 +108,10 @@ public final strictfp class WraparoundTransformTest extends TestCase {
      * transform between them. The absence of separation between the two {@link WraparoundTransform}s is an
      * indirect test of {@link WraparoundTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)}.
      *
-     * @throws NoninvertibleMatrixException if the expected matrix can not be inverted.
+     * @throws TransformException if a coordinate can not be computed.
      */
     @Test
-    public void testTwoAxes() throws NoninvertibleMatrixException {
+    public void testTwoAxes() throws TransformException {
         final AbstractCoordinateOperation op = new AbstractCoordinateOperation(
                 Collections.singletonMap(AbstractCoordinateOperation.NAME_KEY, "Wrapper"),
                 HardCodedCRS.WGS84_3D_TIME.forConvention(AxesConvention.POSITIVE_RANGE),

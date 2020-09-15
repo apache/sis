@@ -21,9 +21,7 @@ import java.util.function.Supplier;
 import java.util.function.IntToDoubleFunction;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -37,9 +35,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.BackingStoreException;
 
@@ -144,13 +140,13 @@ public final class WraparoundTransform extends AbstractMathTransform {
      *
      * @param  op       the coordinate operation for which to get the math transform.
      * @return the math transform for the given coordinate operation.
+     * @throws TransformException if a coordinate can not be computed.
      */
-    public static MathTransform forTargetCRS(final CoordinateOperation op) {
+    public static MathTransform forTargetCRS(final CoordinateOperation op) throws TransformException {
         MathTransform tr = op.getMathTransform();
         final CoordinateSystem targetCS = op.getTargetCRS().getCoordinateSystem();
         for (final int wraparoundDimension : CoordinateOperations.wrapAroundChanges(op)) {
-            tr = MathTransforms.concatenate(tr, create(targetCS.getDimension(),
-                    wraparoundDimension, targetCS.getAxis(wraparoundDimension), Double.NaN));
+            tr = concatenate(tr, wraparoundDimension, targetCS, null);
         }
         return tr;
     }
@@ -170,59 +166,72 @@ public final class WraparoundTransform extends AbstractMathTransform {
      * @param  targetCS  the target coordinate system.
      * @param  median    the coordinates to put at the center of new ranges.
      * @return the math transform with wraparound if needed.
+     * @throws TransformException if a coordinate can not be computed.
      */
-    public static MathTransform forDomainOfUse(MathTransform tr, final CoordinateSystem targetCS, final DirectPosition median) {
+    public static MathTransform forDomainOfUse(MathTransform tr, final CoordinateSystem targetCS,
+            final DirectPosition median) throws TransformException
+    {
         final int dimension = targetCS.getDimension();
         for (int i=0; i<dimension; i++) {
-            final CoordinateSystemAxis axis = targetCS.getAxis(i);
-            if (RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
-                tr = MathTransforms.concatenate(tr,
-                        create(dimension, i, targetCS.getAxis(i), median.getOrdinate(i)));
-            }
+            tr = concatenate(tr, i, targetCS, median);
         }
         return tr;
     }
 
     /**
-     * Creates a transform with a "wrap around" behavior in the given dimension.
-     * The wraparound is implemented by a concatenation of affine transform before
-     * and after the {@link WraparoundTransform} instance.
+     * Concatenates the given transform with a "wrap around" transform if applicable.
+     * The wraparound is implemented by concatenations of affine transforms before and
+     * after the {@link WraparoundTransform} instance.
+     * If there is no wraparound to apply, then this method returns {@code tr} unchanged.
      *
-     * @param  dimension            the number of source and target dimensions.
-     * @param  wraparoundDimension  the dimension where "wrap around" behavior apply.
-     * @param  axis                 the coordinate system axis in the "wrap around" dimension.
+     * @param  tr                   the transform to concatenate with a wraparound transform.
+     * @param  wraparoundDimension  the dimension where "wrap around" behavior may apply.
+     * @param  targetCS             the target coordinate system.
      * @param  median               the coordinate to put at the center of new range,
-     *                              or {@link Double#NaN} for standard center of given axis.
+     *                              or {@code null} for standard axis center.
      * @return the math transform with "wrap around" behavior in the specified dimension.
+     * @throws TransformException if a coordinate can not be computed.
      */
-    private static MathTransform create(final int dimension, final int wraparoundDimension,
-            final CoordinateSystemAxis axis, final double median)
+    private static MathTransform concatenate(final MathTransform tr, final int wraparoundDimension,
+            final CoordinateSystem targetCS, final DirectPosition median) throws TransformException
     {
-        ArgumentChecks.ensureStrictlyPositive("dimension", dimension);
-        ArgumentChecks.ensureBetween("wraparoundDimension", 0, dimension - 1, wraparoundDimension);
-        NoninvertibleTransformException cause = null;
-        final double minimum = axis.getMinimumValue();
-        final double maximum = axis.getMaximumValue();
-        final double span = maximum - minimum;
-        if (span > 0 && span != Double.POSITIVE_INFINITY) {
-            final MatrixSIS m = Matrices.createIdentity(dimension + 1);
-            m.setElement(wraparoundDimension, wraparoundDimension, span);
-            m.setElement(wraparoundDimension, dimension, Double.isNaN(median) ? minimum : median - span/2);
-            final MathTransform denormalize = MathTransforms.linear(m);
-            final WraparoundTransform wraparound = create(dimension, wraparoundDimension);
+        final double span = WraparoundAdjustment.range(targetCS, wraparoundDimension);
+        if (!(span > 0 && span != Double.POSITIVE_INFINITY)) {
+            return tr;
+        }
+        double start;
+        if (median != null) {
             try {
+                start = median.getOrdinate(wraparoundDimension) + -0.5 * span;
+            } catch (BackingStoreException e) {
+                // Some implementations compute coordinates only when first needed.
+                throw e.unwrapOrRethrow(TransformException.class);
+            }
+            if (!Double.isFinite(start)) return tr;
+        } else {
+            start = targetCS.getAxis(wraparoundDimension).getMinimumValue();
+            if (!Double.isFinite(start)) {
                 /*
-                 * Do not use the 3-arguments method because we need to
-                 * control the order in which concatenation is applied.
+                 * May happen if `WraparoundAdjustment.range(…)` recognized a longitude axis
+                 * despite the `CoordinateSystemAxis` not declarining minimum/maximum values.
+                 * Use 0 as the range center (e.g. center of [-180 … 180]° longitude range).
                  */
-                return MathTransforms.concatenate(denormalize.inverse(),
-                       MathTransforms.concatenate(wraparound, denormalize));
-            } catch (NoninvertibleTransformException e) {
-                // Matrix is non-invertible only if the range given in argument is illegal.
-                cause = e;
+                start = -0.5 * span;
             }
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minimum, maximum), cause);
+        final int dimension = tr.getTargetDimensions();
+        final MatrixSIS m = Matrices.createIdentity(dimension + 1);
+        m.setElement(wraparoundDimension, wraparoundDimension, span);
+        m.setElement(wraparoundDimension, dimension, start);
+        final MathTransform denormalize = MathTransforms.linear(m);
+        MathTransform wraparound = create(dimension, wraparoundDimension);
+        /*
+         * Do not use the 3-arguments method because we need to
+         * control the order in which concatenation is applied.
+         */
+        wraparound = MathTransforms.concatenate(denormalize.inverse(),
+                     MathTransforms.concatenate(wraparound, denormalize));
+        return MathTransforms.concatenate(tr, wraparound);
     }
 
     /**

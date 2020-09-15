@@ -24,7 +24,6 @@ import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -35,8 +34,8 @@ import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.WraparoundTransform;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.geometry.AbstractDirectPosition;
 import org.apache.sis.geometry.Envelopes;
-import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -308,18 +307,15 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
          * which may be identity. A wraparound may be applied for keeping target coordinates inside the expected
          * target domain.
          */
-        if (forwardOp == null) {
+apply:  if (forwardOp == null) {
             forwardOp = operation.getMathTransform();
             final CoordinateSystem cs = operation.getTargetCRS().getCoordinateSystem();
-wraparound: if (mayRequireWraparound(cs)) {
-                DirectPosition median = median(target);
-                if (median == null) {
-                    median = median(source);
-                    if (median == null) break wraparound;
-                    median = forwardOp.transform(median, null);
-                }
-                forwardOp = WraparoundTransform.forDomainOfUse(forwardOp, cs, median);
+            DirectPosition median = median(target, null);
+            if (median == null) {
+                median = median(source, forwardOp);
+                if (median == null) break apply;
             }
+            forwardOp = WraparoundTransform.forDomainOfUse(forwardOp, cs, median);
         }
         return MathTransforms.concatenate(tr, forwardOp);
     }
@@ -415,48 +411,51 @@ check:  if (gridToCRS != null) {
         if (!isWraparoundApplied) {
             isWraparoundApplied = true;
             final CoordinateSystem cs = operation.getSourceCRS().getCoordinateSystem();
-            if (mayRequireWraparound(cs)) {
-                final DirectPosition median = median(source);
-                if (median != null) {
-                    inverseOp = WraparoundTransform.forDomainOfUse(inverseOp, cs, median);
-                    crsToGrid = MathTransforms.concatenate(inverseOp, tr);
-                }
+            final DirectPosition median = median(source, null);
+            if (median != null) {
+                inverseOp = WraparoundTransform.forDomainOfUse(inverseOp, cs, median);
+                crsToGrid = MathTransforms.concatenate(inverseOp, tr);
             }
         }
         return crsToGrid;
     }
 
     /**
-     * Returns {@code true} if a transform to the specified target coordinate system may require handling
-     * of wraparound axes. A {@code true} return value does not mean that wraparounds actually happen;
-     * it only means that more expensive checks will be required.
-     */
-    private static boolean mayRequireWraparound(final CoordinateSystem cs) {
-        final int dimension = cs.getDimension();
-        for (int i=0; i<dimension; i++) {
-            if (RangeMeaning.WRAPAROUND.equals(cs.getAxis(i).getRangeMeaning())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Returns the point of interest converted to the Coordinate Reference System.
      * If the grid does not define a point of interest or does not define a CRS,
      * then this method returns {@code null}.
+     *
+     * @param  grid       the source or target grid providing the point of interest.
+     * @param  forwardOp  transform from source CRS to target CRS, or {@code null} if none.
      */
-    private static DirectPosition median(final GridGeometry grid) throws TransformException {
-        if (grid.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS)) {
-            final double[] poi = grid.getExtent().getPointOfInterest();
-            if (poi != null) {
-                final MathTransform tr = grid.getGridToCRS(PixelInCell.CELL_CENTER);
-                final GeneralDirectPosition median = new GeneralDirectPosition(tr.getTargetDimensions());
-                tr.transform(poi, 0, median.coordinates, 0, 1);
-                return median;
-            }
+    private static DirectPosition median(final GridGeometry grid, final MathTransform forwardOp) throws TransformException {
+        if (!grid.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS)) {
+            return null;
         }
-        return null;
+        return new AbstractDirectPosition() {
+            /** The coordinates, computed when first needed. */
+            private double[] coordinates;
+
+            @Override public int    getDimension()     {return coordinates().length;}
+            @Override public double getOrdinate(int i) {return coordinates()[i];}
+
+            /** Returns the coordinate tuple. */
+            @SuppressWarnings("ReturnOfCollectionOrArrayField")
+            private double[] coordinates() {
+                if (coordinates == null) try {
+                    final double[] poi = grid.getExtent().getPointOfInterest();
+                    MathTransform tr = grid.getGridToCRS(PixelInCell.CELL_CENTER);
+                    if (forwardOp != null) {
+                        tr = MathTransforms.concatenate(tr, forwardOp);
+                    }
+                    coordinates = new double[tr.getTargetDimensions()];
+                    tr.transform(poi, 0, coordinates, 0, 1);
+                } catch (TransformException e) {
+                    throw new BackingStoreException(e);
+                }
+                return coordinates;
+            }
+        };
     }
 
     /**

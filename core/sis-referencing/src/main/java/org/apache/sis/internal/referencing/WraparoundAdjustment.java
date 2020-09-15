@@ -116,9 +116,9 @@ public final class WraparoundAdjustment {
     }
 
     /**
-     * Returns the range (maximum - minimum) of the given axis if it has wraparound meaning,
-     * or {@link Double#NaN} otherwise. This method implements a fallback for the longitude
-     * axis if it does not declare the minimum and maximum values as expected.
+     * Returns the range (maximum - minimum) of axis in specified dimension if it has wraparound meaning,
+     * or {@link Double#NaN} otherwise. This method implements a fallback for longitude axis if it does
+     * not declare the minimum and maximum values as expected.
      *
      * @param  cs         the coordinate system for which to get wraparound range.
      * @param  dimension  dimension of the axis to test.

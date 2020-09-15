@@ -1306,11 +1306,6 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
         @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
             return getMedian(dimension);
         }
-
-        /** Unsupported operation. */
-        @Override public void setOrdinate(int dimension, double value) {
-            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
-        }
     }
 
     /**
