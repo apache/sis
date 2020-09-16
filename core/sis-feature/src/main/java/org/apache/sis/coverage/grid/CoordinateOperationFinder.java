@@ -43,6 +43,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -356,33 +357,8 @@ apply:  if (forwardOp == null) {
         inverseOp = inverseNoWrap;
         crsToGrid = crsToGridNoWrap;
         isWraparoundApplied = false;
-check:  if (gridToCRS != null) {
-            /*
-             * We will do a more extensive check by converting all corners of source grid to the target CRS,
-             * then convert back to the source grid and see if coordinates match. Only if coordinates do not
-             * match, `WraparoundTransform.isNeeded(…)` will request a `crsToGrid` transform which includes
-             * wraparound steps in order to check if it improves the results. By using a `Supplier`,
-             * we avoid creating `WraparoundTransform` in the common case where it is not needed.
-             */
-            final Supplier<MathTransform> withWraparound = () -> {
-                try {
-                    return applyWraparound(tr);
-                } catch (TransformException e) {
-                    throw new BackingStoreException(e);
-                }
-            };
-            final GridExtent extent = source.getExtent();
-            final boolean isCorner = (anchor == PixelInCell.CELL_CORNER);
-            isWraparoundNeeded = WraparoundTransform.isNeeded(gridToCRS, crsToGridNoWrap, withWraparound, (dim) -> {
-                long cc;                                          // Coordinate of a corner.
-                if (dim < 0) {
-                    cc = extent.getLow(~dim);
-                } else {
-                    cc = extent.getHigh(dim);                     // Inclusive.
-                    if (isCorner && cc != Long.MAX_VALUE) cc++;   // Make exclusive.
-                }
-                return cc;
-            });
+        if (gridToCRS != null) {
+            isWraparoundNeeded = isWraparoundNeeded(gridToCRS, crsToGridNoWrap, tr);
         }
         /*
          * At this point we determined whether wraparound is needed. The `inverseOp` and `crsToGrid` fields
@@ -397,6 +373,84 @@ check:  if (gridToCRS != null) {
             crsToGrid = crsToGridNoWrap;
             return crsToGridNoWrap;
         }
+    }
+
+    /**
+     * Verifies whether wraparound is needed for a "CRS to grid" transform.
+     * This method converts coordinates of all corners of a grid to an arbitrary CRS, then back to the grid.
+     * The forward and backward transforms are not exactly the inverse of each other: the forward transform
+     * applies wraparounds while the backward transform does not. By checking whether or not the roundtrip
+     * result is equal to the original coordinates, we determine if wraparound is necessary or not.
+     *
+     * @param  gridToCRS  result of previous call to {@link #gridToCRS(PixelInCell)}.
+     * @param  invNoWrap  inverse of {@code gridToCRS} but without handling of wraparound axes.
+     * @param  tr         the transform to give to {@link #applyWraparound(MathTransform)} if a
+     *                    the {@code crsToGrid} (including wraparound) transform is needed.
+     * @return whether wraparound transform seems needed.
+     * @throws TransformException if an error occurred while transforming coordinates.
+     */
+    private boolean isWraparoundNeeded(final MathTransform gridToCRS, final MathTransform invNoWrap,
+                                       final MathTransform tr) throws TransformException
+    {
+        final GridExtent extent = source.getExtent();
+        final boolean isCorner = (anchor == PixelInCell.CELL_CORNER);
+        /*
+         * Do not use class fields below this point. In particular, `this.crsToGrid` may be modified as a side
+         * effect of call to `applyWraparound(tr)`, so the `crsToGridNoWrap` reference needs to be used instead.
+         */
+        MathTransform withWraparound = null;
+        final int dimension = gridToCRS.getSourceDimensions();
+        final double[]  src = new double[dimension];            // Coordinates of a corner.
+        final double[]  nwp = new double[dimension];            // Roundtrip result without wraparound.
+        final double[]  tgt = new double[Math.max(gridToCRS.getTargetDimensions(), dimension)];
+        long  maskOfUppers  = Numerics.bitmask(dimension);
+        long  maskOfChanges = 0;
+        do {
+            maskOfChanges ^= --maskOfUppers;                    // Source coordinates that changed since last iteration.
+            do {
+                final int i = Long.numberOfTrailingZeros(maskOfChanges);
+                final long bit = 1L << i;
+                long cc;                                        // Coordinate of a corner.
+                if ((maskOfUppers & bit) == 0) {
+                    cc = extent.getLow(i);
+                } else {
+                    cc = extent.getHigh(i);                         // Inclusive.
+                    if (isCorner && cc != Long.MAX_VALUE) cc++;     // Make exclusive.
+                }
+                src[i] = cc;
+                maskOfChanges &= ~bit;
+            } while (maskOfChanges != 0);                       // Iterate only over the coordinates that changed.
+            maskOfChanges = maskOfUppers;
+            /*
+             * Transform corner from the source extent to the destination CRS, then back to source grid coordinates.
+             * We do not concatenate the forward and inverse transforms because we do not want MathTransformFactory
+             * to simplify the transformation chain (e.g. replacing "Mercator → Inverse of Mercator" by an identity
+             * transform), because such simplification would erase wraparound effects.
+             */
+            boolean transformedWithWrap = false;
+            gridToCRS.transform(src, 0, tgt, 0, 1);
+            invNoWrap.transform(tgt, 0, nwp, 0, 1);
+            for (int i=0; i<dimension; i++) {
+                final double error = Math.abs(nwp[i] - src[i]);
+                if (!(error <= 1)) {                                // Use `!` for catching NaN.
+                    if (!transformedWithWrap) {
+                        transformedWithWrap = true;
+                        if (withWraparound == null) {
+                            withWraparound = applyWraparound(tr);
+                        }
+                        withWraparound.transform(tgt, 0, tgt, 0, 1);
+                    }
+                    /*
+                     * Do not consider NaN in `tgt` as a need for wraparound because NaN values
+                     * occur when an operation between two CRS reduces the number of dimensions.
+                     */
+                    if (Math.abs(tgt[i] - src[i]) < (error <= Double.MAX_VALUE ? error : 1)) {
+                        return true;
+                    }
+                }
+            }
+        } while (maskOfUppers != 0);
+        return false;
     }
 
     /**
