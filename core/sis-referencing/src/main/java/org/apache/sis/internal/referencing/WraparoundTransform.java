@@ -397,7 +397,8 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
         final List<MathTransform> steps = MathTransforms.getSteps(other);
         final int count = steps.size();
         if (count >= 2) {
-            Matrix middle = MathTransforms.getMatrix(steps.get(applyOtherFirst ? count - 1 : 0));
+            final MathTransform middleTr = steps.get(applyOtherFirst ? count - 1 : 0);
+            Matrix middle = MathTransforms.getMatrix(middleTr);
             if (middle != null) try {
                 /*
                  * We have a matrix between this `WraparoundTransform` and something else,
@@ -409,7 +410,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
                 final MathTransformsOrFactory mf = MathTransformsOrFactory.wrap(factory);
                 boolean modified = false;
                 MathTransform step1 = this;
-                MathTransform move = movable(middle, mf);
+                MathTransform move = movable(middleTr, middle, mf);
                 if (move != null) {
                     /*
                      * Update the middle matrix with everything that we could not put in `move`.
@@ -441,7 +442,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
                 MathTransform step2 = steps.get(applyOtherFirst ? count - 2 : 1);
                 if (step2 instanceof WraparoundTransform) {
                     WraparoundTransform redim = (WraparoundTransform) step2;
-                    move = redim.movable(middle, mf);
+                    move = redim.movable(null, middle, mf);
                     if (move != null) {
                         final Matrix remaining = remaining(!applyOtherFirst, move, middle);
                         redim = redim.redim(!applyOtherFirst, remaining);
@@ -482,13 +483,16 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
      * Returns a transform based on the given matrix but converting only coordinates in dimensions
      * that can be processed indifferently before or after this {@code WraparoundTransform}.
      *
+     * @param  tr       the transform of the matrix to analyze, or {@code null} if none.
      * @param  matrix   the matrix to analyze.
      * @param  factory  wrapper of the factory given to {@link #tryConcatenate tryConcatenate(…)}.
      * @return a transform processing only the movable parts, or {@code null} if identity.
      */
-    private MathTransform movable(Matrix matrix, final MathTransformsOrFactory factory) throws FactoryException {
-        long canMoveAfter = Numerics.bitmask(dimension) - 1;
-        canMoveAfter &= ~Numerics.bitmask(wraparoundDimension);
+    private MathTransform movable(MathTransform tr, Matrix matrix, final MathTransformsOrFactory factory)
+            throws FactoryException
+    {
+        final long moveAll = Numerics.bitmask(dimension) - 1;
+        long canMoveAfter = moveAll;
         /*
          * If any matrix row (output coordinate) uses the wraparound dimension as input,
          * then we can not move that row because the coordinate value may not be the same
@@ -496,28 +500,34 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
          */
         if (matrix.getNumCol() - 1 > wraparoundDimension) {
             for (int j = matrix.getNumRow(); --j >= 0;) {
-                if (matrix.getElement(j, wraparoundDimension) != 0) {
+                final double v = matrix.getElement(j, wraparoundDimension);
+                if (v != (j == wraparoundDimension ? 1 : 0)) {
                     canMoveAfter &= ~Numerics.bitmask(j);
                 }
             }
         }
         if (canMoveAfter != 0) {
-            /*
-             * Create a matrix which will convert coordinates in all dimensions
-             * that we can process before or after this `WraparoundTransform`.
-             * We start with a copy and set to identity the rows that we can not move.
-             */
-            matrix = Matrices.copy(matrix);
-            for (int j = matrix.getNumRow() - 1; --j >=0;) {
-                if ((canMoveAfter & Numerics.bitmask(j)) == 0) {
-                    for (int i=matrix.getNumCol(); --i >= 0;) {
-                        matrix.setElement(j, i, (i == j) ? 1 : 0);
+            if (canMoveAfter != moveAll) {
+                /*
+                 * Create a matrix which will convert coordinates in all dimensions
+                 * that we can process before or after this `WraparoundTransform`.
+                 * We start with a copy and set to identity the rows that we can not move.
+                 */
+                matrix = Matrices.copy(matrix);
+                for (int j = matrix.getNumRow() - 1; --j >=0;) {
+                    if ((canMoveAfter & Numerics.bitmask(j)) == 0) {
+                        for (int i=matrix.getNumCol(); --i >= 0;) {
+                            matrix.setElement(j, i, (i == j) ? 1 : 0);
+                        }
                     }
                 }
+            } else if (tr != null) {
+                return tr;
+                // OTherwise `matrix` can be used as-is.
             }
-        }
-        if (!matrix.isIdentity()) {
-            return factory.linear(matrix);
+            if (!matrix.isIdentity()) {
+                return factory.linear(matrix);
+            }
         }
         return null;
     }

@@ -119,8 +119,8 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
             if (v != 0) {
                 final int row  = (i / numCol);
                 final int col  = (i % numCol);
-                isScale       &= row == col;
-                isTranslation &= (col == lastColumn) || (isScale && v == 1);
+                isScale       &= (col == row);
+                isTranslation &= (col == lastColumn) || (col == row && v == 1);
                 if (!(isScale | isTranslation)) {
                     return this;
                 }
