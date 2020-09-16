@@ -151,7 +151,7 @@ public final class Longitude extends Angle {
     public static double normalize(double λ) {
         /*
          * Following should be simplified as only one branch by javac since
-         * the values used in the 'if' statement are compile-time constants.
+         * the values used in the `if` statement are compile-time constants.
          * For verifying: javap -c org.apache.sis.measure.Longitude
          */
         if (MIN_VALUE == -MAX_VALUE) {

@@ -47,11 +47,12 @@ public final strictfp class WraparoundTransformTest extends TestCase {
      */
     @Test
     public void testCache() {
+        final double period = 360;
         final WraparoundTransform t1, t2, t3, t4;
-        assertSame   (WraparoundTransform.create(3, 0), t1 = WraparoundTransform.create(3, 0));
-        assertNotSame(WraparoundTransform.create(3, 0), t2 = WraparoundTransform.create(3, 1));
-        assertNotSame(WraparoundTransform.create(3, 0), t3 = WraparoundTransform.create(2, 0));
-        assertNotSame(WraparoundTransform.create(3, 0), t4 = WraparoundTransform.create(3, 2));
+        assertSame   (WraparoundTransform.create(3, 0, period), t1 = WraparoundTransform.create(3, 0, period));
+        assertNotSame(WraparoundTransform.create(3, 0, period), t2 = WraparoundTransform.create(3, 1, period));
+        assertNotSame(WraparoundTransform.create(3, 0, period), t3 = WraparoundTransform.create(2, 0, period));
+        assertNotSame(WraparoundTransform.create(3, 0, period), t4 = WraparoundTransform.create(3, 2, period));
         assertEquals(3, t1.getSourceDimensions());
         assertEquals(3, t2.getSourceDimensions());
         assertEquals(2, t3.getSourceDimensions());
@@ -71,8 +72,9 @@ public final strictfp class WraparoundTransformTest extends TestCase {
     public void testOneAxis() throws TransformException {
         final AbstractCoordinateOperation op = new AbstractCoordinateOperation(
                 Collections.singletonMap(AbstractCoordinateOperation.NAME_KEY, "Wrapper"),
+                HardCodedCRS.WGS84_φλ,
                 HardCodedCRS.WGS84_φλ.forConvention(AxesConvention.POSITIVE_RANGE),
-                HardCodedCRS.WGS84_φλ, null, MathTransforms.scale(3, 5));
+                null, MathTransforms.scale(3, 5));
         /*
          * Transform should be  [scale & normalization]  →  [wraparound]  →  [denormalization].
          * The wraparound is applied on target coordinates, which is why it appears after [scale].
@@ -84,27 +86,41 @@ public final strictfp class WraparoundTransformTest extends TestCase {
         assertEquals(3, steps.size());
         assertEquals(1, ((WraparoundTransform) steps.get(1)).wraparoundDimension);
         /*
-         * Wraparound outputs are in [0 … 1) range (0 inclusive and 1 exclusive), so we expect a
-         * multiplication by the span of each axis for getting the final range.
+         * WraparoundTransform outputs are in [−180 … 180] range, so we expect
+         * a 180° shift for getting results in the [0 … 360]° range.
          */
         assertMatrixEquals("denormalize", new Matrix3(
                 1,   0,    0,                           // Latitude (no wrap around)
-                0, 360, -180,                           // Longitude in [-180 … 180) range.
+                0,   1,  180,                           // Longitude in [0 … 360] range.
                 0,   0,    1),
                 MathTransforms.getMatrix(steps.get(2)), STRICT);
         /*
-         * The normalization is the inverse of above matrix (when source and target axes have the same span).
-         * But we expect the normalization matrix to be concatenated with the (3, 2, 5) scale operation.
+         * The normalization is the inverse of above matrix.
+         * But we expect the normalization matrix to be concatenated with the (3, 5) scale operation.
          */
         assertMatrixEquals("normalize", new Matrix3(
-                3,      0,            0,                // 3 is a factor in MathTransforms.scale(…).
-                0, 5./360,  -(-180./360),               // 5 is (idem).
-                0,      0,            1),
-                MathTransforms.getMatrix(steps.get(0)), 1E-15);
+                3,  0,    0,                            // 3 is a factor in MathTransforms.scale(…).
+                0,  5, -180,                            // 5 is (idem).
+                0,  0,    1),
+                MathTransforms.getMatrix(steps.get(0)), STRICT);
+        /*
+         * Test transforming some points.
+         */
+        final double[] pts = {
+            2, -100/5,
+            6, -200/5,
+            9,  200/5,
+            3,  400/5};
+        wt.transform(pts, 0, pts, 0, 4);
+        assertArrayEquals(new double[] {
+             6, 260,
+            18, 160,
+            27, 200,
+             9,  40}, pts, STRICT);
     }
 
     /**
-     * Tests wraparound on two axes. We expects two instances of {@link WraparoundTransform} without linear
+     * Tests wraparound on two axes. We expect two instances of {@link WraparoundTransform} without linear
      * transform between them. The absence of separation between the two {@link WraparoundTransform}s is an
      * indirect test of {@link WraparoundTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)}.
      *
@@ -120,7 +136,7 @@ public final strictfp class WraparoundTransformTest extends TestCase {
          * Transform should be  [scale & normalization]  →  [wraparound 1]  →  [wraparound 2]  →  [denormalization].
          * At first an affine transform existed between the two [wraparound] operations, but that affine transform
          * should have been moved by `WraparoundTransform.tryConcatenate(…)` in order to combine them with initial
-         * [normalization} and final {denormalization].
+         * [normalization] and final [denormalization].
          */
         final MathTransform wt = WraparoundTransform.forTargetCRS(op);
         final List<MathTransform> steps = MathTransforms.getSteps(wt);
@@ -128,24 +144,24 @@ public final strictfp class WraparoundTransformTest extends TestCase {
         assertEquals(0, ((WraparoundTransform) steps.get(1)).wraparoundDimension);
         assertEquals(2, ((WraparoundTransform) steps.get(2)).wraparoundDimension);
         /*
-         * Wraparound outputs are in [0 … 1) range (0 inclusive and 1 exclusive), so we expect a
-         * multiplication by the span of each axis for getting the final range.
+         * WraparoundTransform outputs are in [−180 … 180] range in longitude case,
+         * so we expect a 180° shift for getting results in the [0 … 360]° range.
          */
         assertMatrixEquals("denormalize", new Matrix4(
-                360,   0,   0, -180,                        // Longitude in [-180 … 180) range.
-                  0,   1,   0,    0,                        // Latitude (no wrap around)
-                  0,   0, 365,    1,                        // Day of year in [1 … 366) range.
-                  0,   0,   0,    1),
+                1,   0,   0,   0,                           // Longitude in [-180 … 180] range.
+                0,   1,   0,   0,                           // Latitude (no wrap around)
+                0,   0,   1, 183.5,                         // Day of year in [1 … 366] range.
+                0,   0,   0,   1),
                 MathTransforms.getMatrix(steps.get(3)), STRICT);
         /*
          * The normalization is the inverse of above matrix (when source and target axes have the same span).
          * But we expect the normalization matrix to be concatenated with the (3, 2, 5) scale operation.
          */
         assertMatrixEquals("normalize", new Matrix4(
-                3./360,  0,       0,  -(-180./360),         // 3 is a factor in MathTransforms.scale(…).
-                    0,   2,       0,            0,          // 2 is (idem).
-                    0,   0,  5./365,     -(1./365),         // 5 is (idem).
-                    0,   0,       0,            1),
+                3,   0,   0,    0,                          // 3 is a factor in MathTransforms.scale(…).
+                0,   2,   0,    0,                          // 2 is (idem).
+                0,   0,   5, -183.5,                        // 5 is (idem).
+                0,   0,   0,    1),
                 MathTransforms.getMatrix(steps.get(0)), 1E-15);
     }
 }

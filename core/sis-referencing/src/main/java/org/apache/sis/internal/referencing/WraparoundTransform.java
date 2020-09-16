@@ -16,10 +16,12 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.io.Serializable;
 import java.util.List;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -27,12 +29,12 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -64,9 +66,16 @@ import org.apache.sis.util.collection.BackingStoreException;
  * @since   1.1
  * @module
  */
-public final class WraparoundTransform extends AbstractMathTransform {
+public final class WraparoundTransform extends AbstractMathTransform implements Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -8811608024800445706L;
+
     /**
      * Number of dimensions of the first cached {@link WraparoundTransform} instance.
+     * We cache only {@code WraparoundTransform} instances having a period of 360°
+     * (i.e. longitudes).
      */
     private static final int FIRST_CACHED_DIMENSION = 2;
 
@@ -79,22 +88,23 @@ public final class WraparoundTransform extends AbstractMathTransform {
     static {
         for (int i=0; i<CACHE.length; i++) {
             final int dimension = (i >>> 1) + FIRST_CACHED_DIMENSION;
-            CACHE[i] = new WraparoundTransform(dimension, i & 1);
+            CACHE[i] = new WraparoundTransform(dimension, i & 1, Longitude.MAX_VALUE - Longitude.MIN_VALUE);
         }
     }
 
     /**
      * Returns a transform with a wraparound behavior in the given dimension.
-     * Input and output values in the wraparound dimension shall be normalized in the [0 … 1] range.
+     * Input and output values in the wraparound dimension shall be normalized in the [−p/2 … +p/2] range
+     * where <var>p</var> is the period (typically 360° for longitude axis).
      */
-    static WraparoundTransform create(final int dimension, final int wraparoundDimension) {
-        if ((wraparoundDimension & ~1) == 0) {
+    static WraparoundTransform create(final int dimension, final int wraparoundDimension, final double period) {
+        if (period == (Longitude.MAX_VALUE - Longitude.MIN_VALUE) && (wraparoundDimension & ~1) == 0) {
             final int i = ((dimension - FIRST_CACHED_DIMENSION) << 1) | wraparoundDimension;
             if (i >= 0 && i < CACHE.length) {
                 return CACHE[i];
             }
         }
-        return new WraparoundTransform(dimension, wraparoundDimension);
+        return new WraparoundTransform(dimension, wraparoundDimension, period);
     }
 
     /**
@@ -108,23 +118,43 @@ public final class WraparoundTransform extends AbstractMathTransform {
     final int wraparoundDimension;
 
     /**
+     * Period on wraparound axis. This is 360° for the longitude axis.
+     * Coordinates will be normalized in the [−p/2 … +p/2] range.
+     *
+     * <h4>Design note</h4>
+     * A previous version of {@code WraparoundTransform} had no period. It was expecting coordinates
+     * normalized in the [0 … 1] range. Coordinates in [0 … 360]° range were divided by 360 using an
+     * affine transforms before {@code WraparoundTransform} and multiplied by 360 using another affine
+     * transform after {@code WraparoundTransform}. That approach allowed to delegate more work to the
+     * affine transforms which can efficiently be combined with other affine transforms, but it caused
+     * more rounding errors.
+     */
+    private final double period;
+
+    /**
      * Creates a new transform with a wraparound behavior in the given dimension.
      * Input and output values in the wraparound dimension shall be normalized in
-     * the [0 … 1] range.
+     * the [−p/2 … +p/2] range where <var>p</var> is the period (e.g. 360°).
      */
-    private WraparoundTransform(final int dimension, final int wraparoundDimension) {
+    private WraparoundTransform(final int dimension, final int wraparoundDimension, final double period) {
         this.dimension = dimension;
         this.wraparoundDimension = wraparoundDimension;
+        this.period = period;
     }
 
     /**
-     * Returns an instance with the given number of dimensions while keeping {@link #wraparoundDimension} unchanged.
+     * Returns an instance with the number of dimensions compatible with the given matrix, while keeping
+     * {@link #wraparoundDimension} and {@link #period} unchanged.
      * If no instance can be created for the given number of dimensions, then this method returns {@code null}.
+     *
+     * @param  other            matrix defining a transform which will be applied before or after {@code this}.
+     * @param  applyOtherFirst  whether the transform defined by the matrix will be applied before {@code this}.
      */
-    private WraparoundTransform redim(final int n) {
+    private WraparoundTransform redim(final boolean applyOtherFirst, final Matrix other) {
+        final int n = (applyOtherFirst ? other.getNumRow() : other.getNumCol()) - 1;
         if (n == dimension) return this;
         if (n >= wraparoundDimension) return null;
-        return create(n, wraparoundDimension);
+        return create(n, wraparoundDimension, period);
     }
 
     /**
@@ -136,7 +166,7 @@ public final class WraparoundTransform extends AbstractMathTransform {
      * on an inspection of source and target CRS axes. For a method making decision based on a domain of use,
      * see {@link #forDomainOfUse forDomainOfUse(…)} instead.</p>
      *
-     * @param  op       the coordinate operation for which to get the math transform.
+     * @param  op  the coordinate operation for which to get the math transform.
      * @return the math transform for the given coordinate operation.
      * @throws TransformException if a coordinate can not be computed.
      */
@@ -193,42 +223,51 @@ public final class WraparoundTransform extends AbstractMathTransform {
     private static MathTransform concatenate(final MathTransform tr, final int wraparoundDimension,
             final CoordinateSystem targetCS, final DirectPosition median) throws TransformException
     {
-        final double span = WraparoundAdjustment.range(targetCS, wraparoundDimension);
-        if (!(span > 0 && span != Double.POSITIVE_INFINITY)) {
+        final double period = WraparoundAdjustment.range(targetCS, wraparoundDimension);
+        if (!(period > 0 && period != Double.POSITIVE_INFINITY)) {
             return tr;
         }
-        double start;
-        if (median != null) {
-            try {
-                start = median.getOrdinate(wraparoundDimension) + -0.5 * span;
-            } catch (BackingStoreException e) {
-                // Some implementations compute coordinates only when first needed.
-                throw e.unwrapOrRethrow(TransformException.class);
-            }
-            if (!Double.isFinite(start)) return tr;
+        double m;
+        if (median == null) {
+            final CoordinateSystemAxis axis = targetCS.getAxis(wraparoundDimension);
+            m = (axis.getMinimumValue() + axis.getMaximumValue()) / 2;
+        } else try {
+            m = median.getOrdinate(wraparoundDimension);
+        } catch (BackingStoreException e) {
+            // Some implementations compute coordinates only when first needed.
+            throw e.unwrapOrRethrow(TransformException.class);
+        }
+        if (Double.isFinite(m)) {
+            /*
+             * Round the median to a value having an exact representation in base 2 using about 10 bits.
+             * The intent is to reduce the risk of rounding errors with add/subtract operations.
+             */
+            final int power = 10 - Math.getExponent(m);
+            m = Math.scalb(Math.rint(Math.scalb(m, power)), -power);
+        } else if (median == null) {
+            /*
+             * May happen if `WraparoundAdjustment.range(…)` recognized a longitude axis
+             * despite the `CoordinateSystemAxis` not declarining minimum/maximum values.
+             * Use 0 as the range center (e.g. center of [-180 … 180]° longitude range).
+             */
+            m = 0;
         } else {
-            start = targetCS.getAxis(wraparoundDimension).getMinimumValue();
-            if (!Double.isFinite(start)) {
-                /*
-                 * May happen if `WraparoundAdjustment.range(…)` recognized a longitude axis
-                 * despite the `CoordinateSystemAxis` not declarining minimum/maximum values.
-                 * Use 0 as the range center (e.g. center of [-180 … 180]° longitude range).
-                 */
-                start = -0.5 * span;
-            }
+            // Invalid median value. Assume caller means "no wrap".
+            return tr;
         }
         final int dimension = tr.getTargetDimensions();
-        final MatrixSIS m = Matrices.createIdentity(dimension + 1);
-        m.setElement(wraparoundDimension, wraparoundDimension, span);
-        m.setElement(wraparoundDimension, dimension, start);
-        final MathTransform denormalize = MathTransforms.linear(m);
-        MathTransform wraparound = create(dimension, wraparoundDimension);
-        /*
-         * Do not use the 3-arguments method because we need to
-         * control the order in which concatenation is applied.
-         */
-        wraparound = MathTransforms.concatenate(denormalize.inverse(),
-                     MathTransforms.concatenate(wraparound, denormalize));
+        MathTransform wraparound = create(dimension, wraparoundDimension, period);
+        if (m != 0) {
+            final double[] t = new double[dimension];
+            t[wraparoundDimension] = m;
+            final MathTransform denormalize = MathTransforms.translation(t);
+            /*
+             * Do not use the 3-arguments method because we need to
+             * control the order in which concatenation is applied.
+             */
+            wraparound = MathTransforms.concatenate(denormalize.inverse(),
+                         MathTransforms.concatenate(wraparound, denormalize));
+        }
         return MathTransforms.concatenate(tr, wraparound);
     }
 
@@ -253,29 +292,19 @@ public final class WraparoundTransform extends AbstractMathTransform {
     }
 
     /**
-     * Whether to allow discontinuities in transform derivatives. Strictly speaking the derivative
-     * at 1, 2, 3… should be infinite because the coordinate value jumps "instantaneously" from an
-     * integer value to 0.  However in practice we use derivatives as linear approximations around
-     * small regions, not for calculations requiring strict mathematical values. An infinite value
-     * goes against the approximation goal.  Furthermore whether a source coordinate is an integer
-     * value or not is subject to rounding errors, which may cause unpredictable behavior if
-     * discontinuities are allowed.
-     */
-    private static final boolean ALLOW_DISCONTINUITIES = false;
-
-    /**
      * Gets the derivative of this transform at a point.
+     *
+     * <h4>Mathematical note</h4>
+     * Strictly speaking the derivative at (<var>n</var> + 0.5) × {@link #period} where <var>n</var> is an integer
+     * should be infinite because the coordinate value jumps "instantaneously" from any value to ±{@link #period}/2.
+     * However in practice we use derivatives as linear approximations around small regions, not for calculations
+     * requiring strict mathematical values. An infinite value goes against the approximation goal.
+     * Furthermore whether a source coordinate is an integer value or not is subject to rounding errors,
+     * which may cause unpredictable behavior if those infinite values were provided.
      */
     @Override
     public Matrix derivative(final DirectPosition point) {
-        final MatrixSIS derivative = Matrices.createIdentity(dimension);
-        if (ALLOW_DISCONTINUITIES) {
-            final double v = point.getOrdinate(wraparoundDimension);
-            if (v == Math.floor(v)) {
-                derivative.setElement(wraparoundDimension, wraparoundDimension, Double.NEGATIVE_INFINITY);
-            }
-        }
-        return derivative;
+        return Matrices.createIdentity(dimension);
     }
 
     /**
@@ -283,23 +312,15 @@ public final class WraparoundTransform extends AbstractMathTransform {
      * and optionally computes the transform derivative at that location.
      */
     @Override
-    public Matrix transform(final double[] srcPts, final int srcOff,
-                            final double[] dstPts, final int dstOff, final boolean derivate)
+    public Matrix transform(final double[] srcPts, int srcOff,
+                            final double[] dstPts, int dstOff, final boolean derivate)
     {
-        double v = srcPts[srcOff];
-        v -= Math.floor(v);
         if (dstPts != null) {
             System.arraycopy(srcPts, srcOff, dstPts, dstOff, dimension);
-            dstPts[dstOff + wraparoundDimension] = v;
+            dstOff += wraparoundDimension;
+            dstPts[dstOff] = Math.IEEEremainder(dstPts[dstOff], period);
         }
-        if (!derivate) {
-            return null;
-        }
-        final MatrixSIS derivative = Matrices.createIdentity(dimension);
-        if (ALLOW_DISCONTINUITIES && v == 0) {
-            derivative.setElement(wraparoundDimension, wraparoundDimension, Double.NEGATIVE_INFINITY);
-        }
-        return derivative;
+        return derivate ? Matrices.createIdentity(dimension) : null;
     }
 
     /**
@@ -312,7 +333,7 @@ public final class WraparoundTransform extends AbstractMathTransform {
         System.arraycopy(srcPts, srcOff, dstPts, dstOff, numPts * dimension);
         dstOff += wraparoundDimension;
         while (--numPts >= 0) {
-            dstPts[dstOff] -= Math.floor(dstPts[dstOff]);
+            dstPts[dstOff] = Math.IEEEremainder(dstPts[dstOff], period);
             dstOff += dimension;
         }
     }
@@ -327,7 +348,7 @@ public final class WraparoundTransform extends AbstractMathTransform {
         System.arraycopy(srcPts, srcOff, dstPts, dstOff, numPts * dimension);
         dstOff += wraparoundDimension;
         while (--numPts >= 0) {
-            dstPts[dstOff] -= Math.floor(dstPts[dstOff]);
+            dstPts[dstOff] = (float) Math.IEEEremainder(dstPts[dstOff], period);
             dstOff += dimension;
         }
     }
@@ -373,66 +394,85 @@ public final class WraparoundTransform extends AbstractMathTransform {
         if (equals(other, null)) {
             return this;
         }
-        /*
-         * If two `WraparoundTransform` instances are separated only by a `LinearTransform`,
-         * then that linear transform is moved before or after this `WraparoundTransform`
-         * for increasing the chances to concatenate it using a matrix multiplication.
-         */
-        if (applyOtherFirst) {
-            final List<MathTransform> steps = MathTransforms.getSteps(other);
-            if (steps.size() == 2) {
-                final MathTransform middle = steps.get(1);
-                Matrix matrix = MathTransforms.getMatrix(middle);
-                if (matrix != null) try {
-                    final MathTransformsOrFactory mf = MathTransformsOrFactory.wrap(factory);
-                    boolean modified = false;
-                    MathTransform step2 = this;
-                    final MathTransform after = movable(matrix, mf);
-                    if (after != null) {
-                        /*
-                         * Update the middle matrix with everything that we could not put in `after`.
-                         * Usually the matrix is square before the multiplication. But if it was not the case,
-                         * the new matrix will have the same number of columns (source coordinates) but a new
-                         * number of rows (target coordinates). The result should be a square matrix.
-                         */
-                        final Matrix remaining = Matrices.multiply(MathTransforms.getMatrix(after.inverse()), matrix);
-                        final WraparoundTransform redim = redim(remaining.getNumRow() - 1);
+        final List<MathTransform> steps = MathTransforms.getSteps(other);
+        final int count = steps.size();
+        if (count >= 2) {
+            Matrix middle = MathTransforms.getMatrix(steps.get(applyOtherFirst ? count - 1 : 0));
+            if (middle != null) try {
+                /*
+                 * We have a matrix between this `WraparoundTransform` and something else,
+                 * potentially another `WraparoundTransform`. Try to move as many rows as
+                 * possible outside that `middle` matrix. Ideally we will be able to move
+                 * the matrix completely, which increase the chances to multiply (outside
+                 * this method) with another matrix.
+                 */
+                final MathTransformsOrFactory mf = MathTransformsOrFactory.wrap(factory);
+                boolean modified = false;
+                MathTransform step1 = this;
+                MathTransform move = movable(middle, mf);
+                if (move != null) {
+                    /*
+                     * Update the middle matrix with everything that we could not put in `move`.
+                     * If `applyOtherFirst` is false:
+                     *
+                     *     [move]  →  [redim]  →  [remaining]  →  [other]
+                     *
+                     * If `applyOtherFirst` is true:
+                     *
+                     *     [other]  →  [remaining]  →  [redim]  →  [move]
+                     *
+                     * Usually the matrix is square before the multiplication. But if it was not the case,
+                     * the new matrix will have the same number of columns (source coordinates) but a new
+                     * number of rows (target coordinates). The result should be a square matrix.
+                     */
+                    final Matrix remaining = remaining(applyOtherFirst, move, middle);
+                    final WraparoundTransform redim = redim(applyOtherFirst, remaining);
+                    if (redim != null) {
+                        step1    = mf.concatenate(applyOtherFirst, move, redim);
+                        middle   = remaining;
+                        modified = true;
+                    }
+                }
+                /*
+                 * Now look at the non-linear transform. If it is another instance of `WraparoundTransform`,
+                 * then we may move the calculation of some coordinates before it. This is the same algorithm
+                 * than above but with `applyOtherFirst` reversed.
+                 */
+                MathTransform step2 = steps.get(applyOtherFirst ? count - 2 : 1);
+                if (step2 instanceof WraparoundTransform) {
+                    WraparoundTransform redim = (WraparoundTransform) step2;
+                    move = redim.movable(middle, mf);
+                    if (move != null) {
+                        final Matrix remaining = remaining(!applyOtherFirst, move, middle);
+                        redim = redim.redim(!applyOtherFirst, remaining);
                         if (redim != null) {
-                            step2 = mf.concatenate(redim, after);
-                            matrix = remaining;
+                            step2    = mf.concatenate(applyOtherFirst, redim, move);
+                            middle   = remaining;
                             modified = true;
                         }
                     }
-                    /*
-                     * Now look at the non-linear transform. If it is another instance of `WraparoundTransform`,
-                     * then we may move the calculation of some coordinates before it.
-                     */
-                    MathTransform step1 = steps.get(0);
-                    if (step1 instanceof WraparoundTransform) {
-                        WraparoundTransform wb = (WraparoundTransform) step1;
-                        final MathTransform before = wb.movable(matrix, mf);
-                        if (before != null) {
-                            final Matrix remaining = Matrices.multiply(matrix, MathTransforms.getMatrix(before.inverse()));
-                            wb = wb.redim(remaining.getNumCol() - 1);
-                            if (wb != null) {
-                                step1 = mf.concatenate(before, wb);
-                                matrix = remaining;
-                                modified = true;
-                            }
+                }
+                /*
+                 * Done moving the linear operations that we can move. Put everything together.
+                 */
+                if (modified) {
+                    MathTransform tr = mf.linear(middle);
+                    tr = mf.concatenate(applyOtherFirst, tr, step2);
+                    tr = mf.concatenate(applyOtherFirst, step1, tr);
+                    if (applyOtherFirst) {
+                        for (int i = count-2; --i >= 0;) {
+                            tr = mf.concatenate(steps.get(i), tr);
+                        }
+                    } else {
+                        for (int i = 2; i < count; i++) {
+                            tr = mf.concatenate(tr, steps.get(i));
                         }
                     }
-                    /*
-                     * Done moving the linear operations that we can move. Put everything together.
-                     * Do not use the 3-arguments method because we need to control the order in which
-                     * concatenation is applied.
-                     */
-                    if (modified) {
-                        return mf.concatenate(mf.concatenate(step1, mf.linear(matrix)), step2);
-                    }
-                } catch (NoninvertibleTransformException e) {
-                    // Should not happen. But if it is the case, just abandon the optimization effort.
-                    Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), getClass(), "tryConcatenate", e);
+                    return tr;
                 }
+            } catch (NoninvertibleTransformException e) {
+                // Should not happen. But if it is the case, just abandon the optimization effort.
+                Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), getClass(), "tryConcatenate", e);
             }
         }
         return null;
@@ -483,6 +523,21 @@ public final class WraparoundTransform extends AbstractMathTransform {
     }
 
     /**
+     * Returns a matrix equivalent to applying the inverse of {@code move} first, followed by {@code middle}.
+     * This is appropriate if the {@code move} transform is going to be applied first, followed by {@code remaining}.
+     *
+     * <p>If {@code reverse} is {@code true} then this method performs the concatenation in reverse order.
+     * This is appropriate if the {@code remaining} matrix is going to be applied first, followed by {@code move}.</p>
+     */
+    private static Matrix remaining(final boolean reverse, final MathTransform move, final Matrix middle)
+            throws NoninvertibleTransformException
+    {
+        final Matrix change = MathTransforms.getMatrix(move.inverse());
+        return reverse ? Matrices.multiply(change, middle)
+                       : Matrices.multiply(middle, change);
+    }
+
+    /**
      * Formats this transform as a pseudo-WKT element.
      *
      * @param  formatter  the formatter to use.
@@ -490,7 +545,9 @@ public final class WraparoundTransform extends AbstractMathTransform {
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        formatter.append(dimension);
         formatter.append(wraparoundDimension);
+        formatter.append(period);
         formatter.setInvalidWKT(WraparoundTransform.class, null);
         return "Wraparound_MT";
     }
@@ -505,7 +562,8 @@ public final class WraparoundTransform extends AbstractMathTransform {
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object instanceof WraparoundTransform) {
             final WraparoundTransform other = (WraparoundTransform) object;
-            return other.dimension == dimension && other.wraparoundDimension == wraparoundDimension;
+            return other.dimension == dimension && other.wraparoundDimension == wraparoundDimension
+                    && Numerics.equals(period, other.period);
         }
         return false;
     }
@@ -515,6 +573,6 @@ public final class WraparoundTransform extends AbstractMathTransform {
      */
     @Override
     protected int computeHashCode() {
-        return dimension * 31 + wraparoundDimension;
+        return dimension * 31 + wraparoundDimension + Double.hashCode(period);
     }
 }
