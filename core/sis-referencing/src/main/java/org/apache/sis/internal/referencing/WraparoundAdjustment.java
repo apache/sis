@@ -241,7 +241,7 @@ public final class WraparoundAdjustment {
              */
             final DirectPosition lowerCorner;
             final DirectPosition upperCorner;
-            GeneralEnvelope shifted;            // To be initialized to a copy of 'areaOfInterest' when first needed.
+            GeneralEnvelope shifted;            // To be initialized to a copy of `areaOfInterest` when first needed.
             if (replaceCRS()) {
                 shifted     = Envelopes.transform(geographicToAOI.inverse(), areaOfInterest);
                 lowerCorner = shifted.getLowerCorner();
@@ -252,7 +252,7 @@ public final class WraparoundAdjustment {
                 upperCorner = areaOfInterest.getUpperCorner();
             }
             /*
-             * We will not read 'areaOfInterest' anymore after we got its two corner points (except for creating
+             * We will not read `areaOfInterest` anymore after we got its two corner points (except for creating
              * a copy if `shifted` is still null). The following loop searches for "wraparound" axes.
              */
             final CoordinateSystem cs = crs.getCoordinateSystem();
@@ -267,7 +267,7 @@ public final class WraparoundAdjustment {
                     transformDomainToAOI();
                     /*
                      * "Unroll" the range. For example if we have [+160 … -170]° of longitude, we can replace by [160 … 190]°.
-                     * We do not change the 'lower' or 'upper' value now in order to avoid rounding error. Instead we compute
+                     * We do not change the `lower` or `upper` value now in order to avoid rounding error. Instead we compute
                      * how many periods we need to add to those values. We adjust the side which results in the value closest
                      * to zero, in order to reduce rounding error if no more adjustment is done in the next block.
                      */
@@ -276,13 +276,13 @@ public final class WraparoundAdjustment {
                     double lowerCycles = 0;                             // In number of periods.
                     double upperCycles = 0;
                     double delta = upper - lower;
-                    if (MathFunctions.isNegative(delta)) {              // Use 'isNegative' for catching [+0 … -0] range.
+                    if (MathFunctions.isNegative(delta)) {              // Use `isNegative` for catching [+0 … -0] range.
                         final double cycles = (delta == 0) ? -1 : Math.floor(delta / period);         // Always negative.
                         delta = cycles * period;
                         if (Math.abs(lower + delta) < Math.abs(upper - delta)) {
-                            lowerCycles = cycles;                                    // Will subtract periods to 'lower'.
+                            lowerCycles = cycles;                                    // Will subtract periods to `lower`.
                         } else {
-                            upperCycles = -cycles;                                   // Will add periods to 'upper'.
+                            upperCycles = -cycles;                                   // Will add periods to `upper`.
                         }
                     }
                     /*
@@ -299,7 +299,7 @@ public final class WraparoundAdjustment {
                      *   │    false    │    true    │ AOI on right of valid area │ Add negative amount of period │
                      *   └─────────────┴────────────┴────────────────────────────┴───────────────────────────────┘
                      *
-                     * We try to compute multiples of 'periods' instead than just adding or subtracting 'periods' once in
+                     * We try to compute multiples of `periods` instead than just adding or subtracting `periods` once in
                      * order to support images that cover more than one period, for example images over 720° of longitude.
                      * It may happen for example if an image shows data under the trajectory of a satellite.
                      */
@@ -316,7 +316,7 @@ public final class WraparoundAdjustment {
                             /*
                              * Notation: ⎣x⎦=floor(x) and ⎡x⎤=ceil(x).
                              *
-                             * We need to add an integer amount of 'period' to both sides in order to move the range
+                             * We need to add an integer amount of `period` to both sides in order to move the range
                              * inside the valid area. We need  ⎣lowerToValidStart⎦  for reaching the point where:
                              *
                              *     (validStart - period) < (new lower) ≦ validStart
@@ -361,7 +361,7 @@ public final class WraparoundAdjustment {
                         } else {
                             /*
                              * Same reasoning than above with sign reverted and lower/upper variables interchanged.
-                             * In this block, 'upperToValidEnd' and 'lowerToValidEnd' are negative, contrarily to
+                             * In this block, `upperToValidEnd` and `lowerToValidEnd` are negative, contrarily to
                              * above block where they were positive.
                              */
                             final double cycles = Math.max(Math.ceil (upperToValidStart),
@@ -377,7 +377,7 @@ public final class WraparoundAdjustment {
                     }
                     /*
                      * If there is change to apply, copy the envelope when first needed and set the fields.
-                     * If we never enter in this block, then 'areaOfInterest' will stay the envelope given
+                     * If we never enter in this block, then `areaOfInterest` will stay the envelope given
                      * at construction time.
                      */
                     if (lowerCycles != 0 || upperCycles != 0) {
@@ -385,7 +385,7 @@ public final class WraparoundAdjustment {
                         if (shifted == null) {
                             shifted = new GeneralEnvelope(areaOfInterest);
                         }
-                        areaOfInterest = shifted;                           // 'shifted' may have been set before the loop.
+                        areaOfInterest = shifted;                           // `shifted` may have been set before the loop.
                         shifted.setRange(i, lower + lowerCycles * period,   // TODO: use Math.fma in JDK9.
                                             upper + upperCycles * period);
                     }
@@ -417,7 +417,7 @@ public final class WraparoundAdjustment {
             if (replaceCRS()) {
                 shifted = geographicToAOI.inverse().transform(pointOfInterest, null);
             } else {
-                shifted = pointOfInterest;              // To be replaced by a copy of 'pointOfInterest' when first needed.
+                shifted = pointOfInterest;              // To be replaced by a copy of `pointOfInterest` when first needed.
             }
             final CoordinateSystem cs = crs.getCoordinateSystem();
             for (int i=cs.getDimension(); --i >= 0;) {
@@ -441,7 +441,7 @@ public final class WraparoundAdjustment {
                         if (shifted == pointOfInterest) {
                             shifted = new GeneralDirectPosition(pointOfInterest);
                         }
-                        pointOfInterest = shifted;                         // 'shifted' may have been set before the loop.
+                        pointOfInterest = shifted;                         // `shifted` may have been set before the loop.
                         shifted.setOrdinate(i, x + delta * period);        // TODO: use Math.fma in JDK9.
                     }
                 }

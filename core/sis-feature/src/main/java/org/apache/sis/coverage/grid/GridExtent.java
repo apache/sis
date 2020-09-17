@@ -918,7 +918,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             /*
              * If the envelope contains some NaN values, try to replace them by constant values inferred from the math transform.
              * We must use the MathTransform specified by the user (gridToCRS), not necessarily the cornerToCRS transform, because
-             * inferring a 'cornerToCRS' by translating a 'centerToCRS' by 0.5 cell increase the amount of NaN values in the matrix.
+             * inferring a `cornerToCRS` by translating a `centerToCRS` by 0.5 cell increase the amount of NaN values in the matrix.
              * For giving a chance to TransformSeparator to perform its work, we need the minimal amount of NaN values.
              */
             final boolean isCenter = (gridToCRS != cornerToCRS);
@@ -927,7 +927,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 if (coordinates[srcDim + dimension] == 0 && coordinates[srcDim] == 0) {
                     /*
                      * At this point we found a grid dimension with [0 … 0] range. Only this specific range is processed because
-                     * it is assumed associated to NaN scale factors in the 'gridToCRS' matrix, since the resolution is computed
+                     * it is assumed associated to NaN scale factors in the `gridToCRS` matrix, since the resolution is computed
                      * by 0/0.  We require the range to be [0 … 0] instead of [n … n] because if grid indices are not zero, then
                      * we would need to know the scale factors for computing the offset.
                      */
@@ -981,7 +981,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                     double upper = envelope.getUpper(tgtDim);
                     if (Double.isNaN(lower)) {lower = fallback.getMinimum(tgtDim); modified = true;}
                     if (Double.isNaN(upper)) {upper = fallback.getMaximum(tgtDim); modified = true;}
-                    if (modified && !(lower > upper)) {                // Use '!' for accepting NaN.
+                    if (modified && !(lower > upper)) {                // Use `!` for accepting NaN.
                         envelope.setRange(tgtDim, lower, upper);
                     }
                 }

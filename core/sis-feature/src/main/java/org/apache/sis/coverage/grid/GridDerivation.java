@@ -322,9 +322,9 @@ public class GridDerivation {
             }
         }
         /*
-         * Computes the affine transform to pre-concatenate with the 'gridToCRS' transform.
+         * Computes the affine transform to pre-concatenate with the `gridToCRS` transform.
          * This is the simplest calculation done in this class since we are already in grid coordinates.
-         * The given 'scales' array will become identical to 'this.scales' after length adjustment.
+         * The given `scales` array will become identical to `this.scales` after length adjustment.
          */
         final int actual = scales.length;
         scales = Arrays.copyOf(scales, n);
@@ -346,7 +346,7 @@ public class GridDerivation {
             throw new IllegalArgumentException(e);
         }
         scaledExtent = extent;
-        // Note: current version does not update 'baseExtent'.
+        // Note: current version does not update `baseExtent`.
         return this;
     }
 
@@ -546,7 +546,7 @@ public class GridDerivation {
              * If no area of interest has been specified, or if the result is identical to the original extent,
              * then we will keep the reference to the original GridExtent (i.e. we share existing instances).
              */
-            dimension = baseExtent.getDimension();      // Non-null since 'base.requireGridToCRS()' succeed.
+            dimension = baseExtent.getDimension();      // Non-null since `base.requireGridToCRS()` succeed.
             GeneralEnvelope indices = null;
             if (areaOfInterest != null) {
                 indices = new WraparoundAdjustment(base.envelope, baseToAOI, cornerToCRS.inverse()).shift(areaOfInterest);
@@ -824,7 +824,7 @@ public class GridDerivation {
             if (toBase != null) {
                 gridPoint = toBase.transform(gridPoint, gridPoint);
             }
-            baseExtent = baseExtent.slice(gridPoint, modifiedDimensions);       // Non-null check by 'base.requireGridToCRS()'.
+            baseExtent = baseExtent.slice(gridPoint, modifiedDimensions);       // Non-null check by `base.requireGridToCRS()`.
         } catch (FactoryException e) {
             throw new IllegalGridGeometryException(Resources.format(Resources.Keys.CanNotMapToGridDimensions), e);
         } catch (TransformException e) {
@@ -871,9 +871,9 @@ public class GridDerivation {
 
     /*
      * RATIONAL FOR NOT PROVIDING reduce(int... dimensions) METHOD HERE: that method would need to be the last method invoked,
-     * otherwise it makes more complicated to implement other methods in this class.  Forcing users to invoke 'build()' before
+     * otherwise it makes more complicated to implement other methods in this class.  Forcing users to invoke `build()` before
      * (s)he can invoke GridGeometry.reduce(…) makes that clear and avoid the need for more flags in this GridDerivation class.
-     * Furthermore declaring the 'reduce(…)' method in GridGeometry is more consistent with 'GridExtent.reduce(…)'.
+     * Furthermore declaring the `reduce(…)` method in GridGeometry is more consistent with `GridExtent.reduce(…)`.
      */
 
     /**
