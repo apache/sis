@@ -487,22 +487,26 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
             throws FactoryException
     {
         final long moveAll = Numerics.bitmask(dimension) - 1;
-        long canMoveAfter = moveAll;
+        long canMove = moveAll;
         /*
          * If any matrix row (output coordinate) uses the wraparound dimension as input,
          * then we can not move that row because the coordinate value may not be the same
          * after execution of `WraparoundTransform`.
          */
-        if (matrix.getNumCol() - 1 > wraparoundDimension) {
+        final int lastColumn = matrix.getNumCol() - 1;
+        if (wraparoundDimension < lastColumn) {
             for (int j = matrix.getNumRow(); --j >= 0;) {
                 final double v = matrix.getElement(j, wraparoundDimension);
                 if (v != (j == wraparoundDimension ? 1 : 0)) {
-                    canMoveAfter &= ~Numerics.bitmask(j);
+                    canMove &= ~Numerics.bitmask(j);
                 }
             }
         }
-        if (canMoveAfter != 0) {
-            if (canMoveAfter != moveAll) {
+        if (matrix.getElement(wraparoundDimension, lastColumn) != 0) {
+            canMove &= ~Numerics.bitmask(wraparoundDimension);
+        }
+        if (canMove != 0) {
+            if (canMove != moveAll) {
                 /*
                  * Create a matrix which will convert coordinates in all dimensions that we can process
                  * before or after this `WraparoundTransform`. We start with a copy and set to identity
@@ -512,7 +516,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
                  */
                 matrix = Matrices.copy(matrix);
                 for (int j = matrix.getNumRow() - 1; --j >=0;) {
-                    if ((canMoveAfter & Numerics.bitmask(j)) == 0) {    // True also for dimensions ≥ 64.
+                    if ((canMove & Numerics.bitmask(j)) == 0) {       // True also for dimensions ≥ 64.
                         for (int i=matrix.getNumCol(); --i >= 0;) {
                             matrix.setElement(j, i, (i == j) ? 1 : 0);
                         }

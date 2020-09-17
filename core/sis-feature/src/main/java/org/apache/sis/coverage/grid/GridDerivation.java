@@ -556,7 +556,9 @@ public class GridDerivation {
                 indices = new GeneralEnvelope(dimension);
             }
             for (int i=0; i<dimension; i++) {
-                indices.setRange(i, baseExtent.getLow(i), baseExtent.getHigh(i) + 1.0);
+                long high = baseExtent.getHigh(i);
+                if (high != Long.MAX_VALUE) high++;                 // Increment before conversion to `double`.
+                indices.setRange(i, baseExtent.getLow(i), high);
             }
             /*
              * Convert the target resolutions to grid cell subsamplings and adjust the extent consequently.
