@@ -1221,10 +1221,10 @@ public class GridGeometry implements LenientComparable, Serializable {
          * effort for using `WraparoundTransform` only if needed (contrarily to `gridToCRS(…)`).
          */
         final CoordinateOperationFinder finder = new CoordinateOperationFinder(target, this);
-        MathTransform tr;
+        final MathTransform tr;
         try {
-            tr = finder.gridToCRS(anchor);
-            tr = finder.inverse(tr);
+            finder.setAnchor(anchor);
+            tr = finder.inverse(true);
         } catch (FactoryException e) {
             throw new TransformException(e);
         }

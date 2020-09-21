@@ -231,10 +231,12 @@ final class ResampledGridCoverage extends GridCoverage {
          * The following lines may throw IncompleteGridGeometryException, which is desired because if that
          * transform is missing, we can not continue (we have no way to guess it).
          */
-        final MathTransform sourceCornerToCRS = changeOfCRS.gridToCRS(PixelInCell.CELL_CORNER);
-        final MathTransform crsToSourceCorner = changeOfCRS.inverse(sourceCornerToCRS);
-        final MathTransform sourceCenterToCRS = changeOfCRS.gridToCRS(PixelInCell.CELL_CENTER);
-        final MathTransform crsToSourceCenter = changeOfCRS.inverse(null);
+        changeOfCRS.setAnchor(PixelInCell.CELL_CORNER);
+        final MathTransform sourceCornerToCRS = changeOfCRS.gridToCRS();
+        final MathTransform crsToSourceCorner = changeOfCRS.inverse(true);
+        changeOfCRS.setAnchor(PixelInCell.CELL_CENTER);
+        final MathTransform sourceCenterToCRS = changeOfCRS.gridToCRS();
+        final MathTransform crsToSourceCenter = changeOfCRS.inverse(false);
         /*
          * Compute the transform from target grid to target CRS. This transform may be unspecified,
          * in which case we need to compute a default transform trying to preserve resolution at the

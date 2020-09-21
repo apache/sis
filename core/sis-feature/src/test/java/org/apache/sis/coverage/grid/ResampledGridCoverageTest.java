@@ -571,7 +571,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
 
     /**
      * Tests resampling of an image associated to a coordinate system using the 0 to 360° range of longitude.
-     * The image crosses the 180° longitude.
+     * The image crosses the 180° longitude. The resampling does not involve map projection.
      *
      * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
      */
@@ -601,6 +601,53 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
             {123, 124, 125, 126, 127, 128, 129},
             {155, 156, 157, 158, 159, 160, 161},
             {187, 188, 189, 190, 191, 192, 193}
+        });
+    }
+
+    /**
+     * Tests map reprojection of an image associated to a coordinate system using the 0 to 360° range of longitude.
+     *
+     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     */
+    @Test
+    public void testReprojectionFromLongitude360() throws TransformException {
+        /*
+         * Longitudes from 91°E to 235°E (in WGS84 geographic CRS), which is equivalent to 91°E to 125°W.
+         * Latitude range is not important for this test.
+         */
+        final int width  = 8;
+        final int height = 5;
+        final GridGeometry source = new GridGeometry(
+                new GridExtent(null, null, new long[] {width, height}, false), CELL_CENTER,
+                new AffineTransform2D(18, 0, 0, 19, 100, -20),
+                HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE));
+        /*
+         * 180°W to 180″E (the world) and 80°S to 80°N in Mercator projection.
+         * Latitude range is about the same than source grid geometry.
+         */
+        final double xmin = -2.0037508342789244E7;
+        final GridGeometry target = new GridGeometry(
+                new GridExtent(null, null, new long[] {2*width, height}, false), CELL_CENTER,
+                new AffineTransform2D(-xmin/width, 0, 0, 2610000, xmin, -2376500),
+                HardCodedConversions.mercator());
+        /*
+         * Resample the image by specifying fully the target grid geometry.
+         * The grid coverage should have the exact same instance.
+         */
+        final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        image.getRaster().setPixels(0, 0, width, height, IntStream.range(100, 100 + width*height).toArray());
+        final GridCoverage2D coverage = new GridCoverage2D(source, null, image);
+        final GridCoverage resampled = resample(coverage, target);
+        assertSame(target, resampled.getGridGeometry());
+        /*
+         * Sample values 100, 101, 102, … should be distributed on both sides of the image.
+         */
+        assertValuesEqual(resampled.render(null), 0, new double[][] {
+            {104, 106, 107, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 101, 102, 103},
+            {112, 114, 115, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 109, 110, 111},
+            {120, 122, 123, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 117, 118, 119},
+            {128, 130, 131, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 125, 126, 127},
+            {136, 138, 139, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 133, 134, 135},
         });
     }
 
