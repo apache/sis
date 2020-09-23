@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.Set;
 import java.util.Objects;
+import org.apache.sis.util.Numbers;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
@@ -676,12 +677,15 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *
      * @see #properties()
      */
-    public <V> AttributeTypeBuilder<V> addAttribute(final Class<V> valueClass) {
+    public <V> AttributeTypeBuilder<V> addAttribute(Class<V> valueClass) {
         ensureNonNull("valueClass", valueClass);
         if (Feature.class.isAssignableFrom(valueClass)) {
             // We disallow Feature.class because that type shall be handled as association instead than attribute.
             throw new IllegalArgumentException(errors().getString(Errors.Keys.IllegalArgumentValue_2, "valueClass", valueClass));
         }
+
+        valueClass = (Class<V>) Numbers.primitiveToWrapper(valueClass);
+
         final AttributeTypeBuilder<V> property = new AttributeTypeBuilder<>(this, valueClass);
         properties.add(property);
         clearCache();

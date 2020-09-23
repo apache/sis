@@ -20,6 +20,11 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.Collections;
 import com.esri.core.geometry.Geometry;
+import org.opengis.feature.Attribute;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.Property;
+import org.opengis.feature.PropertyType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.feature.AttributeConvention;
@@ -239,5 +244,28 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
         assertTrue("remove(IDENTIFIER_COMPONENT)", roles.remove(AttributeRole.IDENTIFIER_COMPONENT));
         assertTrue("isEmpty", roles.isEmpty());
         assertFalse("remove(IDENTIFIER_COMPONENT)", roles.remove(AttributeRole.IDENTIFIER_COMPONENT));
+    }
+
+    @Test
+    public void testBoxing() {
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName("boxing");
+        final AttributeTypeBuilder<Integer> boxBuilder = ftb.addAttribute(int.class).setName("boxed");
+        assertEquals("Attribute value type should have been boxed", Integer.class, boxBuilder.getValueClass());
+
+        final FeatureType ft = ftb.build();
+        final PropertyType boxedProperty = ft.getProperty("boxed");
+        assertTrue(boxedProperty instanceof AttributeType);
+        assertEquals("Attribute value type should have been boxed", Integer.class, ((AttributeType)boxedProperty).getValueClass());
+        final Feature feature = ft.newInstance();
+
+        final Property p = feature.getProperty("boxed");
+        assertTrue(p instanceof Attribute);
+        assertEquals("Attribute value type should have been boxed", Integer.class, ((Attribute<?>) p).getType().getValueClass());
+        int value = 3;
+        ((Attribute<Integer>) p).setValue(value);
+        assertEquals(3, p.getValue());
+
+        feature.setPropertyValue("boxed", Integer.valueOf(4));
+        assertEquals(4, feature.getPropertyValue("boxed"));
     }
 }
