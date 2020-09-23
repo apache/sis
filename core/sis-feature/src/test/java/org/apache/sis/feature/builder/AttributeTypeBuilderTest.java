@@ -20,12 +20,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.Collections;
 import com.esri.core.geometry.Geometry;
-import org.opengis.feature.Attribute;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.Property;
-import org.opengis.feature.PropertyType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.feature.Features;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.test.DependsOnMethod;
@@ -36,7 +32,12 @@ import org.junit.Test;
 import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
+import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.Property;
+import org.opengis.feature.PropertyType;
 
 
 /**
@@ -45,7 +46,8 @@ import org.opengis.feature.AttributeType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -246,7 +248,11 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
         assertFalse("remove(IDENTIFIER_COMPONENT)", roles.remove(AttributeRole.IDENTIFIER_COMPONENT));
     }
 
+    /**
+     * Verifies that {@link FeatureTypeBuilder#addAttribute(Class)} converts primitive types to their wrapper.
+     */
     @Test
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testBoxing() {
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName("boxing");
         final AttributeTypeBuilder<Integer> boxBuilder = ftb.addAttribute(int.class).setName("boxed");
@@ -254,16 +260,17 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
 
         final FeatureType ft = ftb.build();
         final PropertyType boxedProperty = ft.getProperty("boxed");
-        assertTrue(boxedProperty instanceof AttributeType);
-        assertEquals("Attribute value type should have been boxed", Integer.class, ((AttributeType)boxedProperty).getValueClass());
+        assertInstanceOf("Unexpected property type.", AttributeType.class, boxedProperty);
+        assertEquals("Attribute value type should have been boxed", Integer.class, ((AttributeType<?>) boxedProperty).getValueClass());
         final Feature feature = ft.newInstance();
 
         final Property p = feature.getProperty("boxed");
-        assertTrue(p instanceof Attribute);
+        assertInstanceOf("Unexpected property type.", Attribute.class, p);
         assertEquals("Attribute value type should have been boxed", Integer.class, ((Attribute<?>) p).getType().getValueClass());
+
         int value = 3;
-        ((Attribute<Integer>) p).setValue(value);
-        assertEquals(3, p.getValue());
+        Features.cast((Attribute<?>) p, Integer.class).setValue(value);
+        assertEquals(value, p.getValue());
 
         feature.setPropertyValue("boxed", Integer.valueOf(4));
         assertEquals(4, feature.getPropertyValue("boxed"));

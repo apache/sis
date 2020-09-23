@@ -241,28 +241,32 @@ public final class Numbers extends Static {
      * Changes a primitive class to its wrapper (for example {@code int} to {@link Integer}).
      * If the specified class is not a primitive type, then it is returned unchanged.
      *
+     * @param  <N>   the primitive and wrapper type (both have the same parametric declaration).
      * @param  type  the primitive type (can be {@code null}).
      * @return the type as a wrapper.
      *
      * @see #wrapperToPrimitive(Class)
      */
-    public static Class<?> primitiveToWrapper(final Class<?> type) {
+    @SuppressWarnings("unchecked")
+    public static <N> Class<N> primitiveToWrapper(final Class<N> type) {
         final Numbers mapping = MAPPING.get(type);
-        return (mapping != null) ? mapping.wrapper : type;
+        return (mapping != null) ? (Class<N>) mapping.wrapper : type;
     }
 
     /**
      * Changes a wrapper class to its primitive (for example {@link Integer} to {@code int}).
      * If the specified class is not a wrapper type, then it is returned unchanged.
      *
+     * @param  <N>   the primitive and wrapper type (both have the same parametric declaration).
      * @param  type  the wrapper type (can be {@code null}).
      * @return the type as a primitive.
      *
      * @see #primitiveToWrapper(Class)
      */
-    public static Class<?> wrapperToPrimitive(final Class<?> type) {
+    @SuppressWarnings("unchecked")
+    public static <N> Class<N> wrapperToPrimitive(final Class<N> type) {
         final Numbers mapping = MAPPING.get(type);
-        return (mapping != null) ? mapping.primitive : type;
+        return (mapping != null) ? (Class<N>) mapping.primitive : type;
     }
 
     /**

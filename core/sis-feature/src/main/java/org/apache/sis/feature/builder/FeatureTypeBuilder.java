@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.Set;
 import java.util.Objects;
-import org.apache.sis.util.Numbers;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
@@ -42,6 +41,7 @@ import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Numbers;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;
@@ -102,7 +102,8 @@ import org.opengis.feature.Operation;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  *
  * @see org.apache.sis.parameter.ParameterBuilder
  *
@@ -677,16 +678,13 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *
      * @see #properties()
      */
-    public <V> AttributeTypeBuilder<V> addAttribute(Class<V> valueClass) {
+    public <V> AttributeTypeBuilder<V> addAttribute(final Class<V> valueClass) {
         ensureNonNull("valueClass", valueClass);
         if (Feature.class.isAssignableFrom(valueClass)) {
             // We disallow Feature.class because that type shall be handled as association instead than attribute.
             throw new IllegalArgumentException(errors().getString(Errors.Keys.IllegalArgumentValue_2, "valueClass", valueClass));
         }
-
-        valueClass = (Class<V>) Numbers.primitiveToWrapper(valueClass);
-
-        final AttributeTypeBuilder<V> property = new AttributeTypeBuilder<>(this, valueClass);
+        final AttributeTypeBuilder<V> property = new AttributeTypeBuilder<>(this, Numbers.primitiveToWrapper(valueClass));
         properties.add(property);
         clearCache();
         return property;

@@ -54,7 +54,8 @@
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  *
  * @see org.apache.sis.feature.DefaultFeatureType
  *
