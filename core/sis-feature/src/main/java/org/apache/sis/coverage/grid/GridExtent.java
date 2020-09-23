@@ -1346,15 +1346,13 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     /**
      * Creates an affine transform from the coordinates of this grid to the coordinates of the given envelope.
      * This method assumes that all axes are in the same order (no axis swapping) and there is no flipping of
-     * axis direction. The transform maps cell corners.
+     * axis direction except for those specified in the {@code flips} bitmask. The transform maps cell corners.
      *
-     * <p>This method is not yet public because we have not decided what could be an API for controlling axis
-     * swapping and flipping, if desired.</p>
-     *
-     * @param  env  the target envelope. Despite this method name, the envelope CRS is ignored.
+     * @param  env    the target envelope. Despite this method name, the envelope CRS is ignored.
+     * @param  flips  bitmask of axes to flip.
      * @return an affine transform from this grid extent to the given envelope, expressed as a matrix.
      */
-    final MatrixSIS cornerToCRS(final Envelope env) {
+    final MatrixSIS cornerToCRS(final Envelope env, final long flips) {
         final int          srcDim = getDimension();
         final int          tgtDim = env.getDimension();
         final MatrixSIS    affine = Matrices.create(tgtDim + 1, srcDim + 1, ExtendedPrecisionMatrix.ZERO);
@@ -1362,16 +1360,18 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         final DoubleDouble offset = new DoubleDouble();
         for (int j=0; j<tgtDim; j++) {
             if (j < srcDim) {
+                final boolean flip = (flips & Numerics.bitmask(j)) != 0;
                 offset.set(coordinates[j]);
                 scale.set(coordinates[j + srcDim]);
                 scale.subtract(offset);
-                scale.add(1);
-                scale.inverseDivideGuessError(env.getSpan(j));
-                if (!offset.isZero()) {                     // Use `if` for keeping the value if scale is NaN.
+                scale.add(1);                                   // == getSize(j) but without overflow.
+                scale.inverseDivideGuessError(env.getSpan(j));  // == (envelope span) / (grid size).
+                if (flip) scale.negate();
+                if (!offset.isZero()) {                         // Use `if` for keeping the value if scale is NaN.
                     offset.multiply(scale);
                     offset.negate();
                 }
-                offset.addGuessError(env.getMinimum(j));
+                offset.addGuessError(flip ? env.getMaximum(j) : env.getMinimum(j));
                 affine.setNumber(j, srcDim, offset);
             } else {
                 scale.value = Double.NaN;

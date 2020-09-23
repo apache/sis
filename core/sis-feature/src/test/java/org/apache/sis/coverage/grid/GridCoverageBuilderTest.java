@@ -139,7 +139,7 @@ public final strictfp class GridCoverageBuilderTest extends TestCase {
         final GeneralEnvelope env = new GeneralEnvelope(HardCodedCRS.WGS84);
         env.setRange(0, 0, 10);     // Scale factor of 2 for grid size of 10.
         env.setRange(1, 0,  4);     // Scale factor of ½ for grid size of 8.
-        GridGeometry grid = new GridGeometry(new GridExtent(8, 5), env);
+        GridGeometry grid = new GridGeometry(new GridExtent(8, 5), env, GridOrientation.HOMOTHETIC);
         assertSame(builder, builder.setDomain(grid));
         try {
             builder.build();
@@ -147,7 +147,7 @@ public final strictfp class GridCoverageBuilderTest extends TestCase {
         } catch (IllegalStateException ex) {
             assertNotNull(ex.getMessage());
         }
-        grid = new GridGeometry(new GridExtent(width, height), env);
+        grid = new GridGeometry(new GridExtent(width, height), env, GridOrientation.HOMOTHETIC);
         assertSame(builder, builder.setDomain(grid));
         return builder.build();
     }

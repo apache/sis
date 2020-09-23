@@ -105,7 +105,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         final int y = random.nextInt(32) - 10;
         final GridGeometry gg = new GridGeometry(
                 new GridExtent(null, new long[] {x, y}, new long[] {x+width, y+height}, false),
-                new Envelope2D(HardCodedCRS.WGS84, 20, 15, 60, 62));
+                new Envelope2D(HardCodedCRS.WGS84, 20, 15, 60, 62), GridOrientation.HOMOTHETIC);
         return new GridCoverage2D(gg, null, image);
     }
 
@@ -440,7 +440,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     @Test
     public void testSubGeographicArea() throws TransformException {
         final GridCoverage2D source = createCoverage2D();             // Envelope2D(20, 15, 60, 62)
-        GridGeometry gg = new GridGeometry(null, new Envelope2D(HardCodedCRS.WGS84, 18, 20, 17, 31));
+        GridGeometry gg = new GridGeometry(null, new Envelope2D(HardCodedCRS.WGS84, 18, 20, 17, 31), null);
         final GridCoverage target = resample(source, gg);
         final GridExtent sourceExtent = source.getGridGeometry().getExtent();
         final GridExtent targetExtent = target.getGridGeometry().getExtent();

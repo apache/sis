@@ -61,6 +61,7 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -565,8 +566,36 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  extent    the valid extent of grid coordinates, or {@code null} if unknown.
      * @param  envelope  the envelope together with CRS of the "real world" coordinates, or {@code null} if unknown.
      * @throws NullPointerException if {@code extent} and {@code envelope} arguments are both null.
+     *
+     * @deprecated Replaced by {@link #GridGeometry(GridExtent, Envelope, GridOrientation)}.
      */
+    @Deprecated
     public GridGeometry(final GridExtent extent, final Envelope envelope) {
+        this(extent, envelope, GridOrientation.HOMOTHETIC);
+    }
+
+    /**
+     * Creates a grid geometry with an extent and an envelope.
+     * This constructor can be used when the <cite>grid to CRS</cite> transform is unknown.
+     * If only the coordinate reference system is known, then the envelope coordinates can be
+     * {@linkplain GeneralEnvelope#isAllNaN() all NaN}.
+     *
+     * <p>The main purpose of this constructor is to create "desired" grid geometries, for example for use in
+     * {@linkplain org.apache.sis.storage.GridCoverageResource#read(GridGeometry, int...) read} or
+     * {@linkplain org.apache.sis.coverage.grid.GridCoverageProcessor#resample resample} operations.
+     * For grid geometries describing preexisting data, it is safer and more flexible to use one of
+     * the constructors expecting a {@link MathTransform} argument.</p>
+     *
+     * @param  extent       the valid extent of grid coordinates, or {@code null} if unknown.
+     * @param  envelope     the envelope together with CRS of the "real world" coordinates, or {@code null} if unknown.
+     * @param  orientation  high-level description of desired characteristics of the {@code gridToCRS} transform.
+     *                      Ignored (can be null) if {@code extent} or {@code envelope} is null.
+     * @throws NullPointerException if {@code extent} and {@code envelope} arguments are both null,
+     *         or if only the {@code orientation} argument is null.
+     *
+     * @since 1.1
+     */
+    public GridGeometry(final GridExtent extent, final Envelope envelope, final GridOrientation orientation) {
         this.extent = extent;
         nonLinears  = 0;
         /*
@@ -576,6 +605,9 @@ public class GridGeometry implements LenientComparable, Serializable {
         boolean nilEnvelope = true;
         final ImmutableEnvelope env = ImmutableEnvelope.castOrCopy(envelope);
         if (env == null || ((nilEnvelope = env.isAllNaN()) && env.getCoordinateReferenceSystem() == null)) {
+            if (env != null && nilEnvelope) {
+                throw new NullArgumentException(Errors.format(Errors.Keys.UnspecifiedCRS));
+            }
             ArgumentChecks.ensureNonNull("extent", extent);
             this.envelope = null;
         } else {
@@ -584,10 +616,11 @@ public class GridGeometry implements LenientComparable, Serializable {
                 /*
                  * If we have both the extent and an envelope with at least one non-NaN coordinates,
                  * create the `cornerToCRS` transform. The `gridToCRS` calculation uses the knowledge
-                 * that all scale factors are on diagonal with no sign reversal, which allows simpler
-                 * calculation than full matrix multiplication. Use double-double arithmetic everywhere.
+                 * that all scale factors are on diagonal, which allows simpler calculation than full
+                 * matrix multiplication. Use double-double arithmetic everywhere.
                  */
-                final MatrixSIS affine = extent.cornerToCRS(env);
+                ArgumentChecks.ensureNonNull("orientation", orientation);
+                final MatrixSIS affine = extent.cornerToCRS(env, orientation.flip);
                 cornerToCRS = MathTransforms.linear(affine);
                 final int srcDim = cornerToCRS.getSourceDimensions();       // Translation column in matrix.
                 final int tgtDim = cornerToCRS.getTargetDimensions();       // Number of matrix rows before last row.
@@ -595,7 +628,7 @@ public class GridGeometry implements LenientComparable, Serializable {
                 for (int j=0; j<tgtDim; j++) {
                     final DoubleDouble scale  = (DoubleDouble) affine.getNumber(j, j);
                     final DoubleDouble offset = (DoubleDouble) affine.getNumber(j, srcDim);
-                    resolution[j] = scale.doubleValue();
+                    resolution[j] = Math.abs(scale.doubleValue());
                     scale.multiply(0.5);
                     offset.add(scale);
                     affine.setNumber(j, srcDim, offset);

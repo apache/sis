@@ -269,18 +269,32 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#cornerToCRS(Envelope)}.
+     * Tests {@link GridExtent#cornerToCRS(Envelope, long)}.
      */
     @Test
     public void testCornerToCRS() {
         final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84);
         aoi.setRange(0,  40, 55);
         aoi.setRange(1, -10, 70);
-        final GridExtent extent = new GridExtent(null, new long[] {-20, -25}, new long[] {10, 15}, false);
+        final GridExtent extent = new GridExtent(null,
+                new long[] {-20, -25},
+                new long[] { 10,  15}, false);
+        /*
+         * No axis flip.
+         * Verification:  y  =  2 × −25 + 40  =  −10  (the minimum value declared in envelope).
+         */
         assertMatrixEquals("cornerToCRS", new Matrix3(
                 0.5,  0,   50,
                 0,    2,   40,
-                0,    0,    1), extent.cornerToCRS(aoi), STRICT);
+                0,    0,    1), extent.cornerToCRS(aoi, 0), STRICT);
+        /*
+         * Y axis flip.
+         * Verification:  y  =  −2 × −25 + 20  =  70  (the maximum value declared in envelope).
+         */
+        assertMatrixEquals("cornerToCRS", new Matrix3(
+                0.5,  0,   50,
+                0,   -2,   20,
+                0,    0,    1), extent.cornerToCRS(aoi, 2), STRICT);
     }
 
     /**

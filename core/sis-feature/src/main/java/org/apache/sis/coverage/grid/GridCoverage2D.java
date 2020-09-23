@@ -29,7 +29,6 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
-import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
@@ -51,7 +50,6 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.Debug;
 
 import static java.lang.Math.min;
@@ -204,6 +202,8 @@ public class GridCoverage2D extends GridCoverage {
      * @throws IllegalGridGeometryException if the {@code domain} does not met the above-documented conditions.
      * @throws IllegalArgumentException if the image number of bands is not the same than the number of sample dimensions.
      * @throws ArithmeticException if the distance between grid location and image location exceeds the {@code long} capacity.
+     *
+     * @see GridCoverageBuilder
      */
     public GridCoverage2D(GridGeometry domain, final List<? extends SampleDimension> range, RenderedImage data) {
         /*
@@ -304,62 +304,11 @@ public class GridCoverage2D extends GridCoverage {
                 } catch (TransformException e) {
                     throw new IllegalGridGeometryException(e);                  // Should never happen.
                 } else {
-                    domain = new GridGeometry(extent, domain.envelope);
+                    domain = new GridGeometry(extent, domain.envelope, GridOrientation.HOMOTHETIC);
                 }
             }
         }
         return domain;
-    }
-
-    /**
-     * Constructs a grid coverage using the specified envelope, range and data.
-     * This convenience constructor computes a {@link GridGeometry} from the given envelope and image size.
-     * This constructor assumes that all grid axes are in the same order than CRS axes and no axis is flipped.
-     * This straightforward approach often results in the <var>y</var> axis to be oriented toward up,
-     * not down as commonly expected with rendered images.
-     *
-     * <p>This constructor is generally not recommended because of the assumptions on axis order and directions.
-     * For better control, use the constructor expecting a {@link GridGeometry} argument instead.
-     * This constructor is provided mostly as a convenience for testing purposes.</p>
-     *
-     * @param  domain  the envelope encompassing all images, from upper-left corner to lower-right corner.
-     *                 If {@code null} a default grid geometry will be created with no CRS and identity conversion.
-     * @param  range   sample dimensions for each image band. The size of this list must be equal to the number of bands.
-     *                 If {@code null}, default sample dimensions will be created with no transfer function.
-     * @param  data    the sample values as a {@link RenderedImage}, with one band for each sample dimension.
-     * @throws IllegalArgumentException if the image number of bands is not the same than the number of sample dimensions.
-     *
-     * @see GridGeometry#GridGeometry(GridExtent, Envelope)
-     */
-    public GridCoverage2D(final Envelope domain, final List<? extends SampleDimension> range, final RenderedImage data) {
-        super(createGridGeometry(data, domain), defaultIfAbsent(range, data, ImageUtilities.getNumBands(data)));
-        this.data = data;   // Non-null verified by createGridGeometry(…, data).
-        xDimension   = 0;
-        yDimension   = 1;
-        gridToImageX = 0;
-        gridToImageY = 0;
-        verifyBandCount(range, data);
-        gridGeometry2D = new AtomicReference<>();
-    }
-
-    /**
-     * Creates a grid geometry from an envelope. The grid extent is computed from the image size.
-     * This static method is a workaround for RFE #4093999
-     * ("Relax constraint on placement of this()/super() call in constructors").
-     */
-    @Workaround(library="JDK", version="1.8")
-    private static GridGeometry createGridGeometry(final RenderedImage data, final Envelope envelope) {
-        ArgumentChecks.ensureNonNull("data", data);
-        CoordinateReferenceSystem crs = null;
-        int dimension = BIDIMENSIONAL;
-        if (envelope != null) {
-            dimension = envelope.getDimension();
-            if (dimension < BIDIMENSIONAL) {
-                throw new IllegalGridGeometryException(Resources.format(Resources.Keys.GridEnvelopeMustBeNDimensional_1, BIDIMENSIONAL));
-            }
-            crs = envelope.getCoordinateReferenceSystem();
-        }
-        return new GridGeometry(createExtent(dimension, ImageUtilities.getBounds(data), crs), envelope);
     }
 
     /**

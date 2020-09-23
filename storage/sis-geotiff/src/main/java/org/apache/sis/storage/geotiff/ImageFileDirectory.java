@@ -1254,7 +1254,7 @@ final class ImageFileDirectory extends AbstractGridResource {
             }
             return gridGeometry;
         } else {
-            return new GridGeometry(new GridExtent(imageWidth, imageHeight), null);
+            return new GridGeometry(new GridExtent(imageWidth, imageHeight), null, null);
         }
     }
 

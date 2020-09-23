@@ -37,6 +37,7 @@ import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.math.Vector;
 
@@ -334,7 +335,7 @@ final class GridGeometryBuilder {
                 envelope = new GeneralEnvelope(crs);
                 envelope.setToNaN();
             }
-            gridGeometry = new GridGeometry(extent, envelope);
+            gridGeometry = new GridGeometry(extent, envelope, GridOrientation.HOMOTHETIC);
             canNotCreate(e);
             /*
              * Note: we catch TransformExceptions because they may be caused by erroneous data in the GeoTIFF file,
