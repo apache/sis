@@ -54,15 +54,15 @@ public enum GridOrientation {
      * <var>S<sub>y</sub></var> &gt; 0 and
      * <var>S<sub>z</sub></var> &gt; 0.
      */
-    HOMOTHETIC(0),
+    HOMOTHETY(0),
 
     /**
      * The {@code gridToCRS} transform applies scales and translations with a flip of the second axis (<var>y</var>).
-     * This is the same kind of conversion than {@link #HOMOTHETIC} except that the <var>S<sub>y</sub></var> term in
+     * This is the same kind of conversion than {@link #HOMOTHETY} except that the <var>S<sub>y</sub></var> term in
      * the matrix is replaced by −<var>S<sub>y</sub></var>.
      *
      * <p>{@code REFLECTION_Y} is commonly used when the grid is a {@link java.awt.image.RenderedImage}.
-     * By contrast, an {@link #HOMOTHETIC} transform often results in <var>y</var> axis oriented toward up,
+     * By contrast, an {@link #HOMOTHETY} transform often results in <var>y</var> axis oriented toward up,
      * instead of down as commonly expected with rendered images.
      * This {@code REFLECTION_Y} value matches the common usage for grids backed by images.</p>
      */
@@ -74,7 +74,7 @@ public enum GridOrientation {
 
     /**
      * Bitmask of axes to flip.
-     * This is the argument to give in calls to {@link GridExtent#cornerToCRS(Envelope, long)}.
+     * This is the argument to give in calls to {@link GridExtent#cornerToCRS(Envelope, long, int[])}.
      */
     final int flip;
 

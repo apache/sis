@@ -343,7 +343,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          * Simplest case: no axis flip.
          * Verification:  y  =  2 × −25 + 40  =  −10  (the minimum value declared in envelope).
          */
-        GridGeometry grid = new GridGeometry(extent, aoi, GridOrientation.HOMOTHETIC);
+        GridGeometry grid = new GridGeometry(extent, aoi, GridOrientation.HOMOTHETY);
         Matrix matrix = MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER));
         assertMatrixEquals("cornerToCRS", new Matrix3(
                 0.5,  0,   50,

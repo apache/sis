@@ -105,7 +105,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         final int y = random.nextInt(32) - 10;
         final GridGeometry gg = new GridGeometry(
                 new GridExtent(null, new long[] {x, y}, new long[] {x+width, y+height}, false),
-                new Envelope2D(HardCodedCRS.WGS84, 20, 15, 60, 62), GridOrientation.HOMOTHETIC);
+                new Envelope2D(HardCodedCRS.WGS84, 20, 15, 60, 62), GridOrientation.HOMOTHETY);
         return new GridCoverage2D(gg, null, image);
     }
 

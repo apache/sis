@@ -304,7 +304,7 @@ public class GridCoverage2D extends GridCoverage {
                 } catch (TransformException e) {
                     throw new IllegalGridGeometryException(e);                  // Should never happen.
                 } else {
-                    domain = new GridGeometry(extent, domain.envelope, GridOrientation.HOMOTHETIC);
+                    domain = new GridGeometry(extent, domain.envelope, GridOrientation.HOMOTHETY);
                 }
             }
         }

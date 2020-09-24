@@ -1348,24 +1348,26 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * This method assumes that all axes are in the same order (no axis swapping) and there is no flipping of
      * axis direction except for those specified in the {@code flips} bitmask. The transform maps cell corners.
      *
-     * @param  env    the target envelope. Despite this method name, the envelope CRS is ignored.
-     * @param  flips  bitmask of axes to flip.
+     * @param  env               the target envelope. Despite this method name, the envelope CRS is ignored.
+     * @param  flips             bitmask of target axes to flip (0 if none).
+     * @param  sourceDimensions  source dimension for each target dimension, or {@code null} if dimensions are the same.
      * @return an affine transform from this grid extent to the given envelope, expressed as a matrix.
      */
-    final MatrixSIS cornerToCRS(final Envelope env, final long flips) {
+    final MatrixSIS cornerToCRS(final Envelope env, final long flips, final int[] sourceDimensions) {
         final int          srcDim = getDimension();
         final int          tgtDim = env.getDimension();
         final MatrixSIS    affine = Matrices.create(tgtDim + 1, srcDim + 1, ExtendedPrecisionMatrix.ZERO);
         final DoubleDouble scale  = new DoubleDouble();
         final DoubleDouble offset = new DoubleDouble();
         for (int j=0; j<tgtDim; j++) {
-            if (j < srcDim) {
+            final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
+            if (i < srcDim) {
                 final boolean flip = (flips & Numerics.bitmask(j)) != 0;
-                offset.set(coordinates[j]);
-                scale.set(coordinates[j + srcDim]);
+                offset.set(coordinates[i]);
+                scale.set(coordinates[i + srcDim]);
                 scale.subtract(offset);
                 scale.add(1);                                   // == getSize(j) but without overflow.
-                scale.inverseDivideGuessError(env.getSpan(j));  // == (envelope span) / (grid size).
+                scale.inverseDivideGuessError(env.getSpan(i));  // == (envelope span) / (grid size).
                 if (flip) scale.negate();
                 if (!offset.isZero()) {                         // Use `if` for keeping the value if scale is NaN.
                     offset.multiply(scale);
@@ -1377,7 +1379,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 scale.value = Double.NaN;
                 scale.error = Double.NaN;
             }
-            affine.setNumber(j, j, scale);
+            affine.setNumber(j, i, scale);
         }
         affine.setElement(tgtDim, srcDim, 1);
         return affine;

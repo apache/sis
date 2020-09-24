@@ -335,7 +335,7 @@ final class GridGeometryBuilder {
                 envelope = new GeneralEnvelope(crs);
                 envelope.setToNaN();
             }
-            gridGeometry = new GridGeometry(extent, envelope, GridOrientation.HOMOTHETIC);
+            gridGeometry = new GridGeometry(extent, envelope, GridOrientation.HOMOTHETY);
             canNotCreate(e);
             /*
              * Note: we catch TransformExceptions because they may be caused by erroneous data in the GeoTIFF file,

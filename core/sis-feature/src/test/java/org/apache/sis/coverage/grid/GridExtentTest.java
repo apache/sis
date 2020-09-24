@@ -269,7 +269,7 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#cornerToCRS(Envelope, long)}.
+     * Tests {@link GridExtent#cornerToCRS(Envelope, long, int[])}.
      */
     @Test
     public void testCornerToCRS() {
@@ -286,7 +286,7 @@ public final strictfp class GridExtentTest extends TestCase {
         assertMatrixEquals("cornerToCRS", new Matrix3(
                 0.5,  0,   50,
                 0,    2,   40,
-                0,    0,    1), extent.cornerToCRS(aoi, 0), STRICT);
+                0,    0,    1), extent.cornerToCRS(aoi, 0, null), STRICT);
         /*
          * Y axis flip.
          * Verification:  y  =  −2 × −25 + 20  =  70  (the maximum value declared in envelope).
@@ -294,7 +294,7 @@ public final strictfp class GridExtentTest extends TestCase {
         assertMatrixEquals("cornerToCRS", new Matrix3(
                 0.5,  0,   50,
                 0,   -2,   20,
-                0,    0,    1), extent.cornerToCRS(aoi, 2), STRICT);
+                0,    0,    1), extent.cornerToCRS(aoi, 2, null), STRICT);
     }
 
     /**

@@ -571,7 +571,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      */
     @Deprecated
     public GridGeometry(final GridExtent extent, final Envelope envelope) {
-        this(extent, envelope, GridOrientation.HOMOTHETIC);
+        this(extent, envelope, GridOrientation.HOMOTHETY);
     }
 
     /**
@@ -620,7 +620,7 @@ public class GridGeometry implements LenientComparable, Serializable {
                  * matrix multiplication. Use double-double arithmetic everywhere.
                  */
                 ArgumentChecks.ensureNonNull("orientation", orientation);
-                final MatrixSIS affine = extent.cornerToCRS(env, orientation.flip);
+                final MatrixSIS affine = extent.cornerToCRS(env, orientation.flip, null);
                 cornerToCRS = MathTransforms.linear(affine);
                 final int srcDim = cornerToCRS.getSourceDimensions();       // Translation column in matrix.
                 final int tgtDim = cornerToCRS.getTargetDimensions();       // Number of matrix rows before last row.
