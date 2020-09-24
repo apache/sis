@@ -18,6 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.referencing.cs.AxesConvention;
 
 
 /**
@@ -29,7 +30,10 @@ import org.opengis.referencing.datum.PixelInCell;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @see GridGeometry#GridGeometry(GridExtent, Envelope, GridOrientation)
+ *
+ * @since 1.1
  * @module
  */
 public enum GridOrientation {
@@ -66,11 +70,28 @@ public enum GridOrientation {
      * instead of down as commonly expected with rendered images.
      * This {@code REFLECTION_Y} value matches the common usage for grids backed by images.</p>
      */
-    REFLECTION_Y(2);
+    REFLECTION_Y(2),
 
-    /*
-     * TODO: add DISPLAY. The difference compared to REFLECTION_Y is that it may change CRS axes.
+    /**
+     * CRS axes are reordered and oriented toward directions commonly used for displaying purpose.
+     * This orientation can be used for deriving a coordinate reference system with the
+     * <i>(<var>longitude</var>, <var>latitude</var>)</i> or <i>(<var>x</var>,<var>y</var>)</i> axis order.
+     * Grid axes order is unchanged.
+     * An example of {@code gridToCRS} transform obtained by this orientation is as below
+     * (the exact matrix depends on the CRS axes):
+     *
+     * {@preformat math
+     *   ┌                 ┐
+     *   │  0   Sx  0   Tx │
+     *   │ −Sy  0   0   Ty │
+     *   │  0   0   Sz  Tz │
+     *   │  0   0   0   1  │
+     *   └                 ┘
+     * }
+     *
+     * @see AxesConvention#DISPLAY_ORIENTED
      */
+    DISPLAY(2);
 
     /**
      * Bitmask of axes to flip.

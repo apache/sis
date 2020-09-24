@@ -369,6 +369,41 @@ public final strictfp class GridGeometryTest extends TestCase {
         assertArrayEquals("resolution", new double[] {0.5, 2}, grid.getResolution(false), STRICT);
         assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
         verifyGridToCRS(grid);
+        /*
+         * The use of `DISPLAY` mode in this particular case should be equivalent ro `REFLECTION_Y`.
+         */
+        assertEquals(grid, new GridGeometry(extent, aoi, GridOrientation.DISPLAY));
+    }
+
+    /**
+     * Tests the construction from a geospatial envelope and an extent with reordering of axes
+     * for matching display convention.
+     *
+     * @see GridExtentTest#testCornerToCRS()
+     */
+    @Test
+    public void testFromExtentAndDisplayEnvelope() {
+        final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
+        aoi.setRange(1,  40, 55);
+        aoi.setRange(0, -10, 70);
+        final GridExtent extent = new GridExtent(null,
+                new long[] {-25, -20},
+                new long[] { 15,  10}, false);
+        /*
+         * Same case than the one tested by `testFromExtentAndEnvelope()`,
+         * but with axis order swapped.
+         */
+        GridGeometry grid = new GridGeometry(extent, aoi, GridOrientation.DISPLAY);
+        Matrix matrix = MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER));
+        assertMatrixEquals("cornerToCRS", new Matrix3(
+                0,  0.5,   50,
+               -2,    0,   20,
+                0,    0,    1), matrix, STRICT);
+
+        // Verify other computed properties.
+        assertArrayEquals("resolution", new double[] {0.5, 2}, grid.getResolution(false), STRICT);
+        assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
+        verifyGridToCRS(grid);
     }
 
     /**

@@ -45,6 +45,8 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.referencing.crs.AbstractCRS;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -52,6 +54,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.TemporalAccessor;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.feature.Resources;
@@ -586,6 +589,11 @@ public class GridGeometry implements LenientComparable, Serializable {
      * For grid geometries describing preexisting data, it is safer and more flexible to use one of
      * the constructors expecting a {@link MathTransform} argument.</p>
      *
+     * <h4>Dimension order</h4>
+     * The given envelope shall always declare dimensions in same order than the given extent.
+     * This constructor may reorder CRS axes if {@code orientation} is {@link GridOrientation#DISPLAY},
+     * but in such case this constructor will derive itself an envelope and CRS with the reordered axes.
+     *
      * @param  extent       the valid extent of grid coordinates, or {@code null} if unknown.
      * @param  envelope     the envelope together with CRS of the "real world" coordinates, or {@code null} if unknown.
      * @param  orientation  high-level description of desired characteristics of the {@code gridToCRS} transform.
@@ -599,19 +607,53 @@ public class GridGeometry implements LenientComparable, Serializable {
         this.extent = extent;
         nonLinears  = 0;
         /*
+         * Potentially change axis order and orientation according the given `GridOrientation` (which may be null).
+         * Current code assumes that units of measurement are unchanged, which should be true for CRSs built using
+         * AxisConvention.DISPLAY_ORIENTED.
+         */
+        long flip = 0;                      // Bitmask specifying whether to reverse axis in each dimension.
+        ImmutableEnvelope target = null;    // May have different axis order than the specified `envelope` CRS.
+        int[] sourceDimensions = null;      // Indices in source envelope of axes colinear with the target envelope.
+        if (envelope != null && orientation == GridOrientation.DISPLAY) {
+            final AbstractCRS sourceCRS = AbstractCRS.castOrCopy(envelope.getCoordinateReferenceSystem());
+            if (sourceCRS != null) {
+                final AbstractCRS targetCRS = sourceCRS.forConvention(AxesConvention.DISPLAY_ORIENTED);
+                if (targetCRS != sourceCRS) {
+                    final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
+                    final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
+                    sourceDimensions = AxisDirections.indicesOfColinear(sourceCS, targetCS);
+                    if (sourceDimensions != null) {
+                        final double[] lowerCorner = new double[sourceDimensions.length];
+                        final double[] upperCorner = new double[sourceDimensions.length];
+                        for (int i=0; i < sourceDimensions.length; i++) {
+                            final int s = sourceDimensions[i];
+                            lowerCorner[i] = envelope.getMinimum(s);
+                            upperCorner[i] = envelope.getMaximum(s);
+                            if (sourceCS.getAxis(s).getDirection() != targetCS.getAxis(i).getDirection()) {
+                                flip |= Numerics.bitmask(i);
+                            }
+                        }
+                        target = new ImmutableEnvelope(lowerCorner, upperCorner, targetCRS);
+                    }
+                }
+            }
+        }
+        if (target == null) {
+            target = ImmutableEnvelope.castOrCopy(envelope);
+        }
+        /*
          * If the envelope contains no useful information, then the grid extent is mandatory.
          * We do that for forcing grid geometries to contain at least one information.
          */
         boolean nilEnvelope = true;
-        final ImmutableEnvelope env = ImmutableEnvelope.castOrCopy(envelope);
-        if (env == null || ((nilEnvelope = env.isAllNaN()) && env.getCoordinateReferenceSystem() == null)) {
-            if (env != null && nilEnvelope) {
+        if (target == null || ((nilEnvelope = target.isAllNaN()) && target.getCoordinateReferenceSystem() == null)) {
+            if (target != null && nilEnvelope) {
                 throw new NullArgumentException(Errors.format(Errors.Keys.UnspecifiedCRS));
             }
             ArgumentChecks.ensureNonNull("extent", extent);
             this.envelope = null;
         } else {
-            this.envelope = env;
+            this.envelope = target;
             if (extent != null && !nilEnvelope) {
                 /*
                  * If we have both the extent and an envelope with at least one non-NaN coordinates,
@@ -620,13 +662,14 @@ public class GridGeometry implements LenientComparable, Serializable {
                  * matrix multiplication. Use double-double arithmetic everywhere.
                  */
                 ArgumentChecks.ensureNonNull("orientation", orientation);
-                final MatrixSIS affine = extent.cornerToCRS(env, orientation.flip, null);
+                final MatrixSIS affine = extent.cornerToCRS(target, orientation.flip ^ flip, sourceDimensions);
                 cornerToCRS = MathTransforms.linear(affine);
                 final int srcDim = cornerToCRS.getSourceDimensions();       // Translation column in matrix.
                 final int tgtDim = cornerToCRS.getTargetDimensions();       // Number of matrix rows before last row.
                 resolution = new double[tgtDim];
                 for (int j=0; j<tgtDim; j++) {
-                    final DoubleDouble scale  = (DoubleDouble) affine.getNumber(j, j);
+                    final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
+                    final DoubleDouble scale  = (DoubleDouble) affine.getNumber(j, i);
                     final DoubleDouble offset = (DoubleDouble) affine.getNumber(j, srcDim);
                     resolution[j] = Math.abs(scale.doubleValue());
                     scale.multiply(0.5);

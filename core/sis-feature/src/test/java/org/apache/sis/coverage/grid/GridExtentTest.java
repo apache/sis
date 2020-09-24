@@ -295,6 +295,16 @@ public final strictfp class GridExtentTest extends TestCase {
                 0.5,  0,   50,
                 0,   -2,   20,
                 0,    0,    1), extent.cornerToCRS(aoi, 2, null), STRICT);
+        /*
+         * Swap axis order. The {1,0} indices apply to grid dimensions, not to CRS dimensions.
+         * Verification:  x  =  0.375 × −25 + 49.375  =  40  (the minimum value declared in envelope).
+         *                y  =  2.667 × −20 + 43.333  ≈ −10  (idem).
+         */
+        assertMatrixEquals("cornerToCRS", new Matrix3(
+                0,                   0.375,   49.375,
+                2.6666666666666667,  0,       43.333333333333333,
+                0,                   0,        1),
+                extent.cornerToCRS(aoi, 0, new int[] {1,0}), 1E-15);
     }
 
     /**

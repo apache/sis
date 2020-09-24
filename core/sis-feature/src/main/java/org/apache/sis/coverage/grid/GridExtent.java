@@ -1367,7 +1367,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 scale.set(coordinates[i + srcDim]);
                 scale.subtract(offset);
                 scale.add(1);                                   // == getSize(j) but without overflow.
-                scale.inverseDivideGuessError(env.getSpan(i));  // == (envelope span) / (grid size).
+                scale.inverseDivideGuessError(env.getSpan(j));  // == (envelope span) / (grid size).
                 if (flip) scale.negate();
                 if (!offset.isZero()) {                         // Use `if` for keeping the value if scale is NaN.
                     offset.multiply(scale);
