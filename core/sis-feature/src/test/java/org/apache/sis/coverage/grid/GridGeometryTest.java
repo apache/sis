@@ -353,6 +353,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         // Verify other computed properties.
         assertArrayEquals("resolution", new double[] {0.5, 2}, grid.getResolution(false), STRICT);
         assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
+        assertSame("extent", extent, grid.getExtent());
         verifyGridToCRS(grid);
         /*
          * Same envelope and extent, but flip Y axis.
@@ -368,6 +369,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         // Verify other computed properties.
         assertArrayEquals("resolution", new double[] {0.5, 2}, grid.getResolution(false), STRICT);
         assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
+        assertSame("extent", extent, grid.getExtent());
         verifyGridToCRS(grid);
         /*
          * The use of `DISPLAY` mode in this particular case should be equivalent ro `REFLECTION_Y`.
@@ -403,6 +405,27 @@ public final strictfp class GridGeometryTest extends TestCase {
         // Verify other computed properties.
         assertArrayEquals("resolution", new double[] {0.5, 2}, grid.getResolution(false), STRICT);
         assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
+        assertSame("extent", extent, grid.getExtent());
+        verifyGridToCRS(grid);
+        /*
+         * Same extent and envelope, but reordering extend dimensions
+         * instead than `gridToCRS` columns.
+         */
+        grid = new GridGeometry(extent, aoi, GridOrientation.DISPLAY_GRID);
+        matrix = MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER));
+        assertMatrixEquals("cornerToCRS", new Matrix3(
+                0.5,  0,   50,
+                0,   -2,   20,
+                0,    0,    1), matrix, STRICT);
+
+        assertExtentEquals(
+                new long[] {-20, -25},
+                new long[] {  9,  14}, grid.getExtent());
+
+        // Verify other computed properties.
+        assertArrayEquals("resolution", new double[] {0.5, 2}, grid.getResolution(false), STRICT);
+        assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
+        assertNotSame("extent", extent, grid.getExtent());
         verifyGridToCRS(grid);
     }
 

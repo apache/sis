@@ -1206,11 +1206,16 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @see GridGeometry#reduce(int...)
      */
     public GridExtent reduce(int... dimensions) {
+        dimensions = verifyDimensions(dimensions, getDimension());
+        return (dimensions != null) ? reorder(dimensions) : this;
+    }
+
+    /**
+     * Changes axis order or reduces the number of dimensions.
+     * It is caller responsibility to ensure that the given dimensions are valid.
+     */
+    final GridExtent reorder(final int[] dimensions) {
         final int sd = getDimension();
-        dimensions = verifyDimensions(dimensions, sd);
-        if (dimensions == null) {
-            return this;
-        }
         final int td = dimensions.length;
         DimensionNameType[] tt = null;
         if (types != null) {

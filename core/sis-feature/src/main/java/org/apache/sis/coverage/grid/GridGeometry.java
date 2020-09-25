@@ -72,6 +72,7 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
@@ -578,7 +579,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Creates a grid geometry with an extent and an envelope.
+     * Creates an axis-aligned grid geometry with an extent and an envelope.
      * This constructor can be used when the <cite>grid to CRS</cite> transform is unknown.
      * If only the coordinate reference system is known, then the envelope coordinates can be
      * {@linkplain GeneralEnvelope#isAllNaN() all NaN}.
@@ -601,11 +602,12 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws NullPointerException if {@code extent} and {@code envelope} arguments are both null,
      *         or if only the {@code orientation} argument is null.
      *
+     * @see <a href="https://en.wikipedia.org/wiki/Axis-aligned_object">Axis-aligned object on Wikipedia</a>
+     *
      * @since 1.1
      */
-    public GridGeometry(final GridExtent extent, final Envelope envelope, final GridOrientation orientation) {
-        this.extent = extent;
-        nonLinears  = 0;
+    public GridGeometry(GridExtent extent, final Envelope envelope, final GridOrientation orientation) {
+        nonLinears = 0;
         /*
          * Potentially change axis order and orientation according the given `GridOrientation` (which may be null).
          * Current code assumes that units of measurement are unchanged, which should be true for CRSs built using
@@ -614,7 +616,8 @@ public class GridGeometry implements LenientComparable, Serializable {
         long flip = 0;                      // Bitmask specifying whether to reverse axis in each dimension.
         ImmutableEnvelope target = null;    // May have different axis order than the specified `envelope` CRS.
         int[] sourceDimensions = null;      // Indices in source envelope of axes colinear with the target envelope.
-        if (envelope != null && orientation == GridOrientation.DISPLAY) {
+        final boolean reorderExtent = (orientation == GridOrientation.DISPLAY_GRID);
+        if (envelope != null && (reorderExtent || orientation == GridOrientation.DISPLAY)) {
             final AbstractCRS sourceCRS = AbstractCRS.castOrCopy(envelope.getCoordinateReferenceSystem());
             if (sourceCRS != null) {
                 final AbstractCRS targetCRS = sourceCRS.forConvention(AxesConvention.DISPLAY_ORIENTED);
@@ -654,32 +657,42 @@ public class GridGeometry implements LenientComparable, Serializable {
             this.envelope = null;
         } else {
             this.envelope = target;
-            if (extent != null && !nilEnvelope) {
-                /*
-                 * If we have both the extent and an envelope with at least one non-NaN coordinates,
-                 * create the `cornerToCRS` transform. The `gridToCRS` calculation uses the knowledge
-                 * that all scale factors are on diagonal, which allows simpler calculation than full
-                 * matrix multiplication. Use double-double arithmetic everywhere.
-                 */
-                ArgumentChecks.ensureNonNull("orientation", orientation);
-                final MatrixSIS affine = extent.cornerToCRS(target, orientation.flip ^ flip, sourceDimensions);
-                cornerToCRS = MathTransforms.linear(affine);
-                final int srcDim = cornerToCRS.getSourceDimensions();       // Translation column in matrix.
-                final int tgtDim = cornerToCRS.getTargetDimensions();       // Number of matrix rows before last row.
-                resolution = new double[tgtDim];
-                for (int j=0; j<tgtDim; j++) {
-                    final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
-                    final DoubleDouble scale  = (DoubleDouble) affine.getNumber(j, i);
-                    final DoubleDouble offset = (DoubleDouble) affine.getNumber(j, srcDim);
-                    resolution[j] = Math.abs(scale.doubleValue());
-                    scale.multiply(0.5);
-                    offset.add(scale);
-                    affine.setNumber(j, srcDim, offset);
+            if (extent != null) {
+                if (reorderExtent) {
+                    if (!ArraysExt.isRange(0, sourceDimensions)) {
+                        extent = extent.reorder(sourceDimensions);
+                    }
+                    sourceDimensions = null;
                 }
-                gridToCRS = MathTransforms.linear(affine);
-                return;
+                if (!nilEnvelope) {
+                    /*
+                     * If we have both the extent and an envelope with at least one non-NaN coordinates,
+                     * create the `cornerToCRS` transform. The `gridToCRS` calculation uses the knowledge
+                     * that all scale factors are on diagonal, which allows simpler calculation than full
+                     * matrix multiplication. Use double-double arithmetic everywhere.
+                     */
+                    ArgumentChecks.ensureNonNull("orientation", orientation);
+                    final MatrixSIS affine = extent.cornerToCRS(target, orientation.flip ^ flip, sourceDimensions);
+                    cornerToCRS = MathTransforms.linear(affine);
+                    final int srcDim = cornerToCRS.getSourceDimensions();       // Translation column in matrix.
+                    final int tgtDim = cornerToCRS.getTargetDimensions();       // Number of matrix rows before last row.
+                    resolution = new double[tgtDim];
+                    for (int j=0; j<tgtDim; j++) {
+                        final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
+                        final DoubleDouble scale  = (DoubleDouble) affine.getNumber(j, i);
+                        final DoubleDouble offset = (DoubleDouble) affine.getNumber(j, srcDim);
+                        resolution[j] = Math.abs(scale.doubleValue());
+                        scale.multiply(0.5);
+                        offset.add(scale);
+                        affine.setNumber(j, srcDim, offset);
+                    }
+                    gridToCRS = MathTransforms.linear(affine);
+                    this.extent = extent;
+                    return;
+                }
             }
         }
+        this.extent = extent;
         gridToCRS   = null;
         cornerToCRS = null;
         resolution  = null;
