@@ -1553,13 +1553,16 @@ public class GridGeometry implements LenientComparable, Serializable {
                 final TableAppender table = new TableAppender(buffer, "  ");
                 final AngleFormat nf = new AngleFormat("DD°MM′SS″", locale);
                 final GeographicBoundingBox bbox = geographicBBox();
+                double westBoundLongitude = Double.NaN;
+                double eastBoundLongitude = Double.NaN;
                 final Instant[] times = timeRange();
                 vocabulary.appendLabel(Vocabulary.Keys.LowerBound, table);
                 table.setCellAlignment(TableAppender.ALIGN_RIGHT);
                 if (bbox != null) {
                     nf.setRoundingMode(RoundingMode.FLOOR);
-                    table.nextColumn(); table.append(nf.format(new  Latitude(bbox.getSouthBoundLatitude())));
-                    table.nextColumn(); table.append(nf.format(new Longitude(bbox.getWestBoundLongitude())));
+                    westBoundLongitude = bbox.getWestBoundLongitude();
+                    table.nextColumn(); table.append(nf.format(new Latitude(bbox.getSouthBoundLatitude())));
+                    table.nextColumn(); table.append(nf.format(new Longitude(westBoundLongitude)));
                 }
                 if (times.length >= 1) {
                     table.nextColumn();
@@ -1571,14 +1574,21 @@ public class GridGeometry implements LenientComparable, Serializable {
                 table.setCellAlignment(TableAppender.ALIGN_RIGHT);
                 if (bbox != null) {
                     nf.setRoundingMode(RoundingMode.CEILING);
-                    table.nextColumn(); table.append(nf.format(new  Latitude(bbox.getNorthBoundLatitude())));
-                    table.nextColumn(); table.append(nf.format(new Longitude(bbox.getEastBoundLongitude())));
+                    eastBoundLongitude = bbox.getEastBoundLongitude();
+                    table.nextColumn(); table.append(nf.format(new Latitude(bbox.getNorthBoundLatitude())));
+                    table.nextColumn(); table.append(nf.format(new Longitude(eastBoundLongitude)));
                 }
                 if (times.length >= 2) {
                     table.nextColumn();
                     table.append(times[1].toString());
                 }
                 table.flush();
+                if (eastBoundLongitude < westBoundLongitude) {
+                    vocabulary.appendLabel(Vocabulary.Keys.Note, buffer);
+                    buffer.append(' ')
+                          .append(org.apache.sis.internal.metadata.Resources.forLocale(locale).getString(
+                                  org.apache.sis.internal.metadata.Resources.Keys.BoxCrossesAntiMeridian));
+                }
                 writeNodes();
             }
             /*

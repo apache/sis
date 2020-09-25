@@ -910,8 +910,9 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         final int dimension = getDimension();
         GeneralEnvelope envelope = new GeneralEnvelope(dimension);
         for (int i=0; i<dimension; i++) {
-            // The +1.0 is for making high coordinate exclusive. See GridExtent(GridExtent, int...) for a discussion.
-            envelope.setRange(i, coordinates[i], coordinates[i + dimension] + 1.0);
+            long high = coordinates[i + dimension];
+            if (high != Long.MAX_VALUE) high++;             // Make the coordinate exclusive before cast.
+            envelope.setRange(i, coordinates[i], high);     // Possible loss of precision in cast to `double` type.
         }
         envelope = Envelopes.transform(cornerToCRS, envelope);
         if (envelope.isEmpty()) try {

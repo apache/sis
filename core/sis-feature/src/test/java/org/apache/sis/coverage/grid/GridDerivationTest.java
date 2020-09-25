@@ -53,6 +53,7 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.0
  * @module
@@ -400,7 +401,7 @@ public final strictfp class GridDerivationTest extends TestCase {
      * argument to {@link GridDerivation#subgrid(GridGeometry)}.
      */
     @Test
-    public void testSubgridCrossingAntiMeridian() {
+    public void testAntiMeridianCrossingInSubgrid() {
         final GridGeometry grid = new GridGeometry(
                 new GridExtent(200, 180), PixelInCell.CELL_CORNER,
                 MathTransforms.linear(new Matrix3(
@@ -424,7 +425,7 @@ public final strictfp class GridDerivationTest extends TestCase {
      * to {@link GridDerivation} constructor.
      */
     @Test
-    public void testBasegridCrossingAntiMeridian() {
+    public void testAntiMeridianCrossingInBaseGrid() {
         /*
          * Longitudes from 100°E to 240°E (in WGS84 geographic CRS), which is equivalent to 100°E to 120°W.
          * That [100 … 240]°E range is compatible with the [0 … 360]° longitude range declared in the CRS.
@@ -433,9 +434,8 @@ public final strictfp class GridDerivationTest extends TestCase {
         final GridGeometry grid = new GridGeometry(
                 new GridExtent(null, null, new long[] {8400, 4860}, true), PixelInCell.CELL_CENTER,
                 MathTransforms.linear(new Matrix3(
-                        0.016664682775860015,  0,  100.00833234138793,
-                    0,  0.016663238016868958,      -20.991668380991566,
-                    0, 0, 1)),
+                        0.016664682775860015,  0,  100.00833234138793,   0,
+                        0.016663238016868958,      -20.991668380991566,  0, 0, 1)),
                 HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE));
         /*
          * 180°W to 180″E (the world) and 80°S to 80°N in Mercator projection.
@@ -444,9 +444,8 @@ public final strictfp class GridDerivationTest extends TestCase {
         final GridGeometry areaOfInterest = new GridGeometry(
                 new GridExtent(null, null, new long[] {256, 256}, false), PixelInCell.CELL_CORNER,
                 MathTransforms.linear(new Matrix3(
-                        156543.03392804097,  0,  -2.0037508342789244E7,
-                    0, -121066.95890409155,       1.5496570739723722E7,
-                    0, 0, 1)),
+                         156543.03392804097,  0,  -2.0037508342789244E7,  0,
+                        -121066.95890409155,       1.5496570739723722E7,  0, 0, 1)),
                 HardCodedConversions.mercator());
         /*
          * Since the area of interest covers the world (in longitude), the intersection should
