@@ -98,7 +98,7 @@ final class SpecialCases extends PropertyAccessor {
             Object east = super.get(index, metadata);
             if (east != null) {
                 Object west = super.get(westBoundLongitude, metadata);
-                if (west != null && (Double) east < (Double) west) {
+                if (west != null && Longitude.isWraparound((Double) west, (Double) east)) {
                     return Resources.formatInternational(Resources.Keys.BoxCrossesAntiMeridian);
                 }
             }

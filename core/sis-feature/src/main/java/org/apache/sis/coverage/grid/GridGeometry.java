@@ -1583,7 +1583,7 @@ public class GridGeometry implements LenientComparable, Serializable {
                     table.append(times[1].toString());
                 }
                 table.flush();
-                if (eastBoundLongitude < westBoundLongitude) {
+                if (Longitude.isWraparound(westBoundLongitude, eastBoundLongitude)) {
                     vocabulary.appendLabel(Vocabulary.Keys.Note, buffer);
                     buffer.append(' ')
                           .append(org.apache.sis.internal.metadata.Resources.forLocale(locale).getString(
