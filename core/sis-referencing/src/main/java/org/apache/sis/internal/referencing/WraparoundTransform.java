@@ -20,6 +20,8 @@ import java.io.Serializable;
 import java.util.List;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -31,10 +33,12 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.internal.referencing.provider.Wraparound;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -96,8 +100,16 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
      * Returns a transform with a wraparound behavior in the given dimension.
      * Input and output values in the wraparound dimension shall be normalized in the [−p/2 … +p/2] range
      * where <var>p</var> is the period (typically 360° for longitude axis).
+     *
+     * @param  dimension            number of dimensions of the transform to create.
+     * @param  wraparoundDimension  dimension where wraparound happens.
+     * @param  period               period on wraparound axis.
+     * @return the wraparound transform (may be a cached instance).
      */
-    static WraparoundTransform create(final int dimension, final int wraparoundDimension, final double period) {
+    public static WraparoundTransform create(final int dimension, final int wraparoundDimension, final double period) {
+        ArgumentChecks.ensureStrictlyPositive("dimension", dimension);
+        ArgumentChecks.ensureBetween("wraparoundDimension", 0, dimension - 1, wraparoundDimension);
+        ArgumentChecks.ensureStrictlyPositive("period", period);
         if (period == (Longitude.MAX_VALUE - Longitude.MIN_VALUE) && (wraparoundDimension & ~1) == 0) {
             final int i = ((dimension - FIRST_CACHED_DIMENSION) << 1) | wraparoundDimension;
             if (i >= 0 && i < CACHE.length) {
@@ -264,6 +276,30 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
             wraparound = MathTransforms.concatenate(denormalize.inverse(), wraparound, denormalize);
         }
         return MathTransforms.concatenate(tr, wraparound);
+    }
+
+    /**
+     * Returns the parameter descriptors for this math transform.
+     *
+     * @return the parameter descriptors for this math transform.
+     */
+    @Override
+    public ParameterDescriptorGroup getParameterDescriptors() {
+        return Wraparound.PARAMETERS;
+    }
+
+    /**
+     * Returns the parameter values for this math transform.
+     *
+     * @return the parameter values for this math transform.
+     */
+    @Override
+    public ParameterValueGroup getParameterValues() {
+        final Parameters pg = Parameters.castOrWrap(getParameterDescriptors().createValue());
+        pg.getOrCreate(Wraparound.DIMENSION).setValue(dimension);
+        pg.getOrCreate(Wraparound.WRAPAROUND_DIMENSION).setValue(wraparoundDimension);
+        pg.getOrCreate(Wraparound.PERIOD).setValue(period);
+        return pg;
     }
 
     /**
@@ -450,21 +486,42 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
                 }
                 /*
                  * Done moving the linear operations that we can move. Put everything together.
+                 * The `middle` transform should become simpler, ideally the identity transform.
+                 *
+                 * As an heuristic rule, we assume that it was worth simplifying if the implementation class changed.
+                 * For example a `ProjectiveTransform` middle transform may be replaced by `IdentityTransform` (ideal
+                 * case, but replacement by `TranslationTransform` is still good). But if we got the same class, then
+                 * even if the matrix is a little bit simpler it is probably not simpler enough; we will probably get
+                 * no performance benefit. In such case abandon this `tryConcatenate(…)` attempt for reducing risk of
+                 * confusing WKT representation. It may happen in particular if `other` is a `NormalizedProjection`
+                 * with normalization/denormalization matrices. "Simplifying" a (de)normalization matrix may actually
+                 * complexify the map projection WKT representation.
+                 *
+                 * NOTE 1: the decision to apply simplification or not has no incidence on the numerical values
+                 *         of transformation results; the transform chains should be equivalent in either cases.
+                 *         It is only an attempt to avoid unnecessary changes (from a performance point of view)
+                 *         in order to produce less surprising WKT representations during debugging.
+                 *
+                 * NOTE 2: we assume that changes of implementation class can only be simplifications (not more
+                 *         costly classes) because changes applied on the `middle` matrix by above code makes
+                 *         that matrix closer to an identity matrix.
                  */
                 if (modified) {
                     MathTransform tr = mf.linear(middle);
-                    tr = mf.concatenate(applyOtherFirst, tr, step2);
-                    tr = mf.concatenate(applyOtherFirst, step1, tr);
-                    if (applyOtherFirst) {
-                        for (int i = count-2; --i >= 0;) {
-                            tr = mf.concatenate(steps.get(i), tr);
+                    if (tr.getClass() != middleTr.getClass()) {               // See above comment for rational.
+                        tr = mf.concatenate(applyOtherFirst, tr, step2);
+                        tr = mf.concatenate(applyOtherFirst, step1, tr);
+                        if (applyOtherFirst) {
+                            for (int i = count-2; --i >= 0;) {
+                                tr = mf.concatenate(steps.get(i), tr);
+                            }
+                        } else {
+                            for (int i = 2; i < count; i++) {
+                                tr = mf.concatenate(tr, steps.get(i));
+                            }
                         }
-                    } else {
-                        for (int i = 2; i < count; i++) {
-                            tr = mf.concatenate(tr, steps.get(i));
-                        }
+                        return tr;
                     }
-                    return tr;
                 }
             } catch (NoninvertibleTransformException e) {
                 // Should not happen. But if it is the case, just abandon the optimization effort.
@@ -546,21 +603,6 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
         final Matrix change = MathTransforms.getMatrix(move.inverse());
         return reverse ? Matrices.multiply(change, middle)
                        : Matrices.multiply(middle, change);
-    }
-
-    /**
-     * Formats this transform as a pseudo-WKT element.
-     *
-     * @param  formatter  the formatter to use.
-     * @return the WKT element name, which is {@code "Wraparound_MT"}.
-     */
-    @Override
-    protected String formatTo(final Formatter formatter) {
-        formatter.append(dimension);
-        formatter.append(wraparoundDimension);
-        formatter.append(period);
-        formatter.setInvalidWKT(WraparoundTransform.class, null);
-        return "Wraparound_MT";
     }
 
     /**

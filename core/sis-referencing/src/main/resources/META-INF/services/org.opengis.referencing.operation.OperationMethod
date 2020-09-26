@@ -69,3 +69,4 @@ org.apache.sis.internal.referencing.provider.NADCON
 org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation
 org.apache.sis.internal.referencing.provider.Interpolation1D
 org.apache.sis.internal.referencing.provider.SatelliteTracking
+org.apache.sis.internal.referencing.provider.Wraparound

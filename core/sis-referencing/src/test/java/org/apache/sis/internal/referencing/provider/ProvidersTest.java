@@ -118,7 +118,8 @@ public final strictfp class ProvidersTest extends TestCase {
             NADCON.class,
             FranceGeocentricInterpolation.class,
             MolodenskyInterpolation.class,
-            Interpolation1D.class
+            Interpolation1D.class,
+            Wraparound.class
         };
     }
 
