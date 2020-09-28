@@ -16,9 +16,10 @@
  */
 package org.apache.sis.internal.referencing;
 
-import java.io.Serializable;
 import java.util.List;
+import java.io.Serializable;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -34,10 +35,13 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.referencing.provider.Wraparound;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
@@ -46,9 +50,7 @@ import org.apache.sis.util.collection.BackingStoreException;
 
 /**
  * Enforces coordinate values in the range of a wraparound axis (typically longitude).
- * This transform is usually not needed for the [-180 … +180]° range since it is the
- * range of trigonometric functions. However this transform is useful for shifting
- * transformation results in the [0 … 360]° range.
+ * For example this transform can shift longitudes in the [-180 … +180]° range to the [0 … 360]° range.
  *
  * <p>{@code WraparoundTransform}s are not created automatically by {@link org.apache.sis.referencing.CRS#findOperation
  * CRS.findOperation(…)} because they introduce a discontinuity in coordinate transformations. Such discontinuities are
@@ -70,7 +72,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * @since   1.1
  * @module
  */
-public final class WraparoundTransform extends AbstractMathTransform implements Serializable {
+public class WraparoundTransform extends AbstractMathTransform implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -104,12 +106,19 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
      * @param  dimension            number of dimensions of the transform to create.
      * @param  wraparoundDimension  dimension where wraparound happens.
      * @param  period               period on wraparound axis.
+     * @param  sourceMedian         coordinate in the center of source envelope, or 0 if none.
      * @return the wraparound transform (may be a cached instance).
      */
-    public static WraparoundTransform create(final int dimension, final int wraparoundDimension, final double period) {
+    public static WraparoundTransform create(final int dimension, final int wraparoundDimension,
+                                             final double period, final double sourceMedian)
+    {
         ArgumentChecks.ensureStrictlyPositive("dimension", dimension);
         ArgumentChecks.ensureBetween("wraparoundDimension", 0, dimension - 1, wraparoundDimension);
         ArgumentChecks.ensureStrictlyPositive("period", period);
+        if (sourceMedian != 0) {
+            ArgumentChecks.ensureFinite("sourceMedian", sourceMedian);
+            return new WraparoundInEnvelope(dimension, wraparoundDimension, period, sourceMedian);
+        }
         if (period == (Longitude.MAX_VALUE - Longitude.MIN_VALUE) && (wraparoundDimension & ~1) == 0) {
             final int i = ((dimension - FIRST_CACHED_DIMENSION) << 1) | wraparoundDimension;
             if (i >= 0 && i < CACHE.length) {
@@ -122,7 +131,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
     /**
      * The dimension of source and target coordinates.
      */
-    private final int dimension;
+    final int dimension;
 
     /**
      * The dimension where to apply wraparound.
@@ -141,17 +150,25 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
      * affine transforms which can efficiently be combined with other affine transforms, but it caused
      * more rounding errors.
      */
-    private final double period;
+    final double period;
 
     /**
      * Creates a new transform with a wraparound behavior in the given dimension.
      * Input and output values in the wraparound dimension shall be normalized in
      * the [−p/2 … +p/2] range where <var>p</var> is the period (e.g. 360°).
      */
-    private WraparoundTransform(final int dimension, final int wraparoundDimension, final double period) {
+    WraparoundTransform(final int dimension, final int wraparoundDimension, final double period) {
         this.dimension = dimension;
         this.wraparoundDimension = wraparoundDimension;
         this.period = period;
+    }
+
+    /**
+     * Returns an instance with the specified number of dimensions while keeping
+     * {@link #wraparoundDimension} and {@link #period} unchanged.
+     */
+    WraparoundTransform redim(final int n) {
+        return create(n, wraparoundDimension, period, 0);
     }
 
     /**
@@ -166,7 +183,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
         final int n = (applyOtherFirst ? other.getNumRow() : other.getNumCol()) - 1;
         if (n == dimension) return this;
         if (n >= wraparoundDimension) return null;
-        return create(n, wraparoundDimension, period);
+        return redim(n);
     }
 
     /**
@@ -186,7 +203,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
         MathTransform tr = op.getMathTransform();
         final CoordinateSystem targetCS = op.getTargetCRS().getCoordinateSystem();
         for (final int wraparoundDimension : CoordinateOperations.wrapAroundChanges(op)) {
-            tr = concatenate(tr, wraparoundDimension, targetCS, null);
+            tr = concatenate(tr, wraparoundDimension, null, null, targetCS);
         }
         return tr;
     }
@@ -202,18 +219,19 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
      * (e.g. when transforming a raster) and we want that output coordinates to be continuous
      * in that domain, independently of axis ranges.</p>
      *
-     * @param  tr        the transform to augment with "wrap around" behavior.
-     * @param  targetCS  the target coordinate system.
-     * @param  median    the coordinates to put at the center of new ranges.
+     * @param  tr            the transform to augment with "wrap around" behavior.
+     * @param  sourceMedian  the coordinates at the center of source ranges, or {@code null} if none.
+     * @param  targetMedian  the coordinates to keep at the center of new ranges.
+     * @param  targetCS      the target coordinate system.
      * @return the math transform with wraparound if needed.
      * @throws TransformException if a coordinate can not be computed.
      */
-    public static MathTransform forDomainOfUse(MathTransform tr, final CoordinateSystem targetCS,
-            final DirectPosition median) throws TransformException
+    public static MathTransform forDomainOfUse(MathTransform tr, final DirectPosition sourceMedian,
+            final DirectPosition targetMedian, final CoordinateSystem targetCS) throws TransformException
     {
         final int dimension = targetCS.getDimension();
         for (int i=0; i<dimension; i++) {
-            tr = concatenate(tr, i, targetCS, median);
+            tr = concatenate(tr, i, sourceMedian, targetMedian, targetCS);
         }
         return tr;
     }
@@ -226,25 +244,27 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
      *
      * @param  tr                   the transform to concatenate with a wraparound transform.
      * @param  wraparoundDimension  the dimension where "wrap around" behavior may apply.
-     * @param  targetCS             the target coordinate system.
-     * @param  median               the coordinate to put at the center of new range,
+     * @param  sourceMedian         the coordinate at the center of source envelope, or {@code null} if none.
+     * @param  targetMedian         the coordinate to put at the center of new range,
      *                              or {@code null} for standard axis center.
+     * @param  targetCS             the target coordinate system.
      * @return the math transform with "wrap around" behavior in the specified dimension.
      * @throws TransformException if a coordinate can not be computed.
      */
     private static MathTransform concatenate(final MathTransform tr, final int wraparoundDimension,
-            final CoordinateSystem targetCS, final DirectPosition median) throws TransformException
+            final DirectPosition sourceMedian, final DirectPosition targetMedian, final CoordinateSystem targetCS)
+            throws TransformException
     {
         final double period = WraparoundAdjustment.range(targetCS, wraparoundDimension);
         if (!(period > 0 && period != Double.POSITIVE_INFINITY)) {
             return tr;
         }
         double m;
-        if (median == null) {
+        if (targetMedian == null) {
             final CoordinateSystemAxis axis = targetCS.getAxis(wraparoundDimension);
             m = (axis.getMinimumValue() + axis.getMaximumValue()) / 2;
         } else try {
-            m = median.getOrdinate(wraparoundDimension);
+            m = targetMedian.getOrdinate(wraparoundDimension);
         } catch (BackingStoreException e) {
             // Some implementations compute coordinates only when first needed.
             throw e.unwrapOrRethrow(TransformException.class);
@@ -256,7 +276,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
              */
             final int power = 10 - Math.getExponent(m);
             m = Math.scalb(Math.rint(Math.scalb(m, power)), -power);
-        } else if (median == null) {
+        } else if (targetMedian == null) {
             /*
              * May happen if `WraparoundAdjustment.range(…)` recognized a longitude axis
              * despite the `CoordinateSystemAxis` not declarining minimum/maximum values.
@@ -267,8 +287,9 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
             // Invalid median value. Assume caller means "no wrap".
             return tr;
         }
+        final double sm = (sourceMedian != null) ? sourceMedian.getOrdinate(wraparoundDimension) - m : 0;
         final int dimension = tr.getTargetDimensions();
-        MathTransform wraparound = create(dimension, wraparoundDimension, period);
+        MathTransform wraparound = create(dimension, wraparoundDimension, period, sm);
         if (m != 0) {
             final double[] t = new double[dimension];
             t[wraparoundDimension] = m;
@@ -308,7 +329,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
      * @return the dimension of input points.
      */
     @Override
-    public int getSourceDimensions() {
+    public final int getSourceDimensions() {
         return dimension;
     }
 
@@ -318,7 +339,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
      * @return the dimension of output points.
      */
     @Override
-    public int getTargetDimensions() {
+    public final int getTargetDimensions() {
         return dimension;
     }
 
@@ -339,6 +360,16 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
     }
 
     /**
+     * Applies the wraparound on the given value.
+     *
+     * @param  x  the value on which to apply wraparound.
+     * @return the value after wraparound.
+     */
+    double shift(final double x) {
+        return Math.IEEEremainder(x, period);
+    }
+
+    /**
      * Wraparounds a single coordinate point in an array,
      * and optionally computes the transform derivative at that location.
      */
@@ -349,7 +380,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
         if (dstPts != null) {
             System.arraycopy(srcPts, srcOff, dstPts, dstOff, dimension);
             dstOff += wraparoundDimension;
-            dstPts[dstOff] = Math.IEEEremainder(dstPts[dstOff], period);
+            dstPts[dstOff] = shift(dstPts[dstOff]);
         }
         return derivate ? Matrices.createIdentity(dimension) : null;
     }
@@ -364,7 +395,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
         System.arraycopy(srcPts, srcOff, dstPts, dstOff, numPts * dimension);
         dstOff += wraparoundDimension;
         while (--numPts >= 0) {
-            dstPts[dstOff] = Math.IEEEremainder(dstPts[dstOff], period);
+            dstPts[dstOff] = shift(dstPts[dstOff]);
             dstOff += dimension;
         }
     }
@@ -379,7 +410,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
         System.arraycopy(srcPts, srcOff, dstPts, dstOff, numPts * dimension);
         dstOff += wraparoundDimension;
         while (--numPts >= 0) {
-            dstPts[dstOff] = (float) Math.IEEEremainder(dstPts[dstOff], period);
+            dstPts[dstOff] = (float) shift(dstPts[dstOff]);
             dstOff += dimension;
         }
     }
@@ -422,7 +453,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
          * If the other transform is also a `WraparoundTransform` for the same dimension,
          * then there is no need to concatenate those two consecutive redudant transforms.
          */
-        if (equals(other, null)) {
+        if (equals(other)) {
             return this;
         }
         final List<MathTransform> steps = MathTransforms.getSteps(other);
@@ -613,7 +644,7 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object instanceof WraparoundTransform) {
+        if (super.equals(object, mode)) {
             final WraparoundTransform other = (WraparoundTransform) object;
             return other.dimension == dimension && other.wraparoundDimension == wraparoundDimension
                     && Numerics.equals(period, other.period);
@@ -627,5 +658,47 @@ public final class WraparoundTransform extends AbstractMathTransform implements 
     @Override
     protected int computeHashCode() {
         return dimension * 31 + wraparoundDimension + Double.hashCode(period);
+    }
+
+    /**
+     * Transforms an envelope using the given math transform with special checks for wraparounds.
+     * The transformation is only approximated: the returned envelope may be bigger than necessary.
+     *
+     * <p>This may method modifies the given transform with translations for enabling wraparounds
+     * that could not be applied in previous {@link #shift(double)} executions.
+     * If the {@link WraparoundInEnvelope#translate()} method returns {@code true}, then the given
+     * transform will compute different output coordinates for the same input coordinates.</p>
+     *
+     * @param  transform  the transform to use.
+     * @param  envelope   envelope to transform. This envelope will not be modified.
+     * @return the transformed envelope.
+     * @throws TransformException if a transform failed.
+     */
+    public static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope) throws TransformException {
+        final GeneralEnvelope result = Envelopes.transform(transform, envelope);
+        WraparoundInEnvelope[] wraparounds = null;
+        for (final MathTransform t : MathTransforms.getSteps(transform)) {
+            if (t instanceof WraparoundInEnvelope) {
+                if (wraparounds == null) {
+                    wraparounds = new WraparoundInEnvelope[] {(WraparoundInEnvelope) t};
+                } else {
+                    wraparounds = ArraysExt.append(wraparounds, (WraparoundInEnvelope) t);
+                }
+            }
+        }
+        if (wraparounds != null) {
+            for (;;) {
+                boolean done = false;
+                for (final WraparoundInEnvelope tr : wraparounds) {
+                    done |= tr.translate();
+                }
+                if (!done) break;
+                result.add(Envelopes.transform(transform, envelope));
+            }
+            for (final WraparoundInEnvelope tr : wraparounds) {
+                tr.reset();
+            }
+        }
+        return result;
     }
 }

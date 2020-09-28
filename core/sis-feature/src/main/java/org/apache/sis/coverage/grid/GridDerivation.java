@@ -422,18 +422,19 @@ public class GridDerivation {
         ensureSubgridNotSet();
         subGridSetter = "subgrid";
         if (!base.equals(gridOfInterest)) {
-            final MathTransform mapCorners, mapCenters;
-            final GridExtent domain = gridOfInterest.getExtent();                  // May throw IncompleteGridGeometryException.
+            final MathTransform mapCenters;
+            final GridExtent domain = gridOfInterest.getExtent();       // May throw IncompleteGridGeometryException.
             try {
                 final CoordinateOperationFinder finder = new CoordinateOperationFinder(gridOfInterest, base);
-                mapCorners = finder.gridToGrid(PixelInCell.CELL_CORNER);
-                mapCenters = finder.gridToGrid(PixelInCell.CELL_CENTER);
+                final MathTransform mapCorners = finder.gridToGrid();
+                finder.setAnchor(PixelInCell.CELL_CENTER);
+                mapCenters = finder.gridToGrid();
                 clipExtent(domain.toCRS(mapCorners, mapCenters, null));
             } catch (FactoryException | TransformException e) {
                 throw new IllegalGridGeometryException(e, "gridOfInterest");
             }
             if (baseExtent != base.extent && baseExtent.equals(gridOfInterest.extent)) {
-                baseExtent = gridOfInterest.extent;                                                 // Share common instance.
+                baseExtent = gridOfInterest.extent;                                         // Share common instance.
             }
             /*
              * The subsampling will be determined by scale factors of the transform from the given desired grid geometry to

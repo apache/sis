@@ -49,10 +49,10 @@ public final strictfp class WraparoundTransformTest extends TestCase {
     public void testCache() {
         final double period = 360;
         final WraparoundTransform t1, t2, t3, t4;
-        assertSame   (WraparoundTransform.create(3, 0, period), t1 = WraparoundTransform.create(3, 0, period));
-        assertNotSame(WraparoundTransform.create(3, 0, period), t2 = WraparoundTransform.create(3, 1, period));
-        assertNotSame(WraparoundTransform.create(3, 0, period), t3 = WraparoundTransform.create(2, 0, period));
-        assertNotSame(WraparoundTransform.create(3, 0, period), t4 = WraparoundTransform.create(3, 2, period));
+        assertSame   (WraparoundTransform.create(3, 0, period, 0), t1 = WraparoundTransform.create(3, 0, period, 0));
+        assertNotSame(WraparoundTransform.create(3, 0, period, 0), t2 = WraparoundTransform.create(3, 1, period, 0));
+        assertNotSame(WraparoundTransform.create(3, 0, period, 0), t3 = WraparoundTransform.create(2, 0, period, 0));
+        assertNotSame(WraparoundTransform.create(3, 0, period, 0), t4 = WraparoundTransform.create(3, 2, period, 0));
         assertEquals(3, t1.getSourceDimensions());
         assertEquals(3, t2.getSourceDimensions());
         assertEquals(2, t3.getSourceDimensions());

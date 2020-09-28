@@ -115,6 +115,6 @@ public final class Wraparound extends AbstractProvider {
         return WraparoundTransform.create(
                 pg.intValue(DIMENSION),
                 pg.intValue(WRAPAROUND_DIMENSION),
-                pg.doubleValue(PERIOD));
+                pg.doubleValue(PERIOD), 0);
     }
 }

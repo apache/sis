@@ -26,6 +26,9 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -36,9 +39,6 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -461,6 +461,62 @@ public final strictfp class GridDerivationTest extends TestCase {
          * The latitude span is more complicated because of adjustement for resolution.
          */
         assertExtentEquals(new long[2], new long[] {100, 73}, result.getExtent());
+    }
+
+    /**
+     * Tests deriving a grid geometry when all involved grid geometries cross the anti-meridian.
+     * Illustration:
+     *
+     * {@preformat text
+     *   ──────────────┐                    ┌──────────────────
+     *        Grid     │                    │       Grid
+     *   ──────────────┘                    └──────────────────
+     *             120°W                    100°E
+     *   ─────────────────┐       ┌────────────────────────────
+     *          AOI       │       │      Area Of Interest
+     *   ─────────────────┘       └────────────────────────────
+     *                102°W       22°W
+     *   ↖…………………………………………………………………………………………………360° period…………↗︎
+     * }
+     */
+    @Test
+    public void testAntiMeridianCrossingInBothGrids() {
+        /*
+         * Longitudes from 100°E to 240°E (in WGS84 geographic CRS), which is equivalent to 100°E to 120°W.
+         * Latitude range is from 21°S to 60°N, but this is secondary for this test.
+         */
+        final GridGeometry grid = new GridGeometry(
+                new GridExtent(null, null, new long[] {8400, 4860}, true), PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix3(
+                        0.016664682775860015,  0,  100.00833234138793,   0,
+                        0.016663238016868958,      -20.991668380991566,  0, 0, 1)),
+                HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE));
+        /*
+         * 22°27′34″W to 102°27′35″W in Mercator projection.
+         * Latitude range is about 66°S to 80°N, but it is not important for this test.
+         */
+        final GridGeometry areaOfInterest = new GridGeometry(
+                new GridExtent(null, null, new long[] {865, 725}, true), PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix3(
+                         35992.44506018084,  0,  -2482193.2646860380,  0,
+                        -35992.44506018084,      16123175.875372937,   0, 0, 1)),
+                HardCodedConversions.mercator());
+        /*
+         * Verify that the area of interest contains the full grid.
+         */
+        final GeneralEnvelope e1 = new GeneralEnvelope(grid.getGeographicExtent().get());
+        final GeneralEnvelope e2 = new GeneralEnvelope(areaOfInterest.getGeographicExtent().get());
+        assertTrue(e2.contains(e1));
+        /*
+         * Expect the same longitude range than `grid` since it is fully included in `areaOfInterest`.
+         */
+        final GridGeometry result = grid.derive().subgrid(areaOfInterest).build();
+        assertEnvelopeEquals(new Envelope2D(null, 100, -21, 240 - 100, 60 - -21),
+                             result.getEnvelope(), Formulas.ANGULAR_TOLERANCE);
+        /*
+         * Following is empirical values provided as an anti-regression test.
+         */
+        assertExtentEquals(new long[2], new long[] {442, 285}, result.getExtent());
     }
 
     /**

@@ -66,7 +66,7 @@ import org.apache.sis.internal.util.Numerics;
  *   <li>Use the area of interest and grid resolution for refining the coordinate operation between two CRS.</li>
  * </ul>
  *
- * <b>Note:</b> except for the {@link #gridToGrid(PixelInCell)} convenience method,
+ * <b>Note:</b> except for the {@link #gridToGrid()} convenience method,
  * this class does not provide the complete chain of operations from grid to grid.
  * It provides only the operation from <em>cell indices</em> in source grid to <em>coordinates in the CRS</em>
  * of destination grid. Callers must add the last step (conversion from target CRS to cell indices) themselves.
@@ -180,7 +180,7 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     private boolean isWraparoundApplied;
 
     /**
-     * Creates a new finder.
+     * Creates a new finder initialized to {@link PixelInCell#CELL_CORNER} anchor.
      *
      * @param  source  the grid geometry which is the source of the coordinate operation to find.
      * @param  target  the grid geometry which is the target of the coordinate operation to find.
@@ -188,31 +188,7 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     CoordinateOperationFinder(final GridGeometry source, final GridGeometry target) {
         this.source = source;
         this.target = target;
-    }
-
-    /**
-     * Returns the CRS of the source grid geometry. If neither the source and target grid geometry
-     * define a CRS, then this method returns {@code null}.
-     *
-     * @throws IncompleteGridGeometryException if the target grid geometry has a CRS but the source
-     *         grid geometry has none. Note that the converse is allowed, in which case the target
-     *         CRS is assumed the same than the source.
-     */
-    private CoordinateReferenceSystem getSourceCRS() {
-        return source.isDefined(GridGeometry.CRS) ||
-               target.isDefined(GridGeometry.CRS) ? source.getCoordinateReferenceSystem() : null;
-    }
-
-    /**
-     * Returns the target of the "corner to CRS" transform.
-     * May be {@code null} if the neither the source and target grid geometry define a CRS.
-     *
-     * @throws IncompleteGridGeometryException if the target grid geometry has a CRS but the source
-     *         grid geometry has none. Note that the converse is allowed, in which case the target
-     *         CRS is assumed the same than the source.
-     */
-    final CoordinateReferenceSystem getTargetCRS() {
-        return (changeOfCRS != null) ? changeOfCRS.getTargetCRS() : getSourceCRS();
+        this.anchor = PixelInCell.CELL_CORNER;
     }
 
     /**
@@ -240,6 +216,31 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
             knowChangeOfCRS    = false;
             // Do not clear `isWraparoundNeeded`; its value is still valid.
         }
+    }
+
+    /**
+     * Returns the CRS of the source grid geometry. If neither the source and target grid geometry
+     * define a CRS, then this method returns {@code null}.
+     *
+     * @throws IncompleteGridGeometryException if the target grid geometry has a CRS but the source
+     *         grid geometry has none. Note that the converse is allowed, in which case the target
+     *         CRS is assumed the same than the source.
+     */
+    private CoordinateReferenceSystem getSourceCRS() {
+        return source.isDefined(GridGeometry.CRS) ||
+               target.isDefined(GridGeometry.CRS) ? source.getCoordinateReferenceSystem() : null;
+    }
+
+    /**
+     * Returns the target of the "corner to CRS" transform.
+     * May be {@code null} if the neither the source and target grid geometry define a CRS.
+     *
+     * @throws IncompleteGridGeometryException if the target grid geometry has a CRS but the source
+     *         grid geometry has none. Note that the converse is allowed, in which case the target
+     *         CRS is assumed the same than the source.
+     */
+    final CoordinateReferenceSystem getTargetCRS() {
+        return (changeOfCRS != null) ? changeOfCRS.getTargetCRS() : getSourceCRS();
     }
 
     /**
@@ -295,14 +296,16 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * Computes the transform from “grid coordinates of the source” to “grid coordinates of the target”.
      * This is a concatenation of {@link #gridToCRS()} with target "CRS to grid" transform.
      *
-     * @param  anchor  whether the operation is between cell centers or cell corners.
+     * <p><b>WARNING:</b> this method may return a mutable transform.
+     * That transform should be only short lived (e.g. just the time to transform an envelope).
+     * See {@link WraparoundTransform#transform(MathTransform, Envelope)}.</p>
+     *
      * @return operation from source grid indices to target grid indices.
      * @throws FactoryException if no operation can be found between the source and target CRS.
      * @throws TransformException if some coordinates can not be transformed to the specified target.
      * @throws IncompleteGridGeometryException if required CRS or a "grid to CRS" information is missing.
      */
-    final MathTransform gridToGrid(final PixelInCell anchor) throws FactoryException, TransformException {
-        setAnchor(anchor);
+    final MathTransform gridToGrid() throws FactoryException, TransformException {
         final MathTransform step1 = gridToCRS();
         final MathTransform step2 = target.getGridToCRS(anchor);
         if (step1.equals(step2)) {                                          // Optimization for a common case.
@@ -329,6 +332,10 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      *   <li>{@link #forwardChangeOfCRS} — cached for next invocation of this {@code gridToCRS()} method.</li>
      * </ul>
      *
+     * <p><b>WARNING:</b> this method may return a mutable transform.
+     * That transform should be only short lived (e.g. just the time to transform an envelope).
+     * See {@link WraparoundTransform#transform(MathTransform, Envelope)}.</p>
+     *
      * @return operation from source grid indices to target geospatial coordinates.
      * @throws FactoryException if no operation can be found between the source and target CRS.
      * @throws TransformException if some coordinates can not be transformed to the specified target.
@@ -350,13 +357,15 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
                  */
 apply:          if (forwardChangeOfCRS == null) {
                     forwardChangeOfCRS = changeOfCRS.getMathTransform();
-                    DirectPosition median = median(target, null);
-                    if (median == null) {
-                        median = median(source, forwardChangeOfCRS);
-                        if (median == null) break apply;
+                    DirectPosition sourceMedian = median(source, forwardChangeOfCRS);
+                    DirectPosition targetMedian = median(target, null);
+                    if (targetMedian == null) {
+                        if (sourceMedian == null) break apply;
+                        targetMedian = sourceMedian;
+                        sourceMedian = null;
                     }
                     forwardChangeOfCRS = WraparoundTransform.forDomainOfUse(forwardChangeOfCRS,
-                                            changeOfCRS.getTargetCRS().getCoordinateSystem(), median);
+                            sourceMedian, targetMedian, changeOfCRS.getTargetCRS().getCoordinateSystem());
                 }
                 gridToCRS = MathTransforms.concatenate(gridToCRS, forwardChangeOfCRS);
             }
@@ -542,7 +551,7 @@ apply:          if (forwardChangeOfCRS == null) {
             if (median != null) {
                 final MathTransform inverseNoWrap = inverseChangeOfCRS;
                 inverseChangeOfCRS = WraparoundTransform.forDomainOfUse(inverseNoWrap,
-                        changeOfCRS().getSourceCRS().getCoordinateSystem(), median);
+                        null, median, changeOfCRS().getSourceCRS().getCoordinateSystem());
 
                 if (inverseChangeOfCRS != inverseNoWrap) {
                     crsToGrid = MathTransforms.concatenate(inverseChangeOfCRS, sourceCrsToGrid);
