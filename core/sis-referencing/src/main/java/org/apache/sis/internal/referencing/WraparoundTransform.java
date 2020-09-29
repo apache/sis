@@ -106,7 +106,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * @param  dimension            number of dimensions of the transform to create.
      * @param  wraparoundDimension  dimension where wraparound happens.
      * @param  period               period on wraparound axis.
-     * @param  sourceMedian         coordinate in the center of source envelope, or 0 if none.
+     * @param  sourceMedian         coordinate in the center of source envelope, or {@link Double#NaN} if none.
      * @return the wraparound transform (may be a cached instance).
      */
     public static WraparoundTransform create(final int dimension, final int wraparoundDimension,
@@ -115,8 +115,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
         ArgumentChecks.ensureStrictlyPositive("dimension", dimension);
         ArgumentChecks.ensureBetween("wraparoundDimension", 0, dimension - 1, wraparoundDimension);
         ArgumentChecks.ensureStrictlyPositive("period", period);
-        if (sourceMedian != 0) {
-            ArgumentChecks.ensureFinite("sourceMedian", sourceMedian);
+        if (Double.isFinite(sourceMedian)) {
             return new WraparoundInEnvelope(dimension, wraparoundDimension, period, sourceMedian);
         }
         if (period == (Longitude.MAX_VALUE - Longitude.MIN_VALUE) && (wraparoundDimension & ~1) == 0) {
@@ -168,7 +167,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * {@link #wraparoundDimension} and {@link #period} unchanged.
      */
     WraparoundTransform redim(final int n) {
-        return create(n, wraparoundDimension, period, 0);
+        return create(n, wraparoundDimension, period, Double.NaN);
     }
 
     /**
@@ -287,7 +286,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
             // Invalid median value. Assume caller means "no wrap".
             return tr;
         }
-        final double sm = (sourceMedian != null) ? sourceMedian.getOrdinate(wraparoundDimension) - m : 0;
+        final double sm = (sourceMedian != null) ? sourceMedian.getOrdinate(wraparoundDimension) - m : Double.NaN;
         final int dimension = tr.getTargetDimensions();
         MathTransform wraparound = create(dimension, wraparoundDimension, period, sm);
         if (m != 0) {
