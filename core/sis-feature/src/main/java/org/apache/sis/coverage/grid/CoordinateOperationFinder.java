@@ -30,6 +30,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.internal.referencing.WraparoundApplicator;
 import org.apache.sis.internal.referencing.WraparoundTransform;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -172,7 +173,7 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      *
      * <p>Note that despite this field name, a {@code true} value does not imply that {@link #inverseChangeOfCRS}
      * and {@link #crsToGrid} transforms really contain some {@link WraparoundTransform} steps. It only means that
-     * the {@link WraparoundTransform#forDomainOfUse WraparoundTransform.forDomainOfUse(…)} method has been invoked.
+     * the {@link WraparoundApplicator#forDomainOfUse WraparoundApplicator.forDomainOfUse(…)} method has been invoked.
      * That method may have decided to not insert any wraparound steps.</p>
      *
      * @see #applyWraparound(MathTransform)
@@ -298,7 +299,7 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      *
      * <p><b>WARNING:</b> this method may return a mutable transform.
      * That transform should be only short lived (e.g. just the time to transform an envelope).
-     * See {@link WraparoundTransform#transform(MathTransform, Envelope)}.</p>
+     * See {@link org.apache.sis.internal.referencing.WraparoundInEnvelope#transform(MathTransform, Envelope)}.</p>
      *
      * @return operation from source grid indices to target grid indices.
      * @throws FactoryException if no operation can be found between the source and target CRS.
@@ -334,7 +335,7 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      *
      * <p><b>WARNING:</b> this method may return a mutable transform.
      * That transform should be only short lived (e.g. just the time to transform an envelope).
-     * See {@link WraparoundTransform#transform(MathTransform, Envelope)}.</p>
+     * See {@link org.apache.sis.internal.referencing.WraparoundInEnvelope#transform(MathTransform, Envelope)}.</p>
      *
      * @return operation from source grid indices to target geospatial coordinates.
      * @throws FactoryException if no operation can be found between the source and target CRS.
@@ -364,8 +365,9 @@ apply:          if (forwardChangeOfCRS == null) {
                         targetMedian = sourceMedian;
                         sourceMedian = null;
                     }
-                    forwardChangeOfCRS = WraparoundTransform.forDomainOfUse(forwardChangeOfCRS,
-                            sourceMedian, targetMedian, changeOfCRS.getTargetCRS().getCoordinateSystem());
+                    final WraparoundApplicator ap = new WraparoundApplicator(sourceMedian,
+                            targetMedian, changeOfCRS.getTargetCRS().getCoordinateSystem());
+                    forwardChangeOfCRS = ap.forDomainOfUse(forwardChangeOfCRS);
                 }
                 gridToCRS = MathTransforms.concatenate(gridToCRS, forwardChangeOfCRS);
             }
@@ -550,9 +552,9 @@ apply:          if (forwardChangeOfCRS == null) {
             final DirectPosition median = median(source, null);
             if (median != null) {
                 final MathTransform inverseNoWrap = inverseChangeOfCRS;
-                inverseChangeOfCRS = WraparoundTransform.forDomainOfUse(inverseNoWrap,
-                        null, median, changeOfCRS().getSourceCRS().getCoordinateSystem());
-
+                final WraparoundApplicator ap = new WraparoundApplicator(null,
+                        median, changeOfCRS().getSourceCRS().getCoordinateSystem());
+                inverseChangeOfCRS = ap.forDomainOfUse(inverseNoWrap);
                 if (inverseChangeOfCRS != inverseNoWrap) {
                     crsToGrid = MathTransforms.concatenate(inverseChangeOfCRS, sourceCrsToGrid);
                     return true;

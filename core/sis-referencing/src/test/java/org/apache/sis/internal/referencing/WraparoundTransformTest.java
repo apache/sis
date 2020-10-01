@@ -81,7 +81,7 @@ public final strictfp class WraparoundTransformTest extends TestCase {
          * Wrararound is often (but not always) unnecessary on source coordinates if the operation
          * uses trigonometric functions.
          */
-        final MathTransform wt = WraparoundTransform.forTargetCRS(op);
+        final MathTransform wt = WraparoundApplicator.forTargetCRS(op);
         final List<MathTransform> steps = MathTransforms.getSteps(wt);
         assertEquals(3, steps.size());
         assertEquals(1, ((WraparoundTransform) steps.get(1)).wraparoundDimension);
@@ -138,7 +138,7 @@ public final strictfp class WraparoundTransformTest extends TestCase {
          * should have been moved by `WraparoundTransform.tryConcatenate(…)` in order to combine them with initial
          * [normalization] and final [denormalization].
          */
-        final MathTransform wt = WraparoundTransform.forTargetCRS(op);
+        final MathTransform wt = WraparoundApplicator.forTargetCRS(op);
         final List<MathTransform> steps = MathTransforms.getSteps(wt);
         assertEquals(4, steps.size());
         assertEquals(0, ((WraparoundTransform) steps.get(1)).wraparoundDimension);

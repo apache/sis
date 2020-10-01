@@ -16,7 +16,14 @@
  */
 package org.apache.sis.internal.referencing;
 
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;
 
 
@@ -44,7 +51,7 @@ import org.apache.sis.util.ComparisonMode;
  * @since   1.1
  * @module
  */
-final class WraparoundInEnvelope extends WraparoundTransform {
+public final class WraparoundInEnvelope extends WraparoundTransform {
     /**
      * For cross-version compatibility.
      */
@@ -76,36 +83,26 @@ final class WraparoundInEnvelope extends WraparoundTransform {
     private boolean minChanged, maxChanged;
 
     /**
+     * The synchronization lock (may be {@code this}).
+     */
+    private final WraparoundInEnvelope lock;
+
+    /**
      * Creates a new transform with a wraparound behavior in the given dimension.
      * Input and output values in the wraparound dimension shall be normalized in
      * the [−p/2 … +p/2] range where <var>p</var> is the period (e.g. 360°).
      */
-    WraparoundInEnvelope(final int dimension, final int wraparoundDimension,
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    WraparoundInEnvelope(final WraparoundApplicator ap, final int dimension, final int wraparoundDimension,
                          final double period, final double sourceMedian)
     {
         super(dimension, wraparoundDimension, period);
         this.sourceMedian = sourceMedian;
-        reset();
-    }
-
-    /**
-     * Copy constructor for {@link #redim(int)}.
-     */
-    private WraparoundInEnvelope(final WraparoundInEnvelope source, final int dimension) {
-        super(dimension, source.wraparoundDimension, source.period);
-        sourceMedian = source.sourceMedian;
-        synchronized (source) {
-            minCycles = maxCycles = limit = source.limit;
+        if (ap.lock == null) {
+            ap.lock = this;
         }
-    }
-
-    /**
-     * Returns an instance with the specified number of dimensions while keeping
-     * {@link #wraparoundDimension} and {@link #period} unchanged.
-     */
-    @Override
-    WraparoundTransform redim(final int n) {
-        return new WraparoundInEnvelope(this, n);
+        lock = ap.lock;
+        reset();
     }
 
     /**
@@ -120,23 +117,25 @@ final class WraparoundInEnvelope extends WraparoundTransform {
      * @return the value after wraparound.
      */
     @Override
-    final synchronized double shift(final double x) {
+    final double shift(final double x) {
         double n = Math.rint(x / period);
-        if (x < sourceMedian) {
-            if (n < limit) {
-                if (n < minCycles) {
-                    minCycles = n;
-                    minChanged = true;
+        synchronized (lock) {
+            if (x < sourceMedian) {
+                if (n < limit) {
+                    if (n < minCycles) {
+                        minCycles = n;
+                        minChanged = true;
+                    }
+                    n = limit;
                 }
-                n = limit;
-            }
-        } else {
-            if (n > limit) {
-                if (n > maxCycles) {
-                    maxCycles = n;
-                    maxChanged = true;
+            } else {
+                if (n > limit) {
+                    if (n > maxCycles) {
+                        maxCycles = n;
+                        maxChanged = true;
+                    }
+                    n = limit;
                 }
-                n = limit;
             }
         }
         return x - n * period;
@@ -153,16 +152,18 @@ final class WraparoundInEnvelope extends WraparoundTransform {
      *
      * @return {@code true} if this transform has been modified.
      */
-    final synchronized boolean translate() {
-        if (minChanged) {
-            minChanged = false;
-            limit = minCycles;
-            return true;
-        }
-        if (maxChanged) {
-            maxChanged = false;
-            limit = maxCycles;
-            return true;
+    private boolean translate() {
+        synchronized (lock) {
+            if (minChanged) {
+                minChanged = false;
+                limit = minCycles;
+                return true;
+            }
+            if (maxChanged) {
+                maxChanged = false;
+                limit = maxCycles;
+                return true;
+            }
         }
         return false;
     }
@@ -170,8 +171,10 @@ final class WraparoundInEnvelope extends WraparoundTransform {
     /**
      * Resets this transform to its initial state.
      */
-    final synchronized void reset() {
-        minCycles = maxCycles = limit = Math.rint(sourceMedian / period);
+    private void reset() {
+        synchronized (lock) {
+            minCycles = maxCycles = limit = Math.rint(sourceMedian / period);
+        }
     }
 
     /**
@@ -183,9 +186,8 @@ final class WraparoundInEnvelope extends WraparoundTransform {
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (super.equals(object, mode)) {
-            final WraparoundInEnvelope other = (WraparoundInEnvelope) object;
-            return Numerics.equals(sourceMedian, other.sourceMedian) &&
-                   Numerics.equals(limit, other.limit);
+            return Numerics.equals(sourceMedian, ((WraparoundInEnvelope) object).sourceMedian);
+            // Do not use `limit` is computation because its value may change.
         }
         return false;
     }
@@ -195,6 +197,61 @@ final class WraparoundInEnvelope extends WraparoundTransform {
      */
     @Override
     protected int computeHashCode() {
-        return super.computeHashCode() + 7*Double.hashCode(limit);
+        return super.computeHashCode() + 7*Double.hashCode(sourceMedian);
+        // Do not use `limit` is computation because its value may change.
+    }
+
+    /**
+     * Returns all instances of {@link WraparoundInEnvelope}, or {@code null} if none.
+     * If non-null, the returned array usually contains only one instance.
+     */
+    private static WraparoundInEnvelope[] wraparounds(final MathTransform transform) {
+        WraparoundInEnvelope[] wraparounds = null;
+        for (final MathTransform t : MathTransforms.getSteps(transform)) {
+            if (t instanceof WraparoundInEnvelope) {
+                if (wraparounds == null) {
+                    wraparounds = new WraparoundInEnvelope[] {(WraparoundInEnvelope) t};
+                } else {
+                    wraparounds = ArraysExt.append(wraparounds, (WraparoundInEnvelope) t);
+                }
+            }
+        }
+        return wraparounds;
+    }
+
+    /**
+     * Transforms an envelope using the given math transform with special checks for wraparounds.
+     * The transformation is only approximated: the returned envelope may be bigger than necessary.
+     *
+     * <p>This may method modifies the given transform with translations for enabling wraparounds
+     * that could not be applied in previous {@link #shift(double)} executions.
+     * If the {@link WraparoundInEnvelope#translate()} method returns {@code true}, then the given
+     * transform will compute different output coordinates for the same input coordinates.</p>
+     *
+     * @param  transform  the transform to use.
+     * @param  envelope   envelope to transform. This envelope will not be modified.
+     * @return the transformed envelope.
+     * @throws TransformException if a transform failed.
+     */
+    public static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope) throws TransformException {
+        final WraparoundInEnvelope[] wraparounds = wraparounds(transform);
+        if (wraparounds == null) {
+            return Envelopes.transform(transform, envelope);
+        }
+        synchronized (wraparounds[0].lock) {
+            final GeneralEnvelope result = Envelopes.transform(transform, envelope);
+            for (;;) {
+                boolean done = false;
+                for (final WraparoundInEnvelope tr : wraparounds) {
+                    done |= tr.translate();
+                }
+                if (!done) break;
+                result.add(Envelopes.transform(transform, envelope));
+            }
+            for (final WraparoundInEnvelope tr : wraparounds) {
+                tr.reset();
+            }
+            return result;
+        }
     }
 }
