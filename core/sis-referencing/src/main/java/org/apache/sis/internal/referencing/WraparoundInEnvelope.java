@@ -23,8 +23,8 @@ import org.apache.sis.util.ComparisonMode;
 /**
  * A {@link WraparoundTransform} where the number of cycles added or removed does not exceed a given limit.
  * The bound is determined by whether the coordinate to transform is before or after a median point.
- * If the coordinate is before the median, this class puts a limit on positive number of cycles added.
- * If the coordinate is after  the median, this class puts a limit on positive number of cycles removed.
+ * If the coordinate is before the median, this class puts a limit on the number of cycles added.
+ * If the coordinate is after  the median, this class puts a limit on the number of cycles removed.
  * The intent is to avoid that the lower bound of an envelope is shifted by a greater number of cycles
  * than the upper bound, which may result in lower bound becoming greater than upper bound.
  *
