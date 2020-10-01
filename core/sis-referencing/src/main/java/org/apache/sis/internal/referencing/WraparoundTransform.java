@@ -262,23 +262,17 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
             // Some implementations compute coordinates only when first needed.
             throw e.unwrapOrRethrow(TransformException.class);
         }
-        if (Double.isFinite(m)) {
-            /*
-             * Round the median to a value having an exact representation in base 2 using about 10 bits.
-             * The intent is to reduce the risk of rounding errors with add/subtract operations.
-             */
-            final int power = 10 - Math.getExponent(m);
-            m = Math.scalb(Math.rint(Math.scalb(m, power)), -power);
-        } else if (targetMedian == null) {
+        if (!Double.isFinite(m)) {
+            if (targetMedian != null) {
+                // Invalid median value. Assume caller means "no wrap".
+                return tr;
+            }
             /*
              * May happen if `WraparoundAdjustment.range(…)` recognized a longitude axis
              * despite the `CoordinateSystemAxis` not declarining minimum/maximum values.
              * Use 0 as the range center (e.g. center of [-180 … 180]° longitude range).
              */
             m = 0;
-        } else {
-            // Invalid median value. Assume caller means "no wrap".
-            return tr;
         }
         final int dimension = tr.getTargetDimensions();
         MathTransform wraparound;
