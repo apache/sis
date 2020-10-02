@@ -20,6 +20,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.util.Numerics;
@@ -117,7 +118,7 @@ public final class WraparoundInEnvelope extends WraparoundTransform {
      * @return the value after wraparound.
      */
     @Override
-    final double shift(final double x) {
+    protected final double shift(final double x) {
         double n = Math.rint(x / period);
         synchronized (lock) {
             if (x < sourceMedian) {

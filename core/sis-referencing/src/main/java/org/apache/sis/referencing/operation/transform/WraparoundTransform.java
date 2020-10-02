@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
 import java.io.Serializable;
@@ -27,8 +27,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.internal.referencing.MathTransformsOrFactory;
 import org.apache.sis.internal.referencing.provider.Wraparound;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
@@ -41,22 +40,29 @@ import org.apache.sis.util.logging.Logging;
 
 /**
  * Enforces coordinate values in the range of a wraparound axis (typically longitude).
- * For example this transform can shift longitudes in the [-180 … +180]° range to the [0 … 360]° range.
+ * For example this transform can shift longitudes from the [0 … 360]° range to the [-180 … +180]° range.
+ * The destination range is centered at 0 with a minimal value of −{@link #period}/2 and a maximal value
+ * of {@link #period}/2. For a range centered on a different value, callers should apply
+ * {@linkplain MathTransforms#translation(double...) translation} before and after the {@code WraparoundTransform}.
  *
- * <p>{@code WraparoundTransform}s are not created automatically by {@link org.apache.sis.referencing.CRS#findOperation
- * CRS.findOperation(…)} because they introduce a discontinuity in coordinate transformations. Such discontinuities are
- * hurtless when transforming only a cloud of points, but produce undesirable artifacts when transforming geometries.
- * Callers need to use {@link WraparoundApplicator} explicitly if discontinuities are acceptable.</p>
+ * <h2>Instantiation</h2>
+ * {@code WraparoundTransform}s are not created automatically by {@link org.apache.sis.referencing.CRS#findOperation
+ * CRS.findOperation(…)} because they introduce discontinuities in coordinate transformations.
+ * Such discontinuities are hurtless when transforming only a cloud of points,
+ * but produce undesirable artifacts when transforming envelopes or geometries.
+ * Callers need to create {@code WraparoundTransform} instances explicitly if discontinuities are acceptable.
  *
- * <h2>Wraparound with more than one lap</h2>
- * Current implementation assumes that data cover only one lap. For wraparound on the longitude axis, it means that
- * raster or geometry data should be less than 360° width. Larger data exist, for example images with time varying
- * together with longitude, in which case the points at 0°, 360°, 720°, <i>etc.</i> represent the same spatial location
- * on Earth but at different times. It may not be possible to handle such cases with a wider wraparound range if the
- * {@link MathTransform} chain includes a map projection. If we want to support "multiple laps" scenario in a future
- * version, a strategy could be to define a new transform implementation which wraps a {@code WraparoundTransform}
- * and the map projection together. That implementation would inspect the source coordinates before map projection
- * for determining how many multiples of wraparound range to add to the output coordinates.
+ * <h2>Subclassing</h2>
+ * In order to control the discontinuity problem, it may be necessary to subclass {@codd WraparoundTransform}
+ * and override the {@link #shift(double)} method. For example a subclass may control the wraparounds in a way
+ * to prevent the {@linkplain org.apache.sis.geometry.AbstractEnvelope#getLowerCorner() lower corner} or an envelope
+ * to become greater than the {@linkplain org.apache.sis.geometry.AbstractEnvelope#getUpperCorner() upper corner}.
+ *
+ * <h2>Inverse transform</h2>
+ * This transform is non-invertible. The {@code inverse()} method does not return another {@code WraparoundTransform}
+ * because an inverse wraparound would need to work on a different range of values, which is unknown to this object.
+ * For example if this transform is converting from <i>something</i> to [-180 … +180]° range,
+ * we do not know what <i>something</i> is (it may be the [0 … 360]° range, but not necessarily).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -120,21 +126,21 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     /**
      * The dimension where to apply wraparound.
      */
-    final int wraparoundDimension;
+    protected final int wraparoundDimension;
 
     /**
      * Period on wraparound axis. This is 360° for the longitude axis.
      * Coordinates will be normalized in the [−p/2 … +p/2] range.
-     *
-     * <h4>Design note</h4>
-     * A previous version of {@code WraparoundTransform} had no period. It was expecting coordinates
-     * normalized in the [0 … 1] range. Coordinates in [0 … 360]° range were divided by 360 using an
-     * affine transforms before {@code WraparoundTransform} and multiplied by 360 using another affine
-     * transform after {@code WraparoundTransform}. That approach allowed to delegate more work to the
-     * affine transforms which can efficiently be combined with other affine transforms, but it caused
-     * more rounding errors.
      */
-    final double period;
+    protected final double period;
+    /*
+     * DESIGN NOTE:
+     * A previous version of `WraparoundTransform` had no period. Instead it was expecting coordinates normalized
+     * in the [0 … 1] range. Coordinates in [0 … 360]° range were divided by 360 using an affine transforms before
+     * `WraparoundTransform` and multiplied by 360 using another affine transform after `WraparoundTransform`.
+     * That approach allowed to delegate more work to the affine transforms which can efficiently be combined
+     * with other affine transforms, but it caused more rounding errors.
+     */
 
     /**
      * Creates a new transform with a wraparound behavior in the given dimension.
@@ -144,8 +150,10 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * @param  dimension            number of dimensions of source and target coordinates.
      * @param  wraparoundDimension  the dimension where to apply wraparound.
      * @param  period               period on wraparound axis.
+     *
+     * @see #create(int, int, double)
      */
-    WraparoundTransform(final int dimension, final int wraparoundDimension, final double period) {
+    protected WraparoundTransform(final int dimension, final int wraparoundDimension, final double period) {
         this.dimension = dimension;
         this.wraparoundDimension = wraparoundDimension;
         this.period = period;
@@ -191,18 +199,30 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     }
 
     /**
-     * Applies the wraparound on the given value.
+     * Applies the wraparound on the given value. This method is invoked by default implementation
+     * of all {@code transform(…)} methods defined in this {@code WraparoundTransform} class.
+     * It provides a single method to override if a different wraparound strategy is desired.
+     * The default implementation is:
+     *
+     * {@preformat java
+     *     return Math.IEEEremainder(x, period);
+     * }
+     *
+     * Subclasses may override this method for applying wraparound only under some conditions,
+     * in order to reduce discontinuities.
      *
      * @param  x  the value on which to apply wraparound.
      * @return the value after wraparound.
+     *
+     * @see Math#IEEEremainder(double, double)
      */
-    double shift(final double x) {
+    protected double shift(final double x) {
         return Math.IEEEremainder(x, period);
     }
 
     /**
-     * Wraparounds a single coordinate point in an array,
-     * and optionally computes the transform derivative at that location.
+     * Applies wraparounds on a single point and optionally computes the transform derivative at that location.
+     * The default implementation delegates to {@link #shift(double)} and {@link #derivative(DirectPosition)}.
      */
     @Override
     public Matrix transform(final double[] srcPts, int srcOff,
@@ -213,11 +233,12 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
             dstOff += wraparoundDimension;
             dstPts[dstOff] = shift(dstPts[dstOff]);
         }
-        return derivate ? Matrices.createIdentity(dimension) : null;
+        return derivate ? derivative(null) : null;
     }
 
     /**
      * Transforms many coordinates in a list of ordinal values.
+     * The default implementation delegates to {@link #shift(double)} for each point.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
@@ -233,6 +254,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
 
     /**
      * Transforms many coordinates in a list of ordinal values.
+     * The default implementation delegates to {@link #shift(double)} for each point.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff,
@@ -249,48 +271,45 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     /**
      * Gets the derivative of this transform at a point.
      *
-     * <h4>Mathematical note</h4>
-     * Strictly speaking the derivative at (<var>n</var> + 0.5) × {@link #period} where <var>n</var> is an integer
+     * <div class="note"><b>Mathematical note:</b>
+     * strictly speaking the derivative at (<var>n</var> + 0.5) × {@link #period} where <var>n</var> is an integer
      * should be infinite because the coordinate value jumps "instantaneously" from any value to ±{@link #period}/2.
      * However in practice we use derivatives as linear approximations around small regions, not for calculations
      * requiring strict mathematical values. An infinite value goes against the approximation goal.
      * Furthermore whether a source coordinate is an integer value or not is subject to rounding errors,
-     * which may cause unpredictable behavior if those infinite values were provided.
+     * which may cause unpredictable behavior if infinite values were returned.</div>
+     *
+     * @param  point  the coordinate point where to evaluate the derivative
+     *                (ignored in default implementation, may be {@code null}).
+     * @return transform derivative (identity matrix in default implementation).
      */
     @Override
     public Matrix derivative(final DirectPosition point) {
         return Matrices.createIdentity(dimension);
     }
 
-    /**
-     * Throws a {@code NoninvertibleTransformException}.
-     * We do not return another {@code WraparoundTransform} for three reasons:
+    /*
+     * Do not implement `inverse()`. See class javadoc.
      *
-     * <ul>
-     *   <li>The inverse wraparound would work on a different range of values, but we do not know that range.</li>
-     *   <li>Even if we knew the original range of values, creating the inverse transform would require the affine
-     *       transforms before and after {@code WraparoundTransform} to be different; it would not be their inverse.
-     *       This is impractical, especially since the transform matrices may have been multiplied with other affine
-     *       transforms.</li>
-     *   <li>Even if we were able to build the inverse {@code WraparoundTransform}, it would not necessarily be
-     *       appropriate. For example in "ProjectedCRS → BaseCRS → GeographicCRS" operation chain, wraparound
-     *       may happen after the geographic CRS. But in the "GeographicCRS → BaseCRS → ProjectedCRS" inverse
-     *       operation, the wraparound would be between BaseCRS and ProjectedCRS, which is often not needed.</li>
-     * </ul>
+     * We do not return `WraparoundTransform` because this class does not know if the inverse operation needs
+     * wraparound. For example in the inverse of "ProjectedCRS → BaseCRS → GeographicCRS → Wraparound" chain,
+     * we could try to put a wraparound as in "GeographicCRS → BaseCRS → Wraparound → ProjectedCRS" but this
+     * is often not needed. And if we try to insert that operation anyway, we do not know which range to use.
      *
-     * We do not return an identity transform because it causes incorrect resampling operation steps when concatenated,
-     * especially when testing if transforms are mutually the inverse of each other.
-     *
-     * @return never return.
-     * @throws NoninvertibleTransformException always thrown.
+     * We do not return an identity transform because it causes incorrect resampling operation steps
+     * when concatenated, especially when testing if transforms are mutually the inverse of each other.
      */
-    @Override
-    public MathTransform inverse() throws NoninvertibleTransformException {
-        return super.inverse();
-    }
 
     /**
      * Concatenates in an optimized way this math transform with the given one, if possible.
+     * If this method detects a chain of operations like below:
+     *
+     * <blockquote>[wraparound]  ⇄  [affine]  ⇄  [wraparound or something else]</blockquote>
+     *
+     * Then this method tries to move some dimensions of the [affine] step before or after the
+     * [wraparound] step in order to simplify (or ideally remove) the [affine] step in the middle.
+     * This move increases the chances that [affine] step is combined with other affine operations.
+     * Only dimensions that do not depend on {@link #wraparoundDimension} can be moved.
      */
     @Override
     protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,

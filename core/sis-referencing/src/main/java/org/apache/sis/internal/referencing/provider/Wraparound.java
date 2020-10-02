@@ -26,7 +26,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.referencing.WraparoundTransform;
+import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 
 
 /**

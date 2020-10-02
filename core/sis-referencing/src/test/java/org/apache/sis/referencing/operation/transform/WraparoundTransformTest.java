@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
 import java.util.Collections;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.internal.referencing.WraparoundApplicator;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
+import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
