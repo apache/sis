@@ -428,7 +428,8 @@ public class GridDerivation {
                 final CoordinateOperationFinder finder = new CoordinateOperationFinder(gridOfInterest, base);
                 final MathTransform mapCorners = finder.gridToGrid();
                 finder.setAnchor(PixelInCell.CELL_CENTER);
-                mapCenters = finder.gridToGrid();
+                finder.nowraparound();
+                mapCenters = finder.gridToGrid();                               // We will use only the scale factors.
                 clipExtent(domain.toCRS(mapCorners, mapCenters, null));
             } catch (FactoryException | TransformException e) {
                 throw new IllegalGridGeometryException(e, "gridOfInterest");

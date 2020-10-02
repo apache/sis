@@ -1313,7 +1313,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         finder.setAnchor(anchor);
         final MathTransform tr;
         try {
-            tr = finder.inverse(true);
+            tr = finder.inverse();
         } catch (FactoryException e) {
             throw new TransformException(e);
         }

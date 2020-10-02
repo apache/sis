@@ -135,14 +135,21 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      *
      * @see #isWraparoundNeeded
      * @see #isWraparoundApplied
-     * @see #inverse(boolean)
+     * @see #inverse()
      */
     private MathTransform inverseChangeOfCRS;
 
     /**
      * Transform from “grid coordinates of the source” to “geospatial coordinates of the target”.
      * This is the concatenation of {@link #source} "grid to CRS" with {@link #forwardChangeOfCRS},
-     * cached for possible reuse by {@link #inverse(boolean)}.
+     * possibly with wraparound handling and cached for reuse by {@link #inverse()}:
+     *
+     * {@preformat java
+     *     forwardChangeOfCRS = changeOfCRS.getMathTransform();
+     *     // + wraparound handling if applicable.
+     *     gridToCRS = source.getGridToCRS(anchor);
+     *     gridToCRS = MathTransforms.concatenate(gridToCRS, forwardChangeOfCRS);
+     * }
      *
      * @see #gridToCRS()
      */
@@ -150,12 +157,27 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
 
     /**
      * Transform from the target CRS to the source grid, with {@link WraparoundTransform} applied if needed.
-     * This is the concatenation of {@link #inverseChangeOfCRS} with inverse of {@link #source} "grid to CRS".
+     * This is the concatenation of {@link #inverseChangeOfCRS} with inverse of {@link #source} "grid to CRS",
+     * possibly with wraparound handling:
      *
-     * @see #inverse(boolean)
+     * {@preformat java
+     *     inverseChangeOfCRS = forwardChangeOfCRS.inverse();
+     *     // + wraparound handling if applicable.
+     *     crsToGrid = gridToCRS.inverse();
+     *     crsToGrid = MathTransforms.concatenate(inverseChangeOfCRS, crsToGrid);
+     * }
+     *
+     * @see #inverse()
      * @see #applyWraparound(MathTransform)
      */
     private MathTransform crsToGrid;
+
+    /**
+     * Whether the {@link #isWraparoundNeeded} value has been determined. This flag controls whether to perform
+     * a more extensive check of wraparound occurrence. This flag should be {@code false} the first time that
+     * {@link #inverse()} is invoked and {@code true} the next time.
+     */
+    private boolean isWraparoundNeedVerified;
 
     /**
      * Whether {@link #inverseChangeOfCRS} needs to include a {@link WraparoundTransform} step. We do this check
@@ -179,6 +201,25 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * @see #applyWraparound(MathTransform)
      */
     private boolean isWraparoundApplied;
+
+    /**
+     * Whether to disable completely all wraparounds checks.
+     * If {@code true}, then calculation done in this class should be equivalent to following code:
+     *
+     * {@preformat java
+     *     forwardChangeOfCRS = changeOfCRS.getMathTransform();
+     *     inverseChangeOfCRS = forwardChangeOfCRS.inverse();
+     *     gridToCRS          = source.getGridToCRS(anchor);
+     *     crsToGrid          = gridToCRS.inverse();
+     *     gridToCRS          = MathTransforms.concatenate(gridToCRS, forwardChangeOfCRS);
+     *     crsToGrid          = MathTransforms.concatenate(inverseChangeOfCRS, crsToGrid);
+     * }
+     *
+     * <b>Tip:</b> searching usage of this field should help to identify code doing wraparound handling.
+     *
+     * @see #nowraparound()
+     */
+    private boolean isWraparoundDisabled;
 
     /**
      * Creates a new finder initialized to {@link PixelInCell#CELL_CORNER} anchor.
@@ -217,6 +258,22 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
             knowChangeOfCRS    = false;
             // Do not clear `isWraparoundNeeded`; its value is still valid.
         }
+    }
+
+    /**
+     * Disables completely all wraparounds operation.
+     *
+     * @see #isWraparoundDisabled
+     */
+    final void nowraparound() {
+        gridToCRS                = null;        // For forcing recomputation.
+        crsToGrid                = null;
+        forwardChangeOfCRS       = null;
+        inverseChangeOfCRS       = null;
+        isWraparoundNeeded       = false;
+        isWraparoundApplied      = true;
+        isWraparoundNeedVerified = true;
+        isWraparoundDisabled     = true;
     }
 
     /**
@@ -297,7 +354,7 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * Computes the transform from “grid coordinates of the source” to “grid coordinates of the target”.
      * This is a concatenation of {@link #gridToCRS()} with target "CRS to grid" transform.
      *
-     * <p><b>WARNING:</b> this method may return a mutable transform.
+     * <p><b>WARNING:</b> this method may return a mutable transform (unless {@link #nowraparound()} has been invoked).
      * That transform should be only short lived (e.g. just the time to transform an envelope).
      * See {@link org.apache.sis.internal.referencing.WraparoundInEnvelope#transform(MathTransform, Envelope)}.</p>
      *
@@ -329,11 +386,11 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * <h4>Implementation note</h4>
      * After invocation of this method, the following fields are valid:
      * <ul>
-     *   <li>{@link #changeOfCRS} — cached for {@link #inverse(boolean)} usage.</li>
+     *   <li>{@link #changeOfCRS} — cached for {@link #inverse()} usage.</li>
      *   <li>{@link #forwardChangeOfCRS} — cached for next invocation of this {@code gridToCRS()} method.</li>
      * </ul>
      *
-     * <p><b>WARNING:</b> this method may return a mutable transform.
+     * <p><b>WARNING:</b> this method may return a mutable transform (unless {@link #nowraparound()} has been invoked).
      * That transform should be only short lived (e.g. just the time to transform an envelope).
      * See {@link org.apache.sis.internal.referencing.WraparoundInEnvelope#transform(MathTransform, Envelope)}.</p>
      *
@@ -358,16 +415,20 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
                  */
 apply:          if (forwardChangeOfCRS == null) {
                     forwardChangeOfCRS = changeOfCRS.getMathTransform();
-                    DirectPosition sourceMedian = median(source, forwardChangeOfCRS);
-                    DirectPosition targetMedian = median(target, null);
-                    if (targetMedian == null) {
-                        if (sourceMedian == null) break apply;
-                        targetMedian = sourceMedian;
-                        sourceMedian = null;
+                    if (!isWraparoundDisabled) {
+                        DirectPosition sourceMedian = median(source, forwardChangeOfCRS);
+                        DirectPosition targetMedian = median(target, null);
+                        if (targetMedian == null) {
+                            if (sourceMedian == null) {
+                                break apply;
+                            }
+                            targetMedian = sourceMedian;
+                            sourceMedian = null;
+                        }
+                        final WraparoundApplicator ap = new WraparoundApplicator(sourceMedian,
+                                targetMedian, changeOfCRS.getTargetCRS().getCoordinateSystem());
+                        forwardChangeOfCRS = ap.forDomainOfUse(forwardChangeOfCRS);
                     }
-                    final WraparoundApplicator ap = new WraparoundApplicator(sourceMedian,
-                            targetMedian, changeOfCRS.getTargetCRS().getCoordinateSystem());
-                    forwardChangeOfCRS = ap.forDomainOfUse(forwardChangeOfCRS);
                 }
                 gridToCRS = MathTransforms.concatenate(gridToCRS, forwardChangeOfCRS);
             }
@@ -380,54 +441,55 @@ apply:          if (forwardChangeOfCRS == null) {
      * This is similar to invoking {@link MathTransform#inverse()} on {@link #gridToCRS()}, except in the way
      * wraparounds are handled.
      *
-     * <p>The {@code checkWraparound} argument controls whether to perform a more extensive check of wraparound occurrence.
-     * The argument should be {@code true} the first time that {@code inverse(…)} is invoked and {@code false} next time.</p>
-     *
      * @return operation from target geospatial coordinates to source grid indices.
      * @throws FactoryException if no operation can be found between the source and target CRS.
      * @throws TransformException if some coordinates can not be transformed.
      */
-    final MathTransform inverse(final boolean checkWraparound) throws FactoryException, TransformException {
+    final MathTransform inverse() throws FactoryException, TransformException {
         final MathTransform sourceCrsToGrid = source.getGridToCRS(anchor).inverse();
         final CoordinateOperation changeOfCRS = changeOfCRS();
         if (changeOfCRS == null) {
             return sourceCrsToGrid;
         }
         if (inverseChangeOfCRS == null) {
-            final MathTransform inverseNoWrap = inverseChangeOfCRS = changeOfCRS.getMathTransform().inverse();
-            isWraparoundApplied = false;
-            if (checkWraparound) {
-                /*
-                 * Need to compute transform with wraparound checks, but contrarily to `gridToCRS()` we do not want
-                 * `WraparoundTransform` to be systematically inserted. This is for performance reasons, because the
-                 * transform returned by this method will be applied on every pixels of destination image. We create
-                 * both transforms with and without wraparound, and check if their results differ.
-                 *
-                 * We give precedence to corners specified by target extent. The corners specified by source extent
-                 * are used only as a fallback if the target extent has not been specified, in which case we assume
-                 * that caller will fallback on source extent transformed to target coordinates.  The target extent
-                 * is preferred because it may cover only a sub-region of the source, or conversely it may be world.
-                 * If smaller, wraparound may become useless (i.e. sub-region may not cross anti-meridian anymore).
-                 * If larger with [-180 … +180]° longitude range, the use of source extent may fail to detect that
-                 * a part of the raster need to be rendered on each side of the [-180 … +180]° range.
-                 */
-                final MathTransform crsToGridNoWrap = MathTransforms.concatenate(inverseNoWrap, sourceCrsToGrid);
-                if (target.isDefined(GridGeometry.EXTENT | GridGeometry.CRS)) {
-                    if (applyWraparound(sourceCrsToGrid)) {
-                        isWraparoundNeeded = isWraparoundNeeded(target.getExtent(),
-                                target.getGridToCRS(anchor), crsToGridNoWrap, null);
+            inverseChangeOfCRS = changeOfCRS.getMathTransform().inverse();
+            if (!isWraparoundDisabled) {
+                isWraparoundApplied = false;
+                if (!isWraparoundNeedVerified) {
+                    isWraparoundNeedVerified = true;
+                    /*
+                     * Need to compute transform with wraparound checks, but contrarily to `gridToCRS()` we do not want
+                     * `WraparoundTransform` to be systematically inserted. This is for performance reasons, because the
+                     * transform returned by this method will be applied on every pixels of destination image. We create
+                     * both transforms with and without wraparound, and check if their results differ.
+                     *
+                     * We give precedence to corners specified by target extent. The corners specified by source extent
+                     * are used only as a fallback if the target extent has not been specified, in which case we assume
+                     * that caller will fallback on source extent transformed to target coordinates.  The target extent
+                     * is preferred because it may cover only a sub-region of the source, or conversely it may be world.
+                     * If smaller, wraparound may become useless (i.e. sub-region may not cross anti-meridian anymore).
+                     * If larger with [-180 … +180]° longitude range, the use of source extent may fail to detect that
+                     * a part of the raster need to be rendered on each side of the [-180 … +180]° range.
+                     */
+                    final MathTransform inverseNoWrap = inverseChangeOfCRS;
+                    final MathTransform crsToGridNoWrap = MathTransforms.concatenate(inverseNoWrap, sourceCrsToGrid);
+                    if (target.isDefined(GridGeometry.EXTENT | GridGeometry.CRS)) {
+                        if (applyWraparound(sourceCrsToGrid)) {
+                            isWraparoundNeeded = isWraparoundNeeded(target.getExtent(),
+                                    target.getGridToCRS(anchor), crsToGridNoWrap, null);
+                        }
+                    } else if (source.isDefined(GridGeometry.EXTENT)) {
+                        isWraparoundNeeded = isWraparoundNeeded(source.getExtent(),
+                                gridToCRS(), crsToGridNoWrap, sourceCrsToGrid);
                     }
-                } else if (source.isDefined(GridGeometry.EXTENT)) {
-                    isWraparoundNeeded = isWraparoundNeeded(source.getExtent(),
-                            gridToCRS(), crsToGridNoWrap, sourceCrsToGrid);
+                    if (!isWraparoundNeeded) {
+                        inverseChangeOfCRS = inverseNoWrap;     // Discard the transform that was applying wraparound.
+                        crsToGrid = crsToGridNoWrap;
+                    }
                 }
-                if (!isWraparoundNeeded) {
-                    inverseChangeOfCRS = inverseNoWrap;     // Discard the transform that was applying wraparound.
-                    crsToGrid = crsToGridNoWrap;
+                if (isWraparoundNeeded) {
+                    applyWraparound(sourceCrsToGrid);           // Update `inverseChangeOfCRS` if possible.
                 }
-            }
-            if (isWraparoundNeeded) {
-                applyWraparound(sourceCrsToGrid);           // Update `inverseChangeOfCRS` if possible.
             }
         }
         /*
@@ -662,7 +724,7 @@ apply:          if (forwardChangeOfCRS == null) {
      * Configures the accuracy hints on the given processor.
      *
      * <h4>Pre-requite</h4>
-     * This method assumes that {@link #gridToCRS()} or {@link #inverse(boolean)}
+     * This method assumes that {@link #gridToCRS()} or {@link #inverse()}
      * has already been invoked before this method.
      */
     final void setAccuracyOf(final ImageProcessor processor) {

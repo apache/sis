@@ -45,6 +45,10 @@ import org.apache.sis.util.ComparisonMode;
  * Since this strategy breaks usual {@link org.apache.sis.referencing.operation.transform.AbstractMathTransform}
  * contract about immutability, this class should be used only for temporary transforms to apply on an envelope.
  *
+ * <h2>Initial state</h2>
+ * On initialization, the {@linkplain #limit} is not applied and this class behaves like {@link WraparoundTransform}
+ * parent class. The limit is enabled when {@link #transform(MathTransform, Envelope)} is invoked.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
@@ -96,12 +100,12 @@ public final class WraparoundInEnvelope extends WraparoundTransform {
                          final double period, final double sourceMedian)
     {
         super(dimension, wraparoundDimension, period);
+        minCycles = maxCycles = limit = Double.NaN;
         this.sourceMedian = sourceMedian;
         if (ap.lock == null) {
             ap.lock = this;
         }
         lock = ap.lock;
-        reset();
     }
 
     /**
@@ -168,11 +172,14 @@ public final class WraparoundInEnvelope extends WraparoundTransform {
     }
 
     /**
-     * Resets this transform to its initial state.
+     * Resets this transform to the {@link #limit} value for an initial transform,
+     * or disable the use of limit.
+     *
+     * @param  enabled  whether to enable the {@linkplain #limit}.
      */
-    private void reset() {
+    private void reset(final boolean enabled) {
         synchronized (lock) {
-            minCycles = maxCycles = limit = Math.rint(sourceMedian / period);
+            minCycles = maxCycles = limit = enabled ? Math.rint(sourceMedian / period) : Double.NaN;
         }
     }
 
@@ -220,6 +227,9 @@ public final class WraparoundInEnvelope extends WraparoundTransform {
             return Envelopes.transform(transform, envelope);
         }
         synchronized (wraparounds[0].lock) {
+            for (final WraparoundInEnvelope tr : wraparounds) {
+                tr.reset(true);
+            }
             final GeneralEnvelope result = Envelopes.transform(transform, envelope);
             for (;;) {
                 boolean done = false;
@@ -230,7 +240,7 @@ public final class WraparoundInEnvelope extends WraparoundTransform {
                 result.add(Envelopes.transform(transform, envelope));
             }
             for (final WraparoundInEnvelope tr : wraparounds) {
-                tr.reset();
+                tr.reset(false);
             }
             return result;
         }
