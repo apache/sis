@@ -19,12 +19,10 @@ package org.apache.sis.internal.referencing;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;
 
 
@@ -203,24 +201,6 @@ public final class WraparoundInEnvelope extends WraparoundTransform {
     }
 
     /**
-     * Returns all instances of {@link WraparoundInEnvelope}, or {@code null} if none.
-     * If non-null, the returned array usually contains only one instance.
-     */
-    private static WraparoundInEnvelope[] wraparounds(final MathTransform transform) {
-        WraparoundInEnvelope[] wraparounds = null;
-        for (final MathTransform t : MathTransforms.getSteps(transform)) {
-            if (t instanceof WraparoundInEnvelope) {
-                if (wraparounds == null) {
-                    wraparounds = new WraparoundInEnvelope[] {(WraparoundInEnvelope) t};
-                } else {
-                    wraparounds = ArraysExt.append(wraparounds, (WraparoundInEnvelope) t);
-                }
-            }
-        }
-        return wraparounds;
-    }
-
-    /**
      * Transforms an envelope using the given math transform with special checks for wraparounds.
      * The transformation is only approximated: the returned envelope may be bigger than necessary.
      *
@@ -235,7 +215,7 @@ public final class WraparoundInEnvelope extends WraparoundTransform {
      * @throws TransformException if a transform failed.
      */
     public static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope) throws TransformException {
-        final WraparoundInEnvelope[] wraparounds = wraparounds(transform);
+        final WraparoundInEnvelope[] wraparounds = getSteps(WraparoundInEnvelope.class, transform);
         if (wraparounds == null) {
             return Envelopes.transform(transform, envelope);
         }

@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterValueGroup;
@@ -33,6 +34,7 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
@@ -500,6 +502,51 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
         final Matrix change = MathTransforms.getMatrix(move.inverse());
         return reverse ? Matrices.multiply(change, middle)
                        : Matrices.multiply(middle, change);
+    }
+
+    /**
+     * Returns all {@link WraparoundTransform} instances of the given type, or {@code null} if none.
+     * Invoking this method is equivalent to invoking {@link MathTransforms#getSteps(MathTransform)}
+     * and filter the list for retaining only instances of the given {@code type}.
+     *
+     * <div class="note"><b>Rational:</b>
+     * this specialized method is provided for efficiency because the returned array, if non-null,
+     * usually contains only one instance. Callers may be interested in a specific subclass of
+     * {@link WraparoundTransform} for finer control of wraparound operations,
+     * for example if using a specialized subclass for envelope transformation.</div>
+     *
+     * @param  <T>        compile-time value of {@code type} argument.
+     * @param  type       {@link WraparoundTransform} subclass to include in the returned array.
+     * @param  transform  the transform for which to get {@link WraparoundTransform} steps.
+     * @return {@link WraparoundTransform} steps in a non-empty array, or {@code null} if none.
+     *
+     * @see MathTransforms#getSteps(MathTransform)
+     */
+    public static <T extends WraparoundTransform> T[] getSteps(final Class<T> type, final MathTransform transform) {
+        ArgumentChecks.ensureNonNull("type", type);
+        return getSteps(type, transform, null);
+    }
+
+    /**
+     * Implementation of {@link #getSteps(Class, MathTransform)} to be invoked recursively.
+     */
+    @SuppressWarnings("unchecked")
+    private static <T extends WraparoundTransform> T[] getSteps(
+            final Class<T> type, final MathTransform transform, T[] wraparounds)
+    {
+        if (type.isInstance(transform)) {
+            if (wraparounds == null) {
+                wraparounds = (T[]) Array.newInstance(type, 1);
+                wraparounds[0] = (T) transform;
+            } else {
+                wraparounds = ArraysExt.append(wraparounds, (T) transform);
+            }
+        } else if (transform instanceof ConcatenatedTransform) {
+            final ConcatenatedTransform ct = (ConcatenatedTransform) transform;
+            wraparounds = getSteps(type, ct.transform1, wraparounds);
+            wraparounds = getSteps(type, ct.transform2, wraparounds);
+        }
+        return wraparounds;
     }
 
     /**
