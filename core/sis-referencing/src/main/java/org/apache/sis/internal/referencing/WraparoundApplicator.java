@@ -156,18 +156,18 @@ public final class WraparoundApplicator {
             m = 0;
         }
         final int dimension = tr.getTargetDimensions();
+        final double sm = (sourceMedian != null) ? sourceMedian.getOrdinate(wraparoundDimension) - m : Double.NaN;
         MathTransform wraparound;
-        if (sourceMedian != null) {
-            final double sm = sourceMedian.getOrdinate(wraparoundDimension) - m;
-            wraparound = new WraparoundInEnvelope(this, dimension, wraparoundDimension, period, sm);
+        if (Double.isNaN(sm)) {
+            wraparound = WraparoundTransform.create(dimension, wraparoundDimension, period, sm, m);
         } else {
-            wraparound = WraparoundTransform.create(dimension, wraparoundDimension, period);
-        }
-        if (m != 0) {
-            final double[] t = new double[dimension];
-            t[wraparoundDimension] = m;
-            final MathTransform denormalize = MathTransforms.translation(t);
-            wraparound = MathTransforms.concatenate(denormalize.inverse(), wraparound, denormalize);
+            wraparound = new WraparoundInEnvelope(this, dimension, wraparoundDimension, period, sm);
+            if (m != 0) {
+                final double[] t = new double[dimension];
+                t[wraparoundDimension] = m;
+                final MathTransform denormalize = MathTransforms.translation(t);
+                wraparound = MathTransforms.concatenate(denormalize.inverse(), wraparound, denormalize);
+            }
         }
         return MathTransforms.concatenate(tr, wraparound);
     }

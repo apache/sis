@@ -43,24 +43,39 @@ import static org.opengis.test.Assert.*;
  */
 public final strictfp class WraparoundTransformTest extends TestCase {
     /**
-     * Tests {@link WraparoundTransform} cache.
+     * Tests {@link WraparoundTransform#inverse()}.
+     *
+     * @throws TransformException if a coordinate can not be computed.
      */
     @Test
-    public void testCache() {
-        final double period = 360;
-        final WraparoundTransform t1, t2, t3, t4;
-        assertSame   (WraparoundTransform.create(3, 0, period), t1 = WraparoundTransform.create(3, 0, period));
-        assertNotSame(WraparoundTransform.create(3, 0, period), t2 = WraparoundTransform.create(3, 1, period));
-        assertNotSame(WraparoundTransform.create(3, 0, period), t3 = WraparoundTransform.create(2, 0, period));
-        assertNotSame(WraparoundTransform.create(3, 0, period), t4 = WraparoundTransform.create(3, 2, period));
-        assertEquals(3, t1.getSourceDimensions());
-        assertEquals(3, t2.getSourceDimensions());
-        assertEquals(2, t3.getSourceDimensions());
-        assertEquals(3, t4.getSourceDimensions());
-        assertEquals(0, t1.wraparoundDimension);
-        assertEquals(1, t2.wraparoundDimension);
-        assertEquals(0, t3.wraparoundDimension);
-        assertEquals(2, t4.wraparoundDimension);
+    public void testInverse() throws TransformException {
+        /*
+         * Source range: [ 20 … 380]°.
+         * Target range: [-90 … 270]°
+         */
+        final MathTransform forward = WraparoundTransform.create(3, 1, 360, 200, 90);
+        final MathTransform inverse = forward.inverse();
+        assertSame(forward, inverse.inverse());
+        assertSame(inverse, forward.inverse());             // Expect cached instance.
+        final double[] sources = new double[] {
+            45, -100, 90,
+            60,  -80, 70,
+            12,  300, 33
+        };
+        final double[] targets = new double[9];
+        forward.transform(sources, 0, targets, 0, 3);
+        assertArrayEquals(new double[] {
+            45, -100 + 360, 90,             // Wraparound shall be applied.
+            60,  -80,       70,             // No wraparound because already in [-90 … 270]° range.
+            12,  300 - 360, 33              // Wraparound in opposite direction.
+        }, targets, STRICT);
+
+        inverse.transform(sources, 0, targets, 0, 3);
+        assertArrayEquals(new double[] {
+            45, -100 + 360, 90,             // Wraparound shall be applied.
+            60,  -80 + 360, 70,             // Idem.
+            12,  300,       33,             // No wraparound because already in [ 20 … 380]° range.
+        }, targets, STRICT);
     }
 
     /**

@@ -34,8 +34,14 @@ import org.apache.sis.util.ComparisonMode;
  * The intent is to avoid that the lower bound of an envelope is shifted by a greater number of cycles
  * than the upper bound, which may result in lower bound becoming greater than upper bound.
  *
- * The final result is that envelopes transformed using {@code WraparoundInEnvelope} may be larger
- * than envelopes transformed using {@link WraparoundTransform} but should never be smaller.
+ * <p>The median point is {@link #sourceMedian}.
+ * It is used as the source coordinate where the minimum or maximum number of cycles is determined.
+ * This <em>source</em> coordinate is not necessarily the same as the median <em>target</em> coordinate
+ * (which is set to zero by application of normalization matrix) because those medians were determined
+ * from source and target envelopes, which do not need to be the same.</p>
+ *
+ * <p>The final result is that envelopes transformed using {@code WraparoundInEnvelope} may be larger
+ * than envelopes transformed using {@link WraparoundTransform} but should never be smaller.</p>
  *
  * <h2>Mutability</h2>
  * <b>This class is mutable.</b> This class records the translations that {@link #shift(double)} wanted to apply
@@ -58,15 +64,7 @@ public final class WraparoundInEnvelope extends WraparoundTransform {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -1590996680159048327L;
-
-    /**
-     * The median source coordinate where the minimum or maximum number of cycles is determined.
-     * This <em>source</em> coordinate is not necessarily the same as the median <em>target</em> coordinate
-     * (which is set to zero by application of normalization matrix) because those medians were determined
-     * from source and target envelopes, which do not need to be the same.
-     */
-    private final double sourceMedian;
+    private static final long serialVersionUID = 4017870982753327584L;
 
     /**
      * Number of cycles at the {@linkplain #sourceMedian} position. This is the minimum or maximum number
@@ -99,9 +97,8 @@ public final class WraparoundInEnvelope extends WraparoundTransform {
     WraparoundInEnvelope(final WraparoundApplicator ap, final int dimension, final int wraparoundDimension,
                          final double period, final double sourceMedian)
     {
-        super(dimension, wraparoundDimension, period);
+        super(dimension, wraparoundDimension, period, sourceMedian);
         minCycles = maxCycles = limit = Double.NaN;
-        this.sourceMedian = sourceMedian;
         if (ap.lock == null) {
             ap.lock = this;
         }

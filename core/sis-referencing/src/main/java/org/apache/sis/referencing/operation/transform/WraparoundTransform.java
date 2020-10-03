@@ -32,7 +32,6 @@ import org.apache.sis.internal.referencing.MathTransformsOrFactory;
 import org.apache.sis.internal.referencing.provider.Wraparound;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.measure.Longitude;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
@@ -44,12 +43,14 @@ import org.apache.sis.util.logging.Logging;
  * Enforces coordinate values in the range of a wraparound axis (typically longitude).
  * For example this transform can shift longitudes from the [0 … 360]° range to the [-180 … +180]° range.
  * The destination range is centered at 0 with a minimal value of −{@link #period}/2 and a maximal value
- * of {@link #period}/2. For a range centered on a different value, callers should apply
- * {@linkplain MathTransforms#translation(double...) translation} before and after the {@code WraparoundTransform}.
+ * of {@link #period}/2. For a range centered on a different value,
+ * a {@linkplain MathTransforms#translation(double...) translation}
+ * can be applied before and after the {@code WraparoundTransform}.
  *
  * <h2>Instantiation</h2>
- * {@code WraparoundTransform}s are not created automatically by {@link org.apache.sis.referencing.CRS#findOperation
- * CRS.findOperation(…)} because they introduce discontinuities in coordinate transformations.
+ * {@code WraparoundTransform}s are not created automatically by
+ * {@link org.apache.sis.referencing.CRS#findOperation CRS.findOperation(…)}
+ * because they introduce discontinuities in coordinate transformations.
  * Such discontinuities are hurtless when transforming only a cloud of points,
  * but produce undesirable artifacts when transforming envelopes or geometries.
  * Callers need to create {@code WraparoundTransform} instances explicitly if discontinuities are acceptable.
@@ -57,14 +58,15 @@ import org.apache.sis.util.logging.Logging;
  * <h2>Subclassing</h2>
  * In order to control the discontinuity problem, it may be necessary to subclass {@codd WraparoundTransform}
  * and override the {@link #shift(double)} method. For example a subclass may control the wraparounds in a way
- * to prevent the {@linkplain org.apache.sis.geometry.AbstractEnvelope#getLowerCorner() lower corner} or an envelope
+ * to prevent the {@linkplain org.apache.sis.geometry.AbstractEnvelope#getLowerCorner() lower corner} of an envelope
  * to become greater than the {@linkplain org.apache.sis.geometry.AbstractEnvelope#getUpperCorner() upper corner}.
  *
  * <h2>Inverse transform</h2>
- * This transform is non-invertible. The {@code inverse()} method does not return another {@code WraparoundTransform}
- * because an inverse wraparound would need to work on a different range of values, which is unknown to this object.
+ * The {@link #inverse()} method can return another {@code WraparoundTransform} with the same {@linkplain #period}
+ * but {@linkplain #sourceMedian centered on a different value}, which must be specified at construction time.
  * For example if this transform is converting from <i>something</i> to [-180 … +180]° range,
- * we do not know what <i>something</i> is (it may be the [0 … 360]° range, but not necessarily).
+ * then inverse transform is possible only if <i>"something"</i> has been specified
+ * (it may be the [0 … 360]° range, but not necessarily).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -75,50 +77,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -8811608024800445706L;
-
-    /**
-     * Number of dimensions of the first cached {@link WraparoundTransform} instance.
-     * We cache only {@code WraparoundTransform} instances having a period of 360°
-     * (i.e. longitudes).
-     */
-    private static final int FIRST_CACHED_DIMENSION = 2;
-
-    /**
-     * Frequently used {@link WraparoundTransform} instances.
-     * The {@link #dimension} value ranges from {@value #FIRST_CACHED_DIMENSION} to 4 inclusive,
-     * and the {@link #wraparoundDimension} value alternates between 0 and 1.
-     */
-    private static final WraparoundTransform[] CACHE = new WraparoundTransform[6];
-    static {
-        for (int i=0; i<CACHE.length; i++) {
-            final int dimension = (i >>> 1) + FIRST_CACHED_DIMENSION;
-            CACHE[i] = new WraparoundTransform(dimension, i & 1, Longitude.MAX_VALUE - Longitude.MIN_VALUE);
-        }
-    }
-
-    /**
-     * Returns a transform with a wraparound behavior in the given dimension.
-     * Input and output values in the wraparound dimension shall be normalized in the [−p/2 … +p/2] range
-     * where <var>p</var> is the period (typically 360° for longitude axis).
-     *
-     * @param  dimension            number of dimensions of the transform to create.
-     * @param  wraparoundDimension  dimension where wraparound happens.
-     * @param  period               period on wraparound axis.
-     * @return the wraparound transform (may be a cached instance).
-     */
-    public static WraparoundTransform create(final int dimension, final int wraparoundDimension, final double period) {
-        ArgumentChecks.ensureStrictlyPositive("dimension", dimension);
-        ArgumentChecks.ensureBetween("wraparoundDimension", 0, dimension - 1, wraparoundDimension);
-        ArgumentChecks.ensureStrictlyPositive("period", period);
-        if (period == (Longitude.MAX_VALUE - Longitude.MIN_VALUE) && (wraparoundDimension & ~1) == 0) {
-            final int i = ((dimension - FIRST_CACHED_DIMENSION) << 1) | wraparoundDimension;
-            if (i >= 0 && i < CACHE.length) {
-                return CACHE[i];
-            }
-        }
-        return new WraparoundTransform(dimension, wraparoundDimension, period);
-    }
+    private static final long serialVersionUID = -1959034793759509170L;
 
     /**
      * Number of dimensions of source and target coordinates.
@@ -132,7 +91,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
 
     /**
      * Period on wraparound axis. This is 360° for the longitude axis.
-     * Coordinates will be normalized in the [−p/2 … +p/2] range.
+     * Coordinates will be normalized in the [−<var>period</var>/2 … +<var>period</var>/2] range.
      */
     protected final double period;
     /*
@@ -145,25 +104,68 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      */
 
     /**
+     * Coordinate in the wraparound dimension which is at the center of the range of valid source coordinates.
+     * For example if this transform wraps coordinates from the [0 … 360]° range to the [-180 … +180]° range,
+     * then {@code sourceMedian} should be 180° (the value at the center of [0 … 360]° range).
+     * The value may be {@link Double#NaN} if unknown.
+     *
+     * <p>This field is used for inverse transforms only; it has no effect on the forward transforms.
+     * If not NaN, this value is used for building the transform returned by {@link #inverse()}.</p>
+     *
+     * <div class="note"><b>Note:</b>
+     * there is no {@code targetMedian} field because the target median is fixed to 0 in {@code WraparoundTransform}.
+     * Non-zero target medians are implemented by {@linkplain MathTransforms#translation(double...) translations}
+     * applied before and after {@code WraparoundTransform}. Because of this translation, the value of this field
+     * is related to the arguments given to the {@link #create create(…)} method by
+     * {@code this.sourceMeridian = sourceMeridian - targetMeridian}.</div>
+     */
+    protected final double sourceMedian;
+
+    /**
+     * Inverse of this transform, computed when first needed.
+     *
+     * @see #inverse()
+     */
+    private transient volatile MathTransform inverse;
+
+    /**
      * Creates a new transform with a wraparound behavior in the given dimension.
-     * Input and output values in the wraparound dimension shall be normalized in
-     * the [−p/2 … +p/2] range where <var>p</var> is the period (e.g. 360°).
+     * Output values in the wraparound dimension will be in the [−p/2 … +p/2] range
+     * where <var>p</var> is the period (e.g. 360°).
      *
      * @param  dimension            number of dimensions of source and target coordinates.
      * @param  wraparoundDimension  the dimension where to apply wraparound.
      * @param  period               period on wraparound axis.
+     * @param  sourceMedian         coordinate at the center of the range of valid source coordinates, or NaN if unknown.
+     *                              This argument is used for inverse transforms only (ignored in forward transforms).
      *
-     * @see #create(int, int, double)
+     * @see #create(int, int, double, double, double)
      */
-    protected WraparoundTransform(final int dimension, final int wraparoundDimension, final double period) {
-        this.dimension = dimension;
+    protected WraparoundTransform(final int dimension, final int wraparoundDimension, final double period, final double sourceMedian) {
+        this.dimension           = dimension;
         this.wraparoundDimension = wraparoundDimension;
-        this.period = period;
+        this.period              = period;
+        this.sourceMedian        = sourceMedian;
     }
 
     /**
-     * Returns an instance with the number of dimensions compatible with the given matrix, while keeping
-     * {@link #wraparoundDimension} and {@link #period} unchanged.
+     * Creates a new transform with the same parameters than the given transform.
+     * This constructor can be used by subclasses applying the same wraparound than
+     * an existing transform but with a different {@link #shift(double)} implementation.
+     *
+     * @param  other  the other transform from which to copy the parameters.
+     */
+    protected WraparoundTransform(final WraparoundTransform other) {
+        dimension           = other.dimension;
+        wraparoundDimension = other.wraparoundDimension;
+        period              = other.period;
+        sourceMedian        = other.sourceMedian;
+        inverse             = other.inverse;
+    }
+
+    /**
+     * Returns an instance with the number of dimensions compatible with the given matrix,
+     * while keeping {@link #wraparoundDimension}, {@link #period} and {@link #sourceMedian} unchanged.
      * If no instance can be created for the given number of dimensions, then this method returns {@code null}.
      *
      * @param  other            matrix defining a transform which will be applied before or after {@code this}.
@@ -175,9 +177,56 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
             return this;
         }
         if (n < wraparoundDimension && getClass() == WraparoundTransform.class) {
-            return create(n, wraparoundDimension, period);
+            return new WraparoundTransform(n, wraparoundDimension, period, sourceMedian);
         }
         return null;
+    }
+
+    /**
+     * Returns a transform with a wraparound behavior in the given dimension.
+     * Output values in the wraparound dimension will be in the [t−p/2 … t+p/2] range
+     * where <var>t</var> is the target median and <var>p</var> is the period (typically 360° for longitude axis).
+     *
+     * <p>The {@code sourceMedian} argument is optional (can be {@link Double#NaN} if unknown) and has no effect on
+     * the forward transform. This argument is used only for creating the {@linkplain #inverse() inverse} transform.</p>
+     *
+     * <div class="note"><b>Examples:</b>
+     *   <ul>
+     *     <li>Wraparound longitudes in (φ,λ) coordinates from [-180 … +180]° range to [0 … 360]° range:
+     *         {@code create(2, 0, 360, 0, 180)}.</li>
+     *     <li>Wraparound longitudes in (φ,λ,h) coordinates from unknown range to [-180 … +180]° range:
+     *         {@code create(3, 0, 360, Double.NaN, 0)} (non-invertible).</li>
+     *   </ul>
+     * </div>
+     *
+     * @param  dimension            number of dimensions of the transform to create.
+     * @param  wraparoundDimension  dimension where wraparound happens.
+     * @param  period               period on wraparound axis.
+     * @param  sourceMedian         coordinate at the center of the range of valid source coordinates, or NaN if unknown.
+     * @param  targetMedian         coordinate at the center of the range of valid target coordinates.
+     * @return the wraparound transform.
+     */
+    public static MathTransform create(final int dimension, final int wraparoundDimension, final double period,
+                                       final double sourceMedian, final double targetMedian)
+    {
+        ArgumentChecks.ensureStrictlyPositive("dimension", dimension);
+        ArgumentChecks.ensureBetween("wraparoundDimension", 0, dimension - 1, wraparoundDimension);
+        ArgumentChecks.ensureStrictlyPositive("period", period);
+        ArgumentChecks.ensureFinite("targetMedian", targetMedian);
+        /*
+         * Since we are going to apply a `-targetMedian` translation before the `WraparoundTransform`, the
+         * `sourceMedian` used for computing the inverse of that transform must have the same translation.
+         */
+        MathTransform tr = new WraparoundTransform(dimension, wraparoundDimension, period, sourceMedian - targetMedian);
+        if (targetMedian != 0) try {
+            final double[] vector = new double[dimension];
+            vector[wraparoundDimension] = targetMedian;
+            final MathTransform denormalize = MathTransforms.translation(vector);
+            tr = MathTransforms.concatenate(denormalize.inverse(), tr, denormalize);
+        } catch (NoninvertibleTransformException e) {
+            throw new IllegalArgumentException(e);              // Should never happen actually.
+        }
+        return tr;
     }
 
     /**
@@ -290,17 +339,33 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
         return Matrices.createIdentity(dimension);
     }
 
-    /*
-     * Do not implement `inverse()`. See class javadoc.
+    /**
+     * Returns a wraparound transform producing values in the range of source coordinate values.
+     * Output values in the wraparound dimension will be in the [s−p/2 … s+p/2] range
+     * where <var>s</var> is {@link #sourceMedian} and <var>p</var> is {@link #period}.
      *
-     * We do not return `WraparoundTransform` because this class does not know if the inverse operation needs
-     * wraparound. For example in the inverse of "ProjectedCRS → BaseCRS → GeographicCRS → Wraparound" chain,
-     * we could try to put a wraparound as in "GeographicCRS → BaseCRS → Wraparound → ProjectedCRS" but this
-     * is often not needed. And if we try to insert that operation anyway, we do not know which range to use.
-     *
-     * We do not return an identity transform because it causes incorrect resampling operation steps
-     * when concatenated, especially when testing if transforms are mutually the inverse of each other.
+     * @return wraparound transform producing values in the range of source coordinate values.
+     * @throws NoninvertibleTransformException if {@link #sourceMedian} is NaN or infinite.
      */
+    @Override
+    public MathTransform inverse() throws NoninvertibleTransformException {
+        MathTransform tr = inverse;
+        if (tr == null) {
+            if (!Double.isFinite(sourceMedian)) {
+                return super.inverse();
+            } else if (sourceMedian == 0) {
+                inverse = tr = this;
+            } else synchronized (this) {
+                tr = inverse;
+                if (tr == null) {
+                    tr = create(dimension, wraparoundDimension, period, 0, sourceMedian);
+                    ConcatenatedTransform.setInverse(tr, this);
+                    inverse = tr;
+                }
+            }
+        }
+        return tr;
+    }
 
     /**
      * Concatenates in an optimized way this math transform with the given one, if possible.
@@ -560,7 +625,10 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     }
 
     /**
-     * Returns the parameter values for this math transform.
+     * Returns the parameter values for this math transform. The set of parameters include the number of dimensions,
+     * the {@linkplain #wraparoundDimension wraparound dimension} and the {@linkplain #period} values.
+     * The default implementation does not include the {@linkplain #sourceMedian source median} because
+     * that parameter has no effect on forward transforms (it is used for creating the inverse transform).
      *
      * @return the parameter values for this math transform.
      */
@@ -585,7 +653,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
         if (super.equals(object, mode)) {
             final WraparoundTransform other = (WraparoundTransform) object;
             return other.dimension == dimension && other.wraparoundDimension == wraparoundDimension
-                    && Numerics.equals(period, other.period);
+                    && Numerics.equals(period, other.period) && Numerics.equals(sourceMedian, other.sourceMedian);
         }
         return false;
     }
@@ -597,6 +665,6 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      */
     @Override
     protected int computeHashCode() {
-        return dimension * 31 + wraparoundDimension + Double.hashCode(period);
+        return dimension * 31 + wraparoundDimension + Double.hashCode(period) + 7*Double.hashCode(sourceMedian);
     }
 }

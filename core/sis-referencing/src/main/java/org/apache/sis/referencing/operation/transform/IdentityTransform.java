@@ -65,7 +65,7 @@ final class IdentityTransform extends AbstractLinearTransform {
         this.dimension = dimension;
         /*
          * This value is not used by `inverse()` method, but we set it anyway because
-         * `ConcatenatedTransform.createOptimized(…)` checks if the value is non-null.
+         * `ConcatenatedTransform.tryOptimized(…)` checks if the value is non-null.
          * A null value would cause unwanted computation of inverse transform(because
          * `ConcatenatedTransform` computes it itself.
          */
