@@ -429,7 +429,7 @@ public final strictfp class GridDerivationTest extends TestCase {
         /*
          * Longitudes from 100°E to 240°E (in WGS84 geographic CRS), which is equivalent to 100°E to 120°W.
          * That [100 … 240]°E range is compatible with the [0 … 360]° longitude range declared in the CRS.
-         * Latitude range is from 21°S to 60°N, but this is secondary for this test.
+         * Latitude range is from 21°S to 60°N, but this is not important for this test.
          */
         final GridGeometry grid = new GridGeometry(
                 new GridExtent(null, null, new long[] {8400, 4860}, true), PixelInCell.CELL_CENTER,
@@ -483,7 +483,7 @@ public final strictfp class GridDerivationTest extends TestCase {
     public void testAntiMeridianCrossingInBothGrids() {
         /*
          * Longitudes from 100°E to 240°E (in WGS84 geographic CRS), which is equivalent to 100°E to 120°W.
-         * Latitude range is from 21°S to 60°N, but this is secondary for this test.
+         * Latitude range is from 21°S to 60°N, but this is not important for this test.
          */
         final GridGeometry grid = new GridGeometry(
                 new GridExtent(null, null, new long[] {8400, 4860}, true), PixelInCell.CELL_CENTER,
@@ -493,7 +493,7 @@ public final strictfp class GridDerivationTest extends TestCase {
                 HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE));
         /*
          * 22°27′34″W to 102°27′35″W in Mercator projection.
-         * Latitude range is about 66°S to 80°N, but it is not important for this test.
+         * Latitude range is about 66°S to 80°N, but this is not important for this test.
          */
         final GridGeometry areaOfInterest = new GridGeometry(
                 new GridExtent(null, null, new long[] {865, 725}, true), PixelInCell.CELL_CENTER,

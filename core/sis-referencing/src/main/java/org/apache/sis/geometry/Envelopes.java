@@ -180,6 +180,26 @@ public final class Envelopes extends Static {
     }
 
     /**
+     * Computes the intersection of all given envelopes, transforming them to a common CRS if necessary.
+     * If all envelopes use the same CRS ({@link ComparisonMode#IGNORE_METADATA ignoring metadata})
+     * or if the CRS of all envelopes is {@code null}, then the {@linkplain GeneralEnvelope#intersect(Envelope)
+     * intersection is computed} without transforming any envelope. Otherwise all envelopes are transformed to a
+     * {@linkplain CRS#suggestCommonTarget common CRS} before intersection is computed.
+     * The CRS of the returned envelope may different than the CRS of all given envelopes.
+     *
+     * @param  envelopes  the envelopes for which to compute intersection. Null elements are ignored.
+     * @return intersection of given envelopes, or {@code null} if the given array does not contain non-null elements.
+     * @throws TransformException if this method can not determine a common CRS, or if a transformation failed.
+     *
+     * @see GeneralEnvelope#intersect(Envelope)
+     *
+     * @since 1.0
+     */
+    public static GeneralEnvelope intersect(final Envelope... envelopes) throws TransformException {
+        return EnvelopeReducer.INTERSECT.reduce(envelopes);
+    }
+
+    /**
      * Finds a mathematical operation from the CRS of the given source envelope to the CRS of the given target envelope.
      * For non-null georeferenced envelopes, this method is equivalent to the following code with {@code areaOfInterest}
      * computed as the union of the two envelopes:
@@ -230,8 +250,8 @@ public final class Envelopes extends Static {
                     }
                 } catch (TransformException e) {
                     /*
-                     * Note: we may succeed to transform 'source' and fail to transform 'target' to geographic bounding box,
-                     * but the opposite is unlikely because 'source' should not have less dimensions than 'target'.
+                     * Note: we may succeed to transform `source` and fail to transform `target` to geographic bounding box,
+                     * but the opposite is unlikely because `source` should not have less dimensions than `target`.
                      */
                     Logging.recoverableException(Logging.getLogger(Loggers.GEOMETRY), Envelopes.class, "findOperation", e);
                 }
@@ -239,26 +259,6 @@ public final class Envelopes extends Static {
             }
         }
         return null;
-    }
-
-    /**
-     * Computes the intersection of all given envelopes, transforming them to a common CRS if necessary.
-     * If all envelopes use the same CRS ({@link ComparisonMode#IGNORE_METADATA ignoring metadata})
-     * or if the CRS of all envelopes is {@code null}, then the {@linkplain GeneralEnvelope#intersect(Envelope)
-     * intersection is computed} without transforming any envelope. Otherwise all envelopes are transformed to a
-     * {@linkplain CRS#suggestCommonTarget common CRS} before intersection is computed.
-     * The CRS of the returned envelope may different than the CRS of all given envelopes.
-     *
-     * @param  envelopes  the envelopes for which to compute intersection. Null elements are ignored.
-     * @return intersection of given envelopes, or {@code null} if the given array does not contain non-null elements.
-     * @throws TransformException if this method can not determine a common CRS, or if a transformation failed.
-     *
-     * @see GeneralEnvelope#intersect(Envelope)
-     *
-     * @since 1.0
-     */
-    public static GeneralEnvelope intersect(final Envelope... envelopes) throws TransformException {
-        return EnvelopeReducer.INTERSECT.reduce(envelopes);
     }
 
     /**
@@ -437,7 +437,7 @@ public final class Envelopes extends Static {
         transformPoint: while (true) {
             /*
              * Compute the derivative (optional operation). If this operation fails, we will
-             * set a flag to 'false' so we don't try again for all remaining points. We try
+             * set a flag to `false` so we don't try again for all remaining points. We try
              * to compute the derivative and the transformed point in a single operation if
              * we can. If we can not, we will compute those two information separately.
              *
@@ -459,7 +459,7 @@ public final class Envelopes extends Static {
             }
             /*
              * The transformed point has been saved for future reuse after the enclosing
-             * 'while' loop. Now add the transformed point to the destination envelope.
+             * `while` loop. Now add the transformed point to the destination envelope.
              */
             if (transformed == null) {
                 transformed = new GeneralEnvelope(targetDim);
@@ -472,11 +472,11 @@ public final class Envelopes extends Static {
                 transformed.add(ordinatesView);
             }
             /*
-             * Get the next point coordinate. The 'coordinateIndex' variable is an index in base 3
+             * Get the next point coordinate. The `coordinateIndex` variable is an index in base 3
              * having a number of digits equals to the number of source dimensions.  For example a
              * 4-D space have indexes ranging from "0000" to "2222" (numbers in base 3). The digits
              * are then mapped to minimal (0), maximal (1) or central (2) coordinates. The outer loop
-             * stops when the counter roll back to "0000". Note that 'targetPt' must keep the value
+             * stops when the counter roll back to "0000". Note that `targetPt` must keep the value
              * of the last projected point, which must be the envelope center identified by "2222"
              * in the 4-D case.
              */
@@ -807,7 +807,7 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
             if ((includedMinValue & includedMaxValue & dimensionBitMask) == 0 && CoordinateOperations.isWrapAround(axis)) {
                 isWrapAroundAxis |= dimensionBitMask;
             }
-            // Restore 'targetPt' to its initial state, which is equals to 'centerPt'.
+            // Restore `targetPt` to its initial state, which is equals to `centerPt`.
             if (targetPt != null) {
                 targetPt.setOrdinate(i, centerPt[i]);
             }
@@ -852,7 +852,7 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
                          * or skip c={2,3}.
                          */
                         double value = max;
-                        if ((c & 1) == 0) {         // 'true' if we are testing "wrapAroundMin".
+                        if ((c & 1) == 0) {         // `true` if we are testing "wrapAroundMin".
                             if (((c == 0 ? includedMinValue : includedMaxValue) & bm) == 0) {
                                 c++;                // Skip also the case for "wrapAroundMax".
                                 continue;
