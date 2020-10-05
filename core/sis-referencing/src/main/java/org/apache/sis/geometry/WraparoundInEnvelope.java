@@ -37,7 +37,20 @@ import org.apache.sis.util.ArraysExt;
  * from source and target envelopes, which do not need to be the same.</p>
  *
  * <p>The final result is that envelopes transformed using {@code WraparoundInEnvelope} may be larger
- * than envelopes transformed using {@link WraparoundTransform} but should never be smaller.</p>
+ * than envelopes transformed using {@link WraparoundTransform} but should never be smaller.
+ * For example when transforming the following envelope with wraparound on the dashed line:</p>
+ *
+ * {@preformat text
+ *     ┌─┆───────────────┆───┐           ┆              Envelope to transform.
+ *     │ ┆               ┆   │           ┆
+ *     └─┆───────────────┆───┘           ┆
+ *       ┆               ┆   ┌─────────┐ ┆              Result we would got without `WraparoundInEnvelope`.
+ *       ┆               ┆   │         │ ┆
+ *       ┆               ┆   └─────────┘ ┆
+ *       ┆             ┌─┆───┐         ┌─┆───┐          Better result (union to be done by caller).
+ *       ┆             │ ┆   │         │ ┆   │
+ *       ┆             └─┆───┘         └─┆───┘
+ * }
  *
  * <h2>Mutability</h2>
  * <b>This class is mutable.</b> This class records the translations that {@link #shift(double)} wanted to apply
