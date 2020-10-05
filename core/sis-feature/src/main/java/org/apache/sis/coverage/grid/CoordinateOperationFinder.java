@@ -354,10 +354,6 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * Computes the transform from “grid coordinates of the source” to “grid coordinates of the target”.
      * This is a concatenation of {@link #gridToCRS()} with target "CRS to grid" transform.
      *
-     * <p><b>WARNING:</b> this method may return a mutable transform (unless {@link #nowraparound()} has been invoked).
-     * That transform should be only short lived (e.g. just the time to transform an envelope).
-     * See {@link org.apache.sis.internal.referencing.WraparoundInEnvelope#transform(MathTransform, Envelope)}.</p>
-     *
      * @return operation from source grid indices to target grid indices.
      * @throws FactoryException if no operation can be found between the source and target CRS.
      * @throws TransformException if some coordinates can not be transformed to the specified target.
@@ -389,10 +385,6 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      *   <li>{@link #changeOfCRS} — cached for {@link #inverse()} usage.</li>
      *   <li>{@link #forwardChangeOfCRS} — cached for next invocation of this {@code gridToCRS()} method.</li>
      * </ul>
-     *
-     * <p><b>WARNING:</b> this method may return a mutable transform (unless {@link #nowraparound()} has been invoked).
-     * That transform should be only short lived (e.g. just the time to transform an envelope).
-     * See {@link org.apache.sis.internal.referencing.WraparoundInEnvelope#transform(MathTransform, Envelope)}.</p>
      *
      * @return operation from source grid indices to target geospatial coordinates.
      * @throws FactoryException if no operation can be found between the source and target CRS.

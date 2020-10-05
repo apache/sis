@@ -92,7 +92,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.metadata.iso.extent.Extents
  * @see CRS
@@ -262,8 +262,8 @@ public final class Envelopes extends Static {
     }
 
     /**
-     * Invoked when a recoverable exception occurred. Those exceptions must be minor enough
-     * that they can be silently ignored in most cases.
+     * Invoked when a recoverable exception occurred.
+     * Those exceptions must be minor enough that they can be silently ignored in most cases.
      */
     static void recoverableException(final Class<? extends Static> caller, final TransformException exception) {
         Logging.recoverableException(Logging.getLogger(Loggers.GEOMETRY), caller, "transform", exception);
@@ -379,9 +379,7 @@ public final class Envelopes extends Static {
      *                   May be {@code null} if this information is not needed.
      */
     @SuppressWarnings("null")
-    private static GeneralEnvelope transform(final MathTransform transform,
-                                             final Envelope      envelope,
-                                             final double[]      targetPt)
+    private static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope, double[] targetPt)
             throws TransformException
     {
         if (transform.isIdentity()) {
@@ -419,154 +417,162 @@ public final class Envelopes extends Static {
         if (sourceDim >= 20) {          // Maximal value supported by Formulas.pow3(int) is 19.
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, sourceDim));
         }
-        int             pointIndex            = 0;
-        boolean         isDerivativeSupported = true;
-        GeneralEnvelope transformed           = null;
-        final Matrix[]  derivatives           = new Matrix[Math.toIntExact(MathFunctions.pow(3, sourceDim))];
-        final double[]  coordinates           = new double[derivatives.length * targetDim];
-        final double[]  sourcePt              = new double[sourceDim];
-        for (int i=sourceDim; --i>=0;) {
-            sourcePt[i] = envelope.getMinimum(i);
-        }
+        boolean isDerivativeSupported = true;
+        DirectPosition  temporary     = null;
+        GeneralEnvelope transformed   = null;
+        final Matrix[]  derivatives   = new Matrix[Math.toIntExact(MathFunctions.pow(3, sourceDim))];
+        final double[]  coordinates   = new double[Math.multiplyExact(derivatives.length, targetDim)];
+        final double[]  sourcePt      = new double[sourceDim];
         // A window over a single coordinate in the `coordinates` array.
         final DirectPositionView ordinatesView = new DirectPositionView.Double(coordinates, 0, targetDim);
-        /*
-         * Iterates over every minimal, maximal and median coordinate values (3 points) along each
-         * dimension. The total number of iterations is 3 ^ (number of source dimensions).
-         */
-        transformPoint: while (true) {
+        final WraparoundInEnvelope.Controller wc = new WraparoundInEnvelope.Controller(transform);
+        do {
+            for (int i=sourceDim; --i>=0;) {
+                sourcePt[i] = envelope.getMinimum(i);
+            }
             /*
-             * Compute the derivative (optional operation). If this operation fails, we will
-             * set a flag to `false` so we don't try again for all remaining points. We try
-             * to compute the derivative and the transformed point in a single operation if
-             * we can. If we can not, we will compute those two information separately.
+             * Iterates over every minimal, maximal and median coordinate values (3 points) along each dimension.
+             * The total number of iterations is 3 ^ (number of source dimensions).
+             */
+nextPoint:  for (int pointIndex = 0;;) {                // Break condition at the end of this block.
+                /*
+                 * Compute the derivative (optional operation). If this operation fails, we will
+                 * set a flag to `false` so we don't try again for all remaining points. We try
+                 * to compute the derivative and the transformed point in a single operation if
+                 * we can. If we can not, we will compute those two information separately.
+                 *
+                 * Note that the very last point to be projected must be the envelope center.
+                 * There is usually no need to calculate the derivative for that last point,
+                 * but we let it does anyway for safety.
+                 */
+                final int offset = pointIndex * targetDim;
+                try {
+                    derivatives[pointIndex] = derivativeAndTransform(wc.transform,
+                            sourcePt, coordinates, offset, isDerivativeSupported);
+                } catch (TransformException e) {
+                    if (!isDerivativeSupported) {
+                        throw e;                    // Derivative were already disabled, so something went wrong.
+                    }
+                    isDerivativeSupported = false;
+                    wc.transform.transform(sourcePt, 0, coordinates, offset, 1);
+                    recoverableException(Envelopes.class, e);       // Log only if the above call was successful.
+                }
+                /*
+                 * The transformed point has been saved for future reuse after the enclosing
+                 * `for(;;)` loop. Now add the transformed point to the destination envelope.
+                 */
+                if (transformed == null) {
+                    transformed = new GeneralEnvelope(targetDim);
+                    for (int i=0; i<targetDim; i++) {
+                        final double value = coordinates[offset + i];
+                        transformed.setRange(i, value, value);
+                    }
+                } else {
+                    ordinatesView.offset = offset;
+                    transformed.add(ordinatesView);
+                }
+                /*
+                 * Get the next point coordinate. The `coordinateIndex` variable is an index in base 3
+                 * having a number of digits equals to the number of source dimensions.  For example a
+                 * 4-D space have indexes ranging from "0000" to "2222" (numbers in base 3). The digits
+                 * are then mapped to minimal (0), maximal (1) or central (2) coordinates. The outer loop
+                 * stops when the counter roll back to "0000". Note that `targetPt` will be set to value
+                 * of the last projected point, which must be the envelope center identified by "2222"
+                 * in the 4-D case.
+                 */
+                int indexBase3 = ++pointIndex;
+                for (int dim = sourceDim; --dim >= 0; indexBase3 /= 3) {
+                    switch (indexBase3 % 3) {
+                        case 0:  sourcePt[dim] = envelope.getMinimum(dim); continue;            // Continue the loop.
+                        case 1:  sourcePt[dim] = envelope.getMaximum(dim); continue nextPoint;
+                        case 2:  sourcePt[dim] = envelope.getMedian (dim); continue nextPoint;
+                        default: throw new AssertionError(indexBase3);                          // Should never happen
+                    }
+                }
+                assert pointIndex == derivatives.length : pointIndex;
+                break;
+            }
+            /*
+             * At this point we finished to build an envelope from all sampled positions. Now iterate
+             * over all points. For each point, iterate over all line segments from that point to a
+             * neighbor median point.  Use the derivate information for approximating the transform
+             * behavior in that area by a cubic curve. We can then find analytically the curve extremum.
              *
-             * Note that the very last point to be projected must be the envelope center.
-             * There is usually no need to calculate the derivative for that last point,
-             * but we let it does anyway for safety.
+             * The same technic is applied in transform(MathTransform, Rectangle2D), except that in
+             * the Rectangle2D case the calculation was bundled right inside the main loop in order
+             * to avoid the need for storage.
              */
-            final int offset = pointIndex * targetDim;
-            try {
-                derivatives[pointIndex] = derivativeAndTransform(transform,
-                        sourcePt, coordinates, offset, isDerivativeSupported);
-            } catch (TransformException e) {
-                if (!isDerivativeSupported) {
-                    throw e;                    // Derivative were already disabled, so something went wrong.
-                }
-                isDerivativeSupported = false;
-                transform.transform(sourcePt, 0, coordinates, offset, 1);
-                recoverableException(Envelopes.class, e);       // Log only if the above call was successful.
-            }
-            /*
-             * The transformed point has been saved for future reuse after the enclosing
-             * `while` loop. Now add the transformed point to the destination envelope.
-             */
-            if (transformed == null) {
-                transformed = new GeneralEnvelope(targetDim);
-                for (int i=0; i<targetDim; i++) {
-                    final double value = coordinates[offset + i];
-                    transformed.setRange(i, value, value);
-                }
-            } else {
-                ordinatesView.offset = offset;
-                transformed.add(ordinatesView);
-            }
-            /*
-             * Get the next point coordinate. The `coordinateIndex` variable is an index in base 3
-             * having a number of digits equals to the number of source dimensions.  For example a
-             * 4-D space have indexes ranging from "0000" to "2222" (numbers in base 3). The digits
-             * are then mapped to minimal (0), maximal (1) or central (2) coordinates. The outer loop
-             * stops when the counter roll back to "0000". Note that `targetPt` must keep the value
-             * of the last projected point, which must be the envelope center identified by "2222"
-             * in the 4-D case.
-             */
-            int indexBase3 = ++pointIndex;
-            for (int dim=sourceDim; --dim>=0; indexBase3 /= 3) {
-                switch (indexBase3 % 3) {
-                    case 0:  sourcePt[dim] = envelope.getMinimum(dim); break;   // Continue the loop.
-                    case 1:  sourcePt[dim] = envelope.getMaximum(dim); continue transformPoint;
-                    case 2:  sourcePt[dim] = envelope.getMedian (dim); continue transformPoint;
-                    default: throw new AssertionError(indexBase3);     // Should never happen
-                }
-            }
-            break;
-        }
-        assert pointIndex == derivatives.length : pointIndex;
-        /*
-         * At this point we finished to build an envelope from all sampled positions. Now iterate
-         * over all points. For each point, iterate over all line segments from that point to a
-         * neighbor median point.  Use the derivate information for approximating the transform
-         * behavior in that area by a cubic curve. We can then find analytically the curve extremum.
-         *
-         * The same technic is applied in transform(MathTransform, Rectangle2D), except that in
-         * the Rectangle2D case the calculation was bundled right inside the main loop in order
-         * to avoid the need for storage.
-         */
-        DirectPosition temporary = null;
-        final DirectPositionView sourceView = new DirectPositionView.Double(sourcePt, 0, sourceDim);
-        final CurveExtremum extremum = new CurveExtremum();
-        for (pointIndex=0; pointIndex < derivatives.length; pointIndex++) {
-            final Matrix D1 = derivatives[pointIndex];
-            if (D1 != null) {
-                int indexBase3 = pointIndex, power3 = 1;
-                for (int i=sourceDim; --i>=0; indexBase3 /= 3, power3 *= 3) {
-                    final int digitBase3 = indexBase3 % 3;
-                    if (digitBase3 != 2) { // Process only if we are not already located on the median along the dimension i.
-                        final int medianIndex = pointIndex + power3 * (2 - digitBase3);
-                        final Matrix D2 = derivatives[medianIndex];
-                        if (D2 != null) {
-                            final double xmin = envelope.getMinimum(i);
-                            final double xmax = envelope.getMaximum(i);
-                            final double x2   = envelope.getMedian (i);
-                            final double x1   = (digitBase3 == 0) ? xmin : xmax;
-                            final int offset1 = targetDim * pointIndex;
-                            final int offset2 = targetDim * medianIndex;
-                            for (int j=0; j<targetDim; j++) {
-                                extremum.resolve(x1, coordinates[offset1 + j], D1.getElement(j,i),
-                                                 x2, coordinates[offset2 + j], D2.getElement(j,i));
-                                boolean isP2 = false;
-                                do { // Executed exactly twice, one for each extremum point.
-                                    final double x = isP2 ? extremum.ex2 : extremum.ex1;
-                                    if (x > xmin && x < xmax) {
-                                        final double y = isP2 ? extremum.ey2 : extremum.ey1;
-                                        if (y < transformed.getMinimum(j) ||
-                                            y > transformed.getMaximum(j))
-                                        {
-                                            /*
-                                             * At this point, we have determined that adding the extremum point
-                                             * would expand the envelope. However we will not add that point
-                                             * directly because its position may not be quite right (since we
-                                             * used a cubic curve approximation). Instead, we project the point
-                                             * on the envelope border which is located vis-à-vis the extremum.
-                                             */
-                                            for (int ib3 = pointIndex, dim = sourceDim; --dim >= 0; ib3 /= 3) {
-                                                final double coordinate;
-                                                if (dim == i) {
-                                                    coordinate = x;                       // Position of the extremum.
-                                                } else switch (ib3 % 3) {
-                                                    case 0:  coordinate = envelope.getMinimum(dim); break;
-                                                    case 1:  coordinate = envelope.getMaximum(dim); break;
-                                                    case 2:  coordinate = envelope.getMedian (dim); break;
-                                                    default: throw new AssertionError(ib3);     // Should never happen.
+            final DirectPositionView sourceView = new DirectPositionView.Double(sourcePt, 0, sourceDim);
+            final CurveExtremum extremum = new CurveExtremum();
+            for (int pointIndex=0; pointIndex < derivatives.length; pointIndex++) {
+                final Matrix D1 = derivatives[pointIndex];
+                if (D1 != null) {
+                    int indexBase3 = pointIndex, power3 = 1;
+                    for (int i = sourceDim; --i >= 0; indexBase3 /= 3, power3 *= 3) {
+                        final int digitBase3 = indexBase3 % 3;
+                        // Process only if we are not already located on the median along the dimension i.
+                        if (digitBase3 != 2) {
+                            final int medianIndex = pointIndex + power3 * (2 - digitBase3);
+                            final Matrix D2 = derivatives[medianIndex];
+                            if (D2 != null) {
+                                final double xmin = envelope.getMinimum(i);
+                                final double xmax = envelope.getMaximum(i);
+                                final double x2   = envelope.getMedian (i);
+                                final double x1   = (digitBase3 == 0) ? xmin : xmax;
+                                final int offset1 = targetDim * pointIndex;
+                                final int offset2 = targetDim * medianIndex;
+                                for (int j=0; j<targetDim; j++) {
+                                    extremum.resolve(x1, coordinates[offset1 + j], D1.getElement(j,i),
+                                                     x2, coordinates[offset2 + j], D2.getElement(j,i));
+                                    boolean isP2 = false;
+                                    do {
+                                        // Executed exactly twice, one for each extremum point.
+                                        final double x = isP2 ? extremum.ex2 : extremum.ex1;
+                                        if (x > xmin && x < xmax) {
+                                            final double y = isP2 ? extremum.ey2 : extremum.ey1;
+                                            if (y < transformed.getMinimum(j) ||
+                                                y > transformed.getMaximum(j))
+                                            {
+                                                /*
+                                                 * At this point, we have determined that adding the extremum point
+                                                 * would expand the envelope. However we will not add that point
+                                                 * directly because its position may not be quite right (since we
+                                                 * used a cubic curve approximation). Instead, we project the point
+                                                 * on the envelope border which is located vis-à-vis the extremum.
+                                                 */
+                                                for (int ib3 = pointIndex, dim = sourceDim; --dim >= 0; ib3 /= 3) {
+                                                    final double coordinate;
+                                                    if (dim == i) {
+                                                        coordinate = x;                       // Position of the extremum.
+                                                    } else switch (ib3 % 3) {
+                                                        case 0:  coordinate = envelope.getMinimum(dim); break;
+                                                        case 1:  coordinate = envelope.getMaximum(dim); break;
+                                                        case 2:  coordinate = envelope.getMedian (dim); break;
+                                                        default: throw new AssertionError(ib3);     // Should never happen.
+                                                    }
+                                                    sourcePt[dim] = coordinate;
                                                 }
-                                                sourcePt[dim] = coordinate;
+                                                temporary = wc.transform.transform(sourceView, temporary);
+                                                transformed.add(temporary);
                                             }
-                                            temporary = transform.transform(sourceView, temporary);
-                                            transformed.add(temporary);
                                         }
-                                    }
-                                } while ((isP2 = !isP2) == true);
+                                    } while ((isP2 = !isP2) == true);
+                                }
                             }
                         }
                     }
+                    derivatives[pointIndex] = null;                 // Let GC do its job earlier.
                 }
-                derivatives[pointIndex] = null;                 // Let GC do its job earlier.
             }
-        }
-        if (targetPt != null) {
-            // Copy the coordinate of the center point.
-            System.arraycopy(coordinates, coordinates.length - targetDim, targetPt, 0, targetDim);
-        }
+            /*
+             * Copy the coordinate of the center point. We take the point of the
+             * first iteration because it is the one before translation is applied.
+             */
+            if (targetPt != null) {
+                System.arraycopy(coordinates, coordinates.length - targetDim, targetPt, 0, targetDim);
+                targetPt = null;
+            }
+        } while (wc.translate());
         return transformed;
     }
 

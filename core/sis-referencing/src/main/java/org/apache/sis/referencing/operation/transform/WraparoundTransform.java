@@ -17,8 +17,9 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterValueGroup;
@@ -33,7 +34,6 @@ import org.apache.sis.internal.referencing.provider.Wraparound;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
@@ -87,13 +87,13 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     /**
      * The dimension where to apply wraparound.
      */
-    protected final int wraparoundDimension;
+    public final int wraparoundDimension;
 
     /**
-     * Period on wraparound axis. This is 360° for the longitude axis.
+     * Period on wraparound axis, always greater than zero. This is 360° for the longitude axis.
      * Coordinates will be normalized in the [−<var>period</var>/2 … +<var>period</var>/2] range.
      */
-    protected final double period;
+    public final double period;
     /*
      * DESIGN NOTE:
      * A previous version of `WraparoundTransform` had no period. Instead it was expecting coordinates normalized
@@ -119,7 +119,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * is related to the arguments given to the {@link #create create(…)} method by
      * {@code this.sourceMeridian = sourceMeridian - targetMeridian}.</div>
      */
-    protected final double sourceMedian;
+    public final double sourceMedian;
 
     /**
      * Inverse of this transform, computed when first needed.
@@ -230,6 +230,39 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     }
 
     /**
+     * Replaces all {@code WraparoundTransform} instances in a chain of transform steps.
+     * For each instance found in the {@linkplain MathTransforms#getSteps(MathTransform) list of transform steps},
+     * the given function is invoked with the {@code WraparoundTransform} instance found. If that function returns
+     * a different instance, then this method creates a new chain of transforms with the same steps than the given
+     * {@code transform}, except for the {@code WraparoundTransform} steps that are replaced by the steps returned
+     * by the {@code replacement} function.
+     *
+     * <p>This method allows injection of a specialized type of {@code WraparoundTransform}, for example in order
+     * to override the {@link #shift(double)} method with finer control of wraparound operations.</p>
+     *
+     * @param  transform    the transform in which to replace {@link WraparoundTransform} steps.
+     * @param  replacement  function providing replacements for {@code WraparoundTransform} steps.
+     * @return chain of transforms with {@link WraparoundTransform} steps replaced (if any).
+     */
+    public static MathTransform replace(MathTransform transform,
+            final Function<? super WraparoundTransform, ? extends WraparoundTransform> replacement)
+    {
+        ArgumentChecks.ensureNonNull("transform",   transform);
+        ArgumentChecks.ensureNonNull("replacement", replacement);
+        if (transform instanceof WraparoundTransform) {
+            transform = Objects.requireNonNull(replacement.apply((WraparoundTransform) transform));
+        } else if (transform instanceof ConcatenatedTransform) {
+            final ConcatenatedTransform ct = (ConcatenatedTransform) transform;
+            final MathTransform tr1 = replace(ct.transform1, replacement);
+            final MathTransform tr2 = replace(ct.transform2, replacement);
+            if (tr1 != ct.transform1 || tr2 != ct.transform2) {
+                transform = MathTransforms.concatenate(tr1, tr2);
+            }
+        }
+        return transform;
+    }
+
+    /**
      * Gets the dimension of input points.
      *
      * @return the dimension of input points.
@@ -250,7 +283,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     }
 
     /**
-     * Applies the wraparound on the given value. This method is invoked by default implementation
+     * Applies the wraparound on the given coordinate value. This method is invoked by default implementation
      * of all {@code transform(…)} methods defined in this {@code WraparoundTransform} class.
      * It provides a single method to override if a different wraparound strategy is desired.
      * The default implementation is:
@@ -567,51 +600,6 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
         final Matrix change = MathTransforms.getMatrix(move.inverse());
         return reverse ? Matrices.multiply(change, middle)
                        : Matrices.multiply(middle, change);
-    }
-
-    /**
-     * Returns all {@link WraparoundTransform} instances of the given type, or {@code null} if none.
-     * Invoking this method is equivalent to invoking {@link MathTransforms#getSteps(MathTransform)}
-     * and filter the list for retaining only instances of the given {@code type}.
-     *
-     * <div class="note"><b>Rational:</b>
-     * this specialized method is provided for efficiency because the returned array, if non-null,
-     * usually contains only one instance. Callers may be interested in a specific subclass of
-     * {@link WraparoundTransform} for finer control of wraparound operations,
-     * for example if using a specialized subclass for envelope transformation.</div>
-     *
-     * @param  <T>        compile-time value of {@code type} argument.
-     * @param  type       {@link WraparoundTransform} subclass to include in the returned array.
-     * @param  transform  the transform for which to get {@link WraparoundTransform} steps.
-     * @return {@link WraparoundTransform} steps in a non-empty array, or {@code null} if none.
-     *
-     * @see MathTransforms#getSteps(MathTransform)
-     */
-    public static <T extends WraparoundTransform> T[] getSteps(final Class<T> type, final MathTransform transform) {
-        ArgumentChecks.ensureNonNull("type", type);
-        return getSteps(type, transform, null);
-    }
-
-    /**
-     * Implementation of {@link #getSteps(Class, MathTransform)} to be invoked recursively.
-     */
-    @SuppressWarnings("unchecked")
-    private static <T extends WraparoundTransform> T[] getSteps(
-            final Class<T> type, final MathTransform transform, T[] wraparounds)
-    {
-        if (type.isInstance(transform)) {
-            if (wraparounds == null) {
-                wraparounds = (T[]) Array.newInstance(type, 1);
-                wraparounds[0] = (T) transform;
-            } else {
-                wraparounds = ArraysExt.append(wraparounds, (T) transform);
-            }
-        } else if (transform instanceof ConcatenatedTransform) {
-            final ConcatenatedTransform ct = (ConcatenatedTransform) transform;
-            wraparounds = getSteps(type, ct.transform1, wraparounds);
-            wraparounds = getSteps(type, ct.transform2, wraparounds);
-        }
-        return wraparounds;
     }
 
     /**

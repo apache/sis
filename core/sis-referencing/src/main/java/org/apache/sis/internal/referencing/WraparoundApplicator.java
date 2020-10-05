@@ -40,7 +40,7 @@ public final class WraparoundApplicator {
     /**
      * Coordinates at the center of source envelope, or {@code null} if none.
      */
-    final DirectPosition sourceMedian;
+    private final DirectPosition sourceMedian;
 
     /**
      * Coordinates to put at the center of new coordinate ranges,
@@ -52,12 +52,6 @@ public final class WraparoundApplicator {
      * The target coordinate system.
      */
     private final CoordinateSystem targetCS;
-
-    /**
-     * The synchronization lock to give to {@link WraparoundInEnvelope} instances.
-     * This is initially null, then set to the lock of the first instance.
-     */
-    WraparoundInEnvelope lock;
 
     /**
      * Creates a new applicator.
@@ -155,20 +149,8 @@ public final class WraparoundApplicator {
              */
             m = 0;
         }
-        final int dimension = tr.getTargetDimensions();
-        final double sm = (sourceMedian != null) ? sourceMedian.getOrdinate(wraparoundDimension) - m : Double.NaN;
-        MathTransform wraparound;
-        if (Double.isNaN(sm)) {
-            wraparound = WraparoundTransform.create(dimension, wraparoundDimension, period, sm, m);
-        } else {
-            wraparound = new WraparoundInEnvelope(this, dimension, wraparoundDimension, period, sm);
-            if (m != 0) {
-                final double[] t = new double[dimension];
-                t[wraparoundDimension] = m;
-                final MathTransform denormalize = MathTransforms.translation(t);
-                wraparound = MathTransforms.concatenate(denormalize.inverse(), wraparound, denormalize);
-            }
-        }
+        final MathTransform wraparound = WraparoundTransform.create(tr.getTargetDimensions(), wraparoundDimension,
+                period, (sourceMedian == null) ? Double.NaN : sourceMedian.getOrdinate(wraparoundDimension), m);
         return MathTransforms.concatenate(tr, wraparound);
     }
 }

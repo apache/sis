@@ -40,13 +40,13 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
-import org.apache.sis.internal.referencing.WraparoundInEnvelope;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -914,7 +914,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             if (high != Long.MAX_VALUE) high++;             // Make the coordinate exclusive before cast.
             envelope.setRange(i, coordinates[i], high);     // Possible loss of precision in cast to `double` type.
         }
-        envelope = WraparoundInEnvelope.transform(cornerToCRS, envelope);
+        envelope = Envelopes.transform(cornerToCRS, envelope);
         if (envelope.isEmpty()) try {
             /*
              * If the envelope contains some NaN values, try to replace them by constant values inferred from the math transform.
