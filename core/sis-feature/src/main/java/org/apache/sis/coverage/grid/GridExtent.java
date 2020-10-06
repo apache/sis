@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.awt.Rectangle;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -76,7 +77,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * <div class="note"><b>Note:</b>
  * The inclusiveness of {@linkplain #getHigh() high} coordinates come from ISO 19123.
  * We follow this specification for all getters methods, but developers should keep in mind
- * that this is the opposite of Java2D usage where {@link java.awt.Rectangle} maximal values are exclusive.</div>
+ * that this is the opposite of Java2D usage where {@link Rectangle} maximal values are exclusive.</div>
  *
  * <p>{@code GridExtent} instances are immutable and thread-safe.
  * The same instance can be shared by different {@link GridGeometry} instances.</p>
@@ -231,6 +232,19 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Creates a new grid extent for an image or matrix of the given bounds.
+     * The axis types are {@link DimensionNameType#COLUMN} and {@link DimensionNameType#ROW ROW} in that order.
+     *
+     * @param  bounds  the bounds to copy in the new grid extent.
+     *
+     * @since 1.1
+     */
+    public GridExtent(final Rectangle bounds) {
+        this(bounds.width, bounds.height);
+        translate2D(bounds.x, bounds.y);
+    }
+
+    /**
      * Creates a new grid extent for an image or matrix of the given size.
      * The {@linkplain #getLow() low} grid coordinates are zeros and the axis types are
      * {@link DimensionNameType#COLUMN} and {@link DimensionNameType#ROW ROW} in that order.
@@ -249,9 +263,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Creates a new grid extent for an image of the given size and location. This constructor
-     * is for {@link GridCoverage2D} internal usage: it does not check for overflow (arguments
-     * are assumed small enough, which is the case when they are converted from {@code int}s),
-     * and argument meanings differ from conventions in public constructors.
+     * is for internal usage: argument meanings differ from conventions in public constructors.
      *
      * @param  xmin    column index of the first cell.
      * @param  ymin    row index of the first cell.
@@ -260,6 +272,14 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     GridExtent(final int xmin, final int ymin, final int width, final int height) {
         this(width, height);
+        translate2D(xmin, ymin);
+    }
+
+    /**
+     * Completes a {@link GridExtent} construction with a final translation.
+     * Shall be invoked for two-dimensional extents only.
+     */
+    private void translate2D(final long xmin, final long ymin) {
         for (int i=coordinates.length; --i >= 0;) {
             coordinates[i] += ((i & 1) == 0) ? xmin : ymin;
         }

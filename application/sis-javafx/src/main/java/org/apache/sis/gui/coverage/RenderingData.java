@@ -19,14 +19,15 @@ package org.apache.sis.gui.coverage;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.io.IOException;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import org.apache.sis.coverage.SampleDimension;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
@@ -35,12 +36,17 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.internal.coverage.j2d.ColorModelType;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.referencing.WraparoundApplicator;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -243,6 +249,16 @@ final class RenderingData implements Cloneable {
     }
 
     /**
+     * Returns the position at the center of source data, or {@code null} if none.
+     */
+    private DirectPosition getSourceMedian() {
+        if (dataGeometry.isDefined(GridGeometry.ENVELOPE)) {
+            return AbstractEnvelope.castOrCopy(dataGeometry.getEnvelope()).getMedian();
+        }
+        return null;
+    }
+
+    /**
      * Stretch the color ramp of source image according the current value of {@link #selectedDerivative}.
      * This method uses the original image as the source of statistics. It saves computation time
      * (no need to recompute the statistics when the projection is changed) and provides more stable
@@ -274,10 +290,13 @@ final class RenderingData implements Cloneable {
      * @param  recoloredImage      the image computed by {@link #recolor()}.
      * @param  objectiveCRS        value of {@link CoverageCanvas#getObjectiveCRS()}.
      * @param  objectiveToDisplay  value of {@link CoverageCanvas#getObjectiveToDisplay()}.
+     * @param  objectivePOI        value of {@link CoverageCanvas#getPointOfInterest(boolean)} in objective CRS.
      * @return image with operation applied and color ramp stretched.
      */
-    final RenderedImage resampleAndConvert(final RenderedImage recoloredImage,
-            final CoordinateReferenceSystem objectiveCRS, final LinearTransform objectiveToDisplay)
+    final RenderedImage resampleAndConvert(final RenderedImage             recoloredImage,
+                                           final CoordinateReferenceSystem objectiveCRS,
+                                           final LinearTransform           objectiveToDisplay,
+                                           final DirectPosition            objectivePOI)
             throws TransformException
     {
         if (changeOfCRS == null && objectiveCRS != null && dataGeometry.isDefined(GridGeometry.CRS)) {
@@ -305,8 +324,15 @@ final class RenderingData implements Cloneable {
             cornerToObjective = dataGeometry.getGridToCRS(PixelInCell.CELL_CORNER);
             objectiveToCenter = dataGeometry.getGridToCRS(PixelInCell.CELL_CENTER).inverse();
             if (changeOfCRS != null) {
+                DirectPosition median = getSourceMedian();
                 MathTransform forward = changeOfCRS.getMathTransform();
                 MathTransform inverse = forward.inverse();
+                try {
+                    forward = applyWraparound(forward, median, objectivePOI, changeOfCRS.getTargetCRS());
+                    inverse = applyWraparound(inverse, objectivePOI, median, changeOfCRS.getSourceCRS());
+                } catch (TransformException e) {
+                    recoverableException(e);
+                }
                 cornerToObjective = MathTransforms.concatenate(cornerToObjective, forward);
                 objectiveToCenter = MathTransforms.concatenate(inverse, objectiveToCenter);
             }
@@ -342,6 +368,19 @@ final class RenderingData implements Cloneable {
             }
         }
         return processor.resample(recoloredImage, bounds, displayToCenter);
+    }
+
+    /**
+     * Conversion or transformation from {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS} to
+     * {@linkplain #data} CRS. This transform will include {@code WraparoundTransform} steps if needed.
+     */
+    private static MathTransform applyWraparound(final MathTransform transform, final DirectPosition sourceMedian,
+            final DirectPosition targetMedian, final CoordinateReferenceSystem targetCRS) throws TransformException
+    {
+        if (targetMedian == null) {
+            return transform;
+        }
+        return new WraparoundApplicator(sourceMedian, targetMedian, targetCRS.getCoordinateSystem()).forDomainOfUse(transform);
     }
 
     /**
@@ -403,5 +442,66 @@ final class RenderingData implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         }
+    }
+
+    /**
+     * Returns a string representation for debugging purposes.
+     * The string content may change in any future version.
+     * Current implementation requires a wide screen.
+     *
+     * @see CoverageCanvas#toString()
+     */
+    @Override
+    public String toString() {
+        return toString(new StringBuilder(6000), null);
+    }
+
+    /**
+     * Returns a string representation which combines information of
+     * this {@code RenderingData} with information of the given canvas.
+     */
+    final String toString(final StringBuilder buffer, final CoverageCanvas canvas) {
+        final String lineSeparator = System.lineSeparator();
+        final TableAppender table  = new TableAppender(buffer);
+        table.setMultiLinesCells(true);
+        try {
+            table.nextLine('═');
+            table.append("Geometry of source coverage:").append(lineSeparator)
+                 .append(String.valueOf(dataGeometry));
+            if (canvas != null) {
+                table.nextColumn();
+                table.append("Geometry of display canvas:").append(lineSeparator)
+                     .append(String.valueOf(canvas.getGridGeometry()));
+            }
+            table.appendHorizontalSeparator();
+            table.append("Median in data CRS:").append(lineSeparator)
+                 .append(String.valueOf(getSourceMedian()));
+            if (canvas != null) {
+                table.nextColumn();
+                table.append("Median in objective CRS:").append(lineSeparator)
+                     .append(String.valueOf(canvas.getPointOfInterest(true)));
+            }
+            table.appendHorizontalSeparator();
+            table.append("Objective CRS to source pixel centers:").append(lineSeparator)
+                 .append(String.valueOf(objectiveToCenter));
+            if (canvas != null) {
+                final Envelope2D bounds = canvas.getDisplayBounds();
+                final Rectangle db = (Rectangle) Shapes2D.transform(
+                        MathTransforms.bidimensional(objectiveToCenter),
+                        AffineTransforms2D.transform(displayToObjective, bounds, bounds), new Rectangle());
+                table.nextColumn();
+                table.append("Display bounds in objective CRS:").append(lineSeparator)
+                     .append(String.valueOf(bounds)).append(lineSeparator)
+                     .append(lineSeparator)
+                     .append("Display bounds in source coverage pixels:").append(lineSeparator)
+                     .append(String.valueOf(new GridExtent(db))).append(lineSeparator);
+            }
+            table.nextLine();
+            table.nextLine('═');
+            table.flush();
+        } catch (RenderException | TransformException | IOException e) {
+            buffer.append(e).append(lineSeparator);
+        }
+        return buffer.toString();
     }
 }

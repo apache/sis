@@ -21,6 +21,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
+import java.io.PrintStream;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -91,12 +92,12 @@ public class CoverageCanvas extends MapCanvasAWT {
     private static final int OVERFLOW_SAFETY_MARGIN = 10_000_000;
 
     /**
-     * Whether to print debug information to {@link System#out}. We use {@code stdout} instead than logging
+     * Where to print debug information. If non-null, we use {@link System#out} instead than logging
      * because the log messages are intercepted and rerouted to the "logging" tab in the explorer widget.
-     * This field should always be {@code false} except during debugging.
+     * This field should always be {@code null} except during debugging.
      */
     @Debug
-    private static final boolean TRACE = false;
+    private static final PrintStream TRACE = null;
 
     /**
      * The data shown in this canvas. Note that setting this property to a non-null value may not
@@ -174,6 +175,12 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see #setOriginator(Reference)
      */
     private Reference<Resource> originator;
+
+    /**
+     * Number of times that a coverage has been rendered.
+     * Used only for debugging purposes.
+     */
+    private int renderingCount;
 
     /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
@@ -321,6 +328,9 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @param  colors  colors to use for arbitrary categories of sample values, or {@code null} for default.
      */
     final void setCategoryColors(final Function<Category, java.awt.Color[]> colors) {
+        if (TRACE != null) {
+            TRACE.format("CoverageCanvas.setCategoryColors(…).%n");
+        }
         data.processor.setCategoryColors(colors);
         resampledImage = null;
         requestRepaint();
@@ -340,7 +350,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      *
      * @param  newValue  the new Coordinate Reference System in which to resample the coverage before displaying.
      * @param  anchor    the point to keep at fixed display coordinates, expressed in any compatible CRS.
-     *                   If {@code null}, defaults to {@linkplain #getPointOfInterest() point of interest}.
+     *                   If {@code null}, defaults to {@linkplain #getPointOfInterest(boolean) point of interest}.
      *                   If non-null, the anchor must be associated to a CRS.
      * @throws RenderException if the objective CRS can not be set to the given value.
      *
@@ -437,8 +447,10 @@ public class CoverageCanvas extends MapCanvasAWT {
      *
      * <p>All arguments can be {@code null} for clearing the canvas.</p>
      */
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private void setRawImage(final RenderedImage image, final GridGeometry domain, final List<SampleDimension> ranges) {
+        if (TRACE != null) {
+            TRACE.format("CoverageCanvas.setRawImage(%s).%n", image);
+        }
         resampledImage = null;
         derivedImages.clear();
         data.setImage(image, domain, ranges);
@@ -448,7 +460,6 @@ public class CoverageCanvas extends MapCanvasAWT {
         }
         setObjectiveBounds(bounds);
         requestRepaint();                       // Cause `Worker` class to be executed.
-        if (TRACE) System.out.format("setRawImage: %s%n", image);
     }
 
     /**
@@ -457,6 +468,9 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see #setInterpolation(Interpolation)
      */
     private void onInterpolationSpecified(final Interpolation newValue) {
+        if (TRACE != null) {
+            TRACE.format("CoverageCanvas.onInterpolationSpecified(%s).%n", newValue);
+        }
         data.processor.setInterpolation(newValue);
         resampledImage = null;
         requestRepaint();
@@ -512,6 +526,12 @@ public class CoverageCanvas extends MapCanvasAWT {
         private final Envelope2D displayBounds;
 
         /**
+         * The coordinates of the point to show typically (but not necessarily) in the center of display area.
+         * The coordinate is expressed in objective CRS.
+         */
+        private final DirectPosition objectivePOI;
+
+        /**
          * The {@link #data} image after color ramp stretching, before resampling is applied.
          * May be {@code null} if not yet computed, in which case it will be computed by {@link #render()}.
          */
@@ -555,6 +575,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             objectiveCRS       = canvas.getObjectiveCRS();
             objectiveToDisplay = canvas.getObjectiveToDisplay();
             displayBounds      = canvas.getDisplayBounds();
+            objectivePOI       = canvas.getPointOfInterest(true);
             recoloredImage     = canvas.derivedImages.get(data.selectedDerivative);
             if (data.validateCRS(objectiveCRS)) {
                 resampledImage = canvas.resampledImage;
@@ -582,7 +603,7 @@ public class CoverageCanvas extends MapCanvasAWT {
          * to skip some steps for example if the required source image is already resampled.
          */
         @Override
-        @SuppressWarnings({"PointlessBitwiseExpression", "UseOfSystemOutOrSystemErr"})
+        @SuppressWarnings("PointlessBitwiseExpression")
         protected void render() throws TransformException {
             final Long id = LogHandler.loadingStart(originator);
             try {
@@ -605,19 +626,23 @@ public class CoverageCanvas extends MapCanvasAWT {
                         isValid = Math.max(Math.abs(resampledToDisplay.getTranslateX()),
                                            Math.abs(resampledToDisplay.getTranslateY()))
                                   < Integer.MAX_VALUE - OVERFLOW_SAFETY_MARGIN;
-                        if (TRACE && !isValid) {
-                            System.out.println("New resample for avoiding overflow caused by translation.");
+                        if (TRACE != null && !isValid) {
+                            TRACE.println("CoverageCanvas: New resample for avoiding overflow caused by translation.");
                         }
                     }
                 }
                 if (!isValid) {
                     if (recoloredImage == null) {
                         recoloredImage = data.recolor();
-                        if (TRACE) System.out.format("Recolor by application of %s.%n", data.selectedDerivative.name());
+                        if (TRACE != null) {
+                            TRACE.format("CoverageCanvas: Recolor by application of %s.%n", data.selectedDerivative.name());
+                        }
                     }
-                    resampledImage = data.resampleAndConvert(recoloredImage, objectiveCRS, objectiveToDisplay);
+                    resampledImage = data.resampleAndConvert(recoloredImage, objectiveCRS, objectiveToDisplay, objectivePOI);
                     resampledToDisplay = data.getTransform(objectiveToDisplay);
-                    if (TRACE) System.out.format("Resampled image: %s%n", resampledImage);
+                    if (TRACE != null) {
+                        TRACE.format("CoverageCanvas: Resampled image: %s.%n", resampledImage);
+                    }
                 }
                 prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);
             } finally {
@@ -651,19 +676,24 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Invoked after a paint event for caching rendering data.
      * If the resampled image changed, all previously cached images are discarded.
      */
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private void cacheRenderingData(final Worker worker) {
         data = worker.data;
         derivedImages.put(data.selectedDerivative, worker.recoloredImage);
         resampledImage = worker.resampledImage;
+        renderingCount++;
+        if (TRACE != null) {
+            TRACE.println(this);
+        }
         /*
          * Notify the "Image properties" tab that the image changed. The `imageProperty` field is non-null
          * only if the "Properties" section in `CoverageControls` has been shown at least once.
          */
         if (imageProperty != null) {
             imageProperty.setImage(resampledImage, worker.getVisibleImageBounds());
-            if (TRACE) System.out.format("Update image property view with visible area %s.%n",
-                                         imageProperty.getVisibleImageBounds(resampledImage));
+            if (TRACE != null) {
+                TRACE.format("CoverageCanvas: Update image property view with visible area %s.%n",
+                             imageProperty.getVisibleImageBounds(resampledImage));
+            }
         }
         if (statusBar != null) {
             final Object value = resampledImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY);
@@ -705,6 +735,9 @@ public class CoverageCanvas extends MapCanvasAWT {
      * The sample values are assumed the same; only the image appearance is modified.
      */
     final void setStyling(final Stretching selection) {
+        if (TRACE != null) {
+            TRACE.format("CoverageCanvas.setStyling(%s).%n", selection);
+        }
         if (data.selectedDerivative != selection) {
             data.selectedDerivative = selection;
             resampledImage = null;
@@ -724,7 +757,26 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     @Override
     protected void clear() {
+        if (TRACE != null) {
+            TRACE.format("CoverageCanvas.clear().%n");
+        }
         setRawImage(null, null, null);
         super.clear();
+    }
+
+    /**
+     * Returns a string representation for debugging purposes.
+     * The string content may change in any future version.
+     * Current implementation requires a wide screen.
+     */
+    @Override
+    public String toString() {
+        if (Platform.isFxApplicationThread()) {
+            final StringBuilder buffer = new StringBuilder(12000);
+            buffer.append("Rendering #").append(renderingCount).append(':').append(System.lineSeparator());
+            return data.toString(buffer, this);
+        } else {
+            return super.toString();
+        }
     }
 }

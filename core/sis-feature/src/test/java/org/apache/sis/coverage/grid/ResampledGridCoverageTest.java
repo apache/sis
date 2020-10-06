@@ -228,11 +228,11 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         final int tx = random.nextInt(3);
         final int ty = random.nextInt(3);
         final GridExtent sourceExtent = source.gridGeometry.getExtent();
-        final int newWidth   = (int) sourceExtent.getSize(0) - tx;
-        final int newHeight  = (int) sourceExtent.getSize(1) - ty;
+        final int newWidth   = StrictMath.toIntExact(sourceExtent.getSize(0) - tx);
+        final int newHeight  = StrictMath.toIntExact(sourceExtent.getSize(1) - ty);
         GridExtent subExtent = new GridExtent(
-                (int) sourceExtent.getLow(0) + tx,
-                (int) sourceExtent.getLow(1) + ty,
+                StrictMath.toIntExact(sourceExtent.getLow(0) + tx),
+                StrictMath.toIntExact(sourceExtent.getLow(1) + ty),
                 newWidth,
                 newHeight
         );

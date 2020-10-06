@@ -1057,7 +1057,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 values = null;
             }
             position.setText(text);
-            sampleValues.setText(values);
+            if (isSampleValuesVisible) {
+                sampleValues.setText(values);
+            }
             /*
              * Make sure that there is enough space for keeping the coordinates always visible.
              * This is the needed if there is an error message on the left which may be long.

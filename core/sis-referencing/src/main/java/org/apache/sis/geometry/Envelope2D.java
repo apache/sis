@@ -97,7 +97,7 @@ import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see GeneralEnvelope
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
@@ -333,6 +333,10 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
      * @return a copy of the lower corner, typically (but not necessarily) containing minimal coordinate values.
+     *
+     * @see #getMinX()
+     * @see #getMinY()
+     * @see #getMinimum(int)
      */
     @Override
     public DirectPosition2D getLowerCorner() {
@@ -356,10 +360,30 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
      * @return a copy of the upper corner, typically (but not necessarily) containing maximal coordinate values.
+     *
+     * @see #getMaxX()
+     * @see #getMaxY()
+     * @see #getMaximum(int)
      */
     @Override
     public DirectPosition2D getUpperCorner() {
         return new DirectPosition2D(crs, x+width, y+height);
+    }
+
+    /**
+     * A coordinate position consisting of all the median coordinate values.
+     *
+     * <p>The object returned by this method is a copy. Change in the returned position
+     * will not affect this envelope, and conversely.</p>
+     *
+     * @return a copy of the median coordinates.
+     *
+     * @see #getMedian(int)
+     *
+     * @since 1.1
+     */
+    public DirectPosition2D getMedian() {
+        return new DirectPosition2D(crs, getMedian(0), getMedian(1));
     }
 
     /**
@@ -422,6 +446,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * @param  dimension  the dimension to query.
      * @return the mid coordinate value along the given dimension.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     *
+     * @see #getMedian()
      */
     @Override
     public double getMedian(final int dimension) throws IndexOutOfBoundsException {

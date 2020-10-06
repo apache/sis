@@ -189,7 +189,7 @@ public class Canvas extends Observable implements Localized {
      * in all dimensions beyond the ones shown by the device.
      * Associated values are instances of {@link DirectPosition}.
      *
-     * @see #getPointOfInterest()
+     * @see #getPointOfInterest(boolean)
      * @see #setPointOfInterest(DirectPosition)
      * @see #addPropertyChangeListener(String, PropertyChangeListener)
      */
@@ -266,12 +266,15 @@ public class Canvas extends Observable implements Localized {
     final GeneralEnvelope displayBounds;
 
     /**
-     * The point of interest to show typically (but not necessarily) in the center of display area.
+     * The point to show in the center of display area when no zoom or translation is applied.
+     * This is typically (but not necessarily) the center of data bounding box.
+     * May become outside the viewing area after zooms or translations have been applied.
+     *
      * Also used for selecting a slice in all supplemental dimensions.
      * If {@code null}, then calculations that depend on a point of interest are skipped.
      *
      * @see #POINT_OF_INTEREST_PROPERTY
-     * @see #getPointOfInterest()
+     * @see #getPointOfInterest(boolean)
      * @see #setPointOfInterest(DirectPosition)
      */
     private GeneralDirectPosition pointOfInterest;
@@ -503,7 +506,7 @@ public class Canvas extends Observable implements Localized {
      *
      * @param  newValue  the new Coordinate Reference System in which to transform all data before displaying.
      * @param  anchor    the point to keep at fixed display coordinates, expressed in any compatible CRS.
-     *                   If {@code null}, defaults to {@linkplain #getPointOfInterest() point of interest}.
+     *                   If {@code null}, defaults to {@linkplain #getPointOfInterest(boolean) point of interest}.
      *                   If non-null, the anchor must be associated to a CRS.
      * @throws NullPointerException if the given CRS is null.
      * @throws MismatchedDimensionException if the given CRS does not have the number of dimensions of the display device.
@@ -814,26 +817,33 @@ public class Canvas extends Observable implements Localized {
     }
 
     /**
-     * Returns the coordinates of the point to show typically (but not necessarily) in the center of display area.
-     * This position may be expressed in any CRS, not necessarily the {@linkplain #getObjectiveCRS() objective CRS}.
-     * The number of dimensions is equal or greater than the highest number of dimensions found in data CRS.
-     * The coordinate values in dimensions beyond the {@linkplain #getObjectiveCRS() objective CRS} dimensions
-     * specifies which slice to show (for example the depth of the horizontal plane to display, or the date of
-     * the dynamic phenomenon to display). See {@linkplain Canvas class javadoc} for more discussion.
+     * Returns the coordinates of the point to show in the center of display area in absence of zoom
+     * or translation events. This is typically (but not necessarily) the center of data bounding box.
+     * This position may become outside the viewing area after zooms or translations have been applied.
+     *
+     * <p>The coordinates can be given in their original CRS or in the {@linkplain #getObjectiveCRS() objective CRS}.
+     * If {@code objective} is {@code false}, then the returned position can be expressed in any CRS convertible to
+     * data or objective CRS. If that CRS has more dimensions than the {@linkplain #getObjectiveCRS() objective CRS},
+     * then the supplemental dimensions specify which slice to show
+     * (for example the depth of the horizontal plane to display, or the date of the dynamic phenomenon to display.
+     * See {@linkplain Canvas class javadoc} for more discussion.)
+     * If {@code objective} is {@code true}, then the position is transformed to the objective CRS.</p>
      *
      * <p>This value may be {@code null} on newly created {@code Canvas}, before data are added and canvas
      * is configured. It should not be {@code null} anymore once a {@code Canvas} is ready for displaying.</p>
      *
+     * @param  objective  whether to return a position transformed to {@linkplain #getObjectiveCRS() objective CRS}.
      * @return coordinates of the point to show typically (but not necessarily) in the center of display area.
      *
      * @see #POINT_OF_INTEREST_PROPERTY
      */
-    public DirectPosition getPointOfInterest() {
-        return (pointOfInterest != null) ? pointOfInterest.clone() : null;
+    public DirectPosition getPointOfInterest(final boolean objective) {
+        final DirectPosition poi = objective ? objectivePOI : pointOfInterest;
+        return (poi != null) ? new GeneralDirectPosition(poi) : null;
     }
 
     /**
-     * Sets the coordinates of the point to show typically (but not necessarily) in the center of display area.
+     * Sets the coordinates of the point center of display area when there is no zoom or translations events.
      * If the given value is different than the previous value, then a change event is sent to all listeners
      * registered for the {@value #POINT_OF_INTEREST_PROPERTY} property.
      *
@@ -926,7 +936,8 @@ public class Canvas extends Observable implements Localized {
      *   </tr><tr>
      *     <td>{@link GridGeometry#getCoordinateReferenceSystem()}</td>
      *     <td>{@link #getObjectiveCRS()}.</td>
-     *     <td>Some of <code>{@linkplain #getPointOfInterest()}.getCoordinateReferenceSystem()</code></td>
+     *     <td>Some of <code>{@linkplain #getPointOfInterest(boolean)
+     *         getPointOfInterest}(false).getCoordinateReferenceSystem()</code></td>
      *   </tr><tr>
      *     <td>{@link GridGeometry#getExtent()}</td>
      *     <td>{@link #getDisplayBounds()} rounded to enclosing (floor and ceil) integers</td>
@@ -934,7 +945,7 @@ public class Canvas extends Observable implements Localized {
      *   </tr><tr>
      *     <td>{@link GridGeometry#getGridToCRS(PixelInCell)}</td>
      *     <td>Inverse of {@link #getObjectiveToDisplay()}</td>
-     *     <td>Some {@linkplain #getPointOfInterest() point of interest} coordinates as translation terms</td>
+     *     <td>Some {@linkplain #getPointOfInterest(boolean) point of interest} coordinates as translation terms</td>
      *   </tr>
      * </table>
      *
@@ -1089,6 +1100,7 @@ public class Canvas extends Observable implements Localized {
             displayBounds.setEnvelope(newBounds);
             updateObjectiveToDisplay(newObjectiveToDisplay);
             pointOfInterest       = newPOI;
+            objectivePOI          = newPOI;
             objectiveCRS          = newObjectiveCRS;
             multidimToObjective   = dimensionSelect;
             augmentedObjectiveCRS = null;               // Will be recomputed when first needed.
