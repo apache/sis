@@ -54,6 +54,7 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.internal.referencing.WraparoundApplicator;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -564,7 +565,8 @@ public class Canvas extends Observable implements Localized {
                      * in order to preserve pixel ratios (otherwise the map projection would appear deformed).
                      */
                     oldObjectiveToDisplay = getObjectiveToDisplay();
-                    final MathTransform change = orthogonalTangent(newToOld, anchor.getCoordinate());
+                    final WraparoundApplicator wp = new WraparoundApplicator(null, objectivePOI, oldValue.getCoordinateSystem());
+                    final MathTransform change = orthogonalTangent(wp.forDomainOfUse(newToOld), anchor.getCoordinate());
                     final MathTransform result = MathTransforms.concatenate(change, oldObjectiveToDisplay);
                     /*
                      * The result is the new `objectiveToTransform` such as the display is unchanged around POI.
