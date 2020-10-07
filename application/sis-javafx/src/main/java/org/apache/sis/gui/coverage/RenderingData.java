@@ -148,16 +148,17 @@ final class RenderingData implements Cloneable {
     private CoordinateOperation changeOfCRS;
 
     /**
-     * The conversion from {@link #data} pixel coordinates to {@linkplain CoverageCanvas#getObjectiveCRS()
-     * objective CRS}. This is {@link GridGeometry#getGridToCRS(PixelInCell)} on {@link #dataGeometry}
-     * concatenated with {@link #changeOfCRS}. May be {@code null} if not yet computed.
+     * Conversion from {@link #data} pixel coordinates to {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS}.
+     * This is value of {@link GridGeometry#getGridToCRS(PixelInCell)} invoked on {@link #dataGeometry}, concatenated
+     * with {@link #changeOfCRS} and potentially completed by a wraparound operation.
+     * May be {@code null} if not yet computed.
      */
     private MathTransform cornerToObjective;
 
     /**
-     * The conversion from {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS} to {@link #data}
-     * pixel coordinates. This is the inverse of {@link #changeOfCRS} concatenated with the inverse of
-     * {@link GridGeometry#getGridToCRS(PixelInCell)} on {@link #dataGeometry}.
+     * Conversion from {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS} to {@link #data} pixel coordinates.
+     * This is the inverse of {@link #changeOfCRS} (potentially with a wraparound operation) concatenated with inverse
+     * of {@link GridGeometry#getGridToCRS(PixelInCell)} on {@link #dataGeometry}.
      * May be {@code null} if not yet computed.
      */
     private MathTransform objectiveToCenter;
@@ -320,6 +321,14 @@ final class RenderingData implements Cloneable {
                 // Leave `changeOfCRS` to null.
             }
         }
+        /*
+         * Following transforms are computed when first needed after the new data have been specified,
+         * or after the objective CRS changed. If non-null, `objToCenterNoWrap` is the same transform
+         * than `objectiveToCenter` but without wraparound steps. A non-null value means that we need
+         * to check if wraparound step is really needed and replace `objectiveToCenter` if it appears
+         * to be unnecessary.
+         */
+        MathTransform objToCenterNoWrap = null;
         if (cornerToObjective == null || objectiveToCenter == null) {
             cornerToObjective = dataGeometry.getGridToCRS(PixelInCell.CELL_CORNER);
             objectiveToCenter = dataGeometry.getGridToCRS(PixelInCell.CELL_CENTER).inverse();
@@ -327,11 +336,15 @@ final class RenderingData implements Cloneable {
                 DirectPosition median = getSourceMedian();
                 MathTransform forward = changeOfCRS.getMathTransform();
                 MathTransform inverse = forward.inverse();
+                MathTransform nowrap  = inverse;
                 try {
                     forward = applyWraparound(forward, median, objectivePOI, changeOfCRS.getTargetCRS());
                     inverse = applyWraparound(inverse, objectivePOI, median, changeOfCRS.getSourceCRS());
                 } catch (TransformException e) {
                     recoverableException(e);
+                }
+                if (inverse != nowrap) {
+                    objToCenterNoWrap = MathTransforms.concatenate(nowrap, objectiveToCenter);
                 }
                 cornerToObjective = MathTransforms.concatenate(cornerToObjective, forward);
                 objectiveToCenter = MathTransforms.concatenate(inverse, objectiveToCenter);
@@ -347,11 +360,22 @@ final class RenderingData implements Cloneable {
          */
         final LinearTransform inverse = objectiveToDisplay.inverse();
         displayToObjective = AffineTransforms2D.castOrCopy(inverse);
-        final MathTransform cornerToDisplay = MathTransforms.concatenate(cornerToObjective, objectiveToDisplay);
-        final MathTransform displayToCenter = MathTransforms.concatenate(inverse, objectiveToCenter);
+        MathTransform cornerToDisplay = MathTransforms.concatenate(cornerToObjective, objectiveToDisplay);
+        MathTransform displayToCenter = MathTransforms.concatenate(inverse, objectiveToCenter);
         final Rectangle bounds = (Rectangle) Shapes2D.transform(
                 MathTransforms.bidimensional(cornerToDisplay),
                 ImageUtilities.getBounds(recoloredImage), new Rectangle());
+        /*
+         * Verify if wraparound is really necessary. We do this check because the `displayToCenter` transform
+         * may be used for every pixels, so it is worth to make that transform more efficient if possible.
+         */
+        if (objToCenterNoWrap != null) {
+            final MathTransform nowrap = MathTransforms.concatenate(inverse, objToCenterNoWrap);
+            if (!isWraparoundNeeded(bounds, displayToCenter, nowrap)) {
+                objectiveToCenter = objToCenterNoWrap;
+                displayToCenter = nowrap;
+            }
+        }
         /*
          * Apply a map projection on the image, then convert the floating point results to integer values
          * that we can use with IndexColorModel.
@@ -381,6 +405,53 @@ final class RenderingData implements Cloneable {
             return transform;
         }
         return new WraparoundApplicator(sourceMedian, targetMedian, targetCRS.getCoordinateSystem()).forDomainOfUse(transform);
+    }
+
+    /**
+     * Tests whether wraparound step seems necessary. This method transforms all corners and all centers
+     * of the given rectangle using the two specified transform. If the results differ by one pixel or more,
+     * the wraparound step is considered necessary.
+     *
+     * @param  bounds     rectangular coordinates of the display device, in pixels.
+     * @param  reference  transform from display coordinates to {@link #dataGeometry} cell coordinates.
+     * @param  nowrap     same as {@code reference} but with a wraparound step. Used as a reference.
+     * @return {@code true} if at least one coordinate is distant from the reference coordinate by at least one pixel.
+     *
+     * @see org.apache.sis.coverage.grid.CoordinateOperationFinder#isWraparoundNeeded
+     */
+    private static boolean isWraparoundNeeded(final Rectangle bounds,
+            final MathTransform reference, final MathTransform nowrap) throws TransformException
+    {
+        final int      numPts = 9;
+        final int      srcDim = nowrap.getSourceDimensions();       // Should always be 2, but we are paranoiac.
+        final int      tgtDim = nowrap.getTargetDimensions();       // Idem.
+        final double[] source = new double[srcDim * numPts];
+        final double[] target = new double[tgtDim * numPts];
+        for (int pi=0; pi<numPts; pi++) {
+            final double x, y;
+            switch (pi % 3) {
+                case 0:  x = bounds.getMinX();    break;
+                case 1:  x = bounds.getMaxX();    break;
+                default: x = bounds.getCenterX(); break;
+            }
+            switch (pi / 3) {
+                case 0:  y = bounds.getMinY();    break;
+                case 1:  y = bounds.getMaxY();    break;
+                default: y = bounds.getCenterY(); break;
+            }
+            final int i = pi * srcDim;
+            source[i  ] = x;
+            source[i+1] = y;
+        }
+        nowrap   .transform(source, 0, target, 0, numPts);
+        reference.transform(source, 0, source, 0, numPts);
+        for (int i=0; i<target.length; i++) {
+            final double r = source[i];
+            if (!(Math.abs(target[i] - r) < 1) && Double.isFinite(r)) {     // Use `!` for catching NaN.
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
