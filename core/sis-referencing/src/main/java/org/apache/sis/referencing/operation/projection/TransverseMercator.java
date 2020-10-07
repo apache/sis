@@ -309,7 +309,7 @@ public class TransverseMercator extends NormalizedProjection {
         /*
          * When rewriting equations using trigonometric identities, some constants appear.
          * For example sin(2θ) = 2⋅sinθ⋅cosθ, so we can factor out the 2 constant into the
-         * corresponding 'c' field.  Note: this factorization can only be performed after
+         * corresponding `c` field.  Note: this factorization can only be performed after
          * the constructor finished to compute other constants.
          */
         if (ALLOW_TRIGONOMETRIC_IDENTITIES) {
@@ -390,12 +390,14 @@ public class TransverseMercator extends NormalizedProjection {
              * Since a distance of 90° from central meridian is far outside the Transverse Mercator
              * domain of validity anyway, we do not let the user go further.
              *
-             * In the particular case of ellipsoidal formulas, we put a limit of 81° instead of 90°
+             * In the particular case of ellipsoidal formulas, we put a limit of 70° instead of 90°
              * because experience shows that results close to equator become chaotic after 85° when
              * using WGS84 ellipsoid. We do not need to reduce the limit for the spherical formulas,
              * because the mathematic are simpler and the function still smooth until 90°.
              */
-            throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
+            if (Math.abs(IEEEremainder(λ, 2*PI)) >= DOMAIN_OF_VALIDITY * (PI/180)) {    // More costly check.
+                throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
+            }
         }
         final double φ     = srcPts[srcOff+1];
         final double sinλ  = sin(λ);
@@ -491,16 +493,16 @@ public class TransverseMercator extends NormalizedProjection {
         /*
          * Now compute the derivative, if the user asked for it.
          */
-        final double cosλ          = cos(λ);                                        //-- λ
-        final double cosφ          = cos(φ);                                        //-- φ
-        final double cosh2Q        = coshQ * coshQ;                                 //-- Q
+        final double cosλ          = cos(λ);                                          // λ
+        final double cosφ          = cos(φ);                                          // φ
+        final double cosh2Q        = coshQ * coshQ;                                   // Q
         final double sinhQ         = sinh(Q);
         final double tanhQ         = tanh(Q);
-        final double cosh2Q_sin2λ  = cosh2Q - (sinλ * sinλ);                        //-- Qλ
-        final double sinhη0        = sinh(η0);                                      //-- η0
-        final double sqrt1_thQchη0 = sqrt(1 - (tanhQ * tanhQ) * (coshη0 * coshη0)); //-- Qη0
+        final double cosh2Q_sin2λ  = cosh2Q - (sinλ * sinλ);                          // Qλ
+        final double sinhη0        = sinh(η0);                                        // η0
+        final double sqrt1_thQchη0 = sqrt(1 - (tanhQ * tanhQ) * (coshη0 * coshη0));   // Qη0
 
-        //-- dQ_dλ = 0;
+        // dQ_dλ = 0;
         final double dQ_dφ  = 1 / cosφ - eccentricitySquared * cosφ / (1 - ℯsinφ * ℯsinφ);
 
         final double dη0_dλ =  cosλ * coshQ         / cosh2Q_sin2λ;
@@ -518,28 +520,28 @@ public class TransverseMercator extends NormalizedProjection {
          *    (Proj(λ,φ))    │ ∂ξ(λ,φ)/∂λ, ∂ξ(λ,φ)/∂φ │
          *                   └                        ┘
          */
-        //-- dξ(λ, φ) / dλ
+        // dξ(λ, φ) / dλ
         final double dξ_dλ = dξ0_dλ
                            + 2 * (cf2 * (dξ0_dλ * cos_2ξ0 * cosh_2η0 + dη0_dλ * sinh_2η0 * sin_2ξ0)
                            + 3 *  cf6 * (dξ0_dλ * cos_6ξ0 * cosh_6η0 + dη0_dλ * sinh_6η0 * sin_6ξ0)
                            + 2 * (cf4 * (dξ0_dλ * cos_4ξ0 * cosh_4η0 + dη0_dλ * sinh_4η0 * sin_4ξ0)
                            + 2 *  cf8 * (dξ0_dλ * cos_8ξ0 * cosh_8η0 + dη0_dλ * sinh_8η0 * sin_8ξ0)));
 
-        //-- dξ(λ, φ) / dφ
+        // dξ(λ, φ) / dφ
         final double dξ_dφ = dξ0_dφ
                            + 2 * (cf2 * (dξ0_dφ * cos_2ξ0 * cosh_2η0 + dη0_dφ * sinh_2η0 * sin_2ξ0)
                            + 3 *  cf6 * (dξ0_dφ * cos_6ξ0 * cosh_6η0 + dη0_dφ * sinh_6η0 * sin_6ξ0)
                            + 2 * (cf4 * (dξ0_dφ * cos_4ξ0 * cosh_4η0 + dη0_dφ * sinh_4η0 * sin_4ξ0)
                            + 2 *  cf8 * (dξ0_dφ * cos_8ξ0 * cosh_8η0 + dη0_dφ * sinh_8η0 * sin_8ξ0)));
 
-        //-- dη(λ, φ) / dλ
+        // dη(λ, φ) / dλ
         final double dη_dλ = dη0_dλ
                            + 2 * (cf2 * (dη0_dλ * cosh_2η0 * cos_2ξ0 - dξ0_dλ * sin_2ξ0 * sinh_2η0)
                            + 3 *  cf6 * (dη0_dλ * cosh_6η0 * cos_6ξ0 - dξ0_dλ * sin_6ξ0 * sinh_6η0)
                            + 2 * (cf4 * (dη0_dλ * cosh_4η0 * cos_4ξ0 - dξ0_dλ * sin_4ξ0 * sinh_4η0)
                            + 2 *  cf8 * (dη0_dλ * cosh_8η0 * cos_8ξ0 - dξ0_dλ * sin_8ξ0 * sinh_8η0)));
 
-        //-- dη(λ, φ) / dφ
+        // dη(λ, φ) / dφ
         final double dη_dφ = dη0_dφ
                            + 2 * (cf2 * (dη0_dφ * cosh_2η0 * cos_2ξ0 - dξ0_dφ * sin_2ξ0 * sinh_2η0)
                            + 3 *  cf6 * (dη0_dφ * cosh_6η0 * cos_6ξ0 - dξ0_dφ * sin_6ξ0 * sinh_6η0)
@@ -738,7 +740,7 @@ public class TransverseMercator extends NormalizedProjection {
             final double y = srcPts[srcOff+1];
             final double sinhx = sinh(x);
             final double cosy  = cos(y);
-            // 'copySign' corrects for the fact that we made everything positive using sqrt(…)
+            // `copySign` corrects for the fact that we made everything positive using sqrt(…)
             dstPts[dstOff  ] = atan2(sinhx, cosy);
             dstPts[dstOff+1] = copySign(asin(sqrt((1 - cosy*cosy) / (1 + sinhx*sinhx))), y);
         }
