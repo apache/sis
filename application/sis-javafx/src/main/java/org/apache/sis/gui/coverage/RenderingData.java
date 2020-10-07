@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -41,7 +42,6 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.internal.coverage.j2d.ColorModelType;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.referencing.WraparoundApplicator;
@@ -425,6 +425,36 @@ final class RenderingData implements Cloneable {
     }
 
     /**
+     * Converts the given bounds from pixel coordinates on the screen to pixel coordinates in the source coverage.
+     * As a side effect, the given {@code bounds} rectangle is updated to display bounds in objective CRS.
+     *
+     * @param  bounds              display coordinates (in pixels).
+     * @param  displayToObjective  inverse of {@link CoverageCanvas#getObjectiveToDisplay()}.
+     *         Equivalent to {@link #displayToObjective} on the first rendering for a new zoom level,
+     *         before translations are applied by pan actions.
+     * @return data coverage cell coordinates (in pixels).
+     * @throws TransformException if the bounds can not be transformed.
+     */
+    final Rectangle displayToData(final Envelope2D bounds, final LinearTransform displayToObjective) throws TransformException {
+        return (Rectangle) Shapes2D.transform(
+                MathTransforms.bidimensional(objectiveToCenter),
+                Shapes2D.transform(MathTransforms.bidimensional(displayToObjective), bounds, bounds),
+                new Rectangle());
+    }
+
+    /**
+     * Returns whether {@link #dataGeometry} or {@link #objectiveToCenter} changed since a previous rendering.
+     * This is used for information purposes only.
+     */
+    final boolean changed(final RenderingData previous) {
+        /*
+         * Really !=, not Object.equals(Object), because we rely on new instances to be created
+         * (even if equal) as a way to detect that cached values have not been reused.
+         */
+        return (previous.dataGeometry != dataGeometry) || (previous.objectiveToCenter != objectiveToCenter);
+    }
+
+    /**
      * Invoked when an exception occurred while computing a transform but the painting process can continue.
      * This method pretends that the warning come from {@link CoverageCanvas} class since it is the public API.
      */
@@ -447,60 +477,30 @@ final class RenderingData implements Cloneable {
     /**
      * Returns a string representation for debugging purposes.
      * The string content may change in any future version.
-     * Current implementation requires a wide screen.
      *
      * @see CoverageCanvas#toString()
      */
     @Override
     public String toString() {
-        return toString(new StringBuilder(6000), null);
-    }
-
-    /**
-     * Returns a string representation which combines information of
-     * this {@code RenderingData} with information of the given canvas.
-     */
-    final String toString(final StringBuilder buffer, final CoverageCanvas canvas) {
         final String lineSeparator = System.lineSeparator();
+        final StringBuilder buffer = new StringBuilder(6000);
         final TableAppender table  = new TableAppender(buffer);
         table.setMultiLinesCells(true);
         try {
             table.nextLine('═');
             table.append("Geometry of source coverage:").append(lineSeparator)
-                 .append(String.valueOf(dataGeometry));
-            if (canvas != null) {
-                table.nextColumn();
-                table.append("Geometry of display canvas:").append(lineSeparator)
-                     .append(String.valueOf(canvas.getGridGeometry()));
-            }
-            table.appendHorizontalSeparator();
+                 .append(String.valueOf(dataGeometry))
+                 .appendHorizontalSeparator();
+            table.append("Pixel corners to objective CRS:").append(lineSeparator)
+                 .append(String.valueOf(cornerToObjective))
+                 .appendHorizontalSeparator();
             table.append("Median in data CRS:").append(lineSeparator)
-                 .append(String.valueOf(getSourceMedian()));
-            if (canvas != null) {
-                table.nextColumn();
-                table.append("Median in objective CRS:").append(lineSeparator)
-                     .append(String.valueOf(canvas.getPointOfInterest(true)));
-            }
-            table.appendHorizontalSeparator();
-            table.append("Objective CRS to source pixel centers:").append(lineSeparator)
-                 .append(String.valueOf(objectiveToCenter));
-            if (canvas != null) {
-                final Envelope2D bounds = canvas.getDisplayBounds();
-                final Rectangle db = (Rectangle) Shapes2D.transform(
-                        MathTransforms.bidimensional(objectiveToCenter),
-                        AffineTransforms2D.transform(displayToObjective, bounds, bounds), new Rectangle());
-                table.nextColumn();
-                table.append("Display bounds in objective CRS:").append(lineSeparator)
-                     .append(String.valueOf(bounds)).append(lineSeparator)
-                     .append(lineSeparator)
-                     .append("Display bounds in source coverage pixels:").append(lineSeparator)
-                     .append(String.valueOf(new GridExtent(db))).append(lineSeparator);
-            }
-            table.nextLine();
+                 .append(String.valueOf(getSourceMedian()))
+                 .nextLine();
             table.nextLine('═');
             table.flush();
-        } catch (RenderException | TransformException | IOException e) {
-            buffer.append(e).append(lineSeparator);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);      // Should never happen since we are writing to `StringBuilder`.
         }
         return buffer.toString();
     }
