@@ -249,15 +249,16 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     {
         ArgumentChecks.ensureNonNull("transform",   transform);
         ArgumentChecks.ensureNonNull("replacement", replacement);
-        if (transform instanceof WraparoundTransform) {
-            transform = Objects.requireNonNull(replacement.apply((WraparoundTransform) transform));
-        } else if (transform instanceof ConcatenatedTransform) {
+        if (transform instanceof ConcatenatedTransform) {
             final ConcatenatedTransform ct = (ConcatenatedTransform) transform;
             final MathTransform tr1 = replace(ct.transform1, replacement);
             final MathTransform tr2 = replace(ct.transform2, replacement);
             if (tr1 != ct.transform1 || tr2 != ct.transform2) {
                 transform = MathTransforms.concatenate(tr1, tr2);
             }
+        } else if (transform instanceof WraparoundTransform) {
+            // Tested last because less frequent (most often, does not happen at all).
+            transform = Objects.requireNonNull(replacement.apply((WraparoundTransform) transform));
         }
         return transform;
     }

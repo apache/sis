@@ -1523,6 +1523,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * inconsistent unit definitions, <i>etc.</i>), warnings may be reported in a
      * {@linkplain java.util.logging.Logger logger} named {@code "org.apache.sis.io.wkt"}.
      *
+     * <p>Note that the WKT format is not always lossless. A {@code MathTransform} recreated from WKT may be
+     * non-invertible even if the original transform was invertible. For example if an "Affine" operation is
+     * defined by a non-square matrix, Apache SIS implementation sometime has "hidden" information about the
+     * inverse matrix but those information are lost at WKT formatting time. A similar "hidden" information
+     * lost may also happen with {@link WraparoundTransform}, also making that transform non-invertible.</p>
+     *
      * @param  text  math transform encoded in Well-Known Text format.
      * @return the math transform (never {@code null}).
      * @throws FactoryException if the Well-Known Text can not be parsed,
