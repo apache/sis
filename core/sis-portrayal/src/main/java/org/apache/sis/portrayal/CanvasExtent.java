@@ -36,7 +36,7 @@ import org.apache.sis.internal.util.Numerics;
 
 
 /**
- * A {@link GridExtent} which remembers the {@link Canvas#getPointOfInterest()} coordinates.
+ * A {@link GridExtent} which remembers the {@link Canvas#getPointOfInterest(boolean)} coordinates.
  * This class contains also static help functions for the construction of {@link GridGeometry}.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -75,7 +75,7 @@ final class CanvasExtent extends GridExtent {
      * Returns the grid coordinates of a representative point.
      * This is the canvas point of interest converted to (typically) pixel coordinates.
      *
-     * @see Canvas#getPointOfInterest()
+     * @see Canvas#getPointOfInterest(boolean)
      */
     @Override
     public double[] getPointOfInterest() {
@@ -175,7 +175,7 @@ final class CanvasExtent extends GridExtent {
      * "objective to display" transform augmented with supplemental dimensions.
      *
      * @param  displayToObjective      inverse of {@link Canvas#getObjectiveToDisplay()}.
-     * @param  pointOfInterest         value of {@link Canvas#getPointOfInterest()}.
+     * @param  pointOfInterest         value of {@link Canvas#getPointOfInterest(boolean)}.
      * @param  supplementalDimensions  value of {@link #findSupplementalDimensions(CoordinateReferenceSystem, Matrix, List)}.
      * @return the "grid to CRS" transform of a grid geometry for a {@link Canvas}.
      */
