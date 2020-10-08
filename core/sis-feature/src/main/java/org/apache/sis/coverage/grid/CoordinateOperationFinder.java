@@ -603,11 +603,16 @@ apply:          if (forwardChangeOfCRS == null) {
     private boolean applyWraparound(final MathTransform sourceCrsToGrid) throws FactoryException, TransformException {
         if (!isWraparoundApplied) {
             isWraparoundApplied = true;
-            final DirectPosition median = median(source, null);
-            if (median != null) {
+            DirectPosition sourceMedian = median(source, null);
+            DirectPosition targetMedian = median(target, inverseChangeOfCRS);
+            if (sourceMedian == null) {
+                sourceMedian = targetMedian;
+                targetMedian = null;
+            }
+            if (sourceMedian != null) {
                 final MathTransform inverseNoWrap = inverseChangeOfCRS;
-                final WraparoundApplicator ap = new WraparoundApplicator(null,
-                        median, changeOfCRS().getSourceCRS().getCoordinateSystem());
+                final WraparoundApplicator ap = new WraparoundApplicator(targetMedian,
+                        sourceMedian, changeOfCRS().getSourceCRS().getCoordinateSystem());
                 inverseChangeOfCRS = ap.forDomainOfUse(inverseNoWrap);
                 if (inverseChangeOfCRS != inverseNoWrap) {
                     crsToGrid = MathTransforms.concatenate(inverseChangeOfCRS, sourceCrsToGrid);
