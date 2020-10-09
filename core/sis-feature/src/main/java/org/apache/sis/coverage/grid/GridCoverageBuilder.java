@@ -159,7 +159,7 @@ public class GridCoverageBuilder {
      * Set of grid axes to reverse, as a bit mask. For any dimension <var>i</var>, the bit
      * at {@code 1L << i} is set to 1 if the grid axis at that dimension should be flipped.
      *
-     * @see #flipAxis(int)
+     * @see #flipGridAxis(int)
      */
     private long flippedAxes;
 
@@ -168,6 +168,7 @@ public class GridCoverageBuilder {
      *
      * @see #addImageProperty(String, Object)
      */
+    @SuppressWarnings("UseOfObsoleteCollectionType")
     private Hashtable<String,Object> properties;
 
     /**
@@ -208,7 +209,7 @@ public class GridCoverageBuilder {
      * coordinates in the coverage domain (e.g. latitude values) are also increasing toward up.
      * It often results in images flipped vertically, because popular image formats such as PNG
      * use row indices increasing in the opposite direction (toward down).
-     * This effect can be compensated by invoking <code>{@linkplain #flipAxis(int) flipAxis}(1)</code>.
+     * This effect can be compensated by invoking <code>{@linkplain #flipGridAxis(int) flipGridAxis}(1)</code>.
      *
      * <div class="note"><b>Design note:</b>
      * {@code GridCoverageBuilder} does not flip the <var>y</var> axis by default because not all
@@ -230,11 +231,11 @@ public class GridCoverageBuilder {
      *                 or {@code null} for removing previous domain setting.
      * @return {@code this} for method invocation chaining.
      *
-     * @see #flipAxis(int)
+     * @see #flipGridAxis(int)
      * @see GridGeometry#GridGeometry(GridExtent, Envelope)
      */
     public GridCoverageBuilder setDomain(final Envelope domain) {
-        return setDomain(domain == null ? null : new GridGeometry(null, domain, null));
+        return setDomain(domain == null ? null : new GridGeometry(null, domain, GridOrientation.HOMOTHETY));
     }
 
     /**
@@ -309,7 +310,7 @@ public class GridCoverageBuilder {
      * must be equal to the number of sample dimensions.
      *
      * <p><b>Note:</b> row indices in an image are usually increasing down, while geographic coordinates
-     * are usually increasing up. Consequently the <code>{@linkplain #flipAxis(int) flipAxis}(1)</code>
+     * are usually increasing up. Consequently the <code>{@linkplain #flipGridAxis(int) flipGridAxis}(1)</code>
      * method may need to be invoked after this method.</p>
      *
      * @param  data  the rendered image to be wrapped in a {@code GridCoverage}. Can not be {@code null}.
@@ -333,7 +334,7 @@ public class GridCoverageBuilder {
      * number of sample dimensions.
      *
      * <p><b>Note:</b> row indices in a raster are usually increasing down, while geographic coordinates
-     * are usually increasing up. Consequently the <code>{@linkplain #flipAxis(int) flipAxis}(1)</code>
+     * are usually increasing up. Consequently the <code>{@linkplain #flipGridAxis(int) flipGridAxis}(1)</code>
      * method may need to be invoked after this method.</p>
      *
      * @param  data  the raster to be wrapped in a {@code GridCoverage}. Can not be {@code null}.
@@ -379,7 +380,7 @@ public class GridCoverageBuilder {
     /**
      * Reverses axis direction in the specified grid dimension.
      * For example if grid indices are (<var>column</var>, <var>row</var>),
-     * then {@code flipAxis(1)} will reverse the direction of rows axis.
+     * then {@code flipGridAxis(1)} will reverse the direction of rows axis.
      * Invoking this method a second time for the same dimension will cancel the flipping.
      *
      * <p>When building coverage with a {@linkplain #setDomain(Envelope) domain specified by an envelope}
@@ -392,8 +393,9 @@ public class GridCoverageBuilder {
      * @return {@code this} for method invocation chaining.
      *
      * @see #setDomain(Envelope)
+     * @see GridOrientation#flipGridAxis(int)
      */
-    public GridCoverageBuilder flipAxis(final int dimension) {
+    public GridCoverageBuilder flipGridAxis(final int dimension) {
         ArgumentChecks.ensurePositive("dimension", dimension);
         if (dimension >= Long.SIZE) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension + 1));
@@ -412,6 +414,7 @@ public class GridCoverageBuilder {
      *
      * @since 1.1
      */
+    @SuppressWarnings("UseOfObsoleteCollectionType")
     public void addImageProperty(final String key, final Object value) {
         ArgumentChecks.ensureNonNull("key",   key);
         ArgumentChecks.ensureNonNull("value", value);

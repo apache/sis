@@ -411,7 +411,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          * Same extent and envelope, but reordering extend dimensions
          * instead than `gridToCRS` columns.
          */
-        grid = new GridGeometry(extent, aoi, GridOrientation.DISPLAY_GRID);
+        grid = new GridGeometry(extent, aoi, GridOrientation.DISPLAY.canReorderGridAxis(true));
         matrix = MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER));
         assertMatrixEquals("cornerToCRS", new Matrix3(
                 0.5,  0,   50,

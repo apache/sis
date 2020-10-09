@@ -1375,11 +1375,11 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * axis direction except for those specified in the {@code flips} bitmask. The transform maps cell corners.
      *
      * @param  env               the target envelope. Despite this method name, the envelope CRS is ignored.
-     * @param  flips             bitmask of target axes to flip (0 if none).
+     * @param  flippedAxes       bitmask of target axes to flip (0 if none).
      * @param  sourceDimensions  source dimension for each target dimension, or {@code null} if dimensions are the same.
      * @return an affine transform from this grid extent to the given envelope, expressed as a matrix.
      */
-    final MatrixSIS cornerToCRS(final Envelope env, final long flips, final int[] sourceDimensions) {
+    final MatrixSIS cornerToCRS(final Envelope env, final long flippedAxes, final int[] sourceDimensions) {
         final int          srcDim = getDimension();
         final int          tgtDim = env.getDimension();
         final MatrixSIS    affine = Matrices.create(tgtDim + 1, srcDim + 1, ExtendedPrecisionMatrix.ZERO);
@@ -1388,7 +1388,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         for (int j=0; j<tgtDim; j++) {
             final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
             if (i < srcDim) {
-                final boolean flip = (flips & Numerics.bitmask(j)) != 0;
+                final boolean flip = (flippedAxes & Numerics.bitmask(j)) != 0;
                 offset.set(coordinates[i]);
                 scale.set(coordinates[i + srcDim]);
                 scale.subtract(offset);

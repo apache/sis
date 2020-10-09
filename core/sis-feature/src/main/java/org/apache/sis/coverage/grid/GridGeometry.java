@@ -46,7 +46,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.crs.AbstractCRS;
-import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -592,15 +591,15 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * <h4>Dimension order</h4>
      * The given envelope shall always declare dimensions in same order than the given extent.
-     * This constructor may reorder CRS axes if {@code orientation} is {@link GridOrientation#DISPLAY},
-     * but in such case this constructor will derive itself an envelope and CRS with the reordered axes.
+     * This constructor may reorder axes if {@code orientation} is (for example) {@link GridOrientation#DISPLAY},
+     * but in such case this constructor will derive itself an envelope and a CRS with reordered axes.
      *
      * @param  extent       the valid extent of grid coordinates, or {@code null} if unknown.
      * @param  envelope     the envelope together with CRS of the "real world" coordinates, or {@code null} if unknown.
      * @param  orientation  high-level description of desired characteristics of the {@code gridToCRS} transform.
-     *                      Ignored (can be null) if {@code extent} or {@code envelope} is null.
+     *                      Ignored (can be null) if {@code envelope} is null.
      * @throws NullPointerException if {@code extent} and {@code envelope} arguments are both null,
-     *         or if only the {@code orientation} argument is null.
+     *         or if {@code envelope} is non-null but {@code orientation} is null.
      *
      * @see <a href="https://en.wikipedia.org/wiki/Axis-aligned_object">Axis-aligned object on Wikipedia</a>
      *
@@ -616,27 +615,29 @@ public class GridGeometry implements LenientComparable, Serializable {
         long flip = 0;                      // Bitmask specifying whether to reverse axis in each dimension.
         ImmutableEnvelope target = null;    // May have different axis order than the specified `envelope` CRS.
         int[] sourceDimensions = null;      // Indices in source envelope of axes colinear with the target envelope.
-        final boolean reorderExtent = (orientation == GridOrientation.DISPLAY_GRID);
-        if (envelope != null && (reorderExtent || orientation == GridOrientation.DISPLAY)) {
-            final AbstractCRS sourceCRS = AbstractCRS.castOrCopy(envelope.getCoordinateReferenceSystem());
-            if (sourceCRS != null) {
-                final AbstractCRS targetCRS = sourceCRS.forConvention(AxesConvention.DISPLAY_ORIENTED);
-                if (targetCRS != sourceCRS) {
-                    final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
-                    final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
-                    sourceDimensions = AxisDirections.indicesOfColinear(sourceCS, targetCS);
-                    if (sourceDimensions != null) {
-                        final double[] lowerCorner = new double[sourceDimensions.length];
-                        final double[] upperCorner = new double[sourceDimensions.length];
-                        for (int i=0; i < sourceDimensions.length; i++) {
-                            final int s = sourceDimensions[i];
-                            lowerCorner[i] = envelope.getMinimum(s);
-                            upperCorner[i] = envelope.getMaximum(s);
-                            if (sourceCS.getAxis(s).getDirection() != targetCS.getAxis(i).getDirection()) {
-                                flip |= Numerics.bitmask(i);
+        if (envelope != null) {
+            ArgumentChecks.ensureNonNull("orientation", orientation);
+            if (orientation.crsVariant != null) {
+                final AbstractCRS sourceCRS = AbstractCRS.castOrCopy(envelope.getCoordinateReferenceSystem());
+                if (sourceCRS != null) {
+                    final AbstractCRS targetCRS = sourceCRS.forConvention(orientation.crsVariant);
+                    if (targetCRS != sourceCRS) {
+                        final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
+                        final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
+                        sourceDimensions = AxisDirections.indicesOfColinear(sourceCS, targetCS);
+                        if (sourceDimensions != null) {
+                            final double[] lowerCorner = new double[sourceDimensions.length];
+                            final double[] upperCorner = new double[sourceDimensions.length];
+                            for (int i=0; i < sourceDimensions.length; i++) {
+                                final int s = sourceDimensions[i];
+                                lowerCorner[i] = envelope.getMinimum(s);
+                                upperCorner[i] = envelope.getMaximum(s);
+                                if (sourceCS.getAxis(s).getDirection() != targetCS.getAxis(i).getDirection()) {
+                                    flip |= Numerics.bitmask(i);
+                                }
                             }
+                            target = new ImmutableEnvelope(lowerCorner, upperCorner, targetCRS);
                         }
-                        target = new ImmutableEnvelope(lowerCorner, upperCorner, targetCRS);
                     }
                 }
             }
@@ -658,7 +659,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         } else {
             this.envelope = target;
             if (extent != null) {
-                if (reorderExtent) {
+                if (orientation != null && orientation.canReorderGridAxis) {
                     if (!ArraysExt.isRange(0, sourceDimensions)) {
                         extent = extent.reorder(sourceDimensions);
                     }
@@ -671,8 +672,8 @@ public class GridGeometry implements LenientComparable, Serializable {
                      * that all scale factors are on diagonal, which allows simpler calculation than full
                      * matrix multiplication. Use double-double arithmetic everywhere.
                      */
-                    ArgumentChecks.ensureNonNull("orientation", orientation);
-                    final MatrixSIS affine = extent.cornerToCRS(target, orientation.flip ^ flip, sourceDimensions);
+                    @SuppressWarnings("null")           // `!nilEnvelope` implies non-null `orientation`.
+                    final MatrixSIS affine = extent.cornerToCRS(target, orientation.flippedAxes ^ flip, sourceDimensions);
                     cornerToCRS = MathTransforms.linear(affine);
                     final int srcDim = cornerToCRS.getSourceDimensions();       // Translation column in matrix.
                     final int tgtDim = cornerToCRS.getTargetDimensions();       // Number of matrix rows before last row.

@@ -156,7 +156,7 @@ public final strictfp class GridCoverageBuilderTest extends TestCase {
      * Tests {@link GridCoverageBuilder#setValues(DataBuffer, Dimension)}.
      */
     @Test
-    public void createFromBufferTest() {
+    public void testCreateFromBuffer() {
         final DataBuffer buffer = new DataBufferByte(new byte[] {1,2,3,4,5,6}, 6);
         final GridCoverageBuilder builder = new GridCoverageBuilder();
         assertSame(builder, builder.setValues(buffer, null));
@@ -172,10 +172,10 @@ public final strictfp class GridCoverageBuilderTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridCoverageBuilder#flipAxis(int)}.
+     * Tests {@link GridCoverageBuilder#flipGridAxis(int)}.
      */
     @Test
-    public void flippedAxisTest() {
+    public void testFlipGridAxis() {
         final RenderedImage image = new BufferedImage(36, 18, BufferedImage.TYPE_INT_ARGB);
         final GeneralEnvelope domain = new GeneralEnvelope(HardCodedCRS.WGS84);
         domain.setRange(0, -180, +180);
@@ -201,7 +201,7 @@ public final strictfp class GridCoverageBuilderTest extends TestCase {
          * This is the common orientation for images.
          */
         {
-            assertSame(builder, builder.flipAxis(1));
+            assertSame(builder, builder.flipGridAxis(1));
             final GridCoverage coverage = builder.build();
             final GridGeometry gg = coverage.getGridGeometry();
             assertTrue(domain.equals(gg.getEnvelope(), STRICT, false));
