@@ -256,6 +256,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short OpenDataFile = 29;
 
         /**
+         * Orthographic
+         */
+        public static final short Orthographic = 52;
+
+        /**
          * Select a coordinate reference system
          */
         public static final short SelectCRS = 30;
