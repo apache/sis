@@ -209,7 +209,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
     @Override
     public FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
         if (query instanceof SimpleQuery) {
-            final org.apache.sis.internal.storage.SubsetAdapter subsetAdapter = new org.apache.sis.internal.storage.SubsetAdapter(fs -> new SubsetAdapter());
+            final org.apache.sis.internal.sql.feature.SubsetAdapter subsetAdapter = new org.apache.sis.internal.sql.feature.SubsetAdapter(fs -> new SubsetAdapter());
             return subsetAdapter.subset(this, (SimpleQuery) query);
         }
 

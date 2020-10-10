@@ -14,25 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.sql.feature;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-
 import org.opengis.filter.Filter;
 import org.opengis.filter.sort.SortBy;
-
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.Query;
 
-import static org.apache.sis.internal.storage.query.SimpleQuery.UNLIMITED;
 
-public final class SubsetAdapter {
+/**
+ * Helper class for {@link FeatureSet#subset(Query)} implementations.
+ *
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
+ * @since   1.1
+ * @module
+ */
+final class SubsetAdapter {
 
-    final Function<FeatureSet, AdapterBuilder> driverSupplier;
+    private final Function<FeatureSet, AdapterBuilder> driverSupplier;
 
     public SubsetAdapter(Function<FeatureSet, AdapterBuilder> driverSupplier) {
         this.driverSupplier = driverSupplier;
@@ -40,15 +46,15 @@ public final class SubsetAdapter {
 
     public final FeatureSet subset(final FeatureSet source, SimpleQuery query) {
         final AdapterBuilder driver = driverSupplier.apply(source);
-
         final SimpleQuery remaining = new SimpleQuery();
-
         final long offset = query.getOffset();
-        if (offset > 0) remaining.setOffset(driver.offset(offset));
-
+        if (offset > 0) {
+            remaining.setOffset(driver.offset(offset));
+        }
         final long limit = query.getLimit();
-        if (limit != UNLIMITED) remaining.setLimit(driver.limit(limit));
-
+        if (limit != SimpleQuery.UNLIMITED) {
+            remaining.setLimit(driver.limit(limit));
+        }
         if (filteringRequired(query)) {
             final Filter baseFilter = query.getFilter();
             try {
@@ -58,22 +64,20 @@ public final class SubsetAdapter {
                 remaining.setFilter(baseFilter);
             }
         }
-
-        if (sortRequired(query) && !driver.sort(query.getSortBy())) remaining.setSortBy(query.getSortBy());
-
+        if (sortRequired(query) && !driver.sort(query.getSortBy())) {
+            remaining.setSortBy(query.getSortBy());
+        }
         if (!allColumnsIncluded(query) && !driver.select(query.getColumns())) {
             List<SimpleQuery.Column> columns = query.getColumns();
             remaining.setColumns(columns != null ? columns.toArray(new SimpleQuery.Column[columns.size()]) : null);
         }
-
         final FeatureSet driverSubset = driver.build().orElse(source);
-
         return isNoOp(remaining) ? driverSubset : remaining.execute(driverSubset);
     }
 
     protected static final boolean isNoOp(final SimpleQuery in) {
         return in.getOffset() <= 0
-                && in.getLimit() == UNLIMITED
+                && in.getLimit() == SimpleQuery.UNLIMITED
                 && allColumnsIncluded(in)
                 && !filteringRequired(in)
                 && !sortRequired(in);
@@ -95,7 +99,6 @@ public final class SubsetAdapter {
     }
 
     public interface AdapterBuilder {
-
         /**
          * Specify an offset to use in custom query.
          *
@@ -150,6 +153,7 @@ public final class SubsetAdapter {
 
         /**
          * Specify a subset of columns to return to the driver.
+         *
          * @param columns The columns to fetch in result set. Neither null nor empty list accepted.
          * @return True if underlying driver can entirely manage column selection. False otherwise, meaning that column
          * selection won't be done, or only partially, and a fallback filter must be applied over driver feature set to

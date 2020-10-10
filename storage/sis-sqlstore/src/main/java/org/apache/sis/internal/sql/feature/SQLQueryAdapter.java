@@ -25,7 +25,6 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.sort.SortBy;
 
 import org.apache.sis.internal.metadata.sql.Dialect;
-import org.apache.sis.internal.storage.SubsetAdapter;
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.FeatureSet;
 

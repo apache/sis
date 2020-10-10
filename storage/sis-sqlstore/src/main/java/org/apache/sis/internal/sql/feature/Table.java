@@ -40,7 +40,6 @@ import org.opengis.util.GenericName;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
-import org.apache.sis.internal.storage.SubsetAdapter;
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
