@@ -30,20 +30,14 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
-import java.util.function.ToIntFunction;
-import java.util.function.ToLongFunction;
 import java.util.logging.Level;
 import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.sql.DataSource;
 
 import org.opengis.feature.Feature;
 
-import org.apache.sis.internal.util.DoubleStreamDecoration;
-import org.apache.sis.internal.util.StreamDecoration;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.logging.Logging;
@@ -66,7 +60,7 @@ import static org.apache.sis.util.ArgumentChecks.ensurePositive;
  * @module
  *
  */
-class StreamSQL extends StreamDecoration<Feature> {
+final class StreamSQL extends StreamWrapper<Feature> {
 
     private final QueryBuilder queryAdapter;
 
@@ -97,21 +91,6 @@ class StreamSQL extends StreamDecoration<Feature> {
     @Override
     public <R> Stream<R> map(Function<? super Feature, ? extends R> mapper) {
         return new MappedStream<>(mapper, this);
-    }
-
-    @Override
-    public IntStream mapToInt(ToIntFunction<? super Feature> mapper) {
-        return super.mapToInt(mapper);
-    }
-
-    @Override
-    public LongStream mapToLong(ToLongFunction<? super Feature> mapper) {
-        return super.mapToLong(mapper);
-    }
-
-    @Override
-    public DoubleStream mapToDouble(ToDoubleFunction<? super Feature> mapper) {
-        return super.mapToDouble(mapper);
     }
 
     @Override
@@ -194,7 +173,7 @@ class StreamSQL extends StreamDecoration<Feature> {
     }
 
     @Override
-    protected synchronized Stream<Feature> createDecoratedStream() {
+    protected synchronized Stream<Feature> createSource() {
         final AtomicReference<Connection> connectionRef = new AtomicReference<>();
         Stream<Feature> featureStream = Stream.of(uncheck(() -> connectReadOnly(source)))
                 .map(Supplier::get)
@@ -237,7 +216,7 @@ class StreamSQL extends StreamDecoration<Feature> {
      * @param <I> Type of object received as input of mapping operation.
      * @param <O> Return type of mapping operation.
      */
-    private static final class MappedStream<I, O> extends StreamDecoration<O> {
+    private static final class MappedStream<I, O> extends StreamWrapper<O> {
         private Function<? super I, ? extends O> mapper;
         private Stream<I> source;
 
@@ -297,7 +276,7 @@ class StreamSQL extends StreamDecoration<Feature> {
         }
 
         @Override
-        protected Stream<O> createDecoratedStream() {
+        protected Stream<O> createSource() {
             // Break possible infinite loop by sinking source content through its spliterator (terminal op).
             final Stream<I> sink = StreamSupport.stream(source.spliterator(), source.isParallel());
             sink.onClose(source::close);
@@ -311,7 +290,7 @@ class StreamSQL extends StreamDecoration<Feature> {
      *
      * @param <T> Type of objects contained in source stream (before double mapping).
      */
-    private static final class ToDoubleStream<T> extends DoubleStreamDecoration {
+    private static final class ToDoubleStream<T> extends DoubleStreamWrapper {
 
         Stream<T> source;
         ToDoubleFunction<T> toDouble;
@@ -382,7 +361,7 @@ class StreamSQL extends StreamDecoration<Feature> {
         }
 
         @Override
-        protected DoubleStream createDecoratedStream() {
+        protected DoubleStream createSource() {
             // Break possible cycle by sinking source content through its spliterator (terminal op).
             final Stream<T> sink = StreamSupport.stream(source.spliterator(), source.isParallel());
             sink.onClose(source::close);
