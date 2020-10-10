@@ -419,9 +419,11 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
         /*
          * If the other transform is also a `WraparoundTransform` for the same dimension,
          * then there is no need to concatenate those two consecutive redudant transforms.
+         * Keep the first transform because it will be the last one (having precedence)
+         * in inverse transform.
          */
-        if (equals(other)) {
-            return this;
+        if (other instanceof WraparoundTransform && equalsIgnoreInverse((WraparoundTransform) other)) {
+            return applyOtherFirst ? other : this;
         }
         final List<MathTransform> steps = MathTransforms.getSteps(other);
         final int count = steps.size();
@@ -631,6 +633,15 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     }
 
     /**
+     * Returns {@code true} if this transform is equal to the given transform,
+     * comparing only the parameters required for forward conversions.
+     */
+    private boolean equalsIgnoreInverse(final WraparoundTransform other) {
+        return other.dimension == dimension && other.wraparoundDimension == wraparoundDimension
+                && Numerics.equals(period, other.period);
+    }
+
+    /**
      * Compares this transform with the given object for equality.
      *
      * @param  object  the object to compare with this transform.
@@ -641,8 +652,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (super.equals(object, mode)) {
             final WraparoundTransform other = (WraparoundTransform) object;
-            return other.dimension == dimension && other.wraparoundDimension == wraparoundDimension
-                    && Numerics.equals(period, other.period) && Numerics.equals(sourceMedian, other.sourceMedian);
+            return equalsIgnoreInverse(other) && Numerics.equals(sourceMedian, other.sourceMedian);
         }
         return false;
     }
