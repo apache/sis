@@ -56,7 +56,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -212,6 +212,16 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Returns {@code true} if this variable is an enumeration.
+     *
+     * @see #meaning(int)
+     */
+    @Override
+    protected boolean isEnumeration() {
+        return variable.getDataType().isEnum() && (variable instanceof ucar.nc2.Variable);
+    }
+
+    /**
      * Returns whether this variable can grow. A variable is unlimited if at least one of its dimension is unlimited.
      */
     @Override
@@ -278,10 +288,23 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Returns the number of grid dimensions. This is the size of the {@link #getGridDimensions()} list
+     * but cheaper than a call to {@code getGridDimensions().size()}.
+     *
+     * @return number of grid dimensions.
+     */
+    @Override
+    public int getNumDimensions() {
+        return variable.getRank();
+    }
+
+    /**
      * Returns the dimensions of this variable in the order they are declared in the netCDF file.
      * The dimensions are those of the grid, not the dimensions (or axes) of the coordinate system.
      * In ISO 19123 terminology, the dimension lengths give the upper corner of the grid envelope plus one.
      * The lower corner is always (0, 0, …, 0).
+     *
+     * @see #getNumDimensions()
      */
     @Override
     public List<org.apache.sis.internal.netcdf.Dimension> getGridDimensions() {
@@ -503,6 +526,19 @@ final class VariableWrapper extends Variable {
             }
         }
         return super.trySetTransform(gridToCRS, srcDim, tgtDim, values);
+    }
+
+    /**
+     * Returns the meaning of the given ordinal value, or {@code null} if none.
+     * Callers must have verified that {@link #isEnumeration()} returned {@code true}
+     * before to invoke this method
+     *
+     * @param  ordinal  the ordinal of the enumeration for which to get the value.
+     * @return the value associated to the given ordinal, or {@code null} if none.
+     */
+    @Override
+    protected String meaning(final int ordinal) {
+        return ((ucar.nc2.Variable) variable).lookupEnumString(ordinal);
     }
 
     /**

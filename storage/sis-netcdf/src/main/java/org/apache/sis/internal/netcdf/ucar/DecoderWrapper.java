@@ -45,6 +45,7 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.Node;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
@@ -57,7 +58,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * Provides netCDF decoding services based on the netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -483,6 +484,31 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             }
         }
         return geometries;
+    }
+
+    /**
+     * Returns the dimension of the given name (eventually ignoring case), or {@code null} if none.
+     * This method searches in all dimensions found in the netCDF file, regardless of variables.
+     *
+     * @param  dimName  the name of the dimension to search.
+     * @return dimension of the given name, or {@code null} if none.
+     */
+    @Override
+    protected Dimension findDimension(final String dimName) {
+        final ucar.nc2.Dimension dimension = file.findDimension(dimName);
+        return (dimension != null) ? new DimensionWrapper(dimension) : null;
+    }
+
+    /**
+     * Returns the netCDF variable of the given name, or {@code null} if none.
+     *
+     * @param  name  the name of the variable to search, or {@code null}.
+     * @return the variable of the given name, or {@code null} if none.
+     */
+    @Override
+    protected Variable findVariable(final String name) {
+        final VariableIF v = file.findVariable(name);
+        return (v != null) ? getWrapperFor(v) : null;
     }
 
     /**

@@ -47,9 +47,8 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Node;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.NamedElement;
-import org.apache.sis.internal.netcdf.DiscreteSampling;
-import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -65,7 +64,6 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
-import ucar.nc2.constants.CF;
 
 
 /**
@@ -343,15 +341,6 @@ public final class ChannelDecoder extends Decoder {
      */
     final Errors errors() {
         return Errors.getResources(listeners.getLocale());
-    }
-
-    /**
-     * Returns the netCDF-specific resource bundle for the locale given by {@link StoreListeners#getLocale()}.
-     *
-     * @return the localized error resource bundle.
-     */
-    final Resources resources() {
-        return Resources.forLocale(listeners.getLocale());
     }
 
     /**
@@ -714,7 +703,8 @@ public final class ChannelDecoder extends Decoder {
      * @param  dimName  the name of the dimension to search.
      * @return dimension of the given name, or {@code null} if none.
      */
-    final DimensionInfo findDimension(final String dimName) {
+    @Override
+    protected Dimension findDimension(final String dimName) {
         DimensionInfo dim = dimensionMap.get(dimName);          // Give precedence to exact match before to ignore case.
         if (dim == null) {
             final String lower = dimName.toLowerCase(ChannelDecoder.NAME_LOCALE);
@@ -731,7 +721,7 @@ public final class ChannelDecoder extends Decoder {
      * @param  name  the name of the variable to search, or {@code null}.
      * @return the variable of the given name, or {@code null} if none.
      */
-    final VariableInfo findVariable(final String name) {
+    private VariableInfo findVariableInfo(final String name) {
         VariableInfo v = variableMap.get(name);
         if (v == null && name != null) {
             final String lower = name.toLowerCase(NAME_LOCALE);
@@ -744,6 +734,17 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
+     * Returns the netCDF variable of the given name, or {@code null} if none.
+     *
+     * @param  name  the name of the variable to search, or {@code null}.
+     * @return the variable of the given name, or {@code null} if none.
+     */
+    @Override
+    protected Variable findVariable(final String name) {
+        return findVariableInfo(name);
+    }
+
+    /**
      * Returns the variable of the given name. Note that groups do not exist in netCDF 3.
      *
      * @param  name  the name of the variable to search, or {@code null}.
@@ -751,7 +752,7 @@ public final class ChannelDecoder extends Decoder {
      */
     @Override
     protected Node findNode(final String name) {
-        return findVariable(name);
+        return findVariableInfo(name);
     }
 
     /**
@@ -894,24 +895,6 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * If this decoder can handle the file content as features, returns handlers for them.
-     *
-     * @return {@inheritDoc}
-     * @throws IOException if an I/O operation was necessary but failed.
-     * @throws DataStoreException if a logical error occurred.
-     */
-    @Override
-    public DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException {
-        if ("trajectory".equalsIgnoreCase(stringValue(CF.FEATURE_TYPE))) try {
-            return FeaturesInfo.create(this);
-        } catch (IllegalArgumentException | ArithmeticException e) {
-            // Illegal argument is not a problem with content, but rather with configuration.
-            throw new DataStoreException(e.getLocalizedMessage(), e);
-        }
-        return new FeaturesInfo[0];
-    }
-
-    /**
      * Adds to the given set all variables of the given names. This operation is performed when the set of axes is
      * specified by a {@code "coordinates"} attribute associated to a data variable, or by customized conventions
      * specified by {@link org.apache.sis.internal.netcdf.Convention#namesOfAxisVariables(Variable)}.
@@ -926,7 +909,7 @@ public final class ChannelDecoder extends Decoder {
             return false;
         }
         for (final CharSequence name : names) {
-            final VariableInfo axis = findVariable(name.toString());
+            final VariableInfo axis = findVariableInfo(name.toString());
             if (axis == null) {
                 dimensions.clear();
                 axes.clear();

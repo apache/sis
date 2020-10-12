@@ -29,11 +29,15 @@ import org.opengis.feature.FeatureType;
 
 /**
  * A wrapper around the UCAR {@code ucar.nc2.ft} package.
+ * Created by {@link DecoderWrapper#getDiscreteSampling()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
  * @module
+ *
+ * @todo we do not yet have an example of file that {@link ucar.nc2.ft.FeatureDatasetFactoryManager} can handle
+ *       (maybe we don't use that class correctly).
  */
 final class FeaturesWrapper extends DiscreteSampling {
     /**

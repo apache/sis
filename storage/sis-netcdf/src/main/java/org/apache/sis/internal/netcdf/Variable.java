@@ -323,6 +323,15 @@ public abstract class Variable extends Node {
     }
 
     /**
+     * Returns {@code true} if this variable is an enumeration.
+     *
+     * @return whether this variable is an enumeration.
+     *
+     * @see #meaning(int)
+     */
+    protected abstract boolean isEnumeration();
+
+    /**
      * Returns whether this variable can grow. A variable is unlimited if at least one of its dimension is unlimited.
      * In netCDF 3 classic format, only the first dimension can be unlimited.
      *
@@ -621,6 +630,14 @@ public abstract class Variable extends Node {
     }
 
     /**
+     * Returns the number of grid dimensions. This is the size of the {@link #getGridDimensions()}
+     * list but may be cheaper than a call to {@code getGridDimensions().size()}.
+     *
+     * @return number of grid dimensions.
+     */
+    public abstract int getNumDimensions();
+
+    /**
      * Returns the dimensions of this variable in the order they are declared in the netCDF file.
      * The dimensions are those of the grid, not the dimensions of the coordinate system.
      * In ISO 19123 terminology, {@link Dimension#length()} on each dimension give the upper corner
@@ -642,6 +659,7 @@ public abstract class Variable extends Node {
      *
      * @return all dimensions of this variable, in netCDF order (reverse of "natural" order).
      *
+     * @see #getNumDimensions()
      * @see Grid#getDimensions()
      */
     public abstract List<Dimension> getGridDimensions();
@@ -928,6 +946,16 @@ public abstract class Variable extends Node {
             dimensions.get(i).writeLength(buffer);
         }
     }
+
+    /**
+     * Returns the meaning of the given ordinal value, or {@code null} if none.
+     * Callers must have verified that {@link #isEnumeration()} returned {@code true}
+     * before to invoke this method
+     *
+     * @param  ordinal  the ordinal of the enumeration for which to get the value.
+     * @return the value associated to the given ordinal, or {@code null} if none.
+     */
+    protected abstract String meaning(final int ordinal);
 
     /**
      * Returns a string representation of this variable for debugging purpose.

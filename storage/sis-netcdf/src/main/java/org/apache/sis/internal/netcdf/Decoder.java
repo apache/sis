@@ -46,6 +46,7 @@ import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
+import ucar.nc2.constants.CF;
 
 
 /**
@@ -295,8 +296,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @param  e      the exception, or {@code null} if none.
      */
     final void illegalAttributeValue(final String name, final String value, final NumberFormatException e) {
-        listeners.warning(Resources.forLocale(listeners.getLocale()).getString(
-                Resources.Keys.IllegalAttributeValue_3, getFilename(), name, value), e);
+        listeners.warning(resources().getString(Resources.Keys.IllegalAttributeValue_3, getFilename(), name, value), e);
     }
 
     /**
@@ -371,7 +371,15 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException;
+    public DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException {
+        if ("trajectory".equalsIgnoreCase(stringValue(CF.FEATURE_TYPE))) try {
+            return FeatureSet.create(this);
+        } catch (IllegalArgumentException | ArithmeticException e) {
+            // Illegal argument is not a problem with content, but rather with configuration.
+            throw new DataStoreException(e.getLocalizedMessage(), e);
+        }
+        return new FeatureSet[0];
+    }
 
     /**
      * Returns all grid geometries (related to coordinate systems) found in the netCDF file.
@@ -432,6 +440,25 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     }
 
     /**
+     * Returns the dimension of the given name (eventually ignoring case), or {@code null} if none.
+     * This method searches in all dimensions found in the netCDF file, regardless of variables.
+     *
+     * @param  dimName  the name of the dimension to search.
+     * @return dimension of the given name, or {@code null} if none.
+     */
+    protected abstract Dimension findDimension(String dimName);
+
+    /**
+     * Returns the netCDF variable of the given name, or {@code null} if none.
+     *
+     * @param  name  the name of the variable to search, or {@code null}.
+     * @return the variable of the given name, or {@code null} if none.
+     *
+     * @see #getVariables()
+     */
+    protected abstract Variable findVariable(String name);
+
+    /**
      * Returns the variable or group of the given name. Groups exist in netCDF 4 but not in netCDF 3.
      *
      * @param  name  name of the variable or group to search.
@@ -450,10 +477,19 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      */
     final void performance(final Class<?> caller, final String method, final short resourceKey, long time) {
         time = System.nanoTime() - time;
-        final LogRecord record = Resources.forLocale(listeners.getLocale()).getLogRecord(
+        final LogRecord record = resources().getLogRecord(
                 PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS), resourceKey,
                 getFilename(), time / (double) StandardDateFormat.NANOS_PER_SECOND);
         record.setLoggerName(Modules.NETCDF);
         Logging.log(caller, method, record);
+    }
+
+    /**
+     * Returns the netCDF-specific resource bundle for the locale given by {@link StoreListeners#getLocale()}.
+     *
+     * @return the localized error resource bundle.
+     */
+    final Resources resources() {
+        return Resources.forLocale(listeners.getLocale());
     }
 }

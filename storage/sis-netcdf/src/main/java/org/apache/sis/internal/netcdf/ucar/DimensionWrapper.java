@@ -28,7 +28,7 @@ import ucar.nc2.Dimension;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -59,7 +59,7 @@ final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
     /**
      * Wraps the given netCDF dimension object.
      */
-    private DimensionWrapper(final Dimension netcdf) {
+    DimensionWrapper(final Dimension netcdf) {
         this.netcdf = netcdf;
     }
 

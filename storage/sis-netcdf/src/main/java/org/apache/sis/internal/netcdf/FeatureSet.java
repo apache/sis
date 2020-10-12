@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.netcdf.impl;
+package org.apache.sis.internal.netcdf;
 
 import java.util.Map;
 import java.util.List;
@@ -31,9 +31,6 @@ import java.util.OptionalLong;
 import java.io.IOException;
 import org.apache.sis.math.Vector;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.internal.netcdf.DataType;
-import org.apache.sis.internal.netcdf.DiscreteSampling;
-import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.feature.DefaultFeatureType;
@@ -51,13 +48,14 @@ import org.opengis.feature.AttributeType;
 /**
  * Implementations of the discrete sampling features decoder. This implementation shall be able to decode at least the
  * netCDF files encoded as specified in the OGC 16-114 (OGC Moving Features Encoding Extension: netCDF) specification.
+ * This implementation is used as a fallback when the subclass does not provide a more specialized class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
-final class FeaturesInfo extends DiscreteSampling {
+final class FeatureSet extends DiscreteSampling {
     /**
      * The number of instances for each feature.
      */
@@ -67,26 +65,26 @@ final class FeaturesInfo extends DiscreteSampling {
      * The moving feature identifiers ("mfIdRef").
      * The amount of identifiers shall be the same than the length of the {@link #counts} vector.
      */
-    private final VariableInfo identifiers;
+    private final Variable identifiers;
 
     /**
      * The variable that contains time.
      */
-    private final VariableInfo time;
+    private final Variable time;
 
     /**
      * The variable that contains <var>x</var> and <var>y</var> coordinate values (typically longitudes and latitudes).
      * All variables in this array shall have the same length, and that length shall be the same than {@link #time}.
      */
-    private final VariableInfo[] coordinates;
+    private final Variable[] coordinates;
 
     /**
      * Any custom properties.
      */
-    private final VariableInfo[] properties;
+    private final Variable[] properties;
 
     /**
-     * The type of all features to be read by this {@code FeaturesInfo}.
+     * The type of all features to be read by this {@code FeatureSet}.
      */
     private final FeatureType type;
 
@@ -102,15 +100,15 @@ final class FeaturesInfo extends DiscreteSampling {
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
     @SuppressWarnings("rawtypes")                               // Because of generic array creation.
-    private FeaturesInfo(final ChannelDecoder decoder,
-            final Vector counts, final VariableInfo identifiers, final VariableInfo time,
-            final Collection<VariableInfo> coordinates, final Collection<VariableInfo> properties)
+    private FeatureSet(final Decoder decoder,
+            final Vector counts, final Variable identifiers, final Variable time,
+            final Collection<Variable> coordinates, final Collection<Variable> properties)
     {
         super(decoder.geomlib, decoder.listeners);
         this.counts      = counts;
         this.identifiers = identifiers;
-        this.coordinates = coordinates.toArray(new VariableInfo[coordinates.size()]);
-        this.properties  = properties .toArray(new VariableInfo[properties .size()]);
+        this.coordinates = coordinates.toArray(new Variable[coordinates.size()]);
+        this.properties  = properties .toArray(new Variable[properties .size()]);
         this.time        = time;
         /*
          * Creates a description of the features to be read.
@@ -119,14 +117,14 @@ final class FeaturesInfo extends DiscreteSampling {
         final PropertyType[] pt = new PropertyType[this.properties.length + 2];
         AttributeType[] characteristics = null;
         for (int i=0; i<pt.length; i++) {
-            final VariableInfo variable;
+            final Variable variable;
             final Class<?> valueClass;
             int minOccurs = 1;
             int maxOccurs = 1;
             switch (i) {
                 case 0: {
-                    variable        = identifiers;
-                    valueClass      = Integer.class;
+                    variable   = identifiers;
+                    valueClass = Integer.class;
                     break;
                 }
                 case 1: {
@@ -137,10 +135,10 @@ final class FeaturesInfo extends DiscreteSampling {
                 }
                 default: {
                     // TODO: use more accurate Number subtype for value class.
-                    variable        = this.properties[i-2];
-                    valueClass      = (variable.meaning(0) != null) ? String.class : Number.class;
-                    minOccurs       = 0;
-                    maxOccurs       = Integer.MAX_VALUE;
+                    variable   = this.properties[i-2];
+                    valueClass = (variable.meaning(0) != null) ? String.class : Number.class;
+                    minOccurs  = 0;
+                    maxOccurs  = Integer.MAX_VALUE;
                     break;
                 }
             }
@@ -157,8 +155,8 @@ final class FeaturesInfo extends DiscreteSampling {
      * Returns {@code true} if the given attribute value is one of the {@code cf_role} attribute values
      * supported by this implementation.
      */
-    private static boolean isSupportedRole(final String role) {
-        return CF.TRAJECTORY_ID.equalsIgnoreCase(role);
+    private static boolean hasSupportedRole(final Variable variable) {
+        return CF.TRAJECTORY_ID.equalsIgnoreCase(variable.getAttributeAsString(CF.CF_ROLE));
     }
 
     /**
@@ -167,9 +165,10 @@ final class FeaturesInfo extends DiscreteSampling {
      * @throws IllegalArgumentException if the geometric object library is not available.
      * @throws ArithmeticException if the size of a variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    static FeaturesInfo[] create(final ChannelDecoder decoder) throws IOException, DataStoreException {
-        final List<FeaturesInfo> features = new ArrayList<>(3);     // Will usually contain at most one element.
-search: for (final VariableInfo counts : decoder.variables) {
+    @SuppressWarnings("fallthrough")
+    static FeatureSet[] create(final Decoder decoder) throws IOException, DataStoreException {
+        final List<FeatureSet> features = new ArrayList<>(3);     // Will usually contain at most one element.
+search: for (final Variable counts : decoder.getVariables()) {
             /*
              * Any one-dimensional integer variable having a "sample_dimension" attribute string value
              * will be taken as an indication that we have Discrete Sampling Geometries. That variable
@@ -186,108 +185,131 @@ search: for (final VariableInfo counts : decoder.variables) {
              *         int counts(identifiers);
              *             counts:sample_dimension = "points";
              */
-            if (counts.dimensions.length == 1 && counts.getDataType().isInteger) {
-                final String sampleDimName = counts.getAttributeAsString(CF.SAMPLE_DIMENSION);
-                if (sampleDimName != null) {
-                    final DimensionInfo featureDimension = counts.dimensions[0];
-                    final DimensionInfo sampleDimension = decoder.findDimension(sampleDimName);
-                    if (sampleDimension == null) {
-                        decoder.listeners.warning(decoder.resources().getString(Resources.Keys.DimensionNotFound_3,
-                                decoder.getFilename(), counts.getName(), sampleDimName));
-                        continue;
+            if (counts.getNumDimensions() != 1 || !counts.getDataType().isInteger) {
+                continue;
+            }
+            final String sampleDimName = counts.getAttributeAsString(CF.SAMPLE_DIMENSION);
+            if (sampleDimName == null) {
+                continue;
+            }
+            final Dimension featureDimension = counts.getGridDimensions().get(0);
+            final Dimension sampleDimension = decoder.findDimension(sampleDimName);
+            if (sampleDimension == null) {
+                decoder.listeners.warning(decoder.resources().getString(Resources.Keys.DimensionNotFound_3,
+                                          decoder.getFilename(), counts.getName(), sampleDimName));
+                continue;
+            }
+            /*
+             * We should have another variable of the same name than the feature dimension name
+             * ("identifiers" in above example). That variable should have a "cf_role" attribute
+             * set to one of the values known to current implementation.  If we do not find such
+             * variable, search among other variables before to give up. That second search is not
+             * part of CF convention and will be accepted only if there is no ambiguity.
+             */
+            final String name = featureDimension.getName();
+            Variable identifiers = decoder.findVariable(name);
+            if (identifiers == null || !hasSupportedRole(identifiers)) {
+                for (final Variable alt : decoder.getVariables()) {
+                    if (startsWith(alt, featureDimension, false) && hasSupportedRole(alt)) {
+                        if (identifiers != null) {
+                            identifiers = null;
+                            break;                  // Ambiguity found: consider that we found no replacement.
+                        }
+                        identifiers = alt;
                     }
-                    /*
-                     * We should have another variable of the same name than the feature dimension name
-                     * ("identifiers" in above example). That variable should have a "cf_role" attribute
-                     * set to one of the values known to current implementation.  If we do not find such
-                     * variable, search among other variables before to give up. That second search is not
-                     * part of CF convention and will be accepted only if there is no ambiguity.
-                     */
-                    VariableInfo identifiers = decoder.findVariable(featureDimension.name);
-                    if (identifiers == null || !isSupportedRole(identifiers.getAttributeAsString(CF.CF_ROLE))) {
-                        VariableInfo replacement = null;
-                        for (final VariableInfo alt : decoder.variables) {
-                            if (alt.dimensions.length != 0 && alt.dimensions[0] == featureDimension
-                                    && isSupportedRole(alt.getAttributeAsString(CF.CF_ROLE)))
-                            {
-                                if (replacement != null) {
-                                    replacement = null;
-                                    break;                  // Ambiguity found: consider that we found no replacement.
-                                }
-                                replacement = alt;
-                            }
-                        }
-                        if (replacement != null) {
-                            identifiers = replacement;
-                        }
-                        if (identifiers == null) {
-                            decoder.listeners.warning(decoder.resources().getString(Resources.Keys.VariableNotFound_2,
-                                    decoder.getFilename(), featureDimension.name));
-                            continue;
-                        }
+                }
+                if (identifiers == null) {
+                    decoder.listeners.warning(decoder.resources().getString(
+                            Resources.Keys.VariableNotFound_2, decoder.getFilename(), name));
+                    continue;
+                }
+            }
+            /*
+             * At this point we found a variable that should be the feature identifiers.
+             * Verify that the variable dimensions are valid.
+             */
+            final List<Dimension> dimensions = identifiers.getGridDimensions();
+            int unexpectedDimension = -1;
+            switch (dimensions.size()) {
+                default: {                              // Too many dimensions
+                    unexpectedDimension = 2;
+                    break;
+                }
+                case 2: {
+                    if (identifiers.getDataType() != DataType.CHAR) {
+                        unexpectedDimension = 1;
+                        break;
                     }
-                    /*
-                     * At this point we found a variable that should be the feature identifiers.
-                     * Verify that the variable dimensions are valid.
-                     */
-                    for (int i=0; i<identifiers.dimensions.length; i++) {
-                        final boolean isValid;
-                        switch (i) {
-                            case 0:  isValid = (identifiers.dimensions[0] == featureDimension); break;
-                            case 1:  isValid = (identifiers.getDataType() == DataType.CHAR); break;
-                            default: isValid = false; break;                    // Too many dimensions
-                        }
-                        if (!isValid) {
-                            decoder.listeners.warning(decoder.resources().getString(
-                                    Resources.Keys.UnexpectedDimensionForVariable_4,
-                                    decoder.getFilename(), identifiers.getName(),
-                                    featureDimension.getName(), identifiers.dimensions[i].name));
-                            continue search;
-                        }
+                    // Fall through for checking the first dimension.
+                }
+                case 1: {
+                    if (!featureDimension.equals(dimensions.get(0))) {
+                        unexpectedDimension = 0;
                     }
-                    /*
-                     * At this point, all information have been verified as valid. Now search all variables having
-                     * the expected sample dimension. Those variable contains the actual data. For example if the
-                     * sample dimension name is "points", then we may have:
-                     *
-                     *     double longitude(points);
-                     *         longitude:axis = "X";
-                     *         longitude:standard_name = "longitude";
-                     *         longitude:units = "degrees_east";
-                     *     double latitude(points);
-                     *         latitude:axis = "Y";
-                     *         latitude:standard_name = "latitude";
-                     *         latitude:units = "degrees_north";
-                     *     double time(points);
-                     *         time:axis = "T";
-                     *         time:standard_name = "time";
-                     *         time:units = "minutes since 2014-11-29 00:00:00";
-                     *     short myCustomProperty(points);
-                     */
-                    final Map<String,VariableInfo> coordinates = new LinkedHashMap<>();
-                    final List<VariableInfo> properties  = new ArrayList<>();
-                    for (final VariableInfo data : decoder.variables) {
-                        if (data.dimensions.length == 1 && data.dimensions[0] == sampleDimension) {
-                            final String axisType = data.getAttributeAsString(CF.AXIS);
-                            if (axisType == null) {
-                                properties.add(data);
-                            } else if (coordinates.put(axisType, data) != null) {
-                                continue search;    // Two axes of the same type: abort.
-                            }
-                        }
-                    }
-                    final VariableInfo time = coordinates.remove("T");
-                    if (time != null) {
-                        features.add(new FeaturesInfo(decoder, counts.read(), identifiers, time, coordinates.values(), properties));
+                    break;
+                }
+                case 0: continue;                       // Should not happen.
+            }
+            if (unexpectedDimension >= 0) {
+                decoder.listeners.warning(decoder.resources().getString(
+                        Resources.Keys.UnexpectedDimensionForVariable_4,
+                        decoder.getFilename(), identifiers.getName(),
+                        featureDimension.getName(), dimensions.get(unexpectedDimension).getName()));
+                continue;
+            }
+            /*
+             * At this point, all information have been verified as valid. Now search all variables having
+             * the expected sample dimension. Those variable contains the actual data. For example if the
+             * sample dimension name is "points", then we may have:
+             *
+             *     double longitude(points);
+             *         longitude:axis = "X";
+             *         longitude:standard_name = "longitude";
+             *         longitude:units = "degrees_east";
+             *     double latitude(points);
+             *         latitude:axis = "Y";
+             *         latitude:standard_name = "latitude";
+             *         latitude:units = "degrees_north";
+             *     double time(points);
+             *         time:axis = "T";
+             *         time:standard_name = "time";
+             *         time:units = "minutes since 2014-11-29 00:00:00";
+             *     short myCustomProperty(points);
+             */
+            final Map<String,Variable> coordinates = new LinkedHashMap<>();
+            final List<Variable> properties  = new ArrayList<>();
+            for (final Variable data : decoder.getVariables()) {
+                if (startsWith(data, sampleDimension, true)) {
+                    final String axisType = data.getAttributeAsString(CF.AXIS);
+                    if (axisType == null) {
+                        properties.add(data);
+                    } else if (coordinates.put(axisType, data) != null) {
+                        continue search;    // Two axes of the same type: abort.
                     }
                 }
             }
+            final Variable time = coordinates.remove("T");
+            if (time != null) {
+                features.add(new FeatureSet(decoder, counts.read(), identifiers, time, coordinates.values(), properties));
+            }
         }
-        return features.toArray(new FeaturesInfo[features.size()]);
+        return features.toArray(new FeatureSet[features.size()]);
     }
 
     /**
-     * Returns the type of all features to be read by this {@code FeaturesInfo}.
+     * Returns {@code true} if the given variable starts with the given dimension.
+     *
+     * @param  data       the data for which to check the dimensions.
+     * @param  first      the dimension that we expect as the first dimension.
+     * @param  singleton  whether the variable shall have no more dimension than {@code first}.
+     */
+    private static boolean startsWith(final Variable data, final Dimension first, final boolean singleton) {
+        final int n = data.getNumDimensions();
+        return (singleton ? n == 1 : n >= 1) && first.equals(data.getGridDimensions().get(0));
+    }
+
+    /**
+     * Returns the type of all features to be read by this {@code FeatureSet}.
      */
     @Override
     public FeatureType getType() {
@@ -359,7 +381,7 @@ search: for (final VariableInfo counts : decoder.variables) {
                     coords[i] = coordinates[i].read(extent, step);
                 }
                 for (int i=0; i<properties.length; i++) {
-                    final VariableInfo p = properties[i];
+                    final Variable p = properties[i];
                     final Vector data = p.read(extent, step);
                     if (p.isEnumeration()) {
                         final String[] meanings = new String[data.size()];

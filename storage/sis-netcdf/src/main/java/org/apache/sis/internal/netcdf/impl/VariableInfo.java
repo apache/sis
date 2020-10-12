@@ -172,7 +172,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @see #isEnumeration()
      * @see #meaning(int)
      *
-     * @todo Need to be consistent with {@code VariableWrapper}. We could move this field to {@link FeaturesInfo},
+     * @todo Need to be consistent with {@code VariableWrapper}. We could move this field to {@code FeatureSet},
      *       or provides the same functionality in {@code VariableWrapper}. Whatever solution is chosen,
      *       {@code RasterResource.createEnumeration(…)} needs to use the mechanism common to both implementations.
      */
@@ -426,8 +426,11 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
 
     /**
      * Returns {@code true} if this variable is an enumeration.
+     *
+     * @see #meaning(int)
      */
-    final boolean isEnumeration() {
+    @Override
+    protected boolean isEnumeration() {
         return meanings != null;
     }
 
@@ -486,10 +489,22 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
+     * Returns the number of grid dimensions. This is the size of the {@link #getGridDimensions()} list.
+     *
+     * @return number of grid dimensions.
+     */
+    @Override
+    public int getNumDimensions() {
+        return dimensions.length;
+    }
+
+    /**
      * Returns the dimensions of this variable in the order they are declared in the netCDF file.
      * The dimensions are those of the grid, not the dimensions (or axes) of the coordinate system.
      * In ISO 19123 terminology, the {@linkplain Dimension#length() dimension lengths} give the upper
      * corner of the grid envelope plus one. The lower corner is always (0, 0, …, 0).
+     *
+     * @see #getNumDimensions()
      */
     @Override
     public List<Dimension> getGridDimensions() {
@@ -748,7 +763,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @param  ordinal  the ordinal of the enumeration for which to get the value.
      * @return the value associated to the given ordinal, or {@code null} if none.
      */
-    final String meaning(final int ordinal) {
+    @Override
+    protected String meaning(final int ordinal) {
         return (ordinal >= 0 && ordinal < meanings.length) ? meanings[ordinal] : null;
     }
 
