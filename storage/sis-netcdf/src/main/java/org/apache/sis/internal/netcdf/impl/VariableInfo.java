@@ -166,19 +166,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     private transient Vector values;
 
     /**
-     * The {@code flag_meanings} values (used for enumeration values), or {@code null} if this variable is not
-     * an enumeration.
-     *
-     * @see #isEnumeration()
-     * @see #meaning(int)
-     *
-     * @todo Need to be consistent with {@code VariableWrapper}. We could move this field to {@code FeatureSet},
-     *       or provides the same functionality in {@code VariableWrapper}. Whatever solution is chosen,
-     *       {@code RasterResource.createEnumeration(…)} needs to use the mechanism common to both implementations.
-     */
-    private final String[] meanings;
-
-    /**
      * Creates a new variable.
      *
      * @param  decoder     the netCDF file where this variable is stored.
@@ -267,13 +254,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
          * enumeration since those attributes may be verbose and "pollute" the variable definition.
          */
         if (!attributes.isEmpty()) {    // For avoiding UnsupportedOperationException if unmodifiable map.
-            final Object flags = attributes.remove(AttributeNames.FLAG_MEANINGS);
-            if (flags != null) {
-                meanings = (String[]) CharSequences.split(flags.toString(), ' ');
-                return;
-            }
+            setFlagMeanings(attributes.remove(AttributeNames.FLAG_MEANINGS),
+                            attributes.remove(AttributeNames.FLAG_VALUES));
         }
-        meanings = null;
     }
 
     /**
@@ -422,16 +405,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     @Override
     public DataType getDataType() {
         return dataType;
-    }
-
-    /**
-     * Returns {@code true} if this variable is an enumeration.
-     *
-     * @see #meaning(int)
-     */
-    @Override
-    protected boolean isEnumeration() {
-        return meanings != null;
     }
 
     /**
@@ -753,19 +726,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         assert i >= 0 && i < dimensions[1].length : i;
         final long n = dimensions[1].length();
         return read().doubleValue(Math.toIntExact(i + n*j));
-    }
-
-    /**
-     * Returns the meaning of the given ordinal value, or {@code null} if none.
-     * Callers must have verified that {@link #isEnumeration()} returned {@code true}
-     * before to invoke this method
-     *
-     * @param  ordinal  the ordinal of the enumeration for which to get the value.
-     * @return the value associated to the given ordinal, or {@code null} if none.
-     */
-    @Override
-    protected String meaning(final int ordinal) {
-        return (ordinal >= 0 && ordinal < meanings.length) ? meanings[ordinal] : null;
     }
 
     /**

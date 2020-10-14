@@ -364,15 +364,16 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
 
     /**
      * If the file contains features encoded as discrete sampling (for example profiles or trajectories),
-     * returns objects for handling them.
-     * This method may return a direct reference to an internal array - do not modify.
+     * returns objects for handling them. This method does not need to cache the returned array, because
+     * it will be invoked only once by {@link org.apache.sis.storage.netcdf.NetcdfStore#components()}.
      *
      * @return a handler for the features, or an empty array if none.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      */
     public DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException {
-        if ("trajectory".equalsIgnoreCase(stringValue(CF.FEATURE_TYPE))) try {
+        final String type = stringValue(CF.FEATURE_TYPE);
+        if (type == null || type.equalsIgnoreCase(FeatureSet.TRAJECTORY)) try {
             return FeatureSet.create(this);
         } catch (IllegalArgumentException | ArithmeticException e) {
             // Illegal argument is not a problem with content, but rather with configuration.

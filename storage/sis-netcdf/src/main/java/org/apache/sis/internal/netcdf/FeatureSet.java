@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Spliterator;
 import java.util.stream.Stream;
@@ -29,20 +28,21 @@ import java.util.stream.StreamSupport;
 import java.util.function.Consumer;
 import java.util.OptionalLong;
 import java.io.IOException;
+import java.util.Collections;
+import org.opengis.metadata.acquisition.GeometryType;
 import org.apache.sis.math.Vector;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.feature.DefaultAttributeType;
+import org.apache.sis.feature.builder.AttributeRole;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.util.collection.BackingStoreException;
 import ucar.nc2.constants.CF;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
-import org.opengis.feature.AttributeType;
 
 
 /**
@@ -57,29 +57,46 @@ import org.opengis.feature.AttributeType;
  */
 final class FeatureSet extends DiscreteSampling {
     /**
-     * The number of instances for each feature.
+     * Kind of features supported by this class. Also used as property name.
+     */
+    static final String TRAJECTORY = "trajectory";
+
+    /**
+     * The number of instances for each feature, or {@code null} if none. If non-null, then the number of features
+     * is the length of this vector and each {@link Feature} instance has multi-valued properties with a number of
+     * elements given by this count.
+     *
+     * If null, then the number of features is determined by the length of other variables.
+     *
+     * @see #getFeatureCount()
      */
     private final Vector counts;
 
     /**
-     * The moving feature identifiers ("mfIdRef").
-     * The amount of identifiers shall be the same than the length of the {@link #counts} vector.
+     * The singleton properties (for which there is only one value per feature instance), or an empty array if none.
+     * If non-empty, it typically contains the moving feature identifiers ("mfIdRef"). If {@link #counts} is non-null,
+     * then the length of {@code singletons} variables shall be the same than the length of the {@link #counts} vector.
+     * If {@link #counts} is null, then the first {@code singletons} variable determines the number of features.
      */
-    private final Variable identifiers;
+    private final Variable[] singletons;
 
     /**
-     * The variable that contains time.
+     * Whether the {@link #coordinates} array contains a temporal variable.
+     * If {@code true}, then the time variable shall be last.
      */
-    private final Variable time;
+    private final boolean hasTime;
 
     /**
-     * The variable that contains <var>x</var> and <var>y</var> coordinate values (typically longitudes and latitudes).
-     * All variables in this array shall have the same length, and that length shall be the same than {@link #time}.
+     * The variables for <var>x</var>, <var>y</var> and potentially <var>z</var> or <var>t</var> coordinate values.
+     * The <var>x</var> and <var>y</var> coordinates are typically longitudes and latitudes, but not necessarily.
+     * If temporal coordinates exist, the time variable must be last and {@link #hasTime} shall be set to {@code true}.
+     * All variables in this array shall have the same length.
      */
     private final Variable[] coordinates;
 
     /**
-     * Any custom properties.
+     * Any time-varying properties other than coordinate values, or an empty array if none.
+     * All variables in this array shall have the same length than {@link #coordinates} variables.
      */
     private final Variable[] properties;
 
@@ -92,63 +109,67 @@ final class FeatureSet extends DiscreteSampling {
      * Creates a new discrete sampling parser for features identified by the given variable.
      *
      * @param  decoder      the source of the features to create.
-     * @param  counts       the count of instances per feature.
-     * @param  identifiers  the feature identifiers.
-     * @param  time         the variable that contains time.
-     * @param  coordinates  the variable that contains <var>x</var> and <var>y</var> coordinate values.
-     * @param  properties   the variables that contain custom properties.
+     * @param  counts       the count of instances per feature, or {@code null} if none.
+     * @param  singletons   the feature identifiers, possibly with other singleton properties.
+     * @param  hasTime      whether the {@code coordinates} array contains a temporal variable.
+     * @param  coordinates  <var>x</var>, <var>y</var> and potentially <var>z</var> or <var>t</var> coordinate values.
+     * @param  properties   the variables that contain custom time-varying properties.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    @SuppressWarnings("rawtypes")                               // Because of generic array creation.
-    private FeatureSet(final Decoder decoder,
-            final Vector counts, final Variable identifiers, final Variable time,
-            final Collection<Variable> coordinates, final Collection<Variable> properties)
+    private FeatureSet(final Decoder decoder, final Vector counts, final Collection<Variable> singletons,
+            final boolean hasTime, final Collection<Variable> coordinates, final Collection<Variable> properties)
     {
         super(decoder.geomlib, decoder.listeners);
         this.counts      = counts;
-        this.identifiers = identifiers;
+        this.singletons  = singletons .toArray(new Variable[singletons .size()]);
         this.coordinates = coordinates.toArray(new Variable[coordinates.size()]);
         this.properties  = properties .toArray(new Variable[properties .size()]);
-        this.time        = time;
+        this.hasTime     = hasTime;
         /*
-         * Creates a description of the features to be read.
+         * Creates a description of the features to be read with following properties:
+         *
+         *    - Identifier and other properties having a single value per feature instance.
+         *    - Trajectory as a geometry object, potentially with a time characteristic.
+         *    - Time-varying properties (i.e. properties having a value per instant).
          */
-        final Map<String,Object> info = new HashMap<>(4);
-        final PropertyType[] pt = new PropertyType[this.properties.length + 2];
-        AttributeType[] characteristics = null;
-        for (int i=0; i<pt.length; i++) {
-            final Variable variable;
-            final Class<?> valueClass;
-            int minOccurs = 1;
-            int maxOccurs = 1;
-            switch (i) {
-                case 0: {
-                    variable   = identifiers;
-                    valueClass = Integer.class;
-                    break;
-                }
-                case 1: {
-                    variable        = null;
-                    valueClass      = factory.polylineClass;
-                    characteristics = new AttributeType[] {MovingFeature.TIME};
-                    break;
-                }
-                default: {
-                    // TODO: use more accurate Number subtype for value class.
-                    variable   = this.properties[i-2];
-                    valueClass = (variable.meaning(0) != null) ? String.class : Number.class;
-                    minOccurs  = 0;
-                    maxOccurs  = Integer.MAX_VALUE;
-                    break;
-                }
-            }
-            info.put(DefaultAttributeType.NAME_KEY, (variable != null) ? variable.getName() : "trajectory");
-            // TODO: add description.
-            pt[i] = new DefaultAttributeType<>(info, valueClass, minOccurs, maxOccurs, null, characteristics);
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder(decoder.nameFactory, decoder.geomlib, decoder.listeners.getLocale());
+        for (final Variable v : this.singletons) {
+            final Class<?> type = v.getDataType().getClass(v.getNumDimensions() > 1);
+            describe(v, builder.addAttribute(Long.class), false);   // TODO: use type.
         }
-        String name = "Features";       // TODO: find a better name.
-        info.put(DefaultAttributeType.NAME_KEY, decoder.nameFactory.createLocalName(decoder.namespace, name));
-        type = new DefaultFeatureType(info, false, null, pt);
+        final AttributeTypeBuilder<?> geometry = builder.addAttribute(counts != null ? GeometryType.LINEAR : GeometryType.POINT);
+        geometry.setName(TRAJECTORY).addRole(AttributeRole.DEFAULT_GEOMETRY);
+        if (hasTime) {
+            geometry.addCharacteristic(MovingFeature.TIME);
+        }
+        for (final Variable v : this.properties) {
+            /*
+             * Use `Number` type instead than a more specialized subclass because values
+             * will be stored in `Vector` objects and that class implements `List<Number>`.
+             */
+            final Class<?> type = v.isEnumeration() ? String.class : Number.class;
+            describe(v, builder.addAttribute(type).setMaximumOccurs(Integer.MAX_VALUE), hasTime);
+        }
+        type = builder.setName("Features").build();     // TODO: get a better name.
+    }
+
+    /**
+     * Sets the attribute name, and potentially its definition, from the given variable.
+     *
+     * @param  variable   the variable from which to get metadata.
+     * @param  attribute  the attribute to configure with variable metadata.
+     * @param  hasTime    whether to add a "time" characteristic on the attribute.
+     */
+    private static void describe(final Variable variable, final AttributeTypeBuilder<?> attribute, final boolean hasTime) {
+        final String name = variable.getName();
+        attribute.setName(name);
+        final String desc = variable.getDescription();
+        if (desc != null && !desc.equals(name)) {
+            attribute.setDefinition(desc);
+        }
+        if (hasTime) {
+            attribute.addCharacteristic(MovingFeature.TIME);
+        }
     }
 
     /**
@@ -165,7 +186,6 @@ final class FeatureSet extends DiscreteSampling {
      * @throws IllegalArgumentException if the geometric object library is not available.
      * @throws ArithmeticException if the size of a variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    @SuppressWarnings("fallthrough")
     static FeatureSet[] create(final Decoder decoder) throws IOException, DataStoreException {
         final List<FeatureSet> features = new ArrayList<>(3);     // Will usually contain at most one element.
 search: for (final Variable counts : decoder.getVariables()) {
@@ -206,11 +226,15 @@ search: for (final Variable counts : decoder.getVariables()) {
              * variable, search among other variables before to give up. That second search is not
              * part of CF convention and will be accepted only if there is no ambiguity.
              */
-            final String name = featureDimension.getName();
-            Variable identifiers = decoder.findVariable(name);
-            if (identifiers == null || !hasSupportedRole(identifiers)) {
+            Variable identifiers = decoder.findVariable(featureDimension.getName());
+            if (identifiers != null && hasSupportedRole(identifiers)) {
+                if (!isScalarOrString(identifiers, featureDimension, decoder)) {
+                    continue;
+                }
+            } else {
+                identifiers = null;
                 for (final Variable alt : decoder.getVariables()) {
-                    if (startsWith(alt, featureDimension, false) && hasSupportedRole(alt)) {
+                    if (hasSupportedRole(alt) && isScalarOrString(alt, featureDimension, null)) {
                         if (identifiers != null) {
                             identifiers = null;
                             break;                  // Ambiguity found: consider that we found no replacement.
@@ -219,43 +243,10 @@ search: for (final Variable counts : decoder.getVariables()) {
                     }
                 }
                 if (identifiers == null) {
-                    decoder.listeners.warning(decoder.resources().getString(
-                            Resources.Keys.VariableNotFound_2, decoder.getFilename(), name));
+                    decoder.listeners.warning(decoder.resources().getString(Resources.Keys.VariableNotFound_2,
+                                              decoder.getFilename(), featureDimension.getName()));
                     continue;
                 }
-            }
-            /*
-             * At this point we found a variable that should be the feature identifiers.
-             * Verify that the variable dimensions are valid.
-             */
-            final List<Dimension> dimensions = identifiers.getGridDimensions();
-            int unexpectedDimension = -1;
-            switch (dimensions.size()) {
-                default: {                              // Too many dimensions
-                    unexpectedDimension = 2;
-                    break;
-                }
-                case 2: {
-                    if (identifiers.getDataType() != DataType.CHAR) {
-                        unexpectedDimension = 1;
-                        break;
-                    }
-                    // Fall through for checking the first dimension.
-                }
-                case 1: {
-                    if (!featureDimension.equals(dimensions.get(0))) {
-                        unexpectedDimension = 0;
-                    }
-                    break;
-                }
-                case 0: continue;                       // Should not happen.
-            }
-            if (unexpectedDimension >= 0) {
-                decoder.listeners.warning(decoder.resources().getString(
-                        Resources.Keys.UnexpectedDimensionForVariable_4,
-                        decoder.getFilename(), identifiers.getName(),
-                        featureDimension.getName(), dimensions.get(unexpectedDimension).getName()));
-                continue;
             }
             /*
              * At this point, all information have been verified as valid. Now search all variables having
@@ -279,7 +270,7 @@ search: for (final Variable counts : decoder.getVariables()) {
             final Map<String,Variable> coordinates = new LinkedHashMap<>();
             final List<Variable> properties  = new ArrayList<>();
             for (final Variable data : decoder.getVariables()) {
-                if (startsWith(data, sampleDimension, true)) {
+                if (isScalarOrString(data, sampleDimension, null)) {
                     final String axisType = data.getAttributeAsString(CF.AXIS);
                     if (axisType == null) {
                         properties.add(data);
@@ -290,7 +281,9 @@ search: for (final Variable counts : decoder.getVariables()) {
             }
             final Variable time = coordinates.remove("T");
             if (time != null) {
-                features.add(new FeatureSet(decoder, counts.read(), identifiers, time, coordinates.values(), properties));
+                coordinates.put("T", time);     // Make sure that time is last.
+                features.add(new FeatureSet(decoder, counts.read(), Collections.singleton(identifiers),
+                             true, coordinates.values(), properties));
             }
         }
         return features.toArray(new FeatureSet[features.size()]);
@@ -298,14 +291,47 @@ search: for (final Variable counts : decoder.getVariables()) {
 
     /**
      * Returns {@code true} if the given variable starts with the given dimension.
+     * If the variable is an array of character, then it can have 2 dimensions.
+     * Otherwise it shall have exactly one dimension.
      *
-     * @param  data       the data for which to check the dimensions.
-     * @param  first      the dimension that we expect as the first dimension.
-     * @param  singleton  whether the variable shall have no more dimension than {@code first}.
+     * @param  data              the data for which to check the dimensions.
+     * @param  featureDimension  the dimension that we expect as the first dimension.
+     * @param  decoder           decoder where to report warnings, or {@code null} for silent mode.
      */
-    private static boolean startsWith(final Variable data, final Dimension first, final boolean singleton) {
-        final int n = data.getNumDimensions();
-        return (singleton ? n == 1 : n >= 1) && first.equals(data.getGridDimensions().get(0));
+    @SuppressWarnings("fallthrough")
+    private static boolean isScalarOrString(final Variable data, final Dimension featureDimension, final Decoder decoder) {
+        final List<Dimension> dimensions = data.getGridDimensions();
+        final int unexpectedDimension;
+        switch (dimensions.size()) {
+            default: {                              // Too many dimensions
+                unexpectedDimension = 2;
+                break;
+            }
+            case 2: {
+                if (data.getDataType() != DataType.CHAR) {
+                    unexpectedDimension = 1;
+                    break;
+                }
+                // Fall through for checking the first dimension.
+            }
+            case 1: {
+                if (featureDimension.equals(dimensions.get(0))) {
+                    return true;
+                }
+                unexpectedDimension = 0;
+                break;
+            }
+            case 0: {                               // Should not happen.
+                return false;
+            }
+        }
+        if (decoder != null) {
+            decoder.listeners.warning(decoder.resources().getString(
+                    Resources.Keys.UnexpectedDimensionForVariable_4,
+                    decoder.getFilename(), data.getName(),
+                    featureDimension.getName(), dimensions.get(unexpectedDimension).getName()));
+        }
+        return false;
     }
 
     /**
@@ -323,7 +349,22 @@ search: for (final Variable counts : decoder.getVariables()) {
      */
     @Override
     protected OptionalLong getFeatureCount() {
-        return OptionalLong.of(counts.size());
+        if (counts != null) {
+            return OptionalLong.of(counts.size());
+        }
+        for (int i=0; ; i++) {
+            final Variable[] data;
+            switch (i) {
+                case 0: data = singletons;  break;
+                case 1: data = coordinates; break;
+                case 2: data = properties;  break;
+                default: return OptionalLong.empty();
+            }
+            if (data.length != 0) {
+                final long length = data[0].getGridDimensions().get(0).length();
+                if (length >= 0) return OptionalLong.of(length);
+            }
+        }
     }
 
     /**
@@ -332,14 +373,23 @@ search: for (final Variable counts : decoder.getVariables()) {
      * @param  parallel  ignored, since current version does not support parallelism.
      */
     @Override
-    public Stream<Feature> features(boolean parallel) {
-        return StreamSupport.stream(new Iter(), false);
+    public Stream<Feature> features(boolean parallel) throws DataStoreException {
+        try {
+            return StreamSupport.stream(new Iter(), false);
+        } catch (IOException e) {
+            throw new DataStoreException(canNotReadFile(), e);
+        }
     }
 
     /**
      * Implementation of the iterator returned by {@link #features(boolean)}.
      */
     private final class Iter implements Spliterator<Feature> {
+        /**
+         * Expected number of features.
+         */
+        private final int count;
+
         /**
          * Index of the next feature to read.
          */
@@ -352,9 +402,23 @@ search: for (final Variable counts : decoder.getVariables()) {
         private int position;
 
         /**
+         * The singleton properties, or an empty array if none. This is called "identifiers" because
+         * this is usually an array of length 1 with a vector containing feature identifiers.
+         *
+         * @see FeatureSet#singletons
+         */
+        private final Vector[] identifiers;
+
+        /**
          * Creates a new iterator.
          */
-        Iter() {
+        Iter() throws IOException, DataStoreException {
+            count = (int) Math.min(getFeatureCount().orElse(0), Integer.MAX_VALUE);
+            identifiers = new Vector[singletons.length];
+            for (int i=0; i < identifiers.length; i++) {
+                // Efficiency should be okay because those vectors are cached.
+                identifiers[i] = singletons[i].read();
+            }
         }
 
         /**
@@ -367,52 +431,68 @@ search: for (final Variable counts : decoder.getVariables()) {
          */
         @Override
         public boolean tryAdvance(final Consumer<? super Feature> action) {
-            final int length = counts.intValue(index);
-            final GridExtent extent = new GridExtent(null, new long[] {position},
-                            new long[] {Math.addExact(position, length)}, false);
+            final Vector[] coordinateValues  = new Vector[coordinates.length];
+            final Object[] singleProperties  = new Number[singletons .length];
+            final Object[] varyingProperties = new Object[properties .length];
+            for (int i=0; i < singleProperties.length; i++) {
+                singleProperties[i] = identifiers[i].get(index);
+            }
             final int[] step = {1};
-            final Vector   id, t;
-            final Vector[] coords = new Vector[coordinates.length];
-            final Object[] props  = new Object[properties.length];
-            try {
-                id = identifiers.read();                    // Efficiency should be okay because of cached value.
-                t = time.read(extent, step);
-                for (int i=0; i<coordinates.length; i++) {
-                    coords[i] = coordinates[i].read(extent, step);
-                }
-                for (int i=0; i<properties.length; i++) {
-                    final Variable p = properties[i];
-                    final Vector data = p.read(extent, step);
-                    if (p.isEnumeration()) {
-                        final String[] meanings = new String[data.size()];
-                        for (int j=0; j<meanings.length; j++) {
-                            String m = p.meaning(data.intValue(j));
-                            meanings[j] = (m != null) ? m : "";
+            boolean isEmpty = true;
+            int length;
+            do {
+                length = (counts != null) ? counts.intValue(index) : 1;
+                if (length != 0) {
+                    isEmpty = false;
+                    final GridExtent extent = new GridExtent(null, new long[] {position},
+                                    new long[] {Math.addExact(position, length)}, false);
+                    try {
+                        for (int i=0; i<coordinateValues.length; i++) {
+                            coordinateValues[i] = coordinates[i].read(extent, step);
                         }
-                        props[i] = Arrays.asList(meanings);
-                    } else {
-                        props[i] = data;
+                        for (int i=0; i<properties.length; i++) {
+                            final Variable p = properties[i];
+                            final Vector data = p.read(extent, step);
+                            if (p.isEnumeration()) {
+                                final String[] meanings = new String[data.size()];
+                                for (int j=0; j<meanings.length; j++) {
+                                    String m = p.meaning(data.intValue(j));
+                                    meanings[j] = (m != null) ? m : "";
+                                }
+                                varyingProperties[i] = Arrays.asList(meanings);
+                            } else {
+                                varyingProperties[i] = data;
+                            }
+                        }
+                    } catch (IOException | DataStoreException e) {
+                        throw new BackingStoreException(canNotReadFile(), e);
                     }
                 }
-            } catch (IOException | DataStoreException e) {
-                throw new BackingStoreException(canNotReadFile(), e);
-            }
+                if (++index >= count) {
+                    return false;
+                }
+            } while (isEmpty);
+            /*
+             * At this point we found that there is some data we can put in a feature instance.
+             */
             final Feature feature = type.newInstance();
-            feature.setPropertyValue(identifiers.getName(), id.intValue(index));
+            for (int i=0; i < singleProperties.length; i++) {
+                feature.setPropertyValue(singletons[i].getName(), singleProperties[i]);
+            }
             for (int i=0; i<properties.length; i++) {
-                feature.setPropertyValue(properties[i].getName(), props[i]);
+                feature.setPropertyValue(properties[i].getName(), varyingProperties[i]);
                 // TODO: set time characteristic.
             }
             // TODO: temporary hack - to be replaced by support in Vector.
-            final int dimension = coordinates.length;
+            final int dimension = coordinates.length - (hasTime ? 1 : 0);
             final double[] tmp = new double[length * dimension];
             for (int i=0; i<tmp.length; i++) {
-                tmp[i] = coords[i % dimension].doubleValue(i / dimension);
+                tmp[i] = coordinateValues[i % dimension].doubleValue(i / dimension);
             }
-            feature.setPropertyValue("trajectory", factory.createPolyline(false, dimension, Vector.create(tmp)));
+            feature.setPropertyValue(TRAJECTORY, factory.createPolyline(false, dimension, Vector.create(tmp)));
             action.accept(feature);
             position = Math.addExact(position, length);
-            return ++index < counts.size();
+            return true;
         }
 
         /**
@@ -428,7 +508,7 @@ search: for (final Variable counts : decoder.getVariables()) {
          */
         @Override
         public long estimateSize() {
-            return counts.size() - index;
+            return count - index;
         }
 
         /**

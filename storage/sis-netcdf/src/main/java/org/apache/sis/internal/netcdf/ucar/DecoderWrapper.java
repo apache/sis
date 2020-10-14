@@ -91,6 +91,9 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
 
     /**
      * The discrete sampling features, or {@code null} if none.
+     * This reference is kept for making possible to close it in {@link #close()}.
+     *
+     * @see #getDiscreteSampling()
      */
     private transient FeatureDataset features;
 
@@ -426,19 +429,24 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             features = FeatureDatasetFactoryManager.wrap(null, (NetcdfDataset) file, this,
                     new Formatter(new LogAdapter(listeners), listeners.getLocale()));
         }
-        List<FeatureCollection> fc = null;
         if (features instanceof FeatureDatasetPoint) {
-            fc = ((FeatureDatasetPoint) features).getPointFeatureCollectionList();
-        }
-        final FeaturesWrapper[] wrappers = new FeaturesWrapper[(fc != null) ? fc.size() : 0];
-        try {
-            for (int i=0; i<wrappers.length; i++) {
-                wrappers[i] = new FeaturesWrapper(fc.get(i), geomlib, listeners);
+            final List<FeatureCollection> fc = ((FeatureDatasetPoint) features).getPointFeatureCollectionList();
+            if (fc != null && !fc.isEmpty()) {
+                final FeaturesWrapper[] wrappers = new FeaturesWrapper[fc.size()];
+                try {
+                    for (int i=0; i<wrappers.length; i++) {
+                        wrappers[i] = new FeaturesWrapper(fc.get(i), geomlib, listeners);
+                    }
+                } catch (IllegalArgumentException e) {
+                    throw new DataStoreException(e.getLocalizedMessage(), e);
+                }
+                return wrappers;
             }
-        } catch (IllegalArgumentException e) {
-            throw new DataStoreException(e.getLocalizedMessage(), e);
         }
-        return wrappers;
+        /*
+         * If the UCAR library did not recognized the features in this file, ask to SIS.
+         */
+        return super.getDiscreteSampling();
     }
 
     /**

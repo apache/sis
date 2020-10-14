@@ -38,9 +38,12 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CDM;                      // We use only String constants.
 import ucar.nc2.constants.CF;
@@ -100,11 +103,21 @@ public abstract class Variable extends Node {
     /**
      * All no-data values declared for this variable, or an empty map if none.
      * This is computed by {@link #getNodataValues()} and cached for efficiency and stability.
-     * The meaning of entries in this map is described in {@code getNodataValues()} method javadoc.
+     * The meaning of entries in this map is described in {@link #getNodataValues()} method javadoc.
      *
      * @see #getNodataValues()
      */
     private Map<Number,Object> nodataValues;
+
+    /**
+     * The {@code flag_meanings} values (used for enumeration values),
+     * or {@code null} if this variable is not an enumeration.
+     *
+     * @see #isEnumeration()
+     * @see #meaning(int)
+     * @see #setFlagMeanings(Object, Object)
+     */
+    private Map<Integer,String> meanings;
 
     /**
      * The grid associated to this variable, or {@code null} if none or not yet computed.
@@ -139,6 +152,76 @@ public abstract class Variable extends Node {
      */
     protected Variable(final Decoder decoder) {
         super(decoder);
+    }
+
+    /**
+     * If {@code flags} is non-null, declares this variable as an enumeration.
+     * This method stores the information needed for {@link #meaning(int)} default implementation.
+     *
+     * @param  flags   the flag meanings as a space-separated string, or {@code null} if none.
+     * @param  values  the flag values as a vector of integer values, or {@code null} if none.
+     *
+     * @see #isEnumeration()
+     * @see #meaning(int)
+     */
+    @SuppressWarnings("null")
+    protected final void setFlagMeanings(final Object flags, final Object values) {
+        if (flags == null) {
+            return;
+        }
+        final String[] labels = (String[]) CharSequences.split(flags.toString(), ' ');
+        int count = labels.length;
+        meanings = new HashMap<>(Containers.hashMapCapacity(count));
+        final Vector numbers;
+        if (values instanceof Vector) {
+            numbers = (Vector) values;
+            final int n = numbers.size();
+            if (n != count) {
+                warning(Variable.class, "setFlagMeanings", Resources.Keys.MismatchedAttributeLength_5,
+                        getName(), AttributeNames.FLAG_VALUES, AttributeNames.FLAG_MEANINGS, n, count);
+                if (n < count) count = n;
+            }
+        } else {
+            numbers = Vector.createSequence(0, 1, count);
+            warning(Variable.class, "setFlagMeanings", Resources.Keys.MissingVariableAttribute_3,
+                    getFilename(), getName(), AttributeNames.FLAG_VALUES);
+        }
+        /*
+         * Copy (numbers, labels) entries in an HashMap with keys converted to 32-bits signed integer.
+         * If a key can not be converted, we will log a warning after all errors have been collected
+         * in order to produce only one log message. We put a limit on the amount of reported errors
+         * for avoiding to flood the logger.
+         */
+        Exception     error    = null;
+        StringBuilder invalids = null;
+        for (int i=0; i<count; i++) try {
+            meanings.merge(numbers.intValue(i), labels[i], (o,n) -> o + " | " + n);
+        } catch (NumberFormatException | ArithmeticException e) {
+            if (error == null) {
+                error = e;
+                invalids = new StringBuilder();
+            } else {
+                final int length = invalids.length();
+                final boolean tooManyErrors = (length > 100);                   // Arbitrary limit.
+                if (tooManyErrors && invalids.charAt(length - 1) == '…') {
+                    continue;
+                }
+                error.addSuppressed(e);
+                invalids.append(", ");
+                if (tooManyErrors) {
+                    invalids.append('…');
+                    continue;
+                }
+            }
+            invalids.append(numbers.stringValue(i));
+        }
+        if (invalids != null) {
+            error(Variable.class, "setFlagMeanings", error,
+                  Errors.Keys.CanNotConvertValue_2, invalids, numbers.getElementType());
+        }
+        if (meanings.isEmpty()) {
+            meanings = null;
+        }
     }
 
     /**
@@ -329,7 +412,9 @@ public abstract class Variable extends Node {
      *
      * @see #meaning(int)
      */
-    protected abstract boolean isEnumeration();
+    protected boolean isEnumeration() {
+        return meanings != null;
+    }
 
     /**
      * Returns whether this variable can grow. A variable is unlimited if at least one of its dimension is unlimited.
@@ -955,7 +1040,9 @@ public abstract class Variable extends Node {
      * @param  ordinal  the ordinal of the enumeration for which to get the value.
      * @return the value associated to the given ordinal, or {@code null} if none.
      */
-    protected abstract String meaning(final int ordinal);
+    protected String meaning(final int ordinal) {
+        return meanings.get(ordinal);
+    }
 
     /**
      * Returns a string representation of this variable for debugging purpose.

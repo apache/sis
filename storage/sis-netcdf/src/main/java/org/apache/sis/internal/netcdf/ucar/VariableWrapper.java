@@ -46,6 +46,7 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
@@ -83,6 +84,11 @@ final class VariableWrapper extends Variable {
     private transient Vector values;
 
     /**
+     * {@code true} if this variable is an enumeration.
+     */
+    private final boolean isEnumeration;
+
+    /**
      * Creates a new variable wrapping the given netCDF interface.
      */
     VariableWrapper(final Decoder decoder, VariableIF v) {
@@ -95,6 +101,17 @@ final class VariableWrapper extends Variable {
             }
         }
         raw = v;
+        /*
+         * If the UCAR library recognizes this variable as an enumeration, we will use UCAR services.
+         * Only if UCAR did not recognized the enumeration, fallback on Apache SIS implementation.
+         */
+        if (variable.getDataType().isEnum() && (variable instanceof ucar.nc2.Variable)) {
+            isEnumeration = true;
+        } else {
+            setFlagMeanings(getAttributeAsString(AttributeNames.FLAG_MEANINGS),
+                            getAttributeAsVector(AttributeNames.FLAG_VALUES));
+            isEnumeration = super.isEnumeration();
+        }
     }
 
     /**
@@ -218,7 +235,7 @@ final class VariableWrapper extends Variable {
      */
     @Override
     protected boolean isEnumeration() {
-        return variable.getDataType().isEnum() && (variable instanceof ucar.nc2.Variable);
+        return isEnumeration;
     }
 
     /**
@@ -538,7 +555,8 @@ final class VariableWrapper extends Variable {
      */
     @Override
     protected String meaning(final int ordinal) {
-        return ((ucar.nc2.Variable) variable).lookupEnumString(ordinal);
+        return super.isEnumeration() ? super.meaning(ordinal)
+                : ((ucar.nc2.Variable) variable).lookupEnumString(ordinal);
     }
 
     /**

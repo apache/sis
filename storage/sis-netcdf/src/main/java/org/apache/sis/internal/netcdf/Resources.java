@@ -131,6 +131,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalValueRange_4 = 16;
 
         /**
+         * Attributes “{1}” and “{2}” on variable “{0}” have different lengths: {3} and {4}
+         * respectively.
+         */
+        public static final short MismatchedAttributeLength_5 = 24;
+
+        /**
          * The declared size of variable “{1}” in netCDF file “{0}” is {2,number} bytes greater than
          * expected.
          */
@@ -140,6 +146,11 @@ public final class Resources extends IndexedResourceBundle {
          * Variables “{1}” and “{2}” in netCDF file “{0}” does not have the same type.
          */
         public static final short MismatchedVariableType_3 = 13;
+
+        /**
+         * Missing attribute “{2}” on the “{1}” variable of netCDF file “{0}”.
+         */
+        public static final short MissingVariableAttribute_3 = 23;
 
         /**
          * Variable “{1}” or netCDF file “{0}” has a different size than its coordinate system, but no
