@@ -72,166 +72,166 @@ public final class Resources extends IndexedResourceBundle {
         /**
          * Can not build the grid coverage.
          */
-        public static final short CanNotBuildGridCoverage = 72;
+        public static final short CanNotBuildGridCoverage = 3;
 
         /**
          * Can not compute tile ({0}, {1}).
          */
-        public static final short CanNotComputeTile_2 = 66;
+        public static final short CanNotComputeTile_2 = 4;
 
         /**
          * Can not create a two-dimensional reference system from the “{0}” system.
          */
-        public static final short CanNotCreateTwoDimensionalCRS_1 = 60;
+        public static final short CanNotCreateTwoDimensionalCRS_1 = 5;
 
         /**
          * Can not enumerate values in the {0} range.
          */
-        public static final short CanNotEnumerateValuesInRange_1 = 23;
+        public static final short CanNotEnumerateValuesInRange_1 = 6;
 
         /**
          * Property “{0}” is not a type that can be instantiated.
          */
-        public static final short CanNotInstantiateProperty_1 = 3;
+        public static final short CanNotInstantiateProperty_1 = 7;
 
         /**
          * Some envelope dimensions can not be mapped to grid dimensions.
          */
-        public static final short CanNotMapToGridDimensions = 24;
+        public static final short CanNotMapToGridDimensions = 8;
 
         /**
          * Can not process tile ({0}, {1}).
          */
-        public static final short CanNotProcessTile_2 = 70;
+        public static final short CanNotProcessTile_2 = 9;
 
         /**
          * Can not set a value of type ‘{1}’ to characteristic “{0}”.
          */
-        public static final short CanNotSetCharacteristics_2 = 4;
+        public static final short CanNotSetCharacteristics_2 = 10;
 
         /**
          * Can not set this derived grid property after a call to “{0}” method.
          */
-        public static final short CanNotSetDerivedGridProperty_1 = 25;
+        public static final short CanNotSetDerivedGridProperty_1 = 11;
 
         /**
          * Type of the “{0}” property does not allow to set a value.
          */
-        public static final short CanNotSetPropertyValue_1 = 5;
+        public static final short CanNotSetPropertyValue_1 = 12;
 
         /**
          * Can not simplify transfer function of sample dimension “{0}”.
          */
-        public static final short CanNotSimplifyTransferFunction_1 = 26;
+        public static final short CanNotSimplifyTransferFunction_1 = 13;
 
         /**
          * Can not update tile ({0}, {1}).
          */
-        public static final short CanNotUpdateTile_2 = 69;
+        public static final short CanNotUpdateTile_2 = 14;
 
         /**
          * The two categories “{0}” and “{2}” have overlapping ranges: {1} and {3} respectively.
          */
-        public static final short CategoryRangeOverlap_4 = 27;
+        public static final short CategoryRangeOverlap_4 = 15;
 
         /**
          * Characteristics “{1}” already exists in attribute “{0}”.
          */
-        public static final short CharacteristicsAlreadyExists_2 = 6;
+        public static final short CharacteristicsAlreadyExists_2 = 16;
 
         /**
          * No characteristics named “{1}” has been found in “{0}” attribute.
          */
-        public static final short CharacteristicsNotFound_2 = 7;
+        public static final short CharacteristicsNotFound_2 = 17;
 
         /**
          * Operation “{0}” requires a “{1}” property, but no such property has been found in “{2}”.
          */
-        public static final short DependencyNotFound_3 = 8;
+        public static final short DependencyNotFound_3 = 18;
 
         /**
          * Image has zero pixel.
          */
-        public static final short EmptyImage = 73;
+        public static final short EmptyImage = 19;
 
         /**
          * Empty tile or image region.
          */
-        public static final short EmptyTileOrImageRegion = 67;
+        public static final short EmptyTileOrImageRegion = 20;
 
         /**
          * Indices ({3}) are outside grid coverage. The value in dimension {0} shall be between
          * {1,number} and {2,number} inclusive.
          */
-        public static final short GridCoordinateOutsideCoverage_4 = 28;
+        public static final short GridCoordinateOutsideCoverage_4 = 21;
 
         /**
          * The grid envelope must have at least {0} dimensions.
          */
-        public static final short GridEnvelopeMustBeNDimensional_1 = 29;
+        public static final short GridEnvelopeMustBeNDimensional_1 = 22;
 
         /**
          * Envelope is outside grid coverage. Indices [{3,number} … {4,number}] in dimension {0} do not
          * intersect the [{1,number} … {2,number}] grid extent.
          */
-        public static final short GridEnvelopeOutsideCoverage_5 = 30;
+        public static final short GridEnvelopeOutsideCoverage_5 = 23;
 
         /**
          * Sample value range {1} for “{0}” category is illegal.
          */
-        public static final short IllegalCategoryRange_2 = 31;
+        public static final short IllegalCategoryRange_2 = 24;
 
         /**
          * Expected an instance of ‘{1}’ for the “{0}” characteristics, but got an instance of ‘{2}’.
          */
-        public static final short IllegalCharacteristicsType_3 = 75;
+        public static final short IllegalCharacteristicsType_3 = 25;
 
         /**
          * Association “{0}” does not accept features of type ‘{2}’. Expected an instance of ‘{1}’ or
          * derived type.
          */
-        public static final short IllegalFeatureType_3 = 9;
+        public static final short IllegalFeatureType_3 = 26;
 
         /**
          * Illegal grid envelope [{1,number} … {2,number}] for dimension {0}.
          */
-        public static final short IllegalGridEnvelope_3 = 32;
+        public static final short IllegalGridEnvelope_3 = 27;
 
         /**
          * Can not create a grid geometry with the given “{0}” component.
          */
-        public static final short IllegalGridGeometryComponent_1 = 33;
+        public static final short IllegalGridGeometryComponent_1 = 28;
 
         /**
          * Type or result of “{0}” property can not be ‘{1}’ for this operation.
          */
-        public static final short IllegalPropertyType_2 = 10;
+        public static final short IllegalPropertyType_2 = 29;
 
         /**
          * Property “{0}” does not accept values of type ‘{2}’. Expected an instance of ‘{1}’ or
          * derived type.
          */
-        public static final short IllegalPropertyValueClass_3 = 11;
+        public static final short IllegalPropertyValueClass_3 = 30;
 
         /**
          * Illegal transfer function for “{0}” category.
          */
-        public static final short IllegalTransferFunction_1 = 34;
+        public static final short IllegalTransferFunction_1 = 31;
 
         /**
          * Image allows transparency.
          */
-        public static final short ImageAllowsTransparency = 63;
+        public static final short ImageAllowsTransparency = 32;
 
         /**
          * Image has alpha channel.
          */
-        public static final short ImageHasAlphaChannel = 64;
+        public static final short ImageHasAlphaChannel = 33;
 
         /**
          * Image is opaque.
          */
-        public static final short ImageIsOpaque = 65;
+        public static final short ImageIsOpaque = 34;
 
         /**
          * The ({0}, {1}) tile has an unexpected size, number of bands or sample layout.
@@ -242,220 +242,215 @@ public final class Resources extends IndexedResourceBundle {
          * Data buffer capacity is insufficient for a grid of {0} cells × {1} bands. Missing {2}
          * elements.
          */
-        public static final short InsufficientBufferCapacity_3 = 71;
+        public static final short InsufficientBufferCapacity_3 = 36;
 
         /**
          * Invalid or unsupported “{1}” expression at index {0}.
          */
-        public static final short InvalidExpression_2 = 56;
+        public static final short InvalidExpression_2 = 37;
 
         /**
          * Iteration is finished.
          */
-        public static final short IterationIsFinished = 36;
+        public static final short IterationIsFinished = 38;
 
         /**
          * Iteration did not started.
          */
-        public static final short IterationNotStarted = 37;
+        public static final short IterationNotStarted = 39;
 
         /**
          * Image number of bands {0,number} does not match the number of sample dimensions
          * ({1,number}).
          */
-        public static final short MismatchedBandCount_2 = 61;
+        public static final short MismatchedBandCount_2 = 40;
 
         /**
          * The bands have different number of sample values.
          */
-        public static final short MismatchedBandSize = 38;
+        public static final short MismatchedBandSize = 41;
 
         /**
          * The bands store sample values using different data types.
          */
-        public static final short MismatchedDataType = 39;
+        public static final short MismatchedDataType = 42;
 
         /**
          * The two images have different size or pixel coordinates.
          */
-        public static final short MismatchedImageLocation = 40;
+        public static final short MismatchedImageLocation = 43;
 
         /**
          * Image {0,choice,0#width|1#height} ({1,number} pixels) does not match the grid extent size
          * ({2,number} cells).
          */
-        public static final short MismatchedImageSize_3 = 62;
+        public static final short MismatchedImageSize_3 = 44;
 
         /**
          * Mismatched type for “{0}” property.
          */
-        public static final short MismatchedPropertyType_1 = 12;
+        public static final short MismatchedPropertyType_1 = 45;
 
         /**
          * The two images use different sample models.
          */
-        public static final short MismatchedSampleModel = 41;
+        public static final short MismatchedSampleModel = 46;
 
         /**
          * The two images have different tile grid.
          */
-        public static final short MismatchedTileGrid = 42;
+        public static final short MismatchedTileGrid = 47;
 
         /**
          * An attribute for ‘{1}’ values where expected, but the “{0}” attribute specifies values of
          * type ‘{2}’.
          */
-        public static final short MismatchedValueClass_3 = 13;
+        public static final short MismatchedValueClass_3 = 48;
 
         /**
          * No category for value {0}.
          */
-        public static final short NoCategoryForValue_1 = 43;
+        public static final short NoCategoryForValue_1 = 49;
 
         /**
          * Can not infer a {0}-dimensional slice from the grid envelope. Dimension {1} has {2,number}
          * cells.
          */
-        public static final short NoNDimensionalSlice_3 = 44;
+        public static final short NoNDimensionalSlice_3 = 50;
 
         /**
          * non-linear in {0} dimension{0,choice,1#|2#s}:
          */
-        public static final short NonLinearInDimensions_1 = 45;
+        public static final short NonLinearInDimensions_1 = 51;
 
         /**
          * Value provided by first expression is not a geometry.
          */
-        public static final short NotAGeometryAtFirstExpression = 57;
+        public static final short NotAGeometryAtFirstExpression = 52;
 
         /**
          * Property “{0}” contains more than one value.
          */
-        public static final short NotASingleton_1 = 14;
+        public static final short NotASingleton_1 = 53;
 
         /**
          * The specified dimensions are not in strictly ascending order.
          */
-        public static final short NotStrictlyOrderedDimensions = 46;
+        public static final short NotStrictlyOrderedDimensions = 54;
 
         /**
          * This operation requires an image with only one band.
          */
-        public static final short OperationRequiresSingleBand = 77;
+        public static final short OperationRequiresSingleBand = 55;
 
         /**
          * The {0} optional library is not available. Geometric operations will ignore that library.
          * Cause is {1}.
          */
-        public static final short OptionalLibraryNotFound_2 = 19;
+        public static final short OptionalLibraryNotFound_2 = 56;
 
         /**
          * The ({0,number}, {1,number}) pixel coordinate is outside iterator domain.
          */
-        public static final short OutOfIteratorDomain_2 = 47;
+        public static final short OutOfIteratorDomain_2 = 57;
 
-        public static final short PointOutsideCoverageDomain_1 = 55;
+        public static final short PointOutsideCoverageDomain_1 = 77;
 
         /**
          * Property “{1}” already exists in feature “{0}”.
          */
-        public static final short PropertyAlreadyExists_2 = 15;
+        public static final short PropertyAlreadyExists_2 = 58;
 
         /**
          * No property named “{1}” has been found in “{0}” feature.
          */
-        public static final short PropertyNotFound_2 = 16;
+        public static final short PropertyNotFound_2 = 59;
 
         /**
          * Tile ({0}, {1}) is unavailable because of error in a previous calculation attempt.
          */
-        public static final short TileErrorFlagSet_2 = 68;
+        public static final short TileErrorFlagSet_2 = 60;
 
         /**
          * Tile ({0}, {1}) is not writable.
          */
-        public static final short TileNotWritable_2 = 78;
+        public static final short TileNotWritable_2 = 61;
 
         /**
          * Too many qualitative categories.
          */
-        public static final short TooManyQualitatives = 48;
+        public static final short TooManyQualitatives = 62;
 
         /**
          * Coordinate operation depends on grid dimension {0}.
          */
-        public static final short TransformDependsOnDimension_1 = 74;
+        public static final short TransformDependsOnDimension_1 = 63;
 
         /**
          * The {0} geometry library is not available in current runtime environment.
          */
-        public static final short UnavailableGeometryLibrary_1 = 21;
+        public static final short UnavailableGeometryLibrary_1 = 64;
 
         /**
          * Can not convert grid coordinate {1} to type ‘{0}’.
          */
-        public static final short UnconvertibleGridCoordinate_2 = 59;
+        public static final short UnconvertibleGridCoordinate_2 = 65;
 
         /**
          * Can not convert sample values.
          */
-        public static final short UnconvertibleSampleValues = 76;
+        public static final short UnconvertibleSampleValues = 66;
 
         /**
          * Expected {0} bands but got {1}.
          */
-        public static final short UnexpectedNumberOfBands_2 = 49;
+        public static final short UnexpectedNumberOfBands_2 = 67;
 
         /**
          * The “{1}” value given to “{0}” property should be separable in {2} components, but we got
          * {3}.
          */
-        public static final short UnexpectedNumberOfComponents_4 = 17;
-
-        /**
-         * The “{0}” feature at {1} has a {3} coordinate values, while we expected a multiple of {2}.
-         */
-        public static final short UnexpectedNumberOfCoordinates_4 = 22;
+        public static final short UnexpectedNumberOfComponents_4 = 68;
 
         /**
          * Raster data type ‘{0}’ is unknown or unsupported.
          */
-        public static final short UnknownDataType_1 = 50;
+        public static final short UnknownDataType_1 = 69;
 
         /**
          * Function “{0}” is unknown or unsupported.
          */
-        public static final short UnknownFunction_1 = 58;
+        public static final short UnknownFunction_1 = 70;
 
         /**
          * Feature named “{0}” has not yet been resolved.
          */
-        public static final short UnresolvedFeatureName_1 = 18;
+        public static final short UnresolvedFeatureName_1 = 71;
 
         /**
          * Coordinate reference system is unspecified.
          */
-        public static final short UnspecifiedCRS = 51;
+        public static final short UnspecifiedCRS = 72;
 
         /**
          * Grid extent is unspecified.
          */
-        public static final short UnspecifiedGridExtent = 52;
+        public static final short UnspecifiedGridExtent = 73;
 
         /**
          * Raster data are unspecified.
          */
-        public static final short UnspecifiedRasterData = 53;
+        public static final short UnspecifiedRasterData = 74;
 
         /**
          * Coordinates transform is unspecified.
          */
-        public static final short UnspecifiedTransform = 54;
+        public static final short UnspecifiedTransform = 75;
 
         /**
          * Unsupported geometry {0}D object.
          */
-        public static final short UnsupportedGeometryObject_1 = 20;
+        public static final short UnsupportedGeometryObject_1 = 76;
     }
 
     /**

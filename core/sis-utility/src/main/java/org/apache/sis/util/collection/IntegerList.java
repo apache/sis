@@ -42,7 +42,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see org.apache.sis.math.Vector
  *
@@ -88,6 +88,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
 
     /**
      * The list size. Initially 0.
+     *
+     * @see #size()
      */
     private int size;
 
@@ -672,6 +674,42 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      */
     public void trimToSize() {
         values = ArraysExt.resize(values, length(size));
+    }
+
+    /**
+     * Compares the content of this list with the given object. This method overrides the
+     * {@link AbstractList#equals(Object) default implementation} for performance reasons.
+     *
+     * @param  other  the other object to compare with this list.
+     * @return {@code true} if both object are equal.
+     *
+     * @since 1.1
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (other != null && other.getClass() == getClass()) {
+            final IntegerList that = (IntegerList) other;
+            if (that.size != size) {
+                return false;
+            }
+            if (that.bitCount == bitCount) {
+                int n = size * bitCount;
+                final int nr = n & OFFSET_MASK;             // Number of remaining values.
+                n >>>= BASE_SHIFT;
+                // TODO: use Arrays.equals(…) with JDK9.
+                for (int i=0; i<n; i++) {
+                    if (that.values[i] != values[i]) {
+                        return false;
+                    }
+                }
+                if (nr == 0) return true;
+                return ((that.values[n] ^ values[n]) & ((1L << nr) - 1)) == 0;
+            }
+        }
+        return super.equals(other);
     }
 
     /**

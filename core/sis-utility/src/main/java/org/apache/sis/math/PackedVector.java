@@ -26,7 +26,7 @@ import org.apache.sis.util.resources.Errors;
  * This offers a compressed storage using only the minimal amount of bits per value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -215,5 +215,18 @@ final class PackedVector extends ArrayVector<Long> {
             }
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotStoreInVector_1, value));
+    }
+
+    /**
+     * Optimization of {@code equals} method for the case where the other object
+     * is another {@code PackedVector}.
+     */
+    @Override
+    boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+        if (other instanceof PackedVector) {
+            final PackedVector d = (PackedVector) other;
+            return d.increment == increment && d.offset == offset && d.data.equals(data);
+        }
+        return super.equals(lower, upper, other, otherOffset);
     }
 }

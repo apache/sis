@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.feature;
+package org.apache.sis.internal.storage.csv;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Date;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -25,41 +23,27 @@ import java.util.logging.LogRecord;
 import java.util.function.Consumer;
 import java.lang.reflect.Array;
 import java.time.Instant;
-import org.opengis.util.LocalName;
 import org.apache.sis.math.Vector;
-import org.apache.sis.util.iso.Names;
-import org.apache.sis.feature.DefaultAttributeType;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.MovingFeatures;
+import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 // Branch-dependent imports
 import org.opengis.feature.Attribute;
-import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 
 
 /**
- * A feature implementation where the geometry is a trajectory and some property values may change with time.
- * In current implementation this is a helper method for updating a {@code Feature} attribute.
- * However in future versions, it could extend {@code DenseFeature} directly.
+ * Builder of feature where the geometry is a trajectory and some property values may change with time.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
-public final class MovingFeature {
-    /**
-     * Definition of characteristics containing a list of time instants in chronological order, without duplicates.
-     */
-    public static final AttributeType<Instant> TIME;
-    static {
-        final LocalName scope = Names.createLocalName("OGC", null, "MF");
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(DefaultAttributeType.NAME_KEY, Names.createScopedName(scope, null, "datetimes"));
-        TIME = new DefaultAttributeType<>(properties, Instant.class, 0, Integer.MAX_VALUE, null);
-    }
-
+final class MovingFeatureBuilder extends MovingFeatures {
     /**
      * The properties having values that may change in time.
      * May contain the values of arbitrary properties (e.g. as {@link String} instances),
@@ -84,8 +68,8 @@ public final class MovingFeature {
         final long startTime;
 
         /**
-         * End in milliseconds since Java epoch of the period when the the property value is valid.
-         * This end time will be adjusted if the property has the same valid in the next time step.
+         * End in milliseconds since Java epoch of the period when the property value is valid.
+         * This end time will be adjusted if the next added period can be merged with this period.
          */
         long endTime;
 
@@ -119,9 +103,11 @@ public final class MovingFeature {
     /**
      * Creates a new moving feature.
      *
+     * @param share          other builder that may share time vectors, or {@code null} if none.
      * @param numProperties  maximal number of dynamic properties.
      */
-    public MovingFeature(final int numProperties) {
+    public MovingFeatureBuilder(final MovingFeatureBuilder share, final int numProperties) {
+        super(share);
         properties = new Period[numProperties];
         count      = new int   [numProperties];
     }
@@ -193,9 +179,7 @@ public final class MovingFeature {
             throw new CorruptedObjectException();
         }
         dest.setValues(UnmodifiableArrayList.wrap(values));
-        final Attribute<Instant> c = TIME.newInstance();
-        c.setValues(new DateList(times));
-        dest.characteristics().values().add(c);
+        setTime(dest, times);
     }
 
     /**
@@ -292,9 +276,7 @@ public final class MovingFeature {
          * Store the geometry and characteristics in the attribute.
          */
         dest.setValue(factory.createPolyline(false, dimension, vectors));
-        final Attribute<Instant> c = TIME.newInstance();
-        c.setValues(new DateList(times));
-        dest.characteristics().values().add(c);
+        setTime(dest, times);
     }
 
     /**

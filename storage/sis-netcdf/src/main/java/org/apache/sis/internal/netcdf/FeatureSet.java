@@ -18,7 +18,6 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -28,11 +27,10 @@ import java.util.stream.StreamSupport;
 import java.util.function.Consumer;
 import java.util.OptionalLong;
 import java.io.IOException;
-import java.util.Collections;
 import org.opengis.metadata.acquisition.GeometryType;
 import org.apache.sis.math.Vector;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.internal.feature.MovingFeature;
+import org.apache.sis.internal.feature.MovingFeatures;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -74,11 +72,11 @@ final class FeatureSet extends DiscreteSampling {
 
     /**
      * The singleton properties (for which there is only one value per feature instance), or an empty array if none.
-     * If non-empty, it typically contains the moving feature identifiers ("mfIdRef"). If {@link #counts} is non-null,
-     * then the length of {@code singletons} variables shall be the same than the length of the {@link #counts} vector.
-     * If {@link #counts} is null, then the first {@code singletons} variable determines the number of features.
+     * If non-empty, it typically contains a single variable which is the moving feature identifiers ("mfIdRef").
+     * If {@link #counts} is non-null, then the length of {@code identifiers[i]} variables shall be the same than
+     * the length of the {@link #counts} vector.
      */
-    private final Variable[] singletons;
+    private final Variable[] identifiers;
 
     /**
      * Whether the {@link #coordinates} array contains a temporal variable.
@@ -89,8 +87,9 @@ final class FeatureSet extends DiscreteSampling {
     /**
      * The variables for <var>x</var>, <var>y</var> and potentially <var>z</var> or <var>t</var> coordinate values.
      * The <var>x</var> and <var>y</var> coordinates are typically longitudes and latitudes, but not necessarily.
-     * If temporal coordinates exist, the time variable must be last and {@link #hasTime} shall be set to {@code true}.
-     * All variables in this array shall have the same length.
+     * If temporal coordinates exist, the time variable must be last and {@link #hasTime} shall be {@code true}.
+     * All variables in this array shall have the same length. If {@link #counts} is non-null, then the length
+     * of {@code coordinates[i]} variables shall be the sum of all {@link #counts} values.
      */
     private final Variable[] coordinates;
 
@@ -107,42 +106,46 @@ final class FeatureSet extends DiscreteSampling {
 
     /**
      * Creates a new discrete sampling parser for features identified by the given variable.
+     * All arrays given to this method are stored by direct reference (they are not cloned).
      *
      * @param  decoder      the source of the features to create.
      * @param  counts       the count of instances per feature, or {@code null} if none.
-     * @param  singletons   the feature identifiers, possibly with other singleton properties.
+     * @param  identifiers  the feature identifiers, possibly with other singleton properties.
      * @param  hasTime      whether the {@code coordinates} array contains a temporal variable.
      * @param  coordinates  <var>x</var>, <var>y</var> and potentially <var>z</var> or <var>t</var> coordinate values.
      * @param  properties   the variables that contain custom time-varying properties.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    private FeatureSet(final Decoder decoder, final Vector counts, final Collection<Variable> singletons,
-            final boolean hasTime, final Collection<Variable> coordinates, final Collection<Variable> properties)
+    private FeatureSet(final Decoder decoder, final Vector counts, final Variable[] identifiers,
+            final boolean hasTime, final Variable[] coordinates, final Variable[] properties)
     {
         super(decoder.geomlib, decoder.listeners);
         this.counts      = counts;
-        this.singletons  = singletons .toArray(new Variable[singletons .size()]);
-        this.coordinates = coordinates.toArray(new Variable[coordinates.size()]);
-        this.properties  = properties .toArray(new Variable[properties .size()]);
+        this.identifiers = identifiers;
+        this.coordinates = coordinates;
+        this.properties  = properties;
         this.hasTime     = hasTime;
         /*
          * Creates a description of the features to be read with following properties:
          *
          *    - Identifier and other properties having a single value per feature instance.
-         *    - Trajectory as a geometry object, potentially with a time characteristic.
+         *    - Trajectory as a geometric object, potentially with a time characteristic.
          *    - Time-varying properties (i.e. properties having a value per instant).
          */
         final FeatureTypeBuilder builder = new FeatureTypeBuilder(decoder.nameFactory, decoder.geomlib, decoder.listeners.getLocale());
-        for (final Variable v : this.singletons) {
+        for (final Variable v : identifiers) {
             final Class<?> type = v.getDataType().getClass(v.getNumDimensions() > 1);
             describe(v, builder.addAttribute(Long.class), false);   // TODO: use type.
         }
-        final AttributeTypeBuilder<?> geometry = builder.addAttribute(counts != null ? GeometryType.LINEAR : GeometryType.POINT);
-        geometry.setName(TRAJECTORY).addRole(AttributeRole.DEFAULT_GEOMETRY);
-        if (hasTime) {
-            geometry.addCharacteristic(MovingFeature.TIME);
+        if (coordinates.length > (hasTime ? 1 : 0)) {
+            final AttributeTypeBuilder<?> geometry = builder.addAttribute(
+                    counts != null ? GeometryType.LINEAR : GeometryType.POINT);
+            geometry.setName(TRAJECTORY).addRole(AttributeRole.DEFAULT_GEOMETRY);
+            if (hasTime) {
+                geometry.addCharacteristic(MovingFeatures.TIME);
+            }
         }
-        for (final Variable v : this.properties) {
+        for (final Variable v : properties) {
             /*
              * Use `Number` type instead than a more specialized subclass because values
              * will be stored in `Vector` objects and that class implements `List<Number>`.
@@ -168,7 +171,7 @@ final class FeatureSet extends DiscreteSampling {
             attribute.setDefinition(desc);
         }
         if (hasTime) {
-            attribute.addCharacteristic(MovingFeature.TIME);
+            attribute.addCharacteristic(MovingFeatures.TIME);
         }
     }
 
@@ -282,8 +285,10 @@ search: for (final Variable counts : decoder.getVariables()) {
             final Variable time = coordinates.remove("T");
             if (time != null) {
                 coordinates.put("T", time);     // Make sure that time is last.
-                features.add(new FeatureSet(decoder, counts.read(), Collections.singleton(identifiers),
-                             true, coordinates.values(), properties));
+                features.add(new FeatureSet(decoder, counts.read(),
+                             new Variable[] {identifiers}, true,
+                             coordinates.values().toArray(new Variable[coordinates.size()]),
+                             properties.toArray(new Variable[properties.size()])));
             }
         }
         return features.toArray(new FeatureSet[features.size()]);
@@ -355,7 +360,7 @@ search: for (final Variable counts : decoder.getVariables()) {
         for (int i=0; ; i++) {
             final Variable[] data;
             switch (i) {
-                case 0: data = singletons;  break;
+                case 0: data = identifiers; break;
                 case 1: data = coordinates; break;
                 case 2: data = properties;  break;
                 default: return OptionalLong.empty();
@@ -402,22 +407,21 @@ search: for (final Variable counts : decoder.getVariables()) {
         private int position;
 
         /**
-         * The singleton properties, or an empty array if none. This is called "identifiers" because
-         * this is usually an array of length 1 with a vector containing feature identifiers.
+         * Values of all singleton properties (typically only identifiers), or an empty array if none.
          *
-         * @see FeatureSet#singletons
+         * @see FeatureSet#identifiers
          */
-        private final Vector[] identifiers;
+        private final Vector[] idValues;
 
         /**
          * Creates a new iterator.
          */
         Iter() throws IOException, DataStoreException {
             count = (int) Math.min(getFeatureCount().orElse(0), Integer.MAX_VALUE);
-            identifiers = new Vector[singletons.length];
-            for (int i=0; i < identifiers.length; i++) {
+            idValues = new Vector[identifiers.length];
+            for (int i=0; i < idValues.length; i++) {
                 // Efficiency should be okay because those vectors are cached.
-                identifiers[i] = singletons[i].read();
+                idValues[i] = identifiers[i].read();
             }
         }
 
@@ -432,10 +436,10 @@ search: for (final Variable counts : decoder.getVariables()) {
         @Override
         public boolean tryAdvance(final Consumer<? super Feature> action) {
             final Vector[] coordinateValues  = new Vector[coordinates.length];
-            final Object[] singleProperties  = new Number[singletons .length];
+            final Object[] singleProperties  = new Number[identifiers.length];
             final Object[] varyingProperties = new Object[properties .length];
             for (int i=0; i < singleProperties.length; i++) {
-                singleProperties[i] = identifiers[i].get(index);
+                singleProperties[i] = idValues[i].get(index);
             }
             final int[] step = {1};
             boolean isEmpty = true;
@@ -477,7 +481,7 @@ search: for (final Variable counts : decoder.getVariables()) {
              */
             final Feature feature = type.newInstance();
             for (int i=0; i < singleProperties.length; i++) {
-                feature.setPropertyValue(singletons[i].getName(), singleProperties[i]);
+                feature.setPropertyValue(identifiers[i].getName(), singleProperties[i]);
             }
             for (int i=0; i<properties.length; i++) {
                 feature.setPropertyValue(properties[i].getName(), varyingProperties[i]);

@@ -337,6 +337,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UndefinedParameter_2 = 27;
 
         /**
+         * The “{0}” feature at {1} has a {3} coordinate values, while we expected a multiple of {2}.
+         */
+        public static final short UnexpectedNumberOfCoordinates_4 = 58;
+
+        /**
          * Format of “{0}” is not recognized.
          */
         public static final short UnknownFormatFor_1 = 14;

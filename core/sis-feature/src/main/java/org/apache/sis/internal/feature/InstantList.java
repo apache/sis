@@ -23,14 +23,14 @@ import org.apache.sis.util.collection.CheckedContainer;
 
 
 /**
- * Unmodifiable lists of instants.
+ * Unmodifiable lists of instants backed by a compressed vector.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
-final class DateList extends AbstractList<Instant> implements CheckedContainer<Instant> {
+final class InstantList extends AbstractList<Instant> implements CheckedContainer<Instant> {
     /**
      * The times in milliseconds since the epoch.
      */
@@ -39,8 +39,17 @@ final class DateList extends AbstractList<Instant> implements CheckedContainer<I
     /**
      * Creates a new list for the given times.
      */
-    DateList(final long[] millis) {
-        times = Vector.create(millis, false).compress(0);
+    InstantList(final Vector times) {
+        this.times = times;
+    }
+
+    /**
+     * Creates a vector for the given times.
+     *
+     * @param  millis  times in milliseconds since the epoch.
+     */
+    static Vector vectorize(final long[] millis) {
+        return Vector.create(millis, false).compress(0);
     }
 
     /**
@@ -53,6 +62,8 @@ final class DateList extends AbstractList<Instant> implements CheckedContainer<I
 
     /**
      * Returns the number of instants in this list.
+     *
+     * @return number of instants in this list.
      */
     @Override
     public int size() {
@@ -61,6 +72,9 @@ final class DateList extends AbstractList<Instant> implements CheckedContainer<I
 
     /**
      * Returns the instant at the given index.
+     *
+     * @param  index  index of the desired extent element.
+     * @return instant at the given index.
      */
     @Override
     public Instant get(final int index) {
