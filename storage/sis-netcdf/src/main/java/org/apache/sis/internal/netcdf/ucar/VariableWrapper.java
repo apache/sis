@@ -29,12 +29,14 @@ import ucar.nc2.Attribute;
 import ucar.nc2.VariableIF;
 import ucar.nc2.dataset.Enhancements;
 import ucar.nc2.dataset.VariableEnhanced;
+import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dataset.CoordinateAxis2D;
 import ucar.nc2.dataset.CoordinateSystem;
 import ucar.nc2.dataset.EnhanceScaleMissing;
 import ucar.nc2.units.SimpleUnit;
 import ucar.nc2.units.DateUnit;
+import ucar.nc2.constants._Coordinate;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
@@ -50,6 +52,7 @@ import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
+import ucar.nc2.constants.AxisType;
 
 
 /**
@@ -252,6 +255,20 @@ final class VariableWrapper extends Variable {
     @Override
     protected boolean isCoordinateSystemAxis() {
         return variable.isCoordinateVariable();
+    }
+
+    /**
+     * Returns the value of the {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
+     */
+    @Override
+    protected String getAxisType() {
+        if (variable instanceof CoordinateAxis) {
+            final AxisType type = ((CoordinateAxis) variable).getAxisType();
+            if (type != null) {
+                return type.name();
+            }
+        }
+        return getAttributeAsString(_Coordinate.AxisType);
     }
 
     /**

@@ -995,7 +995,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 final Ellipsoid     ellipsoid = createEllipsoid(names, linearUnit);
                 final PrimeMeridian meridian  = createPrimeMeridian(names, angularUnit);
                 final GeodeticDatum datum     = getDatumFactory().createGeodeticDatum(properties(name), ellipsoid, meridian);
-                name = Strings.toUpperCase(name, Characters.Filter.LETTERS_AND_DIGITS);
+                name = Strings.toUpperCase(name, Characters.Filter.LETTERS_AND_DIGITS, true);
                 lastName = datum.getName();
                 try {
                     final GeodeticDatum predefined = CommonCRS.valueOf(name).datum();

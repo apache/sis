@@ -30,6 +30,7 @@ import ucar.nc2.dataset.CoordinateSystem;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
@@ -42,7 +43,7 @@ import org.apache.sis.util.ArraysExt;
  * of the grid geometry information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -234,6 +235,7 @@ next:       for (final String name : axisNames) {
         final Axis[] axes = new Axis[targetDim];
         while (--targetDim >= 0) {
             final CoordinateAxis axis = range.get(targetDim);
+            final Variable wrapper = ((DecoderWrapper) decoder).getWrapperFor(axis);
             /*
              * The AttributeNames are for ISO 19115 metadata. They are not used for locating grid cells
              * on Earth, but we nevertheless get them now for making MetadataReader work easier.
@@ -253,6 +255,9 @@ next:       for (final String name : axisNames) {
                 case RadialAzimuth:   abbreviation = 'θ'; break;    // Spherical longitude
                 case RadialElevation: abbreviation = 'Ω'; break;    // Spherical latitude
                 case RadialDistance:  abbreviation = 'r'; break;    // Geocentric radius
+            }
+            if (abbreviation == 0) {
+                abbreviation = org.apache.sis.internal.netcdf.AxisType.abbreviation(wrapper);
             }
             /*
              * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing
@@ -276,8 +281,7 @@ next:       for (final String name : axisNames) {
                  */
             }
             axes[targetDim] = new Axis(abbreviation, axis.getPositive(),
-                    ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i),
-                    ((DecoderWrapper) decoder).getWrapperFor(axis));
+                    ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), wrapper);
         }
         /*
          * We want axes in "natural" order. But the netCDF UCAR library sometime provides axes already

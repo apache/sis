@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Spliterator;
 import java.util.stream.Stream;
@@ -31,11 +33,13 @@ import org.opengis.metadata.acquisition.GeometryType;
 import org.apache.sis.math.Vector;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.feature.MovingFeatures;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.Characters;
 import ucar.nc2.constants.CF;
 
 // Branch-dependent imports
@@ -55,7 +59,8 @@ import org.opengis.feature.FeatureType;
  */
 final class FeatureSet extends DiscreteSampling {
     /**
-     * Kind of features supported by this class. Also used as property name.
+     * Value of {@code "featureType"} global attribute for netCDF files that this class can handle.
+     * Also used as property name for the geometry object.
      */
     static final String TRAJECTORY = "trajectory";
 
@@ -108,7 +113,12 @@ final class FeatureSet extends DiscreteSampling {
      * Creates a new discrete sampling parser for features identified by the given variable.
      * All arrays given to this method are stored by direct reference (they are not cloned).
      *
+     * <p>The {@code name} argument can be anything. A not-too-bad choice (when nothing better is available)
+     * is the name of the first dimension of {@code coordinates} and {@code properties} variables. All those
+     * variables should have that first dimension in common, because {@code create(…)} uses that criterion.</p>
+     *
      * @param  decoder      the source of the features to create.
+     * @param  name         name to give to the feature type.
      * @param  counts       the count of instances per feature, or {@code null} if none.
      * @param  identifiers  the feature identifiers, possibly with other singleton properties.
      * @param  hasTime      whether the {@code coordinates} array contains a temporal variable.
@@ -116,8 +126,8 @@ final class FeatureSet extends DiscreteSampling {
      * @param  properties   the variables that contain custom time-varying properties.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    private FeatureSet(final Decoder decoder, final Vector counts, final Variable[] identifiers,
-            final boolean hasTime, final Variable[] coordinates, final Variable[] properties)
+    private FeatureSet(final Decoder decoder, String name, final Vector counts, final Variable[] identifiers,
+                       final boolean hasTime, final Variable[] coordinates, final Variable[] properties)
     {
         super(decoder.geomlib, decoder.listeners);
         this.counts      = counts;
@@ -153,11 +163,18 @@ final class FeatureSet extends DiscreteSampling {
             final Class<?> type = v.isEnumeration() ? String.class : Number.class;
             describe(v, builder.addAttribute(type).setMaximumOccurs(Integer.MAX_VALUE), hasTime);
         }
-        type = builder.setName("Features").build();     // TODO: get a better name.
+        /*
+         * By default, `name` is a netCDF dimension name (see method javadoc), usually all lower-cases.
+         * Make the first letter upper-case for consistency with SIS convention used for feature types.
+         */
+        name = Strings.toUpperCase(name, Characters.Filter.UNICODE_IDENTIFIER, false);
+        type = builder.setName(name).build();
     }
 
     /**
      * Sets the attribute name, and potentially its definition, from the given variable.
+     * If the variable has a {@code "cf_role"} attribute set {@code "trajectory_id"},
+     * then the attribute will also be declared as an identifier.
      *
      * @param  variable   the variable from which to get metadata.
      * @param  attribute  the attribute to configure with variable metadata.
@@ -173,19 +190,15 @@ final class FeatureSet extends DiscreteSampling {
         if (hasTime) {
             attribute.addCharacteristic(MovingFeatures.TIME);
         }
-    }
-
-    /**
-     * Returns {@code true} if the given attribute value is one of the {@code cf_role} attribute values
-     * supported by this implementation.
-     */
-    private static boolean hasSupportedRole(final Variable variable) {
-        return CF.TRAJECTORY_ID.equalsIgnoreCase(variable.getAttributeAsString(CF.CF_ROLE));
+        if (CF.TRAJECTORY_ID.equalsIgnoreCase(variable.getAttributeAsString(CF.CF_ROLE))) {
+            attribute.addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        }
     }
 
     /**
      * Creates new discrete sampling parsers from the attribute values found in the given decoder.
      *
+     * @param  decoder  the source of the features to create.
      * @throws IllegalArgumentException if the geometric object library is not available.
      * @throws ArithmeticException if the size of a variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
@@ -196,7 +209,7 @@ search: for (final Variable counts : decoder.getVariables()) {
              * Any one-dimensional integer variable having a "sample_dimension" attribute string value
              * will be taken as an indication that we have Discrete Sampling Geometries. That variable
              * shall be counting the number of feature instances, and another variable having the same
-             * dimension (optionally plus a character dimension) shall give the feature identifiers.
+             * dimension (optionally plus a character dimension) should give the feature identifiers.
              * Example:
              *
              *     dimensions:
@@ -208,90 +221,112 @@ search: for (final Variable counts : decoder.getVariables()) {
              *         int counts(identifiers);
              *             counts:sample_dimension = "points";
              */
-            if (counts.getNumDimensions() != 1 || !counts.getDataType().isInteger) {
-                continue;
-            }
-            final String sampleDimName = counts.getAttributeAsString(CF.SAMPLE_DIMENSION);
-            if (sampleDimName == null) {
-                continue;
-            }
-            final Dimension featureDimension = counts.getGridDimensions().get(0);
-            final Dimension sampleDimension = decoder.findDimension(sampleDimName);
-            if (sampleDimension == null) {
-                decoder.listeners.warning(decoder.resources().getString(Resources.Keys.DimensionNotFound_3,
-                                          decoder.getFilename(), counts.getName(), sampleDimName));
-                continue;
-            }
-            /*
-             * We should have another variable of the same name than the feature dimension name
-             * ("identifiers" in above example). That variable should have a "cf_role" attribute
-             * set to one of the values known to current implementation.  If we do not find such
-             * variable, search among other variables before to give up. That second search is not
-             * part of CF convention and will be accepted only if there is no ambiguity.
-             */
-            Variable identifiers = decoder.findVariable(featureDimension.getName());
-            if (identifiers != null && hasSupportedRole(identifiers)) {
-                if (!isScalarOrString(identifiers, featureDimension, decoder)) {
-                    continue;
-                }
-            } else {
-                identifiers = null;
-                for (final Variable alt : decoder.getVariables()) {
-                    if (hasSupportedRole(alt) && isScalarOrString(alt, featureDimension, null)) {
-                        if (identifiers != null) {
-                            identifiers = null;
-                            break;                  // Ambiguity found: consider that we found no replacement.
-                        }
-                        identifiers = alt;
+            if (counts.getNumDimensions() == 1 && counts.getDataType().isInteger) {
+                final String sampleDimName = counts.getAttributeAsString(CF.SAMPLE_DIMENSION);
+                if (sampleDimName != null) {
+                    final Dimension sampleDimension = decoder.findDimension(sampleDimName);
+                    if (sampleDimension != null) {
+                        addFeatureSet(features, decoder, counts, counts.getGridDimensions().get(0), sampleDimension);
+                    } else {
+                        decoder.listeners.warning(decoder.resources().getString(Resources.Keys.DimensionNotFound_3,
+                                                  decoder.getFilename(), counts.getName(), sampleDimName));
                     }
                 }
-                if (identifiers == null) {
-                    decoder.listeners.warning(decoder.resources().getString(Resources.Keys.VariableNotFound_2,
-                                              decoder.getFilename(), featureDimension.getName()));
-                    continue;
-                }
-            }
-            /*
-             * At this point, all information have been verified as valid. Now search all variables having
-             * the expected sample dimension. Those variable contains the actual data. For example if the
-             * sample dimension name is "points", then we may have:
-             *
-             *     double longitude(points);
-             *         longitude:axis = "X";
-             *         longitude:standard_name = "longitude";
-             *         longitude:units = "degrees_east";
-             *     double latitude(points);
-             *         latitude:axis = "Y";
-             *         latitude:standard_name = "latitude";
-             *         latitude:units = "degrees_north";
-             *     double time(points);
-             *         time:axis = "T";
-             *         time:standard_name = "time";
-             *         time:units = "minutes since 2014-11-29 00:00:00";
-             *     short myCustomProperty(points);
-             */
-            final Map<String,Variable> coordinates = new LinkedHashMap<>();
-            final List<Variable> properties  = new ArrayList<>();
-            for (final Variable data : decoder.getVariables()) {
-                if (isScalarOrString(data, sampleDimension, null)) {
-                    final String axisType = data.getAttributeAsString(CF.AXIS);
-                    if (axisType == null) {
-                        properties.add(data);
-                    } else if (coordinates.put(axisType, data) != null) {
-                        continue search;    // Two axes of the same type: abort.
-                    }
-                }
-            }
-            final Variable time = coordinates.remove("T");
-            if (time != null) {
-                coordinates.put("T", time);     // Make sure that time is last.
-                features.add(new FeatureSet(decoder, counts.read(),
-                             new Variable[] {identifiers}, true,
-                             coordinates.values().toArray(new Variable[coordinates.size()]),
-                             properties.toArray(new Variable[properties.size()])));
             }
         }
         return features.toArray(new FeatureSet[features.size()]);
+    }
+
+    /**
+     * Searches all variables having the expected feature dimension or sample dimension.
+     * Those variable contains the actual data. For example if the sample dimension name
+     * is "points", then we may have:
+     *
+     * {@preformat text
+     *     double longitude(points);
+     *         longitude:axis = "X";
+     *         longitude:standard_name = "longitude";
+     *         longitude:units = "degrees_east";
+     *     double latitude(points);
+     *         latitude:axis = "Y";
+     *         latitude:standard_name = "latitude";
+     *         latitude:units = "degrees_north";
+     *     double time(points);
+     *         time:axis = "T";
+     *         time:standard_name = "time";
+     *         time:units = "minutes since 2014-11-29 00:00:00";
+     *     short myCustomProperty(points);
+     * }
+     *
+     * @param  features          where to add the {@code FeatureSet} instance.
+     * @param  decoder           the source of the features to create.
+     * @param  counts            the count of instances per feature, or {@code null} if none.
+     * @param  featureDimension  dimension of properties having a single value per feature instance.
+     * @param  sampleDimension   dimension of properties having multiple values per feature instance.
+     * @return whether a {@code FeatureSet} has been added to the {@code features} collection.
+     */
+    private static boolean addFeatureSet(final List<FeatureSet> features, final Decoder decoder, final Variable counts,
+            final Dimension featureDimension, final Dimension sampleDimension) throws IOException, DataStoreException
+    {
+        final String                 featureName = featureDimension.getName();
+        final boolean                isPointSet  = sampleDimension.equals(featureDimension);
+        final List<Variable>         singletons  = isPointSet ? Collections.emptyList() : new ArrayList<>();
+        final List<Variable>         properties  = new ArrayList<>();
+        final Map<AxisType,Variable> coordinates = new LinkedHashMap<>();
+        for (final Variable data : decoder.getVariables()) {
+            if (data.equals(counts)) {
+                continue;
+            }
+            /*
+             * We should have another variable of the same name than the feature dimension name.
+             * In SIS implementation, this variable is optional. But if present, it should have
+             * the expected dimension. According CF convention that variable should also have a
+             * "cf_role" attribute set to "trajectory_id", but this is not required by SIS.
+             */
+            if (featureName.equalsIgnoreCase(data.getName())) {
+                if (isScalarOrString(data, featureDimension, decoder)) {
+                    (isPointSet ? properties : singletons).add(data);
+                }
+            } else if (!isPointSet && isScalarOrString(data, featureDimension, null)) {
+                /*
+                 * Feature property other than identifiers. Should rarely happen.
+                 */
+                singletons.add(data);
+            } else if (isScalarOrString(data, sampleDimension, null)) {
+                /*
+                 * All other sample property (i.e. property having a value for each temporal value).
+                 * If `isPointSet` is true, then sample properties are actually feature properties.
+                 */
+                final AxisType axisType = AxisType.valueOf(data);
+                if (axisType != null) {
+                    final Variable previous = coordinates.putIfAbsent(axisType, data);
+                    if (previous != null) {
+                        decoder.listeners.warning(decoder.resources().getString(Resources.Keys.DuplicatedAxisType_4,
+                                                  decoder.getFilename(), axisType, previous.getName(), data.getName()));
+                        // TODO: give precedence to which axis?
+                    }
+                } else {
+                    properties.add(data);
+                }
+            }
+        }
+        final Variable time = coordinates.remove(AxisType.T);
+        if (time != null) {
+            coordinates.put(AxisType.T, time);      // Make sure that time is last.
+        }
+        return features.add(new FeatureSet(decoder, featureName,
+                            (counts != null) ? counts.read() : null,
+                            toArray(singletons), time != null,
+                            toArray(coordinates.values()),
+                            toArray(properties)));
+
+    }
+
+    /**
+     * Returns the content of given collection as an array.
+     */
+    private static Variable[] toArray(final Collection<Variable> variables) {
+        return variables.toArray(new Variable[variables.size()]);
     }
 
     /**
@@ -305,9 +340,9 @@ search: for (final Variable counts : decoder.getVariables()) {
      */
     @SuppressWarnings("fallthrough")
     private static boolean isScalarOrString(final Variable data, final Dimension featureDimension, final Decoder decoder) {
-        final List<Dimension> dimensions = data.getGridDimensions();
+        List<Dimension> dimensions = null;
         final int unexpectedDimension;
-        switch (dimensions.size()) {
+        switch (data.getNumDimensions()) {
             default: {                              // Too many dimensions
                 unexpectedDimension = 2;
                 break;
@@ -320,6 +355,7 @@ search: for (final Variable counts : decoder.getVariables()) {
                 // Fall through for checking the first dimension.
             }
             case 1: {
+                dimensions = data.getGridDimensions();
                 if (featureDimension.equals(dimensions.get(0))) {
                     return true;
                 }
@@ -331,6 +367,9 @@ search: for (final Variable counts : decoder.getVariables()) {
             }
         }
         if (decoder != null) {
+            if (dimensions == null) {
+                dimensions = data.getGridDimensions();
+            }
             decoder.listeners.warning(decoder.resources().getString(
                     Resources.Keys.UnexpectedDimensionForVariable_4,
                     decoder.getFilename(), data.getName(),

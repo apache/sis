@@ -196,9 +196,11 @@ public final class Strings extends Static {
      *
      * @param  text     the text to filter.
      * @param  filter   the filter to apply.
+     * @param  all      {@code true} for making all the string in upper-cases,
+     *                  or {@code false} for changing only the first character.
      * @return the filtered text.
      */
-    public static String toUpperCase(final String text, final Characters.Filter filter) {
+    public static String toUpperCase(final String text, final Characters.Filter filter, final boolean all) {
         final int length = text.length();
         int c, i = 0;
         while (true) {
@@ -206,7 +208,8 @@ public final class Strings extends Static {
                 return text;
             }
             c = text.codePointAt(i);
-            if (!filter.contains(c) || Character.toUpperCase(c) != c) {
+            if (!filter.contains(c)) break;
+            if ((i == 0 | all) && Character.toUpperCase(c) != c) {
                 break;
             }
             i += Character.charCount(c);
@@ -219,7 +222,7 @@ public final class Strings extends Static {
         while (i < length) {
             c = text.codePointAt(i);
             if (filter.contains(c)) {
-                buffer.appendCodePoint(Character.toUpperCase(c));
+                buffer.appendCodePoint((i == 0 | all) ? Character.toUpperCase(c) : c);
             }
             i += Character.charCount(c);
         }

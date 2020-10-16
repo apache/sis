@@ -748,7 +748,7 @@ final class LandsatReader extends MetadataBuilder {
              * We ignore the "ELLIPSOID" attribute because it is implied by the datum.
              */
             case "DATUM": {
-                datum = CommonCRS.valueOf(Strings.toUpperCase(value, Characters.Filter.LETTERS_AND_DIGITS));
+                datum = CommonCRS.valueOf(Strings.toUpperCase(value, Characters.Filter.LETTERS_AND_DIGITS, true));
                 break;
             }
             /*

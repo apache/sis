@@ -440,6 +440,13 @@ public abstract class Variable extends Node {
     protected abstract boolean isCoordinateSystemAxis();
 
     /**
+     * Returns the value of {@code "_CoordinateAxisType"} attribute.
+     *
+     * @return Value of {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
+     */
+    protected abstract String getAxisType();
+
+    /**
      * Returns a builder for the grid geometry of this variable, or {@code null} if this variable is not a data cube.
      * Not all variables have a grid geometry. For example collections of features do not have such grid.
      * This method should be invoked only once per variable, but the same builder may be returned by different variables.

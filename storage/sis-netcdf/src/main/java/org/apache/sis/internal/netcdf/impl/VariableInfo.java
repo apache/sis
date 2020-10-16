@@ -430,7 +430,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Returns the value of the {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
      */
-    final String getAxisType() {
+    @Override
+    protected String getAxisType() {
         final Object value = getAttributeValue(_Coordinate.AxisType, "_coordinateaxistype");
         return (value instanceof String) ? (String) value : null;
     }

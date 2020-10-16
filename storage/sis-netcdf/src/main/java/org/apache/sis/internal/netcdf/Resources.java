@@ -116,6 +116,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DimensionNotFound_3 = 1;
 
         /**
+         * Axes “{2}” and “{3}” have the same type “{1}” in netCDF file “{0}”.
+         */
+        public static final short DuplicatedAxisType_4 = 3;
+
+        /**
          * Duplicated axis “{1}” in a grid of netCDF file “{0}”.
          */
         public static final short DuplicatedAxis_2 = 7;
@@ -179,11 +184,6 @@ public final class Resources extends IndexedResourceBundle {
          * NetCDF file “{0}” uses unsupported data type {2} for variable “{1}”.
          */
         public static final short UnsupportedDataType_3 = 5;
-
-        /**
-         * Variable “{1}” is not found in the “{0}” file.
-         */
-        public static final short VariableNotFound_2 = 3;
     }
 
     /**
