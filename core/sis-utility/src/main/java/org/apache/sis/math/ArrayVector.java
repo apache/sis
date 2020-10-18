@@ -33,6 +33,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.measure.NumberRange;
 
 
@@ -256,16 +257,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns whether this vector in the given range is equals to the specified vector. */
-        @Override boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+        @Override boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other instanceof Doubles) {
-                // TODO: replace by Arrays.equals(…) with JDK9.
-                final double[] cmp = ((Doubles) other).array;
-                while (lower < upper) {
-                    if (Double.doubleToLongBits(array[lower++]) != Double.doubleToLongBits(cmp[otherOffset++])) {
-                        return false;
-                    }
-                }
-                return true;
+                return JDK9.equals(array, lower, upper,
+                        ((Doubles) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
         }
@@ -363,16 +358,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns whether this vector in the given range is equals to the specified vector. */
-        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+        @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                // TODO: replace by Arrays.equals(…) with JDK9.
-                final float[] cmp = ((Floats) other).array;
-                while (lower < upper) {
-                    if (Float.floatToIntBits(array[lower++]) != Float.floatToIntBits(cmp[otherOffset++])) {
-                        return false;
-                    }
-                }
-                return true;
+                return JDK9.equals(array, lower, upper,
+                        ((Floats) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
         }
@@ -507,16 +496,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns whether this vector in the given range is equals to the specified vector. */
-        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+        @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                // TODO: replace by Arrays.equals(…) with JDK9.
-                final long[] cmp = ((Longs) other).array;
-                while (lower < upper) {
-                    if (array[lower++] != cmp[otherOffset++]) {
-                        return false;
-                    }
-                }
-                return true;
+                return JDK9.equals(array, lower, upper,
+                        ((Longs) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
         }
@@ -626,16 +609,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns whether this vector in the given range is equals to the specified vector. */
-        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+        @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                // TODO: replace by Arrays.equals(…) with JDK9.
-                final int[] cmp = ((Integers) other).array;
-                while (lower < upper) {
-                    if (array[lower++] != cmp[otherOffset++]) {
-                        return false;
-                    }
-                }
-                return true;
+                return JDK9.equals(array, lower, upper,
+                        ((Integers) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
         }
@@ -749,16 +726,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns whether this vector in the given range is equals to the specified vector. */
-        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+        @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                // TODO: replace by Arrays.equals(…) with JDK9.
-                final short[] cmp = ((Shorts) other).array;
-                while (lower < upper) {
-                    if (array[lower++] != cmp[otherOffset++]) {
-                        return false;
-                    }
-                }
-                return true;
+                return JDK9.equals(array, lower, upper,
+                        ((Shorts) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
         }
@@ -849,14 +820,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equals to the specified vector. */
         @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
             if (other.getClass() == getClass()) {
-                // TODO: replace by Arrays.equals(…) with JDK9.
-                final byte[] cmp = ((Bytes) other).array;
-                while (lower < upper) {
-                    if (array[lower++] != cmp[otherOffset++]) {
-                        return false;
-                    }
-                }
-                return true;
+                return JDK9.equals(array, lower, upper,
+                        ((Bytes) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
         }

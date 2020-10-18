@@ -218,15 +218,15 @@ final class PackedVector extends ArrayVector<Long> {
     }
 
     /**
-     * Optimization of {@code equals} method for the case where the other object
+     * Optimization of {@code equals(…)} method for the case where the other object
      * is another {@code PackedVector}.
      */
     @Override
-    boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+    public boolean equals(final Object other) {
         if (other instanceof PackedVector) {
             final PackedVector d = (PackedVector) other;
             return d.increment == increment && d.offset == offset && d.data.equals(data);
         }
-        return super.equals(lower, upper, other, otherOffset);
+        return super.equals(other);
     }
 }

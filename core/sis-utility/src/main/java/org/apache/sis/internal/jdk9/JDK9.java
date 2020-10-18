@@ -159,4 +159,112 @@ public final class JDK9 {
     public static long multiplyFull​(int x, int y) {
         return ((long) x) * ((long) y);
     }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
+    public static boolean equals(final byte[] a, int ai, final int aUp,
+                                 final byte[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (a[ai++] != b[bi++]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
+    public static boolean equals(final short[] a, int ai, final int aUp,
+                                 final short[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (a[ai++] != b[bi++]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
+    public static boolean equals(final int[] a, int ai, final int aUp,
+                                 final int[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (a[ai++] != b[bi++]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
+    public static boolean equals(final long[] a, int ai, final int aUp,
+                                 final long[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (a[ai++] != b[bi++]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
+    public static boolean equals(final float[] a, int ai, final int aUp,
+                                 final float[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (Float.floatToIntBits(a[ai++]) != Float.floatToIntBits(b[bi++])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
+    public static boolean equals(final double[] a, int ai, final int aUp,
+                                 final double[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (Double.doubleToLongBits(a[ai++]) != Double.doubleToLongBits(b[bi++])) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

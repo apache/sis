@@ -32,6 +32,7 @@ import java.io.Serializable;
 import java.io.ObjectOutputStream;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -699,11 +700,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
                 int n = size * bitCount;
                 final int nr = n & OFFSET_MASK;             // Number of remaining values.
                 n >>>= BASE_SHIFT;
-                // TODO: use Arrays.equals(…) with JDK9.
-                for (int i=0; i<n; i++) {
-                    if (that.values[i] != values[i]) {
-                        return false;
-                    }
+                if (!JDK9.equals(values, 0, n, that.values, 0, n)) {
+                    return false;
                 }
                 if (nr == 0) return true;
                 return ((that.values[n] ^ values[n]) & ((1L << nr) - 1)) == 0;
