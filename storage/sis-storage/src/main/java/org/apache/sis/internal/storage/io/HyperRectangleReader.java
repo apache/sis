@@ -128,7 +128,7 @@ public final class HyperRectangleReader {
         final long[] strides = new long[region.getDimension() - contiguousDataDimension];
         final int[]   cursor = new int[strides.length];
         final int sampleSize = sampleSize();
-        long  streamPosition = Math.addExact(origin, Math.multiplyExact(region.startAt, sampleSize));
+        long  streamPosition = Math.addExact(origin, region.offset(sampleSize));
         int    arrayPosition = 0;
         for (int i=0; i<strides.length; i++) {
             strides[i] = region.stride(i + contiguousDataDimension, contiguousDataLength, sampleSize);

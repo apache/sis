@@ -192,8 +192,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         }
         this.dataType = dataType;
         /*
-         * The 'size' value is provided in the netCDF files, but doesn't need to be stored since it
-         * is redundant with the dimension lengths and is not large enough for big variables anyway.
+         * The `size` value is provided in the netCDF files, but does not need to be stored because it can
+         * be computed from dimension lengths and its type is not wide enough for large variables anyway.
          * Instead we compute the length ourselves, excluding the unlimited dimension.
          */
         if (dataType != null && (offsetToNextRecord = dataType.size()) != 0) {
@@ -276,9 +276,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     static void complete(final VariableInfo[] variables) {
         final Set<CharSequence> referencedAsAxis = new HashSet<>();
         final VariableInfo[] unlimited = new VariableInfo[variables.length];
-        int     count        = 0;               // Number of valid elements in the 'unlimited' array.
+        int     count        = 0;               // Number of valid elements in the `unlimited` array.
         long    recordStride = 0;               // Sum of the size of all variables having a unlimited dimension.
-        boolean isUnknown    = false;           // True if 'total' is actually unknown.
+        boolean isUnknown    = false;           // True if `total` is actually unknown.
         for (final VariableInfo variable : variables) {
             // Opportunistically store names of all axes listed in "coordinates" attributes of all variables.
             referencedAsAxis.addAll(Arrays.asList(variable.getCoordinateVariables()));
@@ -594,7 +594,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         replaceNaN(array);
         /*
          * If we can convert a double[] array to a float[] array, we should do that before
-         * to invoke 'setValues(array)' - we can not rely on data.compress(tolerance). The
+         * to invoke `setValues(array)` - we can not rely on data.compress(tolerance). The
          * reason is because we assume that float[] arrays are accurate in base 10 even if
          * the data were originally stored as doubles. The Vector class does not make such
          * assumption since it is specific to what we observe with netCDF files. To enable

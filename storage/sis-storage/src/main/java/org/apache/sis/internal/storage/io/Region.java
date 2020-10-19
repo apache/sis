@@ -69,6 +69,7 @@ public final class Region {
      *   <li><i>etc.</i></li>
      * </ol>
      *
+     * Values are determined by the {@code subsamplings} argument given at construction time.
      * The length of this array is the hyper-rectangle dimension plus one.
      */
     private final long[] skips;
@@ -128,11 +129,12 @@ public final class Region {
      * The strides are computed automatically at construction time, but this method can be invoked in some rare cases
      * where those values need to be modified (example: for adapting to the layout of netCDF "unlimited" variable).
      *
-     * <div class="note"><b>Example:</b> in a cube of dimension 10×10×10, the number of values between indices
-     * (0,0,1) and (0,0,2) is 100. If the values type is {@code float}, invoking {@code increaseStride(1, 12)}
-     * will increase this value to 103 (computed as 100 + 12/{@value Float#SIZE}). {@link HyperRectangleReader}
-     * will still read only the requested 100 values, but will skip 3 more values when moving from plane 1 to
-     * plane 2.</div>
+     * <div class="note"><b>Example:</b>
+     * in a cube of dimension 10×10×10, the number of values between indices (0,0,1) and (0,0,2) is 100.
+     * If the values type is {@code float}, invoking {@code setAdditionalByteOffset(1, 12)} will increase
+     * this value to 103 (computed as 100 + 12/{@value Float#BYTES}).
+     * {@link HyperRectangleReader} will still read only the requested 100 values,
+     * but will skip 3 more values when moving from plane 1 to plane 2.</div>
      *
      * This method is the only one in this {@link Region} class to use a count of bytes instead than a count
      * of sample values.
@@ -167,13 +169,36 @@ public final class Region {
         for (i=0; i<dimension; i++) {
             if (skips[i] != 0) break;
         }
+        if (skipBytes != null) {
+            final int n = Math.min(i, skipBytes.length);
+            for (int j=0; j<n; j++) {
+                if (skipBytes[j] != 0) {
+                    return j;
+                }
+            }
+        }
         return i;
     }
 
     /**
-     * Computes the number of stride for the given dimension. Caller must provide a base stride value,
+     * Returns the offset in bytes where reading should start.
+     * Offset is relative to the first sample value of the hyper-cube.
+     *
+     * @param  sampleSize   size of sample values, in bytes.
+     * @return offset in bytes relative to the first sample value.
+     */
+    final long offset(long sampleSize) {
+        if (skipBytes != null) {
+            // This additional offset is in bytes.
+            sampleSize = addExact(sampleSize, skipBytes[0]);
+        }
+        return Math.multiplyExact(startAt, sampleSize);
+    }
+
+    /**
+     * Computes stride in number of bytes for the given dimension. Caller must provide a base stride value,
      * which is the stride that we would have in absence of subregion and additional bytes to skip.
-     * This method adds the given base the number of bytes to skip.
+     * This method adds to that given base the number of bytes to skip.
      *
      * @param  dimension    the dimension for which to compute the stride.
      * @param  base         stride that we would have in absence of subregion and bytes to skip.
