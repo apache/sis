@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.netcdf.impl;
+package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -24,8 +24,8 @@ import java.util.regex.Pattern;
 import java.util.GregorianCalendar;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.storage.DataStoreContentException;
 
 
 /**
@@ -33,7 +33,7 @@ import org.apache.sis.storage.DataStoreContentException;
  * We handle them in a separated class for now and may refactor later in a more general mechanism for providing extensions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-315">SIS-315</a>
  *
@@ -84,10 +84,10 @@ final class HYCOM {
      * In this example, the real units of {@code Date(MT)} will be taken from {@code MT(MT)}, which is
      * "days since 1900-12-31 00:00:00".
      */
-    static void convert(final ChannelDecoder decoder, final VariableInfo[] variables) throws IOException, DataStoreContentException {
+    static void convert(final Decoder decoder, final Variable[] variables) throws IOException, DataStoreException {
         Matcher matcher = null;
-        for (final VariableInfo variable : variables) {
-            if (variable.dimensions.length == 1) {
+        for (final Variable variable : variables) {
+            if (variable.getNumDimensions() == 1) {
                 final String units = variable.getUnitsString();
                 if (units != null) {
                     if (matcher == null) {
@@ -96,7 +96,8 @@ final class HYCOM {
                         matcher.reset(units);
                     }
                     if (matcher.matches()) {
-                        Instant epoch = variable.setUnit(decoder.findVariable(variable.dimensions[0].name), Units.DAY);
+                        final Dimension dimension = variable.getGridDimensions().get(0);
+                        Instant epoch = variable.setUnit(decoder.findVariable(dimension.getName()), Units.DAY);
                         if (epoch == null) {
                             epoch = Instant.EPOCH;
                         }

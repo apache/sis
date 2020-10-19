@@ -166,6 +166,7 @@ public final class ChannelDecoder extends Decoder {
      * its effect is local to that variable.
      *
      * @see #NAME_ENCODING
+     * @see #getEncoding()
      * @see #readValues(DataType, int)
      */
     private Charset encoding;
@@ -631,18 +632,6 @@ public final class ChannelDecoder extends Decoder {
         return variables;
     }
 
-    /**
-     * Checks and potentially modifies the content of this dataset for conventions other than CF-conventions.
-     * This method should be invoked after construction for handling the particularities of some datasets
-     * (HYCOM, …).
-     *
-     * @throws IOException if an error occurred while reading the channel.
-     * @throws DataStoreContentException if an error occurred while interpreting the netCDF file content.
-     */
-    public final void applyOtherConventions() throws IOException, DataStoreContentException {
-        HYCOM.convert(this, variables);
-    }
-
 
 
     // --------------------------------------------------------------------------------------------
@@ -880,6 +869,17 @@ public final class ChannelDecoder extends Decoder {
             listeners.warning(e);
         }
         return dates;
+    }
+
+    /**
+     * Returns the encoding for attribute or variable data.
+     * This is <strong>not</strong> the encoding of netCDF names.
+     *
+     * @return encoding of data (not the encoding of netCDF names).
+     */
+    @Override
+    public Charset getEncoding() {
+        return encoding;
     }
 
     /**

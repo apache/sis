@@ -29,6 +29,7 @@ import ucar.nc2.constants.CF;
 /**
  * Type of coordinate system axis, in the order they should appears for a "normalized" coordinate reference system.
  * The enumeration name matches the name of the {@code "axis"} attribute in CF-convention.
+ * Enumeration order is the desired order of coordinate values.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

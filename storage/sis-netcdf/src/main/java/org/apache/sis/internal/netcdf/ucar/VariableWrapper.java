@@ -80,13 +80,6 @@ final class VariableWrapper extends Variable {
     private final VariableIF raw;
 
     /**
-     * The values of the whole variable, or {@code null} if not yet read. This vector should be assigned only
-     * for relatively small variables, or for variables that are critical to the use of other variables
-     * (for example the values in coordinate system axes).
-     */
-    private transient Vector values;
-
-    /**
      * {@code true} if this variable is an enumeration.
      */
     private final boolean isEnumeration;
@@ -466,24 +459,27 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Notifies the parent class that UCAR library may cache the values provided by this variable.
+     * This is an indication that the parent class should not invoke {@link Vector#compress(double)}.
+     * Compressing vectors is useful only if the original array is discarded.
+     * But the UCAR library has its own cache mechanism which may keep references to the original arrays.
+     * Consequently compressing vectors may result in data being duplicated.
+     */
+    @Override
+    protected boolean isExternallyCached() {
+        return true;
+    }
+
+    /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * This method may replace fill/missing values by NaN values and caches the returned vector.
+     *
+     * @see #read()
      */
     @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Vector read() throws IOException {
-        if (values == null) {
-            final Array array = variable.read();                // May be already cached by the UCAR library.
-            values = createDecimalVector(get1DJavaArray(array), variable.isUnsigned());
-            values = SHARED_VECTORS.unique(values);
-            /*
-             * Do not invoke Vector.compress(…). Compressing vectors is useful only if the original array
-             * is discarded. But the UCAR library has its own cache mechanism which may keep references to
-             * the original arrays. Consequently compressing vectors may result in data being duplicated.
-             */
-        }
-        return values;
+    protected Object readFully() throws IOException {
+        return get1DJavaArray(variable.read());             // May be already cached by the UCAR library.
     }
 
     /**
@@ -540,7 +536,7 @@ final class VariableWrapper extends Variable {
      * This method is invoked only for variables that represent a coordinate system axis.
      */
     @Override
-    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, final Vector values)
+    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, final Vector data)
             throws IOException, DataStoreException
     {
         if (variable instanceof CoordinateAxis1D) {
@@ -559,7 +555,7 @@ final class VariableWrapper extends Variable {
                  */
             }
         }
-        return super.trySetTransform(gridToCRS, srcDim, tgtDim, values);
+        return super.trySetTransform(gridToCRS, srcDim, tgtDim, data);
     }
 
     /**

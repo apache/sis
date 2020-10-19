@@ -277,9 +277,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
         Object keepOpen;
         final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
         if (input != null) try {
-            final ChannelDecoder cd = new ChannelDecoder(input, connector.getOption(OptionKey.ENCODING), geomlib, listeners);
-            cd.applyOtherConventions();
-            decoder = cd;
+            decoder = new ChannelDecoder(input, connector.getOption(OptionKey.ENCODING), geomlib, listeners);
             keepOpen = input;
         } catch (DataStoreException | ArithmeticException e) {
             final String path = connector.getStorageAs(String.class);
@@ -297,6 +295,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             decoder = createByReflection(keepOpen, true, geomlib, listeners);
         }
         connector.closeAllExcept(keepOpen);
+        decoder.applyOtherConventions();
         return decoder;
     }
 

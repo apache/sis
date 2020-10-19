@@ -50,7 +50,6 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
 
@@ -138,6 +137,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
 
     /**
      * The netCDF type of data, or {@code null} if unknown.
+     *
+     * @see #getDataType()
      */
     private final DataType dataType;
 
@@ -157,13 +158,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * because requested more than once.
      */
     boolean isCoordinateSystemAxis;
-
-    /**
-     * The values of the whole variable, or {@code null} if not yet read. This vector should be assigned only
-     * for relatively small variables, or for variables that are critical to the use of other variables
-     * (for example the values in coordinate system axes).
-     */
-    private transient Vector values;
 
     /**
      * Creates a new variable.
@@ -572,78 +566,45 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Sets the values in this variable. The values are normally read from the netCDF file by the {@link #read()} method,
-     * but this {@code setValues(Object)} method may also be invoked if we want to overwrite those values.
-     *
-     * @param  array  the values as an array of primitive type (for example {@code float[]}.
-     */
-    final void setValues(final Object array) {
-        Vector data = createDecimalVector(array, dataType.isUnsigned);
-        /*
-         * This method is usually invoked with vector of increasing or decreasing values. Set a tolerance threshold to the
-         * precision of greatest (in magnitude) number, provided that this precision is not larger than increment. If values
-         * are not sorted in increasing or decreasing order, the tolerance computed below will be smaller than it could be.
-         * This is okay since it will cause more conservative compression (i.e. it does not increase the risk of data loss).
-         */
-        double tolerance = 0;
-        if (Numbers.isFloat(data.getElementType())) {
-            final int n = data.size() - 1;
-            if (n >= 0) {
-                double first = data.doubleValue(0);
-                double last  = data.doubleValue(n);
-                double inc   = Math.abs((last - first) / n);
-                if (!Double.isNaN(inc)) {
-                    double ulp = Math.ulp(Math.max(Math.abs(first), Math.abs(last)));
-                    tolerance = Math.min(inc, ulp);
-                }
-            }
-        }
-        values = data.compress(tolerance);
-        values = SHARED_VECTORS.unique(values);
-    }
-
-    /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * Fill values/missing values are replaced by NaN if {@link #hasRealValues()} is {@code true}.
      * The vector is cached and returned as-is in all future invocation of this method.
      *
      * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     *
+     * @see #read()
      */
     @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Vector read() throws IOException, DataStoreContentException {
-        if (values == null) {
-            if (reader == null) {
-                throw new DataStoreContentException(unknownType());
-            }
-            final int    dimension   = dimensions.length;
-            final long[] lower       = new long[dimension];
-            final long[] upper       = new long[dimension];
-            final int [] subsampling = new int [dimension];
-            for (int i=0; i<dimension; i++) {
-                upper[i] = dimensions[(dimension - 1) - i].length();
-                subsampling[i] = 1;
-            }
-            final Region region = new Region(upper, lower, upper, subsampling);
-            applyUnlimitedDimensionStride(region);
-            Object array = reader.read(region);
-            replaceNaN(array);
-            /*
-             * If we can convert a double[] array to a float[] array, we should do that before
-             * to invoke 'setValues(array)' - we can not rely on data.compress(tolerance). The
-             * reason is because we assume that float[] arrays are accurate in base 10 even if
-             * the data were originally stored as doubles. The Vector class does not make such
-             * assumption since it is specific to what we observe with netCDF files. To enable
-             * this assumption, we need to convert to float[] before createDecimalVector(…).
-             */
-            if (array instanceof double[]) {
-                final float[] copy = ArraysExt.copyAsFloatsIfLossless((double[]) array);
-                if (copy != null) array = copy;
-            }
-            setValues(array);
+    protected Object readFully() throws IOException, DataStoreContentException {
+        if (reader == null) {
+            throw new DataStoreContentException(unknownType());
         }
-        return values;
+        final int    dimension   = dimensions.length;
+        final long[] lower       = new long[dimension];
+        final long[] upper       = new long[dimension];
+        final int [] subsampling = new int [dimension];
+        for (int i=0; i<dimension; i++) {
+            upper[i] = dimensions[(dimension - 1) - i].length();
+            subsampling[i] = 1;
+        }
+        final Region region = new Region(upper, lower, upper, subsampling);
+        applyUnlimitedDimensionStride(region);
+        Object array = reader.read(region);
+        replaceNaN(array);
+        /*
+         * If we can convert a double[] array to a float[] array, we should do that before
+         * to invoke 'setValues(array)' - we can not rely on data.compress(tolerance). The
+         * reason is because we assume that float[] arrays are accurate in base 10 even if
+         * the data were originally stored as doubles. The Vector class does not make such
+         * assumption since it is specific to what we observe with netCDF files. To enable
+         * this assumption, we need to convert to float[] before createDecimalVector(…).
+         */
+        if (array instanceof double[]) {
+            final float[] copy = ArraysExt.copyAsFloatsIfLossless((double[]) array);
+            if (copy != null) array = copy;
+        }
+        return array;
     }
 
     /**
@@ -676,9 +637,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     public Vector read(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
         if (reader == null) {
             throw new DataStoreContentException(unknownType());
-        }
-        if (values != null) {
-            throw new DataStoreException();     // TODO: create a view.
         }
         /*
          * NetCDF sorts datas in reverse dimension order. Example:

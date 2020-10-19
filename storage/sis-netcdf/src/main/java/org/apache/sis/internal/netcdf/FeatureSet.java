@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.EnumMap;
 import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -121,13 +121,13 @@ final class FeatureSet extends DiscreteSampling {
      * @param  name         name to give to the feature type.
      * @param  counts       the count of instances per feature, or {@code null} if none.
      * @param  identifiers  the feature identifiers, possibly with other singleton properties.
-     * @param  hasTime      whether the {@code coordinates} array contains a temporal variable.
      * @param  coordinates  <var>x</var>, <var>y</var> and potentially <var>z</var> or <var>t</var> coordinate values.
+     * @param  hasTime      whether the {@code coordinates} array contains a temporal variable.
      * @param  properties   the variables that contain custom time-varying properties.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
     private FeatureSet(final Decoder decoder, String name, final Vector counts, final Variable[] identifiers,
-                       final boolean hasTime, final Variable[] coordinates, final Variable[] properties)
+                       final Variable[] coordinates, final boolean hasTime, final Variable[] properties)
     {
         super(decoder.geomlib, decoder.listeners);
         this.counts      = counts;
@@ -145,7 +145,7 @@ final class FeatureSet extends DiscreteSampling {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder(decoder.nameFactory, decoder.geomlib, decoder.listeners.getLocale());
         for (final Variable v : identifiers) {
             final Class<?> type = v.getDataType().getClass(v.getNumDimensions() > 1);
-            describe(v, builder.addAttribute(Long.class), false);   // TODO: use type.
+            describe(v, builder.addAttribute(type), false);
         }
         if (coordinates.length > (hasTime ? 1 : 0)) {
             final AttributeTypeBuilder<?> geometry = builder.addAttribute(
@@ -272,7 +272,7 @@ search: for (final Variable counts : decoder.getVariables()) {
         final boolean                isPointSet  = sampleDimension.equals(featureDimension);
         final List<Variable>         singletons  = isPointSet ? Collections.emptyList() : new ArrayList<>();
         final List<Variable>         properties  = new ArrayList<>();
-        final Map<AxisType,Variable> coordinates = new LinkedHashMap<>();
+        final Map<AxisType,Variable> coordinates = new EnumMap<>(AxisType.class);
         for (final Variable data : decoder.getVariables()) {
             if (data.equals(counts)) {
                 continue;
@@ -301,23 +301,19 @@ search: for (final Variable counts : decoder.getVariables()) {
                 if (axisType != null) {
                     final Variable previous = coordinates.putIfAbsent(axisType, data);
                     if (previous != null) {
+                        // Duplicated axis type. Keep the first axis in declaration order.
                         decoder.listeners.warning(decoder.resources().getString(Resources.Keys.DuplicatedAxisType_4,
                                                   decoder.getFilename(), axisType, previous.getName(), data.getName()));
-                        // TODO: give precedence to which axis?
                     }
                 } else {
                     properties.add(data);
                 }
             }
         }
-        final Variable time = coordinates.remove(AxisType.T);
-        if (time != null) {
-            coordinates.put(AxisType.T, time);      // Make sure that time is last.
-        }
         return features.add(new FeatureSet(decoder, featureName,
                             (counts != null) ? counts.read() : null,
-                            toArray(singletons), time != null,
-                            toArray(coordinates.values()),
+                            toArray(singletons),
+                            toArray(coordinates.values()), coordinates.containsKey(AxisType.T),
                             toArray(properties)));
 
     }
@@ -450,17 +446,17 @@ search: for (final Variable counts : decoder.getVariables()) {
          *
          * @see FeatureSet#identifiers
          */
-        private final Vector[] idValues;
+        private final List<?>[] idValues;
 
         /**
          * Creates a new iterator.
          */
         Iter() throws IOException, DataStoreException {
             count = (int) Math.min(getFeatureCount().orElse(0), Integer.MAX_VALUE);
-            idValues = new Vector[identifiers.length];
+            idValues = new List<?>[identifiers.length];
             for (int i=0; i < idValues.length; i++) {
-                // Efficiency should be okay because those vectors are cached.
-                idValues[i] = identifiers[i].read();
+                // Efficiency should be okay because those lists are cached.
+                idValues[i] = identifiers[i].readAnyType();
             }
         }
 
@@ -475,7 +471,7 @@ search: for (final Variable counts : decoder.getVariables()) {
         @Override
         public boolean tryAdvance(final Consumer<? super Feature> action) {
             final Vector[] coordinateValues  = new Vector[coordinates.length];
-            final Object[] singleProperties  = new Number[identifiers.length];
+            final Object[] singleProperties  = new Object[identifiers.length];
             final Object[] varyingProperties = new Object[properties .length];
             for (int i=0; i < singleProperties.length; i++) {
                 singleProperties[i] = idValues[i].get(index);
