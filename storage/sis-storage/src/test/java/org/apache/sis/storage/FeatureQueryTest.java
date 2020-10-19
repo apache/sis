@@ -233,4 +233,37 @@ public final strictfp class FeatureQueryTest extends TestCase {
         assertEquals("Unnamed #2", properties.next().getName().toString());
         assertFalse(properties.hasNext());
     }
+
+    /**
+     * Tests {@link FeatureQuery#setProjection(FeatureQuery.NamedExpression...)} on an abstract feature type.
+     * We expect the column to be defined even if the property name is undefined on the feature type.
+     * This case happens when the {@link FeatureSet} contains features with inherited types.
+     *
+     * @throws DataStoreException if an error occurred while executing the query.
+     */
+    @Test
+    public void testColumnsAbstractType() throws DataStoreException {
+        final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
+        query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1"),  (String) null),
+                            new FeatureQuery.NamedExpression(ff.property("unknown"), "unexpected"));
+        query.setLimit(1);
+
+        final FeatureSet fs = query.execute(featureSet);
+        final Feature result = TestUtilities.getSingleton(fs.features(false).collect(Collectors.toList()));
+
+        // Check result type.
+        final FeatureType resultType = result.getType();
+        assertEquals("Test", resultType.getName().toString());
+        assertEquals(2, resultType.getProperties(true).size());
+        final PropertyType pt1 = resultType.getProperty("value1");
+        final PropertyType pt2 = resultType.getProperty("unexpected");
+        assertTrue(pt1 instanceof AttributeType);
+        assertTrue(pt2 instanceof AttributeType);
+        assertEquals(Integer.class, ((AttributeType) pt1).getValueClass());
+        assertEquals(Object.class,  ((AttributeType) pt2).getValueClass());
+
+        // Check feature property values.
+        assertEquals(3,    result.getPropertyValue("value1"));
+        assertEquals(null, result.getPropertyValue("unexpected"));
+    }
 }
