@@ -877,8 +877,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @return encoding of data (not the encoding of netCDF names).
      */
-    @Override
-    public Charset getEncoding() {
+    final Charset getEncoding() {
         return encoding;
     }
 

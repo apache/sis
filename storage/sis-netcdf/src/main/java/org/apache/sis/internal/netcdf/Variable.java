@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.time.Instant;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
@@ -42,7 +41,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.WeakHashSet;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -1010,7 +1008,7 @@ public abstract class Variable extends Node {
                 while (n > 0) {
                     count = Math.multiplyExact(count, Math.toIntExact(dimensions.get(--n).length()));
                 }
-                final String[] strings = createStringArray((byte[]) array, count, length, decoder.getEncoding());
+                final String[] strings = createStringArray(array, count, length);
                 /*
                  * Following method calls take the array reference without cloning it.
                  * Consequently creating those two objects now (even if we may not use them) is reasonably cheap.
@@ -1058,39 +1056,16 @@ public abstract class Variable extends Node {
      * For each element, leading and trailing spaces and control codes are trimmed.
      * The array does not contain null element but may contain empty strings.
      *
-     * @param  chars     the "two-dimensional" array of characters stored in a flat array.
-     * @param  count     number of string elements (size of first dimension).
-     * @param  length    number of characters in each element (size of second dimension).
-     * @param  encoding  conversion from bytes to characters.
+     * <p>The implementation of this method is the same code duplicated in subclasses,
+     * except that one subclass (the SIS implementation) expects a {@code byte[]} array
+     * and the other subclass (the wrapper around UCAR library) expects a {@code char[]} array.</p>
+     *
+     * @param  chars   the "two-dimensional" array stored in a flat {@code byte[]} or {@code char[]} array.
+     * @param  count   number of string elements (size of first dimension).
+     * @param  length  number of characters in each element (size of second dimension).
      * @return array of character strings.
      */
-    private static String[] createStringArray(final byte[] chars, final int count, final int length, final Charset encoding) {
-        final String[] strings = new String[count];
-        String previous = "";                       // For sharing same `String` instances when same value is repeated.
-        int plo = 0, phi = 0;                       // Index range of bytes used for building the previous string.
-        int lower = 0;
-        for (int i=0; i<count; i++) {
-            String element = "";
-            final int upper = lower + length;
-            for (int j=upper; --j >= lower;) {
-                if (Byte.toUnsignedInt(chars[j]) > ' ') {
-                    while (Byte.toUnsignedInt(chars[lower]) <= ' ') lower++;
-                    if (JDK9.equals(chars, lower, ++j, chars, plo, phi)) {
-                        element = previous;
-                    } else {
-                        element  = new String(chars, lower, j - lower, encoding);
-                        previous = element;
-                        plo      = lower;
-                        phi      = j;
-                    }
-                    break;
-                }
-            }
-            strings[i] = element;
-            lower = upper;
-        }
-        return strings;
-    }
+    protected abstract String[] createStringArray(Object chars, int count, int length);
 
     /**
      * Wraps the given data in a {@link Vector} with the assumption that accuracy in base 10 matters.

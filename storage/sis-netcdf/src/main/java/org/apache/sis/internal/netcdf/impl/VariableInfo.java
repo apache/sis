@@ -25,11 +25,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Matcher;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import javax.measure.Unit;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Dimension;
@@ -671,6 +673,47 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         final Object array = reader.read(region);
         replaceNaN(array);
         return Vector.create(array, dataType.isUnsigned);
+    }
+
+    /**
+     * Creates an array of character strings from a "two-dimensional" array of bytes stored in a flat array.
+     * For each element, leading and trailing spaces and control codes are trimmed.
+     * The array does not contain null element but may contain empty strings.
+     *
+     * @param  array     the "two-dimensional" array of characters stored in a flat {@code byte[]} array.
+     * @param  count     number of string elements (size of first dimension).
+     * @param  length    number of characters in each element (size of second dimension).
+     * @return array of character strings.
+     */
+    @Override
+    protected String[] createStringArray(final Object array, final int count, final int length) {
+        final byte[] chars = (byte[]) array;
+        final Charset encoding = ((ChannelDecoder) decoder).getEncoding();
+        final String[] strings = new String[count];
+        String previous = "";                       // For sharing same `String` instances when same value is repeated.
+        int plo = 0, phi = 0;                       // Index range of bytes used for building the previous string.
+        int lower = 0;
+        for (int i=0; i<count; i++) {
+            String element = "";
+            final int upper = lower + length;
+            for (int j=upper; --j >= lower;) {
+                if (Byte.toUnsignedInt(chars[j]) > ' ') {
+                    while (Byte.toUnsignedInt(chars[lower]) <= ' ') lower++;
+                    if (JDK9.equals(chars, lower, ++j, chars, plo, phi)) {
+                        element = previous;
+                    } else {
+                        element  = new String(chars, lower, j - lower, encoding);
+                        previous = element;
+                        plo      = lower;
+                        phi      = j;
+                    }
+                    break;
+                }
+            }
+            strings[i] = element;
+            lower = upper;
+        }
+        return strings;
     }
 
     /**

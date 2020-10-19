@@ -164,6 +164,24 @@ public final class JDK9 {
      * Place holder for {@link java.util.Arrays} method added in JDK9.
      * This placeholder does not perform range check (JDK9 method does).
      */
+    public static boolean equals(final char[] a, int ai, final int aUp,
+                                 final char[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (a[ai++] != b[bi++]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
     public static boolean equals(final byte[] a, int ai, final int aUp,
                                  final byte[] b, int bi, final int bUp)
     {

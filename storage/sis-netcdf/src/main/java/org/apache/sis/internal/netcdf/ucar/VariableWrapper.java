@@ -47,6 +47,7 @@ import org.apache.sis.internal.netcdf.GridAdjustment;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.measure.MeasurementRange;
@@ -520,6 +521,46 @@ final class VariableWrapper extends Variable {
         final Object data = array.get1DJavaArray(array.getElementType());
         replaceNaN(data);
         return data;
+    }
+
+    /**
+     * Creates an array of character strings from a "two-dimensional" array of characters stored in a flat array.
+     * For each element, leading and trailing spaces and control codes are trimmed.
+     * The array does not contain null element but may contain empty strings.
+     *
+     * @param  array     the "two-dimensional" array of characters stored in a flat {@code char[]} array.
+     * @param  count     number of string elements (size of first dimension).
+     * @param  length    number of characters in each element (size of second dimension).
+     * @return array of character strings.
+     */
+    @Override
+    protected String[] createStringArray(final Object array, final int count, final int length) {
+        final char[] chars = (char[]) array;
+        final String[] strings = new String[count];
+        String previous = "";                       // For sharing same `String` instances when same value is repeated.
+        int plo = 0, phi = 0;                       // Index range of bytes used for building the previous string.
+        int lower = 0;
+        for (int i=0; i<count; i++) {
+            String element = "";
+            final int upper = lower + length;
+            for (int j=upper; --j >= lower;) {
+                if (chars[j] > ' ') {
+                    while (chars[lower] <= ' ') lower++;
+                    if (JDK9.equals(chars, lower, ++j, chars, plo, phi)) {
+                        element = previous;
+                    } else {
+                        element  = new String(chars, lower, j - lower);
+                        previous = element;
+                        plo      = lower;
+                        phi      = j;
+                    }
+                    break;
+                }
+            }
+            strings[i] = element;
+            lower = upper;
+        }
+        return strings;
     }
 
     /**

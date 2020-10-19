@@ -29,7 +29,6 @@ import java.util.logging.LogRecord;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.charset.Charset;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.referencing.datum.Datum;
@@ -366,14 +365,6 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     public String getTitle() {
         return stringValue("_Title");
     }
-
-    /**
-     * Returns the encoding for attribute or variable data.
-     * This is <strong>not</strong> the encoding of netCDF names.
-     *
-     * @return encoding of data (not the encoding of netCDF names).
-     */
-    public abstract Charset getEncoding();
 
     /**
      * Returns all variables found in the netCDF file.

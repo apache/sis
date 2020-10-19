@@ -24,8 +24,6 @@ import java.util.Formatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
 import ucar.nc2.VariableIF;
@@ -382,17 +380,6 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @Override
     public String getTitle() {
         return Utils.nonEmpty(file.getTitle());
-    }
-
-    /**
-     * Returns the encoding for attribute or variable data.
-     * This is <strong>not</strong> the encoding of netCDF names.
-     *
-     * @return encoding of data (not the encoding of netCDF names).
-     */
-    @Override
-    public Charset getEncoding() {
-        return StandardCharsets.ISO_8859_1;
     }
 
     /**
