@@ -148,6 +148,14 @@ final class PackedVector extends ArrayVector<Long> {
     }
 
     /**
+     * Long values are not guaranteed to be convertible to single-precision floating point type.
+     */
+    @Override
+    public boolean isSinglePrecision() {
+        return false;
+    }
+
+    /**
      * Returns the number of elements in this vector.
      */
     @Override

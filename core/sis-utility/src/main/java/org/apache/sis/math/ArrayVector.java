@@ -42,7 +42,7 @@ import org.apache.sis.measure.NumberRange;
  * so changes in the underlying array is reflected in this vector and vice-versa.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -207,6 +207,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return Double.class;
         }
 
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public boolean isSinglePrecision() {
+            return false;
+        }
+
         /** Returns the length of the backing array. */
         @Override public int size() {
             return array.length;
@@ -322,6 +327,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return Float.class;
         }
 
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public boolean isSinglePrecision() {
+            return true;
+        }
+
         /** Returns the length of the backing array. */
         @Override public final int size() {
             return array.length;
@@ -417,6 +427,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             super(array);
         }
 
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public boolean isSinglePrecision() {
+            return false;
+        }
+
         /** Returns the value at the given index. */
         @Override public double doubleValue(final int index) {
             return DecimalFunctions.floatToDouble(super.floatValue(index));
@@ -463,6 +478,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the type of elements in the backing array. */
         @Override public final Class<Long> getElementType() {
             return Long.class;
+        }
+
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public final boolean isSinglePrecision() {
+            return false;
         }
 
         /** Values in this vector are guaranteed to be integers. */
@@ -575,6 +595,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the type of elements in the backing array. */
         @Override public final Class<Integer> getElementType() {
             return Integer.class;
+        }
+
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public final boolean isSinglePrecision() {
+            return false;
         }
 
         /** Values in this vector are guaranteed to be integers. */
@@ -693,6 +718,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return Short.class;
         }
 
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public final boolean isSinglePrecision() {
+            return true;
+        }
+
         /** Values in this vector are guaranteed to be integers. */
         @Override public final boolean isInteger() {
             return true;
@@ -782,6 +812,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the type of elements in the backing array. */
         @Override public final Class<Byte> getElementType() {
             return Byte.class;
+        }
+
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public final boolean isSinglePrecision() {
+            return true;
         }
 
         /** Values in this vector are guaranteed to be integers. */
@@ -1092,6 +1127,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the type of elements in the backing array. */
         @Override public final Class<Double> getElementType() {
             return Double.class;
+        }
+
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public final boolean isSinglePrecision() {
+            return false;
         }
 
         /** Returns {@code true} if the element at the given index is null or NaN. */

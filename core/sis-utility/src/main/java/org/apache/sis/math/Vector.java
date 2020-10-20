@@ -90,7 +90,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * method and by accepting buffer in the {@link #create(Object, boolean)} method.</div>
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.util.collection.IntegerList
  *
@@ -267,6 +267,22 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     public abstract Class<? extends Number> getElementType();
 
     /**
+     * Returns {@code true} if values in this vector can be casted to single-precision floating point numbers
+     * ({@code float}) without precision lost. In case of doubt, this method conservatively returns {@code false}.
+     *
+     * @return whether values in this vector can be casted to {@code float} primitive type.
+     *
+     * @see #floatValue(int)
+     * @see #floatValues()
+     *
+     * @since 1.1
+     */
+    public boolean isSinglePrecision() {
+        final byte type = Numbers.getEnumConstant(getElementType());
+        return (type == Numbers.FLOAT) || (type >= Numbers.BYTE && type <= Numbers.SHORT);
+    }
+
+    /**
      * Returns an estimation of the number of bits used by each value in this vector.
      * This is an estimation only and should be used only as a hint.
      */
@@ -357,6 +373,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
      *
      * @see #floatValues()
+     * @see #isSinglePrecision()
      */
     public float floatValue(int index) {
         return (float) doubleValue(index);
@@ -931,6 +948,11 @@ search:     for (;;) {
             return Vector.this.getElementType();
         }
 
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public boolean isSinglePrecision() {
+            return Vector.this.isSinglePrecision();
+        }
+
         /** Returns the length of this subvector. */
         @Override public int size() {
             return length;
@@ -1130,6 +1152,11 @@ search:     for (;;) {
         /** Returns the type of elements in this vector. */
         @Override public Class<? extends Number> getElementType() {
             return Vector.this.getElementType();
+        }
+
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public boolean isSinglePrecision() {
+            return Vector.this.isSinglePrecision();
         }
 
         /** Delegates to the enclosing vector. */
@@ -1458,6 +1485,7 @@ search:     for (;;) {
      * @return a copy of all floating point values in this vector.
      *
      * @see #floatValue(int)
+     * @see #isSinglePrecision()
      */
     public float[] floatValues() {
         final float[] array = new float[size()];

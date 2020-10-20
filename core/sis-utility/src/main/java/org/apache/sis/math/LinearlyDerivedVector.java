@@ -31,7 +31,7 @@ import org.apache.sis.measure.NumberRange;
  * This is mostly the case if coefficients are finite and {@link #scale} is non-zero, as asserted at construction time.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see Vector#transform(double, double)
  *
@@ -79,6 +79,14 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
     @Override
     public Class<Double> getElementType() {
         return Double.class;
+    }
+
+    /**
+     * Double-precision values are not guaranteed to be convertible to single-precision floating point type.
+     */
+    @Override
+    public boolean isSinglePrecision() {
+        return false;
     }
 
     /**
