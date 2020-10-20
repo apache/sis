@@ -43,6 +43,7 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -1847,7 +1848,22 @@ public enum CommonCRS {
          *   <tr><th>Unit:</th> <td>{@link Units#UNITY}</td></tr>
          * </table></blockquote>
          */
-        GRID(new DefaultEngineeringDatum(singletonMap(EngineeringDatum.NAME_KEY, "Cell indices")));
+        GRID(new DefaultEngineeringDatum(singletonMap(EngineeringDatum.NAME_KEY, "Cell indices"))),
+
+        /**
+         * A single-dimensional coordinate system for time in seconds since an unknown epoch.
+         * This definition can be used as a fallback when {@link Temporal} enumeration can not be used,
+         * for example because the temporal datum epoch is unknown.
+         *
+         * <blockquote><table class="compact">
+         * <caption>Time properties</caption>
+         *   <tr><th>Primary names:</th> <td>"Time"</td></tr>
+         *   <tr><th>Direction:</th>
+         *     <td>{@link AxisDirection#FUTURE}</td></tr>
+         *   <tr><th>Unit:</th> <td>{@link Units#SECOND}</td></tr>
+         * </table></blockquote>
+         */
+        TIME(new DefaultEngineeringDatum(singletonMap(EngineeringDatum.NAME_KEY, "Time")));
 
         /**
          * The datum.
@@ -1875,8 +1891,9 @@ public enum CommonCRS {
             if (crs == null) {
                 final String x, y;
                 final AxisDirection dx, dy;
-                final Map<String,Object> cs = singletonMap(CartesianCS.NAME_KEY, datum.getName());
-                final Map<String,Object> properties = new HashMap<>(cs);
+                final Map<String,Object> pcs = singletonMap(CartesianCS.NAME_KEY, datum.getName());
+                final Map<String,Object> properties = new HashMap<>(pcs);
+                CoordinateSystem cs = null;
                 switch (this) {
                     case GEODISPLAY: {
                         x = "i"; dx = AxisDirection.EAST;
@@ -1894,11 +1911,21 @@ public enum CommonCRS {
                         y = "j"; dy = AxisDirection.ROW_POSITIVE;
                         break;
                     }
+                    case TIME: {
+                        x  = y  = "t";
+                        dx = dy = AxisDirection.FUTURE;
+                        cs = new DefaultTimeCS(pcs, new DefaultCoordinateSystemAxis(
+                                singletonMap(TimeCS.NAME_KEY, x), x, dx, Units.SECOND));
+                        break;
+                    }
                     default: throw new AssertionError(this);
                 }
-                crs = new DefaultEngineeringCRS(properties, datum, new DefaultCartesianCS(cs,
-                        new DefaultCoordinateSystemAxis(singletonMap(CartesianCS.NAME_KEY, x), x, dx, Units.PIXEL),
-                        new DefaultCoordinateSystemAxis(singletonMap(CartesianCS.NAME_KEY, y), y, dy, Units.PIXEL)));
+                if (cs == null) {
+                    cs = new DefaultCartesianCS(pcs,
+                            new DefaultCoordinateSystemAxis(singletonMap(CartesianCS.NAME_KEY, x), x, dx, Units.PIXEL),
+                            new DefaultCoordinateSystemAxis(singletonMap(CartesianCS.NAME_KEY, y), y, dy, Units.PIXEL));
+                }
+                crs = new DefaultEngineeringCRS(properties, datum, cs);
             }
             return crs;
         }

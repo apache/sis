@@ -806,17 +806,21 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
         /**
          * Creates a {@link TemporalDatum} for <cite>"Unknown datum based on …"</cite>.
+         * This method may left the datum to {@code null} if the epoch is unknown.
+         * In such case, {@link #createCRS createCRS(…)} will create an engineering CRS instead.
          */
         @Override void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
             final Axis axis = getFirstAxis();
             axis.getUnit();                                     // Force epoch parsing if not already done.
-            Instant epoch = axis.coordinates.epoch;
-            final CommonCRS.Temporal c = CommonCRS.Temporal.forEpoch(epoch);
-            if (c != null) {
-                datum = c.datum();
-            } else {
-                properties = properties("Time since " + epoch);
-                datum = factory.createTemporalDatum(properties, TemporalUtilities.toDate(epoch));
+            final Instant epoch = axis.coordinates.epoch;
+            if (epoch != null) {
+                final CommonCRS.Temporal c = CommonCRS.Temporal.forEpoch(epoch);
+                if (c != null) {
+                    datum = c.datum();
+                } else {
+                    properties = properties("Time since " + epoch);
+                    datum = factory.createTemporalDatum(properties, TemporalUtilities.toDate(epoch));
+                }
             }
         }
 
@@ -831,10 +835,17 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
         /**
          * Creates the coordinate reference system from datum and coordinate system computed in previous steps.
+         * It should be a temporal CRS. But if the temporal datum can not be created because epoch was unknown,
+         * this method fallbacks on an engineering CRS.
          */
         @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
             properties = properties(getFirstAxis().coordinates.getUnitsString());
-            referenceSystem =  factory.createTemporalCRS(properties, datum, coordinateSystem);
+            if (datum != null) {
+                referenceSystem =  factory.createTemporalCRS(properties, datum, coordinateSystem);
+            } else {
+                referenceSystem =  factory.createEngineeringCRS(properties,
+                        CommonCRS.Engineering.TIME.datum(), coordinateSystem);
+            }
         }
     }
 
