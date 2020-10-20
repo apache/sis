@@ -16,11 +16,13 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.Set;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
+import java.nio.charset.Charset;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
@@ -39,6 +41,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.WritableFeatureSet;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -54,11 +57,18 @@ import org.opengis.feature.Feature;
  * Some methods may also move in public API if we feel confident enough.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
 public final class StoreUtilities extends Static {
+    /**
+     * Names of encoding where bytes less than 128 can be interpreted as ASCII.
+     *
+     * @see #basedOnASCII(Charset)
+     */
+    private static final Set<String> basedOnASCII = JDK9.setOf("US-ASCII", "ISO-8859-1", "UTF-8");
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -294,6 +304,17 @@ public final class StoreUtilities extends Static {
             }
         }
         return set;
+    }
+
+    /**
+     * Returns {@code true} if a sequence of bytes in the given encoding can be decoded as if they were ASCII,
+     * ignoring values greater than 127. In case of doubt, this method conservatively returns {@code false}.
+     *
+     * @param  encoding  the encoding.
+     * @return whether bytes less than 128 can be interpreted as ASCII.
+     */
+    public static boolean basedOnASCII(final Charset encoding) {
+        return basedOnASCII.contains(encoding.name());
     }
 
     /**

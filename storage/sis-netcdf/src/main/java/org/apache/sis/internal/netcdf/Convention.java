@@ -249,7 +249,7 @@ public class Convention {
                     return VariableRole.COVERAGE;
                 }
             }
-            if (n == 2 && dataType == DataType.CHAR) {
+            if (n == Variable.STRING_DIMENSION && dataType == DataType.CHAR) {
                 return VariableRole.FEATURE;
             }
         }

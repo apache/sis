@@ -31,6 +31,7 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.storage.CodeTypeTest.class,
+    org.apache.sis.internal.storage.StoreUtilitiesTest.class,
     org.apache.sis.internal.storage.io.IOUtilitiesTest.class,
     org.apache.sis.internal.storage.io.ChannelDataInputTest.class,
     org.apache.sis.internal.storage.io.ChannelDataOutputTest.class,

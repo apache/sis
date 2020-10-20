@@ -612,7 +612,7 @@ public final class ChannelDecoder extends Decoder {
                     // More cases may be added later if they appear to exist.
                     case ATTRIBUTE: {
                         final Charset globalEncoding = encoding;
-                        attributes = readAttributes(na);
+                        attributes = readAttributes(na);            // May change the encoding.
                         encoding = globalEncoding;
                         break;
                     }

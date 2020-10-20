@@ -508,7 +508,7 @@ final class VariableWrapper extends Variable {
     @Override
     public List<?> readAnyType(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
         final Object array = readArray(area, subsampling);
-        if (variable.getDataType() == ucar.ma2.DataType.CHAR && variable.getRank() >= 2) {
+        if (variable.getDataType() == ucar.ma2.DataType.CHAR && variable.getRank() >= STRING_DIMENSION) {
             return createStringList(array, area);
         }
         return Vector.create(array, variable.isUnsigned());

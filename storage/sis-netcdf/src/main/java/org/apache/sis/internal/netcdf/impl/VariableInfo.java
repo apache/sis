@@ -39,6 +39,7 @@ import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.netcdf.GridAdjustment;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.io.Region;
@@ -607,7 +608,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     @Override
     public List<?> readAnyType(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
         final Object array = readArray(area, subsampling);
-        if (dataType == DataType.CHAR && dimensions.length >= 2) {
+        if (dataType == DataType.CHAR && dimensions.length >= STRING_DIMENSION) {
             return createStringList(array, area);
         }
         return Vector.create(array, dataType.isUnsigned);
@@ -711,28 +712,37 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         final byte[] chars = (byte[]) array;
         final Charset encoding = ((ChannelDecoder) decoder).getEncoding();
         final String[] strings = new String[count];
-        String previous = "";                       // For sharing same `String` instances when same value is repeated.
-        int plo = 0, phi = 0;                       // Index range of bytes used for building the previous string.
         int lower = 0;
-        for (int i=0; i<count; i++) {
-            String element = "";
-            final int upper = lower + length;
-            for (int j=upper; --j >= lower;) {
-                if (Byte.toUnsignedInt(chars[j]) > ' ') {
-                    while (Byte.toUnsignedInt(chars[lower]) <= ' ') lower++;
-                    if (JDK9.equals(chars, lower, ++j, chars, plo, phi)) {
-                        element = previous;
-                    } else {
-                        element  = new String(chars, lower, j - lower, encoding);
-                        previous = element;
-                        plo      = lower;
-                        phi      = j;
+        String previous = "";                       // For sharing same `String` instances when same value is repeated.
+        if (StoreUtilities.basedOnASCII(encoding)) {
+            int plo = 0, phi = 0;                   // Index range of bytes used for building the previous string.
+            for (int i=0; i<count; i++) {
+                String element = "";
+                final int upper = lower + length;
+                for (int j=upper; --j >= lower;) {
+                    if (Byte.toUnsignedInt(chars[j]) > ' ') {
+                        while (Byte.toUnsignedInt(chars[lower]) <= ' ') lower++;
+                        if (JDK9.equals(chars, lower, ++j, chars, plo, phi)) {
+                            element = previous;
+                        } else {
+                            element  = new String(chars, lower, j - lower, encoding);
+                            previous = element;
+                            plo      = lower;
+                            phi      = j;
+                        }
+                        break;
                     }
-                    break;
                 }
+                strings[i] = element;
+                lower = upper;
             }
-            strings[i] = element;
-            lower = upper;
+        } else {
+            for (int i=0; i<count; i++) {
+                final String element = new String(chars, lower, length, encoding).trim();
+                if (!previous.equals(element)) previous = element;
+                strings[i] = previous;
+                lower += length;
+            }
         }
         return strings;
     }

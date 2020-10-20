@@ -30,8 +30,8 @@ import java.util.stream.StreamSupport;
 import java.util.function.Consumer;
 import java.util.OptionalLong;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.opengis.metadata.acquisition.GeometryType;
-import org.apache.sis.math.Vector;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.feature.MovingFeatures;
 import org.apache.sis.internal.util.Strings;
@@ -41,6 +41,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.Characters;
+import org.apache.sis.math.Vector;
 import ucar.nc2.constants.CF;
 
 // Branch-dependent imports
@@ -87,6 +88,17 @@ final class FeatureSet extends DiscreteSampling {
      * same than the length of the {@link #counts} vector.
      */
     private final Variable[] properties;
+
+    /**
+     * The kind of geometry described by {@linkplain #coordinates} vectors.
+     * Current implementation supports only two types:
+     *
+     * <ul>
+     *   <li>{@link GeometryType#POINT}  (specified by {@code isTrajectory = false}).</li>
+     *   <li>{@link GeometryType#LINEAR} (specified by {@code isTrajectory = true}).</li>
+     * </ul>
+     */
+    private final boolean isTrajectory;
 
     /**
      * Whether the {@link #coordinates} array contains a temporal variable.
@@ -153,9 +165,10 @@ final class FeatureSet extends DiscreteSampling {
             final Class<?> type = v.getDataType().getClass(v.getNumDimensions() > 1);
             describe(v, builder.addAttribute(type), false);
         }
+        isTrajectory = (counts != null);
         if (coordinates.length > (hasTime ? 1 : 0)) {
-            final AttributeTypeBuilder<?> geometry = builder.addAttribute(
-                    counts != null ? GeometryType.LINEAR : GeometryType.POINT);
+            final AttributeTypeBuilder<?> geometry =
+                    builder.addAttribute(isTrajectory ? GeometryType.LINEAR : GeometryType.POINT);
             geometry.setName(TRAJECTORY).addRole(AttributeRole.DEFAULT_GEOMETRY);
             if (hasTime) {
                 geometry.addCharacteristic(MovingFeatures.TIME);
@@ -369,7 +382,7 @@ final class FeatureSet extends DiscreteSampling {
                 unexpectedDimension = 2;
                 break;
             }
-            case 2: {
+            case Variable.STRING_DIMENSION: {
                 if (data.getDataType() != DataType.CHAR) {
                     unexpectedDimension = 1;
                     break;
@@ -529,15 +542,19 @@ final class FeatureSet extends DiscreteSampling {
             /*
              * At this point we found that there is some data we can put in a feature instance.
              * Above loop has set the static properties (those having one value per feature).
-             * Now set the dynamic properties (those having time-varying values).
+             * The loop below sets the dynamic properties (those having time-varying values).
              */
             final Vector[] coordinateValues = new Vector[coordinates.length];
             final GridExtent extent = extent(null, 1, length);
             List<Dimension> textDimensions = null;
             GridExtent textExtent = null;
+            boolean isSinglePrecision = factory.supportSinglePrecision();
             try {
                 for (int i=0; i<coordinateValues.length; i++) {
                     coordinateValues[i] = coordinates[i].read(extent, null);
+                    if (isSinglePrecision) {
+                        isSinglePrecision = coordinateValues[i].isSinglePrecision();
+                    }
                 }
                 for (int i=0; i<dynamicProperties.length; i++) {
                     final Variable p = dynamicProperties[i];
@@ -564,16 +581,40 @@ final class FeatureSet extends DiscreteSampling {
                     feature.setPropertyValue(dynamicProperties[i].getName(), value);
                     // TODO: set time characteristic.
                 }
-            } catch (IOException | DataStoreException e) {
+            } catch (IOException e) {
+                throw new UncheckedIOException(canNotReadFile(), e);
+            } catch (DataStoreException e) {
                 throw new BackingStoreException(canNotReadFile(), e);
             }
-            // TODO: temporary hack - to be replaced by support in Vector.
-            final int dimension = coordinates.length - (hasTime ? 1 : 0);
-            final double[] tmp = new double[Math.toIntExact(length * dimension)];
-            for (int i=0; i<tmp.length; i++) {
-                tmp[i] = coordinateValues[i % dimension].doubleValue(i / dimension);
+            /*
+             * Create the geometry, which may be a trajectory or a single point. Some geometry libraries
+             * (e.g. Java2D) provides different implementations for single-precision or double-precision.
+             * For that reason we
+             */
+            final Object geometry;
+            if (isTrajectory) {
+                final int dimension = coordinateValues.length - (hasTime ? 1 : 0);
+                final int n = Math.toIntExact(length * dimension);
+                final Vector vc;
+                if (isSinglePrecision) {
+                    final float[] c = new float[n];
+                    for (int i=0; i<n; i++) {
+                        c[i] = coordinateValues[i % dimension].floatValue(i / dimension);
+                    }
+                    vc = Vector.create(c, false);
+                } else {
+                    final double[] c = new double[n];
+                    for (int i=0; i<n; i++) {
+                        c[i] = coordinateValues[i % dimension].doubleValue(i / dimension);
+                    }
+                    vc = Vector.create(c);
+                }
+                geometry = factory.createPolyline(false, dimension, vc);
+            } else {
+                geometry = factory.createPoint(coordinateValues[0].doubleValue(0),
+                                               coordinateValues[1].doubleValue(0));
             }
-            feature.setPropertyValue(TRAJECTORY, factory.createPolyline(false, dimension, Vector.create(tmp)));
+            feature.setPropertyValue(TRAJECTORY, geometry);
             action.accept(feature);
             position += length;         // Check for ArithmeticException is already done by `extent(…)` call.
             return true;

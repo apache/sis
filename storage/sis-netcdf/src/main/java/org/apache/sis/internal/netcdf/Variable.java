@@ -81,6 +81,14 @@ public abstract class Variable extends Node {
     public static final Pattern TIME_UNIT_PATTERN = Pattern.compile("(.+)\\Wsince\\W(.+)", Pattern.CASE_INSENSITIVE);
 
     /**
+     * Minimal number of dimension of a {@code char} array for considering this variable as a list of strings.
+     * This constant is defined for making easier to locate codes that check if this variable is a string list.
+     *
+     * @see #isString()
+     */
+    protected static final int STRING_DIMENSION = 2;
+
+    /**
      * The unit of measurement, parsed from {@link #getUnitsString()} when first needed.
      * We do not try to parse the unit at construction time because this variable may be
      * never requested by the user.
@@ -441,10 +449,12 @@ public abstract class Variable extends Node {
      * <div class="note"><b>Maintenance note:</b>
      * the implementation of this method is inlined in some places, when the code already
      * has the {@link DataType} value at hand. If this implementation is modified, search
-     * for {@link DataType#CHAR} usage.</div>
+     * for {@link #STRING_DIMENSION} usages.</div>
+     *
+     * @see #STRING_DIMENSION
      */
     final boolean isString() {
-        return getDataType() == DataType.CHAR && getNumDimensions() >= 2;
+        return getDataType() == DataType.CHAR && getNumDimensions() >= STRING_DIMENSION;
     }
 
     /**
@@ -1026,7 +1036,7 @@ public abstract class Variable extends Node {
         final DataType dataType = getDataType();
         if (dataType == DataType.CHAR) {
             int n = getNumDimensions();
-            if (n >= 2) {
+            if (n >= STRING_DIMENSION) {
                 final List<Dimension> dimensions = getGridDimensions();
                 final int length = Math.toIntExact(dimensions.get(--n).length());
                 long count = dimensions.get(--n).length();
