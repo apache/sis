@@ -221,6 +221,9 @@ public class Convention {
      *       to confuse them with images.</li>
      * </ul>
      *
+     * <p>The default implementation returns {@link VariableRole#FEATURE} if the given variable may be values
+     * for one feature property of a feature set. This detection is based on the number of dimensions.</p>
+     *
      * @param  variable  the variable for which to get the role.
      * @return role of the given variable.
      */
@@ -228,16 +231,26 @@ public class Convention {
         if (variable.isCoordinateSystemAxis()) {
             return VariableRole.AXIS;
         }
-        int numVectors = 0;                                     // Number of dimension having more than 1 value.
-        for (final Dimension dimension : variable.getGridDimensions()) {
-            if (dimension.length() >= Grid.MIN_SPAN) {
-                numVectors++;
+        final int n = variable.getNumDimensions();
+        if (n == 1) {
+            if (variable.getAxisType() == null && variable.getAttributeValue(CF.AXIS) == null) {
+                return VariableRole.FEATURE;
             }
-        }
-        if (numVectors >= Grid.MIN_DIMENSION) {
+        } else if (n != 0) {
             final DataType dataType = variable.getDataType();
-            if (dataType.rasterDataType != null) {
-                return VariableRole.COVERAGE;
+            int numVectors = 0;                 // Number of dimension having more than 1 value.
+            for (final Dimension dimension : variable.getGridDimensions()) {
+                if (dimension.length() >= Grid.MIN_SPAN) {
+                    numVectors++;
+                }
+            }
+            if (numVectors >= Grid.MIN_DIMENSION) {
+                if (dataType.rasterDataType != null) {
+                    return VariableRole.COVERAGE;
+                }
+            }
+            if (n == 2 && dataType == DataType.CHAR) {
+                return VariableRole.FEATURE;
             }
         }
         return VariableRole.OTHER;

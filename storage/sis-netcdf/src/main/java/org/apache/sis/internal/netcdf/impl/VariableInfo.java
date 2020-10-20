@@ -429,7 +429,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     @Override
     protected String getAxisType() {
         final Object value = getAttributeValue(_Coordinate.AxisType, "_coordinateaxistype");
-        return (value instanceof String) ? (String) value : null;
+        return (value != null) ? value.toString() : null;
     }
 
     /**
@@ -571,58 +571,14 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * Fill values/missing values are replaced by NaN if {@link #hasRealValues()} is {@code true}.
-     * The vector is cached and returned as-is in all future invocation of this method.
      *
      * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      *
      * @see #read()
      */
     @Override
-    protected Object readFully() throws IOException, DataStoreContentException {
-        if (reader == null) {
-            throw new DataStoreContentException(unknownType());
-        }
-        final int    dimension   = dimensions.length;
-        final long[] lower       = new long[dimension];
-        final long[] upper       = new long[dimension];
-        final int [] subsampling = new int [dimension];
-        for (int i=0; i<dimension; i++) {
-            upper[i] = dimensions[(dimension - 1) - i].length();
-            subsampling[i] = 1;
-        }
-        final Region region = new Region(upper, lower, upper, subsampling);
-        applyUnlimitedDimensionStride(region);
-        Object array = reader.read(region);
-        replaceNaN(array);
-        /*
-         * If we can convert a double[] array to a float[] array, we should do that before
-         * to invoke `setValues(array)` - we can not rely on data.compress(tolerance). The
-         * reason is because we assume that float[] arrays are accurate in base 10 even if
-         * the data were originally stored as doubles. The Vector class does not make such
-         * assumption since it is specific to what we observe with netCDF files. To enable
-         * this assumption, we need to convert to float[] before createDecimalVector(…).
-         */
-        if (array instanceof double[]) {
-            final float[] copy = ArraysExt.copyAsFloatsIfLossless((double[]) array);
-            if (copy != null) array = copy;
-        }
-        return array;
-    }
-
-    /**
-     * If this variable uses the unlimited dimension, we have to skip the records of all other unlimited variables
-     * before to reach the next record of this variable.  Current implementation can do that only if the number of
-     * bytes to skip is a multiple of the data type size. It should be the case most of the time because variables
-     * in netCDF files have a 4 bytes padding. It may not work however if the variable uses {@code long} or
-     * {@code double} type.
-     */
-    private void applyUnlimitedDimensionStride(final Region region) throws DataStoreContentException {
-        if (isUnlimited()) {
-            if (offsetToNextRecord < 0) {
-                throw canNotComputePosition(null);
-            }
-            region.setAdditionalByteOffset(dimensions.length - 1, offsetToNextRecord);
-        }
+    protected Object readFully() throws IOException, DataStoreException {
+        return readArray(null, null);
     }
 
     /**
@@ -637,9 +593,48 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     @Override
     public Vector read(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
+        return Vector.create(readArray(area, subsampling), dataType.isUnsigned);
+    }
+
+    /**
+     * Reads a subsampled sub-area of the variable and returns them as a list of any object.
+     * Elements in the returned list may be {@link Number} or {@link String} instances.
+     *
+     * @param  area         indices of cell values to read along each dimension, in "natural" order.
+     * @param  subsampling  subsampling along each dimension, or {@code null} if none.
+     * @return the data as a list of {@link Number} or {@link String} instances.
+     */
+    @Override
+    public List<?> readAnyType(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
+        final Object array = readArray(area, subsampling);
+        if (dataType == DataType.CHAR && dimensions.length >= 2) {
+            return createStringList(array, area);
+        }
+        return Vector.create(array, dataType.isUnsigned);
+    }
+
+    /**
+     * Reads the data from this variable and returns them as an array of a Java primitive type.
+     * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
+     * Fill values/missing values are replaced by NaN if {@link #hasRealValues()} is {@code true}.
+     * Array elements are in "natural" order (inverse of netCDF order).
+     *
+     * @param  area         indices (in "natural" order) of cell values to read, or {@code null} for whole variable.
+     * @param  subsampling  subsampling along each dimension, or {@code null} if none. Ignored if {@code area} is null.
+     * @return the data as an array of a Java primitive type.
+     * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     *
+     * @see #read()
+     * @see #read(GridExtent, int[])
+     */
+    private Object readArray(final GridExtent area, int[] subsampling) throws IOException, DataStoreException {
         if (reader == null) {
             throw new DataStoreContentException(unknownType());
         }
+        final int dimension = dimensions.length;
+        final long[] lower  = new long[dimension];
+        final long[] upper  = new long[dimension];
+        final long[] size   = (area != null) ? new long[dimension] : upper;
         /*
          * NetCDF sorts datas in reverse dimension order. Example:
          *
@@ -659,20 +654,46 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
          *   (2,0,0) (2,0,1) (2,0,2) (2,0,3)
          *   (2,1,0) (2,1,1) (2,1,2) (2,1,3)
          */
-        final int dimension = dimensions.length;
-        final long[] size  = new long[dimension];
-        final long[] lower = new long[dimension];
-        final long[] upper = new long[dimension];
         for (int i=0; i<dimension; i++) {
-            lower[i] = area.getLow(i);
-            upper[i] = Math.incrementExact(area.getHigh(i));
-            size [i] = dimensions[(dimension - 1) - i].length();
+            size[i] = dimensions[(dimension - 1) - i].length();
+            if (area != null) {
+                lower[i] = area.getLow(i);
+                upper[i] = Math.incrementExact(area.getHigh(i));
+            }
+        }
+        if (subsampling == null) {
+            subsampling = new int[dimension];
+            Arrays.fill(subsampling, 1);
         }
         final Region region = new Region(size, lower, upper, subsampling);
-        applyUnlimitedDimensionStride(region);
-        final Object array = reader.read(region);
+        /*
+         * If this variable uses the unlimited dimension, we have to skip the records of all other unlimited variables
+         * before to reach the next record of this variable.  Current implementation can do that only if the number of
+         * bytes to skip is a multiple of the data type size. It should be the case most of the time because variables
+         * in netCDF files have a 4 bytes padding. It may not work however if the variable uses {@code long} or
+         * {@code double} type.
+         */
+        if (isUnlimited()) {
+            if (offsetToNextRecord < 0) {
+                throw canNotComputePosition(null);
+            }
+            region.setAdditionalByteOffset(dimensions.length - 1, offsetToNextRecord);
+        }
+        Object array = reader.read(region);
         replaceNaN(array);
-        return Vector.create(array, dataType.isUnsigned);
+        if (area == null && array instanceof double[]) {
+            /*
+             * If we can convert a double[] array to a float[] array, we should do that before
+             * to invoke `setValues(array)` - we can not rely on data.compress(tolerance). The
+             * reason is because we assume that float[] arrays are accurate in base 10 even if
+             * the data were originally stored as doubles. The Vector class does not make such
+             * assumption since it is specific to what we observe with netCDF files. To enable
+             * this assumption, we need to convert to float[] before createDecimalVector(…).
+             */
+            final float[] copy = ArraysExt.copyAsFloatsIfLossless((double[]) array);
+            if (copy != null) array = copy;
+        }
+        return array;
     }
 
     /**

@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -52,6 +53,10 @@ import org.opengis.feature.FeatureType;
  * netCDF files encoded as specified in the OGC 16-114 (OGC Moving Features Encoding Extension: netCDF) specification.
  * This implementation is used as a fallback when the subclass does not provide a more specialized class.
  *
+ * <h4>Limitations</h4>
+ * Current implementation may perform many seek operations during traversal of feature instances.
+ * It may be inefficient unless the {@link Decoder} uses a {@code ChannelDataInput} backed by a direct buffer.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
@@ -77,11 +82,11 @@ final class FeatureSet extends DiscreteSampling {
 
     /**
      * The singleton properties (for which there is only one value per feature instance), or an empty array if none.
-     * If non-empty, it typically contains a single variable which is the moving feature identifiers ("mfIdRef").
-     * If {@link #counts} is non-null, then the length of {@code identifiers[i]} variables shall be the same than
-     * the length of the {@link #counts} vector.
+     * In the case of trajectories, this array usually contains a single variable for the moving feature identifiers
+     * ("mfIdRef"). If {@link #counts} is non-null, then the length of {@code identifiers[i]} variables shall be the
+     * same than the length of the {@link #counts} vector.
      */
-    private final Variable[] identifiers;
+    private final Variable[] properties;
 
     /**
      * Whether the {@link #coordinates} array contains a temporal variable.
@@ -102,7 +107,7 @@ final class FeatureSet extends DiscreteSampling {
      * Any time-varying properties other than coordinate values, or an empty array if none.
      * All variables in this array shall have the same length than {@link #coordinates} variables.
      */
-    private final Variable[] properties;
+    private final Variable[] dynamicProperties;
 
     /**
      * The type of all features to be read by this {@code FeatureSet}.
@@ -117,24 +122,24 @@ final class FeatureSet extends DiscreteSampling {
      * is the name of the first dimension of {@code coordinates} and {@code properties} variables. All those
      * variables should have that first dimension in common, because {@code create(…)} uses that criterion.</p>
      *
-     * @param  decoder      the source of the features to create.
-     * @param  name         name to give to the feature type.
-     * @param  counts       the count of instances per feature, or {@code null} if none.
-     * @param  identifiers  the feature identifiers, possibly with other singleton properties.
-     * @param  coordinates  <var>x</var>, <var>y</var> and potentially <var>z</var> or <var>t</var> coordinate values.
-     * @param  hasTime      whether the {@code coordinates} array contains a temporal variable.
-     * @param  properties   the variables that contain custom time-varying properties.
+     * @param  decoder            the source of the features to create.
+     * @param  name               name to give to the feature type.
+     * @param  counts             the count of instances per feature, or {@code null} if none.
+     * @param  properties         variables providing a single value per feature instance (e.g. "mfIdRef").
+     * @param  coordinates        <var>x</var>, <var>y</var> and potentially <var>z</var> or <var>t</var> values.
+     * @param  hasTime            whether the {@code coordinates} array contains a temporal variable.
+     * @param  dynamicProperties  variables that contain time-varying properties other than coordinates.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    private FeatureSet(final Decoder decoder, String name, final Vector counts, final Variable[] identifiers,
-                       final Variable[] coordinates, final boolean hasTime, final Variable[] properties)
+    private FeatureSet(final Decoder decoder, String name, final Vector counts, final Variable[] properties,
+                       final Variable[] coordinates, final boolean hasTime, final Variable[] dynamicProperties)
     {
         super(decoder.geomlib, decoder.listeners);
-        this.counts      = counts;
-        this.identifiers = identifiers;
-        this.coordinates = coordinates;
-        this.properties  = properties;
-        this.hasTime     = hasTime;
+        this.counts            = counts;
+        this.properties        = properties;
+        this.coordinates       = coordinates;
+        this.dynamicProperties = dynamicProperties;
+        this.hasTime           = hasTime;
         /*
          * Creates a description of the features to be read with following properties:
          *
@@ -142,8 +147,9 @@ final class FeatureSet extends DiscreteSampling {
          *    - Trajectory as a geometric object, potentially with a time characteristic.
          *    - Time-varying properties (i.e. properties having a value per instant).
          */
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder(decoder.nameFactory, decoder.geomlib, decoder.listeners.getLocale());
-        for (final Variable v : identifiers) {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder(
+                decoder.nameFactory, decoder.geomlib, decoder.listeners.getLocale());
+        for (final Variable v : properties) {
             final Class<?> type = v.getDataType().getClass(v.getNumDimensions() > 1);
             describe(v, builder.addAttribute(type), false);
         }
@@ -155,12 +161,12 @@ final class FeatureSet extends DiscreteSampling {
                 geometry.addCharacteristic(MovingFeatures.TIME);
             }
         }
-        for (final Variable v : properties) {
+        for (final Variable v : dynamicProperties) {
             /*
              * Use `Number` type instead than a more specialized subclass because values
              * will be stored in `Vector` objects and that class implements `List<Number>`.
              */
-            final Class<?> type = v.isEnumeration() ? String.class : Number.class;
+            final Class<?> type = (v.isEnumeration() || v.isString()) ? String.class : Number.class;
             describe(v, builder.addAttribute(type).setMaximumOccurs(Integer.MAX_VALUE), hasTime);
         }
         /*
@@ -204,7 +210,11 @@ final class FeatureSet extends DiscreteSampling {
      */
     static FeatureSet[] create(final Decoder decoder) throws IOException, DataStoreException {
         final List<FeatureSet> features = new ArrayList<>(3);     // Will usually contain at most one element.
-search: for (final Variable counts : decoder.getVariables()) {
+        final Map<Dimension,Boolean> done = new HashMap<>();      // Whether a dimension has already been used.
+        for (final Variable v : decoder.getVariables()) {
+            if (v.getRole() != VariableRole.FEATURE) {
+                continue;
+            }
             /*
              * Any one-dimensional integer variable having a "sample_dimension" attribute string value
              * will be taken as an indication that we have Discrete Sampling Geometries. That variable
@@ -221,17 +231,35 @@ search: for (final Variable counts : decoder.getVariables()) {
              *         int counts(identifiers);
              *             counts:sample_dimension = "points";
              */
-            if (counts.getNumDimensions() == 1 && counts.getDataType().isInteger) {
-                final String sampleDimName = counts.getAttributeAsString(CF.SAMPLE_DIMENSION);
+            if (v.getNumDimensions() == 1 && v.getDataType().isInteger) {
+                final String sampleDimName = v.getAttributeAsString(CF.SAMPLE_DIMENSION);
                 if (sampleDimName != null) {
+                    // At this point, the variable is assumed to be `counts`.
+                    final Dimension featureDimension = v.getGridDimensions().get(0);
                     final Dimension sampleDimension = decoder.findDimension(sampleDimName);
                     if (sampleDimension != null) {
-                        addFeatureSet(features, decoder, counts, counts.getGridDimensions().get(0), sampleDimension);
+                        addFeatureSet(features, decoder, v, featureDimension, sampleDimension);
+                        done.put(sampleDimension, Boolean.TRUE);
                     } else {
                         decoder.listeners.warning(decoder.resources().getString(Resources.Keys.DimensionNotFound_3,
-                                                  decoder.getFilename(), counts.getName(), sampleDimName));
+                                                  decoder.getFilename(), v.getName(), sampleDimName));
                     }
+                    done.put(featureDimension, Boolean.TRUE);           // Overwrite `false` value with `true`.
+                    continue;
                 }
+            }
+            done.putIfAbsent(v.getGridDimensions().get(0), Boolean.FALSE);
+        }
+        /*
+         * Above loop handled all features which seem to be trajectories (i.e. having a `counts` variable allowing
+         * each feature instance to contain an arbitrary number of points). If there is other feature variables not
+         * handled by above loop (i.e. feature properties without `counts` variable), the features are assumed to be
+         * "simple features" with only points instead than trajectories.
+         */
+        for (final Map.Entry<Dimension,Boolean> entry : done.entrySet()) {
+            if (!entry.getValue()) {
+                final Dimension dimension = entry.getKey();
+                addFeatureSet(features, decoder, null, dimension, dimension);
             }
         }
         return features.toArray(new FeatureSet[features.size()]);
@@ -263,15 +291,14 @@ search: for (final Variable counts : decoder.getVariables()) {
      * @param  counts            the count of instances per feature, or {@code null} if none.
      * @param  featureDimension  dimension of properties having a single value per feature instance.
      * @param  sampleDimension   dimension of properties having multiple values per feature instance.
-     * @return whether a {@code FeatureSet} has been added to the {@code features} collection.
      */
-    private static boolean addFeatureSet(final List<FeatureSet> features, final Decoder decoder, final Variable counts,
+    private static void addFeatureSet(final List<FeatureSet> features, final Decoder decoder, final Variable counts,
             final Dimension featureDimension, final Dimension sampleDimension) throws IOException, DataStoreException
     {
-        final String                 featureName = featureDimension.getName();
-        final boolean                isPointSet  = sampleDimension.equals(featureDimension);
-        final List<Variable>         singletons  = isPointSet ? Collections.emptyList() : new ArrayList<>();
-        final List<Variable>         properties  = new ArrayList<>();
+        final String         featureName = featureDimension.getName();
+        final boolean        isPointSet  = sampleDimension.equals(featureDimension);
+        final List<Variable> properties  = isPointSet ? Collections.emptyList() : new ArrayList<>();
+        final List<Variable> dynamicProperties   = new ArrayList<>();
         final Map<AxisType,Variable> coordinates = new EnumMap<>(AxisType.class);
         for (final Variable data : decoder.getVariables()) {
             if (data.equals(counts)) {
@@ -285,13 +312,13 @@ search: for (final Variable counts : decoder.getVariables()) {
              */
             if (featureName.equalsIgnoreCase(data.getName())) {
                 if (isScalarOrString(data, featureDimension, decoder)) {
-                    (isPointSet ? properties : singletons).add(data);
+                    (isPointSet ? dynamicProperties : properties).add(data);
                 }
             } else if (!isPointSet && isScalarOrString(data, featureDimension, null)) {
                 /*
                  * Feature property other than identifiers. Should rarely happen.
                  */
-                singletons.add(data);
+                properties.add(data);
             } else if (isScalarOrString(data, sampleDimension, null)) {
                 /*
                  * All other sample property (i.e. property having a value for each temporal value).
@@ -306,16 +333,15 @@ search: for (final Variable counts : decoder.getVariables()) {
                                                   decoder.getFilename(), axisType, previous.getName(), data.getName()));
                     }
                 } else {
-                    properties.add(data);
+                    dynamicProperties.add(data);
                 }
             }
         }
-        return features.add(new FeatureSet(decoder, featureName,
-                            (counts != null) ? counts.read() : null,
-                            toArray(singletons),
-                            toArray(coordinates.values()), coordinates.containsKey(AxisType.T),
-                            toArray(properties)));
-
+        features.add(new FeatureSet(decoder, featureName,
+                     (counts != null) ? counts.read() : null,
+                     toArray(properties),
+                     toArray(coordinates.values()), coordinates.containsKey(AxisType.T),
+                     toArray(dynamicProperties)));
     }
 
     /**
@@ -395,9 +421,9 @@ search: for (final Variable counts : decoder.getVariables()) {
         for (int i=0; ; i++) {
             final Variable[] data;
             switch (i) {
-                case 0: data = identifiers; break;
+                case 0: data = properties; break;
                 case 1: data = coordinates; break;
-                case 2: data = properties;  break;
+                case 2: data = dynamicProperties; break;
                 default: return OptionalLong.empty();
             }
             if (data.length != 0) {
@@ -426,112 +452,149 @@ search: for (final Variable counts : decoder.getVariables()) {
      */
     private final class Iter implements Spliterator<Feature> {
         /**
-         * Expected number of features.
+         * Expected number of feature instances.
          */
-        private final int count;
+        private final int size;
 
         /**
          * Index of the next feature to read.
          */
-        private int index;
+        private int nextIndex;
 
         /**
          * Position in the data vectors of the next feature to read.
          * This is the sum of the length of data in all previous features.
          */
-        private int position;
+        private long position;
 
         /**
-         * Values of all singleton properties (typically only identifiers), or an empty array if none.
+         * Values of all simple properties (having a single value per feature instance).
          *
-         * @see FeatureSet#identifiers
+         * @see FeatureSet#properties
          */
-        private final List<?>[] idValues;
+        private final List<?>[] propertyValues;
+
+        /**
+         * Names of feature properties where to store {@link #propertyValues}.
+         */
+        private final String[] propertyNames;
 
         /**
          * Creates a new iterator.
          */
         Iter() throws IOException, DataStoreException {
-            count = (int) Math.min(getFeatureCount().orElse(0), Integer.MAX_VALUE);
-            idValues = new List<?>[identifiers.length];
-            for (int i=0; i < idValues.length; i++) {
+            size = (int) Math.min(getFeatureCount().orElse(0), Integer.MAX_VALUE);
+            final int n = properties.length;
+            propertyValues = new List<?>[n];
+            propertyNames  = new String[n];
+            for (int i=0; i<n; i++) {
                 // Efficiency should be okay because those lists are cached.
-                idValues[i] = identifiers[i].readAnyType();
+                propertyValues[i] = properties[i].readAnyType();
+                propertyNames [i] = properties[i].getName();
             }
         }
 
         /**
          * Executes the given action only on the next feature, if any.
          *
+         * <h4>Limitations</h4>
+         * Current implementation performs a lot of seek operations, which may be inefficient
+         * unless the {@link Decoder} uses a {@code ChannelDataInput} backed by a direct buffer.
+         *
          * @throws ArithmeticException if the size of a variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
          * @throws BackingStoreException if an {@link IOException} or {@link DataStoreException} occurred.
-         *
-         * @todo current reading process implies lot of seeks, which is inefficient.
          */
         @Override
         public boolean tryAdvance(final Consumer<? super Feature> action) {
-            final Vector[] coordinateValues  = new Vector[coordinates.length];
-            final Object[] singleProperties  = new Object[identifiers.length];
-            final Object[] varyingProperties = new Object[properties .length];
-            for (int i=0; i < singleProperties.length; i++) {
-                singleProperties[i] = idValues[i].get(index);
-            }
-            final int[] step = {1};
-            boolean isEmpty = true;
-            int length;
+            final Feature feature = type.newInstance();
+            boolean isEmpty;
+            long length;
             do {
-                length = (counts != null) ? counts.intValue(index) : 1;
-                if (length != 0) {
-                    isEmpty = false;
-                    final GridExtent extent = new GridExtent(null, new long[] {position},
-                                    new long[] {Math.addExact(position, length)}, false);
-                    try {
-                        for (int i=0; i<coordinateValues.length; i++) {
-                            coordinateValues[i] = coordinates[i].read(extent, step);
-                        }
-                        for (int i=0; i<properties.length; i++) {
-                            final Variable p = properties[i];
-                            final Vector data = p.read(extent, step);
-                            if (p.isEnumeration()) {
-                                final String[] meanings = new String[data.size()];
-                                for (int j=0; j<meanings.length; j++) {
-                                    String m = p.meaning(data.intValue(j));
-                                    meanings[j] = (m != null) ? m : "";
-                                }
-                                varyingProperties[i] = Arrays.asList(meanings);
-                            } else {
-                                varyingProperties[i] = data;
-                            }
-                        }
-                    } catch (IOException | DataStoreException e) {
-                        throw new BackingStoreException(canNotReadFile(), e);
-                    }
-                }
-                if (++index >= count) {
+                if (nextIndex >= size) {
                     return false;
                 }
+                length  = (counts != null) ? counts.longValue(nextIndex) : 1;
+                isEmpty = (length == 0);
+                for (int i=0; i < propertyNames.length; i++) {
+                    final Object value = propertyValues[i].get(nextIndex);
+                    feature.setPropertyValue(propertyNames[i], value);
+                    if (isEmpty) {
+                        isEmpty = (value == null) || "".equals(value) ||
+                                  (value instanceof Float  && ((Float)  value).isNaN()) ||
+                                  (value instanceof Double && ((Double) value).isNaN());
+                    }
+                }
+                nextIndex++;
             } while (isEmpty);
             /*
              * At this point we found that there is some data we can put in a feature instance.
+             * Above loop has set the static properties (those having one value per feature).
+             * Now set the dynamic properties (those having time-varying values).
              */
-            final Feature feature = type.newInstance();
-            for (int i=0; i < singleProperties.length; i++) {
-                feature.setPropertyValue(identifiers[i].getName(), singleProperties[i]);
-            }
-            for (int i=0; i<properties.length; i++) {
-                feature.setPropertyValue(properties[i].getName(), varyingProperties[i]);
-                // TODO: set time characteristic.
+            final Vector[] coordinateValues = new Vector[coordinates.length];
+            final GridExtent extent = extent(null, 1, length);
+            List<Dimension> textDimensions = null;
+            GridExtent textExtent = null;
+            try {
+                for (int i=0; i<coordinateValues.length; i++) {
+                    coordinateValues[i] = coordinates[i].read(extent, null);
+                }
+                for (int i=0; i<dynamicProperties.length; i++) {
+                    final Variable p = dynamicProperties[i];
+                    Object value;
+                    if (p.getNumDimensions() > 1) {
+                        final List<Dimension> dimensions = p.getGridDimensions();
+                        if (textExtent == null || !dimensions.equals(textDimensions)) {
+                            textExtent = extent(dimensions, dimensions.size(), length);
+                            textDimensions = dimensions;
+                        }
+                        value = p.readAnyType(textExtent, null);
+                    } else {
+                        value = p.readAnyType(extent, null);
+                    }
+                    if (p.isEnumeration() && value instanceof Vector) {
+                        final Vector data = (Vector) value;
+                        final String[] meanings = new String[data.size()];
+                        for (int j=0; j<meanings.length; j++) {
+                            String m = p.meaning(data.intValue(j));
+                            meanings[j] = (m != null) ? m : "";
+                        }
+                        value = Arrays.asList(meanings);
+                    }
+                    feature.setPropertyValue(dynamicProperties[i].getName(), value);
+                    // TODO: set time characteristic.
+                }
+            } catch (IOException | DataStoreException e) {
+                throw new BackingStoreException(canNotReadFile(), e);
             }
             // TODO: temporary hack - to be replaced by support in Vector.
             final int dimension = coordinates.length - (hasTime ? 1 : 0);
-            final double[] tmp = new double[length * dimension];
+            final double[] tmp = new double[Math.toIntExact(length * dimension)];
             for (int i=0; i<tmp.length; i++) {
                 tmp[i] = coordinateValues[i % dimension].doubleValue(i / dimension);
             }
             feature.setPropertyValue(TRAJECTORY, factory.createPolyline(false, dimension, Vector.create(tmp)));
             action.accept(feature);
-            position = Math.addExact(position, length);
+            position += length;         // Check for ArithmeticException is already done by `extent(…)` call.
             return true;
+        }
+
+        /**
+         * Creates a grid extent for a sub-region to read in a vector of the given number of dimensions.
+         *
+         * @param  dimensions  dimensions of the vector to read. Can be {@code null} if {@code n} is 1.
+         * @param  n           number of dimensions in the vector to read.
+         * @param  length      number of values to read.
+         */
+        private GridExtent extent(final List<Dimension> dimensions, int n, final long length) {
+            final long[] lower = new long[n];
+            final long[] upper = new long[n];
+            lower[--n] = position;
+            upper[  n] = Math.addExact(position, length);
+            for (int i=0; i<n; i++) {
+                upper[i] = dimensions.get(n-i).length();
+            }
+            return new GridExtent(null, lower, upper, false);
         }
 
         /**
@@ -547,7 +610,7 @@ search: for (final Variable counts : decoder.getVariables()) {
          */
         @Override
         public long estimateSize() {
-            return count - index;
+            return size - nextIndex;
         }
 
         /**

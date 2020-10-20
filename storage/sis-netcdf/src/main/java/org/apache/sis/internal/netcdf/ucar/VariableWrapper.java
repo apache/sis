@@ -488,28 +488,65 @@ final class VariableWrapper extends Variable {
      * Array elements are in inverse of netCDF order.
      *
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
-     * @param  subsampling  subsampling along each dimension. 1 means no subsampling.
-     * @return the data as an array of a Java primitive type.
+     * @param  subsampling  subsampling along each dimension, or {@code null} if none.
+     * @return the data as a vector wrapping a Java array.
      */
     @Override
     public Vector read(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
+        final Object array = readArray(area, subsampling);
+        return Vector.create(array, variable.isUnsigned());
+    }
+
+    /**
+     * Reads a subsampled sub-area of the variable and returns them as a list of any object.
+     * Elements in the returned list may be {@link Number} or {@link String} instances.
+     *
+     * @param  area         indices of cell values to read along each dimension, in "natural" order.
+     * @param  subsampling  subsampling along each dimension, or {@code null} if none.
+     * @return the data as a list of {@link Number} or {@link String} instances.
+     */
+    @Override
+    public List<?> readAnyType(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
+        final Object array = readArray(area, subsampling);
+        if (variable.getDataType() == ucar.ma2.DataType.CHAR && variable.getRank() >= 2) {
+            return createStringList(array, area);
+        }
+        return Vector.create(array, variable.isUnsigned());
+    }
+
+    /**
+     * Reads the data from this variable and returns them as an array of a Java primitive type.
+     * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
+     * This method may replace fill/missing values by NaN values and caches the returned vector.
+     *
+     * @param  area         indices of cell values to read along each dimension, in "natural" order.
+     * @param  subsampling  subsampling along each dimension, or {@code null} if none.
+     * @return the data as an array of a Java primitive type.
+     *
+     * @see #read()
+     * @see #read(GridExtent, int[])
+     */
+    private Object readArray(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
         int n = area.getDimension();
         final int[] lower = new int[n];
         final int[] size  = new int[n];
-        final int[] sub   = new int[n--];
+        final int[] sub   = (subsampling != null) ? new int[n] : null;
+        n--;
         for (int i=0; i<=n; i++) {
             final int j = (n - i);
             lower[j] = Math.toIntExact(area.getLow(i));
             size [j] = Math.toIntExact(area.getSize(i));
-            sub  [j] = subsampling[i];
+            if (sub != null) {
+                sub[j] = subsampling[i];
+            }
         }
         final Array array;
         try {
-            array = variable.read(new Section(lower, size, sub));
+            array = variable.read(sub != null ? new Section(lower, size, sub) : new Section(lower, size));
         } catch (InvalidRangeException e) {
             throw new DataStoreException(e);
         }
-        return Vector.create(get1DJavaArray(array), variable.isUnsigned());
+        return get1DJavaArray(array);
     }
 
     /**

@@ -85,6 +85,25 @@ public final strictfp class DataTypeTest extends TestCase {
     }
 
     /**
+     * Tests {@link DataType#isInteger}.
+     */
+    @Test
+    public void testIsNumber() {
+        assertTrue (DataType.BYTE  .isInteger);
+        assertTrue (DataType.UBYTE .isInteger);
+        assertTrue (DataType.SHORT .isInteger);
+        assertTrue (DataType.USHORT.isInteger);
+        assertTrue (DataType.INT   .isInteger);
+        assertTrue (DataType.UINT  .isInteger);
+        assertTrue (DataType.INT64 .isInteger);
+        assertTrue (DataType.UINT64.isInteger);
+        assertFalse(DataType.FLOAT .isInteger);
+        assertFalse(DataType.DOUBLE.isInteger);
+        assertFalse(DataType.CHAR  .isInteger);
+        assertFalse(DataType.STRING.isInteger);
+    }
+
+    /**
      * Verifies the {@link DataType#classe} values.
      */
     @Test

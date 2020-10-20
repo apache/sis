@@ -436,6 +436,18 @@ public abstract class Variable extends Node {
     }
 
     /**
+     * Returns {@code true} if this variable should be considered as a list of strings.
+     *
+     * <div class="note"><b>Maintenance note:</b>
+     * the implementation of this method is inlined in some places, when the code already
+     * has the {@link DataType} value at hand. If this implementation is modified, search
+     * for {@link DataType#CHAR} usage.</div>
+     */
+    final boolean isString() {
+        return getDataType() == DataType.CHAR && getNumDimensions() >= 2;
+    }
+
+    /**
      * Returns {@code true} if this variable is an enumeration.
      *
      * @return whether this variable is an enumeration.
@@ -972,13 +984,26 @@ public abstract class Variable extends Node {
      * method shall {@linkplain #replaceNaN(Object) replace fill/missing values by NaN values}.
      *
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
-     * @param  subsampling  subsampling along each dimension. 1 means no subsampling.
-     * @return the data as an array of a Java primitive type.
+     * @param  subsampling  subsampling along each dimension, or {@code null} if none.
+     * @return the data as a vector wrapping a Java array.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public abstract Vector read(GridExtent area, int[] subsampling) throws IOException, DataStoreException;
+
+    /**
+     * Reads a subsampled sub-area of the variable and returns them as a list of any object.
+     * Elements in the returned list may be {@link Number} or {@link String} instances.
+     *
+     * @param  area         indices of cell values to read along each dimension, in "natural" order.
+     * @param  subsampling  subsampling along each dimension, or {@code null} if none.
+     * @return the data as a list of {@link Number} or {@link String} instances.
+     * @throws IOException if an error occurred while reading the data.
+     * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     */
+    public abstract List<?> readAnyType(GridExtent area, int[] subsampling) throws IOException, DataStoreException;
 
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
@@ -1004,11 +1029,11 @@ public abstract class Variable extends Node {
             if (n >= 2) {
                 final List<Dimension> dimensions = getGridDimensions();
                 final int length = Math.toIntExact(dimensions.get(--n).length());
-                int count = Math.toIntExact(dimensions.get(--n).length());
+                long count = dimensions.get(--n).length();
                 while (n > 0) {
-                    count = Math.multiplyExact(count, Math.toIntExact(dimensions.get(--n).length()));
+                    count = Math.multiplyExact(count, dimensions.get(--n).length());
                 }
-                final String[] strings = createStringArray(array, count, length);
+                final String[] strings = createStringArray(array, Math.toIntExact(count), length);
                 /*
                  * Following method calls take the array reference without cloning it.
                  * Consequently creating those two objects now (even if we may not use them) is reasonably cheap.
@@ -1066,6 +1091,22 @@ public abstract class Variable extends Node {
      * @return array of character strings.
      */
     protected abstract String[] createStringArray(Object chars, int count, int length);
+
+    /**
+     * Creates a list of character strings from a "two-dimensional" array of characters stored in a flat array.
+     *
+     * @param  chars  the "two-dimensional" array stored in a flat {@code byte[]} or {@code char[]} array.
+     * @param  area   the {@code area} argument given to the {@code read(…)} method that obtained the array.
+     * @return list of character strings.
+     */
+    protected final List<String> createStringList(final Object chars, final GridExtent area) {
+        final int length = Math.toIntExact(area.getSize(0));
+        long count = area.getSize(1);
+        for (int i = area.getDimension(); --i >= 2;) {          // As a safety, but should never enter in this loop.
+            count = Math.multiplyExact(count, area.getSize(i));
+        }
+        return UnmodifiableArrayList.wrap(createStringArray(chars, Math.toIntExact(count), length));
+    }
 
     /**
      * Wraps the given data in a {@link Vector} with the assumption that accuracy in base 10 matters.
