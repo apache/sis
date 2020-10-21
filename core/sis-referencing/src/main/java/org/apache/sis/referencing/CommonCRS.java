@@ -1528,7 +1528,10 @@ public enum CommonCRS {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
-     * @since   0.4
+     *
+     * @see Engineering#TIME
+     *
+     * @since 0.4
      * @module
      */
     public enum Temporal {
@@ -1862,6 +1865,8 @@ public enum CommonCRS {
          *     <td>{@link AxisDirection#FUTURE}</td></tr>
          *   <tr><th>Unit:</th> <td>{@link Units#SECOND}</td></tr>
          * </table></blockquote>
+         *
+         * @see Temporal
          */
         TIME(new DefaultEngineeringDatum(singletonMap(EngineeringDatum.NAME_KEY, "Time")));
 

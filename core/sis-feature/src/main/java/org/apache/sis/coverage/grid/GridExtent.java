@@ -824,8 +824,10 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 if (count < s) {
                     selected[count++] = i;
                 } else {
+                    long size = high - low;
+                    if (size != -1) size++;     // When interpreted as unsigned long, -1 is the maximal value.
                     throw new SubspaceNotSpecifiedException(Resources.format(Resources.Keys.NoNDimensionalSlice_3,
-                                    s, getAxisIdentification(i,i), Numerics.toUnsignedDouble(high - low)));
+                                s, getAxisIdentification(i,i), Numerics.toUnsignedDouble(size)));
                 }
             }
         }

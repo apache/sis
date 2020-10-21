@@ -61,7 +61,7 @@ import org.apache.sis.util.CharSequences;
  * but nevertheless allows to specify a timezone.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -87,6 +87,8 @@ public final class StandardDateFormat extends DateFormat {
      * The thread-safe instance to use for reading and formatting dates.
      * Only the year is mandatory, all other fields are optional at parsing time.
      * However all fields are written, including milliseconds at formatting time.
+     *
+     * @see #parseInstantUTC(CharSequence, int, int)
      */
     public static final DateTimeFormatter FORMAT = new DateTimeFormatterBuilder()
             .parseLenient()                    // For allowing fields with one digit instead of two.
@@ -98,16 +100,18 @@ public final class StandardDateFormat extends DateFormat {
             .optionalStart().appendLiteral(':').appendValue(ChronoField.SECOND_OF_MINUTE, 2)
                                                .appendFraction(ChronoField.MILLI_OF_SECOND, 3, 3, true)
             .optionalEnd().optionalEnd().optionalEnd()    // Move back to the optional block of HOUR_OF_DAY.
-//          .optionalStart().appendOffset("+H:MM:ss", "Z")
-            .optionalStart().appendOffsetId()               // TODO: replace by above line after we migrated to JDK10.
+            .optionalStart().appendZoneOrOffsetId()
             .toFormatter(Locale.ROOT);
 
     /**
      * The kinds of objects to get from calls to {@link #parseBest(CharSequence)}, in preference order.
      * The time is converted to UTC timezone if possible.
      *
-     * Tip: if we want to preserve the timezone instead than converting to UTC, we could try replacing
-     * {@code Instant::from} by {@code ZonedDateTime::from, OffsetDateTime::from}.
+     * <div class="note"><b>Tip:</b>
+     * if we want to preserve the timezone instead than converting to UTC, we could try replacing
+     * {@code Instant::from} by {@code ZonedDateTime::from, OffsetDateTime::from}.</div>
+     *
+     * @see #parseInstantUTC(CharSequence, int, int)
      */
     private static TemporalQuery<?>[] QUERIES = {
         Instant::from, LocalDateTime::from, LocalDate::from
@@ -175,18 +179,18 @@ public final class StandardDateFormat extends DateFormat {
      * @return sub-sequence of {@code text} from {@code lower} to {@code upper}, potentially modified.
      */
     static CharSequence toISO(CharSequence text, int lower, int upper) {
-        boolean isCopied = false;
         lower = CharSequences.skipLeadingWhitespaces (text, lower, upper);
         upper = CharSequences.skipTrailingWhitespaces(text, lower, upper);
+        StringBuilder buffer = null;
         int cp = 0;   // Non-whitespace character from previous iteration.
         for (int i = upper; i > lower;) {
             int c = Character.codePointBefore(text, i);
             int n = Character.charCount(c);
 replace:    if (Character.isWhitespace(c)) {
                 /*
-                 * Found whitespaces from 'i' inclusive (after computation below) to 'end' exclusive.
+                 * Found whitespaces from `i` inclusive (after computation below) to `end` exclusive.
                  * If no concurrent change, i > lower because text.charAt(lower) is not a whitespace.
-                 * Set 'c' to the character before whitespaces. 'cp' is the character after spaces.
+                 * Set `c` to the character before whitespaces. `cp` is the character after spaces.
                  */
                 int end = i;
                 i = CharSequences.skipTrailingWhitespaces(text, lower, i - n);
@@ -196,27 +200,23 @@ replace:    if (Character.isWhitespace(c)) {
                 if (Character.isDigit(cp) && Character.isDigit(c)) {
                     /*
                      * If the character before and after whitespaces are digits, maybe we have
-                     * the separation between date and timezone. Use ':' position as a check.
+                     * the separation between date and timezone. Use `:` position as a check.
                      */
                     isDateTimeSeparator = CharSequences.indexOf(text, ':', lower, upper) > end;
                     if (!isDateTimeSeparator) break replace;               // Skip replacement.
                 }
-                final StringBuilder b;
-                if (isCopied) {
-                    b = (StringBuilder) text;
-                } else {
-                    text = b = new StringBuilder(upper - lower).append(text, lower, upper);
-                    i       -= lower;
-                    end     -= lower;
-                    lower    = 0;
-                    isCopied = true;
+                if (buffer == null) {
+                    text  = buffer = new StringBuilder(upper - lower).append(text, lower, upper);
+                    i    -= lower;
+                    end  -= lower;
+                    lower = 0;
                 }
                 if (isDateTimeSeparator) {
-                    b.replace(i, end, "T");
+                    buffer.replace(i, end, "T");
                 } else {
-                    b.delete(i, end);
+                    buffer.delete(i, end);
                 }
-                upper = b.length();
+                upper = buffer.length();
             }
             i -= n;
             cp = c;
