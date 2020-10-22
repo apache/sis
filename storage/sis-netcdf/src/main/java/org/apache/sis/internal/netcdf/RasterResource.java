@@ -163,6 +163,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
     /**
      * The object to use for synchronization. For now we use a {@code synchronized} statement,
      * but it may be changed to {@link java.util.concurrent.locks.Lock} in a future version.
+     *
+     * @see DiscreteSampling#lock
      */
     private final Object lock;
 

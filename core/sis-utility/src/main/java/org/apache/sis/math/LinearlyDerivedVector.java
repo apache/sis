@@ -110,6 +110,16 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
     }
 
     /**
+     * Returns {@code true} if this vector is empty or contains only {@code NaN} values.
+     * The implementation delegates to the {@linkplain #base} vector since linear relationship
+     * does not change whether values are NaN.
+     */
+    @Override
+    public boolean isEmptyOrNaN() {
+        return base.isEmptyOrNaN();
+    }
+
+    /**
      * Returns {@code true} if the value at the given index is {@code null} or {@code NaN}.
      * The implementation delegates to the {@linkplain #base} vector since linear relationship
      * does not change whether a value is NaN.

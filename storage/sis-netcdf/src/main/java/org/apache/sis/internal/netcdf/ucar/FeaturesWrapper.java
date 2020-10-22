@@ -29,7 +29,7 @@ import org.opengis.feature.FeatureType;
 
 /**
  * A wrapper around the UCAR {@code ucar.nc2.ft} package.
- * Created by {@link DecoderWrapper#getDiscreteSampling()}.
+ * Created by {@link DecoderWrapper#getDiscreteSampling(Object)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -50,10 +50,13 @@ final class FeaturesWrapper extends DiscreteSampling {
      *
      * @param  factory    the library for geometric objects, or {@code null} for the default.
      * @param  listeners  the set of registered warning listeners for the data store.
+     * @param  lock       the lock to use in {@code synchronized(lock)} statements.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    FeaturesWrapper(final FeatureCollection features, final GeometryLibrary factory, final StoreListeners listeners) {
-        super(factory, listeners);
+    FeaturesWrapper(final FeatureCollection features, final GeometryLibrary factory, final StoreListeners listeners,
+                    final Object lock)
+    {
+        super(factory, listeners, lock);
         this.features = features;
     }
 

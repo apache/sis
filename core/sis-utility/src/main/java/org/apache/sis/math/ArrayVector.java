@@ -261,6 +261,14 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return index;
         }
 
+        /** Returns {@code true} if this vector is empty or contains only {@code NaN} values. */
+        @Override public boolean isEmptyOrNaN() {
+            for (final double v : array) {
+                if (!Double.isNaN(v)) return false;
+            }
+            return true;
+        }
+
         /** Returns whether this vector in the given range is equals to the specified vector. */
         @Override boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other instanceof Doubles) {
@@ -365,6 +373,14 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             final int first = Float.floatToIntBits(array[toSearch]);
             while (index < array.length && (first == Float.floatToIntBits(array[index])) != equality) index++;
             return index;
+        }
+
+        /** Returns {@code true} if this vector is empty or contains only {@code NaN} values. */
+        @Override public final boolean isEmptyOrNaN() {
+            for (final float v : array) {
+                if (!Float.isNaN(v)) return false;
+            }
+            return true;
         }
 
         /** Returns whether this vector in the given range is equals to the specified vector. */
@@ -478,6 +494,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the type of elements in the backing array. */
         @Override public final Class<Long> getElementType() {
             return Long.class;
+        }
+
+        /** Returns whether this vector is empty. */
+        @Override public final boolean isEmptyOrNaN() {
+            return array.length == 0;
         }
 
         /** Returns whether values are convertible to {@code float} type. */
@@ -595,6 +616,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the type of elements in the backing array. */
         @Override public final Class<Integer> getElementType() {
             return Integer.class;
+        }
+
+        /** Returns whether this vector is empty. */
+        @Override public final boolean isEmptyOrNaN() {
+            return array.length == 0;
         }
 
         /** Returns whether values are convertible to {@code float} type. */
@@ -718,6 +744,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return Short.class;
         }
 
+        /** Returns whether this vector is empty. */
+        @Override public final boolean isEmptyOrNaN() {
+            return array.length == 0;
+        }
+
         /** Returns whether values are convertible to {@code float} type. */
         @Override public final boolean isSinglePrecision() {
             return true;
@@ -812,6 +843,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the type of elements in the backing array. */
         @Override public final Class<Byte> getElementType() {
             return Byte.class;
+        }
+
+        /** Returns whether this vector is empty. */
+        @Override public final boolean isEmptyOrNaN() {
+            return array.length == 0;
         }
 
         /** Returns whether values are convertible to {@code float} type. */
@@ -1194,11 +1230,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Returns {@code true} if the element at the given index is null or NaN. */
         @Override public boolean isNaN(final int index) {
-            Number value = array[index];
-            if (value == null) return true;
-            if (value instanceof Float)  return ((Float)  value).isNaN();
-            if (value instanceof Double) return ((Double) value).isNaN();
-            return false;
+            return Numbers.isNaN(array[index]);
         }
 
         @Override public int           size()          {return array.length;}

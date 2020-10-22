@@ -136,6 +136,7 @@ final class RepeatedVector extends Vector implements Serializable {
     }
 
     /** Forwards to the base vector. */
+    @Override public final boolean isEmptyOrNaN()      {return base.isEmptyOrNaN();}
     @Override public final boolean isSinglePrecision() {return base.isSinglePrecision();}
     @Override public final boolean isInteger()         {return base.isInteger();}
     @Override public final boolean isUnsigned()        {return base.isUnsigned();}

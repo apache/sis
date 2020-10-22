@@ -379,14 +379,15 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * returns objects for handling them. This method does not need to cache the returned array, because
      * it will be invoked only once by {@link org.apache.sis.storage.netcdf.NetcdfStore#components()}.
      *
+     * @param  lock  the lock to use in {@code synchronized(lock)} statements.
      * @return a handler for the features, or an empty array if none.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      */
-    public DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException {
+    public DiscreteSampling[] getDiscreteSampling(final Object lock) throws IOException, DataStoreException {
         final String type = stringValue(CF.FEATURE_TYPE);
         if (type == null || type.equalsIgnoreCase(FeatureSet.TRAJECTORY)) try {
-            return FeatureSet.create(this);
+            return FeatureSet.create(this, lock);
         } catch (IllegalArgumentException | ArithmeticException e) {
             // Illegal argument is not a problem with content, but rather with configuration.
             throw new DataStoreException(e.getLocalizedMessage(), e);

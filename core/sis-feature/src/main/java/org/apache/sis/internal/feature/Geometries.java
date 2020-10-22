@@ -276,6 +276,20 @@ public abstract class Geometries<G> {
     }
 
     /**
+     * Single-precision variant of {@link #createPoint(double, double)}.
+     * Default implementation delegates to the double-precision variant.
+     *
+     * @param  x  the first coordinate value.
+     * @param  y  the second coordinate value.
+     * @return the point for the given coordinate values.
+     *
+     * @see #supportSinglePrecision()
+     */
+    public Object createPoint(float x, float y) {
+        return createPoint((double) x, (double) y);
+    }
+
+    /**
      * Creates a two-dimensional point from the given coordinate. If the CRS is geographic, then the
      * (x,y) values should be (longitude, latitude) for compliance with usage in ESRI and JTS libraries.
      * The returned object will be an instance of {@link #pointClass}.

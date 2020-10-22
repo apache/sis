@@ -93,7 +93,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * The discrete sampling features, or {@code null} if none.
      * This reference is kept for making possible to close it in {@link #close()}.
      *
-     * @see #getDiscreteSampling()
+     * @see #getDiscreteSampling(Object)
      */
     private transient FeatureDataset features;
 
@@ -418,13 +418,14 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * If this decoder can handle the file content as features, returns handlers for them.
      *
-     * @return {@inheritDoc}
+     * @param  lock  the lock to use in {@code synchronized(lock)} statements.
+     * @return a handler for the features, or an empty array if none.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if the library of geometric objects is not available.
      */
     @Override
     @SuppressWarnings("null")
-    public DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException {
+    public DiscreteSampling[] getDiscreteSampling(final Object lock) throws IOException, DataStoreException {
         if (features == null && file instanceof NetcdfDataset) {
             features = FeatureDatasetFactoryManager.wrap(null, (NetcdfDataset) file, this,
                     new Formatter(new LogAdapter(listeners), listeners.getLocale()));
@@ -435,7 +436,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                 final FeaturesWrapper[] wrappers = new FeaturesWrapper[fc.size()];
                 try {
                     for (int i=0; i<wrappers.length; i++) {
-                        wrappers[i] = new FeaturesWrapper(fc.get(i), geomlib, listeners);
+                        wrappers[i] = new FeaturesWrapper(fc.get(i), geomlib, listeners, lock);
                     }
                 } catch (IllegalArgumentException e) {
                     throw new DataStoreException(e.getLocalizedMessage(), e);
@@ -446,7 +447,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
         /*
          * If the UCAR library did not recognized the features in this file, ask to SIS.
          */
-        return super.getDiscreteSampling();
+        return super.getDiscreteSampling(lock);
     }
 
     /**

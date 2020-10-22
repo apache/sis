@@ -65,7 +65,11 @@ public strictfp class FeatureSetTest extends TestCase {
      */
     @Test
     public void testMovingFeatures() throws IOException, DataStoreException {
-        final FeatureSet[] features = FeatureSet.create(selectDataset(TestData.MOVING_FEATURES));
+        final Object lock = new Object();
+        final FeatureSet[] features;
+        synchronized (lock) {
+            features = FeatureSet.create(selectDataset(TestData.MOVING_FEATURES), lock);
+        }
         assertEquals(1, features.length);
         type = features[0].getType();
         verifyType(type.getProperties(false).iterator());

@@ -80,6 +80,14 @@ public final class Factory extends Geometries<Shape> {
      * Creates a two-dimensional point from the given coordinate.
      */
     @Override
+    public Object createPoint(float x, float y) {
+        return new Point2D.Float(x, y);
+    }
+
+    /**
+     * Creates a two-dimensional point from the given coordinate.
+     */
+    @Override
     public Object createPoint(final double x, final double y) {
         return new Point2D.Double(x, y);
     }

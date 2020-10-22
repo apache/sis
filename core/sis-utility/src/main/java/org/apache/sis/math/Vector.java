@@ -336,6 +336,23 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     public abstract int size();
 
     /**
+     * Returns {@code true} if this vector is empty or contains only {@code NaN} values.
+     *
+     * @return whether this vector is empty or contains only {@code NaN} values.
+     *
+     * @since 1.1
+     */
+    public boolean isEmptyOrNaN() {
+        final int n = size();
+        for (int i=0; i<n; i++) {
+            if (!isNaN(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns {@code true} if the value at the given index is {@code null} or {@code NaN}.
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
