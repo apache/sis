@@ -115,19 +115,21 @@ final class RecentFiles implements EventHandler<ActionEvent> {
          * Verifies if an item already exists for the given file.
          * If yes, we will just move it.
          */
+        MenuItem item = null;
         for (int i=0; i<size; i++) {
             if (file.equals(items.get(i).getUserData())) {
-                items.add(0, items.remove(i));
-                return;
+                item = items.remove(i);
+                break;
             }
         }
-        final MenuItem item;
-        if (size >= MAX_COUNT) {
-            item = items.remove(size-1);
-            item.setText(file.getName());
-            item.setUserData(file);
-        } else {
-            item = createItem(file);
+        if (item == null) {
+            if (size >= MAX_COUNT) {
+                item = items.remove(size-1);
+                item.setText(file.getName());
+                item.setUserData(file);
+            } else {
+                item = createItem(file);
+            }
         }
         items.add(0, item);
         /*
