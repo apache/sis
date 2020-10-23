@@ -424,7 +424,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 @Override protected void failed() {
                     final Throwable ex = getException();
                     errorOccurred(ex);
-                    ExceptionReporter.canNotUseResource(ex);
+                    ExceptionReporter.canNotUseResource(fixedPane, ex);
                 }
 
                 /**

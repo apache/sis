@@ -228,8 +228,8 @@ public class StandardMetadataTree extends MetadataTree {
                         }
                     } catch (Exception e) {
                         final Resources localized = Resources.forLocale(((MetadataTree) getTreeTableView()).getLocale());
-                        ExceptionReporter.show(localized.getString(Resources.Keys.ErrorExportingData),
-                                               localized.getString(Resources.Keys.CanNotCreateXML), e);
+                        ExceptionReporter.show(this, localized.getString(Resources.Keys.ErrorExportingData),
+                                                     localized.getString(Resources.Keys.CanNotCreateXML), e);
                         return;
                     }
                     content.putString(text);

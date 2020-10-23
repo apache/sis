@@ -166,7 +166,7 @@ public class MapMenu extends ContextMenu {
                 content.putString(text);
                 Clipboard.getSystemClipboard().setContent(content);
             } catch (TransformException | RuntimeException e) {
-                ExceptionReporter.show(((MenuItem) event.getSource()).getText(), null, e);
+                ExceptionReporter.show(getOwnerWindow(), ((MenuItem) event.getSource()).getText(), null, e);
             }
         });
         getItems().add(coordinates);

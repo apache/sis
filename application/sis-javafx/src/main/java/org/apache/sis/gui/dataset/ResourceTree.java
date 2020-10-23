@@ -199,7 +199,7 @@ public class ResourceTree extends TreeView<Resource> {
                     addResource(existing);
                 } else {
                     loader.setOnSucceeded((event) -> addResource((Resource) event.getSource().getValue()));
-                    loader.setOnFailed(ExceptionReporter::show);
+                    loader.setOnFailed((event) -> ExceptionReporter.show(this, event));
                     BackgroundThreads.execute(loader);
                 }
             }
@@ -236,7 +236,7 @@ public class ResourceTree extends TreeView<Resource> {
                 final int start = url.lastIndexOf('/', url.length() - 2) + 1;
                 int stop = url.indexOf('?', start);
                 if (stop <= 0) stop = url.length();
-                ExceptionReporter.canNotReadFile(url.substring(start, stop), e);
+                ExceptionReporter.canNotReadFile(this, url.substring(start, stop), e);
             }
         }
         event.setDropCompleted(success);
@@ -268,7 +268,7 @@ public class ResourceTree extends TreeView<Resource> {
     public void removeAndClose(final Resource resource) {
         if (findOrRemove(resource, true)) {
             if (resource instanceof DataStore) {
-                ResourceLoader.removeAndClose((DataStore) resource);
+                ResourceLoader.removeAndClose((DataStore) resource, this);
             }
         }
     }
@@ -480,8 +480,9 @@ public class ResourceTree extends TreeView<Resource> {
                         more = new Button(Styles.ERROR_DETAILS_ICON);
                         more.setOnAction((e) -> {
                             final Resources localized = tree.localized();
-                            ExceptionReporter.show(localized.getString(Resources.Keys.ErrorDetails),
-                                                   localized.getString(Resources.Keys.CanNotReadResource), failure);
+                            ExceptionReporter.show(tree,
+                                    localized.getString(Resources.Keys.ErrorDetails),
+                                    localized.getString(Resources.Keys.CanNotReadResource), failure);
                         });
                     }
                 } else {

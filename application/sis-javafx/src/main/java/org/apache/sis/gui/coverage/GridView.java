@@ -382,10 +382,11 @@ public class GridView extends Control {
         protected void failed() {
             terminated(null);
             final GridCoverageResource resource = request.resource;
+            final GridView owner = GridView.this;
             if (resource instanceof StoreListeners) {
-                ExceptionReporter.canNotReadFile(((StoreListeners) resource).getSourceName(), getException());
+                ExceptionReporter.canNotReadFile(owner, ((StoreListeners) resource).getSourceName(), getException());
             } else {
-                ExceptionReporter.canNotUseResource(getException());
+                ExceptionReporter.canNotUseResource(owner, getException());
             }
         }
 

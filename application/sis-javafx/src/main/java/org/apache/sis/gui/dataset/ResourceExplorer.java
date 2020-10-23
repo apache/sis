@@ -235,7 +235,7 @@ public class ResourceExplorer extends WindowManager {
         /** Invoked if the tabs can not be built. */
         @Override protected void failed() {
             builder = null;
-            ExceptionReporter.show(this);
+            ExceptionReporter.show(getView(), this);
         }
 
         /** Should never happen, but defined as a safety. */

@@ -615,7 +615,7 @@ public abstract class MapCanvas extends PlanarCanvas {
             } catch (Exception e) {
                 errorOccurred(e);
                 final Resources i18n = Resources.forLocale(getLocale());
-                ExceptionReporter.show(null, i18n.getString(Resources.Keys.CanNotUseRefSys_1, projection), e);
+                ExceptionReporter.show(fixedPane, null, i18n.getString(Resources.Keys.CanNotUseRefSys_1, projection), e);
             }
         }
 
@@ -671,7 +671,7 @@ public abstract class MapCanvas extends PlanarCanvas {
             errorOccurred(e);
             final Locale locale = getLocale();
             final Resources i18n = Resources.forLocale(locale);
-            ExceptionReporter.show(null, i18n.getString(Resources.Keys.CanNotUseRefSys_1,
+            ExceptionReporter.show(fixedPane, null, i18n.getString(Resources.Keys.CanNotUseRefSys_1,
                                    IdentifiedObjects.getDisplayName(crs, locale)), e);
         }
     }

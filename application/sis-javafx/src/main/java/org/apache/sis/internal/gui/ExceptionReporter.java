@@ -25,6 +25,9 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.stage.Window;
+import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DialogPane;
@@ -33,6 +36,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.Region;
+import org.apache.sis.gui.Widget;
 import org.apache.sis.util.Classes;
 
 
@@ -49,7 +53,7 @@ import org.apache.sis.util.Classes;
  * @since   1.1
  * @module
  */
-public final class ExceptionReporter {
+public final class ExceptionReporter extends Widget {
     /**
      * The margin to use for the stack trace. We add some spaces on the top and left sides.
      */
@@ -70,7 +74,6 @@ public final class ExceptionReporter {
      *
      * @param  exception  the error to report.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public ExceptionReporter(final Throwable exception) {
         this.exception = exception;
         trace = new Label(getStackTrace(exception));
@@ -111,22 +114,40 @@ public final class ExceptionReporter {
      *
      * @return the stack trace viewer.
      */
+    @Override
     public final Region getView() {
         return trace;
     }
 
     /**
+     * Returns the window where is located the given JavaFX control.
+     *
+     * @param  control  the JavaFX control for which to get the window.
+     * @return window containing the given control, or {@code null} if none.
+     */
+    private static Window getWindow(final Node control) {
+        if (control != null) {
+            final Scene scene = control.getScene();
+            if (scene != null) {
+                return scene.getWindow();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Shows the reporter for the exception that occurred during a task.
      *
+     * @param  owner  control in the window which will own the dialog, or {@code null} if unknown.
      * @param  event  an event for the task where an error occurred.
      */
-    public static void show(final WorkerStateEvent event) {
+    public static void show(final Node owner, final WorkerStateEvent event) {
         final Worker<?> worker = event.getSource();
         final Throwable exception = worker.getException();
         if (worker instanceof ResourceLoader) {
-            canNotReadFile(((ResourceLoader) worker).getFileName(), exception);
+            canNotReadFile(owner, ((ResourceLoader) worker).getFileName(), exception);
         } else {
-            show((short) 0, (short) 0, null, exception);
+            show(getWindow(owner), (short) 0, (short) 0, null, exception);
         }
     }
 
@@ -134,55 +155,62 @@ public final class ExceptionReporter {
      * Shows the reporter for a failure to read a file.
      * This method does nothing if the exception is null.
      *
+     * @param  owner      control in the window which will own the dialog, or {@code null} if unknown.
      * @param  file       the file that can not be read.
      * @param  exception  the error that occurred.
      */
-    public static void canNotReadFile(final String file, final Throwable exception) {
-        show(Resources.Keys.ErrorOpeningFile, Resources.Keys.CanNotReadFile_1, new Object[] {file}, exception);
+    public static void canNotReadFile(final Node owner, final String file, final Throwable exception) {
+        show(getWindow(owner), Resources.Keys.ErrorOpeningFile, Resources.Keys.CanNotReadFile_1, new Object[] {file}, exception);
     }
 
     /**
      * Shows the reporter for a failure to close a file.
      * This method does nothing if the exception is null.
      *
+     * @param  owner      control in the window which will own the dialog, or {@code null} if unknown.
      * @param  file       the file that can not be closed.
      * @param  exception  the error that occurred.
      */
-    public static void canNotCloseFile(final String file, final Throwable exception) {
-        show(Resources.Keys.ErrorClosingFile, Resources.Keys.CanNotClose_1, new Object[] {file}, exception);
+    public static void canNotCloseFile(final Node owner, final String file, final Throwable exception) {
+        show(getWindow(owner), Resources.Keys.ErrorClosingFile, Resources.Keys.CanNotClose_1, new Object[] {file}, exception);
     }
 
     /**
      * Shows the reporter for a failure to create a CRS.
      * This method does nothing if the exception is null.
      *
+     * @param  owner      the owner window of the dialog, or {@code null} if none.
      * @param  code       code of the CRS that can not be created.
      * @param  exception  the error that occurred.
      */
-    public static void canNotCreateCRS(final String code, final Throwable exception) {
-        show(Resources.Keys.ErrorCreatingCRS, Resources.Keys.CanNotCreateCRS_1, new Object[] {code}, exception);
+    public static void canNotCreateCRS(final Window owner, final String code, final Throwable exception) {
+        show(owner, Resources.Keys.ErrorCreatingCRS, Resources.Keys.CanNotCreateCRS_1, new Object[] {code}, exception);
     }
 
     /**
      * Shows the reporter for a failure to use a store resource.
      * This method does nothing if the exception is null.
      *
+     * @param  owner      control in the window which will own the dialog, or {@code null} if unknown.
      * @param  exception  the error that occurred.
      */
-    public static void canNotUseResource(final Throwable exception) {
-        show(Resources.Keys.ErrorDataAccess, Resources.Keys.ErrorDataAccess, new Object[0], exception);
+    public static void canNotUseResource(final Node owner, final Throwable exception) {
+        show(getWindow(owner), Resources.Keys.ErrorDataAccess, Resources.Keys.ErrorDataAccess, new Object[0], exception);
     }
 
     /**
      * Constructs and shows the exception reporter. The title and text are keys from the {@link Resources}.
      * If the title and/or text are 0, then the {@link Alert} default title and text will be used.
      *
+     * @param owner       the owner window of the dialog, or {@code null} if none.
      * @param title       {@link Resources.Keys} of the title, or 0 if unknown.
      * @param text        {@link Resources.Keys} of the text (possibly with arguments), or 0 if unknown.
      * @param arguments   the arguments for creating the text identified by the {@code text} key.
      * @param exception   the exception to report, or {@code null} if none.
      */
-    private static void show(final short title, final short text, final Object[] arguments, final Throwable exception) {
+    private static void show(final Window owner, final short title,
+            final short text, final Object[] arguments, final Throwable exception)
+    {
         if (exception != null) {
             String t = null, h = null;
             if ((title | text) != 0) {
@@ -190,7 +218,7 @@ public final class ExceptionReporter {
                 if (title != 0) t = resources.getString(title);
                 if (text  != 0) h = resources.getString(text, arguments);
             }
-            show(t, h, exception);
+            show(owner, t, h, exception);
         }
     }
 
@@ -198,13 +226,28 @@ public final class ExceptionReporter {
      * Constructs and shows the exception reporter.
      * This method can be invoked from any thread.
      *
-     * @param title      the window the title, or {@code null} if none.
+     * @param owner      control in the window which will own the dialog, or {@code null} if unknown.
+     * @param title      the window title, or {@code null} if none.
      * @param text       the text in the dialog box, or {@code null} if none.
      * @param exception  the exception to report.
      */
-    public static void show(final String title, final String text, final Throwable exception) {
+    public static void show(final Node owner, final String title, final String text, final Throwable exception) {
+        show(getWindow(owner), title, text, exception);
+    }
+
+    /**
+     * Constructs and shows the exception reporter.
+     * This method can be invoked from any thread.
+     * All other {@code show(…)} methods in this class ultimately delegate to this method.
+     *
+     * @param owner      the owner window of the dialog, or {@code null} if none.
+     * @param title      the window title, or {@code null} if none.
+     * @param text       the text in the dialog box, or {@code null} if none.
+     * @param exception  the exception to report.
+     */
+    public static void show(final Window owner, final String title, final String text, final Throwable exception) {
         if (!Platform.isFxApplicationThread()) {
-            Platform.runLater(() -> show(title, text, exception));
+            Platform.runLater(() -> show(owner, title, text, exception));
             return;
         }
         String message = exception.getLocalizedMessage();
@@ -215,6 +258,7 @@ public final class ExceptionReporter {
         if (title != null) alert.setTitle(title);
         if (text  != null) alert.setHeaderText(text);
         alert.setContentText(message);
+        alert.initOwner(owner);
         final DialogPane pane = alert.getDialogPane();
         pane.setExpandableContent(new ExceptionReporter(exception).trace);
         pane.setPrefWidth(650);
@@ -224,10 +268,11 @@ public final class ExceptionReporter {
     /**
      * Constructs and shows the exception reporter for the given task.
      *
-     * @param  task  the task that failed.
+     * @param  owner  control in the window which will own the dialog, or {@code null} if unknown.
+     * @param  task   the task that failed.
      */
-    public static void show(final Task<?> task) {
-        show(task.getTitle(), null, task.getException());
+    public static void show(final Node owner, final Task<?> task) {
+        show(owner, task.getTitle(), null, task.getException());
     }
 
     /**

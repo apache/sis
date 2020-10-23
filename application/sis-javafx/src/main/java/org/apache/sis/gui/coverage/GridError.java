@@ -116,7 +116,7 @@ final class GridError extends VBox {
      * Invoked when the user click on the "details" button.
      */
     private void showDetails() {
-        ExceptionReporter.show(Resources.format(Resources.Keys.ErrorDataAccess), header, exception);
+        ExceptionReporter.show(this, Resources.format(Resources.Keys.ErrorDataAccess), header, exception);
     }
 
     /**

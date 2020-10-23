@@ -417,7 +417,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
             if (code != null) try {
                 return getAuthorityCodes().getFactory().createCoordinateReferenceSystem(code.code);
             } catch (FactoryException e) {
-                ExceptionReporter.canNotCreateCRS(code.code, e);
+                ExceptionReporter.canNotCreateCRS(getOwner(), code.code, e);
             }
         }
         return null;
