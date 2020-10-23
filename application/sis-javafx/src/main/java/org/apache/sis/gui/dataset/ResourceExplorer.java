@@ -267,6 +267,7 @@ public class ResourceExplorer extends WindowManager {
 
     /**
      * Returns the a function to be called after a resource has been loaded from a file or URL.
+     * This is an accessor for the {@link ResourceTree#onResourceLoaded} property value.
      *
      * @return current function to be called after a resource has been loaded, or {@code null} if none.
      */
@@ -276,6 +277,7 @@ public class ResourceExplorer extends WindowManager {
 
     /**
      * Specifies a function to be called after a resource has been loaded from a file or URL.
+     * This is a setter for the {@link ResourceTree#onResourceLoaded} property value.
      * If this method is never invoked, then the default value is {@code null}.
      *
      * @param  handler  new function to be called after a resource has been loaded, or {@code null} if none.

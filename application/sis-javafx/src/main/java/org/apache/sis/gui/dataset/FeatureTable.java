@@ -41,11 +41,13 @@ import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.gui.IdentityValueFactory;
 import org.apache.sis.internal.gui.ExceptionReporter;
 
@@ -277,10 +279,11 @@ public class FeatureTable extends TableView<Feature> {
              * Get localized text to show in column header. Also remember
              * the plain property name; it will be needed for ValueGetter.
              */
-            final String name = pt.getName().toString();
+            final GenericName qualifiedName = pt.getName();
+            final String name = qualifiedName.toString();
             String title = string(pt.getDesignation());
             if (title == null) {
-                title = string(pt.getName().toInternationalString());
+                title = string(qualifiedName.toInternationalString());
                 if (title == null) title = name;
             }
             /*
@@ -305,6 +308,9 @@ public class FeatureTable extends TableView<Feature> {
             final TableColumn<Feature,Object> column = new TableColumn<>(title);
             column.setCellValueFactory(new ValueGetter(name));
             column.setCellFactory(isMultiValued ? ElementCell::new : ValueCell::new);
+            if (AttributeConvention.contains(qualifiedName)) {
+                column.setVisible(false);                       // Hide synthetic properties.
+            }
             columns.add(column);
         }
         /*
