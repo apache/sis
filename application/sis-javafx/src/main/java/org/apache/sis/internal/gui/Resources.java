@@ -161,6 +161,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DoesNotCoverAOI = 13;
 
         /**
+         * An error occurred at the following location:
+         */
+        public static final short ErrorAt = 53;
+
+        /**
          * Error closing file
          */
         public static final short ErrorClosingFile = 14;

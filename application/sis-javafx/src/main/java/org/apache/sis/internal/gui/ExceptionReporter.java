@@ -24,18 +24,21 @@ import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.stage.Window;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.text.Text;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DialogPane;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.util.Classes;
 
@@ -43,9 +46,6 @@ import org.apache.sis.util.Classes;
 /**
  * A modal dialog box reporting an exception.
  * This dialog box contains an expandable section with the full stack trace.
- *
- * @todo If another error happen in a background thread while this dialog is visible,
- *       add the error in the existing dialog instead than opening a new one.
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
@@ -55,19 +55,39 @@ import org.apache.sis.util.Classes;
  */
 public final class ExceptionReporter extends Widget {
     /**
-     * The margin to use for the stack trace. We add some spaces on the top and left sides.
+     * The margin around stack trace in side the scroll pane.
+     * This is the space between the text and scroll bars.
      */
-    private static final Insets MARGIN = new Insets(9, 0, 0, 40);
+    private static final Insets MARGIN = new Insets(9, 3, 3, 9);
+
+    /**
+     * The margin around (outside) the scroll pane.
+     */
+    private static final Insets PADDING = new Insets(9, 3, 1, 3);
+
+    /**
+     * If an alert dialog box is already visible, the dialog. Otherwise {@code null}.
+     * This is used for avoiding to popup many dialog boxes when many errors occur.
+     * In current implementation, only the most recent exception is shown.
+     * This field shall be read and written in JavaFX thread only.
+     */
+    private static Alert currentlyShown;
 
     /**
      * The exception that occurred.
      */
-    private final Throwable exception;
+    private Throwable exception;
 
     /**
      * The component where to show the stack trace.
+     * Contains (indirectly) the {@link #trace}.
      */
-    private final Label trace;
+    private final VBox view;
+
+    /**
+     * The node where stack trace is written.
+     */
+    private final Text trace;
 
     /**
      * Creates a new exception reporter showing the stack trace of the given exception.
@@ -76,15 +96,24 @@ public final class ExceptionReporter extends Widget {
      */
     public ExceptionReporter(final Throwable exception) {
         this.exception = exception;
-        trace = new Label(getStackTrace(exception));
-        trace.setAlignment(Pos.TOP_LEFT);
-        trace.setPadding(MARGIN);
+        trace = new Text(getStackTrace(exception));
+        final ScrollPane pane = new ScrollPane(trace);
+        pane.setFitToWidth(true);
+        pane.setFitToHeight(true);
+        pane.setPadding(MARGIN);
 
         final Resources localized = Resources.getInstance();
         final Menu sendTo = new Menu(localized.getString(Resources.Keys.SendTo));
         sendTo.getItems().add(localized.menu(Resources.Keys.StandardErrorStream, this::printStackTrace));
         final ContextMenu menu = new ContextMenu(localized.menu(Resources.Keys.Copy, this::copy), sendTo);
-        trace.setContextMenu(menu);
+        pane.setContextMenu(menu);
+
+        final Label header = new Label(localized.getString(Resources.Keys.ErrorAt));
+        view = new VBox(header, pane);
+        VBox.setVgrow(pane, Priority.ALWAYS);
+        VBox.setMargin(pane, PADDING);
+        VBox.setMargin(header, PADDING);
+        view.setPrefHeight(400);
     }
 
     /**
@@ -94,6 +123,7 @@ public final class ExceptionReporter extends Widget {
      */
     public void setException(final Throwable exception) {
         trace.setText(getStackTrace(exception));
+        this.exception = exception;
     }
 
     /**
@@ -116,7 +146,7 @@ public final class ExceptionReporter extends Widget {
      */
     @Override
     public final Region getView() {
-        return trace;
+        return view;
     }
 
     /**
@@ -254,15 +284,25 @@ public final class ExceptionReporter extends Widget {
         if (message == null) {
             message = Classes.getShortClassName(exception);
         }
-        final Alert alert = new Alert(Alert.AlertType.ERROR);
+        Alert alert = currentlyShown;
+        if (alert == null) {
+            alert = new Alert(Alert.AlertType.ERROR);
+            alert.initOwner(owner);
+            alert.setOnHidden((event) -> currentlyShown = null);
+            final ExceptionReporter content = new ExceptionReporter(exception);
+            final DialogPane pane = alert.getDialogPane();
+            pane.setExpandableContent(content.getView());
+            pane.setPrefWidth(650);
+            pane.setUserData(content);
+        } else {
+            final ExceptionReporter content = (ExceptionReporter) alert.getDialogPane().getUserData();
+            content.setException(exception);
+        }
         if (title != null) alert.setTitle(title);
         if (text  != null) alert.setHeaderText(text);
         alert.setContentText(message);
-        alert.initOwner(owner);
-        final DialogPane pane = alert.getDialogPane();
-        pane.setExpandableContent(new ExceptionReporter(exception).trace);
-        pane.setPrefWidth(650);
         alert.show();
+        currentlyShown = alert;
     }
 
     /**
