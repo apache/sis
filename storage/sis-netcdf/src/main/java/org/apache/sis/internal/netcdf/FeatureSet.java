@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 import java.util.OptionalLong;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import javax.measure.Unit;
 import org.opengis.metadata.acquisition.GeometryType;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.feature.MovingFeatures;
@@ -243,6 +244,10 @@ final class FeatureSet extends DiscreteSampling {
         final String desc = variable.getDescription();
         if (desc != null && !desc.equals(name)) {
             attribute.setDefinition(desc);
+        }
+        final Unit<?> unit = variable.getUnit();
+        if (unit != null) {
+            attribute.setUnit(unit);
         }
         if (hasTime) {
             attribute.addCharacteristic(MovingFeatures.TIME);
