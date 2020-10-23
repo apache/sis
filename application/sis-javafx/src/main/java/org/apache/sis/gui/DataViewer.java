@@ -143,8 +143,9 @@ public class DataViewer extends Application {
         final Menu file = new Menu(vocabulary.getString(Vocabulary.Keys.File));
         {   // For keeping variables locale.
             final MenuItem open, close;
+            final Menu recentFiles = RecentFiles.create(content, localized);
             file.getItems().addAll(
-                    open  = localized.menu(Resources.Keys.Open,  (e) -> showOpenFileDialog()),
+                    open  = localized.menu(Resources.Keys.Open,  (e) -> showOpenFileDialog()), recentFiles,
                     close = localized.menu(Resources.Keys.Close, (e) -> closeSelectedFile()),
                     new SeparatorMenuItem(),
                     localized.menu(Resources.Keys.Exit, (e) -> Platform.exit()));

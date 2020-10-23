@@ -261,6 +261,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short OpenDataFile = 29;
 
         /**
+         * Open recent file
+         */
+        public static final short OpenRecentFile = 54;
+
+        /**
          * Orthographic
          */
         public static final short Orthographic = 52;

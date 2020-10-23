@@ -436,6 +436,30 @@ public final class IOUtilities extends Static {
     }
 
     /**
+     * Converts the given object to a {@link Path} if the object is a known type, or returns {@code null} otherwise.
+     * Current implementation recognizes {@link CharSequence}, {@link Path}, {@link File}, {@link URI}
+     * but not {@link URL}, because conversion of URL requires to know the encoding.
+     *
+     * @param  path  the object to convert to a path.
+     * @return the given object as a path, or {@code null}.
+     * @throws IllegalArgumentException if the given object is an instance of a supported type but can not be converted.
+     * @throws FileSystemNotFoundException if the file system identified by URI can not be used.
+     */
+    public static Path toPathOrNull(final Object path) {
+        if (path instanceof Path) {
+            return (Path) path;
+        } else if (path instanceof File) {
+            return ((File) path).toPath();
+        } else if (path instanceof URI) {
+            return Paths.get((URI) path);
+        } else if (path instanceof CharSequence) {
+            return Paths.get(path.toString());
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Converts the given output stream to an input stream. It is caller's responsibility to flush
      * the stream and reset its position to the beginning of file before to invoke this method.
      * The data read by the input stream will be the data that have been written in the output stream

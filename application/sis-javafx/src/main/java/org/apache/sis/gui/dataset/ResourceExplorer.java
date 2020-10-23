@@ -22,6 +22,7 @@ import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.concurrent.Task;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
@@ -262,6 +263,25 @@ public class ResourceExplorer extends WindowManager {
     @Override
     public final Region getView() {
         return content;
+    }
+
+    /**
+     * Returns the a function to be called after a resource has been loaded from a file or URL.
+     *
+     * @return current function to be called after a resource has been loaded, or {@code null} if none.
+     */
+    public EventHandler<LoadEvent> getOnResourceLoaded() {
+        return resources.onResourceLoaded.get();
+    }
+
+    /**
+     * Specifies a function to be called after a resource has been loaded from a file or URL.
+     * If this method is never invoked, then the default value is {@code null}.
+     *
+     * @param  handler  new function to be called after a resource has been loaded, or {@code null} if none.
+     */
+    public void setOnResourceLoaded(final EventHandler<LoadEvent> handler) {
+        resources.onResourceLoaded.set(handler);
     }
 
     /**
