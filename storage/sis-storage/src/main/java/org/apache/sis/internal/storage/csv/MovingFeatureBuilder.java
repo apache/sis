@@ -179,7 +179,7 @@ final class MovingFeatureBuilder extends MovingFeatures {
             throw new CorruptedObjectException();
         }
         dest.setValues(UnmodifiableArrayList.wrap(values));
-        setTime(dest, times);
+        setInstants(dest, times);
     }
 
     /**
@@ -276,7 +276,7 @@ final class MovingFeatureBuilder extends MovingFeatures {
          * Store the geometry and characteristics in the attribute.
          */
         dest.setValue(factory.createPolyline(false, dimension, vectors));
-        setTime(dest, times);
+        setInstants(dest, times);
     }
 
     /**

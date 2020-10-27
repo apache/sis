@@ -21,16 +21,21 @@ import java.awt.geom.PathIterator;
 import java.util.Iterator;
 import java.util.Collection;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.test.dataset.TestData;
 
@@ -56,6 +61,18 @@ public strictfp class FeatureSetTest extends TestCase {
      * Index of the feature to verify.
      */
     private int featureIndex;
+
+    /**
+     * Instant from which time are measured.
+     */
+    private final Instant timeOrigin;
+
+    /**
+     * Creates a new test case.
+     */
+    public FeatureSetTest() {
+        timeOrigin = Instant.parse("2014-11-29T00:00:00Z");
+    }
 
     /**
      * Tests {@link FeatureSet} with a moving features file.
@@ -105,6 +122,7 @@ public strictfp class FeatureSetTest extends TestCase {
     private void verifyInstance(final Feature instance) {
         assertSame(type, instance.getType());
         final float[] longitudes, latitudes;
+        final short[] times;                    // In minutes since 2014-11-29 00:00:00.
         final String[] stations;
         final String identifier;
         switch (featureIndex++) {
@@ -112,6 +130,7 @@ public strictfp class FeatureSetTest extends TestCase {
                 identifier = "a4078a16";
                 longitudes = new float[] {139.622715f, 139.696899f, 139.740440f, 139.759640f, 139.763328f, 139.766084f};
                 latitudes  = new float[] { 35.466188f,  35.531328f,  35.630152f,  35.665498f,  35.675069f,  35.681382f};
+                times      = new short[] {       1068,        1077,        1087,        1094,        1096,        1098};
                 stations   = new String[] {
                     "Yokohama", "Kawasaki", "Shinagawa", "Shinbashi", "Yurakucho", "Tokyo"
                 };
@@ -121,6 +140,7 @@ public strictfp class FeatureSetTest extends TestCase {
                 identifier = "1e146c16";
                 longitudes = new float[] {139.700258f, 139.730667f, 139.763786f, 139.774219f};
                 latitudes  = new float[] { 35.690921f,  35.686014f,  35.699855f,  35.698683f};
+                times      = new short[] {       1075,        1079,        1087,        1090};
                 stations   = new String[] {
                     "Shinjuku", "Yotsuya", "Ochanomizu", "Akihabara"
                 };
@@ -130,6 +150,7 @@ public strictfp class FeatureSetTest extends TestCase {
                 identifier = "f50ff004";
                 longitudes = new float[] {139.649867f, 139.665652f, 139.700258f};
                 latitudes  = new float[] { 35.705385f,  35.706032f,  35.690921f};
+                times      = new short[] {       3480,        3482,        3486};
                 stations   = new String[] {
                     "Koenji", "Nakano", "Shinjuku"
                 };
@@ -140,9 +161,20 @@ public strictfp class FeatureSetTest extends TestCase {
                 return;
             }
         }
+        // Convert the time vector to an array of instants.
+        final Instant[] instants = new Instant[times.length];
+        for (int i=0; i<times.length; i++) {
+            instants[i] = timeOrigin.plus(times[i], ChronoUnit.MINUTES);
+        }
+        /*
+         * Verify property values and characteristics.
+         */
         assertEquals("identifier", identifier, instance.getPropertyValue("features"));
-        asserLineStringEquals((Shape) instance.getPropertyValue("trajectory"), longitudes, latitudes);
+        final Attribute<?> trajectory = (Attribute<?>) instance.getProperty("trajectory");
+        asserLineStringEquals((Shape) trajectory.getValue(), longitudes, latitudes);
         assertArrayEquals("stations", stations, ((Collection<?>) instance.getPropertyValue("stations")).toArray());
+        assertArrayEquals("times", instants, trajectory.characteristics().get("datetimes").getValues().toArray());
+        assertInstanceOf("CRS", GeographicCRS.class, AttributeConvention.getCRSCharacteristic(trajectory));
     }
 
     /**

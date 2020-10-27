@@ -31,7 +31,11 @@ import java.util.OptionalLong;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import javax.measure.Unit;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.metadata.acquisition.GeometryType;
+import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.feature.MovingFeatures;
 import org.apache.sis.internal.util.Strings;
@@ -47,6 +51,7 @@ import ucar.nc2.constants.CF;
 // Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.Attribute;
 
 
 /**
@@ -149,6 +154,13 @@ final class FeatureSet extends DiscreteSampling {
     private final boolean hasTime;
 
     /**
+     * The temporal component of the coordinate reference system (CRS), or {@code null} if none.
+     * Note that this field may be {@code null} even if {@link #hasTime} is {@code true},
+     * if the CRS can not be expressed as a {@link TemporalCRS}.
+     */
+    private final DefaultTemporalCRS timeCRS;
+
+    /**
      * The type of all features to be read by this {@code FeatureSet}.
      */
     private final FeatureType type;
@@ -167,25 +179,26 @@ final class FeatureSet extends DiscreteSampling {
      * @param  counts                the count of instances per feature, or {@code null} if none.
      * @param  properties            variables providing a single value per feature instance (e.g. "mfIdRef").
      * @param  dynamicProperties     variables that contain time-varying properties other than coordinates.
-     * @param  referencingDimension  number of coordinate variables.
+     * @param  selectedAxes          variables storing the coordinates of all geometries (trajectories or points).
      * @param  isTrajectory          whether coordinates are stored in {@code properties} or {@code dynamicProperties}.
      * @param  hasTime               whether coordinates include a temporal variable.
      * @param  lock                  the lock to use in {@code synchronized(lock)} statements.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
     private FeatureSet(final Decoder decoder, String name, final Vector counts, final Variable[] properties,
-                       final Variable[] dynamicProperties, final int referencingDimension, final boolean isTrajectory,
-                       final boolean hasTime, final Object lock)
+                       final Variable[] dynamicProperties, final Map<AxisType,Variable> selectedAxes,
+                       final boolean isTrajectory, final boolean hasTime, final Object lock)
+            throws DataStoreException, IOException
     {
         super(decoder.geomlib, decoder.listeners, lock);
         this.counts               = counts;
         this.properties           = properties;
         this.dynamicProperties    = dynamicProperties;
-        this.referencingDimension = referencingDimension;
+        this.referencingDimension = selectedAxes.size();
         this.hasTime              = hasTime;
         this.isTrajectory         = isTrajectory;
         /*
-         * Creates a description of the features to be read with following properties:
+         * We will create a description of the features to be read with following properties:
          *
          *    - Identifier and other properties having a single value per feature instance.
          *    - Trajectory as a geometric object, potentially with a time characteristic.
@@ -193,7 +206,9 @@ final class FeatureSet extends DiscreteSampling {
          */
         final FeatureTypeBuilder builder = new FeatureTypeBuilder(
                 decoder.nameFactory, decoder.geomlib, decoder.listeners.getLocale());
-
+        /*
+         * Identifier and other static properties (one value per feature instance).
+         */
         for (int i = getReferencingDimension(false); i < properties.length; i++) {
             final Variable v = properties[i];
             final Class<?> type;
@@ -202,24 +217,42 @@ final class FeatureSet extends DiscreteSampling {
             } else {
                 type = v.getDataType().getClass(v.getNumDimensions() > 1);
             }
-            describe(v, builder.addAttribute(type), false);
+            describe(v, builder.addAttribute(type));
         }
+        /*
+         * Geometry object as a single point or a trajectory, associated with:
+         *   - A Coordinate Reference System (CRS) characteristic.
+         *   - A "datetimes" characteristic if a time axis exists.
+         */
+        DefaultTemporalCRS timeCRS = null;
         if (referencingDimension != 0) {
             final AttributeTypeBuilder<?> geometry;
             geometry = builder.addAttribute(isTrajectory ? GeometryType.LINEAR : GeometryType.POINT);
             geometry.setName(TRAJECTORY).addRole(AttributeRole.DEFAULT_GEOMETRY);
+            try {
+                final SingleCRS[] time = new SingleCRS[1];
+                geometry.setCRS(CRSBuilder.assemble(decoder, selectedAxes.values(), time));
+                if (time[0] instanceof TemporalCRS) {
+                    timeCRS = DefaultTemporalCRS.castOrCopy((TemporalCRS) time[0]);
+                }
+            } catch (FactoryException ex) {
+                decoder.listeners.warning(decoder.resources().getString(Resources.Keys.CanNotCreateCRS_3,
+                                          decoder.getFilename(), name, ex.getLocalizedMessage()), ex);
+            }
             if (hasTime) {
-                geometry.addCharacteristic(MovingFeatures.TIME);
+                geometry.addCharacteristic(MovingFeatures.characteristic(timeCRS != null));
             }
         }
+        this.timeCRS = timeCRS;
+        /*
+         * Dynamic properties (many values by feature instances).
+         * Use `Number` type instead than a more specialized subclass because values
+         * will be stored in `Vector` objects and that class implements `List<Number>`.
+         */
         for (int i = getReferencingDimension(true); i < dynamicProperties.length; i++) {
-            /*
-             * Use `Number` type instead than a more specialized subclass because values
-             * will be stored in `Vector` objects and that class implements `List<Number>`.
-             */
             final Variable v = dynamicProperties[i];
             final Class<?> type = (v.isEnumeration() || v.isString()) ? String.class : Number.class;
-            describe(v, builder.addAttribute(type).setMaximumOccurs(Integer.MAX_VALUE), hasTime);
+            describe(v, builder.addAttribute(type).setMaximumOccurs(Integer.MAX_VALUE));
         }
         /*
          * By default, `name` is a netCDF dimension name (see method javadoc), usually all lower-cases.
@@ -236,9 +269,8 @@ final class FeatureSet extends DiscreteSampling {
      *
      * @param  variable   the variable from which to get metadata.
      * @param  attribute  the attribute to configure with variable metadata.
-     * @param  hasTime    whether to add a "time" characteristic on the attribute.
      */
-    private static void describe(final Variable variable, final AttributeTypeBuilder<?> attribute, final boolean hasTime) {
+    private static void describe(final Variable variable, final AttributeTypeBuilder<?> attribute) {
         final String name = variable.getName();
         attribute.setName(name);
         final String desc = variable.getDescription();
@@ -248,9 +280,6 @@ final class FeatureSet extends DiscreteSampling {
         final Unit<?> unit = variable.getUnit();
         if (unit != null) {
             attribute.setUnit(unit);
-        }
-        if (hasTime) {
-            attribute.addCharacteristic(MovingFeatures.TIME);
         }
         if (CF.TRAJECTORY_ID.equalsIgnoreCase(variable.getAttributeAsString(CF.CF_ROLE))) {
             attribute.addRole(AttributeRole.IDENTIFIER_COMPONENT);
@@ -406,12 +435,17 @@ final class FeatureSet extends DiscreteSampling {
                 }
             }
         }
+        /*
+         * Choose whether coordinates are taken in static or dynamic properties. Current implementation does not
+         * support mixing both modes (e.g. X and Y coordinates as static properties and T as dynamic property).
+         * The variables are reordered for making sure that X, Y, Z, T are first and in that order.
+         */
         final Reorder r = new Reorder();
         features.add(new FeatureSet(decoder, featureName,
                      (counts != null) ? counts.read() : null,
                      r.toArray(properties, coordinates, false),
                      r.toArray(dynamicProperties, trajectory, true),
-                     r.referencingDimension, r.isTrajectory, r.hasTime, lock));     // Those arguments must be last.
+                     r.selectedAxes, r.isTrajectory, r.hasTime, lock));         // Those arguments must be last.
     }
 
     /**
@@ -470,10 +504,10 @@ final class FeatureSet extends DiscreteSampling {
      */
     private static final class Reorder {
         /**
-         * Number of variables storing the coordinates of all geometries (trajectories or points).
-         * This is the value to assign to {@link FeatureSet#referencingDimension}.
+         * Variables storing the coordinates of all geometries (trajectories or points).
+         * Those variables are taken either from static properties or from dynamic properties.
          */
-        int referencingDimension;
+        Map<AxisType,Variable> selectedAxes;
 
         /**
          * The kind of geometry described by coordinates.
@@ -488,21 +522,31 @@ final class FeatureSet extends DiscreteSampling {
         boolean hasTime;
 
         /**
+         * Creates an initially empty builder of variable arrays.
+         */
+        Reorder() {
+            selectedAxes = Collections.emptyMap();
+        }
+
+        /**
          * Returns the content of given property list as an array, potentially with coordinate variables first.
          *
          * @param  properties   the list to return as an array, not necessarily with elements in same order.
          * @param  coordinates  {@code properties} variables to consider as coordinate values.
          * @param  dynamic      value to assign to {@link #isTrajectory} if coordinate axes have been found.
          */
+        @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
         Variable[] toArray(final List<Variable> properties, final EnumMap<AxisType,Variable> coordinates, final boolean dynamic) {
             Variable[] array = new Variable[properties.size()];
-            if (referencingDimension == 0 && coordinates.containsKey(AxisType.X) && coordinates.containsKey(AxisType.Y)) {
-                isTrajectory = dynamic;
-                hasTime      = coordinates.containsKey(AxisType.T);
-                array        = coordinates.values().toArray(array);     // Put coordinates at array beginning.
-                int n        = referencingDimension = coordinates.size();
+            if (selectedAxes.isEmpty() && coordinates.containsKey(AxisType.X) && coordinates.containsKey(AxisType.Y)) {
+                isTrajectory  = dynamic;
+                selectedAxes  = coordinates;
+                hasTime       = coordinates.containsKey(AxisType.T);
+                array         = coordinates.values().toArray(array);     // Put coordinates at array beginning.
+                final int dim = coordinates.size();
+                int n = dim;
 skip:           for (final Variable v : properties) {
-                    for (int i=referencingDimension; --i >= 0;) {
+                    for (int i=dim; --i >= 0;) {
                         if (array[i] == v) continue skip;               // Skip already added coordinates.
                     }
                     array[n++] = v;                                     // Add property after coordinates.
@@ -736,7 +780,6 @@ skip:           for (final Variable v : properties) {
                     read(dynamicProperties, dynamicPropertyPosition, length, target);
                     for (int i=getReferencingDimension(true); i<n; i++) {
                         feature.setPropertyValue(dynamicProperties[i].getName(), target[i]);
-                        // TODO: set time characteristic.
                     }
                     if (isTrajectory) {
                         values = target;
@@ -749,9 +792,9 @@ skip:           for (final Variable v : properties) {
                  *
                  * The following `System.arraycopy(…)` call writes `List<?>` references into a `Vector[]` array,
                  * which seems unsafe. But it should not cause an ArrayStoreException because the elements that
-                 * we copy should be `Vector` instances, even if the remaining elements are not.
+                 * we copy should be `Vector` instances, even if the remaining `values` elements are not.
                  */
-                coordinateValues = new Vector[geometryDimension];
+                coordinateValues = new Vector[referencingDimension];
                 System.arraycopy(values, 0, coordinateValues, 0, coordinateValues.length);
             } catch (IOException e) {
                 throw new UncheckedIOException(canNotReadFile(), e);
@@ -811,6 +854,15 @@ makeGeom:   if (!isEmpty) {
                     }
                 }
                 feature.setPropertyValue(TRAJECTORY, geometry);
+            }
+            /*
+             * Add time characteristic on the geometry. Actually this characteristic
+             * could be applied to all dynamic properties, but that would be redundancies.
+             * The time vector is the first vector after the geometry dimensions.
+             */
+            if (hasTime) {
+                MovingFeatures.setTimes((Attribute<?>) feature.getProperty(TRAJECTORY),
+                                        coordinateValues[geometryDimension], timeCRS);
             }
             action.accept(feature);
             dynamicPropertyPosition += length;         // Check for ArithmeticException is already done by `extent(…)` call.

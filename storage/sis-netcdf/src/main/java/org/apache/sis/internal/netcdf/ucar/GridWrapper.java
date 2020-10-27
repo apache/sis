@@ -277,7 +277,7 @@ next:       for (final String name : axisNames) {
                 /*
                  * If the axis dimension has not been found in the coordinate system (sourceDim < 0),
                  * then there is maybe a problem with the netCDF file. However for the purpose of this
-                 * package, we can proceed as if the dimension does not exist ('i' not incremented).
+                 * package, we can proceed as if the dimension does not exist (`i` not incremented).
                  */
             }
             axes[targetDim] = new Axis(abbreviation, axis.getPositive(),

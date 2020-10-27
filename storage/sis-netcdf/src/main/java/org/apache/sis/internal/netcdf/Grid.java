@@ -19,15 +19,12 @@ package org.apache.sis.internal.netcdf;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.io.IOException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.spatial.DimensionNameType;
@@ -211,7 +208,7 @@ public abstract class Grid extends NamedElement {
             int i = 0, deferred = workspace.length;
             for (final Axis axis : axes) {
                 // Put one-dimensional axes first, all other axes last.
-                workspace[axis.getDimension() <= 1 ? i++ : --deferred] = axis;
+                workspace[axis.getNumDimensions() <= 1 ? i++ : --deferred] = axis;
             }
             deferred = workspace.length;        // Will become index of the first axis whose examination has been deferred.
             while (i < workspace.length) {      // Start the loop at the first n-dimensional axis (n > 1).
@@ -280,20 +277,7 @@ public abstract class Grid extends NamedElement {
     {
         if (!isCRSDetermined) try {
             isCRSDetermined = true;                             // Set now for avoiding new attempts if creation fail.
-            final List<CRSBuilder<?,?>> builders = new ArrayList<>();
-            for (final Axis axis : getAxes(decoder)) {
-                CRSBuilder.dispatch(builders, axis);
-            }
-            final SingleCRS[] components = new SingleCRS[builders.size()];
-            for (int i=0; i < components.length; i++) {
-                components[i] = builders.get(i).build(decoder);
-            }
-            switch (components.length) {
-                case 0:  break;                                 // Leave 'crs' to null.
-                case 1:  crs = components[0]; break;
-                default: crs = decoder.getCRSFactory().createCompoundCRS(
-                                        Collections.singletonMap(CoordinateSystem.NAME_KEY, getName()), components);
-            }
+            crs = CRSBuilder.assemble(decoder, this);
         } catch (FactoryException | NullArgumentException ex) {
             if (isNewWarning(ex, warnings)) {
                 canNotCreate(decoder, "getCoordinateReferenceSystem", Resources.Keys.CanNotCreateCRS_3, ex);
@@ -342,7 +326,7 @@ public abstract class Grid extends NamedElement {
             case 0:  break;
         }
         for (final Axis axis : axes) {
-            if (axis.getDimension() == 1) {
+            if (axis.getNumDimensions() == 1) {
                 final DimensionNameType name;
                 if (AxisDirections.isVertical(axis.direction)) {
                     name = DimensionNameType.VERTICAL;
@@ -351,7 +335,7 @@ public abstract class Grid extends NamedElement {
                 } else {
                     continue;
                 }
-                int dim = axis.sourceDimensions[0];
+                int dim = axis.gridDimensionIndices[0];
                 dim = names.length - 1 - dim;               // Convert netCDF order to "natural" order.
                 if (dim >= 0) names[dim] = name;
             }
@@ -394,7 +378,7 @@ public abstract class Grid extends NamedElement {
              * If we have not been able to set some coefficients in the matrix (because some transforms are non-linear),
              * set a single scale factor to 1 in the matrix row. The coefficient that we set to 1 is the one for the source
              * dimension which is not already taken by another row. If we have choice, we give preference to the dimension
-             * which seems most closely oriented toward axis direction (i.e. the first element in axis.sourceDimensions).
+             * which seems most closely oriented toward axis direction (i.e. the first element in axis.gridDimensionIndices).
              *
              * Example: if the `axes` array contains (longitude, latitude) in that order, and if the longitude axis said
              * that its preferred dimension is 1 (after conversion to "natural" order) while the latitude axis said that
@@ -406,21 +390,22 @@ public abstract class Grid extends NamedElement {
              *    │ 0  0  1 │
              *    └         ┘
              *
-             * The preferred grid dimensions are stored in the `sourceDimensions` array. In above example this is {1, 0}.
+             * The preferred grid dimensions are stored in the `gridDimensionIndices` array.
+             * In above example this is {1, 0}.
              */
-            final int[] sourceDimensions = new int[nonLinears.size()];
-            Arrays.fill(sourceDimensions, -1);
-            for (int i=0; i<sourceDimensions.length; i++) {
+            final int[] gridDimensionIndices = new int[nonLinears.size()];
+            Arrays.fill(gridDimensionIndices, -1);
+            for (int i=0; i<gridDimensionIndices.length; i++) {
                 final int tgtDim = deferred[i];
                 final Axis axis = axes[tgtDim];
-findFree:       for (int srcDim : axis.sourceDimensions) {                      // In preference order (will take only one).
+findFree:       for (int srcDim : axis.gridDimensionIndices) {                  // In preference order (will take only one).
                     srcDim = lastSrcDim - srcDim;                               // Convert netCDF order to "natural" order.
                     for (int j=affine.getNumRow(); --j>=0;) {
                         if (affine.getElement(j, srcDim) != 0) {
                             continue findFree;
                         }
                     }
-                    sourceDimensions[i] = srcDim;
+                    gridDimensionIndices[i] = srcDim;
                     affine.setElement(tgtDim, srcDim, 1);
                     break;
                 }
@@ -436,16 +421,16 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
                         if (nonLinears.get(j) == null) {
                             /*
                              * Found a pair of axes.  Prepare an array of length 2, to be reordered later in the
-                             * axis order declared in `sourceDimensions`. This is not necessarily the same order
-                             * than iteration order because it depends on values of `axis.sourceDimensions[0]`.
+                             * axis order declared in `gridDimensionIndices`. This is not necessarily the same order
+                             * than iteration order because it depends on values of `axis.gridDimensionIndices[0]`.
                              * Those values take in account what is the "main" dimension of each axis.
                              */
                             final Axis[] gridAxes = new Axis[] {
                                 axes[deferred[i]],
                                 axes[deferred[j]]
                             };
-                            final int srcDim   = sourceDimensions[i];
-                            final int otherDim = sourceDimensions[j];
+                            final int srcDim   = gridDimensionIndices[i];
+                            final int otherDim = gridDimensionIndices[j];
                             switch (srcDim - otherDim) {
                                 case -1: break;
                                 case +1: ArraysExt.swap(gridAxes, 0, 1); break;
@@ -460,10 +445,10 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
                                 nonLinears.set(i, grid);
                                 nonLinears.remove(j);
                                 final int n = nonLinears.size() - j;
-                                System.arraycopy(deferred,         j+1, deferred,         j, n);
-                                System.arraycopy(sourceDimensions, j+1, sourceDimensions, j, n);
+                                System.arraycopy(deferred,             j+1, deferred,             j, n);
+                                System.arraycopy(gridDimensionIndices, j+1, gridDimensionIndices, j, n);
                                 if (otherDim < srcDim) {
-                                    sourceDimensions[i] = otherDim;         // Index of the first dimension.
+                                    gridDimensionIndices[i] = otherDim;     // Index of the first dimension.
                                 }
                                 break;                                      // Continue the 'i' loop.
                             }
@@ -472,13 +457,13 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
                 }
             }
             /*
-             * If at least one `sourceDimensions` is undefined, the variable is maybe not a grid.
+             * If at least one `gridDimensionIndices` is undefined, the variable is maybe not a grid.
              * It happens for example if the variable is a trajectory, in which case we have two
              * CRS dimensions (e.g. latitude and longitude) but only one variable dimension;
              * the first CRS dimension has been associated to that variable and the other CRS
              * dimension is orphan.
              */
-            for (final int s : sourceDimensions) {
+            for (final int s : gridDimensionIndices) {
                 if (s < 0) return null;
             }
             /*
@@ -493,7 +478,7 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
                 MathTransform tr = nonLinears.get(i);
                 if (tr != null) {
                     if (i < nonLinearCount) {
-                        final int srcDim = sourceDimensions[i];
+                        final int srcDim = gridDimensionIndices[i];
                         tr = factory.createPassThroughTransform(srcDim, tr,
                                         (lastSrcDim + 1) - (srcDim + tr.getSourceDimensions()));
                     }

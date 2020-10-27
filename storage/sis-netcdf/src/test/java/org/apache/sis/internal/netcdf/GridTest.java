@@ -89,11 +89,11 @@ public strictfp class GridTest extends TestCase {
         assertEquals('λ', x.abbreviation);
         assertEquals('φ', y.abbreviation);
 
-        assertArrayEquals(new int[] {1}, x.sourceDimensions);
-        assertArrayEquals(new int[] {0}, y.sourceDimensions);
+        assertArrayEquals(new int[] {1}, x.gridDimensionIndices);
+        assertArrayEquals(new int[] {0}, y.gridDimensionIndices);
 
-        assertEquals(73, x.getSize());
-        assertEquals(73, y.getSize());
+        assertEquals(73, x.getMainSize().getAsLong());
+        assertEquals(73, y.getMainSize().getAsLong());
     }
 
     /**
@@ -117,15 +117,15 @@ public strictfp class GridTest extends TestCase {
         assertEquals('H', z.abbreviation);
         assertEquals('t', t.abbreviation);
 
-        assertArrayEquals(new int[] {3}, x.sourceDimensions);
-        assertArrayEquals(new int[] {2}, y.sourceDimensions);
-        assertArrayEquals(new int[] {1}, z.sourceDimensions);
-        assertArrayEquals(new int[] {0}, t.sourceDimensions);
+        assertArrayEquals(new int[] {3}, x.gridDimensionIndices);
+        assertArrayEquals(new int[] {2}, y.gridDimensionIndices);
+        assertArrayEquals(new int[] {1}, z.gridDimensionIndices);
+        assertArrayEquals(new int[] {0}, t.gridDimensionIndices);
 
-        assertEquals(38, x.getSize());
-        assertEquals(19, y.getSize());
-        assertEquals( 4, z.getSize());
-        assertEquals( 1, t.getSize());
+        assertEquals(38, x.getMainSize().getAsLong());
+        assertEquals(19, y.getMainSize().getAsLong());
+        assertEquals( 4, z.getMainSize().getAsLong());
+        assertEquals( 1, t.getMainSize().getAsLong());
     }
 
     /**

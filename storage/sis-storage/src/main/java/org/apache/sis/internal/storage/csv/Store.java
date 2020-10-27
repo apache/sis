@@ -569,7 +569,7 @@ final class Store extends URIDataStore implements FeatureSet {
                                 type = double[].class;
                             } else {
                                 type = geometries.polylineClass;
-                                characteristics = new AttributeType[] {MovingFeatureBuilder.TIME};
+                                characteristics = new AttributeType[] {MovingFeatureBuilder.TIME_AS_INSTANTS};
                             }
                             minOccurrence = 1;
                             maxOccurrence = 1;

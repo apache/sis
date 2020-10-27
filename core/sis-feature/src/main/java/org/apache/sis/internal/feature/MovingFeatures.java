@@ -18,11 +18,14 @@ package org.apache.sis.internal.feature;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
 import java.time.Instant;
 import org.opengis.util.LocalName;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.math.Vector;
 import org.apache.sis.feature.DefaultAttributeType;
+import org.apache.sis.referencing.crs.DefaultTemporalCRS;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 // Branch-dependent imports
 import org.opengis.feature.Attribute;
@@ -42,20 +45,40 @@ import org.opengis.feature.AttributeType;
  */
 public class MovingFeatures {
     /**
-     * Definition of characteristics containing a list of time instants in chronological order, without duplicates.
+     * Definition of characteristics containing a list of instants, without duplicates.
+     * Should be in chronological order, but this is not verified.
      */
-    public static final AttributeType<Instant> TIME;
+    public static final AttributeType<Instant> TIME_AS_INSTANTS;
+
+    /**
+     * An alternative to {@link #TIME_AS_INSTANTS} used when times can not be mapped to calendar dates.
+     * This characteristic uses the same name than {@code TIME_AS_INSTANTS}. Consequently at most one
+     * of {@code TIME_AS_INSTANTS} and {@code TIME_AS_NUMBERS} can be used on the same property.
+     */
+    private static final AttributeType<Number> TIME_AS_NUMBERS;
     static {
         final LocalName scope = Names.createLocalName("OGC", null, "MF");
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(DefaultAttributeType.NAME_KEY, Names.createScopedName(scope, null, "datetimes"));
-        TIME = new DefaultAttributeType<>(properties, Instant.class, 0, Integer.MAX_VALUE, null);
+        final Map<String,Object> properties = Collections.singletonMap(
+                DefaultAttributeType.NAME_KEY, Names.createScopedName(scope, null, "datetimes"));
+        TIME_AS_INSTANTS = new DefaultAttributeType<>(properties, Instant.class, 0, Integer.MAX_VALUE, null);
+        TIME_AS_NUMBERS  = new DefaultAttributeType<>(properties,  Number.class, 0, Integer.MAX_VALUE, null);
     }
 
     /**
-     * Caches of list of instants, used for sharing existing instances.
-     * We do this sharing because it is common to have many properties
-     * having the same time characteristics.
+     * Returns the "datetimes" characteristic to add on an attribute type.
+     * The characteristic will expect either {@link Instant} or {@link Number} values,
+     * depending on whether a temporal CRS is available or not.
+     *
+     * @param  hasCRS  whether a temporal CRS is available.
+     * @return the "datetimes" characteristic.
+     */
+    public static AttributeType<?> characteristic(final boolean hasCRS) {
+        return hasCRS ? TIME_AS_INSTANTS : TIME_AS_NUMBERS;
+    }
+
+    /**
+     * Caches of list of times or instants, used for sharing existing instances.
+     * We do this sharing because it is common to have many properties having the same time characteristics.
      */
     private final Map<Vector,InstantList> cache;
 
@@ -69,14 +92,45 @@ public class MovingFeatures {
     }
 
     /**
-     * Set the time characteristic on the given attribute.
+     * Sets the "datetimes" characteristic on the given attribute as a list of {@link Instant} instances.
+     * Should be in chronological order, but this is not verified.
      *
      * @param  dest    the attribute on which to set time characteristic.
      * @param  millis  times in milliseconds since the epoch.
      */
-    public final void setTime(final Attribute<?> dest, final long[] millis) {
-        final Attribute<Instant> c = TIME.newInstance();
+    public final void setInstants(final Attribute<?> dest, final long[] millis) {
+        final Attribute<Instant> c = TIME_AS_INSTANTS.newInstance();
         c.setValues(cache.computeIfAbsent(InstantList.vectorize(millis), InstantList::new));
         dest.characteristics().values().add(c);
+    }
+
+    /**
+     * Sets the "datetimes" characteristic on the given attribute.
+     * If the {@code converter} is non-null, it will be used for converting values to {@link Instant} instances.
+     * Otherwise values are stored as-is as time elapsed in arbitrary units since an arbitrary epoch.
+     *
+     * <p>Values should be in chronological order, but this is not verified.
+     * Current implementation does not cache the values, but this policy may be revisited in a future version.</p>
+     *
+     * @param  dest       the attribute on which to set time characteristic.
+     * @param  values     times in arbitrary units since an arbitrary epoch.
+     * @param  converter  the CRS to use for converting values to {@link Instant} instances, or {@code null}.
+     */
+    public static void setTimes(final Attribute<?> dest, final Vector values, final DefaultTemporalCRS converter) {
+        final Attribute<?> ct;
+        if (converter != null) {
+            final Instant[] instants = new Instant[values.size()];
+            for (int i=0; i<instants.length; i++) {
+                instants[i] = converter.toInstant(values.doubleValue(i));
+            }
+            final Attribute<Instant> c = TIME_AS_INSTANTS.newInstance();
+            c.setValues(UnmodifiableArrayList.wrap(instants));
+            ct = c;
+        } else {
+            final Attribute<Number> c = TIME_AS_NUMBERS.newInstance();
+            c.setValues(values);
+            ct = c;
+        }
+        dest.characteristics().values().add(ct);
     }
 }

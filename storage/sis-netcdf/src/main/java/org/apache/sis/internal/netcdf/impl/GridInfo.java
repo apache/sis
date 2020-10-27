@@ -212,7 +212,7 @@ next:       for (final String name : axisNames) {
                 for (int sourceDim = 0; sourceDim < domain.length; sourceDim++) {
                     if (domain[sourceDim] == dimension) {
                         indices[i] = sourceDim;
-                        sizes[i++] = dimension.length;
+                        sizes[i++] = dimension.length;              // Handled as unsigned intengers.
                         break;
                     }
                 }

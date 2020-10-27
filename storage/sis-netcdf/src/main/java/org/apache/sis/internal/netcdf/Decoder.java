@@ -105,7 +105,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * The geodetic datum, created when first needed. The datum are generally not specified in netCDF files.
      * To make that clearer, we will build datum with names like "Unknown datum presumably based on GRS 1980".
      *
-     * @see CRSBuilder#build(Decoder)
+     * @see CRSBuilder#build(Decoder, boolean)
      */
     final Datum[] datumCache;
 

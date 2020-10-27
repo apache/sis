@@ -68,8 +68,8 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotComputeVariablePosition_2 = 6;
 
         /**
-         * Can not create the Coordinate Reference System for grid geometry “{1}” in the “{0}” netCDF
-         * file. The reason is: {2}
+         * Can not create the Coordinate Reference System for “{1}” in the “{0}” netCDF file. The
+         * reason is: {2}
          */
         public static final short CanNotCreateCRS_3 = 11;
 
