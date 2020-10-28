@@ -722,7 +722,7 @@ skip:           for (final Variable v : properties) {
          */
         private void readNextPage() throws IOException, DataStoreException {
             final int length = Math.min(size - currentLowerIndex, PAGE_SIZE);
-            read(properties, currentLowerIndex, length, propertyValues);
+            read(properties, propertyIndexOffset, currentLowerIndex, length, propertyValues);
             currentUpperIndex = currentLowerIndex + length;
         }
 
@@ -777,8 +777,9 @@ skip:           for (final Variable v : properties) {
                 final int n = dynamicProperties.length;
                 if (n != 0) {
                     final List<?>[] target = new List<?>[n];
-                    read(dynamicProperties, dynamicPropertyPosition, length, target);
-                    for (int i=getReferencingDimension(true); i<n; i++) {
+                    int i = getReferencingDimension(true);
+                    read(dynamicProperties, i, dynamicPropertyPosition, length, target);
+                    for (/* i = first property after coordinate vectors */; i<n; i++) {
                         feature.setPropertyValue(dynamicProperties[i].getName(), target[i]);
                     }
                     if (isTrajectory) {
@@ -874,12 +875,13 @@ makeGeom:   if (!isEmpty) {
          * The same sub-region is read for all variables.
          *
          * @param  variables   the variables to read.
+         * @param  refdim      number of referencing dimensions in {@code variables}.
          * @param  position    position of the first value to read in the netCDF variables.
          * @param  length      number of property values to read.
          * @param  target      where to store the results of read operations.
          */
-        private void read(final Variable[] variables, final long position, final int length, final List<?>[] target)
-                throws IOException, DataStoreException
+        private void read(final Variable[] variables, final int refdim, final long position, final int length,
+                          final List<?>[] target) throws IOException, DataStoreException
         {
             final GridExtent extent = extent(null, 1, position, length);
             List<Dimension> textDimensions = null;
@@ -895,8 +897,10 @@ makeGeom:   if (!isEmpty) {
                             textDimensions = dimensions;
                         }
                         value = p.readAnyType(textExtent, null);
+                    } else if (i >= refdim) {
+                        value = p.readAnyType(extent, null);        // May be `Vector` or `List<String>`.
                     } else {
-                        value = p.readAnyType(extent, null);
+                        value = p.read(extent, null);               // Force the type to `Vector`.
                     }
                     if (p.isEnumeration() && value instanceof Vector) {
                         final Vector data = (Vector) value;
