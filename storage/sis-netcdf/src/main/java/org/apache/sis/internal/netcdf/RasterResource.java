@@ -43,7 +43,6 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.coverage.IllegalSampleDimensionException;
-import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -52,7 +51,6 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
@@ -466,7 +464,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
          * by UCAR because we need the range of packed values instead than the range of converted values.
          */
         NumberRange<?> range;
-        if (!createEnumeration(builder, band, index) && (range = band.getValidRange()) != null) try {
+        if (!createEnumeration(builder, band) && (range = band.getValidRange()) != null) try {
             final MathTransform1D mt = band.getTransferFunction().getTransform();
             if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
                 /*
@@ -583,27 +581,17 @@ public final class RasterResource extends AbstractGridResource implements Resour
      *
      * @param  builder  the builder to use for creating the sample dimension.
      * @param  band     the data for which to create a sample dimension.
-     * @param  index    index in the variable dimension identified by {@link #bandDimension}.
      * @return {@code true} if flag attributes have been found, or {@code false} otherwise.
      */
-    private static boolean createEnumeration(final SampleDimension.Builder builder, final Variable band, final int index) {
-        CharSequence[] names = band.getAttributeAsStrings(AttributeNames.FLAG_NAMES, ' ');
-        if (names == null) {
-            names = band.getAttributeAsStrings(AttributeNames.FLAG_MEANINGS, ' ');
-            if (names == null) return false;
+    private static boolean createEnumeration(final SampleDimension.Builder builder, final Variable band) {
+        final Map<Integer,String> enumeration = band.getEnumeration();
+        if (enumeration == null) {
+            return false;
         }
-        Vector values = band.getAttributeAsVector(AttributeNames.FLAG_VALUES);
-        if (values == null) {
-            values = band.getAttributeAsVector(AttributeNames.FLAG_MASKS);
-            if (values == null) return false;
-        }
-        final int length = values.size();
-        for (int i=0; i<length; i++) {
-            final Number value = values.get(i);
-            final CharSequence name;
-            if (i < names.length) {
-                name = names[i];
-            } else {
+        for (final Map.Entry<Integer,String> entry : enumeration.entrySet()) {
+            final Number value = entry.getKey();
+            CharSequence name = entry.getValue();
+            if (name == null) {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.Unnamed);
             }
             builder.addQualitative(name, value, value);

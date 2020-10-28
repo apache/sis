@@ -131,6 +131,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      *   <li>{@link String} if the attribute contains a single textual value.</li>
      *   <li>{@link Number} if the attribute contains a single numerical value.</li>
      *   <li>{@link Vector} if the attribute contains many numerical values.</li>
+     *   <li>{@code String[]} if the attribute is one of predefined attributes
+     *       for which many text values are expected (e.g. an enumeration).</li>
      * </ul>
      *
      * If the value is a {@code String}, then leading and trailing spaces and control characters
@@ -247,12 +249,22 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             isCoordinateSystemAxis = dimensions[0].name.equals(value);
         }
         /*
-         * Verify if this variable is an enumeration. If yes, we remove the attributes that define the
-         * enumeration since those attributes may be verbose and "pollute" the variable definition.
+         * Rewrite the enumeration names as an array for avoiding to parse the string if this information
+         * is asked twice (e.g. in `setEnumeration(…)` and in `MetadataReader`). Note that there is no need
+         * to perform similar operation for vectors of numbers.
          */
-        if (!attributes.isEmpty()) {    // For avoiding UnsupportedOperationException if unmodifiable map.
-            setFlagMeanings(attributes.remove(AttributeNames.FLAG_MEANINGS),
-                            attributes.remove(AttributeNames.FLAG_VALUES));
+        split(AttributeNames.FLAG_NAMES);
+        split(AttributeNames.FLAG_MEANINGS);
+        setEnumeration(null);
+    }
+
+    /**
+     * Splits a space-separated attribute value into an array of strings.
+     */
+    private void split(final String attribute) {
+        final CharSequence[] values = getAttributeAsStrings(attribute, ' ');
+        if (values != null) {
+            attributes.put(attribute, values);
         }
     }
 

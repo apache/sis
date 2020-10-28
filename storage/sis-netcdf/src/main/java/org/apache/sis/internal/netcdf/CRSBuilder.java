@@ -176,7 +176,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
     public static CoordinateReferenceSystem assemble(final Decoder decoder, final Grid grid)
             throws DataStoreException, FactoryException, IOException
     {
-        final List<CRSBuilder<?,?>> builders = new ArrayList<>();
+        final List<CRSBuilder<?,?>> builders = new ArrayList<>(4);
         for (final Axis axis : grid.getAxes(decoder)) {
             dispatch(builders, axis);
         }
@@ -206,7 +206,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
     static CoordinateReferenceSystem assemble(final Decoder decoder, final Iterable<Variable> axes, final SingleCRS[] time)
             throws DataStoreException, FactoryException, IOException
     {
-        final List<CRSBuilder<?,?>> builders = new ArrayList<>();
+        final List<CRSBuilder<?,?>> builders = new ArrayList<>(4);
         for (final Variable axis : axes) {
             dispatch(builders, new Axis(axis));
         }

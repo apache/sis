@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Collection;
 import java.io.File;
@@ -49,7 +50,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
@@ -81,11 +81,6 @@ final class VariableWrapper extends Variable {
     private final VariableIF raw;
 
     /**
-     * {@code true} if this variable is an enumeration.
-     */
-    private final boolean isEnumeration;
-
-    /**
      * Creates a new variable wrapping the given netCDF interface.
      */
     VariableWrapper(final Decoder decoder, VariableIF v) {
@@ -102,13 +97,11 @@ final class VariableWrapper extends Variable {
          * If the UCAR library recognizes this variable as an enumeration, we will use UCAR services.
          * Only if UCAR did not recognized the enumeration, fallback on Apache SIS implementation.
          */
+        Map<Integer,String> enumeration = null;
         if (variable.getDataType().isEnum() && (variable instanceof ucar.nc2.Variable)) {
-            isEnumeration = true;
-        } else {
-            setFlagMeanings(getAttributeAsString(AttributeNames.FLAG_MEANINGS),
-                            getAttributeAsVector(AttributeNames.FLAG_VALUES));
-            isEnumeration = super.isEnumeration();
+            enumeration = ((ucar.nc2.Variable) variable).getEnumTypedef().getMap();
         }
+        setEnumeration(enumeration);        // Use SIS fallback if `enumeration` is null.
     }
 
     /**
@@ -223,16 +216,6 @@ final class VariableWrapper extends Variable {
             default:     return DataType.UNKNOWN;
         }
         return type.unsigned(variable.isUnsigned());
-    }
-
-    /**
-     * Returns {@code true} if this variable is an enumeration.
-     *
-     * @see #meaning(int)
-     */
-    @Override
-    protected boolean isEnumeration() {
-        return isEnumeration;
     }
 
     /**
@@ -634,20 +617,6 @@ final class VariableWrapper extends Variable {
             }
         }
         return super.trySetTransform(gridToCRS, srcDim, tgtDim, data);
-    }
-
-    /**
-     * Returns the meaning of the given ordinal value, or {@code null} if none.
-     * Callers must have verified that {@link #isEnumeration()} returned {@code true}
-     * before to invoke this method
-     *
-     * @param  ordinal  the ordinal of the enumeration for which to get the value.
-     * @return the value associated to the given ordinal, or {@code null} if none.
-     */
-    @Override
-    protected String meaning(final int ordinal) {
-        return super.isEnumeration() ? super.meaning(ordinal)
-                : ((ucar.nc2.Variable) variable).lookupEnumString(ordinal);
     }
 
     /**

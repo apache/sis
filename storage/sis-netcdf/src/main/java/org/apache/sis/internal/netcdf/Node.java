@@ -88,6 +88,8 @@ public abstract class Node extends NamedElement {
 
     /**
      * Returns the value of the given attribute as a non-blank string with leading/trailing spaces removed.
+     * If the attribute value is an array, this method returns a non-null value only if the array contains
+     * a single value (possibly duplicated), ignoring null or empty values.
      *
      * @param  attributeName  the name of the attribute for which to get the value.
      * @return the singleton attribute value, or {@code null} if none, empty, blank or ambiguous.
@@ -103,10 +105,12 @@ public abstract class Node extends NamedElement {
         }
         String singleton = null;
         for (final String c : values) {
-            if (singleton == null) {
-                singleton = c;
-            } else if (!singleton.equals(c)) {
-                return null;
+            if (c != null) {
+                if (singleton == null) {
+                    singleton = c;
+                } else if (!singleton.equals(c)) {
+                    return null;
+                }
             }
         }
         return singleton;
@@ -116,10 +120,14 @@ public abstract class Node extends NamedElement {
      * Returns the values of the given attribute as an array of non-blank texts.
      * If the attribute is not stored as an array in the netCDF file, then this
      * method splits the single {@link String} value around the given separator.
+     * Empty or blank strings are replaced by {@code null} values.
+     *
+     * <p>This method may return a direct reference to an internal array;
+     * <strong>do not modify array content</strong>.</p>
      *
      * @param  attributeName  the name of the attribute for which to get the values.
      * @param  separator      separator to use for splitting a single {@link String} value into a list of values.
-     * @return the attribute values, or {@code null} if none.
+     * @return the attribute values, or {@code null} if none. The array may contain {@code null} elements.
      */
     public final CharSequence[] getAttributeAsStrings(final String attributeName, final char separator) {
         final Object value = getAttributeValue(attributeName);
@@ -138,10 +146,17 @@ public abstract class Node extends NamedElement {
     /**
      * Converts the given value into an array of strings, or returns {@code null}
      * if the given value is not an array or a vector or contains only null values.
+     * The returned array contains no blank strings, but may contain null values.
+     *
+     * <p>This method may return a direct reference to an internal array;
+     * <strong>do not modify array content</strong>.</p>
      */
     private static String[] toArray(final Object value) {
         final String[] array;
-        if (value instanceof Object[]) {
+        if (value instanceof String[]) {
+            // Empty strings are already replaced by null values.
+            return (String[]) value;
+        } else if (value instanceof Object[]) {
             final Object[] values = (Object[]) value;
             array = new String[values.length];
             for (int i=0; i<array.length; i++) {
@@ -161,11 +176,7 @@ public abstract class Node extends NamedElement {
         }
         boolean hasValues = false;
         for (int i=0; i<array.length; i++) {
-            String e = Strings.trimOrNull(array[i]);
-            if (e != null) {
-                hasValues = true;
-                array[i] = e;
-            }
+            hasValues |= (array[i] = Strings.trimOrNull(array[i])) != null;
         }
         return hasValues ? array : null;
     }

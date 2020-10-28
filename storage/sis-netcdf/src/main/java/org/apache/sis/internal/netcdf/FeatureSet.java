@@ -212,7 +212,7 @@ final class FeatureSet extends DiscreteSampling {
         for (int i = getReferencingDimension(false); i < properties.length; i++) {
             final Variable v = properties[i];
             final Class<?> type;
-            if (v.isEnumeration()) {
+            if (v.getEnumeration() != null) {
                 type = String.class;
             } else {
                 type = v.getDataType().getClass(v.getNumDimensions() > 1);
@@ -251,7 +251,7 @@ final class FeatureSet extends DiscreteSampling {
          */
         for (int i = getReferencingDimension(true); i < dynamicProperties.length; i++) {
             final Variable v = dynamicProperties[i];
-            final Class<?> type = (v.isEnumeration() || v.isString()) ? String.class : Number.class;
+            final Class<?> type = (v.getEnumeration() != null || v.isString()) ? String.class : Number.class;
             describe(v, builder.addAttribute(type).setMaximumOccurs(Integer.MAX_VALUE));
         }
         /*
@@ -902,11 +902,12 @@ makeGeom:   if (!isEmpty) {
                     } else {
                         value = p.read(extent, null);               // Force the type to `Vector`.
                     }
-                    if (p.isEnumeration() && value instanceof Vector) {
+                    final Map<Integer,String> enumeration = p.getEnumeration();
+                    if (enumeration != null && value instanceof Vector) {
                         final Vector data = (Vector) value;
                         final String[] meanings = new String[data.size()];
                         for (int j=0; j<meanings.length; j++) {
-                            String m = p.meaning(data.intValue(j));
+                            String m = enumeration.get(data.intValue(j));
                             meanings[j] = (m != null) ? m : "";
                         }
                         value = Arrays.asList(meanings);

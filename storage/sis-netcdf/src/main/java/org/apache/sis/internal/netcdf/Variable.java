@@ -38,7 +38,6 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.util.Numerics;
@@ -125,11 +124,10 @@ public abstract class Variable extends Node {
      * The {@code flag_meanings} values (used for enumeration values),
      * or {@code null} if this variable is not an enumeration.
      *
-     * @see #isEnumeration()
-     * @see #meaning(int)
-     * @see #setFlagMeanings(Object, Object)
+     * @see #setEnumeration(Map)
+     * @see #getEnumeration()
      */
-    private Map<Integer,String> meanings;
+    private Map<Integer,String> enumeration;
 
     /**
      * The grid associated to this variable, or {@code null} if none or not yet computed.
@@ -192,73 +190,85 @@ public abstract class Variable extends Node {
     }
 
     /**
-     * If {@code flags} is non-null, declares this variable as an enumeration.
-     * This method stores the information needed for {@link #meaning(int)} default implementation.
-     * This method is invoked by subclass constructors for completing {@code Variable} creation.
+     * Initializes the map of enumeration values. If the given map is non-null, then the enumerations are set
+     * to the specified map (by direct reference; the map is not cloned). Otherwise this method auto-detects
+     * if this variable is an enumeration.
      *
-     * @param  flags   the flag meanings as a space-separated string, or {@code null} if none.
-     * @param  values  the flag values as a vector of integer values, or {@code null} if none.
+     * <p>This method is invoked by subclass constructors for completing {@code Variable} creation.
+     * It should not be invoked after creation, for keeping {@link Variable} immutable.</p>
      *
-     * @see #isEnumeration()
-     * @see #meaning(int)
+     * @param  enumeration  the enumeration map, or {@code null} for auto-detection.
+     *
+     * @see #getEnumeration()
      */
-    @SuppressWarnings("null")
-    protected final void setFlagMeanings(final Object flags, final Object values) {
-        if (flags == null) {
-            return;
-        }
-        final String[] labels = (String[]) CharSequences.split(flags.toString(), ' ');
-        int count = labels.length;
-        meanings = new HashMap<>(Containers.hashMapCapacity(count));
-        final Vector numbers;
-        if (values instanceof Vector) {
-            numbers = (Vector) values;
-            final int n = numbers.size();
-            if (n != count) {
-                warning(Variable.class, "setFlagMeanings", Resources.Keys.MismatchedAttributeLength_5,
-                        getName(), AttributeNames.FLAG_VALUES, AttributeNames.FLAG_MEANINGS, n, count);
-                if (n < count) count = n;
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
+    protected final void setEnumeration(Map<Integer,String> enumeration) {
+        if (enumeration == null) {
+            String srcLabels, srcNumbers;           // For more accurate message in case of warning.
+            CharSequence[] labels = getAttributeAsStrings(srcLabels = AttributeNames.FLAG_NAMES, ' ');
+            if (labels == null) {
+                labels = getAttributeAsStrings(srcLabels = AttributeNames.FLAG_MEANINGS, ' ');
+                if (labels == null) return;
             }
-        } else {
-            numbers = Vector.createSequence(0, 1, count);
-            warning(Variable.class, "setFlagMeanings", Resources.Keys.MissingVariableAttribute_3,
-                    getFilename(), getName(), AttributeNames.FLAG_VALUES);
-        }
-        /*
-         * Copy (numbers, labels) entries in an HashMap with keys converted to 32-bits signed integer.
-         * If a key can not be converted, we will log a warning after all errors have been collected
-         * in order to produce only one log message. We put a limit on the amount of reported errors
-         * for avoiding to flood the logger.
-         */
-        Exception     error    = null;
-        StringBuilder invalids = null;
-        for (int i=0; i<count; i++) try {
-            meanings.merge(numbers.intValue(i), labels[i], (o,n) -> o + " | " + n);
-        } catch (NumberFormatException | ArithmeticException e) {
-            if (error == null) {
-                error = e;
-                invalids = new StringBuilder();
+            Vector numbers = getAttributeAsVector(srcNumbers = AttributeNames.FLAG_VALUES);
+            if (numbers == null) {
+                numbers = getAttributeAsVector(srcNumbers = AttributeNames.FLAG_MASKS);
+            }
+            int count = labels.length;
+            if (numbers != null) {
+                final int n = numbers.size();
+                if (n != count) {
+                    warning(Variable.class, "setEnumeration", Resources.Keys.MismatchedAttributeLength_5,
+                            getName(), srcNumbers, srcLabels, n, count);
+                    if (n < count) count = n;
+                }
             } else {
-                final int length = invalids.length();
-                final boolean tooManyErrors = (length > 100);                   // Arbitrary limit.
-                if (tooManyErrors && invalids.charAt(length - 1) == '…') {
-                    continue;
-                }
-                error.addSuppressed(e);
-                invalids.append(", ");
-                if (tooManyErrors) {
-                    invalids.append('…');
-                    continue;
-                }
+                numbers = Vector.createSequence(0, 1, count);
+                warning(Variable.class, "setEnumeration", Resources.Keys.MissingVariableAttribute_3,
+                        getFilename(), getName(), AttributeNames.FLAG_VALUES);
             }
-            invalids.append(numbers.stringValue(i));
+            /*
+             * Copy (numbers, labels) entries in an HashMap with keys converted to 32-bits signed integer.
+             * If a key can not be converted, we will log a warning after all errors have been collected
+             * in order to produce only one log message. We put a limit on the amount of reported errors
+             * for avoiding to flood the logger.
+             */
+            Exception     error    = null;
+            StringBuilder invalids = null;
+            enumeration = new HashMap<>(Containers.hashMapCapacity(count));
+            for (int i=0; i<count; i++) try {
+                final CharSequence label = labels[i];
+                if (label != null) {
+                    enumeration.merge(numbers.intValue(i), label.toString(), (o,n) -> {
+                        return o.equals(n) ? o : o + " | " + n;
+                    });
+                }
+            } catch (NumberFormatException | ArithmeticException e) {
+                if (error == null) {
+                    error = e;
+                    invalids = new StringBuilder();
+                } else {
+                    final int length = invalids.length();
+                    final boolean tooManyErrors = (length > 100);                   // Arbitrary limit.
+                    if (tooManyErrors && invalids.charAt(length - 1) == '…') {
+                        continue;
+                    }
+                    error.addSuppressed(e);
+                    invalids.append(", ");
+                    if (tooManyErrors) {
+                        invalids.append('…');
+                        continue;
+                    }
+                }
+                invalids.append(numbers.stringValue(i));
+            }
+            if (invalids != null) {
+                error(Variable.class, "setEnumeration", error,
+                      Errors.Keys.CanNotConvertValue_2, invalids, numbers.getElementType());
+            }
         }
-        if (invalids != null) {
-            error(Variable.class, "setFlagMeanings", error,
-                  Errors.Keys.CanNotConvertValue_2, invalids, numbers.getElementType());
-        }
-        if (meanings.isEmpty()) {
-            meanings = null;
+        if (!enumeration.isEmpty()) {
+            this.enumeration = enumeration;
         }
     }
 
@@ -455,17 +465,6 @@ public abstract class Variable extends Node {
      */
     final boolean isString() {
         return getDataType() == DataType.CHAR && getNumDimensions() >= STRING_DIMENSION;
-    }
-
-    /**
-     * Returns {@code true} if this variable is an enumeration.
-     *
-     * @return whether this variable is an enumeration.
-     *
-     * @see #meaning(int)
-     */
-    protected boolean isEnumeration() {
-        return meanings != null;
     }
 
     /**
@@ -871,6 +870,20 @@ public abstract class Variable extends Node {
     }
 
     /**
+     * Returns enumeration values (keys) and their meanings (values), or {@code null} if this
+     * variable is not an enumeration. This method returns a direct reference to internal map
+     * (no clone, no unmodifiable wrapper); <strong>Do not modify the returned map.</strong>
+     *
+     * @return the ordinals and values associated to ordinals, or {@code null} if none.
+     *
+     * @see #setEnumeration(Map)
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final Map<Integer,String> getEnumeration() {
+        return enumeration;
+    }
+
+    /**
      * Returns all no-data values declared for this variable, or an empty map if none.
      * The map keys are the no-data values (pad sample values or missing sample values).
      * The map values can be either {@link String} or {@link org.opengis.util.InternationalString} values
@@ -1240,18 +1253,6 @@ public abstract class Variable extends Node {
         for (int i=dimensions.size(); --i>=0;) {
             dimensions.get(i).writeLength(buffer);
         }
-    }
-
-    /**
-     * Returns the meaning of the given ordinal value, or {@code null} if none.
-     * Callers must have verified that {@link #isEnumeration()} returned {@code true}
-     * before to invoke this method
-     *
-     * @param  ordinal  the ordinal of the enumeration for which to get the value.
-     * @return the value associated to the given ordinal, or {@code null} if none.
-     */
-    protected String meaning(final int ordinal) {
-        return meanings.get(ordinal);
     }
 
     /**
