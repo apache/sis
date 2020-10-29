@@ -260,11 +260,16 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
 
     /**
      * Splits a space-separated attribute value into an array of strings.
+     * If the attribute is a list of numbers, it will be left unchanged.
+     * (should not happen, but we are paranoiac)
      */
-    private void split(final String attribute) {
-        final CharSequence[] values = getAttributeAsStrings(attribute, ' ');
+    private void split(final String attributeName) {
+        final CharSequence[] values = getAttributeAsStrings(attributeName, ' ');
         if (values != null) {
-            attributes.put(attribute, values);
+            final Object previous = attributes.put(attributeName, values);
+            if (previous instanceof Vector) {
+                attributes.put(attributeName, previous);
+            }
         }
     }
 
