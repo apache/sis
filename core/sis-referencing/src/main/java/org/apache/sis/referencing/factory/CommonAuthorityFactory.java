@@ -254,7 +254,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
 
     /**
      * Returns the specification that defines the codes recognized by this factory. The definitive source for this
-     * factory is OGC <a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a> (WMS) specification,
+     * factory is OGC <a href="https://www.ogc.org/standards/wms">Web Map Service</a> (WMS) specification,
      * also available as the ISO 19128 <cite>Geographic Information — Web map server interface</cite> standard.
      *
      * <p>While the authority is WMS, the {@linkplain org.apache.sis.xml.IdentifierSpace#getName() namespace}

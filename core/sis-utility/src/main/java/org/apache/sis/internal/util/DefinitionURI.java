@@ -108,8 +108,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.8
  *
  * @see org.apache.sis.internal.metadata.NameMeaning
- * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
- * @see <a href="http://www.opengeospatial.org/ogcna">OGC Naming Authority</a>
+ * @see <a href="https://portal.ogc.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
+ * @see <a href="https://www.ogc.org/ogcna">OGC Naming Authority</a>
  *
  * @since 0.4
  * @module

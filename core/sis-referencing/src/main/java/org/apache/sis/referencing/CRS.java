@@ -231,7 +231,7 @@ public final class CRS extends Static {
      *
      * @see #getAuthorityFactory(String)
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory
-     * @see <a href="http://epsg-registry.org/">EPSG Geodetic Registry</a>
+     * @see <a href="https://epsg.org/">EPSG Geodetic Registry</a>
      *
      * @category factory
      */

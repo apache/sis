@@ -71,7 +71,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * <h2>Creating new ellipsoid instances</h2>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
- * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many ellipsoids,
+ * In particular, the <a href="https://epsg.org/">EPSG repository</a> provides definitions for many ellipsoids,
  * and Apache SIS provides convenience shortcuts for some of them.
  *
  * <p>Choice 1 in the following list is the easiest but most restrictive way to get an ellipsoid.

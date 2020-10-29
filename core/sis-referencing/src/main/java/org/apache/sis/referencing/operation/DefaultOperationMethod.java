@@ -920,7 +920,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * <p><b>Historical note:</b> older, deprecated, names for the parameters were:
      * <ul>
      *   <li>{@code includesParameter}</li>
-     *   <li>{@code generalOperationParameter} - note that this name was used by the EPSG registry</li>
+     *   <li>{@code generalOperationParameter} - note that this name was used by the EPSG repository</li>
      *   <li>{@code usesParameter}</li>
      * </ul>
      *

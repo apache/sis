@@ -31,7 +31,8 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Cache;
 
 /**
- * Geometric SQL mapping based on <a href="https://www.opengeospatial.org/standards/sfs">OpenGIS® Implementation Standard for Geographic information -Simple feature access -Part 2: SQL option</a>
+ * Geometric SQL mapping based on <a href="https://www.ogc.org/standards/sfs">OpenGIS® Implementation Standard
+ * for Geographic information -Simple feature access -Part 2: SQL option</a>.
  *
  * @implNote WARNING: This class will (almost certainly) not work as is. It provides a base implementation for geometry
  * access on any SQL simple feature compliant database, but the standard does not specify precisely what mode of

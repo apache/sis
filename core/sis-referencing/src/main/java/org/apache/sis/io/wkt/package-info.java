@@ -48,7 +48,7 @@
  * <ul>
  *   <li>ISO 19162 defines the current format, also known as “WKT 2”. The specification is also made
  *       <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">available online</a> by OGC.</li>
- *   <li>The previous format — “WKT 1” — was defined in the <a href="http://www.opengeospatial.org/standards/ct">OGC
+ *   <li>The previous format — “WKT 1” — was defined in the <a href="https://www.ogc.org/standards/ct">OGC
  *       document 01-009</a>. This definition is
  *       <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">shown on GeoAPI</a>.</li>
  * </ul>
@@ -63,7 +63,8 @@
  * <h2>Geometry WKT</h2>
  * The {@link org.apache.sis.geometry.GeneralEnvelope} and {@link org.apache.sis.geometry.GeneralDirectPosition} classes
  * provide their own, limited, WKT parsing and formatting services for the {@code BOX} and {@code POINT} elements.
- * A description for this WKT format can be found on <a href="https://en.wikipedia.org/wiki/Well-known_text">Wikipedia</a>.
+ * A description for this WKT format can be found on
+ * <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_coordinate_reference_systems">Wikipedia</a>.
  *
  * <h2>Where to find WKT examples</h2>
  * An excellent source of well-formed WKT is the online <cite>EPSG Geodetic Parameter Registry</cite>.
@@ -71,12 +72,12 @@
  * (replace {@code 3395} by the EPSG code of the desired CRS):
  *
  * <blockquote><b>Example</b>: <cite>"WGS 84 / World Mercator"</cite>:
- * <a href="http://epsg-registry.org/export.htm?wkt=urn:ogc:def:crs:EPSG::3395">http://epsg-registry.org/export.htm?wkt=urn:ogc:def:crs:EPSG::3395</a>
+ * <a href="https://epsg.org/crs/wkt/id/3395">https://epsg.org/crs/wkt/id/3395</a>
  * </blockquote>
  *
  * Readers should be aware that some popular other sources of WKT are actually invalid,
  * since many of them do not comply with EPSG definitions (especially on axis order).
- * The above-cited EPSG registry is <strong>the</strong> authoritative source
+ * The above-cited EPSG repository is <strong>the</strong> authoritative source
  * of CRS definitions in the EPSG namespace.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

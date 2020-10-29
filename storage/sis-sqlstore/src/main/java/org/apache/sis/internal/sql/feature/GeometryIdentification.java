@@ -36,7 +36,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonEmpty;
 /**
  * Not THREAD-SAFE !
  * Search for geometric information in specialized SQL for Simple feature tables (refer to
- * <a href="https://www.opengeospatial.org/standards/sfs">OGC 06-104r4 (Simple feature access - Part 2: SQL option)</a>).
+ * <a href="https://www.ogc.org/standards/sfs">OGC 06-104r4 (Simple feature access - Part 2: SQL option)</a>).
  *
  * @implNote <a href="https://www.jooq.org/doc/3.12/manual/sql-execution/fetching/pojos/#N5EFC1">I miss JOOQ...</a>
  *
