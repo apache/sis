@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Iterator;
+import java.util.Collections;
 import java.util.Locale;
 import java.io.Serializable;
 import java.text.ParsePosition;
@@ -53,7 +54,7 @@ import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
  *
  * @author  Rémi Ève (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -61,7 +62,7 @@ final class Element implements Serializable {
     /**
      * Indirectly for {@link WKTFormat} serialization compatibility.
      */
-    private static final long serialVersionUID = 2366817541632131955L;
+    private static final long serialVersionUID = 4048095121452884024L;
 
     /**
      * Kind of value expected in the element. Value 0 means "not yet determined".
@@ -95,12 +96,16 @@ final class Element implements Serializable {
     public final String keyword;
 
     /**
-     * An ordered sequence of {@link String}s, {@link Number}s and other {@link Element}s.
-     * May be {@code null} if the keyword was not followed by a pair of brackets (e.g. "north").
-     *
-     * <p>Access to this list should be done using the iterator, not by random access.</p>
+     * {@code true} if the keyword was not followed by a pair of brackets (e.g. "north").
+     * If {@code true}, then {@link #children} shall be an empty list.
      */
-    private final List<Object> list;
+    private final boolean isEnumeration;
+
+    /**
+     * An ordered sequence of {@link String}s, {@link Number}s and other {@link Element}s.
+     * Access to this collection should be done using the iterator, not by random access.
+     */
+    private final List<Object> children;
 
     /**
      * The locale to be used for formatting an error message if the parsing fails, or {@code null} for
@@ -112,30 +117,32 @@ final class Element implements Serializable {
      * Constructs a root element.
      *
      * @param name       an arbitrary name for the root element.
-     * @param singleton  the only children for this root.
+     * @param singleton  the only child for this root.
      */
     Element(final String name, final Element singleton) {
-        keyword = name;
-        offset  = singleton.offset;
-        locale  = singleton.locale;
-        list    = new LinkedList<>();                           // Needs to be a modifiable list.
-        list.add(singleton);
+        keyword  = name;
+        offset   = singleton.offset;
+        locale   = singleton.locale;
+        children = new LinkedList<>();                          // Needs to be a modifiable collection.
+        children.add(singleton);
+        isEnumeration = false;
     }
 
     /**
      * Creates a modifiable copy of the given element.
      */
     Element(final Element toCopy) {
-        keyword = toCopy.keyword;
-        offset  = toCopy.offset;
-        locale  = toCopy.locale;
-        list    = new LinkedList<>(toCopy.list);                // Needs to be a modifiable list.
-        final ListIterator<Object> it = list.listIterator();
+        offset        = toCopy.offset;
+        keyword       = toCopy.keyword;
+        isEnumeration = toCopy.isEnumeration;
+        locale        = toCopy.locale;
+        children      = new LinkedList<>(toCopy.children);      // Needs to be a modifiable collection.
+        final ListIterator<Object> it = children.listIterator();
         while (it.hasNext()) {
             final Object value = it.next();
             if (value instanceof Element) {
                 final Element fragment = (Element) value;
-                if (fragment.list != null) {
+                if (!fragment.isEnumeration) {
                     it.set(new Element(fragment));
                 }
             }
@@ -200,7 +207,8 @@ final class Element implements Serializable {
                                 openingBracket = text.codePointAt(lower))) < 0)
         {
             position.setIndex(lower);
-            list = null;
+            children = Collections.emptyList();
+            isEnumeration = true;
             return;
         }
         lower = skipLeadingWhitespaces(text, lower + Character.charCount(openingBracket), length);
@@ -214,7 +222,7 @@ final class Element implements Serializable {
          *   - Otherwise, if the first character is a quote, then the value is taken as a String.
          *   - Otherwise, the element is parsed as a number or as a date, depending of 'isTemporal' boolean value.
          */
-        final List<Object> list = new LinkedList<>();
+        final List<Object> children = new LinkedList<>();
         final String separator = parser.symbols.trimmedSeparator();
         while (lower < length) {
             final int firstChar = text.codePointAt(lower);
@@ -232,10 +240,10 @@ final class Element implements Serializable {
                     position.setErrorIndex(lower);
                     throw new UnparsableObjectException(locale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
                 }
-                if (fragment.list != null) {
+                if (!fragment.isEnumeration) {
                     fragment = new Element(fragment);
                 }
-                list.add(fragment);
+                children.add(fragment);
                 lower = upper;
             } else if (Character.isUnicodeIdentifierStart(firstChar)) {
                 /*
@@ -243,12 +251,12 @@ final class Element implements Serializable {
                  * except for the boolean "true" and "false" values which are handled in a special way.
                  */
                 if (lower != (lower = regionMatches(text, lower, "true"))) {
-                    list.add(Boolean.TRUE);
+                    children.add(Boolean.TRUE);
                 } else if (lower != (lower = regionMatches(text, lower, "false"))) {
-                    list.add(Boolean.FALSE);
+                    children.add(Boolean.FALSE);
                 } else {
                     position.setIndex(lower);
-                    list.add(new Element(parser, text, position, sharedValues));
+                    children.add(new Element(parser, text, position, sharedValues));
                     lower = position.getIndex();
                 }
             } else {
@@ -319,7 +327,7 @@ final class Element implements Serializable {
                         value = e;
                     }
                 }
-                list.add(value);
+                children.add(value);
             }
             /*
              * At this point we finished to parse the component. If we find a separator (usually a coma),
@@ -334,10 +342,11 @@ final class Element implements Serializable {
                 if (c == closingBracket) {
                     position.setIndex(lower + Character.charCount(c));
                     if (sharedValues != null) {
-                        this.list = UnmodifiableArrayList.wrap(list.toArray());
+                        this.children = UnmodifiableArrayList.wrap(children.toArray());
                     } else {
-                        this.list = list;
+                        this.children = children;
                     }
+                    isEnumeration = false;
                     return;
                 }
                 position.setErrorIndex(lower);
@@ -446,7 +455,7 @@ final class Element implements Serializable {
      */
     final ParseException missingOrUnknownComponent(final String expected) {
         String name = null;
-        for (final Object child : list) {
+        for (final Object child : children) {
             if (child instanceof Element) {
                 name = ((Element) child).keyword;
                 if (name != null) {
@@ -495,7 +504,7 @@ final class Element implements Serializable {
 
     //////////////////////////////////////////////////////////////////////////////////////
     ////////                                                                      ////////
-    ////////    Pull elements from the tree                                       ////////
+    ////////    Peek or pull elements from the tree                               ////////
     ////////                                                                      ////////
     //////////////////////////////////////////////////////////////////////////////////////
 
@@ -505,7 +514,7 @@ final class Element implements Serializable {
      * @return the next value, or {@code null} if none.
      */
     public Object peekValue() {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (!(object instanceof Element)) {
@@ -516,14 +525,14 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link Date} from the list and returns it.
+     * Removes the next {@link Date} from the children and returns it.
      *
      * @param  key  the parameter name. Used for formatting an error message if no date is found.
-     * @return the next {@link Date} on the list.
+     * @return the next {@link Date} among the children.
      * @throws ParseException if no more date is available.
      */
     public Date pullDate(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Date) {
@@ -535,14 +544,14 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link Number} from the list and returns it.
+     * Removes the next {@link Number} from the children and returns it.
      *
      * @param  key  the parameter name. Used for formatting an error message if no number is found.
-     * @return the next {@link Number} on the list as a {@code double}.
+     * @return the next {@link Number} among the children as a {@code double}.
      * @throws ParseException if no more number is available.
      */
     public double pullDouble(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Number) {
@@ -554,14 +563,14 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link Number} from the list and returns it as an integer.
+     * Removes the next {@link Number} from the children and returns it as an integer.
      *
      * @param  key  the parameter name. Used for formatting an error message if no number is found.
-     * @return the next {@link Number} on the list as an {@code int}.
+     * @return the next {@link Number} among the children as an {@code int}.
      * @throws ParseException if no more number is available, or the number is not an integer.
      */
     public int pullInteger(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Number) {
@@ -578,14 +587,14 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link Boolean} from the list and returns it.
+     * Removes the next {@link Boolean} from the children and returns it.
      *
      * @param  key  the parameter name. Used for formatting an error message if no boolean is found.
-     * @return the next {@link Boolean} on the list as a {@code boolean}.
+     * @return the next {@link Boolean} among the children as a {@code boolean}.
      * @throws ParseException if no more boolean is available.
      */
     public boolean pullBoolean(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Boolean) {
@@ -597,14 +606,14 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link String} from the list and returns it.
+     * Removes the next {@link String} from the children and returns it.
      *
      * @param  key  the parameter name. Used for formatting an error message if no number is found.
-     * @return the next {@link String} on the list.
+     * @return the next {@link String} among the children.
      * @throws ParseException if no more string is available.
      */
     public String pullString(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof String) {
@@ -616,14 +625,14 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link Object} from the list and returns it.
+     * Removes the next {@link Object} from the children and returns it.
      *
      * @param  key  the parameter name. Used for formatting an error message if no number is found.
-     * @return the next {@link Object} on the list (never {@code null}).
+     * @return the next {@link Object} among the children (never {@code null}).
      * @throws ParseException if no more object is available.
      */
     public Object pullObject(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object != null && !(object instanceof Element)) {
@@ -635,7 +644,7 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link Element} of the given name from the list and returns it.
+     * Removes the next {@link Element} of the given name from the children and returns it.
      * If the element was mandatory but is missing, then the first entry in the given {@code keys}
      * array will be taken as the name of the missing element to report in the exception message.
      *
@@ -649,16 +658,16 @@ final class Element implements Serializable {
      *
      * @param  mode  {@link AbstractParser#FIRST}, {@link AbstractParser#OPTIONAL} or {@link AbstractParser#MANDATORY}.
      * @param  keys  the element names (e.g. {@code "PrimeMeridian"}).
-     * @return the next {@link Element} of the given names found on the list, or {@code null} if none.
+     * @return the next {@link Element} of the given names found among the children, or {@code null} if none.
      * @throws ParseException if {@code mode} is {@code MANDATORY} and no element of the given names was found.
      */
     public Element pullElement(final int mode, final String... keys) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Element) {
                 final Element element = (Element) object;
-                if (element.list != null) {
+                if (!element.isEnumeration) {
                     for (int i=0; i<keys.length; i++) {
                         if (element.keyword.equalsIgnoreCase(keys[i])) {
                             element.keywordIndex = (byte) i;
@@ -683,16 +692,16 @@ final class Element implements Serializable {
      * The key is used only for only for formatting an error message.
      *
      * @param  key  the parameter name. Used only for formatting an error message.
-     * @return the next {@link Element} in the list, with no bracket.
+     * @return the next {@link Element} among the children, with no bracket.
      * @throws ParseException if no more void element is available.
      */
     public Element pullVoidElement(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Element) {
                 final Element element = (Element) object;
-                if (element.list == null) {
+                if (element.isEnumeration) {
                     iterator.remove();
                     return element;
                 }
@@ -702,14 +711,14 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next object of the given type from the list and returns it, if presents.
+     * Removes the next object of the given type from the children and returns it, if presents.
      *
      * @param  type  the object type.
-     * @return the next object on the list, or {@code null} if none.
+     * @return the next object among the children, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     public <T> T pullOptional(final Class<T> type) {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (type.isInstance(object) && !(object instanceof Element)) {
@@ -726,7 +735,7 @@ final class Element implements Serializable {
      * @return {@code true} if there is no child remaining.
      */
     public boolean isEmpty() {
-        return list.isEmpty();
+        return children.isEmpty();
     }
 
     /**
@@ -740,7 +749,7 @@ final class Element implements Serializable {
      * Closes this element. This method verifies that there is no unprocessed value (dates,
      * numbers, booleans or strings), but ignores inner elements as required by ISO 19162.
      *
-     * This method add the keywords of ignored elements in the {@code ignoredElements} map as below:
+     * This method adds the keywords of ignored elements in the {@code ignoredElements} map as below:
      * <ul>
      *   <li><b>Keys</b>: keyword of ignored elements. Note that a key may be null.</li>
      *   <li><b>Values</b>: keywords of all elements containing an element identified by the above-cited key.
@@ -748,17 +757,15 @@ final class Element implements Serializable {
      * </ul>
      *
      * @param  ignoredElements  the collection where to declare ignored elements.
-     * @throws ParseException if the list still contains some unprocessed values.
+     * @throws ParseException if the children list still contains some unprocessed values.
      */
     final void close(final Map<String, List<String>> ignoredElements) throws ParseException {
-        if (list != null) {
-            for (final Object value : list) {
-                if (value instanceof Element) {
-                    CollectionsExt.addToMultiValuesMap(ignoredElements, ((Element) value).keyword, keyword);
-                } else {
-                    throw new UnparsableObjectException(locale, Errors.Keys.UnexpectedValueInElement_2,
-                            new Object[] {keyword, value}, offset + keyword.length());
-                }
+        for (final Object value : children) {
+            if (value instanceof Element) {
+                CollectionsExt.addToMultiValuesMap(ignoredElements, ((Element) value).keyword, keyword);
+            } else {
+                throw new UnparsableObjectException(locale, Errors.Keys.UnexpectedValueInElement_2,
+                        new Object[] {keyword, value}, offset + keyword.length());
             }
         }
     }
@@ -783,11 +790,11 @@ final class Element implements Serializable {
     @Debug
     private void format(final StringBuilder buffer, int margin, final String lineSeparator) {
         buffer.append(CharSequences.spaces(margin)).append(keyword);
-        if (list != null) {
+        if (!isEnumeration) {
             buffer.append('[');
             margin += 4;
             boolean addSeparator = false;
-            for (final Object value : list) {
+            for (final Object value : children) {
                 if (value instanceof Element) {
                     if (addSeparator) buffer.append(',');
                     buffer.append(lineSeparator);
