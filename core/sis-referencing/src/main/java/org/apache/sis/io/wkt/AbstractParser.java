@@ -240,7 +240,8 @@ abstract class AbstractParser implements Parser {
 
     /**
      * Returns the index after the end of the fragment name starting at the given index.
-     * Current implementation assumes that the fragment name is a Unicode identifier.
+     * Current implementation assumes that the fragment name is a Unicode identifier,
+     * except for the first character which is not required to be an identifier start.
      */
     static int endOfFragmentName(final String text, int upper) {
         final int length = text.length();

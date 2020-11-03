@@ -28,16 +28,16 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Symbols} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.1
  * @since   0.4
  * @module
  */
 public final strictfp class SymbolsTest extends TestCase {
     /**
-     * Tests the {@link Symbols#containsAxis(CharSequence)} method.
+     * Tests the {@link Symbols#containsElement(CharSequence, String)} method.
      */
     @Test
-    public void testContainsAxis() {
+    public void testContainsElement() {
         assertContainsAxis("At beginning of a line.",   true,                  "AXIS[“Long”, EAST]");
         assertContainsAxis("Embeded in GEOGCS.",        true,  "GEOGCS[“WGS84”, AXIS[“Long”, EAST]]");
         assertContainsAxis("Using different brackets.", true,  "GEOGCS[“WGS84”, AXIS (“Long”, EAST)]");
@@ -48,17 +48,17 @@ public final strictfp class SymbolsTest extends TestCase {
     }
 
     /**
-     * Asserts that the call to {@link Symbols#containsAxis(CharSequence)} produce the given result.
+     * Asserts that the call to {@code Symbols.containsElement(wkt, "AXIS")} produce the given result.
      * This method expects an array using the {@code “…”} quotation marks, which will be replaced by
      * the standard {@code '"'} quotation mark after we tested the given string.
      */
     private static void assertContainsAxis(final String message, final boolean expected, final String wkt) {
-        assertEquals(message, expected, Symbols.getDefault().containsAxis(wkt));
+        assertEquals(message, expected, Symbols.getDefault().containsElement(wkt, "AXIS"));
         final StringBuilder buffer = new StringBuilder(wkt);
         StringBuilders.replace(buffer, '“', '"');
         StringBuilders.replace(buffer, '”', '"');
         assertFalse(wkt.contentEquals(buffer));
-        assertEquals(message, expected, Symbols.getDefault().containsAxis(buffer));
+        assertEquals(message, expected, Symbols.getDefault().containsElement(buffer, "AXIS"));
     }
 
     /**
