@@ -78,8 +78,12 @@ public final class JDK9 {
         switch (elements.length) {
             case 0:  return Collections.emptySet();
             case 1:  return Collections.singleton(elements[0]);
-            default: return Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(elements)));
         }
+        final Set<E> c = new LinkedHashSet<>(Arrays.asList(elements));
+        if (c.size() != elements.length) {
+            throw new IllegalArgumentException("Duplicated elements.");
+        }
+        return Collections.unmodifiableSet(c);
     }
 
     /**
@@ -88,7 +92,9 @@ public final class JDK9 {
     public static <K,V> Map<K,V> mapOf(final Object... entries) {
         final Map map = new HashMap();
         for (int i=0; i<entries.length;) {
-            map.put(entries[i++], entries[i++]);
+            if (map.put(entries[i++], entries[i++]) != null) {
+                throw new IllegalArgumentException("Duplicated elements.");
+            }
         }
         return map;
     }
