@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.TreeMap;
+import java.util.Collections;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -107,7 +108,7 @@ import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
@@ -132,16 +133,21 @@ public class WKTFormat extends CompoundFormat<Object> {
     public static final int SINGLE_LINE = -1;
 
     /**
-     * The symbols to use for this formatter.
+     * The {@linkplain Symbols#immutable() immutable} set of symbols to use for this formatter.
      * The same object is also referenced in the {@linkplain #parser} and {@linkplain #formatter}.
      * It appears here for serialization purpose.
+     *
+     * @see #setSymbols(Symbols)
      */
     private Symbols symbols;
 
     /**
-     * The colors to use for this formatter, or {@code null} for no syntax coloring.
+     * The {@linkplain Colors#immutable() immutable} set of colors to use for this formatter,
+     * or {@code null} for no syntax coloring. The default value is {@code null}.
      * The same object is also referenced in the {@linkplain #formatter}.
      * It appears here for serialization purpose.
+     *
+     * @see #setColors(Colors)
      */
     private Colors colors;
 
@@ -196,10 +202,25 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * WKT fragments that can be inserted in longer WKT strings, or {@code null} if none. Keys are short identifiers
      * and values are WKT subtrees to substitute to the identifiers when they are found in a WKT to parse.
+     * The same map instance may be shared by different {@linkplain #clone() clones}.
      *
-     * @see #fragments()
+     * @see #fragments(boolean)
      */
     private Map<String,Element> fragments;
+
+    /**
+     * {@code true} if the {@link #fragments} map is shared by two or more {@code WKTFormat} instances.
+     * In such case, the map shall not be modified; instead it must be copied before any modification.
+     *
+     * <h4>Use case</h4>
+     * This flag allows to clone the {@link #fragments} map only when first needed. In use cases where
+     * {@code WKTFormat} is cloned for multi-threading purposes without change in its configuration,
+     * this flag avoids completely the need to clone the {@link #fragments} map.
+     *
+     * @see #clone()
+     * @see #fragments(boolean)
+     */
+    private transient boolean isCloned;
 
     /**
      * Temporary map used by {@link #addFragment(String, String)} for reusing existing instances when possible.
@@ -258,11 +279,22 @@ public class WKTFormat extends CompoundFormat<Object> {
 
     /**
      * Returns the {@link #fragments} map, creating it when first needed.
+     * Caller shall not modify the returned map, unless the {@code modifiable} parameter is {@code true}.
+     *
+     * @param  modifiable  whether the caller intents to modify the map.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private Map<String,Element> fragments() {
+    private Map<String,Element> fragments(final boolean modifiable) {
         if (fragments == null) {
+            if (!modifiable) {
+                // Most common cases: invoked before to parse a WKT and no fragments specified.
+                return Collections.emptyMap();
+            }
             fragments = new TreeMap<>();
+            isCloned  = false;
+        } else if (isCloned & modifiable) {
+            fragments = new TreeMap<>(fragments);
+            isCloned  = false;
         }
         return fragments;
     }
@@ -301,7 +333,8 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Returns the symbols used for parsing and formatting WKT.
+     * Returns the symbols used for parsing and formatting WKT. This method returns an unmodifiable instance.
+     * Modifications, if desired, should be applied on a {@linkplain Symbols#clone() clone} of the returned object.
      *
      * @return the current set of symbols used for parsing and formatting WKT.
      */
@@ -412,6 +445,8 @@ public class WKTFormat extends CompoundFormat<Object> {
 
     /**
      * Returns the colors to use for syntax coloring, or {@code null} if none.
+     * This method returns an unmodifiable instance. Modifications, if desired,
+     * should be applied on a {@linkplain Colors#clone() clone} of the returned object.
      * By default there is no syntax coloring.
      *
      * @return the colors for syntax coloring, or {@code null} if none.
@@ -677,7 +712,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @return the name of all fragments known to this {@code WKTFormat}.
      */
     public Set<String> getFragmentNames() {
-        return fragments().keySet();
+        return fragments(true).keySet();
     }
 
     /**
@@ -701,9 +736,10 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * For removing a fragment, use <code>{@linkplain #getFragmentNames()}.remove(name)</code>.
      *
-     * @param  name  the name to assign to the WKT fragment. Identifiers are case-sensitive.
+     * @param  name  the name to assign to the WKT fragment (case-sensitive). Must be a valid Unicode identifier.
      * @param  wkt   the Well Know Text (WKT) fragment represented by the given identifier.
-     * @throws IllegalArgumentException if the name is invalid or if a fragment is already present for that name.
+     * @throws IllegalArgumentException if the given name is not a valid Unicode identifier
+     *         or if a fragment is already associated to that name.
      * @throws ParseException if an error occurred while parsing the given WKT.
      */
     public void addFragment(final String name, final String wkt) throws IllegalArgumentException, ParseException {
@@ -711,23 +747,34 @@ public class WKTFormat extends CompoundFormat<Object> {
         ArgumentChecks.ensureNonEmpty("name", name);
         short error = Errors.Keys.NotAUnicodeIdentifier_1;
         if (CharSequences.isUnicodeIdentifier(name)) {
-            if (sharedValues == null) {
-                sharedValues = new HashMap<>();
-            }
             final ParsePosition pos = new ParsePosition(0);
-            final Element element = new Element(parser(), wkt, pos, sharedValues);
+            final Element element = parseFragment(wkt, pos);
             final int index = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length());
             if (index < wkt.length()) {
                 throw new UnparsableObjectException(getLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
                         new Object[] {name + " = " + element.keyword + "[…]", CharSequences.token(wkt, index)}, index);
             }
-            // 'fragments' map has been created by 'parser()'.
+            // `fragments` map has been created by `parser(true)`.
             if (fragments.putIfAbsent(name, element) == null) {
                 return;
             }
             error = Errors.Keys.ElementAlreadyPresent_1;
         }
         throw new IllegalArgumentException(Errors.getResources(getLocale()).getString(error, name));
+    }
+
+    /**
+     * Parses a fragment of Well Know Text (WKT).
+     *
+     * @param  wkt  the Well Know Text (WKT) fragment to parse.
+     * @param  pos  index of the first character to parse (on input) or after last parsed character (on output).
+     * @return root of the tree of elements.
+     */
+    final Element parseFragment(final String wkt, final ParsePosition pos) throws ParseException {
+        if (sharedValues == null) {
+            sharedValues = new HashMap<>();
+        }
+        return new Element(parser(true), wkt, pos, sharedValues);
     }
 
     /**
@@ -747,7 +794,7 @@ public class WKTFormat extends CompoundFormat<Object> {
         sharedValues = null;
         ArgumentChecks.ensureNonEmpty("wkt", wkt);
         ArgumentChecks.ensureNonNull ("pos", pos);
-        final AbstractParser parser = parser();
+        final AbstractParser parser = parser(false);
         Object object = null;
         try {
             return object = parser.parseObject(wkt.toString(), pos);
@@ -758,11 +805,13 @@ public class WKTFormat extends CompoundFormat<Object> {
 
     /**
      * Returns the parser, created when first needed.
+     *
+     * @param  modifiable  whether the caller intents to modify the {@link #fragments} map.
      */
-    private AbstractParser parser() {
+    private AbstractParser parser(final boolean modifiable) {
         AbstractParser parser = this.parser;
-        if (parser == null) {
-            this.parser = parser = new Parser(symbols, fragments(),
+        if (parser == null || (isCloned & modifiable)) {
+            this.parser = parser = new Parser(symbols, fragments(modifiable),
                     (NumberFormat) getFormat(Number.class),
                     (DateFormat)   getFormat(Date.class),
                     (UnitFormat)   getFormat(Unit.class),
@@ -775,8 +824,8 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * The parser created by {@link #parser()}, identical to {@link GeodeticObjectParser} except for
-     * the source of logging messages which is the enclosing {@code WKTParser} instead than a factory.
+     * The parser created by {@link #parser(boolean)}, identical to {@link GeodeticObjectParser} except
+     * for the source of logging messages which is the enclosing {@code WKTParser} instead than a factory.
      */
     private static final class Parser extends GeodeticObjectParser {
         Parser(final Symbols symbols, final Map<String,Element> fragments,
@@ -907,16 +956,21 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Returns a clone of this format.
+     * Returns a clone of this format. The clone has the same configuration (including any added
+     * {@linkplain #addFragment fragments}), except the {@linkplain #getWarnings() warnings}.
      *
      * @return a clone of this format.
      */
     @Override
     public WKTFormat clone() {
         final WKTFormat clone = (WKTFormat) super.clone();
-        clone.formatter = null;                                 // Do not share the formatter.
-        clone.parser    = null;
-        clone.warnings  = null;
+        clone.sharedValues = null;
+        clone.factories    = null;                              // Not thread-safe; clone needs its own.
+        clone.formatter    = null;                              // Do not share the formatter.
+        clone.parser       = null;
+        clone.warnings     = null;
+        clone.isCloned = isCloned = true;
+        // Symbols and Colors do not need to be cloned because they are flagged as immutable.
         return clone;
     }
 }
