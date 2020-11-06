@@ -111,7 +111,7 @@ final class Element implements Serializable {
      * The locale to be used for formatting an error message if the parsing fails, or {@code null} for
      * the system default. This is <strong>not</strong> the locale for parting number or date values.
      */
-    private final Locale locale;
+    private final Locale errorLocale;
 
     /**
      * Constructs a root element.
@@ -120,10 +120,10 @@ final class Element implements Serializable {
      * @param singleton  the only child for this root.
      */
     Element(final String name, final Element singleton) {
-        keyword  = name;
-        offset   = singleton.offset;
-        locale   = singleton.locale;
-        children = new LinkedList<>();                          // Needs to be a modifiable collection.
+        keyword     = name;
+        offset      = singleton.offset;
+        errorLocale = singleton.errorLocale;
+        children    = new LinkedList<>();                       // Needs to be a modifiable collection.
         children.add(singleton);
         isEnumeration = false;
     }
@@ -135,7 +135,7 @@ final class Element implements Serializable {
         offset        = toCopy.offset;
         keyword       = toCopy.keyword;
         isEnumeration = toCopy.isEnumeration;
-        locale        = toCopy.locale;
+        errorLocale   = toCopy.errorLocale;
         children      = new LinkedList<>(toCopy.children);      // Needs to be a modifiable collection.
         final ListIterator<Object> it = children.listIterator();
         while (it.hasNext()) {
@@ -175,7 +175,7 @@ final class Element implements Serializable {
          * Find the first keyword in the specified string. If a keyword is found, then
          * the position is set to the index of the first character after the keyword.
          */
-        locale = parser.errorLocale;
+        errorLocale = parser.errorLocale;
         offset = position.getIndex();
         final int length = text.length();
         int lower = skipLeadingWhitespaces(text, offset, length);
@@ -238,7 +238,7 @@ final class Element implements Serializable {
                 if (fragment == null) {
                     position.setIndex(offset);
                     position.setErrorIndex(lower);
-                    throw new UnparsableObjectException(locale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
+                    throw new UnparsableObjectException(errorLocale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
                 }
                 if (!fragment.isEnumeration) {
                     fragment = new Element(fragment);
@@ -388,8 +388,8 @@ final class Element implements Serializable {
      * @return the exception to be thrown.
      */
     final ParseException parseFailed(final Exception cause) {
-        return new UnparsableObjectException(locale, Errors.Keys.ErrorIn_2,
-                new String[] {keyword, Exceptions.getLocalizedMessage(cause, locale)}, offset).initCause(cause);
+        return new UnparsableObjectException(errorLocale, Errors.Keys.ErrorIn_2,
+                new String[] {keyword, Exceptions.getLocalizedMessage(cause, errorLocale)}, offset).initCause(cause);
     }
 
     /**
@@ -415,7 +415,7 @@ final class Element implements Serializable {
             arguments = new CharSequence[] {keyword, CharSequences.token(text, errorIndex)};
         }
         position.setIndex(offset);
-        return new UnparsableObjectException(locale, errorKey, arguments, errorIndex);
+        return new UnparsableObjectException(errorLocale, errorKey, arguments, errorIndex);
     }
 
     /**
@@ -429,7 +429,7 @@ final class Element implements Serializable {
         position.setIndex(offset);
         position.setErrorIndex(errorIndex);
         final StringBuilder buffer = new StringBuilder(2).appendCodePoint(c);
-        return new UnparsableObjectException(locale, Errors.Keys.MissingCharacterInElement_2,
+        return new UnparsableObjectException(errorLocale, Errors.Keys.MissingCharacterInElement_2,
                 new CharSequence[] {keyword, buffer}, errorIndex);
     }
 
@@ -443,7 +443,7 @@ final class Element implements Serializable {
         if (keyword != null) {
             error += keyword.length();
         }
-        return new UnparsableObjectException(locale, Errors.Keys.MissingComponentInElement_2,
+        return new UnparsableObjectException(errorLocale, Errors.Keys.MissingComponentInElement_2,
                 new String[] {keyword, key}, error);
     }
 
@@ -472,7 +472,7 @@ final class Element implements Serializable {
             res  = Errors.Keys.MissingComponentInElement_2;
             args = new String[] {keyword, expected};
         }
-        return new UnparsableObjectException(locale, res, args, offset);
+        return new UnparsableObjectException(errorLocale, res, args, offset);
     }
 
     /**
@@ -496,7 +496,7 @@ final class Element implements Serializable {
             key   = Errors.Keys.IllegalCoordinateSystem_1;
             value = cs.getName().getCode();
         }
-        return new UnparsableObjectException(locale, key, new String[] {value}, offset);
+        return new UnparsableObjectException(errorLocale, key, new String[] {value}, offset);
     }
 
 
@@ -577,7 +577,7 @@ final class Element implements Serializable {
                 iterator.remove();
                 final Number number = (Number) object;
                 if (number instanceof Float || number instanceof Double) {
-                    throw new UnparsableObjectException(locale, Errors.Keys.UnparsableStringForClass_2,
+                    throw new UnparsableObjectException(errorLocale, Errors.Keys.UnparsableStringForClass_2,
                             new Object[] {Integer.class, number}, offset);
                 }
                 return number.intValue();
@@ -764,7 +764,7 @@ final class Element implements Serializable {
             if (value instanceof Element) {
                 CollectionsExt.addToMultiValuesMap(ignoredElements, ((Element) value).keyword, keyword);
             } else {
-                throw new UnparsableObjectException(locale, Errors.Keys.UnexpectedValueInElement_2,
+                throw new UnparsableObjectException(errorLocale, Errors.Keys.UnexpectedValueInElement_2,
                         new Object[] {keyword, value}, offset + keyword.length());
             }
         }

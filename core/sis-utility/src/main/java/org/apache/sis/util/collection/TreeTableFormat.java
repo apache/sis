@@ -340,9 +340,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     }
 
     /**
-     * Returns the locale to use for code lists, international strings and exception messages.
+     * Returns the locale to use for code lists, international strings and localized messages of exceptions.
      */
-    final Locale getDisplayLocale() {
+    private Locale getDisplayLocale() {
         return getLocale(Locale.Category.DISPLAY);
     }
 

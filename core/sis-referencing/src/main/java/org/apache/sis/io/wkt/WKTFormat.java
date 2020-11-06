@@ -333,6 +333,19 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
+     * Returns the locale to use for error messages. Other {@link CompoundFormat} classes use the system default.
+     * But this class uses a compromise: not exactly the locale used for {@link InternationalString} because that
+     * locale is often fixed to English, and not exactly the system default neither because this "error locale"
+     * is also used for warnings. The compromise implemented in this method may change in any future version.
+     *
+     * @see #errors()
+     */
+    private Locale getErrorLocale() {
+        final Locale locale = getLocale(Locale.Category.DISPLAY);
+        return (locale != null && locale != Locale.ROOT) ? locale : Locale.getDefault(Locale.Category.DISPLAY);
+    }
+
+    /**
      * Returns the symbols used for parsing and formatting WKT. This method returns an unmodifiable instance.
      * Modifications, if desired, should be applied on a {@linkplain Symbols#clone() clone} of the returned object.
      *
@@ -634,8 +647,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             type != MathTransformFactory.class  &&
             type != CoordinateOperationFactory.class)
         {
-            throw new IllegalArgumentException(Errors.getResources(getLocale())
-                    .getString(Errors.Keys.IllegalArgumentValue_2, "type", type));
+            throw new IllegalArgumentException(errors().getString(Errors.Keys.IllegalArgumentValue_2, "type", type));
         }
     }
 
@@ -751,7 +763,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             final Element element = parseFragment(wkt, pos);
             final int index = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length());
             if (index < wkt.length()) {
-                throw new UnparsableObjectException(getLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
+                throw new UnparsableObjectException(getErrorLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
                         new Object[] {name + " = " + element.keyword + "[…]", CharSequences.token(wkt, index)}, index);
             }
             // `fragments` map has been created by `parser(true)`.
@@ -760,7 +772,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             }
             error = Errors.Keys.ElementAlreadyPresent_1;
         }
-        throw new IllegalArgumentException(Errors.getResources(getLocale()).getString(error, name));
+        throw new IllegalArgumentException(errors().getString(error, name));
     }
 
     /**
@@ -817,7 +829,7 @@ public class WKTFormat extends CompoundFormat<Object> {
                     (UnitFormat)   getFormat(Unit.class),
                     convention,
                     (transliterator != null) ? transliterator : Transliterator.DEFAULT,
-                    getLocale(),
+                    getErrorLocale(),
                     factories());
         }
         return parser;
@@ -879,7 +891,7 @@ public class WKTFormat extends CompoundFormat<Object> {
          */
         Formatter formatter = this.formatter;
         if (formatter == null) {
-            formatter = new Formatter(getLocale(), symbols,
+            formatter = new Formatter(getLocale(), getErrorLocale(), symbols,
                     (NumberFormat) getFormat(Number.class),
                     (DateFormat)   getFormat(Date.class),
                     (UnitFormat)   getFormat(Unit.class));
@@ -905,7 +917,7 @@ public class WKTFormat extends CompoundFormat<Object> {
                 warnings.setRoot(object);
             }
             if (!valid) {
-                throw new ClassCastException(Errors.getResources(getLocale()).getString(
+                throw new ClassCastException(errors().getString(
                         Errors.Keys.IllegalArgumentClass_2, "object", object.getClass()));
             }
             if (buffer != toAppendTo) {
@@ -953,6 +965,13 @@ public class WKTFormat extends CompoundFormat<Object> {
             w.publish();
         }
         return w;
+    }
+
+    /**
+     * Convenience methods for resources for error message in the locale given by {@link #getLocale()}.
+     */
+    private Errors errors() {
+        return Errors.getResources(getErrorLocale());
     }
 
     /**
