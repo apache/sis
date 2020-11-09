@@ -254,7 +254,66 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
-     * Parses a <cite>Well Know Text</cite> (WKT).
+     * Parses a <cite>Well Know Text</cite> (WKT) as a tree of {@link Element}s.
+     * This tree can be given to {@link #buildFromTree(Element)} for producing a geodetic object.
+     *
+     * @param  text          the text to be parsed.
+     * @param  position      the position to start parsing from.
+     * @param  sharedValues  non-null if parsing a WKT tree to be kept for a long time.
+     *                       In such case, contains values found during parsing of other elements.
+     * @return the parsed object as a tree of {@link Element}s.
+     * @throws ParseException if the string can not be parsed.
+     *
+     * @see WKTFormat#textToTree(String, ParsePosition)
+     */
+    final Element textToTree(final String text, final ParsePosition position, final Map<Object,Object> sharedValues)
+            throws ParseException
+    {
+        /*
+         * Aliases for fragments (e.g. "$Foo" in ProjectedCRS["something", $Foo]) are expanded by
+         * the `Element` constructor, except if the alias appears at the begining of the text.
+         * In such case the alias is the whole text and we need a different constructor.
+         */
+        Element fragment;
+        int lower = CharSequences.skipLeadingWhitespaces(text, position.getIndex(), text.length());
+        if (lower < text.length() && text.charAt(lower) == Symbols.FRAGMENT_VALUE) {
+            final int upper = endOfFragmentName(text, ++lower);
+            final String id = text.substring(lower, upper);
+            fragment = fragments.get(id);                       // Should be immutable.
+            if (fragment == null) {
+                position.setErrorIndex(lower);
+                throw new UnparsableObjectException(errorLocale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
+            }
+            position.setIndex(upper);
+            if (sharedValues == null) {                         // `true` if invoked for immediate parsing.
+                fragment = fragment.modifiable();               // Parsing requires a modifiable copy.
+            }
+        } else {
+            fragment = new Element(this, text, position, sharedValues);
+        }
+        return fragment;
+    }
+
+    /**
+     * Parses a tree of {@link Element}s to produce a geodetic object.
+     * The {@code root} argument should be a value returned by
+     * {@link #textToTree(String, ParsePosition, Map)}.
+     *
+     * @param  root  the tree of WKT elements.
+     * @return the parsed object.
+     * @throws ParseException if the tree can not be parsed.
+     */
+    final Object buildFromTree(Element root) throws ParseException {
+        warnings = null;
+        ignoredElements.clear();
+        root = new Element("<root>", root);
+        final Object object = parseObject(root);
+        root.close(ignoredElements);
+        return object;
+    }
+
+    /**
+     * Parses a <cite>Well Know Text</cite> (WKT) as a geodetic object.
      *
      * @param  text      the text to be parsed.
      * @param  position  the position to start parsing from.
@@ -265,29 +324,17 @@ abstract class AbstractParser implements Parser {
         warnings = null;
         ignoredElements.clear();
         ArgumentChecks.ensureNonEmpty("text", text);
-        Element fragment;
-        int lower = CharSequences.skipLeadingWhitespaces(text, position.getIndex(), text.length());
-        if (lower < text.length() && text.charAt(lower) == Symbols.FRAGMENT_VALUE) {
-            final int upper = endOfFragmentName(text, ++lower);
-            final String id = text.substring(lower, upper);
-            fragment = fragments.get(id);
-            if (fragment == null) {
-                position.setErrorIndex(lower);
-                throw new UnparsableObjectException(errorLocale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
-            }
-            position.setIndex(upper);
-            fragment = new Element(fragment);
-        } else {
-            fragment = new Element(this, text, position, null);
-        }
-        final Element element = new Element("<root>", fragment);
-        final Object object = parseObject(element);
-        element.close(ignoredElements);
+        Element root = textToTree(text, position, null);
+        root = new Element("<root>", root);
+        final Object object = parseObject(root);
+        root.close(ignoredElements);
         return object;
     }
 
     /**
      * Parses the next element in the specified <cite>Well Know Text</cite> (WKT) tree.
+     * Subclasses will typically get the name of the first element and delegate to a specialized method
+     * such as {@code parseAxis(…)}, {@code parseEllipsoid(…)}, {@code parseTimeDatum(…)}, <i>etc</i>.
      *
      * @param  element  the element to be parsed.
      * @return the parsed object.

@@ -54,6 +54,31 @@ public final class Strings extends Static {
     }
 
     /**
+     * Returns whether the given strings are equal, ignoring case.
+     * This method accepts null arguments.
+     *
+     * @param  a  first string.
+     * @param  b  another string to be compared with {@code a}.
+     * @return whether the given strings are equal, ignoring case.
+     *
+     * @see java.util.Objects#equals(Object, Object)
+     * @see String#equalsIgnoreCase(String)
+     */
+    public static boolean equalsIgnoreCase(final String a, final String b) {
+        return (a == b) || (a != null && a.equalsIgnoreCase(b));
+    }
+
+    /**
+     * Returns the given text is non-null, or the empty string otherwise.
+     *
+     * @param  text  text or null.
+     * @return given text or empty string (never null).
+     */
+    public static String orEmpty(final String text) {
+        return (text != null) ? text : "";
+    }
+
+    /**
      * Trims the leading and trailing spaces of the given string.
      * If the string is null, empty or contains only spaces, then this method returns {@code null}.
      *

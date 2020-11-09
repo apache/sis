@@ -127,6 +127,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotParseCombinedReference_2 = 78;
 
         /**
+         * Can not read Well-Known Text at line {0}. Caused by: {1}
+         */
+        public static final short CanNotParseWKT_2 = 96;
+
+        /**
          * Can not separate the “{0}” coordinate reference system into sub-components.
          */
         public static final short CanNotSeparateCRS_1 = 84;
@@ -158,7 +163,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotTransformGeometry = 86;
 
         /**
-         * Can not use the {0} geodetic parameters: {1}
+         * Can not use the {0} geodetic parameters. Caused by: {1}
          */
         public static final short CanNotUseGeodeticParameters_2 = 9;
 
@@ -346,6 +351,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MisnamedParameter_1 = 38;
 
         /**
+         * Missing or empty “ID[…]” element for “{0}”.
+         */
+        public static final short MissingAuthorityCode_1 = 99;
+
+        /**
          * No authority was specified for code “{0}”. The expected syntax is “AUTHORITY:CODE”.
          */
         public static final short MissingAuthority_1 = 39;
@@ -507,6 +517,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short StartOrEndPointNotSet_1 = 88;
 
         /**
+         * Syntax error for Well-Known Text alias at line {0}.
+         */
+        public static final short SyntaxErrorForAlias_1 = 97;
+
+        /**
          * Combined URI contains unexpected components.
          */
         public static final short UnexpectedComponentInURI = 80;
@@ -515,6 +530,11 @@ public final class Resources extends IndexedResourceBundle {
          * Unexpected dimension for a coordinate system of type ‘{0}’.
          */
         public static final short UnexpectedDimensionForCS_1 = 64;
+
+        /**
+         * Unexpected text “{1}” at line {0}. WKT for new object should start with a non-indented line.
+         */
+        public static final short UnexpectedTextAtLine_2 = 98;
 
         /**
          * Parameter “{0}” does not expect unit.

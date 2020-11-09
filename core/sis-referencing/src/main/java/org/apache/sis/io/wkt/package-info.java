@@ -64,7 +64,7 @@
  * The {@link org.apache.sis.geometry.GeneralEnvelope} and {@link org.apache.sis.geometry.GeneralDirectPosition} classes
  * provide their own, limited, WKT parsing and formatting services for the {@code BOX} and {@code POINT} elements.
  * A description for this WKT format can be found on
- * <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_coordinate_reference_systems">Wikipedia</a>.
+ * <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">Wikipedia</a>.
  *
  * <h2>Where to find WKT examples</h2>
  * An excellent source of well-formed WKT is the online <cite>EPSG Geodetic Parameter Registry</cite>.
@@ -83,7 +83,7 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rémi Eve (IRD)
  * @author  Rueben Schulz (UBC)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>

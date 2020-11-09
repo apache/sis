@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.List;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -100,7 +101,18 @@ public final class JDK9 {
     }
 
     /**
-     * Placeholder for {@code Map.of(...)} (actually a JDK10 method).
+     * Placeholder for {@code Set.copyOf(...)} (actually a JDK10 method).
+     */
+    public static <V> Set<V> copyOf(final Set<V> set) {
+        switch (set.size()) {
+            case 0:  return Collections.emptySet();
+            case 1:  return Collections.singleton(set.iterator().next());
+            default: return new HashSet<>(set);
+        }
+    }
+
+    /**
+     * Placeholder for {@code Map.copyOf(...)} (actually a JDK10 method).
      */
     public static <K,V> Map<K,V> copyOf(final Map<K,V> map) {
         return map.size() < 2 ? CollectionsExt.compact(map) : new HashMap<>(map);

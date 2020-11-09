@@ -1,0 +1,65 @@
+#
+# Test file for org.apache.sis.io.wkt.ReferencingFactory.
+# See "doc-files/ESRI.txt" for file syntax.
+#
+
+#
+# Alias for WGS84 geographic CRS.
+#
+SET DEGREE = Unit["Degree", 0.0174532925199433]
+SET WGS84 =
+ BaseGeodCRS["GCS_WGS_1984",
+  Datum["D_WGS_1984",
+   Ellipsoid["WGS_1984", 6378137, 298.257223563]],
+  $DEGREE]
+
+
+#
+# Derived from https://github.com/Esri/projection-engine-db-doc
+# with base CRS replaced by alias and parameter values omitted
+# when they have the default value.
+#
+ProjectedCRS["North_Pole_Stereographic",
+ $WGS84,
+ Conversion["Stereographic North Pole",
+  Method["Polar Stereographic (variant A)"],
+  Parameter["Latitude of natural origin", 90]],
+ CS[Cartesian, 2],
+  Axis["Easting (E)", east],
+  Axis["Northing (N)", north],
+  Unit["metre", 1],
+ Id["ESRI", 102018]]
+
+ProjectedCRS["South_Pole_Stereographic",
+ $WGS84,
+ Conversion["Stereographic South Pole",
+  Method["Polar Stereographic (variant A)"],
+  Parameter["Latitude of natural origin", -90]],
+ CS[Cartesian, 2],
+  Axis["Easting (E)", east],
+  Axis["Northing (N)", north],
+  Unit["metre", 1],
+ Id["ESRI", 102021]]
+
+#
+# A dummy CRS using the same code than ESRI::102021 but
+# different code space and versions. Used for testing
+# resolution of code collisions.
+#
+GeodCRS["Anguilla 1957",
+  Datum["Anguilla 1957",
+   Ellipsoid["Clarke 1880", 6378249.145, 293.465]],
+ CS[ellipsoidal, 2],
+  Axis["Latitude", north],
+  Axis["Longitude", east],
+  $DEGREE,
+ Id["MyCodeSpace", 102021]]
+
+GeodCRS["Anguilla 1957 (bis)",
+  Datum["Anguilla 1957",
+   Ellipsoid["Clarke 1880", 6378249.145, 293.465]],
+ CS[ellipsoidal, 2],
+  Axis["Latitude", north],
+  Axis["Longitude", east],
+  $DEGREE,
+ Id["MyCodeSpace", 102021, "v2"]]

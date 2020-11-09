@@ -1,0 +1,884 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.io.wkt;
+
+import java.util.Locale;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.stream.Stream;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.io.LineNumberReader;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import org.opengis.util.FactoryException;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
+import org.apache.sis.referencing.factory.FactoryDataException;
+import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Strings;
+import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.collection.FrequencySortedSet;
+
+
+/**
+ * A factory providing CRS objects parsed from WKT definitions associated to authority codes.
+ * Each WKT definition is associated to a key according the <var>authority:version:code</var>
+ * pattern where <var>code</var> is mandatory and <var>authority:version</var> are optional.
+ * Coordinate Reference Systems or other kinds of objects are created from WKT definitions
+ * when a {@code create(…)} method is invoked for the first time for a given key.
+ *
+ * <p>Newly constructed {@code WKTDictionary} are initially empty. For populating the factory,
+ * the {@link #load(BufferedReader)} or {@link #addDefinitions(Stream)} methods must be invoked.</p>
+ *
+ * <h2>Errors management</h2>
+ * Well-Known Text parsing is performed in two steps, each of them executed at a different time:
+ *
+ * <h3>Early validation</h3>
+ * WKT strings added by {@code load(…)} or {@code addDefinitions(…)} methods are verified
+ * for matching quotes, balanced parenthesis or brackets, and valid number or date formats.
+ * If a syntax error is detected, the loading process is interrupted at the point the error occurred;
+ * CRS definitions after the error location are not loaded.
+ * However WKT keywords and geodetic parameters (e.g. map projections) are not validated at this stage.
+ *
+ * <h3>Late validation</h3>
+ * WKT keywords and geodetic parameters inside WKT elements are validated only when {@link #createObject(String)}
+ * is invoked. If an error occurs at this stage, only the CRS (or other geodetic object) for the code given to
+ * the {@code createFoo(…)} method become invalid. Objects associated to other codes are not impacted.
+ *
+ * <h2>Multi-threading</h2>
+ * This class is thread-safe but not necessarily concurrent.
+ * This class is designed for a relatively small amount of WKT;
+ * it is not a replacement for database-backed factory such as
+ * {@link org.apache.sis.referencing.factory.sql.EPSGFactory}.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ * @since   1.1
+ * @module
+ */
+public class WKTDictionary extends GeodeticAuthorityFactory {
+    /**
+     * The organization or specification that defines the codes recognized by this factory.
+     * May be {@code null} if not yet determined.
+     *
+     * @see #updateAuthority()
+     * @see #getAuthority()
+     */
+    private Citation authority;
+
+    /**
+     * Authorities declared in all {@code "ID[CITATION[…]]"} elements found in WKT definitions.
+     * This set is {@code null} if an {@link #authority} value has been explicitly specified at
+     * construction time. If non-null, this is used for creating a default {@link #authority}.
+     */
+    private final Set<String> authorities;
+
+    /**
+     * Code spaces of authority codes recognized by this factory.
+     * This set is computed from the {@code "ID[…]"} elements found in WKT definitions.
+     *
+     * @see #getCodeSpaces()
+     */
+    private final Set<String> codespaces;
+
+    /**
+     * The parser to use for creating geodetic objects from WKT definitions.
+     * All uses of this parser shall be synchronized by the <code>{@linkplain #lock}.writeLock()</code>.
+     */
+    private final WKTFormat parser;
+
+    /**
+     * The write lock for {@link #parser} and the read/write locks for {@link #definitions} accesses.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * we manage the locks ourselves instead than using a {@link java.util.concurrent.ConcurrentHashMap}
+     * because if a {@link #definitions} value needs to be computed, then we need to block all other
+     * threads anyway since {@link #parser} is not thread-safe. Consequently the high concurrency
+     * capability provided by {@code ConcurrentHashMap} does not help us in this case.</div>
+     */
+    private final ReadWriteLock lock;
+
+    /**
+     * CRS definitions associated to <var>authority:version:code</var> keys.
+     * Keys are authority codes, ignoring code space (authority) and version.
+     * For example in "EPSG:9.1:4326" the key would be only "4326".
+     * Values can be one of the following 4 types:
+     *
+     * <ol>
+     *   <li>{@link Element}: this is the initial state when there is no duplicated codes.
+     *       This is the root of a tree of WKT keywords with their values as children.
+     *       A tree can be parsed later as an {@link IdentifiedObject} when first requested.</li>
+     *   <li>{@link IdentifiedObject}: the result of parsing the root {@link Element}
+     *       when {@link #createObject(String)} is invoked for a given authority code.
+     *       The parsing result replaces the previous {@link Element} value.</li>
+     *   <li>{@link Disambiguation}: if the same code is used by two or more authorities or versions,
+     *       then above-cited {@link Element} or {@link IdentifiedObject} alternatives are wrapped
+     *       in a {@link Disambiguation} object.</li>
+     *   <li>{@link String} if parsing failed, in which case the string is the error message.</li>
+     * </ol>
+     *
+     * <h4>Synchronization</h4>
+     * All read operations in this map shall be synchronized by the <code>{@linkplain #lock}.readLock()</code>
+     * and write operations synchronized by the <code>{@linkplain #lock}.writeLock()</code>.
+     *
+     * @see #addDefinition(Element)
+     * @see #createObject(String)
+     */
+    private final Map<String,Object> definitions;
+
+    /**
+     * A special kind of value used in the {@link #definitions} map when the same code is used by more
+     * than one authority and version. In the common case where a {@link WKTDictionary} instance
+     * contains definitions for only one namespace and version, this class will never be instantiated.
+     */
+    private static final class Disambiguation {
+        /**
+         * The previous {@code Disambiguation} in a linked list, or {@code null} if we reached the end of list.
+         * The use of a linked list should be efficient enough if the amount of {@code Disambiguation}s for a
+         * given code is small.
+         */
+        private final Disambiguation previous;
+
+        /**
+         * The authority (or other kind of code space) providing CRS definitions.
+         */
+        private final String codespace;
+
+        /**
+         * Version of the CRS definition, or {@code null} if unspecified.
+         */
+        private final String version;
+
+        /**
+         * The value as an {@link Element} before parsing or an {@link IdentifiedObject} after parsing.
+         * They are the kind of types documented in {@link WKTDictionary#definitions}, excluding
+         * other {@code Disambiguation} instances.
+         */
+        Object value;
+
+        /**
+         * Creates a new {@code Disambiguation} instance as a wrapper around the given identifier object.
+         * This constructor may be invoked if {@link WKTDictionary} has been used for creating some
+         * objects before new definitions are added. It should rarely happen.
+         *
+         * @param  object  the CRS (or other geodetic object) to wrap.
+         */
+        Disambiguation(final IdentifiedObject object) {
+            /*
+             * Identifier should never be null because `WKTDictionary` accepts only definitions having
+             * an `ID[…]` or `AUTHORITY[…]` element. A WKT can contain at most one of those elements.
+             */
+            final Identifier id = CollectionsExt.first(object.getIdentifiers());
+            codespace = id.getCodeSpace();
+            version   = id.getVersion();
+            value     = object;
+            previous  = null;
+        }
+
+        /**
+         * Creates a new {@code Disambiguation} instance as a wrapper around the given identifier object.
+         *
+         * @param  object  definition in WKT of the CRS (or other geodetic object) to wrap.
+         * @param  fullId  an array of length 3 to be used for getting the {@code codespace:version:code} tuple.
+         */
+        Disambiguation(final Element object, final Object[] fullId) {
+            Arrays.fill(fullId, null);
+            object.peekLastElement(MathTransformParser.ID_KEYWORDS).peekValues(fullId);
+            codespace = trimOrNull(fullId[0]);
+            version   = trimOrNull(fullId[2]);
+            value     = object;
+            previous  = null;
+        }
+
+        /**
+         * Creates a new {@code Disambiguation} instance identified by {@code codespace:version:code}.
+         *
+         * @param  previous   previous disambiguation, or {@code null} if none.
+         * @param  codespace  the authority (or other kind of code space) providing CRS definitions.
+         * @param  version    version of the CRS definition, or {@code null} if unspecified.
+         * @param  code       code allocated by the authority for the CRS definition.
+         * @param  value      the CRS (or other geodetic object) definition.
+         * @throws IllegalArgumentException if <var>authority:version:code</var> identifier is already used.
+         *
+         * @see WKTDictionary#addDefinition(Element)
+         */
+        Disambiguation(Disambiguation previous, final String codespace, final String version,
+                       final String code, final Element value)
+        {
+            this.previous  = previous;
+            this.codespace = codespace;
+            this.version   = version;
+            this.value     = value;
+            while (previous != null) {
+                if (Strings.equalsIgnoreCase(codespace, previous.codespace) &&
+                    Strings.equalsIgnoreCase(version,   previous.version))
+                {
+                    throw new IllegalArgumentException(Errors.format(
+                            Errors.Keys.DuplicatedIdentifier_1, identifier(code)));
+                }
+                previous = previous.previous;
+            }
+        }
+
+        /**
+         * Finds the {@code Disambiguation} for the given authority and version.
+         *
+         * @param  choices    end of a linked list of {@code Disambiguation}s, or {@code null} if none.
+         * @param  codespace  the authority providing CRS definitions, or {@code null} if unspecified.
+         * @param  version    version of the CRS definition, or {@code null} if unspecified.
+         * @param  code       code allocated by the authority for the CRS definition.
+         * @return container for the given authority and version, or {@code null} if none.
+         * @throws NoSuchAuthorityCodeException if the given authority and version are ambiguous.
+         */
+        static Disambiguation find(Disambiguation choices, final String codespace, final String version, final String code)
+                throws NoSuchAuthorityCodeException
+        {
+            Disambiguation found = null;
+            for (boolean isExact = false; choices != null; choices = choices.previous) {
+                if (codespace == null || codespace.equalsIgnoreCase(choices.codespace)) {
+                    if (Strings.equalsIgnoreCase(version, choices.version)) {
+                        if (!isExact) {
+                            isExact = true;
+                            found = choices;        // Silently discard previous value since we have a better match.
+                            continue;
+                        }
+                    } else if (isExact) {
+                        continue;                   // Ignore this value since previous one was a better match.
+                    }
+                    if (isExact && found != null) {
+                        final String identifier = identifier(codespace, version, code);
+                        throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.AmbiguousName_3,
+                                choices.identifier(code), found.identifier(code), identifier),
+                                codespace, code, identifier);
+                    }
+                    found = choices;
+                }
+            }
+            return found;
+        }
+
+        /**
+         * Adds all authority codes to the given set.
+         *
+         * @param  choices  end of a linked list of {@code Disambiguation}s.
+         * @param  code     authority code (code space and version may vary).
+         * @param  addTo    where to add the {@code codespace:version:code} tuples.
+         *
+         * @see WKTDictionary#getAuthorityCodes(Class)
+         */
+        static void list(Disambiguation choices, final String code, final Set<String> addTo) {
+            do {
+                addTo.add(choices.identifier(code));
+                choices = choices.previous;
+            } while (choices != null);
+        }
+
+        /**
+         * Creates an <var>authority:version:code</var> identifier with the given code.
+         * This is used for formatting error messages.
+         */
+        private String identifier(final String code) {
+            return identifier(codespace, version, code);
+        }
+
+        /**
+         * Creates an <var>authority:version:code</var> identifier with the given code.
+         * This is used for formatting error messages.
+         */
+        private static String identifier(final String codespace, final String version, final String code) {
+            return Strings.orEmpty(codespace) + Constants.DEFAULT_SEPARATOR +
+                   Strings.orEmpty(version)   + Constants.DEFAULT_SEPARATOR +
+                   Strings.orEmpty(code);
+        }
+    }
+
+    /**
+     * Creates an initially empty factory. The authority can specified explicitly or inferred from the WKTs.
+     * In the later case (when the given authority is {@code null}), an authority will be inferred from all
+     * {@code ID[…]} or {@code AUTHORITY[…]} elements found in WKT strings as below, in preference order:
+     *
+     * <ol>
+     *   <li>Most frequent {@code CITATION[…]} value.</li>
+     *   <li>If there is no citation, then most frequent code space
+     *       in {@code ID[…]} or {@code AUTHORITY[…]} elements.</li>
+     * </ol>
+     *
+     * The WKT strings are specified by calls to {@link #load(BufferedReader)} or {@link #addDefinitions(Stream)}
+     * after construction.
+     *
+     * @param  authority  organization that defines the codes recognized by this factory, or {@code null}.
+     */
+    public WKTDictionary(final Citation authority) {
+        /*
+         * Note: we do not allow users to specify their own `WKTFormat` instance because current
+         * `WKTDictionary` implementation invokes package-private methods. If user supplies
+         * a `WKTFormat` with overridden public methods, (s)he may be surprised to see that those
+         * methods are not invoked.
+         */
+        definitions = new HashMap<>();
+        codespaces  = new FrequencySortedSet<>(true);
+        parser      = new WKTFormat(null, null);
+        lock        = new ReentrantReadWriteLock();
+        authorities = (authority != null) ? null : new FrequencySortedSet<>(true);
+        this.authority = authority;
+    }
+
+    /**
+     * If {@link #authority} is not yet defined, computes a value from {@code ID[…]} found
+     * in all WKT strings. This method should be invoked after new WKTs have been added.
+     */
+    private void updateAuthority() {
+        if (authorities != null) {
+            String name = CollectionsExt.first(authorities);        // Most frequently declared authority.
+            if (name == null) {
+                name = CollectionsExt.first(codespaces);            // Most frequently declared codespace.
+            }
+            authority = Citations.fromName(name);                   // May still be null.
+        }
+    }
+
+    /**
+     * Keyword recognized by {@link #load(BufferedReader)}.
+     */
+    private static final String SET = "SET";
+
+    /**
+     * Adds to this factory all definitions read from the given source.
+     * Each Coordinate Reference System (or other geodetic object) is defined by a string in WKT format.
+     * The key associated to each object is given by the {@code ID[…]} or {@code AUTHORITY[…]} element,
+     * which is typically the last element of a WKT string and is mandatory for definitions in this file.
+     *
+     * <p>WKT strings can span many lines. All lines after the first line shall be indented with at least
+     * one white space. Non-indented lines start new definitions.</p>
+     *
+     * <p>Blank lines and lines starting with the {@code #} character (ignoring white spaces) are ignored.</p>
+     *
+     * <h4>Aliases for WKT fragments</h4>
+     * Files with more than one WKT definition tend to repeat the same WKT fragments many times.
+     * For example the same {@code BaseGeogCRS[…]} element may be repeated in every {@code ProjectedCRS} definitions.
+     * Redundant fragments can be replaced by aliases for making the file more compact,
+     * easier to read, faster to parse and with smaller memory footprint.
+     *
+     * <p>Each line starting with "<code>SET &lt;<var>identifier</var>&gt;=&lt;<var>WKT</var>&gt;</code>"
+     * defines an alias for a fragment of WKT string. The WKT can span many lines as described above.
+     * Aliases are local to the file where they are defined.
+     * Aliases can be expanded in other WKT strings by "<code>$&lt;<var>identifier</var>&gt;</code>".</p>
+     *
+     * <h4>Validation</h4>
+     * This method verifies that definitions have matching quotes, balanced parenthesis or brackets,
+     * and valid number or date formats. It does not verify WKT keywords or geodetic parameters.
+     * See class javadoc for more details.
+     *
+     * <h4>Example</h4>
+     * An example is <a href="./doc-files/ESRI.txt">available here</a>.
+     *
+     * @param  source  the source of WKT definitions.
+     * @throws FactoryException if the definition file can not be read.
+     */
+    public void load(final BufferedReader source) throws FactoryException {
+        ArgumentChecks.ensureNonNull("source", source);
+        lock.writeLock().lock();
+        try {
+            final Loader loader = new Loader(source);
+            try {
+                loader.read();
+            } catch (IOException e) {
+                throw new FactoryException(loader.canNotRead(null, e), e);
+            } catch (ParseException | IllegalArgumentException e) {
+                throw new FactoryDataException(loader.canNotRead(null, e), e);
+            } finally {
+                loader.restore();
+                updateAuthority();
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Implementation of {@link WKTDictionary#load(BufferedReader)} method.
+     * Caller must own the write lock before to instantiate and use this class.
+     */
+    private final class Loader {
+        /** The source of WKT definitions. */
+        private final BufferedReader source;
+
+        /** Temporary buffer where to put the WKT to parse. */
+        private final StringBuilder buffer;
+
+        /** If the WKT being parsed is an alias, the alias key. Otherwise {@code null}. */
+        private String aliasKey;
+
+        /** Argument for {@link #addAliasOrDefinition()}. */
+        private final ParsePosition pos;
+
+        /** Zero-based number of current line. Equivalent to {@link LineNumberReader#getLineNumber()}. */
+        private int lineNumber;
+
+        /** Aliases that existed before in {@link #parser} before loading started. */
+        private final Set<String> aliases;
+
+        /** Creates a new loader. */
+        Loader(final BufferedReader source) {
+            this.source = source;
+            buffer  = new StringBuilder(500);
+            pos     = new ParsePosition(0);
+            aliases = new HashSet<>(parser.getFragmentNames());
+        }
+
+        /**
+         * Restores {@link #parser} to its initial state. This method should be invoked
+         * in a finally block regardless if the parsing succeeded or failed.
+         */
+        final void restore() {
+            parser.getFragmentNames().retainAll(aliases);
+            parser.clear();
+        }
+
+        /**
+         * Returns an error message saying "Can not read WKT at line X". The message is followed
+         * by a "Caused by" phrase specified either as a string or an exception. At least one of
+         * {@code cause} and {@code e} shall be non-null.
+         */
+        final String canNotRead(String cause, final Exception e) {
+            final Locale locale = parser.getErrorLocale();
+            if (cause == null) {
+                cause = Exceptions.getLocalizedMessage(e, locale);
+            }
+            return Resources.forLocale(locale).getString(Resources.Keys.CanNotParseWKT_2, getLineNumber(), cause);
+        }
+
+        /**
+         * Returns the one-based line number of the last line read.
+         * Actually this method returns the zero-based line number of current position,
+         * but since current position is after the last line read, this is equivalent
+         * to line number of last line read + 1.
+         *
+         * @return one-based line number of current position.
+         */
+        private int getLineNumber() {
+            if (source instanceof LineNumberReader) {
+                // In case an unusual implementation counts lines in a different way than we do.
+                lineNumber = ((LineNumberReader) source).getLineNumber();
+            }
+            return lineNumber;
+        }
+
+        /**
+         * Adds to the enclosing factory all definitions read from the given source.
+         * See {@link WKTDictionary#load(BufferedReader)} for a format description.
+         *
+         * @throws IOException if an error occurred while reading lines.
+         * @throws ParseException if an error occurred while parsing a WKT.
+         * @throws FactoryDataException if the file has a syntax error.
+         * @throws IllegalArgumentException if a {@code codespace:version:code} tuple or an alias is assigned twice.
+         */
+        final void read() throws IOException, ParseException, FactoryDataException {
+            final String lineSeparator = System.lineSeparator();
+            int indentation = 0;
+            String line;
+            while ((line = source.readLine()) != null) {
+                lineNumber++;
+                final int length = line.length();
+                int defStart = CharSequences.skipLeadingWhitespaces(line, 0, length);
+                if (defStart < length && line.charAt(defStart) == '#') continue;        // Skip comment lines.
+                /*
+                 * If the line is indented compared to the first line, we presume that it is the continuation
+                 * of previous line and skip the check for "SET" keyword. If the line is not indented,
+                 * previous buffer content need to be parsed before we start a new WKT definition.
+                 */
+                if (defStart > indentation) {
+                    defStart = indentation;
+                } else {
+                    addAliasOrDefinition();
+                    indentation = defStart;
+                    if (line.regionMatches(true, defStart, SET, 0, SET.length())) {
+                        final int keyStart = CharSequences.skipLeadingWhitespaces(line, defStart + SET.length(), length);
+                        if (keyStart > defStart) {             // `true` if "SET" is followed by at least one white space.
+                            defStart = line.indexOf('=', keyStart);
+                            if (defStart <= keyStart) {
+                                throw new FactoryDataException(resources().getString(
+                                            Resources.Keys.SyntaxErrorForAlias_1, getLineNumber()));
+                            }
+                            final int keyEnd = CharSequences.skipTrailingWhitespaces(line, keyStart, defStart);
+                            defStart = CharSequences.skipLeadingWhitespaces(line, defStart + 1, length);
+                            final String key = line.substring(keyStart, keyEnd);
+                            if (!CharSequences.isUnicodeIdentifier(key)) {
+                                String c = parser.errors().getString(Errors.Keys.NotAUnicodeIdentifier_1, key);
+                                throw new FactoryDataException(canNotRead(c, null));
+                            }
+                            aliasKey = key;
+                        }
+                    }
+                }
+                /*
+                 * Copy non-empty lines in the buffer, omitting indentation and trailing spaces.
+                 * The leading spaces after indentation are kept in order to have a more readable
+                 * WKT string in error message if parsing fail.
+                 */
+                final int end = CharSequences.skipTrailingWhitespaces(line, defStart, length);
+                if (defStart < end) {
+                    if (buffer.length() != 0) buffer.append(lineSeparator);
+                    buffer.append(line, defStart, end);
+                }
+            }
+            addAliasOrDefinition();
+        }
+
+        /**
+         * Parses the current {@link #buffer} content as a WKT elements (possibly with children elements).
+         * This method does not build the full {@link IdentifiedObject}; this later part will be done only
+         * when first needed.
+         *
+         * <p>If {@link #aliasKey} is non-null, the first WKT is taken as a {@linkplain WKTFormat#addFragment
+         * fragment} associated to the given alias. All other WKT (if any) are taken as definitions of CRS or
+         * other objects.</p>
+         *
+         * @throws ParseException if an error occurred while parsing the WKT string.
+         * @throws FactoryDataException if there is unparsed text after the WKT.
+         * @throws IllegalArgumentException if a {@code codespace:version:code} tuple or an alias is assigned twice.
+         */
+        private void addAliasOrDefinition() throws ParseException, FactoryDataException {
+            if (buffer.length() != 0) {
+                pos.setIndex(0);
+                final String wkt = buffer.toString();
+                final Element root = parser.textToTree(wkt, pos);
+                final int end = pos.getIndex();
+                if (end < wkt.length()) {           // Trailing white spaces already removed by `read(…)`.
+                    throw new FactoryDataException(resources().getString(Resources.Keys.UnexpectedTextAtLine_2,
+                                getLineNumber(), CharSequences.token(wkt, end)));
+                }
+                if (aliasKey != null) {
+                    parser.addFragment(aliasKey, root);
+                    aliasKey = null;
+                } else {
+                    addDefinition(root);
+                }
+                buffer.setLength(0);
+            }
+        }
+    }
+
+    /**
+     * Adds the definition of a CRS (or other geodetic objects) from a tree of WKT elements.
+     * The authority code is inferred from the {@code ID[…]} or {@code AUTHORITY[…]} element.
+     * Caller must own the write lock before to invoke this method.
+     * {@link #updateAuthority()} should be invoked after this method.
+     *
+     * @param  root  root of a tree of WKT elements.
+     * @throws IllegalArgumentException if a {@code codespace:version:code} tuple is assigned twice.
+     * @throws FactoryDataException if the WKT does not have an {@code ID[…]} or {@code AUTHORITY[…]} element.
+     *
+     * @see #definitions
+     */
+    private void addDefinition(final Element root) throws FactoryDataException {
+        final Element ide = root.peekLastElement(MathTransformParser.ID_KEYWORDS);
+        if (ide != null) {
+            final Object[] fullId = new Object[3];                      // Codespace, code, version.
+            ide.peekValues(fullId);
+            final String codespace = trimOrNull(fullId[0]);
+            final String code      = trimOrNull(fullId[1]);
+            if (code != null) {                                         // Needs at least the code.
+                definitions.merge(code, root, (oldValue, newValue) -> {
+                    final String version = trimOrNull(fullId[2]);
+                    final Disambiguation previous;
+                    if (oldValue instanceof Disambiguation) {
+                        previous = (Disambiguation) oldValue;
+                    } else if (oldValue instanceof Element) {
+                        previous = new Disambiguation((Element) oldValue, fullId);
+                    } else if (oldValue instanceof IdentifiedObject) {
+                        previous = new Disambiguation((IdentifiedObject) oldValue);
+                    } else {
+                        previous = null;        // Discard previous parsing failure.
+                    }
+                    return new Disambiguation(previous, codespace, version, code, (Element) newValue);
+                });
+                codespaces.add(codespace);
+                if (authorities != null) {
+                    final Element citation = ide.peekLastElement(WKTKeywords.Citation);
+                    if (citation != null) {
+                        final String title = trimOrNull(citation.peekValue());
+                        if (title != null) {
+                            authorities.add(title);
+                        }
+                    }
+                }
+                return;
+            }
+        }
+        throw new FactoryDataException(resources().getString(Resources.Keys.MissingAuthorityCode_1, root.peekValue()));
+    }
+
+    /**
+     * Adds definitions of CRS (or other geodetic objects) from Well-Known Texts. Blank strings are ignored.
+     * Each non-blank {@link String} shall contain the complete definition of at least one geodetic object.
+     * More than one geodetic object can appear in the same {@link String} if they are separated by spaces
+     * or line separators. However the same geodetic object can not have its definition splitted in two or
+     * more {@link String}s.
+     *
+     * <p>The key associated to each object is given by the {@code ID[…]} or {@code AUTHORITY[…]} element,
+     * which is typically the last element of a WKT string and is mandatory. WKT strings can contain line
+     * separators for human readability.</p>
+     *
+     * @param  objects  CRS (or other geodetic objects) definitions as WKT strings.
+     * @throws FactoryException if a WKT can not be parsed, or does not contain an {@code ID[…]} or
+     *         {@code AUTHORITY[…]} element, or if the same {@code codespace:version:code} tuple is
+     *         used for two objects.
+     */
+    public void addDefinitions(final Stream<String> objects) throws FactoryException {
+        ArgumentChecks.ensureNonNull("objects", objects);
+        /*
+         * We work with iterator because we do not support parallelism yet.
+         * However a future version may support that, which is why argument
+         * type is a `Stream`.
+         */
+        final Iterator<String> it = objects.iterator();
+        final ParsePosition pos = new ParsePosition(0);
+        lock.writeLock().lock();
+        try {
+            int lineNumber = 1;
+            try {
+                while (it.hasNext()) {
+                    final String wkt = it.next();
+                    final int length = CharSequences.skipTrailingWhitespaces(wkt, 0, wkt.length());
+                    while (pos.getIndex() < length) {
+                        addDefinition(parser.textToTree(wkt, pos));
+                    }
+                    pos.setIndex(0);
+                    lineNumber++;
+                }
+            } catch (ParseException | IllegalArgumentException e) {
+                throw new FactoryDataException(resources().getString(
+                        Resources.Keys.CanNotParseWKT_2, lineNumber, e.getLocalizedMessage()));
+            } finally {
+                updateAuthority();
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Convenience methods for resources in the language used for error messages.
+     */
+    private Resources resources() {
+        return Resources.forLocale(parser.getErrorLocale());
+    }
+
+    /**
+     * Trims the leading and trailing spaces of the string representation of given object.
+     * If null, empty or contains only spaces, then this method returns {@code null}.
+     */
+    private static String trimOrNull(final Object value) {
+        return (value != null) ? Strings.trimOrNull(value.toString()) : null;
+    }
+
+    /**
+     * Returns the authority or specification that defines the codes recognized by this factory.
+     * This is the first of the following values, in preference order:
+     *
+     * <ol>
+     *   <li>The authority explicitly specified at construction time.</li>
+     *   <li>A citation built from the most frequent value found in {@code CITATION} elements.</li>
+     *   <li>A citation built from the most frequent value found in {@code ID} or {@code AUTHORITY} elements.</li>
+     * </ol>
+     *
+     * @return the organization responsible for CRS definitions, or {@code null} if unknown.
+     */
+    @Override
+    public Citation getAuthority() {
+        return authority;
+    }
+
+    /**
+     * Returns all namespaces recognized by this factory. Those namespaces can appear before codes in
+     * calls to {@code createFoo(String)} methods, for example {@code "ESRI"} in {@code "ESRI:102018"}.
+     * Namespaces are case-insensitive.
+     *
+     * @return the namespaces recognized by this factory.
+     */
+    @Override
+    public Set<String> getCodeSpaces() {
+        lock.readLock().lock();
+        try {
+            return JDK9.copyOf(codespaces);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Returns an arbitrary object from a code.
+     *
+     * @param  code  value allocated by authority.
+     * @return the object for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     */
+    @Override
+    public IdentifiedObject createObject(final String code) throws FactoryException {
+        /*
+         * Separate the authority from the rest of the code. The CharSequences.skipWhitespaces(…)
+         * methods are robust to negative index and will work even if code.indexOf(…) returned -1.
+         */
+        String codespace = null;
+        String version   = null;
+        String localCode = code;
+        int afterAuthority = code.indexOf(Constants.DEFAULT_SEPARATOR);
+        int end = CharSequences.skipTrailingWhitespaces(code, 0, afterAuthority);
+        int start = CharSequences.skipLeadingWhitespaces(code, 0, end);
+        if (start < end) {
+            codespace = code.substring(start, end);
+            /*
+             * Separate the version from the rest of the code. The version is optional. The code may have no room
+             * for version (e.g. "EPSG:4326"), or specify an empty version (e.g. "EPSG::4326"). If the version is
+             * equals to an empty string, it will be considered as no version.
+             */
+            int afterVersion = code.indexOf(Constants.DEFAULT_SEPARATOR, ++afterAuthority);
+            start = CharSequences.skipLeadingWhitespaces(code, afterAuthority, afterVersion);
+            end = CharSequences.skipTrailingWhitespaces(code, start, afterVersion++);
+            if (start < end) {
+                version = code.substring(start, end);
+            }
+            start = Math.max(afterAuthority, afterVersion);
+            end = code.length();
+            localCode = CharSequences.trimWhitespaces(code, start, end).toString();
+        }
+        /*
+         * At this point we separated codespace, code and version. First, verify that codespace is valid.
+         * Then get CRS definition as an `IdentifiedObject` or an `Element` (the `Disambiguation` case is
+         * resolved as an `IdentifiedObject` or `Element`).
+         */
+        Disambiguation choices = null;
+        Object value = null;
+        lock.readLock().lock();
+        try {
+            boolean valid = (codespace == null || codespace.isEmpty() || codespaces.contains(codespace));
+            if (!valid) {
+                for (final String cs : codespaces) {            // More costly check if no exact match.
+                    valid = cs.equalsIgnoreCase(codespace);
+                    if (valid) break;
+                }
+            }
+            if (valid) {
+                value = definitions.get(localCode);
+                if (value instanceof Disambiguation) {
+                    choices = Disambiguation.find((Disambiguation) value, codespace, version, localCode);
+                    value = (choices != null) ? choices.value : null;
+                }
+            }
+        } finally {
+            lock.readLock().unlock();
+        }
+        if (value == null) {
+            throw new NoSuchAuthorityCodeException(parser.errors().getString(
+                    Errors.Keys.NoSuchValue_1, code), codespace, localCode, code);
+        }
+        /*
+         * At this point we got a value which may be one of the following classes:
+         *
+         *   - `Element`          — if this method is invoked for the first time for the given code.
+         *   - `IdentifiedObject` — if we already built the geodetic object in a previous invocation of this method.
+         *   - `String`           — if a previous invocation for given code failed to build the geodetic object.
+         *                          In this case, the string is the exception message.
+         *
+         * If `Element`, try to replace that value by an `IdentifiedObject` (on success) or `String` (on failure).
+         * Must be done under write lock because `parser` is not thread-safe.
+         */
+        if (value instanceof Element) {
+            lock.writeLock().lock();
+            try {
+                if (choices != null) {
+                    value = choices.value;              // Check again in case value has been computed concurrently.
+                } else {
+                    value = definitions.get(localCode);
+                }
+                if (value instanceof Element) {
+                    ParseException cause = null;
+                    try {
+                        value = parser.parse((Element) value);
+                    } catch (ParseException e) {
+                        cause = e;
+                        value = e.getLocalizedMessage();
+                        if (value == null) {
+                            value = e.getClass().getSimpleName();
+                        }
+                    }
+                    if (choices != null) {
+                        choices.value = value;          // Save result for future uses.
+                    } else {
+                        definitions.put(localCode, value);
+                    }
+                    if (cause != null) {
+                        throw new FactoryException(resources().getString(
+                                Resources.Keys.CanNotInstantiateGeodeticObject_1, code), cause);
+                    }
+                }
+            } finally {
+                lock.writeLock().unlock();
+            }
+        }
+        if (value instanceof IdentifiedObject) {
+            return (IdentifiedObject) value;
+        } else {
+            // Exception message saved in a previous invocation of this method.
+            throw new FactoryException(String.valueOf(value));
+        }
+    }
+
+    /**
+     * Returns the set of authority codes for objects of the given type.
+     * The {@code type} argument specifies the base type of identified objects.
+     *
+     * @param  type  the spatial reference objects type.
+     * @return the set of authority codes for spatial reference objects of the given type.
+     * @throws FactoryException if an error occurred while fetching the codes.
+     */
+    @Override
+    public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
+        final Set<String> codes = new HashSet<>(Containers.hashMapCapacity(definitions.size()));
+        for (final Map.Entry<String,Object> entry : definitions.entrySet()) {
+            final String code  = entry.getKey();
+            final Object value = entry.getValue();
+            if (value instanceof Disambiguation) {
+                Disambiguation.list((Disambiguation) value, code, codes);
+            } else {
+                codes.add(code);
+            }
+        }
+        return codes;
+    }
+}

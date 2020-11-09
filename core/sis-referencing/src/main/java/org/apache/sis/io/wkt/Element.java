@@ -62,7 +62,7 @@ final class Element implements Serializable {
     /**
      * Indirectly for {@link WKTFormat} serialization compatibility.
      */
-    private static final long serialVersionUID = 4048095121452884024L;
+    private static final long serialVersionUID = -7345192763818308443L;
 
     /**
      * Kind of value expected in the element. Value 0 means "not yet determined".
@@ -97,9 +97,14 @@ final class Element implements Serializable {
 
     /**
      * {@code true} if the keyword was not followed by a pair of brackets (e.g. "north").
-     * If {@code true}, then {@link #children} shall be an empty list.
+     * If {@code true}, then {@link #children} shall be an empty list and {@link #isImmutable} should be {@code true}.
      */
     private final boolean isEnumeration;
+
+    /**
+     * Whether this element is immutable.
+     */
+    private final boolean isImmutable;
 
     /**
      * An ordered sequence of {@link String}s, {@link Number}s and other {@link Element}s.
@@ -120,33 +125,47 @@ final class Element implements Serializable {
      * @param singleton  the only child for this root.
      */
     Element(final String name, final Element singleton) {
-        keyword     = name;
-        offset      = singleton.offset;
-        errorLocale = singleton.errorLocale;
-        children    = new LinkedList<>();                       // Needs to be a modifiable collection.
-        children.add(singleton);
+        keyword       = name;
+        offset        = singleton.offset;
+        errorLocale   = singleton.errorLocale;
         isEnumeration = false;
+        isImmutable   = false;
+        children      = new LinkedList<>();                     // Needs to be a modifiable collection.
+        children.add(singleton.modifiable());
     }
 
     /**
      * Creates a modifiable copy of the given element.
+     * Modifiable instances are needed by the WKT parser.
+     *
+     * @see #modifiable()
      */
-    Element(final Element toCopy) {
+    private Element(final Element toCopy) {
         offset        = toCopy.offset;
         keyword       = toCopy.keyword;
-        isEnumeration = toCopy.isEnumeration;
         errorLocale   = toCopy.errorLocale;
+        isEnumeration = toCopy.isEnumeration;                   // Should always be `false`.
+        isImmutable   = isEnumeration;
         children      = new LinkedList<>(toCopy.children);      // Needs to be a modifiable collection.
         final ListIterator<Object> it = children.listIterator();
         while (it.hasNext()) {
             final Object value = it.next();
             if (value instanceof Element) {
                 final Element fragment = (Element) value;
-                if (!fragment.isEnumeration) {
+                if (fragment.isImmutable) {
                     it.set(new Element(fragment));
                 }
             }
         }
+    }
+
+    /**
+     * Returns a mutable instance of this {@code Element}.
+     * If this element is already modifiable, then it is returned as-is.
+     * If this element is unmodifiable, then a modifiable copy is created.
+     */
+    final Element modifiable() {
+        return isImmutable ? new Element(this) : this;
     }
 
     /**
@@ -166,7 +185,8 @@ final class Element implements Serializable {
      * @param text          the text to parse.
      * @param position      on input, the position where to start parsing from.
      *                      On output, the first character after the separator.
-     * @param sharedValues  if parsing a fragment, a map with the values found in other elements. Otherwise {@code null}.
+     * @param sharedValues  non-null if parsing a WKT tree to be kept for a long time.
+     *                      In such case, contains values found during parsing of other elements.
      */
     Element(final AbstractParser parser, final String text, final ParsePosition position,
             final Map<Object,Object> sharedValues) throws ParseException
@@ -207,8 +227,9 @@ final class Element implements Serializable {
                                 openingBracket = text.codePointAt(lower))) < 0)
         {
             position.setIndex(lower);
-            children = Collections.emptyList();
+            this.children = Collections.emptyList();
             isEnumeration = true;
+            isImmutable   = true;
             return;
         }
         lower = skipLeadingWhitespaces(text, lower + Character.charCount(openingBracket), length);
@@ -240,8 +261,8 @@ final class Element implements Serializable {
                     position.setErrorIndex(lower);
                     throw new UnparsableObjectException(errorLocale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
                 }
-                if (!fragment.isEnumeration) {
-                    fragment = new Element(fragment);
+                if (sharedValues == null) {                         // `true` if created for immediate parsing.
+                    fragment = fragment.modifiable();               // WKT parser needs modifiable elements.
                 }
                 children.add(fragment);
                 lower = upper;
@@ -319,7 +340,7 @@ final class Element implements Serializable {
                     lower = position.getIndex();
                 }
                 /*
-                 * Store the value, using shared instances if this Element may be stored for a long time.
+                 * Store the value, using shared instances if this `Element` may be stored for a long time.
                  */
                 if (sharedValues != null) {
                     final Object e = sharedValues.putIfAbsent(value, value);
@@ -341,12 +362,9 @@ final class Element implements Serializable {
                 final int c = text.codePointAt(lower);
                 if (c == closingBracket) {
                     position.setIndex(lower + Character.charCount(c));
-                    if (sharedValues != null) {
-                        this.children = UnmodifiableArrayList.wrap(children.toArray());
-                    } else {
-                        this.children = children;
-                    }
                     isEnumeration = false;
+                    isImmutable   = (sharedValues != null);
+                    this.children = isImmutable ? UnmodifiableArrayList.wrap(children.toArray()) : children;
                     return;
                 }
                 position.setErrorIndex(lower);
@@ -509,6 +527,34 @@ final class Element implements Serializable {
     //////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Returns the last element of the given names without removing it.
+     * This method searches only in children of this element.
+     * It does not search recursively in children of children.
+     *
+     * @param  keys  the element names (e.g. {@code "ID"}).
+     * @return the last {@link Element} of the given names found in the children, or {@code null} if none.
+     *
+     * @see #pullElement(int, String...)
+     */
+    public Element peekLastElement(final String... keys) {
+        final ListIterator<Object> iterator = children.listIterator(children.size());
+        while (iterator.hasPrevious()) {
+            final Object object = iterator.previous();
+            if (object instanceof Element) {
+                final Element element = (Element) object;
+                if (!element.isEnumeration) {
+                    for (int i=0; i<keys.length; i++) {
+                        if (element.keyword.equalsIgnoreCase(keys[i])) {
+                            return element;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the next value (not a child element) without removing it.
      *
      * @return the next value, or {@code null} if none.
@@ -522,6 +568,25 @@ final class Element implements Serializable {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the next values (not child elements) without removing them.
+     * The maximum number of values fetched is the length of the given array.
+     * If there is less WKT elements, remaining array elements are unchanged.
+     *
+     * @param  addTo  non-empty array where to store the values.
+     */
+    public void peekValues(final Object[] addTo) {
+        int count = 0;
+        final Iterator<Object> iterator = children.iterator();
+        while (iterator.hasNext()) {
+            final Object object = iterator.next();
+            if (!(object instanceof Element)) {
+                addTo[count] = object;
+                if (++count >= addTo.length) break;
+            }
+        }
     }
 
     /**

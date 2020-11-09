@@ -340,7 +340,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @see #errors()
      */
-    private Locale getErrorLocale() {
+    final Locale getErrorLocale() {
         final Locale locale = getLocale(Locale.Category.DISPLAY);
         return (locale != null && locale != Locale.ROOT) ? locale : Locale.getDefault(Locale.Category.DISPLAY);
     }
@@ -757,22 +757,32 @@ public class WKTFormat extends CompoundFormat<Object> {
     public void addFragment(final String name, final String wkt) throws IllegalArgumentException, ParseException {
         ArgumentChecks.ensureNonEmpty("wkt", wkt);
         ArgumentChecks.ensureNonEmpty("name", name);
-        short error = Errors.Keys.NotAUnicodeIdentifier_1;
-        if (CharSequences.isUnicodeIdentifier(name)) {
-            final ParsePosition pos = new ParsePosition(0);
-            final Element element = parseFragment(wkt, pos);
-            final int index = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length());
-            if (index < wkt.length()) {
-                throw new UnparsableObjectException(getErrorLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
-                        new Object[] {name + " = " + element.keyword + "[…]", CharSequences.token(wkt, index)}, index);
-            }
-            // `fragments` map has been created by `parser(true)`.
-            if (fragments.putIfAbsent(name, element) == null) {
-                return;
-            }
-            error = Errors.Keys.ElementAlreadyPresent_1;
+        if (!CharSequences.isUnicodeIdentifier(name)) {
+            throw new IllegalArgumentException(errors().getString(Errors.Keys.NotAUnicodeIdentifier_1, name));
         }
-        throw new IllegalArgumentException(errors().getString(error, name));
+        final ParsePosition pos = new ParsePosition(0);
+        final Element element = textToTree(wkt, pos);
+        final int length = wkt.length();
+        final int index = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), length);
+        if (index < length) {
+            throw new UnparsableObjectException(getErrorLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
+                    new Object[] {name + " = " + element.keyword + "[…]", CharSequences.token(wkt, index)}, index);
+        }
+        addFragment(name, element);
+    }
+
+    /**
+     * Adds a fragment of Well Know Text (WKT).
+     * Caller must have verified that {@code name} is a valid Unicode identifier.
+     *
+     * @param  name     the Unicode identifier to assign to the WKT fragment.
+     * @param  element  root of the WKT fragment to add.
+     * @throws IllegalArgumentException if a fragment is already associated to the given name.
+     */
+    final void addFragment(final String name, final Element element) {
+        if (fragments(true).putIfAbsent(name, element) != null) {
+            throw new IllegalArgumentException(errors().getString(Errors.Keys.ElementAlreadyPresent_1, name));
+        }
     }
 
     /**
@@ -782,11 +792,19 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @param  pos  index of the first character to parse (on input) or after last parsed character (on output).
      * @return root of the tree of elements.
      */
-    final Element parseFragment(final String wkt, final ParsePosition pos) throws ParseException {
+    final Element textToTree(final String wkt, final ParsePosition pos) throws ParseException {
         if (sharedValues == null) {
             sharedValues = new HashMap<>();
         }
-        return new Element(parser(true), wkt, pos, sharedValues);
+        return parser(true).textToTree(wkt, pos, sharedValues);
+    }
+
+    /**
+     * Clears warnings and cache of shared values.
+     */
+    final void clear() {
+        warnings = null;
+        sharedValues = null;
     }
 
     /**
@@ -802,17 +820,36 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     @Override
     public Object parse(final CharSequence wkt, final ParsePosition pos) throws ParseException {
-        warnings = null;
-        sharedValues = null;
+        clear();
         ArgumentChecks.ensureNonEmpty("wkt", wkt);
         ArgumentChecks.ensureNonNull ("pos", pos);
         final AbstractParser parser = parser(false);
         Object object = null;
         try {
-            return object = parser.parseObject(wkt.toString(), pos);
+            object = parser.parseObject(wkt.toString(), pos);
         } finally {
             warnings = parser.getAndClearWarnings(object);
         }
+        return object;
+    }
+
+    /**
+     * Creates an object from the given tree of WKT elements.
+     *
+     * @param  root  the tree of WKT elements.
+     * @return the parsed object (never {@code null}).
+     * @throws ParseException if an error occurred while parsing the WKT.
+     */
+    final Object parse(final Element root) throws ParseException {
+        clear();
+        final AbstractParser parser = parser(false);
+        Object object = null;
+        try {
+            object = parser.buildFromTree(root);
+        } finally {
+            warnings = parser.getAndClearWarnings(object);
+        }
+        return object;
     }
 
     /**
@@ -822,6 +859,10 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     private AbstractParser parser(final boolean modifiable) {
         AbstractParser parser = this.parser;
+        /*
+         * `parser` is always null on a fresh clone. However the `fragments`
+         * map may need to be cloned if the caller intents to modify it.
+         */
         if (parser == null || (isCloned & modifiable)) {
             this.parser = parser = new Parser(symbols, fragments(modifiable),
                     (NumberFormat) getFormat(Number.class),
@@ -871,7 +912,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     @Override
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
-        warnings = null;
+        clear();
         ArgumentChecks.ensureNonNull("object",     object);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
         /*
@@ -970,7 +1011,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Convenience methods for resources for error message in the locale given by {@link #getLocale()}.
      */
-    private Errors errors() {
+    final Errors errors() {
         return Errors.getResources(getErrorLocale());
     }
 
@@ -983,11 +1024,10 @@ public class WKTFormat extends CompoundFormat<Object> {
     @Override
     public WKTFormat clone() {
         final WKTFormat clone = (WKTFormat) super.clone();
-        clone.sharedValues = null;
+        clone.clear();
         clone.factories    = null;                              // Not thread-safe; clone needs its own.
         clone.formatter    = null;                              // Do not share the formatter.
         clone.parser       = null;
-        clone.warnings     = null;
         clone.isCloned = isCloned = true;
         // Symbols and Colors do not need to be cloned because they are flagged as immutable.
         return clone;
