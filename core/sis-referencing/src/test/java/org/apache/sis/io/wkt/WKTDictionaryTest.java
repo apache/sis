@@ -16,6 +16,7 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Set;
 import java.util.Arrays;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -24,7 +25,9 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -64,8 +67,15 @@ public final strictfp class WKTDictionaryTest extends TestCase {
          */
         assertArrayEquals("getCodeSpaces()", new String[] {"ESRI", "MyCodeSpace"}, factory.getCodeSpaces().toArray());
         assertSame("getAuthority()", Citations.ESRI, factory.getAuthority());
-        assertSetEquals(Arrays.asList("102018", "ESRI::102021", "MyCodeSpace::102021", "MyCodeSpace:v2:102021"),
-                factory.getAuthorityCodes(SingleCRS.class));
+        Set<String> codes = factory.getAuthorityCodes(IdentifiedObject.class);
+        assertSame(codes, factory.getAuthorityCodes(IdentifiedObject.class));       // Test caching.
+        assertSame(codes, factory.getAuthorityCodes(SingleCRS.class));              // Test sharing.
+        assertSetEquals(Arrays.asList("102018", "ESRI::102021", "MyCodeSpace::102021", "MyCodeSpace:v2:102021"), codes);
+        assertSetEquals(Arrays.asList("102018", "ESRI::102021"), factory.getAuthorityCodes(ProjectedCRS.class));
+        codes = factory.getAuthorityCodes(GeographicCRS.class);
+        assertSetEquals(Arrays.asList("MyCodeSpace::102021", "MyCodeSpace:v2:102021"), codes);
+        assertSame(codes, factory.getAuthorityCodes(GeodeticCRS.class));            // Test sharing.
+        assertSame(codes, factory.getAuthorityCodes(GeographicCRS.class));          // Test caching.
         /*
          * Tests CRS creation.
          */

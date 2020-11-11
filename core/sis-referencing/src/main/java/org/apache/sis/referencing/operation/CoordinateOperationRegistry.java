@@ -49,7 +49,6 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -73,7 +72,6 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.Containers;
@@ -513,7 +511,7 @@ class CoordinateOperationRegistry {
                         final boolean inverse = Containers.isNullOrEmpty(authoritatives);
                         if (inverse) {
                             /*
-                             * No operation from 'source' to 'target' available. But maybe there is an inverse operation.
+                             * No operation from `source` to `target` available. But maybe there is an inverse operation.
                              * This is typically the case when the user wants to convert from a projected to a geographic CRS.
                              * The EPSG database usually contains transformation paths for geographic to projected CRS only.
                              */
@@ -869,20 +867,15 @@ class CoordinateOperationRegistry {
          * Determine whether the operation to create is a Conversion or a Transformation
          * (could also be a Conversion subtype like Projection, but this is less important).
          * We want the GeoAPI interface, not the implementation class.
-         * The most reliable way is to ask to the 'AbstractOperation.getInterface()' method,
+         * The most reliable way is to ask to the `AbstractOperation.getInterface()` method,
          * but this is SIS-specific. The fallback uses reflection.
          */
-        final Class<? extends IdentifiedObject> type;
-        if (operation instanceof AbstractIdentifiedObject) {
-             type = ((AbstractIdentifiedObject) operation).getInterface();
-        } else {
-             type = Classes.getLeafInterfaces(operation.getClass(), CoordinateOperation.class)[0];
-        }
-        properties.put(CoordinateOperations.OPERATION_TYPE_KEY, type);
+        properties.put(CoordinateOperations.OPERATION_TYPE_KEY,
+                ReferencingUtilities.getInterface(CoordinateOperation.class, operation));
         /*
          * Reuse the same operation method, but we may need to change its number of dimension.
          * The capability to resize an OperationMethod is specific to Apache SIS, so we must
-         * be prepared to see the 'redimension' call fails. In such case, we will try to get
+         * be prepared to see the `redimension` call fails. In such case, we will try to get
          * the SIS implementation of the operation method and try again.
          */
         if (operation instanceof SingleOperation) {

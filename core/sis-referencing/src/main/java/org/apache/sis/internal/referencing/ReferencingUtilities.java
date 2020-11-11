@@ -37,6 +37,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
@@ -61,7 +62,7 @@ import static java.util.Collections.singletonMap;
  * <p><strong>Do not rely on this API!</strong> It may change in incompatible way in any future release.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -147,17 +148,30 @@ public final class ReferencingUtilities extends Static {
      * Returns the GeoAPI interface implemented by the given object, or the implementation class
      * if the interface is unknown.
      *
-     * @param  object  the object for which to get the GeoAPI interface, or {@code null}.
+     * @param  <T>       compile-time value of {@code baseType}.
+     * @param  baseType  parent interface of the desired type.
+     * @param  object    the object for which to get the GeoAPI interface, or {@code null}.
      * @return GeoAPI interface or implementation class of the given object, or {@code null} if the given object is null.
      */
-    public static Class<?> getInterface(final IdentifiedObject object) {
-        if (object == null) {
-            return null;
-        } else if (object instanceof AbstractIdentifiedObject) {
-             return ((AbstractIdentifiedObject) object).getInterface();
+    public static <T extends IdentifiedObject> Class<? extends T> getInterface(final Class<T> baseType, final T object) {
+        if (object instanceof AbstractIdentifiedObject) {
+             return ((AbstractIdentifiedObject) object).getInterface().asSubclass(baseType);
         } else {
-             return object.getClass();
+             return getInterface(baseType, Classes.getClass(object));
         }
+    }
+
+    /**
+     * Returns the GeoAPI interface implemented by the given class, or the class itself if the interface is unknown.
+     *
+     * @param  <T>       compile-time value of {@code baseType}.
+     * @param  baseType  parent interface of the desired type.
+     * @param  type      type of object for which to get the GeoAPI interface, or {@code null}.
+     * @return GeoAPI interface or implementation class, or {@code null} if the given type is null.
+     */
+    public static <T extends IdentifiedObject> Class<? extends T> getInterface(final Class<T> baseType, final Class<? extends T> type) {
+        final Class<? extends T>[] types = Classes.getLeafInterfaces(type, baseType);
+        return (types.length != 0) ? types[0] : type;
     }
 
     /**

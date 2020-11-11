@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.stream.Stream;
+import java.util.function.Predicate;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.io.LineNumberReader;
@@ -38,6 +39,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.FactoryDataException;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -47,9 +49,9 @@ import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.FrequencySortedSet;
 
 
@@ -113,6 +115,12 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * @see #getCodeSpaces()
      */
     private final Set<String> codespaces;
+
+    /**
+     * Cache of authority codes computed by {@link #getAuthorityCodes(Class)}.
+     * This cache can be cleared at any time; values are recomputed when needed.
+     */
+    private final Map<Class<?>, Set<String>> codeCaches;
 
     /**
      * The parser to use for creating geodetic objects from WKT definitions.
@@ -295,13 +303,16 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
          *
          * @param  choices  end of a linked list of {@code Disambiguation}s.
          * @param  code     authority code (code space and version may vary).
+         * @param  filter   filter to apply of elements to add in the set.
          * @param  addTo    where to add the {@code codespace:version:code} tuples.
          *
          * @see WKTDictionary#getAuthorityCodes(Class)
          */
-        static void list(Disambiguation choices, final String code, final Set<String> addTo) {
+        static void list(Disambiguation choices, final String code, final Predicate<Object> filter, final Set<String> addTo) {
             do {
-                addTo.add(choices.identifier(code));
+                if (filter.test(choices.value)) {
+                    addTo.add(choices.identifier(code));
+                }
                 choices = choices.previous;
             } while (choices != null);
         }
@@ -349,6 +360,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
          * methods are not invoked.
          */
         definitions = new HashMap<>();
+        codeCaches  = new HashMap<>();
         codespaces  = new FrequencySortedSet<>(true);
         parser      = new WKTFormat(null, null);
         lock        = new ReentrantReadWriteLock();
@@ -361,6 +373,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * in all WKT strings. This method should be invoked after new WKTs have been added.
      */
     private void updateAuthority() {
+        codeCaches.clear();
         if (authorities != null) {
             String name = CollectionsExt.first(authorities);        // Most frequently declared authority.
             if (name == null) {
@@ -842,6 +855,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
                     } else {
                         definitions.put(localCode, value);
                     }
+                    codeCaches.clear();
                     if (cause != null) {
                         throw new FactoryException(resources().getString(
                                 Resources.Keys.CanNotInstantiateGeodeticObject_1, code), cause);
@@ -869,14 +883,60 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      */
     @Override
     public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
-        final Set<String> codes = new HashSet<>(Containers.hashMapCapacity(definitions.size()));
-        for (final Map.Entry<String,Object> entry : definitions.entrySet()) {
-            final String code  = entry.getKey();
-            final Object value = entry.getValue();
-            if (value instanceof Disambiguation) {
-                Disambiguation.list((Disambiguation) value, code, codes);
-            } else {
-                codes.add(code);
+        ArgumentChecks.ensureNonNull("type", type);
+        if (!type.isInterface()) {
+            type = ReferencingUtilities.getInterface(IdentifiedObject.class, type);
+        }
+        Set<String> codes;
+        lock.readLock().lock();
+        try {
+            codes = codeCaches.get(type);
+        } finally {
+            lock.readLock().unlock();
+        }
+        if (codes == null) {
+            final String[] keywords = WKTKeywords.forType(type);
+            final Class<? extends IdentifiedObject> baseType = type;                // Because lambdas require final.
+            final Predicate<Object> filter = (element) -> {
+                if (element instanceof Element) {
+                    return (keywords == null) || ArraysExt.containsIgnoreCase(keywords, ((Element) element).keyword);
+                } else {
+                    return baseType.isInstance(element);
+                }
+            };
+            lock.writeLock().lock();
+            try {
+                codes = codeCaches.get(type);                           // In case it has been computed concurrently.
+                if (codes == null) {
+                    codes = new HashSet<>();
+                    for (final Map.Entry<String,Object> entry : definitions.entrySet()) {
+                        final String code  = entry.getKey();
+                        final Object value = entry.getValue();
+                        if (value instanceof Disambiguation) {
+                            Disambiguation.list((Disambiguation) value, code, filter, codes);
+                        } else if (filter.test(value)) {
+                            codes.add(code);
+                        }
+                    }
+                    /*
+                     * Verify if an existing collection (assigned to another type) provides the same values.
+                     * If we find one, we will share the same instances.
+                     */
+                    boolean share = false;
+                    for (final Set<String> other : codeCaches.values()) {
+                        if (codes.equals(other)) {
+                            codes = other;
+                            share = true;
+                            break;
+                        }
+                    }
+                    if (!share) {
+                        codes = CollectionsExt.unmodifiableOrCopy(codes);
+                    }
+                    codeCaches.put(type, codes);
+                }
+            } finally {
+                lock.writeLock().unlock();
             }
         }
         return codes;

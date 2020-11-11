@@ -277,7 +277,8 @@ public class GeodeticCalculator {
     GeodeticCalculator(final CoordinateReferenceSystem crs, final Ellipsoid ellipsoid) {
         final GeographicCRS geographic = ReferencingUtilities.toNormalizedGeographicCRS(crs, true, true);
         if (geographic == null) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1, ReferencingUtilities.getInterface(crs)));
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1,
+                    ReferencingUtilities.getInterface(CoordinateReferenceSystem.class, crs)));
         }
         this.ellipsoid = ellipsoid;
         semiMajorAxis  = ellipsoid.getSemiMajorAxis();
@@ -301,7 +302,8 @@ public class GeodeticCalculator {
         ArgumentChecks.ensureNonNull("crs", crs);
         final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(crs);
         if (ellipsoid == null) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1, ReferencingUtilities.getInterface(crs)));
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1,
+                    ReferencingUtilities.getInterface(CoordinateReferenceSystem.class, crs)));
         }
         if (ellipsoid.isSphere()) {
             return new GeodeticCalculator(crs, ellipsoid);

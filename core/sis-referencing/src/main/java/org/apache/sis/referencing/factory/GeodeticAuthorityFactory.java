@@ -1308,7 +1308,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
          * Get the actual type of the object. Returns the GeoAPI type if possible,
          * or fallback on the implementation class otherwise.
          */
-        final Class<?> actual = ReferencingUtilities.getInterface(object);
+        final Class<?> actual = ReferencingUtilities.getInterface(IdentifiedObject.class, object);
         /*
          * Get the authority from the object if possible, in order to avoid a call
          * to the potentially costly (for EPSGDataAccess) getAuthority() method.
