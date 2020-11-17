@@ -146,14 +146,14 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * Values can be one of the following 4 types:
      *
      * <ol>
-     *   <li>{@link Element}: this is the initial state when there is no duplicated codes.
+     *   <li>{@link StoredTree}: this is the initial state when there is no duplicated codes.
      *       This is the root of a tree of WKT keywords with their values as children.
      *       A tree can be parsed later as an {@link IdentifiedObject} when first requested.</li>
-     *   <li>{@link IdentifiedObject}: the result of parsing the root {@link Element}
+     *   <li>{@link IdentifiedObject}: the result of parsing the {@link StoredTree}
      *       when {@link #createObject(String)} is invoked for a given authority code.
-     *       The parsing result replaces the previous {@link Element} value.</li>
+     *       The parsing result replaces the previous {@link StoredTree} value.</li>
      *   <li>{@link Disambiguation}: if the same code is used by two or more authorities or versions,
-     *       then above-cited {@link Element} or {@link IdentifiedObject} alternatives are wrapped
+     *       then above-cited {@link StoredTree} or {@link IdentifiedObject} alternatives are wrapped
      *       in a {@link Disambiguation} object.</li>
      *   <li>{@link String} if parsing failed, in which case the string is the error message.</li>
      * </ol>
@@ -162,7 +162,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * All read operations in this map shall be synchronized by the <code>{@linkplain #lock}.readLock()</code>
      * and write operations synchronized by the <code>{@linkplain #lock}.writeLock()</code>.
      *
-     * @see #addDefinition(Element)
+     * @see #addDefinition(StoredTree)
      * @see #createObject(String)
      */
     private final Map<String,Object> definitions;
@@ -191,9 +191,9 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
         private final String version;
 
         /**
-         * The value as an {@link Element} before parsing or an {@link IdentifiedObject} after parsing.
-         * They are the kind of types documented in {@link WKTDictionary#definitions}, excluding
-         * other {@code Disambiguation} instances.
+         * The value as an {@link StoredTree} before parsing or an {@link IdentifiedObject} after parsing.
+         * They are the kind of types documented in {@link WKTDictionary#definitions}, excluding other
+         * {@code Disambiguation} instances.
          */
         Object value;
 
@@ -222,9 +222,9 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
          * @param  object  definition in WKT of the CRS (or other geodetic object) to wrap.
          * @param  fullId  an array of length 3 to be used for getting the {@code codespace:version:code} tuple.
          */
-        Disambiguation(final Element object, final Object[] fullId) {
+        Disambiguation(final StoredTree object, final Object[] fullId) {
             Arrays.fill(fullId, null);
-            object.peekLastElement(MathTransformParser.ID_KEYWORDS).peekValues(fullId);
+            object.peekIdentifiers(fullId);
             codespace = trimOrNull(fullId[0]);
             version   = trimOrNull(fullId[2]);
             value     = object;
@@ -241,10 +241,10 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
          * @param  value      the CRS (or other geodetic object) definition.
          * @throws IllegalArgumentException if <var>authority:version:code</var> identifier is already used.
          *
-         * @see WKTDictionary#addDefinition(Element)
+         * @see WKTDictionary#addDefinition(StoredTree)
          */
         Disambiguation(Disambiguation previous, final String codespace, final String version,
-                       final String code, final Element value)
+                       final String code, final StoredTree value)
         {
             this.previous  = previous;
             this.codespace = codespace;
@@ -588,17 +588,17 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
             if (buffer.length() != 0) {
                 pos.setIndex(0);
                 final String wkt = buffer.toString();
-                final Element root = parser.textToTree(wkt, pos);
+                final StoredTree tree = parser.textToTree(wkt, pos);
                 final int end = pos.getIndex();
                 if (end < wkt.length()) {           // Trailing white spaces already removed by `read(…)`.
                     throw new FactoryDataException(resources().getString(Resources.Keys.UnexpectedTextAtLine_2,
                                 getLineNumber(), CharSequences.token(wkt, end)));
                 }
                 if (aliasKey != null) {
-                    parser.addFragment(aliasKey, root);
+                    parser.addFragment(aliasKey, tree);
                     aliasKey = null;
                 } else {
-                    addDefinition(root);
+                    addDefinition(tree);
                 }
                 buffer.setLength(0);
             }
@@ -611,48 +611,41 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * Caller must own the write lock before to invoke this method.
      * {@link #updateAuthority()} should be invoked after this method.
      *
-     * @param  root  root of a tree of WKT elements.
+     * @param  tree  a tree of WKT elements.
      * @throws IllegalArgumentException if a {@code codespace:version:code} tuple is assigned twice.
      * @throws FactoryDataException if the WKT does not have an {@code ID[…]} or {@code AUTHORITY[…]} element.
      *
      * @see #definitions
      */
-    private void addDefinition(final Element root) throws FactoryDataException {
-        final Element ide = root.peekLastElement(MathTransformParser.ID_KEYWORDS);
-        if (ide != null) {
-            final Object[] fullId = new Object[3];                      // Codespace, code, version.
-            ide.peekValues(fullId);
-            final String codespace = trimOrNull(fullId[0]);
-            final String code      = trimOrNull(fullId[1]);
-            if (code != null) {                                         // Needs at least the code.
-                definitions.merge(code, root, (oldValue, newValue) -> {
-                    final String version = trimOrNull(fullId[2]);
-                    final Disambiguation previous;
-                    if (oldValue instanceof Disambiguation) {
-                        previous = (Disambiguation) oldValue;
-                    } else if (oldValue instanceof Element) {
-                        previous = new Disambiguation((Element) oldValue, fullId);
-                    } else if (oldValue instanceof IdentifiedObject) {
-                        previous = new Disambiguation((IdentifiedObject) oldValue);
-                    } else {
-                        previous = null;        // Discard previous parsing failure.
-                    }
-                    return new Disambiguation(previous, codespace, version, code, (Element) newValue);
-                });
-                codespaces.add(codespace);
-                if (authorities != null) {
-                    final Element citation = ide.peekLastElement(WKTKeywords.Citation);
-                    if (citation != null) {
-                        final String title = trimOrNull(citation.peekValue());
-                        if (title != null) {
-                            authorities.add(title);
-                        }
-                    }
-                }
-                return;
+    private void addDefinition(final StoredTree tree) throws FactoryDataException {
+        final Object[] fullId = new Object[authorities == null ? 4 : 3];
+        tree.peekIdentifiers(fullId);                   // Codespace, code, version, (authority).
+        final String code = trimOrNull(fullId[1]);
+        if (code == null) {
+            throw new FactoryDataException(resources().getString(Resources.Keys.MissingAuthorityCode_1, tree));
+        }
+        final String codespace = trimOrNull(fullId[0]);
+        definitions.merge(code, tree, (oldValue, newValue) -> {
+            final String version = trimOrNull(fullId[2]);
+            final Disambiguation previous;
+            if (oldValue instanceof Disambiguation) {
+                previous = (Disambiguation) oldValue;
+            } else if (oldValue instanceof StoredTree) {
+                previous = new Disambiguation((StoredTree) oldValue, fullId);
+            } else if (oldValue instanceof IdentifiedObject) {
+                previous = new Disambiguation((IdentifiedObject) oldValue);
+            } else {
+                previous = null;        // Discard previous parsing failure.
+            }
+            return new Disambiguation(previous, codespace, version, code, (StoredTree) newValue);
+        });
+        codespaces.add(codespace);
+        if (fullId.length >= 4) {
+            final String title = trimOrNull(fullId[3]);
+            if (title != null) {
+                authorities.add(title);
             }
         }
-        throw new FactoryDataException(resources().getString(Resources.Keys.MissingAuthorityCode_1, root.peekValue()));
     }
 
     /**
@@ -697,6 +690,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
                 throw new FactoryDataException(resources().getString(
                         Resources.Keys.CanNotParseWKT_2, lineNumber, e.getLocalizedMessage()));
             } finally {
+                parser.clear();
                 updateAuthority();
             }
         } finally {
@@ -792,8 +786,8 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
         }
         /*
          * At this point we separated codespace, code and version. First, verify that codespace is valid.
-         * Then get CRS definition as an `IdentifiedObject` or an `Element` (the `Disambiguation` case is
-         * resolved as an `IdentifiedObject` or `Element`).
+         * Then get CRS definition as an `IdentifiedObject` or an `StoredTree` (the `Disambiguation` case
+         * is resolved as an `IdentifiedObject` or `StoredTree`).
          */
         Disambiguation choices = null;
         Object value = null;
@@ -823,15 +817,15 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
         /*
          * At this point we got a value which may be one of the following classes:
          *
-         *   - `Element`          — if this method is invoked for the first time for the given code.
+         *   - `StoredTree`       — if this method is invoked for the first time for the given code.
          *   - `IdentifiedObject` — if we already built the geodetic object in a previous invocation of this method.
          *   - `String`           — if a previous invocation for given code failed to build the geodetic object.
          *                          In this case, the string is the exception message.
          *
-         * If `Element`, try to replace that value by an `IdentifiedObject` (on success) or `String` (on failure).
+         * If `StoredTree`, try to replace that value by an `IdentifiedObject` (on success) or `String` (on failure).
          * Must be done under write lock because `parser` is not thread-safe.
          */
-        if (value instanceof Element) {
+        if (value instanceof StoredTree) {
             lock.writeLock().lock();
             try {
                 if (choices != null) {
@@ -839,10 +833,10 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
                 } else {
                     value = definitions.get(localCode);
                 }
-                if (value instanceof Element) {
+                if (value instanceof StoredTree) {
                     ParseException cause = null;
                     try {
-                        value = parser.parse((Element) value);
+                        value = parser.buildFromTree((StoredTree) value);
                     } catch (ParseException e) {
                         cause = e;
                         value = e.getLocalizedMessage();
@@ -898,8 +892,8 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
             final String[] keywords = WKTKeywords.forType(type);
             final Class<? extends IdentifiedObject> baseType = type;                // Because lambdas require final.
             final Predicate<Object> filter = (element) -> {
-                if (element instanceof Element) {
-                    return (keywords == null) || ArraysExt.containsIgnoreCase(keywords, ((Element) element).keyword);
+                if (element instanceof StoredTree) {
+                    return (keywords == null) || ArraysExt.containsIgnoreCase(keywords, ((StoredTree) element).keyword());
                 } else {
                     return baseType.isInstance(element);
                 }
@@ -920,7 +914,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
                     }
                     /*
                      * Verify if an existing collection (assigned to another type) provides the same values.
-                     * If we find one, we will share the same instances.
+                     * If we find one, share the same instance for reducing memory usage.
                      */
                     boolean share = false;
                     for (final Set<String> other : codeCaches.values()) {
@@ -931,6 +925,8 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
                         }
                     }
                     if (!share) {
+                        // TODO: replace by Set.copyOf(Set) in JDK9 and remove the `share` flag
+                        // (not needed because Set.copyOf(Set) does the verification itself).
                         codes = CollectionsExt.unmodifiableOrCopy(codes);
                     }
                     codeCaches.put(type, codes);

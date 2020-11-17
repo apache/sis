@@ -1537,6 +1537,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     @Override
     public MathTransform createFromWKT(final String text) throws FactoryException {
         lastMethod.remove();
+        ArgumentChecks.ensureNonEmpty("text", text);
         Parser p = parser.getAndSet(null);
         if (p == null) try {
             Constructor<? extends Parser> c = parserConstructor;

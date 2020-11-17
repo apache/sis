@@ -207,7 +207,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  errorLocale   the locale for error messages (not for parsing), or {@code null} for the system default.
      * @param  factories     on input, the factories to use. On output, the factories used. Can be null.
      */
-    GeodeticObjectParser(final Symbols symbols, final Map<String,Element> fragments,
+    GeodeticObjectParser(final Symbols symbols, final Map<String,StoredTree> fragments,
             final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
             final Convention convention, final Transliterator transliterator, final Locale errorLocale,
             final ReferencingFactoryContainer factories)
@@ -228,7 +228,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a <cite>Well Know Text</cite> (WKT).
+     * Parses a <cite>Well-Know Text</cite> from specified position as a geodetic object.
+     * Caller should invoke {@link #getAndClearWarnings(Object)} in a {@code finally} block
+     * after this method.
      *
      * @param  text      the text to be parsed.
      * @param  position  the position to start parsing from.
@@ -236,10 +238,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @throws ParseException if the string can not be parsed.
      */
     @Override
-    public final Object parseObject(final String text, final ParsePosition position) throws ParseException {
+    final Object createFromWKT(final String text, final ParsePosition position) throws ParseException {
         final Object object;
         try {
-            object = super.parseObject(text, position);
+            object = super.createFromWKT(text, position);
             /*
              * After parsing the object, we may have been unable to set the VerticalCRS of VerticalExtent instances.
              * First, try to set a default VerticalCRS for Mean Sea Level Height in metres. In the majority of cases
@@ -281,7 +283,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @throws ParseException if the element can not be parsed.
      */
     @Override
-    final Object parseObject(final Element element) throws ParseException {
+    final Object buildFromTree(final Element element) throws ParseException {
         Object value = parseCoordinateReferenceSystem(element, false);
         if (value != null) {
             return value;

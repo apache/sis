@@ -35,7 +35,7 @@
 # Alias for WGS84 geographic CRS.
 # Can be inserted in projected CRS with "$WGS84".
 #
-SET WGS84 =
+SET WGS84_BASE =
  BaseGeodCRS["GCS_WGS_1984",
   Datum["D_WGS_1984",
    Ellipsoid["WGS_1984", 6378137, 298.257223563]],
@@ -47,7 +47,7 @@ SET WGS84 =
 # when they have the default value.
 #
 ProjectedCRS["North_Pole_Stereographic",
- $WGS84,
+ $WGS84_BASE,
  Conversion["Stereographic North Pole",
   Method["Polar Stereographic (variant A)"],
   Parameter["Latitude of natural origin", 90]],
@@ -58,7 +58,7 @@ ProjectedCRS["North_Pole_Stereographic",
  Id["ESRI", 102018]]
 
 ProjectedCRS["South_Pole_Stereographic",
- $WGS84,
+ $WGS84_BASE,
  Conversion["Stereographic South Pole",
   Method["Polar Stereographic (variant A)"],
   Parameter["Latitude of natural origin", -90]],

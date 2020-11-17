@@ -1641,6 +1641,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      */
     @Override
     public CoordinateReferenceSystem createFromWKT(final String text) throws FactoryException {
+        ArgumentChecks.ensureNonEmpty("text", text);
         Parser p = parser.getAndSet(null);
         if (p == null) try {
             Constructor<? extends Parser> c = parserConstructor;

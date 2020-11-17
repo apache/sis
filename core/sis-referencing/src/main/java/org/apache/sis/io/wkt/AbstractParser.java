@@ -37,7 +37,6 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -53,11 +52,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * <p>In current version, parsers are not intended to be subclassed outside this package.</p>
  *
  * <p>Parsers are not synchronized. It is recommended to create separate parser instances for each thread.
- * If multiple threads access a parser concurrently, it must be synchronized externally.</p>
+ * If many threads access the same parser instance concurrently, it must be synchronized externally.</p>
  *
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -71,19 +70,21 @@ abstract class AbstractParser implements Parser {
 
     /**
      * A mode for the {@link Element#pullElement(int, String...)} method meaning that the requested element
-     * is optional but is not necessarily first. If no element have a name matching one of the requested names,
+     * is optional but not necessarily first. If no element has a name matching one of the requested names,
      * then {@code pullElement(…)} returns {@code null}.
      */
     static final int OPTIONAL = 1;
 
     /**
      * A mode for the {@link Element#pullElement(int, String...)} method meaning that an exception shall be
-     * thrown if no element have a name matching one of the requested names.
+     * thrown if no element has a name matching one of the requested names.
      */
     static final int MANDATORY = 2;
 
     /**
-     * The locale for error messages (not for number parsing), or {@code null} for the system default.
+     * The locale for formatting error messages if parsing fails, or {@code null} for system default.
+     * This is <strong>not</strong> the locale for parsing number or date values.
+     * The locale for numbers and dates is contained in {@link #symbols}.
      */
     final Locale errorLocale;
 
@@ -115,19 +116,24 @@ abstract class AbstractParser implements Parser {
 
     /**
      * Reference to the {@link WKTFormat#fragments} map, or an empty map if none.
-     * This parser will only read this map, never write to it.
+     * Shall be used in read-only mode; never write through this reference.
+     *
+     * @see WKTFormat#addFragment(String, StoredTree)
      */
-    final Map<String,Element> fragments;
+    final Map<String,StoredTree> fragments;
 
     /**
      * Keyword of unknown elements. The ISO 19162 specification requires that we ignore unknown elements,
-     * but we will nevertheless report them as warnings.
-     * The meaning of this map is:
+     * but we will nevertheless report them as {@linkplain #warnings}. The meaning of this map is:
+     *
      * <ul>
      *   <li><b>Keys</b>: keyword of ignored elements. Note that a key may be null.</li>
      *   <li><b>Values</b>: keywords of all elements containing an element identified by the above-cited key.
      *       This list is used for helping the users to locate the ignored elements.</li>
      * </ul>
+     *
+     * Content of this map is not discarded immediately {@linkplain #getAndClearWarnings(Object) after parsing}.
+     * It is kept for some time because {@link Warnings} will copy its content only when first needed.
      *
      * @see #getAndClearWarnings(Object)
      */
@@ -136,6 +142,7 @@ abstract class AbstractParser implements Parser {
     /**
      * The warning (other than {@link #ignoredElements}) that occurred during the parsing.
      * Created when first needed and reset to {@code null} when a new parsing start.
+     * Warnings are reported when {@link #getAndClearWarnings(Object)} is invoked.
      */
     private Warnings warnings;
 
@@ -149,8 +156,8 @@ abstract class AbstractParser implements Parser {
      * @param  unitFormat    the unit format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param  errorLocale   the locale for error messages (not for parsing), or {@code null} for the system default.
      */
-    AbstractParser(final Symbols symbols, final Map<String,Element> fragments, NumberFormat numberFormat,
-            final DateFormat dateFormat, final UnitFormat unitFormat, final Locale errorLocale)
+    AbstractParser(final Symbols symbols, final Map<String,StoredTree> fragments, NumberFormat numberFormat,
+                   final DateFormat dateFormat, final UnitFormat unitFormat, final Locale errorLocale)
     {
         ensureNonNull("symbols", symbols);
         if (numberFormat == null) {
@@ -184,23 +191,44 @@ abstract class AbstractParser implements Parser {
 
     /**
      * Returns the name of the class providing the publicly-accessible {@code createFromWKT(String)} method.
-     * This information is used for logging purpose only.
+     * This information is used for logging purposes only. Values can be:
+     *
+     * <ul>
+     *   <li>{@code "org.apache.sis.io.wkt.WKTFormat"}</li>
+     *   <li>{@code "org.apache.sis.referencing.factory.GeodeticObjectFactory"}</li>
+     *   <li>{@code "org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory"}</li>
+     * </ul>
      */
     abstract String getPublicFacade();
 
     /**
      * Returns the name of the method invoked from {@link #getPublicFacade()}.
-     * This information is used for logging purpose only.
+     * This information is used for logging purposes only.
+     * Another possible value is {@codd "parse"}.
      */
     String getFacadeMethod() {
         return "createFromWKT";
     }
 
     /**
-     * Creates the object from a string and log the warnings if any.
-     * This method is for implementation of {@code createFromWKT(String)} method is SIS factories only.
+     * Logs the given record for a warning that occurred during parsing.
+     * This is used when we can not use the {@link #warning warning methods},
+     * or when the information is not worth to report as a warning.
+     */
+    final void log(final LogRecord record) {
+        Logger logger = Logging.getLogger(Loggers.WKT);
+        record.setSourceClassName (getPublicFacade());
+        record.setSourceMethodName(getFacadeMethod());
+        record.setLoggerName(logger.getName());
+        logger.log(record);
+    }
+
+    /**
+     * Creates the object from a WKT string and logs the warnings if any.
+     * This method is for implementation of {@code createFromWKT(String)} method in SIS factories only.
+     * Callers should ensure that {@code wkt} is non-null and non-empty (this method does not verify).
      *
-     * @param  text  coordinate system encoded in Well-Known Text format (version 1 or 2).
+     * @param  wkt  object encoded in Well-Known Text format (version 1 or 2).
      * @return the result of parsing the given text.
      * @throws FactoryException if the object creation failed.
      *
@@ -208,34 +236,39 @@ abstract class AbstractParser implements Parser {
      * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createFromWKT(String)
      */
     @Override
-    public final Object createFromWKT(final String text) throws FactoryException {
-        final Object value;
+    public final Object createFromWKT(final String wkt) throws FactoryException {
+        Object result = null;
+        Warnings warnings;
         try {
-            value = parseObject(text, new ParsePosition(0));
+            result = createFromWKT(wkt, new ParsePosition(0));
         } catch (ParseException exception) {
             final Throwable cause = exception.getCause();
             if (cause instanceof FactoryException) {
                 throw (FactoryException) cause;
             }
             throw new FactoryException(exception.getLocalizedMessage(), exception);
+        } finally {
+            warnings = getAndClearWarnings(result);
         }
-        final Warnings warnings = getAndClearWarnings(value);
         if (warnings != null) {
             log(new LogRecord(Level.WARNING, warnings.toString()));
         }
-        return value;
+        return result;
     }
 
     /**
-     * Logs the given record. This is used only when we can not use the {@link #warning warning methods},
-     * or when the information is not worth to report as a warning.
+     * Parses a <cite>Well-Know Text</cite> from specified position as a geodetic object.
+     * Caller should invoke {@link #getAndClearWarnings(Object)} in a {@code finally} block
+     * after this method.
+     *
+     * @return the parsed object.
+     * @throws ParseException if the string can not be parsed.
      */
-    final void log(final LogRecord record) {
-        Logger logger = Logging.getLogger(Loggers.WKT);
-        record.setSourceClassName(getPublicFacade());
-        record.setSourceMethodName(getFacadeMethod());
-        record.setLoggerName(logger.getName());
-        logger.log(record);
+    Object createFromWKT(final String text, final ParsePosition position) throws ParseException {
+        final Element root = new Element(textToTree(text, position));
+        final Object result = buildFromTree(root);
+        root.close(ignoredElements);
+        return result;
     }
 
     /**
@@ -243,92 +276,47 @@ abstract class AbstractParser implements Parser {
      * Current implementation assumes that the fragment name is a Unicode identifier,
      * except for the first character which is not required to be an identifier start.
      */
-    static int endOfFragmentName(final String text, int upper) {
+    static int endOfFragmentName(final String text, int position) {
         final int length = text.length();
-        while (upper < length) {
-            final int c = text.codePointAt(upper);
+        while (position < length) {
+            final int c = text.codePointAt(position);
             if (!Character.isUnicodeIdentifierPart(c)) break;
-            upper += Character.charCount(c);
+            position += Character.charCount(c);
         }
-        return upper;
+        return position;
     }
 
     /**
-     * Parses a <cite>Well Know Text</cite> (WKT) as a tree of {@link Element}s.
+     * Parses the <cite>Well Know Text</cite> from specified position as a tree of {@link Element}s.
      * This tree can be given to {@link #buildFromTree(Element)} for producing a geodetic object.
      *
-     * @param  text          the text to be parsed.
-     * @param  position      the position to start parsing from.
-     * @param  sharedValues  non-null if parsing a WKT tree to be kept for a long time.
-     *                       In such case, contains values found during parsing of other elements.
+     * @param  wkt       the Well-Known Text to be parsed.
+     * @param  position  before parsing, provides index of the first character to parse in the {@code wkt} string.
+     *                   After parsing completion, provides index after the last character parsed.
      * @return the parsed object as a tree of {@link Element}s.
      * @throws ParseException if the string can not be parsed.
      *
      * @see WKTFormat#textToTree(String, ParsePosition)
      */
-    final Element textToTree(final String text, final ParsePosition position, final Map<Object,Object> sharedValues)
-            throws ParseException
-    {
-        /*
-         * Aliases for fragments (e.g. "$Foo" in ProjectedCRS["something", $Foo]) are expanded by
-         * the `Element` constructor, except if the alias appears at the begining of the text.
-         * In such case the alias is the whole text and we need a different constructor.
-         */
-        Element fragment;
-        int lower = CharSequences.skipLeadingWhitespaces(text, position.getIndex(), text.length());
-        if (lower < text.length() && text.charAt(lower) == Symbols.FRAGMENT_VALUE) {
-            final int upper = endOfFragmentName(text, ++lower);
-            final String id = text.substring(lower, upper);
-            fragment = fragments.get(id);                       // Should be immutable.
-            if (fragment == null) {
-                position.setErrorIndex(lower);
-                throw new UnparsableObjectException(errorLocale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
-            }
-            position.setIndex(upper);
-            if (sharedValues == null) {                         // `true` if invoked for immediate parsing.
-                fragment = fragment.modifiable();               // Parsing requires a modifiable copy.
-            }
-        } else {
-            fragment = new Element(this, text, position, sharedValues);
+    final Element textToTree(final String wkt, final ParsePosition position) throws ParseException {
+        int lower = CharSequences.skipLeadingWhitespaces(wkt, position.getIndex(), wkt.length());
+        if (lower >= wkt.length() || wkt.charAt(lower) != Symbols.FRAGMENT_VALUE) {
+            return new Element(this, wkt, position);    // This is the usual case.
         }
-        return fragment;
-    }
-
-    /**
-     * Parses a tree of {@link Element}s to produce a geodetic object.
-     * The {@code root} argument should be a value returned by
-     * {@link #textToTree(String, ParsePosition, Map)}.
-     *
-     * @param  root  the tree of WKT elements.
-     * @return the parsed object.
-     * @throws ParseException if the tree can not be parsed.
-     */
-    final Object buildFromTree(Element root) throws ParseException {
-        warnings = null;
-        ignoredElements.clear();
-        root = new Element("<root>", root);
-        final Object object = parseObject(root);
-        root.close(ignoredElements);
-        return object;
-    }
-
-    /**
-     * Parses a <cite>Well Know Text</cite> (WKT) as a geodetic object.
-     *
-     * @param  text      the text to be parsed.
-     * @param  position  the position to start parsing from.
-     * @return the parsed object.
-     * @throws ParseException if the string can not be parsed.
-     */
-    public Object parseObject(final String text, final ParsePosition position) throws ParseException {
-        warnings = null;
-        ignoredElements.clear();
-        ArgumentChecks.ensureNonEmpty("text", text);
-        Element root = textToTree(text, position, null);
-        root = new Element("<root>", root);
-        final Object object = parseObject(root);
-        root.close(ignoredElements);
-        return object;
+        /*
+         * Aliases for fragments (e.g. "FOO" in ProjectedCRS["something", $FOO]) are expanded by `Element`
+         * constructor invoked above, except if the alias appears at the begining of the WKT string.
+         * In such case the alias is the whole text and is handled in a special way below.
+         */
+        final int upper = endOfFragmentName(wkt, ++lower);
+        final String id = wkt.substring(lower, upper);
+        StoredTree fragment = fragments.get(id);
+        if (fragment == null) {
+            position.setErrorIndex(--lower);
+            throw new UnparsableObjectException(errorLocale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
+        }
+        position.setIndex(upper);
+        return fragment.toElement(this, ~0);
     }
 
     /**
@@ -340,7 +328,7 @@ abstract class AbstractParser implements Parser {
      * @return the parsed object.
      * @throws ParseException if the element can not be parsed.
      */
-    abstract Object parseObject(final Element element) throws ParseException;
+    abstract Object buildFromTree(Element element) throws ParseException;
 
     /**
      * Parses the number at the given position.
@@ -378,7 +366,8 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
-     * Parses the given unit name or symbol.
+     * Parses the given unit name or symbol. Contrarily to other {@code parseFoo()} methods,
+     * this method has no {@link ParsePosition} and expects the given string to be the full unit symbol.
      */
     final Unit<?> parseUnit(final String text) throws ParserException {
         if (unitFormat == null) {
@@ -424,12 +413,13 @@ abstract class AbstractParser implements Parser {
      * Returns the warnings, or {@code null} if none.
      * This method clears the warnings after the call.
      *
-     * <p>The returned object is valid only before a new parsing starts. If a longer lifetime is desired,
-     * then the caller <strong>must</strong> invokes {@link Warnings#publish()}.</p>
+     * <p>The returned object is valid only until a new parsing starts. If a longer lifetime
+     * is desired, then the caller <strong>must</strong> invokes {@link Warnings#publish()}.</p>
      *
-     * @param  object  the object that resulted from the parsing operation, or {@code null}.
+     * @param  result  the object that resulted from the parsing operation, or {@code null}.
+     * @return the warnings, or {@code null} if none.
      */
-    final Warnings getAndClearWarnings(final Object object) {
+    final Warnings getAndClearWarnings(final Object result) {
         Warnings w = warnings;
         warnings = null;
         if (w == null) {
@@ -437,8 +427,9 @@ abstract class AbstractParser implements Parser {
                 return null;
             }
             w = new Warnings(errorLocale, true, ignoredElements);
+            // Do not clear `ignoredElements` now.
         }
-        w.setRoot(object);
+        w.setRoot(result);
         return w;
     }
 }

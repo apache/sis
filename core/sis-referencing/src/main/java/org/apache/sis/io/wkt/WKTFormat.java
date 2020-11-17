@@ -202,11 +202,11 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * WKT fragments that can be inserted in longer WKT strings, or {@code null} if none. Keys are short identifiers
      * and values are WKT subtrees to substitute to the identifiers when they are found in a WKT to parse.
-     * The same map instance may be shared by different {@linkplain #clone() clones}.
+     * The same map instance may be shared by different {@linkplain #clone() clones} as long as they are not modified.
      *
      * @see #fragments(boolean)
      */
-    private Map<String,Element> fragments;
+    private Map<String,StoredTree> fragments;
 
     /**
      * {@code true} if the {@link #fragments} map is shared by two or more {@code WKTFormat} instances.
@@ -284,7 +284,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @param  modifiable  whether the caller intents to modify the map.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private Map<String,Element> fragments(final boolean modifiable) {
+    private Map<String,StoredTree> fragments(final boolean modifiable) {
         if (fragments == null) {
             if (!modifiable) {
                 // Most common cases: invoked before to parse a WKT and no fragments specified.
@@ -761,42 +761,52 @@ public class WKTFormat extends CompoundFormat<Object> {
             throw new IllegalArgumentException(errors().getString(Errors.Keys.NotAUnicodeIdentifier_1, name));
         }
         final ParsePosition pos = new ParsePosition(0);
-        final Element element = textToTree(wkt, pos);
+        final StoredTree definition = textToTree(wkt, pos);
         final int length = wkt.length();
         final int index = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), length);
         if (index < length) {
             throw new UnparsableObjectException(getErrorLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
-                    new Object[] {name + " = " + element.keyword + "[…]", CharSequences.token(wkt, index)}, index);
+                    new Object[] {name + " = " + definition.keyword() + "[…]", CharSequences.token(wkt, index)}, index);
         }
-        addFragment(name, element);
+        addFragment(name, definition);
     }
 
     /**
      * Adds a fragment of Well Know Text (WKT).
      * Caller must have verified that {@code name} is a valid Unicode identifier.
      *
-     * @param  name     the Unicode identifier to assign to the WKT fragment.
-     * @param  element  root of the WKT fragment to add.
+     * @param  name        the Unicode identifier to assign to the WKT fragment.
+     * @param  definition  root of the WKT fragment to add.
      * @throws IllegalArgumentException if a fragment is already associated to the given name.
      */
-    final void addFragment(final String name, final Element element) {
-        if (fragments(true).putIfAbsent(name, element) != null) {
+    final void addFragment(final String name, final StoredTree definition) {
+        if (fragments(true).putIfAbsent(name, definition) != null) {
             throw new IllegalArgumentException(errors().getString(Errors.Keys.ElementAlreadyPresent_1, name));
         }
     }
 
     /**
-     * Parses a fragment of Well Know Text (WKT).
+     * Parses a Well Know Text (WKT) for a fragment or an entire object definition.
+     * This method should be invoked only for WKT trees to be stored for a long time.
+     * It should not be invoked for immediate {@link IdentifiedObject} parsing.
      *
      * @param  wkt  the Well Know Text (WKT) fragment to parse.
      * @param  pos  index of the first character to parse (on input) or after last parsed character (on output).
      * @return root of the tree of elements.
      */
-    final Element textToTree(final String wkt, final ParsePosition pos) throws ParseException {
+    final StoredTree textToTree(final String wkt, final ParsePosition pos) throws ParseException {
+        final AbstractParser parser = parser(true);
+        Element result = null;
+        warnings = null;
+        try {
+            result = parser.textToTree(wkt, pos);
+        } finally {
+            warnings = parser.getAndClearWarnings(result);
+        }
         if (sharedValues == null) {
             sharedValues = new HashMap<>();
         }
-        return parser(true).textToTree(wkt, pos, sharedValues);
+        return new StoredTree(result, sharedValues);
     }
 
     /**
@@ -824,32 +834,35 @@ public class WKTFormat extends CompoundFormat<Object> {
         ArgumentChecks.ensureNonEmpty("wkt", wkt);
         ArgumentChecks.ensureNonNull ("pos", pos);
         final AbstractParser parser = parser(false);
-        Object object = null;
+        Object result = null;
         try {
-            object = parser.parseObject(wkt.toString(), pos);
+            result = parser.createFromWKT(wkt.toString(), pos);
         } finally {
-            warnings = parser.getAndClearWarnings(object);
+            warnings = parser.getAndClearWarnings(result);
         }
-        return object;
+        return result;
     }
 
     /**
-     * Creates an object from the given tree of WKT elements.
+     * Parses a tree of {@link Element}s to produce a geodetic object. The {@code root} argument
+     * should be a value returned by {@link #textToTree(String, ParsePosition)}.
      *
-     * @param  root  the tree of WKT elements.
+     * @param  tree  the tree of WKT elements.
      * @return the parsed object (never {@code null}).
-     * @throws ParseException if an error occurred while parsing the WKT.
+     * @throws ParseException if the tree can not be parsed.
      */
-    final Object parse(final Element root) throws ParseException {
+    final Object buildFromTree(StoredTree tree) throws ParseException {
         clear();
         final AbstractParser parser = parser(false);
-        Object object = null;
+        final Element root = new Element(tree.toElement(parser, 0));
+        Object result = null;
         try {
-            object = parser.buildFromTree(root);
+            result = parser.buildFromTree(root);
+            root.close(parser.ignoredElements);
         } finally {
-            warnings = parser.getAndClearWarnings(object);
+            warnings = parser.getAndClearWarnings(result);
         }
-        return object;
+        return result;
     }
 
     /**
@@ -881,7 +894,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * for the source of logging messages which is the enclosing {@code WKTParser} instead than a factory.
      */
     private static final class Parser extends GeodeticObjectParser {
-        Parser(final Symbols symbols, final Map<String,Element> fragments,
+        Parser(final Symbols symbols, final Map<String,StoredTree> fragments,
                 final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
                 final Convention convention, final Transliterator transliterator, final Locale errorLocale,
                 final ReferencingFactoryContainer factories)

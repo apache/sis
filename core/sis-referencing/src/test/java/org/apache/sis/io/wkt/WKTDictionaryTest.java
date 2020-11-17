@@ -28,7 +28,6 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -61,28 +60,34 @@ public final strictfp class WKTDictionaryTest extends TestCase {
             factory.load(source);
         }
         /*
-         * ESRI code space should be fist because it is the most frequently used
-         * in the test file. The authority should be "ESRI" for the same reason.
-         * Codes can be in any order.
+         * TEST code space should be fist because it is the most frequently used
+         * in the test file. The authority should be "TEST" for the same reason.
+         * Codes can be in any order. Code spaces are omitted when there is no ambiguity.
          */
-        assertArrayEquals("getCodeSpaces()", new String[] {"ESRI", "MyCodeSpace"}, factory.getCodeSpaces().toArray());
-        assertSame("getAuthority()", Citations.ESRI, factory.getAuthority());
+        assertArrayEquals("getCodeSpaces()", new String[] {"TEST", "ESRI"}, factory.getCodeSpaces().toArray());
+        assertEquals("getAuthority()", "TEST", factory.getAuthority().getTitle().toString());
         Set<String> codes = factory.getAuthorityCodes(IdentifiedObject.class);
-        assertSame(codes, factory.getAuthorityCodes(IdentifiedObject.class));       // Test caching.
-        assertSame(codes, factory.getAuthorityCodes(SingleCRS.class));              // Test sharing.
-        assertSetEquals(Arrays.asList("102018", "ESRI::102021", "MyCodeSpace::102021", "MyCodeSpace:v2:102021"), codes);
+        assertSame( codes,  factory.getAuthorityCodes(IdentifiedObject.class));     // Test caching.
+        assertSame( codes,  factory.getAuthorityCodes(SingleCRS.class));            // Test sharing.
+        assertSetEquals(Arrays.asList("102018", "ESRI::102021", "TEST::102021", "TEST:v2:102021", "E1", "E2"), codes);
         assertSetEquals(Arrays.asList("102018", "ESRI::102021"), factory.getAuthorityCodes(ProjectedCRS.class));
         codes = factory.getAuthorityCodes(GeographicCRS.class);
-        assertSetEquals(Arrays.asList("MyCodeSpace::102021", "MyCodeSpace:v2:102021"), codes);
+        assertSetEquals(Arrays.asList("TEST::102021", "TEST:v2:102021", "E1", "E2"), codes);
         assertSame(codes, factory.getAuthorityCodes(GeodeticCRS.class));            // Test sharing.
         assertSame(codes, factory.getAuthorityCodes(GeographicCRS.class));          // Test caching.
         /*
          * Tests CRS creation.
          */
-        verifyCRS(factory.createProjectedCRS(     "102018"), "North_Pole_Stereographic", +90);
-        verifyCRS(factory.createProjectedCRS("ESRI:102021"), "South_Pole_Stereographic", -90);
-        verifyCRS(factory.createGeographicCRS("MyCodeSpace::102021"), "Anguilla 1957");
-        verifyCRS(factory.createGeographicCRS("MyCodeSpace:v2:102021"), "Anguilla 1957 (bis)");
+        verifyCRS(factory.createProjectedCRS (        "102018"), "North_Pole_Stereographic", +90);
+        verifyCRS(factory.createProjectedCRS ("ESRI :  102021"), "South_Pole_Stereographic", -90);
+        verifyCRS(factory.createGeographicCRS("TEST:  :102021"), "Anguilla 1957");
+        verifyCRS(factory.createGeographicCRS("TEST:v2:102021"), "Anguilla 1957 (bis)");
+        /*
+         * Test creation of CRS having errors.
+         *   - Verify error index.
+         */
+        verifyErroneousCRS(factory, "E1", 69);
+        verifyErroneousCRS(factory, "E2", 42);
     }
 
     /**
@@ -110,5 +115,50 @@ public final strictfp class WKTDictionaryTest extends TestCase {
         assertEquals("name", name, crs.getName().getCode());
         assertAxisDirectionsEqual(name, crs.getCoordinateSystem(),
                                   AxisDirection.NORTH, AxisDirection.EAST);
+    }
+
+    /**
+     * Verifies the error message and error offset when trying to parse an erroneous CRS.
+     *
+     * @param  factory      factory to use.
+     * @param  code         code of erroneous CRS.
+     * @param  errorOffset  expected error index.
+     */
+    private static void verifyErroneousCRS(final WKTDictionary factory, final String code, final int errorOffset) {
+        String details = null;
+        try {
+            factory.createGeographicCRS(code);
+            fail("Parsing should have failed.");
+        } catch (FactoryException e) {
+            /*
+             * Expect a message like: Can not create a geodetic object for "E1".
+             * The exact message is locale-dependent, so we can not test fully.
+             */
+            final String message = e.getMessage();
+            assertTrue(message, message.contains(code));
+            /*
+             * Expect a message like: Missing "semiMajorAxis" component in "Ellipsoid" element.
+             * The error offset (zero-based) should point to the character after "Ellipsoid" in
+             * the following WKT:
+             *
+             *     Datum["Erroneous", Ellipsoid["Missing axis length"]]
+             */
+            final UnparsableObjectException cause = (UnparsableObjectException) e.getCause();
+            details = cause.getMessage();
+            assertTrue(message, details.contains("Ellipsoid"));
+            assertTrue(message, details.contains("semiMajorAxis"));
+            assertEquals("errorOffset", errorOffset, cause.getErrorOffset());
+        }
+        /*
+         * Try parsing again. The exception message should have been saved,
+         * i.e. the parsing process is not repeated.
+         */
+        try {
+            factory.createGeographicCRS(code);
+            fail("Parsing should have failed.");
+        } catch (FactoryException e) {
+            assertEquals(details, e.getMessage());
+            assertNull(e.getCause());
+        }
     }
 }
