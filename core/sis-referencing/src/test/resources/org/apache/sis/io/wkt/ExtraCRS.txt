@@ -6,12 +6,17 @@
 #
 # Alias for WGS84 geographic CRS.
 #
-SET DEGREE = Unit["Degree", 0.0174532925199433]
 SET WGS84_BASE =
  BaseGeodCRS["GCS_WGS_1984",
   Datum["D_WGS_1984",
    Ellipsoid["WGS_1984", 6378137, 298.257223563]],
-  $DEGREE]
+  AngleUnit["Degree", 0.0174532925199433]]
+
+SET ELLIPSOIDAL_CS =
+ CS[ellipsoidal, 2],
+  Axis["Latitude", north],
+  Axis["Longitude", east],
+  AngleUnit["Degree", 0.0174532925199433]
 
 
 #
@@ -50,19 +55,13 @@ ProjectedCRS["South_Pole_Stereographic",
 GeodCRS["Anguilla 1957",
  Datum["Anguilla 1957",
   Ellipsoid["Clarke 1880", 6378249.145, 293.465]],
- CS[ellipsoidal, 2],
-  Axis["Latitude", north],
-  Axis["Longitude", east],
-  $DEGREE,
+ $ELLIPSOIDAL_CS,
  Id["TEST", 102021]]
 
 GeodCRS["Anguilla 1957 (bis)",
  Datum["Anguilla 1957",
   Ellipsoid["Clarke 1880", 6378249.145, 293.465]],
- CS[ellipsoidal, 2],
-  Axis["Latitude", north],
-  Axis["Longitude", east],
-  $DEGREE,
+ $ELLIPSOIDAL_CS,
  Id["TEST", 102021, "v2"]]
 
 
@@ -71,19 +70,12 @@ GeodCRS["Anguilla 1957 (bis)",
 # The erroneous element should be on the first line for avoiding platform-dependency
 # caused by various line separators ("\n" versus "\r\n").
 #
-
 SET BAD_DATUM = Datum["Erroneous", Ellipsoid["Missing axis length"]]
 
 GeodCRS["Error index 69 (on Ellipsoid)", Datum["Erroneous", Ellipsoid["Missing axis length"]],
- CS[ellipsoidal, 2],
-  Axis["Latitude", north],
-  Axis["Longitude", east],
-  $DEGREE,
+ $ELLIPSOIDAL_CS,
  Id["TEST", "E1"]]
 
 GeodCRS["Error index 42 (on $BAD_DATUM)", $BAD_DATUM,
- CS[ellipsoidal, 2],
-  Axis["Latitude", north],
-  Axis["Longitude", east],
-  $DEGREE,
+ $ELLIPSOIDAL_CS,
  Id["TEST", "E2"]]

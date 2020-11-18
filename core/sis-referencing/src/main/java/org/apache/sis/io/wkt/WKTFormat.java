@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.TreeMap;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.io.IOException;
 import java.text.Format;
@@ -761,7 +763,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             throw new IllegalArgumentException(errors().getString(Errors.Keys.NotAUnicodeIdentifier_1, name));
         }
         final ParsePosition pos = new ParsePosition(0);
-        final StoredTree definition = textToTree(wkt, pos);
+        final StoredTree definition = textToTree(wkt, pos, name);
         final int length = wkt.length();
         final int index = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), length);
         if (index < length) {
@@ -790,23 +792,45 @@ public class WKTFormat extends CompoundFormat<Object> {
      * This method should be invoked only for WKT trees to be stored for a long time.
      * It should not be invoked for immediate {@link IdentifiedObject} parsing.
      *
-     * @param  wkt  the Well Know Text (WKT) fragment to parse.
-     * @param  pos  index of the first character to parse (on input) or after last parsed character (on output).
+     * <p>If {@code aliasKey} is non-null, this method may return a multi-roots tree.
+     * See {@link StoredTree#root} for a discussion. Note that in both cases (single
+     * root or multi-roots), we may have some unparsed characters at the end of the string.</p>
+     *
+     * @param  wkt       the Well Know Text (WKT) fragment to parse.
+     * @param  pos       index of the first character to parse (on input) or after last parsed character (on output).
+     * @param  aliasKey  key of the alias, or {@code null} if this method is not invoked
+     *                   for defining a {@linkplain #addFragment(String, String) fragment}.
      * @return root of the tree of elements.
      */
-    final StoredTree textToTree(final String wkt, final ParsePosition pos) throws ParseException {
-        final AbstractParser parser = parser(true);
-        Element result = null;
+    final StoredTree textToTree(final String wkt, final ParsePosition pos, final String aliasKey) throws ParseException {
+        final AbstractParser parser  = parser(true);
+        final List<Element>  results = new ArrayList<>(4);
         warnings = null;
         try {
-            result = parser.textToTree(wkt, pos);
+            for (;;) {
+                results.add(parser.textToTree(wkt, pos));
+                if (aliasKey == null) break;
+                /*
+                 * If we find a separator (usually a coma), search for another element. Contrarily to equivalent
+                 * loop in `Element(AbstractParser, …)` constructor, we do not parse number or dates because we
+                 * do not have a way as reliable as above-cited constructor to differentiate the kind of value.
+                 */
+                final int p = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length());
+                final String separator = parser.symbols.trimmedSeparator();
+                if (!wkt.startsWith(separator, p)) break;
+                pos.setIndex(p + separator.length());
+            }
         } finally {
-            warnings = parser.getAndClearWarnings(result);
+            warnings = parser.getAndClearWarnings(results.isEmpty() ? null : results.get(0));
         }
         if (sharedValues == null) {
             sharedValues = new HashMap<>();
         }
-        return new StoredTree(result, sharedValues);
+        if (results.size() == 1) {
+            return new StoredTree(results.get(0), sharedValues);      // Standard case.
+        } else {
+            return new StoredTree(results, sharedValues);             // Anonymous wrapper around multi-roots.
+        }
     }
 
     /**
@@ -824,7 +848,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * In case of error, {@link ParseException#getErrorOffset()} gives the position of the first illegal character.
      *
      * @param  wkt  the character sequence for the object to parse.
-     * @param  pos  the position where to start the parsing.
+     * @param  pos  index of the first character to parse (on input) or after last parsed character (on output).
      * @return the parsed object (never {@code null}).
      * @throws ParseException if an error occurred while parsing the WKT.
      */
@@ -844,8 +868,9 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Parses a tree of {@link Element}s to produce a geodetic object. The {@code root} argument
-     * should be a value returned by {@link #textToTree(String, ParsePosition)}.
+     * Parses a tree of {@link Element}s to produce a geodetic object. The {@code tree} argument
+     * should be a value returned by {@link #textToTree(String, ParsePosition, String)}.
+     * This method is for {@link WKTDictionary#createObject(String)} usage.
      *
      * @param  tree  the tree of WKT elements.
      * @return the parsed object (never {@code null}).
@@ -854,7 +879,9 @@ public class WKTFormat extends CompoundFormat<Object> {
     final Object buildFromTree(StoredTree tree) throws ParseException {
         clear();
         final AbstractParser parser = parser(false);
-        final Element root = new Element(tree.toElement(parser, 0));
+        final SingletonElement singleton = new SingletonElement();
+        tree.toElements(parser, singleton, 0);
+        final Element root = new Element(singleton.value);
         Object result = null;
         try {
             result = parser.buildFromTree(root);

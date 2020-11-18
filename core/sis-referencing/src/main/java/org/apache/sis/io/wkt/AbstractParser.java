@@ -237,10 +237,11 @@ abstract class AbstractParser implements Parser {
      */
     @Override
     public final Object createFromWKT(final String wkt) throws FactoryException {
+        final ParsePosition position = new ParsePosition(0);
         Object result = null;
         Warnings warnings;
         try {
-            result = createFromWKT(wkt, new ParsePosition(0));
+            result = createFromWKT(wkt, position);
         } catch (ParseException exception) {
             final Throwable cause = exception.getCause();
             if (cause instanceof FactoryException) {
@@ -249,6 +250,12 @@ abstract class AbstractParser implements Parser {
             throw new FactoryException(exception.getLocalizedMessage(), exception);
         } finally {
             warnings = getAndClearWarnings(result);
+        }
+        final CharSequence unparsed = CharSequences.token(wkt, position.getIndex());
+        if (unparsed.length() != 0) {
+            throw new FactoryException(Errors.getResources(errorLocale).getString(
+                        Errors.Keys.UnexpectedCharactersAfter_2,
+                        CharSequences.token(wkt, 0) + "[…]", unparsed));
         }
         if (warnings != null) {
             log(new LogRecord(Level.WARNING, warnings.toString()));
@@ -259,8 +266,10 @@ abstract class AbstractParser implements Parser {
     /**
      * Parses a <cite>Well-Know Text</cite> from specified position as a geodetic object.
      * Caller should invoke {@link #getAndClearWarnings(Object)} in a {@code finally} block
-     * after this method.
+     * after this method and should decide what to do with remaining character at the end of the string.
      *
+     * @param  text       the Well-Known Text (WKT) to parse.
+     * @param  position   index of the first character to parse (on input) or after last parsed character (on output).
      * @return the parsed object.
      * @throws ParseException if the string can not be parsed.
      */
@@ -296,7 +305,7 @@ abstract class AbstractParser implements Parser {
      * @return the parsed object as a tree of {@link Element}s.
      * @throws ParseException if the string can not be parsed.
      *
-     * @see WKTFormat#textToTree(String, ParsePosition)
+     * @see WKTFormat#textToTree(String, ParsePosition, String)
      */
     final Element textToTree(final String wkt, final ParsePosition position) throws ParseException {
         int lower = CharSequences.skipLeadingWhitespaces(wkt, position.getIndex(), wkt.length());
@@ -316,7 +325,9 @@ abstract class AbstractParser implements Parser {
             throw new UnparsableObjectException(errorLocale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
         }
         position.setIndex(upper);
-        return fragment.toElement(this, ~0);
+        final SingletonElement singleton = new SingletonElement();
+        fragment.toElements(this, singleton, ~0);
+        return singleton.value;
     }
 
     /**

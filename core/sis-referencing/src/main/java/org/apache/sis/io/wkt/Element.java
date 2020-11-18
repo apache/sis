@@ -267,7 +267,7 @@ final class Element {
                     position.setErrorIndex(lower);
                     throw new UnparsableObjectException(errorLocale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
                 }
-                children.add(fragment.toElement(parser, ~lower));               // Set offset to '$' in "$FOO".
+                fragment.toElements(parser, children, ~lower);                  // Set offset to '$' in "$FOO".
                 lower = upper;
             } else if (Character.isUnicodeIdentifierStart(firstChar)) {
                 /*

@@ -591,11 +591,10 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
             if (buffer.length() != 0) {
                 pos.setIndex(0);
                 final String wkt = buffer.toString();
-                final StoredTree tree = parser.textToTree(wkt, pos);
+                final StoredTree tree = parser.textToTree(wkt, pos, aliasKey);
                 final int end = pos.getIndex();
                 if (end < wkt.length()) {           // Trailing white spaces already removed by `read(…)`.
-                    throw new FactoryDataException(resources().getString(Resources.Keys.UnexpectedTextAtLine_2,
-                                getLineNumber(), CharSequences.token(wkt, end)));
+                    throw new FactoryDataException(unexpectedText(getLineNumber(), wkt, end));
                 }
                 if (aliasKey != null) {
                     parser.addFragment(aliasKey, tree);
@@ -653,10 +652,8 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
 
     /**
      * Adds definitions of CRS (or other geodetic objects) from Well-Known Texts. Blank strings are ignored.
-     * Each non-blank {@link String} shall contain the complete definition of at least one geodetic object.
-     * More than one geodetic object can appear in the same {@link String} if they are separated by spaces
-     * or line separators. However the same geodetic object can not have its definition splitted in two or
-     * more {@link String}s.
+     * Each non-blank {@link String} shall contain the complete definition of exactly one geodetic object.
+     * A geodetic object can not have its definition splitted in two or more {@link String}s.
      *
      * <p>The key associated to each object is given by the {@code ID[…]} or {@code AUTHORITY[…]} element,
      * which is typically the last element of a WKT string and is mandatory. WKT strings can contain line
@@ -682,9 +679,10 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
             try {
                 while (it.hasNext()) {
                     final String wkt = it.next();
-                    final int length = CharSequences.skipTrailingWhitespaces(wkt, 0, wkt.length());
-                    while (pos.getIndex() < length) {
-                        addDefinition(parser.textToTree(wkt, pos));
+                    addDefinition(parser.textToTree(wkt, pos, null));
+                    final int end = pos.getIndex();
+                    if (end < CharSequences.skipTrailingWhitespaces(wkt, 0, wkt.length())) {
+                        throw new FactoryDataException(unexpectedText(lineNumber, wkt, end));
                     }
                     pos.setIndex(0);
                     lineNumber++;
@@ -699,6 +697,18 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
         } finally {
             lock.writeLock().unlock();
         }
+    }
+
+    /**
+     * Produces an error message for unexpected characters at the end of WKT string.
+     *
+     * @param  lineNumber  line where the error occurred.
+     * @param  wkt         the WKT being parsed.
+     * @param  end         end of WKT parsing.
+     * @return message to give to exception constructor.
+     */
+    private String unexpectedText(final int lineNumber, final String wkt, final int end) {
+        return resources().getString(Resources.Keys.UnexpectedTextAtLine_2, lineNumber, CharSequences.token(wkt, end));
     }
 
     /**

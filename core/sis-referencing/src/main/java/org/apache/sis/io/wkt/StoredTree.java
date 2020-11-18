@@ -17,7 +17,9 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -71,7 +73,9 @@ final class StoredTree implements Serializable {
         private static final long serialVersionUID = 1463070931527783896L;
 
         /**
-         * Copy of {@link Element#keyword} reference. Never {@code null}.
+         * Copy of {@link Element#keyword} reference, or {@code null} if this node is anonymous.
+         * Anonymous nodes are used only as wrappers for array of roots in the corner cases
+         * documented by {@link StoredTree#root}.
          *
          * @see StoredTree#keyword()
          */
@@ -86,9 +90,25 @@ final class StoredTree implements Serializable {
         private final Object[] children;
 
         /**
+         * Creates an anonymous node for an array of roots. This constructor is only for the corner
+         * case documented in <cite>"Multi roots"</cite> section of {@link StoredTree#root} javadoc.
+         *
+         * @see StoredTree#StoredTree(List, Map)
+         */
+        Node(final Deflater deflater, final List<Element> elements) {
+            keyword = null;
+            children = new Node[elements.size()];
+            for (int i=0; i<children.length; i++) {
+                children[i] = deflater.unique(new Node(deflater, elements.get(i)));
+            }
+        }
+
+        /**
          * Creates an immutable copy of the given element. Keywords and children references
          * are copied in this new {@code Node} but {@link Element#offset}s are copied in a
          * separated array for making possible to share {@code Node} instances.
+         *
+         * @see StoredTree#StoredTree(Element, Map)
          */
         Node(final Deflater deflater, final Element element) {
             keyword  = (String) deflater.unique(element.keyword);
@@ -106,12 +126,28 @@ final class StoredTree implements Serializable {
         }
 
         /**
+         * Copies this node in modifiable {@link Element}s and add them to the given list.
+         * This is the converse of the {@link #Node(Deflater, List)} constructor.
+         * This method usually adds exactly one element to the given list, except
+         * for the "multi-roots" corner case documented in {@link StoredTree#root}.
+         *
+         * @see StoredTree#toElements(AbstractParser, Collection, int)
+         */
+        final void toElements(final Inflater inflater, final Collection<? super Element> addTo) {
+            if (keyword != null) {
+                addTo.add(toElement(inflater));         // Standard case.
+            } else {
+                for (final Node child : (Node[]) children) {
+                    addTo.add(child.toElement(inflater));
+                }
+            }
+        }
+
+        /**
          * Copies this node in a modifiable {@link Element}.
          * This is the converse of the {@link #Node(Deflater, Element)} constructor.
-         *
-         * @see StoredTree#toElement(AbstractParser, int)
          */
-        final Element toElement(final Inflater inflater) {
+        private Element toElement(final Inflater inflater) {
             final LinkedList<Object> list;
             if (children == null) {
                 list = null;
@@ -144,6 +180,7 @@ final class StoredTree implements Serializable {
                         final Node node = (Node) object;
                         if (node.children != null) {
                             for (final String key : keys) {
+                                // Keyword is never null for children.
                                 if (node.keyword.equalsIgnoreCase(key)) {
                                     return node;
                                 }
@@ -180,7 +217,9 @@ final class StoredTree implements Serializable {
          * @see StoredTree#forEachValue(Consumer)
          */
         final void forEachValue(final Consumer<Object> addTo) {
-            addTo.accept(keyword);
+            if (keyword != null) {
+                addTo.accept(keyword);
+            }
             if (children != null) {
                 for (final Object child : children) {
                     addTo.accept(child);
@@ -215,6 +254,7 @@ final class StoredTree implements Serializable {
          */
         @Override
         public int hashCode() {
+            // We never use hashCode()/equals(Object) with anonymous node (null keyword).
             int hash = keyword.hashCode();
             if (children != null) {
                 for (final Object value : children) {
@@ -235,6 +275,7 @@ final class StoredTree implements Serializable {
         public boolean equals(final Object other) {
             if (other instanceof Node) {
                 final Node that = (Node) other;
+                // We never use hashCode()/equals(Object) with anonymous node (null keyword).
                 if (keyword.equals(that.keyword)) {
                     if (children == that.children) {
                         return true;
@@ -258,6 +299,23 @@ final class StoredTree implements Serializable {
 
     /**
      * Root of a tree of {@link Element} snapshots.
+     *
+     * <h4>Multi-roots</h4>
+     * There is exactly one root in the vast majority of cases. However there is a situation
+     * where we need to allow more roots: when user wants to represent a coordinate system.
+     * A WKT 2 coordinate system looks like:
+     *
+     * {@preformat wkt
+     *   CS[Cartesian, 2],
+     *     Axis["Easting (E)", east],
+     *     Axis["Northing (N)", north],
+     *     Unit["metre", 1]
+     * }
+     *
+     * While axes are conceptually parts of coordinate system, they are not declared inside the {@code CS[…]}
+     * element for historical reasons (for compatibility with WKT 1). For representing such "flattened tree",
+     * we need an array of roots. We do that by wrapping that array in a synthetic {@link Node} with null
+     * {@link Node#keyword} (an "anonymous node").
      */
     private final Node root;
 
@@ -272,28 +330,42 @@ final class StoredTree implements Serializable {
     private final short[] offsets;
 
     /**
-     * Creates a new {@code StoredTree} with a copy of given arrays.
-     * Changes to the given array after construction will not affect this {@code StoredTree}.
+     * Creates a new {@code StoredTree} with a snapshot of given tree of elements.
      *
-     * @param  root          root of the tree of WKT elements.
+     * @param  tree          root of the tree of WKT elements.
      * @param  sharedValues  pool to use for sharing unique instances of values.
      */
-    StoredTree(final Element root, final Map<Object,Object> sharedValues) {
+    StoredTree(final Element tree, final Map<Object,Object> sharedValues) {
         final Deflater deflater = new Deflater(sharedValues);
-        this.root = (Node) deflater.unique(new Node(deflater, root));
+        root = (Node) deflater.unique(new Node(deflater, tree));
         offsets = deflater.offsets();
     }
 
     /**
-     * Recreates {@link Element} tree. This method is the converse of the constructor.
+     * Creates a new {@code StoredTree} with a snapshot of given trees of elements.
+     * This is for a corner case only; see <cite>"Multi roots"</cite> in {@link #root}.
+     *
+     * @param  trees         roots of the trees of WKT elements.
+     * @param  sharedValues  pool to use for sharing unique instances of values.
+     */
+    StoredTree(final List<Element> trees, final Map<Object,Object> sharedValues) {
+        final Deflater deflater = new Deflater(sharedValues);
+        root = new Node(deflater, trees);       // Do not invoke `unique(…)` on anymous node.
+        offsets = deflater.offsets();
+    }
+
+    /**
+     * Recreates {@link Element} trees. This method is the converse of the constructor.
+     * This method usually adds exactly one element to the given list, except
+     * for the "multi-roots" corner case documented in {@link #root}.
      *
      * @param  parser      the parser which will be used for parsing the tree.
+     * @param  addTo       where to add the elements.
      * @param  isFragment  non-zero if and only if {@link Element#isFragment} shall be {@code true}.
      *                     In such case, this value must be <code>~{@linkplain Element#offset}</code>.
-     * @return root of {@link Element} tree.
      */
-    final Element toElement(final AbstractParser parser, final int isFragment) {
-        return root.toElement(new Inflater(parser, offsets, isFragment));
+    final void toElements(final AbstractParser parser, final Collection<? super Element> addTo, final int isFragment) {
+        root.toElements(new Inflater(parser, offsets, isFragment), addTo);
     }
 
     /**
@@ -302,7 +374,7 @@ final class StoredTree implements Serializable {
      * Each instances shall be used for constructing only one {@link Node}. After node construction, this
      * instance lives longer in the {@link #sharedValues} map for sharing {@link #offsets} arrays.
      *
-     * @see StoredTree#StoredTree(Element, Map)
+     * @see StoredTree#StoredTree(List, Map)
      */
     private static final class Deflater {
         /**
@@ -336,16 +408,18 @@ final class StoredTree implements Serializable {
         }
 
         /**
-         * Returns a unique instance of given node.
+         * Returns a unique instance of given object. The given value can be a {@link Node} instance
+         * provided that it is not an anonymous node (i.e. {@link Node#keyword} shall be non-null).
          *
-         * @return a previous instance from the pool, or {@code node} if none.
+         * @param  value  the value for which to get a unique instance.
+         * @return a previous instance from the pool, or {@code value} if none.
          *
          * @see Node#hashCode()
          * @see Node#equals(Object)
          */
-        final Object unique(final Object node) {
-            final Object existing = sharedValues.putIfAbsent(node, node);
-            return (existing != null) ? existing : node;
+        final Object unique(final Object value) {
+            final Object existing = sharedValues.putIfAbsent(value, value);
+            return (existing != null) ? existing : value;
         }
 
         /**
@@ -403,7 +477,7 @@ final class StoredTree implements Serializable {
      * A helper class for decompressing a tree of {@link Element}s from a tree of {@link Node}s.
      * This is the converse of {@link Deflater}.
      *
-     * @see StoredTree#toElement(AbstractParser, int)
+     * @see StoredTree#toElements(AbstractParser, Collection, int)
      */
     private static final class Inflater {
         /**

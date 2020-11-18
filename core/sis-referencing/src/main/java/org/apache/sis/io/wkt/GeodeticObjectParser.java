@@ -232,8 +232,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Caller should invoke {@link #getAndClearWarnings(Object)} in a {@code finally} block
      * after this method.
      *
-     * @param  text      the text to be parsed.
-     * @param  position  the position to start parsing from.
+     * @param  text       the Well-Known Text (WKT) to parse.
+     * @param  position   index of the first character to parse (on input) or after last parsed character (on output).
      * @return the parsed object.
      * @throws ParseException if the string can not be parsed.
      */
