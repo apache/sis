@@ -32,7 +32,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.ParsePosition;
+import java.util.function.Consumer;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
@@ -53,6 +55,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.FrequencySortedSet;
+import org.apache.sis.util.iso.SimpleInternationalString;
 
 
 /**
@@ -99,7 +102,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * @see #updateAuthority()
      * @see #getAuthority()
      */
-    private Citation authority;
+    private volatile Citation authority;
 
     /**
      * Authorities declared in all {@code "ID[CITATION[…]]"} elements found in WKT definitions.
@@ -714,6 +717,26 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     }
 
     /**
+     * Adds all definition values to the given supplier. This is for testing purposes only.
+     * This method performs no locking because it is not needed for current JUnit tests.
+     *
+     * @see StoredTree#forEachValue(Consumer)
+     */
+    final void forEachValue(final Consumer<Object> addTo) {
+        for (final Object value : definitions.values()) {
+            if (value instanceof Disambiguation) {
+                Disambiguation choices = (Disambiguation) value;
+                do {
+                    addTo.accept(choices.value);
+                    choices = choices.previous;
+                } while (choices != null);
+            } else {
+                addTo.accept(value);
+            }
+        }
+    }
+
+    /**
      * Returns the authority or specification that defines the codes recognized by this factory.
      * This is the first of the following values, in preference order:
      *
@@ -748,6 +771,30 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     }
 
     /**
+     * Gets a description of the object corresponding to a code.
+     *
+     * @param  code  value allocated by authority.
+     * @return a description of the object, or {@code null} if {@code null} if none.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the query failed for some other reason.
+     */
+    @Override
+    public InternationalString getDescriptionText(final String code) throws FactoryException {
+        final String text;
+        final Object value = getOrCreate(code, false);
+        if (value instanceof IdentifiedObject) {
+            text = ((IdentifiedObject) value).getName().getCode();
+        } else {
+            text = String.valueOf(value);
+            if (!(value instanceof StoredTree)) {
+                // Exception message saved in a previous invocation of `getOrCreate(…)`.
+                throw new FactoryException(text);
+            }
+        }
+        return new SimpleInternationalString(text);
+    }
+
+    /**
      * Returns an arbitrary object from a code.
      *
      * @param  code  value allocated by authority.
@@ -757,6 +804,25 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      */
     @Override
     public IdentifiedObject createObject(final String code) throws FactoryException {
+        final Object value = getOrCreate(code, true);
+        if (value instanceof IdentifiedObject) {
+            return (IdentifiedObject) value;
+        } else {
+            // Exception message saved in a previous invocation of `getOrCreate(…)`.
+            throw new FactoryException(String.valueOf(value));
+        }
+    }
+
+    /**
+     * Returns the object associated to the given code.
+     *
+     * @param  code    value allocated by authority.
+     * @param  create  whether to create {@link IdentifiedObject} from {@link StoredTree}.
+     * @return the object for the given code, possibly as a {@link StoredTree} if {@code create} is {@code false}.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     */
+    private Object getOrCreate(final String code, final boolean create) throws FactoryException {
         /*
          * Separate the authority from the rest of the code. The CharSequences.skipWhitespaces(…)
          * methods are robust to negative index and will work even if code.indexOf(…) returned -1.
@@ -825,7 +891,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
          * If `StoredTree`, try to replace that value by an `IdentifiedObject` (on success) or `String` (on failure).
          * Must be done under write lock because `parser` is not thread-safe.
          */
-        if (value instanceof StoredTree) {
+        if (create && value instanceof StoredTree) {
             lock.writeLock().lock();
             try {
                 if (choices != null) {
@@ -859,12 +925,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
                 lock.writeLock().unlock();
             }
         }
-        if (value instanceof IdentifiedObject) {
-            return (IdentifiedObject) value;
-        } else {
-            // Exception message saved in a previous invocation of this method.
-            throw new FactoryException(String.valueOf(value));
-        }
+        return value;
     }
 
     /**

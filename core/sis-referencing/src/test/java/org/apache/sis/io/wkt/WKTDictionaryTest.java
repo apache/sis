@@ -17,7 +17,12 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Set;
+import java.util.Map;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.function.Consumer;
+import java.util.function.BiFunction;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -60,7 +65,13 @@ public final strictfp class WKTDictionaryTest extends TestCase {
             factory.load(source);
         }
         /*
-         * TEST code space should be fist because it is the most frequently used
+         * The `load(…)` method should detect duplicated WKT elements and use references
+         * to unique instances of nodes such as "AngleUnit["Degree", 0.0174532925199433]]".
+         * Following line verifies if the trees of WKT elements indeed share common nodes.
+         */
+        new SharedValuesCheck().verify(factory);
+        /*
+         * "TEST" code space should be fist because it is the most frequently used
          * in the test file. The authority should be "TEST" for the same reason.
          * Codes can be in any order. Code spaces are omitted when there is no ambiguity.
          */
@@ -76,6 +87,12 @@ public final strictfp class WKTDictionaryTest extends TestCase {
         assertSame(codes, factory.getAuthorityCodes(GeodeticCRS.class));            // Test sharing.
         assertSame(codes, factory.getAuthorityCodes(GeographicCRS.class));          // Test caching.
         /*
+         * Test descriptions before CRS creation.
+         * Implementation fetches them from `StoredTree` instances.
+         */
+        assertEquals("North_Pole_Stereographic", factory.getDescriptionText("ESRI::102018").toString());
+        assertEquals("South_Pole_Stereographic", factory.getDescriptionText("ESRI::102021").toString());
+        /*
          * Tests CRS creation.
          */
         verifyCRS(factory.createProjectedCRS (        "102018"), "North_Pole_Stereographic", +90);
@@ -83,11 +100,83 @@ public final strictfp class WKTDictionaryTest extends TestCase {
         verifyCRS(factory.createGeographicCRS("TEST:  :102021"), "Anguilla 1957");
         verifyCRS(factory.createGeographicCRS("TEST:v2:102021"), "Anguilla 1957 (bis)");
         /*
+         * Test descriptions after CRS creation.
+         * Implementation fetches them from `IdentifiedObject` instances.
+         */
+        assertEquals("North_Pole_Stereographic", factory.getDescriptionText("ESRI::102018").toString());
+        assertEquals("South_Pole_Stereographic", factory.getDescriptionText("ESRI::102021").toString());
+        /*
          * Test creation of CRS having errors.
          *   - Verify error index.
          */
         verifyErroneousCRS(factory, "E1", 69);
         verifyErroneousCRS(factory, "E2", 42);
+    }
+
+    /**
+     * Verifies that there is no duplicated nodes in the {@link StoredTree}s.
+     * When a WKT element is repeated often (e.g. "AngleUnit["Degree", 0.0174532925199433]]"),
+     * only one {@link org.apache.sis.io.wkt.StoredTree.Node} instance should be created and shared by all trees.
+     */
+    private static final class SharedValuesCheck implements Consumer<Object>, BiFunction<Integer,Integer,Integer> {
+        /**
+         * Counter of number of occurrences of each instance. Keys may be {@link String},
+         * {@link Long}, {@link Double} or {@code StoredTree.Node} instances among others.
+         * Values are number of occurrences.
+         */
+        private final Map<Object,Integer> counts = new IdentityHashMap<>(90);
+
+        /**
+         * Verifies all trees in the given factory.
+         */
+        final void verify(final WKTDictionary factory) {
+            factory.forEachValue(this);
+            assertEquals("Some values are equal but distinct instances. A single instance should be shared.",
+                         new HashSet<>(counts.keySet()).size(), counts.size());
+            /*
+             * Verify the number of occurrences of a few values. Note that the same string representation of keys
+             * value may appear twice: once because the value was already a `String`, and once because the value
+             * was a `StoredTree.Node` with the same string representation.
+             *
+             * The `expected` values below are empirical values and may need to be updated if the content of
+             * `ExtraCRS.txt` test file is modified.
+             */
+            for (final Map.Entry<Object,Integer> entry : counts.entrySet()) {
+                final String key = entry.getKey().toString();
+                final int expected;
+                switch (key) {
+                    case "Cartesian": expected = 2; break;
+                    case "north":     expected = 6; break;
+                    case "Degree":    expected = 6; break;
+                    case "Latitude of natural origin": {
+                        /*
+                         * There is 2 parameters with that string value, but those two parameters are
+                         * distinct instances because they have different parameter values (90° and -90°).
+                         */
+                        expected = (entry.getKey() instanceof String) ? 2 : 1;
+                        break;
+                    }
+                    default: continue;
+                }
+                assertEquals(key, expected, entry.getValue().intValue());
+            }
+        }
+
+        /**
+         * Invoked for each value in a WKT element. This method counts the number of occurrences of each
+         * distinct instance, separated by identity comparison (not by {@link Object#equals(Object)}).
+         */
+        @Override public void accept(final Object value) {
+            if (value instanceof StoredTree) {
+                ((StoredTree) value).forEachValue(this);
+            }
+            counts.merge(value, 1, this);
+        }
+
+        /** Invoked for incrementing a value in the {@link #counts} map. */
+        @Override public Integer apply(final Integer oldValue, final Integer value) {
+            return oldValue + value;
+        }
     }
 
     /**

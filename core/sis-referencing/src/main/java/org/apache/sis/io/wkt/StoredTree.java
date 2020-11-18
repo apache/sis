@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
+import java.util.function.Consumer;
 import java.io.Serializable;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.referencing.WKTKeywords;
@@ -90,14 +91,15 @@ final class StoredTree implements Serializable {
          * separated array for making possible to share {@code Node} instances.
          */
         Node(final Deflater deflater, final Element element) {
-            keyword  = element.keyword;
+            keyword  = (String) deflater.unique(element.keyword);
             children = element.getChildren();
             if (children != null) {
                 for (int i=0; i<children.length; i++) {
-                    final Object child = children[i];
+                    Object child = children[i];
                     if (child instanceof Element) {
-                        children[i] = deflater.unique(new Node(deflater, (Element) child));
+                        child = new Node(deflater, (Element) child);
                     }
+                    children[i] = deflater.unique(child);
                 }
             }
             deflater.addOffset(element);
@@ -137,9 +139,9 @@ final class StoredTree implements Serializable {
         final Node peekLastElement(final String... keys) {
             if (children != null) {
                 for (int i = children.length; --i >= 0;) {
-                    final Object value = children[i];
-                    if (value instanceof Node) {
-                        final Node node = (Node) value;
+                    final Object object = children[i];
+                    if (object instanceof Node) {
+                        final Node node = (Node) object;
                         if (node.children != null) {
                             for (final String key : keys) {
                                 if (node.keyword.equalsIgnoreCase(key)) {
@@ -166,6 +168,25 @@ final class StoredTree implements Serializable {
                 if (!(object instanceof Node)) {
                     addTo[index] = object;
                     if (++index >= addTo.length) break;
+                }
+            }
+        }
+
+        /**
+         * Adds keyword and children to the given supplier.
+         * Children of children are added recursively.
+         * This method is for testing purposes only.
+         *
+         * @see StoredTree#forEachValue(Consumer)
+         */
+        final void forEachValue(final Consumer<Object> addTo) {
+            addTo.accept(keyword);
+            if (children != null) {
+                for (final Object child : children) {
+                    addTo.accept(child);
+                    if (child instanceof Node) {
+                        ((Node) child).forEachValue(addTo);
+                    }
                 }
             }
         }
@@ -259,7 +280,7 @@ final class StoredTree implements Serializable {
      */
     StoredTree(final Element root, final Map<Object,Object> sharedValues) {
         final Deflater deflater = new Deflater(sharedValues);
-        this.root = deflater.unique(new Node(deflater, root));
+        this.root = (Node) deflater.unique(new Node(deflater, root));
         offsets = deflater.offsets();
     }
 
@@ -322,9 +343,9 @@ final class StoredTree implements Serializable {
          * @see Node#hashCode()
          * @see Node#equals(Object)
          */
-        final Node unique(final Node node) {
+        final Object unique(final Object node) {
             final Object existing = sharedValues.putIfAbsent(node, node);
-            return (existing != null) ? (Node) existing : node;
+            return (existing != null) ? existing : node;
         }
 
         /**
@@ -336,7 +357,7 @@ final class StoredTree implements Serializable {
             if (count >= offsets.length) {
                 offsets = Arrays.copyOf(offsets, count * 2);
             }
-            int offset = Math.min(Short.MAX_VALUE, element.offset);
+            int offset = Math.min(Short.MAX_VALUE, Math.max(0, element.offset));
             if (element.isFragment) offset = ~offset;
             offsets[count++] = (short) offset;
         }
@@ -348,10 +369,10 @@ final class StoredTree implements Serializable {
         @SuppressWarnings("ReturnOfCollectionOrArrayField")
         final short[] offsets() {
             offsets = ArraysExt.resize(offsets, count);
-            final Deflater other = (Deflater) sharedValues.putIfAbsent(this, this);
+            final short[] other = (short[]) sharedValues.putIfAbsent(this, offsets);
             sharedValues = null;
             if (other != null) {
-                this.offsets = other.offsets;
+                offsets = other;
             }
             return offsets;
         }
@@ -363,14 +384,17 @@ final class StoredTree implements Serializable {
          */
         @Override
         public boolean equals(final Object other) {
+            assert offsets.length == count;
             return (other instanceof Deflater) && Arrays.equals(offsets, ((Deflater) other).offsets);
         }
 
         /**
          * Computes a hash code value based only on the {@link #offsets} array.
+         * See {@link #equals(Object)} for rational.
          */
         @Override
         public int hashCode() {
+            assert offsets.length == count;
             return Arrays.hashCode(offsets);
         }
     }
@@ -462,6 +486,15 @@ final class StoredTree implements Serializable {
                 }
             }
         }
+    }
+
+    /**
+     * Adds keywords and children to the given supplier. This is for testing purposes only.
+     *
+     * @see WKTDictionary#forEachValue(Consumer)
+     */
+    final void forEachValue(final Consumer<Object> addTo) {
+        root.forEachValue(addTo);
     }
 
     /**
