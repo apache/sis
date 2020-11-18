@@ -771,6 +771,77 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     }
 
     /**
+     * Returns the set of authority codes for objects of the given type.
+     * The {@code type} argument specifies the base type of identified objects.
+     *
+     * @param  type  the spatial reference objects type.
+     * @return the set of authority codes for spatial reference objects of the given type.
+     * @throws FactoryException if an error occurred while fetching the codes.
+     */
+    @Override
+    public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
+        ArgumentChecks.ensureNonNull("type", type);
+        if (!type.isInterface()) {
+            type = ReferencingUtilities.getInterface(IdentifiedObject.class, type);
+        }
+        Set<String> codes;
+        lock.readLock().lock();
+        try {
+            codes = codeCaches.get(type);
+        } finally {
+            lock.readLock().unlock();
+        }
+        if (codes == null) {
+            final String[] keywords = WKTKeywords.forType(type);
+            final Class<? extends IdentifiedObject> baseType = type;                // Because lambdas require final.
+            final Predicate<Object> filter = (element) -> {
+                if (element instanceof StoredTree) {
+                    return (keywords == null) || ArraysExt.containsIgnoreCase(keywords, ((StoredTree) element).keyword());
+                } else {
+                    return baseType.isInstance(element);
+                }
+            };
+            lock.writeLock().lock();
+            try {
+                codes = codeCaches.get(type);                           // In case it has been computed concurrently.
+                if (codes == null) {
+                    codes = new HashSet<>();
+                    for (final Map.Entry<String,Object> entry : definitions.entrySet()) {
+                        final String code  = entry.getKey();
+                        final Object value = entry.getValue();
+                        if (value instanceof Disambiguation) {
+                            Disambiguation.list((Disambiguation) value, code, filter, codes);
+                        } else if (filter.test(value)) {
+                            codes.add(code);
+                        }
+                    }
+                    /*
+                     * Verify if an existing collection (assigned to another type) provides the same values.
+                     * If we find one, share the same instance for reducing memory usage.
+                     */
+                    boolean share = false;
+                    for (final Set<String> other : codeCaches.values()) {
+                        if (codes.equals(other)) {
+                            codes = other;
+                            share = true;
+                            break;
+                        }
+                    }
+                    if (!share) {
+                        // TODO: replace by Set.copyOf(Set) in JDK9 and remove the `share` flag
+                        // (not needed because Set.copyOf(Set) does the verification itself).
+                        codes = CollectionsExt.unmodifiableOrCopy(codes);
+                    }
+                    codeCaches.put(type, codes);
+                }
+            } finally {
+                lock.writeLock().unlock();
+            }
+        }
+        return codes;
+    }
+
+    /**
      * Gets a description of the object corresponding to a code.
      *
      * @param  code  value allocated by authority.
@@ -926,76 +997,5 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
             }
         }
         return value;
-    }
-
-    /**
-     * Returns the set of authority codes for objects of the given type.
-     * The {@code type} argument specifies the base type of identified objects.
-     *
-     * @param  type  the spatial reference objects type.
-     * @return the set of authority codes for spatial reference objects of the given type.
-     * @throws FactoryException if an error occurred while fetching the codes.
-     */
-    @Override
-    public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
-        ArgumentChecks.ensureNonNull("type", type);
-        if (!type.isInterface()) {
-            type = ReferencingUtilities.getInterface(IdentifiedObject.class, type);
-        }
-        Set<String> codes;
-        lock.readLock().lock();
-        try {
-            codes = codeCaches.get(type);
-        } finally {
-            lock.readLock().unlock();
-        }
-        if (codes == null) {
-            final String[] keywords = WKTKeywords.forType(type);
-            final Class<? extends IdentifiedObject> baseType = type;                // Because lambdas require final.
-            final Predicate<Object> filter = (element) -> {
-                if (element instanceof StoredTree) {
-                    return (keywords == null) || ArraysExt.containsIgnoreCase(keywords, ((StoredTree) element).keyword());
-                } else {
-                    return baseType.isInstance(element);
-                }
-            };
-            lock.writeLock().lock();
-            try {
-                codes = codeCaches.get(type);                           // In case it has been computed concurrently.
-                if (codes == null) {
-                    codes = new HashSet<>();
-                    for (final Map.Entry<String,Object> entry : definitions.entrySet()) {
-                        final String code  = entry.getKey();
-                        final Object value = entry.getValue();
-                        if (value instanceof Disambiguation) {
-                            Disambiguation.list((Disambiguation) value, code, filter, codes);
-                        } else if (filter.test(value)) {
-                            codes.add(code);
-                        }
-                    }
-                    /*
-                     * Verify if an existing collection (assigned to another type) provides the same values.
-                     * If we find one, share the same instance for reducing memory usage.
-                     */
-                    boolean share = false;
-                    for (final Set<String> other : codeCaches.values()) {
-                        if (codes.equals(other)) {
-                            codes = other;
-                            share = true;
-                            break;
-                        }
-                    }
-                    if (!share) {
-                        // TODO: replace by Set.copyOf(Set) in JDK9 and remove the `share` flag
-                        // (not needed because Set.copyOf(Set) does the verification itself).
-                        codes = CollectionsExt.unmodifiableOrCopy(codes);
-                    }
-                    codeCaches.put(type, codes);
-                }
-            } finally {
-                lock.writeLock().unlock();
-            }
-        }
-        return codes;
     }
 }
