@@ -268,12 +268,18 @@ abstract class AbstractParser implements Parser {
      * Caller should invoke {@link #getAndClearWarnings(Object)} in a {@code finally} block
      * after this method and should decide what to do with remaining character at the end of the string.
      *
+     * <p>If this method is invoked from {@link WKTFormat}, then {@link WKTFormat#clear()}
+     * should be invoked before this method for making sure that no {@link Warnings} instance
+     * is referencing {@link #ignoredElements}.</p>
+     *
      * @param  text       the Well-Known Text (WKT) to parse.
      * @param  position   index of the first character to parse (on input) or after last parsed character (on output).
      * @return the parsed object.
      * @throws ParseException if the string can not be parsed.
      */
     Object createFromWKT(final String text, final ParsePosition position) throws ParseException {
+        warnings = null;
+        ignoredElements.clear();
         final Element root = new Element(textToTree(text, position));
         final Object result = buildFromTree(root);
         root.close(ignoredElements);
@@ -334,6 +340,9 @@ abstract class AbstractParser implements Parser {
      * Parses the next element in the specified <cite>Well Know Text</cite> (WKT) tree.
      * Subclasses will typically get the name of the first element and delegate to a specialized method
      * such as {@code parseAxis(…)}, {@code parseEllipsoid(…)}, {@code parseTimeDatum(…)}, <i>etc</i>.
+     *
+     * <p>Callers should clear {@link #ignoredElements} before to invoke this method.
+     * Cleaning {@link #warnings} can be done for safety but should not be necessary.</p>
      *
      * @param  element  the element to be parsed.
      * @return the parsed object.

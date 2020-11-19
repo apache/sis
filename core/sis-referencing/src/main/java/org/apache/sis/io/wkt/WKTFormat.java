@@ -26,6 +26,8 @@ import java.util.TreeMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -47,6 +49,8 @@ import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
@@ -771,6 +775,7 @@ public class WKTFormat extends CompoundFormat<Object> {
                     new Object[] {name + " = " + definition.keyword() + "[…]", CharSequences.token(wkt, index)}, index);
         }
         addFragment(name, definition);
+        logWarnings(WKTFormat.class, "addFragment");
     }
 
     /**
@@ -805,7 +810,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     final StoredTree textToTree(final String wkt, final ParsePosition pos, final String aliasKey) throws ParseException {
         final AbstractParser parser  = parser(true);
         final List<Element>  results = new ArrayList<>(4);
-        warnings = null;
+        warnings = null;            // Do not invoke `clear()` because we do not want to clear `sharedValues` map.
         try {
             for (;;) {
                 results.add(parser.textToTree(wkt, pos));
@@ -821,6 +826,7 @@ public class WKTFormat extends CompoundFormat<Object> {
                 pos.setIndex(p + separator.length());
             }
         } finally {
+            // Invoked as a matter of principle, but no warning is expected at this stage.
             warnings = parser.getAndClearWarnings(results.isEmpty() ? null : results.get(0));
         }
         if (sharedValues == null) {
@@ -879,6 +885,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     final Object buildFromTree(StoredTree tree) throws ParseException {
         clear();
         final AbstractParser parser = parser(false);
+        parser.ignoredElements.clear();
         final SingletonElement singleton = new SingletonElement();
         tree.toElements(parser, singleton, 0);
         final Element root = new Element(singleton.value);
@@ -1041,11 +1048,28 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @since 0.6
      */
     public Warnings getWarnings() {
-        final Warnings w = warnings;
-        if (w != null) {
-            w.publish();
+        if (warnings != null) {
+            warnings.publish();
         }
-        return w;
+        return warnings;
+    }
+
+    /**
+     * If a warning occurred, logs it.
+     *
+     * @param  classe  the class to report as the source of the logging message.
+     * @param  method  the method to report as the source of the logging message.
+     */
+    final void logWarnings(final Class<?> classe, final String method) {
+        if (warnings != null) {
+            /*
+             * We can avoid the call to `Warnings.publish()` because we know that we are not keeping a
+             * reference for long, so we do not need to copy the `AbstractParser.ignoredElements` map.
+             */
+            final LogRecord record = new LogRecord(Level.WARNING, warnings.toString());
+            record.setLoggerName(Loggers.WKT);
+            Logging.log(classe, method, record);
+        }
     }
 
     /**
@@ -1065,10 +1089,10 @@ public class WKTFormat extends CompoundFormat<Object> {
     public WKTFormat clone() {
         final WKTFormat clone = (WKTFormat) super.clone();
         clone.clear();
-        clone.factories    = null;                              // Not thread-safe; clone needs its own.
-        clone.formatter    = null;                              // Do not share the formatter.
-        clone.parser       = null;
-        clone.isCloned = isCloned = true;
+        clone.factories = null;                             // Not thread-safe; clone needs its own.
+        clone.formatter = null;                             // Do not share the formatter.
+        clone.parser    = null;
+        clone.isCloned  = isCloned = true;
         // Symbols and Colors do not need to be cloned because they are flagged as immutable.
         return clone;
     }

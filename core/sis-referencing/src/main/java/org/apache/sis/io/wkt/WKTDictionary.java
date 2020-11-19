@@ -572,6 +572,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
                 }
             }
             addAliasOrDefinition();
+            parser.logWarnings(WKTDictionary.class, "load");
         }
 
         /**
@@ -687,6 +688,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
                     pos.setIndex(0);
                     lineNumber++;
                 }
+                parser.logWarnings(WKTDictionary.class, "addDefinitions");
             } catch (ParseException | IllegalArgumentException e) {
                 throw new FactoryDataException(resources().getString(
                         Resources.Keys.CanNotParseWKT_2, lineNumber, e.getLocalizedMessage()));
@@ -984,6 +986,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
                     ParseException cause = null;
                     try {
                         value = parser.buildFromTree((StoredTree) value);
+                        parser.logWarnings(WKTDictionary.class, "createObject");    // `createObject` is the public facade.
                     } catch (ParseException e) {
                         cause = e;
                         value = e.getLocalizedMessage();
