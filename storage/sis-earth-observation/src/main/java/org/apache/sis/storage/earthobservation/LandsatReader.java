@@ -346,7 +346,7 @@ final class LandsatReader extends MetadataBuilder {
                     final char c = key.charAt(i);
                     if (c < '0' || c > '9') {
                         if (c == '_') {
-                            if (key.regionMatches(i - BAND_SUFFIX.length(), BAND_SUFFIX, 0, BAND_SUFFIX.length())) try {
+                            if (key.startsWith(BAND_SUFFIX, i - BAND_SUFFIX.length())) try {
                                 band = Integer.parseInt(key.substring(++i));
                                 key = key.substring(0, i);
                             } catch (NumberFormatException e) {

@@ -418,7 +418,7 @@ public final class IOUtilities extends Static {
              * except in the particular case where there is just one letter before ':'. In such
              * case, it may be the drive letter of a Windows file.
              */
-            if (s<0 || (s==1 && Character.isLetter(path.charAt(0)) && !path.regionMatches(2, "//", 0, 2))) {
+            if (s<0 || (s==1 && Character.isLetter(path.charAt(0)) && !path.startsWith("//", 2))) {
                 return new File(path);
             }
         }

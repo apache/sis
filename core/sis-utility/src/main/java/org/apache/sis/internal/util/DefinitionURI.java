@@ -336,7 +336,7 @@ public final class DefinitionURI {
                         if (codeForGML(null, null, uri, ++upper, result) != null) {
                             return result;
                         }
-                        if (!uri.regionMatches(upper, "//", 0, 2)) {
+                        if (!uri.startsWith("//", upper)) {
                             return null;                                // Prefix is never optional for HTTP.
                         }
                         upper++;

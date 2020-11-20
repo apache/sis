@@ -282,7 +282,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
                                  * is the case, then we consider that those two variables should be kept together.
                                  */
                                 for (final String k : VECTOR_COMPONENT_NAMES) {
-                                    if (cn.regionMatches(prefixLength, k, 0, k.length())) {
+                                    if (cn.startsWith(k, prefixLength)) {
                                         siblings.add(candidate);
                                         variables[j] = null;
                                         break;

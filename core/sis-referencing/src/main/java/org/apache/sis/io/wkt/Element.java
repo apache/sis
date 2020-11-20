@@ -353,7 +353,7 @@ final class Element {
              * search for another element. Otherwise verify that the closing bracket is present.
              */
             lower = skipLeadingWhitespaces(text, lower, length);
-            if (text.regionMatches(lower, separator, 0, separator.length())) {
+            if (text.startsWith(separator, lower)) {
                 lower = skipLeadingWhitespaces(text, lower + separator.length(), length);
             } else {
                 if (lower >= length) break;
