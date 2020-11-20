@@ -17,7 +17,6 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Locale;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
@@ -65,8 +64,44 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * Coordinate Reference Systems or other kinds of objects are created from WKT definitions
  * when a {@code create(…)} method is invoked for the first time for a given key.
  *
- * <p>Newly constructed {@code WKTDictionary} are initially empty. For populating the factory,
- * the {@link #load(BufferedReader)} or {@link #addDefinitions(Stream)} methods must be invoked.</p>
+ * <h2>Sub-classing and instantiation</h2>
+ * {@linkplain #WKTDictionary(Citation) Newly constructed} {@code WKTDictionary} are initially empty.
+ * The dictionary can be populated in the following ways:
+ *
+ * <ul>
+ *   <li>Invoke {@link #load(BufferedReader)} for reading definitions from file(s).</li>
+ *   <li>Invoke {@link #addDefinitions(Stream)} for providing definitions from an arbitrary source.</li>
+ *   <li>Override {@link #fetchDefinition(String, String, String)} in a subclass for fetching WKT definitions
+ *       on-the-fly (for example from the {@code "spatial_ref_sys"} table of a spatial database.</li>
+ * </ul>
+ *
+ * Sub-classing may be necessary even if {@code fetchDefinition(…)} is not overridden
+ * because {@code WKTDictionary} does not implement any of the
+ * {@link org.opengis.referencing.crs.CRSAuthorityFactory},
+ * {@link org.opengis.referencing.cs.CSAuthorityFactory} or
+ * {@link org.opengis.referencing.datum.DatumAuthorityFactory}.
+ * The choice of interfaces to implement is left to subclasses.
+ *
+ * <div class="note"><b>Example:</b>
+ * extend the set of Coordinate Reference Systems recognized
+ * by {@link org.apache.sis.referencing.CRS#forCode(String)}.
+ * The additional CRS are defined by Well-Known Text strings in a {@code "MyCRS.txt"} file.
+ * First step is to create a CRS factory with those definitions:
+ *
+ * {@preformat java
+ *     public final class MyCRS extends WKTDictionary implements CRSAuthorityFactory {
+ *         MyCRS() throws IOException, FactoryException {
+ *             super(new DefaultCitation("MyAuthority"));
+ *             try (BufferedReader source = Files.newBufferedReader(Paths.get("MyCRS.txt"))) {
+ *                 load(source);
+ *             }
+ *         }
+ *     }
+ * }
+ *
+ * The second step is to register this factory as a service with a
+ * {@code META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory} file on the classpath.
+ * That file shall contain the fully qualified class name of above {@code MyCRS} class.</div>
  *
  * <h2>Errors management</h2>
  * Well-Known Text parsing is performed in two steps, each of them executed at a different time:
@@ -127,12 +162,15 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
 
     /**
      * The parser to use for creating geodetic objects from WKT definitions.
-     * All uses of this parser shall be synchronized by the <code>{@linkplain #lock}.writeLock()</code>.
+     * Subclasses can modify the {@code WKTFormat} configuration in their constructor,
+     * but should not use it directly after construction (for thread safety reasons).
      */
-    private final WKTFormat parser;
+    protected final WKTFormat parser;
 
     /**
      * The write lock for {@link #parser} and the read/write locks for {@link #definitions} accesses.
+     * All {@link #parser} usages after {@code WKTDictionary} construction shall be synchronized by
+     * the {@link ReadWriteLock#writeLock()}.
      *
      * <div class="note"><b>Implementation note:</b>
      * we manage the locks ourselves instead than using a {@link java.util.concurrent.ConcurrentHashMap}
@@ -207,7 +245,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
          *
          * @param  object  the CRS (or other geodetic object) to wrap.
          */
-        Disambiguation(final IdentifiedObject object) {
+        private Disambiguation(final IdentifiedObject object) {
             /*
              * Identifier should never be null because `WKTDictionary` accepts only definitions having
              * an `ID[…]` or `AUTHORITY[…]` element. A WKT can contain at most one of those elements.
@@ -223,10 +261,9 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
          * Creates a new {@code Disambiguation} instance as a wrapper around the given identifier object.
          *
          * @param  object  definition in WKT of the CRS (or other geodetic object) to wrap.
-         * @param  fullId  an array of length 3 to be used for getting the {@code codespace:version:code} tuple.
          */
-        Disambiguation(final StoredTree object, final Object[] fullId) {
-            Arrays.fill(fullId, null);
+        private Disambiguation(final StoredTree object) {
+            final Object[] fullId = new Object[3];
             object.peekIdentifiers(fullId);
             codespace = trimOrNull(fullId[0]);
             version   = trimOrNull(fullId[2]);
@@ -237,31 +274,41 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
         /**
          * Creates a new {@code Disambiguation} instance identified by {@code codespace:version:code}.
          *
-         * @param  previous   previous disambiguation, or {@code null} if none.
          * @param  codespace  the authority (or other kind of code space) providing CRS definitions.
          * @param  version    version of the CRS definition, or {@code null} if unspecified.
          * @param  code       code allocated by the authority for the CRS definition.
-         * @param  value      the CRS (or other geodetic object) definition.
+         * @param  oldValue   previous value for the same code, or {@code null} if none.
+         * @param  newValue   the CRS (or other geodetic object) definition.
          * @throws IllegalArgumentException if <var>authority:version:code</var> identifier is already used.
          *
          * @see WKTDictionary#addDefinition(StoredTree)
          */
-        Disambiguation(Disambiguation previous, final String codespace, final String version,
-                       final String code, final StoredTree value)
+        Disambiguation(final String codespace, final String version, final String code,
+                       final Object oldValue, final Object newValue)
         {
-            this.previous  = previous;
             this.codespace = codespace;
             this.version   = version;
-            this.value     = value;
-            while (previous != null) {
-                if (Strings.equalsIgnoreCase(codespace, previous.codespace) &&
-                    Strings.equalsIgnoreCase(version,   previous.version))
+            this.value     = newValue;
+            if (oldValue instanceof Disambiguation) {
+                previous = (Disambiguation) oldValue;
+            } else if (oldValue instanceof StoredTree) {
+                previous = new Disambiguation((StoredTree) oldValue);
+            } else if (oldValue instanceof IdentifiedObject) {
+                previous = new Disambiguation((IdentifiedObject) oldValue);
+            } else {
+                previous = null;            // Discard previous parsing failure (a `String` instance).
+                return;
+            }
+            Disambiguation check = previous;
+            do {
+                if (Strings.equalsIgnoreCase(codespace, check.codespace) &&
+                    Strings.equalsIgnoreCase(version,   check.version))
                 {
                     throw new IllegalArgumentException(Errors.format(
                             Errors.Keys.DuplicatedIdentifier_1, identifier(code)));
                 }
-                previous = previous.previous;
-            }
+                check = check.previous;
+            } while (check != null);
         }
 
         /**
@@ -387,11 +434,6 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     }
 
     /**
-     * Keyword recognized by {@link #load(BufferedReader)}.
-     */
-    private static final String SET = "SET";
-
-    /**
      * Adds to this factory all definitions read from the given source.
      * Each Coordinate Reference System (or other geodetic object) is defined by a string in WKT format.
      * The key associated to each object is given by the {@code ID[…]} or {@code AUTHORITY[…]} element,
@@ -449,6 +491,11 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * Caller must own the write lock before to instantiate and use this class.
      */
     private final class Loader {
+        /**
+         * Keyword recognized by {@link WKTDictionary#load(BufferedReader)}.
+         */
+        private static final String SET = "SET";
+
         /** The source of WKT definitions. */
         private final BufferedReader source;
 
@@ -629,18 +676,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
         }
         final String codespace = trimOrNull(fullId[0]);
         definitions.merge(code, tree, (oldValue, newValue) -> {
-            final String version = trimOrNull(fullId[2]);
-            final Disambiguation previous;
-            if (oldValue instanceof Disambiguation) {
-                previous = (Disambiguation) oldValue;
-            } else if (oldValue instanceof StoredTree) {
-                previous = new Disambiguation((StoredTree) oldValue, fullId);
-            } else if (oldValue instanceof IdentifiedObject) {
-                previous = new Disambiguation((IdentifiedObject) oldValue);
-            } else {
-                previous = null;        // Discard previous parsing failure.
-            }
-            return new Disambiguation(previous, codespace, version, code, (StoredTree) newValue);
+            return new Disambiguation(codespace, trimOrNull(fullId[2]), code, oldValue, newValue);
         });
         codespaces.add(codespace);
         if (fullId.length >= 4) {
@@ -680,11 +716,12 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
             try {
                 while (it.hasNext()) {
                     final String wkt = it.next();
-                    addDefinition(parser.textToTree(wkt, pos, null));
+                    final StoredTree tree = parser.textToTree(wkt, pos, null);
                     final int end = pos.getIndex();
                     if (end < CharSequences.skipTrailingWhitespaces(wkt, 0, wkt.length())) {
                         throw new FactoryDataException(unexpectedText(lineNumber, wkt, end));
                     }
+                    addDefinition(tree);
                     pos.setIndex(0);
                     lineNumber++;
                 }
@@ -699,6 +736,68 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
         } finally {
             lock.writeLock().unlock();
         }
+    }
+
+    /**
+     * Parses immediately the given WKT and caches the result under the given identifier. This method is invoked
+     * only if subclass overrides {@link #fetchDefinition(String, String, String)} for producing WKT on-the-fly.
+     *
+     * @param  codespace  the authority (or other kind of code space) providing CRS definitions.
+     * @param  version    version of the CRS definition, or {@code null} if unspecified.
+     * @param  code       code allocated by the authority for the CRS definition.
+     * @param  wkt         the Well-Known Text to parse immediately.
+     * @return the parsed object.
+     * @throws FactoryException if parsing failed.
+     */
+    private IdentifiedObject parseAndAdd(final String codespace, final String version,
+            final String code, final String wkt) throws FactoryException
+    {
+        ArgumentChecks.ensureNonEmpty("code", code);
+        ArgumentChecks.ensureNonEmpty("wkt",  wkt);
+        lock.writeLock().lock();
+        try {
+            try {
+                final Object object = parser.parseObject(wkt);
+                if (!(object instanceof IdentifiedObject)) {
+                    throw new FactoryDataException(parser.errors().getString(
+                            Errors.Keys.UnexpectedTypeForReference_3, code, IdentifiedObject.class, object.getClass()));
+                }
+                final Disambiguation entry = (Disambiguation) definitions.compute(code, (key, oldValue) -> {
+                    return new Disambiguation(codespace, version, code, oldValue, object);
+                });
+                codespaces.add(entry.codespace);
+                return (IdentifiedObject) object;
+            } catch (ParseException | IllegalArgumentException e) {
+                throw new FactoryDataException(e.getLocalizedMessage());
+            } finally {
+                parser.clear();
+                updateAuthority();
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Fetches the Well-Known Text for a user-specified code not found in this {@code WKTDictionary}.
+     * Subclasses can override this method if WKT strings are not {@linkplain #load(BufferedReader) loaded}
+     * or {@linkplain #addDefinitions(Stream) specified} in advance, but instead fetched when first needed.
+     * An example of such scenario is WKTs provided by the {@code "spatial_ref_sys"} table of a spatial database.
+     * If no WKT is found for the given code, then this method returns {@code null}.
+     *
+     * <h4>Overriding</h4>
+     * The default implementation returns {@code null}. If a subclass overrides this method, then it should
+     * also override {@link #getAuthorityCodes(Class)} because {@code WKTDictionary} does not know the codes
+     * that this method can recognize.
+     *
+     * @param  codespace  the authority specified by user, or {@code null} if none.
+     * @param  version    the version specified by user, or {@code null} if none.
+     * @param  code       the code specified by user.
+     * @return Well-Known Text (WKT) for the given code, or {@code null} if none.
+     * @throws FactoryException if an error occurred while fetching the WKT.
+     */
+    protected String fetchDefinition(String codespace, String version, String code) throws FactoryException {
+        return null;
     }
 
     /**
@@ -959,7 +1058,16 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
         } finally {
             lock.readLock().unlock();
         }
+        /*
+         * If the value has not been found, check if subclass has a mechanism for fetching WKT
+         * when first needed. It happens for example if subclass get WKT definitions from the
+         * "spatial_ref_syst" table of a database.
+         */
         if (value == null) {
+            final String wkt = fetchDefinition(codespace, localCode, version);
+            if (wkt != null) {
+                return parseAndAdd(codespace, localCode, version, wkt);
+            }
             throw new NoSuchAuthorityCodeException(parser.errors().getString(
                     Errors.Keys.NoSuchValue_1, code), codespace, localCode, code);
         }
