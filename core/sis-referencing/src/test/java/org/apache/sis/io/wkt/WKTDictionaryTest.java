@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -35,6 +36,8 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -331,5 +334,68 @@ public final strictfp class WKTDictionaryTest extends TestCase {
         final String message = ex.getMessage();
         assertTrue(message, message.contains("GeodCRS"));
         assertTrue(message, message.contains("‘]’"));
+    }
+
+    /**
+     * Tests {@link WKTDictionary#fetchDefinition(DefaultIdentifier)}.
+     *
+     * @throws FactoryException if an error occurred while parsing a WKT.
+     */
+    @Test
+    public void testFetchDefinition() throws FactoryException {
+        final WKTDictionary factory = new WKTDictionary(null) {
+            @Override protected String fetchDefinition(final DefaultIdentifier identifier) {
+                identifier.setCodeSpace("aNS");
+                switch (identifier.getCode()) {
+                    case "2C": return "GeodCRS[\"Anguilla 1957\",\n" +
+                                      " Datum[\"Anguilla 1957\",\n" +
+                                      "  Ellipsoid[\"Clarke 1880\", 6378249.145, 293.465]],\n" +
+                                      " CS[ellipsoidal, 2],\n" +
+                                      "  Axis[\"Latitude\", north],\n" +
+                                      "  Axis[\"Longitude\", east],\n" +
+                                      "  Unit[\"Degree\", 0.0174532925199433],\n" +
+                                      " Id[\"TEST\", 21]]";     // Intentionally mismatched code.
+
+                    case "2N": return "GeodCRS[\"Anguilla 1957\",\n" +
+                                      " Datum[\"Anguilla 1957\",\n" +
+                                      "  Ellipsoid[\"Clarke 1880\", 6378249.145, 293.465]],\n" +
+                                      " CS[ellipsoidal, 2],\n" +
+                                      "  Axis[\"Latitude\", north],\n" +
+                                      "  Axis[\"Longitude\", east],\n" +
+                                      "  Unit[\"Degree\", 0.0174532925199433]]";
+
+                    default: return null;
+                }
+            }
+        };
+        /*
+         * Test a CRS with an identifier specified in the WKT. We intentionally declare an ID[…] element
+         * with a different code than the one recognized by the `switch` statement ("2C" versus "21")
+         * for checking precedence.
+         */
+        GeographicCRS crs = factory.createGeographicCRS("2C");
+        Identifier id = TestUtilities.getSingleton(crs.getIdentifiers());
+        assertEquals("TEST", id.getCodeSpace());
+        assertEquals("21",   id.getCode());
+        assertSame(crs, factory.createGeographicCRS("2C"));                         // Test caching.
+        /*
+         * Test a CRS without identifier in the WKT. An identifier should be automatically generated
+         * by `WKTFormat.Parser.complete(…)`.
+         */
+        crs = factory.createGeographicCRS("2N");
+        id = TestUtilities.getSingleton(crs.getIdentifiers());
+        assertEquals("aNS", id.getCodeSpace());
+        assertEquals("2N",  id.getCode());
+        assertSame(crs, factory.createGeographicCRS("2N"));                         // Test caching.
+        /*
+         * Test non-existent code.
+         */
+        try {
+            factory.createGeographicCRS("21");
+            fail("Parsing should have failed.");
+        } catch (FactoryException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("21"));
+        }
     }
 }

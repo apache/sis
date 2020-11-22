@@ -110,6 +110,13 @@ final class Element {
     final boolean isFragment;
 
     /**
+     * Whether this element is the root of a tree of WKT elements.
+     * This field is not used by this {@link Element} class.
+     * It is provided for {@link WKTDictionary} convenience.
+     */
+    boolean isRoot;
+
+    /**
      * An ordered sequence of {@link String}s, {@link Number}s and other {@link Element}s.
      * Access to this collection should be done using the iterator, not by random access.
      * Parsing will remove elements (in any order) from this list as they are consumed.
@@ -160,6 +167,7 @@ final class Element {
         isFragment    = false;
         children      = new LinkedList<>();     // Needs to be a modifiable collection.
         children.add(singleton);
+        singleton.isRoot = true;
     }
 
     /**

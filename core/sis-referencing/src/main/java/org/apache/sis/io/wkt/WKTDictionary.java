@@ -47,6 +47,7 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -71,7 +72,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * <ul>
  *   <li>Invoke {@link #load(BufferedReader)} for reading definitions from file(s).</li>
  *   <li>Invoke {@link #addDefinitions(Stream)} for providing definitions from an arbitrary source.</li>
- *   <li>Override {@link #fetchDefinition(String, String, String)} in a subclass for fetching WKT definitions
+ *   <li>Override {@link #fetchDefinition(DefaultIdentifier)} in a subclass for fetching WKT definitions
  *       on-the-fly (for example from the {@code "spatial_ref_sys"} table of a spatial database.</li>
  * </ul>
  *
@@ -740,23 +741,25 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
 
     /**
      * Parses immediately the given WKT and caches the result under the given identifier. This method is invoked
-     * only if subclass overrides {@link #fetchDefinition(String, String, String)} for producing WKT on-the-fly.
+     * only if subclass overrides {@link #fetchDefinition(DefaultIdentifier)} for producing WKT on-the-fly.
      *
-     * @param  codespace  the authority (or other kind of code space) providing CRS definitions.
-     * @param  version    version of the CRS definition, or {@code null} if unspecified.
-     * @param  code       code allocated by the authority for the CRS definition.
-     * @param  wkt         the Well-Known Text to parse immediately.
+     * @param  codespace          the authority (or other kind of code space) providing CRS definitions.
+     * @param  version            version of the CRS definition, or {@code null} if unspecified.
+     * @param  code               code allocated by the authority for the CRS definition.
+     * @param  wkt                the Well-Known Text to parse immediately.
+     * @param  defaultIdentifier  identifier to assign to the object if the WKT does not provide one.
      * @return the parsed object.
      * @throws FactoryException if parsing failed.
      */
     private IdentifiedObject parseAndAdd(final String codespace, final String version,
-            final String code, final String wkt) throws FactoryException
+            final String code, final String wkt, final Identifier defaultIdentifier) throws FactoryException
     {
         ArgumentChecks.ensureNonEmpty("code", code);
         ArgumentChecks.ensureNonEmpty("wkt",  wkt);
         lock.writeLock().lock();
         try {
             try {
+                parser.setDefaultIdentifier(defaultIdentifier);
                 final Object object = parser.parseObject(wkt);
                 if (!(object instanceof IdentifiedObject)) {
                     throw new FactoryDataException(parser.errors().getString(
@@ -770,6 +773,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
             } catch (ParseException | IllegalArgumentException e) {
                 throw new FactoryDataException(e.getLocalizedMessage());
             } finally {
+                parser.setDefaultIdentifier(null);
                 parser.clear();
                 updateAuthority();
             }
@@ -779,24 +783,28 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     }
 
     /**
-     * Fetches the Well-Known Text for a user-specified code not found in this {@code WKTDictionary}.
+     * Fetches the Well-Known Text for a user-specified identifier not found in this {@code WKTDictionary}.
      * Subclasses can override this method if WKT strings are not {@linkplain #load(BufferedReader) loaded}
      * or {@linkplain #addDefinitions(Stream) specified} in advance, but instead fetched when first needed.
      * An example of such scenario is WKTs provided by the {@code "spatial_ref_sys"} table of a spatial database.
-     * If no WKT is found for the given code, then this method returns {@code null}.
+     * If no WKT is found for the given identifier, then this method returns {@code null}.
+     *
+     * <p>On input, {@code identifier} contains only the pieces of information provided by user. For example if user
+     * invoked {@code createGeographicCRS("Foo")}, then the identifier {@linkplain DefaultIdentifier#getCode() code}
+     * will be {@code "Foo"} but the {@linkplain DefaultIdentifier#getCodeSpace() codespace} and
+     * {@linkplain DefaultIdentifier#getVersion() version} will be undefined ({@code null}).
+     * On output, {@code identifier} should be completed with missing code space and version (if available).</p>
      *
      * <h4>Overriding</h4>
      * The default implementation returns {@code null}. If a subclass overrides this method, then it should
      * also override {@link #getAuthorityCodes(Class)} because {@code WKTDictionary} does not know the codes
      * that this method can recognize.
      *
-     * @param  codespace  the authority specified by user, or {@code null} if none.
-     * @param  version    the version specified by user, or {@code null} if none.
-     * @param  code       the code specified by user.
-     * @return Well-Known Text (WKT) for the given code, or {@code null} if none.
+     * @param  identifier  the code specified by user, possible with code space and version.
+     * @return Well-Known Text (WKT) for the given identifier, or {@code null} if none.
      * @throws FactoryException if an error occurred while fetching the WKT.
      */
-    protected String fetchDefinition(String codespace, String version, String code) throws FactoryException {
+    protected String fetchDefinition(DefaultIdentifier identifier) throws FactoryException {
         return null;
     }
 
@@ -1064,9 +1072,10 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
          * "spatial_ref_syst" table of a database.
          */
         if (value == null) {
-            final String wkt = fetchDefinition(codespace, localCode, version);
+            final DefaultIdentifier identifier = new DefaultIdentifier(codespace, localCode, version);
+            final String wkt = fetchDefinition(identifier);
             if (wkt != null) {
-                return parseAndAdd(codespace, localCode, version, wkt);
+                return parseAndAdd(codespace, version, localCode, wkt, identifier);
             }
             throw new NoSuchAuthorityCodeException(parser.errors().getString(
                     Errors.Keys.NoSuchValue_1, code), codespace, localCode, code);

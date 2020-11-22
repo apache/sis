@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.function.Function;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -37,6 +38,7 @@ import java.text.ParseException;
 import javax.measure.Unit;
 import org.opengis.util.Factory;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CSFactory;
@@ -54,6 +56,7 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
+import org.apache.sis.referencing.ImmutableIdentifier;
 
 
 /**
@@ -204,6 +207,18 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @see #getMaximumListElements()
      */
     private int listSizeLimit;
+
+    /**
+     * Identifier to assign to parsed {@link IdentifiedObject} if the WKT does not contain an
+     * explicit {@code ID[…]} or {@code AUTHORITY[…]} element. The main use case is for implementing
+     * a {@link org.opengis.referencing.crs.CRSAuthorityFactory} backed by definitions in WKT format.
+     *
+     * <p>This field is transient because this is not yet a public API. The {@code transient}
+     * keyword may be removed in a future version if we commit to this API.</p>
+     *
+     * @see #setDefaultIdentifier(Identifier)
+     */
+    private transient Identifier defaultIdentifier;
 
     /**
      * WKT fragments that can be inserted in longer WKT strings, or {@code null} if none. Keys are short identifiers
@@ -643,6 +658,24 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
+     * Sets the identifier to assign to parsed {@link IdentifiedObject} if the WKT does not contain an
+     * explicit {@code ID[…]} or {@code AUTHORITY[…]} element. The main use case is for implementing
+     * a {@link org.opengis.referencing.crs.CRSAuthorityFactory} backed by definitions in WKT format.
+     *
+     * <p>Note that this identifier apply to all objects to be created, which is generally not desirable.
+     * Callers should invoke {@code setDefaultIdentifier(null)} in a {@code finally} block.</p>
+     *
+     * <p>This is not a publicly committed API. If we want to make this functionality public in a future
+     * version, we should investigate if we should make it applicable to a wider range of properties and
+     * how to handle the fact that the a given identifier should be used for only one object.</p>
+     *
+     * @param  identifier  the default identifier, or {@code null} if none.
+     */
+    final void setDefaultIdentifier(final Identifier identifier) {
+        defaultIdentifier = identifier;
+    }
+
+    /**
      * Verifies if the given type is a valid key for the {@link #factories} map.
      */
     private void ensureValidFactoryType(final Class<?> type) throws IllegalArgumentException {
@@ -926,8 +959,10 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * The parser created by {@link #parser(boolean)}, identical to {@link GeodeticObjectParser} except
      * for the source of logging messages which is the enclosing {@code WKTParser} instead than a factory.
+     * Also provides a mechanism for adding default identifier to root {@link IdentifiedObject}.
      */
-    private static final class Parser extends GeodeticObjectParser {
+    private final class Parser extends GeodeticObjectParser implements Function<Object,Object> {
+        /** Creates a new parser. */
         Parser(final Symbols symbols, final Map<String,StoredTree> fragments,
                 final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
                 final Convention convention, final Transliterator transliterator, final Locale errorLocale,
@@ -936,8 +971,19 @@ public class WKTFormat extends CompoundFormat<Object> {
             super(symbols, fragments, numberFormat, dateFormat, unitFormat, convention, transliterator, errorLocale, factories);
         }
 
+        /** Returns the source class and method to declare in log records. */
         @Override String getPublicFacade() {return WKTFormat.class.getName();}
         @Override String getFacadeMethod() {return "parse";}
+
+        /** Invoked when an identifier need to be supplied to root {@link IdentifiedObject}. */
+        @Override public Object apply(Object key) {return new ImmutableIdentifier(defaultIdentifier);}
+
+        /** Invoked when a root {@link IdentifiedObject} is about to be created. */
+        @Override void completeRoot(final Map<String,Object> properties) {
+            if (defaultIdentifier != null) {
+                properties.computeIfAbsent(IdentifiedObject.IDENTIFIERS_KEY, this);
+            }
+        }
     }
 
     /**
