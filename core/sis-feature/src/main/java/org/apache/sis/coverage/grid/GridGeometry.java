@@ -943,7 +943,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         Instant[] times = timeRange;
         if (times == null) {
             final TemporalAccessor t = TemporalAccessor.of(getCoordinateReferenceSystem(envelope), 0);
-            times = (t != null) ? t.getTimeRange(envelope) : new Instant[0];
+            times = (t != null) ? t.getTimeRange(envelope) : TemporalAccessor.EMPTY;
             timeRange = times;
         }
         return times;
@@ -1409,11 +1409,16 @@ public class GridGeometry implements LenientComparable, Serializable {
 
     /**
      * Returns the default set of flags to use for {@link #toString()} implementations.
-     * Current implementation returns all flags, but future implementation may omit some
-     * flags if experience suggests that they are too verbose in practice.
+     * Current implementation returns all core properties, augmented with only derived
+     * properties that are defined.
      */
-    static int defaultFlags() {
-        return EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION | GEOGRAPHIC_EXTENT | TEMPORAL_EXTENT;
+    final int defaultFlags() {
+        int flags = EXTENT | GRID_TO_CRS | CRS;
+        if (null != envelope)         flags |= ENVELOPE;
+        if (null != resolution)       flags |= RESOLUTION;
+        if (null != geographicBBox()) flags |= GEOGRAPHIC_EXTENT;
+        if (timeRange().length != 0)  flags |= TEMPORAL_EXTENT;
+        return flags;
     }
 
     /**
@@ -1430,8 +1435,8 @@ public class GridGeometry implements LenientComparable, Serializable {
 
     /**
      * Returns a tree representation of some elements of this grid geometry.
-     * The tree representation is for debugging purpose only and may change
-     * in any future SIS version.
+     * The tree representation is for debugging or logging purposes
+     * and may change in any future SIS version.
      *
      * @param  locale   the locale to use for textual labels.
      * @param  bitmask  combination of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS},
@@ -1553,10 +1558,10 @@ public class GridGeometry implements LenientComparable, Serializable {
             {
                 final TableAppender table = new TableAppender(buffer, "  ");
                 final AngleFormat nf = new AngleFormat("DD°MM′SS″", locale);
-                final GeographicBoundingBox bbox = geographicBBox();
+                final GeographicBoundingBox bbox = ((bitmask & GEOGRAPHIC_EXTENT) != 0) ? geographicBBox() : null;
                 double westBoundLongitude = Double.NaN;
                 double eastBoundLongitude = Double.NaN;
-                final Instant[] times = timeRange();
+                final Instant[] times = ((bitmask & TEMPORAL_EXTENT) != 0) ? timeRange() : TemporalAccessor.EMPTY;
                 vocabulary.appendLabel(Vocabulary.Keys.LowerBound, table);
                 table.setCellAlignment(TableAppender.ALIGN_RIGHT);
                 if (bbox != null) {

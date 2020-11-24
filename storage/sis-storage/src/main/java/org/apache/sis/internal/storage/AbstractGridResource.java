@@ -386,13 +386,17 @@ public abstract class AbstractGridResource extends AbstractResource implements G
             parameters[0] = IOUtilities.filename(file != null ? file : getSourceName());
             parameters[5] = nanos / (double) StandardDateFormat.NANOS_PER_SECOND;
             JDK9.ifPresentOrElse(domain.getGeographicExtent(), (box) -> {
-                final AngleFormat f = new AngleFormat("D°MM′SS″", locale);
-                f.setRoundingMode(RoundingMode.FLOOR);
-                parameters[1] = f.format(new Latitude (box.getSouthBoundLatitude()));
-                parameters[3] = f.format(new Longitude(box.getWestBoundLongitude()));
-                f.setRoundingMode(RoundingMode.CEILING);
-                parameters[2] = f.format(new Latitude (box.getNorthBoundLatitude()));
-                parameters[4] = f.format(new Longitude(box.getEastBoundLongitude()));
+                final AngleFormat f = new AngleFormat(locale);
+                double min = box.getSouthBoundLatitude();
+                double max = box.getNorthBoundLatitude();
+                f.setPrecision(max - min, true);
+                f.setRoundingMode(RoundingMode.FLOOR);   parameters[1] = f.format(new Latitude(min));
+                f.setRoundingMode(RoundingMode.CEILING); parameters[2] = f.format(new Latitude(max));
+                min = box.getWestBoundLongitude();
+                max = box.getEastBoundLongitude();
+                f.setPrecision(max - min, true);
+                f.setRoundingMode(RoundingMode.FLOOR);   parameters[3] = f.format(new Longitude(min));
+                f.setRoundingMode(RoundingMode.CEILING); parameters[4] = f.format(new Longitude(max));
             }, () -> {
                 // If no geographic coordinates, fallback on the 2 first dimensions.
                 if (domain.isDefined(GridGeometry.ENVELOPE)) {

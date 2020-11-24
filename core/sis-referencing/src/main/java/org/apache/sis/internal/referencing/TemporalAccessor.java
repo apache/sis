@@ -28,11 +28,16 @@ import org.apache.sis.geometry.AbstractEnvelope;
  * Convenience methods for accessing the temporal component of an object (envelope, grid geometry…).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
 public final class TemporalAccessor {
+    /**
+     * Empty array of instants.
+     */
+    public static final Instant[] EMPTY = new Instant[0];
+
     /**
      * Dimension of the temporal component.
      */
@@ -85,15 +90,18 @@ public final class TemporalAccessor {
      * @param  envelope  the envelope from which to get the start time end end time.
      * @return the start time and end time in an array of length 1 or 2, or an empty array if none.
      */
-    @SuppressWarnings("fallthrough")
+    @SuppressWarnings({"fallthrough", "ReturnOfCollectionOrArrayField"})
     public Instant[] getTimeRange(final AbstractEnvelope envelope) {
         Instant startTime = timeCRS.toInstant(envelope.getLower(dimension));
         Instant endTime   = timeCRS.toInstant(envelope.getUpper(dimension));
         if (startTime == null) {
+            if (endTime == null) {
+                return EMPTY;
+            }
             startTime = endTime;
             endTime = null;
         }
-        Instant[] times = new Instant[(endTime != null) ? 2 : (startTime != null) ? 1 : 0];
+        final Instant[] times = new Instant[(endTime != null) ? 2 : 1];
         switch (times.length) {
             default: times[1] = endTime;        // Fall through.
             case 1:  times[0] = startTime;      // Fall through.
