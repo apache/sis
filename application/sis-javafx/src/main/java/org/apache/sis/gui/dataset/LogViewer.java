@@ -260,7 +260,7 @@ public class LogViewer extends Widget {
             VBox.setVgrow(table, Priority.ALWAYS);
 
             levels.getItems().setAll(Level.SEVERE, Level.WARNING, Level.INFO, Level.CONFIG,
-                        PerformanceLevel.PERFORMANCE, Level.FINE, Level.FINER, Level.ALL);
+                                     PerformanceLevel.SLOW, Level.FINE, Level.FINER, Level.ALL);
             levels.setConverter(Converter.INSTANCE);
             levels.getSelectionModel().select(Level.ALL);
             levels.getSelectionModel().selectedItemProperty().addListener((p,o,n) -> setFilter(n));

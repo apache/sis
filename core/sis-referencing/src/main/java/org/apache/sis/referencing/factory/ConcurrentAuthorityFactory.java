@@ -455,7 +455,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 if (caller == null) {
                     caller = "create".concat(type.getSimpleName());
                 }
-                final PerformanceLevel level = PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS);
+                final Level level = PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS);
                 final Double duration = time / (double) StandardDateFormat.NANOS_PER_SECOND;
                 final Messages resources = Messages.getResources(null);
                 final LogRecord record;
