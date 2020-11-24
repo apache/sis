@@ -247,6 +247,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InvalidSampleDimensionIndex_2 = 52;
 
         /**
+         * Loaded grid coverage between {1} – {2} and {3} – {4} from file “{0}” in {5} seconds.
+         */
+        public static final short LoadedGridCoverage_6 = 59;
+
+        /**
          * Resource “{0}” does not have an identifier.
          */
         public static final short MissingResourceIdentifier_1 = 42;

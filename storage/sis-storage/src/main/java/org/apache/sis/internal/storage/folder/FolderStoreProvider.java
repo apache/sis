@@ -43,7 +43,6 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.Capability;
@@ -164,7 +163,7 @@ public final class FolderStoreProvider extends DataStoreProvider {
                 return ProbeResult.SUPPORTED;
             }
         } catch (FileSystemNotFoundException e) {
-            Logging.recoverableException(Logging.getLogger(Modules.STORAGE), FolderStoreProvider.class, "probeContent", e);
+            Logging.recoverableException(getLogger(), FolderStoreProvider.class, "probeContent", e);
             // Nothing we can do, may happen often.
         }
         return ProbeResult.UNSUPPORTED_STORAGE;

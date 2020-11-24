@@ -29,8 +29,8 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.StoreResource;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
@@ -315,8 +315,12 @@ public class StoreListeners implements Localized {
      * </ul>
      *
      * @return the logger where to send the warnings when there is no other destination.
+     *
+     * @see DataStoreProvider#getLogger()
+     *
+     * @since 1.1
      */
-    private Logger getLogger() {
+    public Logger getLogger() {
         Resource src = source;
         final DataStore ds = getDataStore(this);
         if (ds != null) {
@@ -423,7 +427,7 @@ public class StoreListeners implements Localized {
                 }
             }
         } catch (ClassNotFoundException | SecurityException e) {
-            Logging.ignorableException(Logging.getLogger(Modules.STORAGE), StoreListeners.class, "warning", e);
+            Logging.ignorableException(StoreUtilities.LOGGER, StoreListeners.class, "warning", e);
         }
         warning(record);
     }

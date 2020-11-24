@@ -18,7 +18,13 @@ package org.apache.sis.internal.storage;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.LogRecord;
+import java.util.concurrent.TimeUnit;
+import java.math.RoundingMode;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.operation.TransformException;
@@ -31,8 +37,15 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.PerformanceLevel;
+import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -352,5 +365,58 @@ public abstract class AbstractGridResource extends AbstractResource implements G
             return (Exception) cause;
         }
         return null;
+    }
+
+    /**
+     * Logs the execution of a {@link #read(GridGeometry, int...)} operation.
+     * The log level will be {@link Level#FINE} if the operation was quick enough,
+     * or {@link PerformanceLevel#SLOW} or higher level otherwise.
+     *
+     * @param  file        the file that was opened, or {@code null} for {@link #getSourceName()}.
+     * @param  domain      domain of the created grid coverage.
+     * @param  startTime   value of {@link System#nanoTime()} when the loading process started.
+     */
+    protected final void logReadOperation(final Object file, final GridGeometry domain, final long startTime) {
+        final Logger logger = getLogger();
+        final long   nanos  = System.nanoTime() - startTime;
+        final Level  level  = PerformanceLevel.forDuration(nanos, TimeUnit.NANOSECONDS);
+        if (logger.isLoggable(level)) {
+            final Locale locale = getLocale();
+            final Object[] parameters = new Object[6];
+            parameters[0] = IOUtilities.filename(file != null ? file : getSourceName());
+            parameters[5] = nanos / (double) StandardDateFormat.NANOS_PER_SECOND;
+            JDK9.ifPresentOrElse(domain.getGeographicExtent(), (box) -> {
+                final AngleFormat f = new AngleFormat("D°MM′SS″", locale);
+                f.setRoundingMode(RoundingMode.FLOOR);
+                parameters[1] = f.format(new Latitude (box.getSouthBoundLatitude()));
+                parameters[3] = f.format(new Longitude(box.getWestBoundLongitude()));
+                f.setRoundingMode(RoundingMode.CEILING);
+                parameters[2] = f.format(new Latitude (box.getNorthBoundLatitude()));
+                parameters[4] = f.format(new Longitude(box.getEastBoundLongitude()));
+            }, () -> {
+                // If no geographic coordinates, fallback on the 2 first dimensions.
+                if (domain.isDefined(GridGeometry.ENVELOPE)) {
+                    final Envelope box = domain.getEnvelope();
+                    final int dimension = Math.min(box.getDimension(), 2);
+                    for (int t=1, i=0; i<dimension; i++) {
+                        parameters[t++] = box.getMinimum(i);
+                        parameters[t++] = box.getMaximum(i);
+                    }
+                } else if (domain.isDefined(GridGeometry.EXTENT)) {
+                    final GridExtent box = domain.getExtent();
+                    final int dimension = Math.min(box.getDimension(), 2);
+                    for (int t=1, i=0; i<dimension; i++) {
+                        parameters[t++] = box.getLow (i);
+                        parameters[t++] = box.getHigh(i);
+                    }
+                }
+            });
+            final LogRecord record = Resources.forLocale(locale)
+                    .getLogRecord(level, Resources.Keys.LoadedGridCoverage_6, parameters);
+            record.setSourceClassName(GridCoverageResource.class.getName());
+            record.setSourceMethodName("read");
+            record.setLoggerName(logger.getName());
+            logger.log(record);
+        }
     }
 }

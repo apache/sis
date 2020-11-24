@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -61,6 +63,11 @@ import ucar.nc2.constants.CF;
  * @module
  */
 public abstract class Decoder extends ReferencingFactoryContainer implements Closeable {
+    /**
+     * The logger to use for messages other than warnings specific to the file being read.
+     */
+    static final Logger LOGGER = Logging.getLogger(Modules.NETCDF);
+
     /**
      * The format name to use in error message. We use lower-case "n" because it seems to be what the netCDF community uses.
      * By contrast, {@code NetcdfStoreProvider} uses upper-case "N" because it is considered at the beginning of sentences.
@@ -491,11 +498,15 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      */
     final void performance(final Class<?> caller, final String method, final short resourceKey, long time) {
         time = System.nanoTime() - time;
-        final LogRecord record = resources().getLogRecord(
-                PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS), resourceKey,
-                getFilename(), time / (double) StandardDateFormat.NANOS_PER_SECOND);
-        record.setLoggerName(Modules.NETCDF);
-        Logging.log(caller, method, record);
+        final Level level = PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS);
+        if (LOGGER.isLoggable(level)) {
+            final LogRecord record = resources().getLogRecord(level, resourceKey,
+                    getFilename(), time / (double) StandardDateFormat.NANOS_PER_SECOND);
+            record.setLoggerName(Modules.NETCDF);
+            record.setSourceClassName(caller.getCanonicalName());
+            record.setSourceMethodName(method);
+            LOGGER.log(record);
+        }
     }
 
     /**

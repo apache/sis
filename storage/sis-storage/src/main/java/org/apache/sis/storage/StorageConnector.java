@@ -49,13 +49,13 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.ChannelImageInputStream;
 import org.apache.sis.internal.storage.io.InputStreamAdapter;
 import org.apache.sis.internal.storage.io.RewindableLineReader;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.setup.OptionKey;
@@ -826,7 +826,7 @@ public class StorageConnector implements Serializable {
                 view = ObjectConverters.convert(storage, type);
             } catch (UnconvertibleObjectException e) {
                 if (!OPENERS.containsKey(type)) throw e;
-                Logging.recoverableException(Logging.getLogger(Modules.STORAGE), StorageConnector.class, "getStorageAs", e);
+                Logging.recoverableException(StoreUtilities.LOGGER, StorageConnector.class, "getStorageAs", e);
                 view = null;
             }
             addView(type, view);

@@ -41,6 +41,7 @@ import org.opengis.feature.Feature;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Modules;
 
 import static org.apache.sis.internal.sql.feature.Database.connectReadOnly;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -55,7 +56,7 @@ import static org.apache.sis.util.ArgumentChecks.ensurePositive;
  * of stream elements is not bound 1 to 1 to query result rows).
  *
  * @author Alexis Manin (Geomatys)
- * @version 2.0
+ * @version 1.1
  * @since   1.0
  * @module
  *
@@ -72,7 +73,7 @@ final class StreamSQL extends StreamWrapper<Feature> {
 
     private long limit, offset;
 
-    private Consumer<SQLException> warningConsumer = e -> Logging.getLogger("sis.sql").log(Level.FINE, "Cannot properly close a connection", e);
+    private Consumer<SQLException> warningConsumer = e -> Logging.getLogger(Modules.SQL).log(Level.FINE, "Cannot properly close a connection", e);
 
     StreamSQL(final Table source, boolean parallel) {
         this(new Features.Builder(source), source.source, parallel);

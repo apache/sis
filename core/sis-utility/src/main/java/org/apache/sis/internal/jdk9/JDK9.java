@@ -31,6 +31,8 @@ import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
@@ -49,6 +51,17 @@ public final class JDK9 {
      * Do not allow instantiation of this class.
      */
     private JDK9() {
+    }
+
+    /**
+     * Placeholder for {@link Optional#ifPresentOrElse(Consumer, Runnable)}.
+     */
+    public static <T> void ifPresentOrElse(Optional<T> optional, Consumer<? super T> action, Runnable emptyAction) {
+        if (optional.isPresent()) {
+            action.accept(optional.get());
+        } else {
+            emptyAction.run();
+        }
     }
 
     /**

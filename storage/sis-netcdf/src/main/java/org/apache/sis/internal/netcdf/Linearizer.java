@@ -27,7 +27,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.logging.Logging;
 
@@ -167,6 +166,6 @@ public enum Linearizer {
      * happens anyway, do not cause the whole netCDF reader to fail for all files because of this error.
      */
     private static void warning(final Exception e) {
-        Logging.unexpectedException(Logging.getLogger(Modules.NETCDF), Variable.class, "getGridGeometry", e);
+        Logging.unexpectedException(Decoder.LOGGER, Variable.class, "getGridGeometry", e);
     }
 }

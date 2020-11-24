@@ -887,9 +887,9 @@ public class GridGeometry implements LenientComparable, Serializable {
      * contains an horizontal component such as a geographic or projected CRS.
      *
      * <div class="note"><b>API note:</b>
-     * this method does not throw {@link IncompleteGridGeometryException} because the geographic extent may be absent
-     * even with a complete grid geometry. This is because grid geometries are not required to have an spatial component
-     * on Earth surface; a raster could be a vertical profile for example.</div>
+     * this method does not throw {@link IncompleteGridGeometryException} because the geographic extent
+     * may be absent even with a complete grid geometry. Grid geometries are not required to have a
+     * spatial component on Earth surface; a raster could be a vertical profile for example.</div>
      *
      * @return the geographic bounding box in "real world" coordinates.
      */

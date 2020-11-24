@@ -226,21 +226,25 @@ replace:    if (Character.isWhitespace(c)) {
 
     /**
      * The length of a day in number of milliseconds.
+     * Can be casted to {@code float} with exact precision.
      */
     public static final int MILLISECONDS_PER_DAY = 24*60*60*1000;
 
     /**
      * Number of milliseconds in one second.
+     * Can be casted to {@code float} with exact precision.
      */
     public static final int MILLIS_PER_SECOND = 1000;
 
     /**
      * Number of nanoseconds in one millisecond.
+     * Can be casted to {@code float} with exact precision.
      */
     public static final int NANOS_PER_MILLISECOND = 1000000;
 
     /**
      * Number of nanoseconds in one second.
+     * Can be casted to {@code float} with exact precision.
      */
     public static final int NANOS_PER_SECOND = 1000000000;
 

@@ -85,6 +85,11 @@ public final class Modules {
     /**
      * The {@value} module name.
      */
+    public static final String SHAPEFILE = "org.apache.sis.shapefile";
+
+    /**
+     * The {@value} module name.
+     */
     public static final String GDAL = "org.apache.sis.storage.gdal";
 
     /**

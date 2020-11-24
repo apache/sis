@@ -609,6 +609,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
      */
     @Override
     public GridCoverage read(GridGeometry domain, final int... range) throws DataStoreException {
+        final long startTime = System.nanoTime();
         final RangeArgument rangeIndices = validateRangeArgument(ranges.length, range);
         if (domain == null) {
             domain = gridGeometry;
@@ -718,8 +719,10 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (imageBuffer == null) {
             throw new DataStoreContentException(Errors.getResources(getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
-        return new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer,
+        final Raster raster = new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer,
                 rangeIndices.getPixelStride(), bandOffsets, String.valueOf(identifier));
+        logReadOperation(location, domain, startTime);
+        return raster;
     }
 
     /**

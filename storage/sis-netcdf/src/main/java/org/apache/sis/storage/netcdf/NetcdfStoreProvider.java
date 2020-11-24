@@ -218,7 +218,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                          * in which case UCAR tries to open it as a file even if it is not a file. For example
                          * we get this exception for "jar:file:/file.jar!/entry.nc".
                          */
-                        Logging.recoverableException(Logging.getLogger(Modules.NETCDF), netcdfFileClass, "canOpen", cause);
+                        Logging.recoverableException(getLogger(), netcdfFileClass, "canOpen", cause);
                         return ProbeResult.UNSUPPORTED_STORAGE;
                     }
                     throw new DataStoreException(e);                        // The cause may be IOException.

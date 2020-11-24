@@ -47,6 +47,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ForwardOnlyStorageException;
 import org.apache.sis.storage.event.StoreListeners;
@@ -521,7 +522,7 @@ public abstract class ChannelFactory {
                 if (listeners != null) {
                     listeners.warning(record);
                 } else {
-                    Logging.getLogger(Modules.STORAGE).log(record);
+                    StoreUtilities.LOGGER.log(record);
                 }
             }
         }
@@ -548,6 +549,6 @@ public abstract class ChannelFactory {
      * the exception at {@link java.util.logging.Level#FINE} without stack trace.
      */
     private static void recoverableException(final Exception warning) {
-        Logging.recoverableException(Logging.getLogger(Modules.STORAGE), ChannelFactory.class, "prepare", warning);
+        Logging.recoverableException(StoreUtilities.LOGGER, ChannelFactory.class, "prepare", warning);
     }
 }

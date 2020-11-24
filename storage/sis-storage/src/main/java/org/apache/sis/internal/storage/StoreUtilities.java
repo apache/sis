@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.stream.Stream;
+import java.util.logging.Logger;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.Charset;
@@ -43,9 +44,11 @@ import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.metadata.Identifiers;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.logging.Logging;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -62,6 +65,12 @@ import org.opengis.feature.Feature;
  * @module
  */
 public final class StoreUtilities extends Static {
+    /**
+     * Logger for the {@value Modules#STORAGE} module. This is used when no more specific logger is available,
+     * or if the more specific logger is not appropriate (e.g. because the log message come from base class).
+     */
+    public static final Logger LOGGER = Logging.getLogger(Modules.STORAGE);
+
     /**
      * Names of encoding where bytes less than 128 can be interpreted as ASCII.
      *

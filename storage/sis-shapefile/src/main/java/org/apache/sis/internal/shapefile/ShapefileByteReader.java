@@ -30,7 +30,6 @@ import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.internal.shapefile.jdbc.*;
 import org.apache.sis.storage.shapefile.InvalidShapefileFormatException;
 import org.apache.sis.storage.shapefile.ShapeTypeEnum;
-import org.apache.sis.util.logging.Logging;
 import org.opengis.feature.Feature;
 
 import com.esri.core.geometry.*;
@@ -320,7 +319,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
 
         // Handle multiple polygon parts.
         if (numParts > 1) {
-            Logger log = Logging.getLogger(ShapefileByteReader.class);
+            Logger log = AutoChecker.LOGGER;
 
             if (log.isLoggable(Level.FINER)) {
                 String format = "Polygon with multiple linear rings encountered at position {0,number} with {1,number} parts.";
