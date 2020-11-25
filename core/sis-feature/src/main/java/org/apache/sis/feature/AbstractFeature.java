@@ -78,7 +78,7 @@ import org.opengis.feature.Operation;
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see DefaultFeatureType#newInstance()
  *
@@ -90,6 +90,13 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -5637918246427380190L;
+
+    /**
+     * Sentinel value for missing property.
+     *
+     * @see #getPropertyValue(String, Object)
+     */
+    static final Object MISSING = new Object();
 
     /**
      * Information about the feature (name, characteristics, <i>etc.</i>).
@@ -326,13 +333,39 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * }
      *
      * @param  name  the property name.
-     * @return the value for the given property, or {@code null} if none.
+     * @return the value for the specified property, or {@code null} if none.
      * @throws PropertyNotFoundException if the given argument is not an attribute or association name of this feature.
      *
      * @see AbstractAttribute#getValue()
      */
     @Override
     public abstract Object getPropertyValue(final String name) throws PropertyNotFoundException;
+
+    /**
+     * Returns the value for the property of the given name if that property exists, or a fallback value otherwise.
+     * This method is equivalent to the following code, but potentially more efficient:
+     *
+     * {@preformat java
+     *     try {
+     *         return getPropertyValue(name);
+     *     } catch (PropertyNotFoundException ignore) {
+     *         return missingPropertyFallback
+     *     }
+     * }
+     *
+     * Note that if a property of the given name exists but has no value, then this method returns {@code null}.
+     * <cite>Property without value</cite> is not equivalent to <cite>non-existent property</cite>.
+     *
+     * @param  name  the property name.
+     * @param  missingPropertyFallback  the (potentially {@code null}) value to return
+     *         if no attribute or association of the given name exists.
+     * @return the value for the specified property, or the fallback value if no attribute or association
+     *         of that name exists. This value may be {@code null}.
+     *
+     * @since 1.1
+     */
+    @Override
+    public abstract Object getPropertyValue(final String name, Object missingPropertyFallback);
 
     /**
      * Sets the value for the property of the given name.

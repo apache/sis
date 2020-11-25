@@ -41,7 +41,7 @@ import org.opengis.feature.PropertyNotFoundException;
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see DenseFeature
  * @see DefaultFeatureType
@@ -122,7 +122,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      *         or a negative value if the property is a parameterless operation.
      * @throws PropertyNotFoundException if the given argument is not a property name of this feature.
      */
-    private int getIndex(final String name) throws PropertyNotFoundException {
+    private Integer getIndex(final String name) throws PropertyNotFoundException {
         final Integer index = indices.get(name);
         if (index != null) {
             return index;
@@ -228,15 +228,34 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      */
     @Override
     public Object getPropertyValue(final String name) throws PropertyNotFoundException {
+        final Object value = getPropertyValue(name, MISSING);
+        if (value != MISSING) return value;
+        throw new PropertyNotFoundException(propertyNotFound(type, getName(), name));
+    }
+
+    /**
+     * Returns the value for the property of the given name if that property exists, or a fallback value otherwise.
+     *
+     * @param  name  the property name.
+     * @param  missingPropertyFallback  the value to return if no attribute or association of the given name exists.
+     * @return the value for the given property, or {@code null} if none.
+     *
+     * @since 1.1
+     */
+    @Override
+    public final Object getPropertyValue(final String name, final Object missingPropertyFallback) {
         ArgumentChecks.ensureNonNull("name", name);
-        final Integer index = getIndex(name);
+        final Integer index = indices.get(name);
+        if (index == null) {
+            return missingPropertyFallback;
+        }
         if (index < 0) {
             return getOperationValue(name);
         }
         final Object element = properties.get(index);
         if (element != null) {
             if (valuesKind == VALUES) {
-                return element; // Most common case.
+                return element;                                         // Most common case.
             } else if (element instanceof Attribute<?>) {
                 return getAttributeValue((Attribute<?>) element);
             } else if (element instanceof FeatureAssociation) {
