@@ -174,7 +174,7 @@ final class ExpandedFeature implements Feature {
      * Synonymous of {@link #getPropertyValue(String)} since we do not check property existence.
      */
     @Override
-    public Object getPropertyValue(final String name, final Object missingPropertyFallback) {
+    public Object getValueOrFallback(final String name, final Object missingPropertyFallback) {
         return getPropertyValue(name);
     }
 

@@ -228,7 +228,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      */
     @Override
     public Object getPropertyValue(final String name) throws PropertyNotFoundException {
-        final Object value = getPropertyValue(name, MISSING);
+        final Object value = getValueOrFallback(name, MISSING);
         if (value != MISSING) return value;
         throw new PropertyNotFoundException(propertyNotFound(type, getName(), name));
     }
@@ -243,7 +243,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      * @since 1.1
      */
     @Override
-    public final Object getPropertyValue(final String name, final Object missingPropertyFallback) {
+    public final Object getValueOrFallback(final String name, final Object missingPropertyFallback) {
         ArgumentChecks.ensureNonNull("name", name);
         final Integer index = indices.get(name);
         if (index == null) {

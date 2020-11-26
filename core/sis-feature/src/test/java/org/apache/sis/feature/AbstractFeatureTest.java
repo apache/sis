@@ -105,7 +105,7 @@ public final strictfp class AbstractFeatureTest extends FeatureTestCase {
          * Synonymous of {@link #getPropertyValue(String)} for this test.
          */
         @Override
-        public Object getPropertyValue(final String name, final Object missingPropertyFallback) {
+        public Object getValueOrFallback(final String name, final Object missingPropertyFallback) {
             return getPropertyValue(name);
         }
 
