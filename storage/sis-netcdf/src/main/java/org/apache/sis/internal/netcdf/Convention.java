@@ -394,6 +394,11 @@ public class Convention {
     protected static final String LONGITUDE_OF_PRIME_MERIDIAN = "longitude_of_prime_meridian";
 
     /**
+     * Suffix of all attribute names used for CRS component names.
+     */
+    static final String NAME_SUFFIX = "_name";
+
+    /**
      * The {@value} attribute name from CF-convention, defined here because not yet provided in {@link CF}.
      * Associated value shall be an instance of {@link String}. This field may be removed in a future SIS
      * version if this constant become defined in {@link ucar.nc2.constants}.
@@ -492,7 +497,7 @@ public class Convention {
                     continue;
                 }
                 default: {
-                    if (ln.endsWith("_name")) {
+                    if (ln.endsWith(NAME_SUFFIX)) {
                         value = node.getAttributeAsString(name);
                         if (value == null) continue;
                     }

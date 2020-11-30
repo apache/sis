@@ -175,6 +175,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnexpectedDimensionForVariable_4 = 2;
 
         /**
+         * Unknown projection parameters in file “{0}”: {1}
+         */
+        public static final short UnknownProjectionParameters_2 = 25;
+
+        /**
          * Variable “{1}” in file “{0}” has {2,number} dimensions but only {3,number} can be associated
          * to a coordinate reference system.
          */
