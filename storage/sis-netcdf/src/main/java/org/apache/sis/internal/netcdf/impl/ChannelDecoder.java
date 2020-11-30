@@ -59,6 +59,7 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.setup.GeometryLibrary;
@@ -73,7 +74,7 @@ import org.apache.sis.math.Vector;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a>
  *
@@ -179,7 +180,11 @@ public final class ChannelDecoder extends Decoder {
     final VariableInfo[] variables;
 
     /**
-     * Same as {@link #variables}, but as a map for faster search.
+     * Contains all {@link #variables}, but as a map for faster lookup by name. The same {@link VariableInfo}
+     * instance may be repeated in two entries if the original variable name contains upper case letters.
+     * In such case, the value is repeated and associated to a key in all lower case key letters.
+     *
+     * @see #findVariable(String)
      */
     private final Map<String,VariableInfo> variableMap;
 
@@ -191,6 +196,15 @@ public final class ChannelDecoder extends Decoder {
      * @see #findAttribute(String)
      */
     private final Map<String,Object> attributeMap;
+
+    /**
+     * Names of attributes. This is {@code attributeMap.keySet()} unless some attributes have a name
+     * containing upper case letters. In such case a separated set is created for avoiding duplicated
+     * names (the name with upper case letters + the name in all lower case letters).
+     *
+     * @see #getAttributeNames()
+     */
+    private final Set<String> attributeNames;
 
     /**
      * All dimensions in the netCDF files.
@@ -257,9 +271,9 @@ public final class ChannelDecoder extends Decoder {
          * Read the dimension, attribute and variable declarations. We expect exactly 3 lists,
          * where any of them can be flagged as absent by a long (64 bits) 0.
          */
-        DimensionInfo[]    dimensions = null;
-        VariableInfo[]     variables  = null;
-        Map<String,Object> attributes = Collections.emptyMap();
+        DimensionInfo[] dimensions = null;
+        VariableInfo[]  variables  = null;
+        List<Map.Entry<String,Object>> attributes = Collections.emptyList();
         for (int i=0; i<3; i++) {
             final long tn = input.readLong();                   // Combination of tag and nelems
             if (tn != 0) {
@@ -278,7 +292,8 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
         }
-        this.attributeMap = attributes;
+        attributeMap = CollectionsExt.toCaseInsensitiveNameMap(attributes, NAME_LOCALE);
+        attributeNames = attributeNames(attributes, attributeMap);
         if (variables != null) {
             this.variables   = variables;
             this.variableMap = toCaseInsensitiveNameMap(variables);
@@ -541,7 +556,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  nelems  the number of attributes to read.
      */
-    private Map<String,Object> readAttributes(int nelems) throws IOException, DataStoreException {
+    private List<Map.Entry<String,Object>> readAttributes(int nelems) throws IOException, DataStoreException {
         final List<Map.Entry<String,Object>> attributes = new ArrayList<>(nelems);
         while (--nelems >= 0) {
             final String name = readName();
@@ -555,7 +570,7 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
         }
-        return CollectionsExt.toCaseInsensitiveNameMap(attributes, NAME_LOCALE);
+        return attributes;
     }
 
     /**
@@ -602,7 +617,7 @@ public final class ChannelDecoder extends Decoder {
              * Following block is almost a copy-and-paste of similar block in the contructor,
              * but with less cases in the "switch" statements.
              */
-            Map<String,Object> attributes = Collections.emptyMap();
+            List<Map.Entry<String,Object>> attributes = Collections.emptyList();
             final long tn = input.readLong();
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);
@@ -619,7 +634,8 @@ public final class ChannelDecoder extends Decoder {
                     default: throw malformedHeader();
                 }
             }
-            variables[j] = new VariableInfo(this, input, name, varDims, attributes,
+            final Map<String,Object> map = CollectionsExt.toCaseInsensitiveNameMap(attributes, NAME_LOCALE);
+            variables[j] = new VariableInfo(this, input, name, varDims, map, attributeNames(attributes, map),
                     DataType.valueOf(input.readInt()), input.readInt(), readOffset());
         }
         /*
@@ -630,6 +646,24 @@ public final class ChannelDecoder extends Decoder {
          */
         VariableInfo.complete(variables);
         return variables;
+    }
+
+    /**
+     * Returns the keys of {@code attributeMap} without the duplicated values caused by the change of name case.
+     * For example if an attribute {@code "Foo"} exists and a {@code "foo"} key has been generated for enabling
+     * case-insensitive search, only the {@code "Foo"} name is added in the returned set.
+     *
+     * @param  attributes    the attributes returned by {@link #readAttributes(int)}.
+     * @param  attributeMap  the map created by {@link CollectionsExt#toCaseInsensitiveNameMap(Collection, Locale)}.
+     * @return {@code attributes.keySet()} without duplicated keys.
+     */
+    private static Set<String> attributeNames(final List<Map.Entry<String,Object>> attributes, final Map<String,?> attributeMap) {
+        if (attributes.size() >= attributeMap.size()) {
+            return Collections.unmodifiableSet(attributeMap.keySet());
+        }
+        final Set<String> attributeNames = new LinkedHashSet<>(Containers.hashMapCapacity(attributes.size()));
+        attributes.forEach((e) -> attributeNames.add(e.getKey()));
+        return attributeNames;
     }
 
 
@@ -788,12 +822,13 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * Returns the names of all global attributes found in the file.
+     * The returned set is unmodifiable.
      *
      * @return names of all global attributes in the file.
      */
     @Override
     public Collection<String> getAttributeNames() {
-        return Collections.unmodifiableSet(attributeMap.keySet());
+        return Collections.unmodifiableSet(attributeNames);
     }
 
     /**
@@ -1027,12 +1062,12 @@ nextVar:    for (final VariableInfo variable : variables) {
      */
     @Override
     public void addAttributesTo(final TreeTable.Node root) {
-        for (final Map.Entry<String,VariableInfo> entry : variableMap.entrySet()) {
+        for (final VariableInfo variable : variables) {
             final TreeTable.Node node = root.newChild();
-            node.setValue(TableColumn.NAME, entry.getKey());
-            entry.getValue().addAttributesTo(node);
+            node.setValue(TableColumn.NAME, variable.getName());
+            variable.addAttributesTo(node);
         }
-        VariableInfo.addAttributesTo(root, attributeMap);
+        VariableInfo.addAttributesTo(root, attributeNames, attributeMap);
     }
 
     /**

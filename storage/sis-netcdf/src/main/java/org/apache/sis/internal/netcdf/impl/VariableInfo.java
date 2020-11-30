@@ -141,6 +141,15 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     private final Map<String,Object> attributes;
 
     /**
+     * Names of attributes. This is {@code attributeMap.keySet()} unless some attributes have a name
+     * containing upper case letters. In such case a separated set is used for avoiding duplicated
+     * names (the name with upper case letters + the name in all lower case letters).
+     *
+     * @see #getAttributeNames()
+     */
+    private final Set<String> attributeNames;
+
+    /**
      * The netCDF type of data, or {@code null} if unknown.
      *
      * @see #getDataType()
@@ -183,14 +192,16 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                  final String             name,
                  final DimensionInfo[]    dimensions,
                  final Map<String,Object> attributes,
+                 final Set<String>        attributeNames,
                        DataType           dataType,
                  final int                size,
                  final long               offset) throws DataStoreContentException
     {
         super(decoder);
-        this.name       = name;
-        this.dimensions = dimensions;
-        this.attributes = attributes;
+        this.name           = name;
+        this.dimensions     = dimensions;
+        this.attributes     = attributes;
+        this.attributeNames = attributeNames;
         final Object isUnsigned = getAttributeValue(CDM.UNSIGNED, "_unsigned");
         if (isUnsigned instanceof String) {
             dataType = dataType.unsigned(Boolean.valueOf((String) isUnsigned));
@@ -501,12 +512,13 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
 
     /**
      * Returns the names of all attributes associated to this variable.
+     * The returned set is unmodifiable.
      *
      * @return names of all attributes associated to this variable.
      */
     @Override
     public Collection<String> getAttributeNames() {
-        return Collections.unmodifiableSet(attributes.keySet());
+        return Collections.unmodifiableSet(attributeNames);
     }
 
     /**
@@ -560,7 +572,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @param  branch  where to add new nodes for the attributes of this variable.
      */
     final void addAttributesTo(final TreeTable.Node branch) {
-        addAttributesTo(branch, attributes);
+        addAttributesTo(branch, attributeNames, attributes);
     }
 
     /**
@@ -568,14 +580,17 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * returned by {@link org.apache.sis.storage.netcdf.NetcdfStore#getNativeMetadata()}.
      * This tree is for information purpose only.
      *
-     * @param  branch      where to add new nodes for the given attributes.
-     * @param  attributes  the attributes to add to the specified branch.
+     * @param  branch          where to add new nodes for the given attributes.
+     * @param  attributeNames  name of attribute to add to the specified branch.
+     * @param  attributes      the attributes to add to the specified branch.
      */
-    static void addAttributesTo(final TreeTable.Node branch, final Map<String,Object> attributes) {
-        for (final Map.Entry<String,Object> entry : attributes.entrySet()) {
+    static void addAttributesTo(final TreeTable.Node branch,
+            final Set<String> attributeNames, final Map<String,Object> attributes)
+    {
+        for (final String name : attributeNames) {
             final TreeTable.Node node = branch.newChild();
-            node.setValue(TableColumn.NAME, entry.getKey());
-            Object value = entry.getValue();
+            node.setValue(TableColumn.NAME, name);
+            Object value = attributes.get(name);
             if (value != null) {
                 if (value instanceof Vector) {
                     value = ((Vector) value).toArray();

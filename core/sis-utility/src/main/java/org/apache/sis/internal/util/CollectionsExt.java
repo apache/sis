@@ -896,6 +896,9 @@ public final class CollectionsExt extends Static {
      * <p>Code searching in the returned map shall ask for the original (non lower-case) name
      * <strong>before</strong> to ask for the lower-cases version of that name.</p>
      *
+     * <p>Iteration order in map entries is the same than iteration order in the given collection.
+     * If lower-case names have been generated, they appear immediately after the original names.</p>
+     *
      * @param  <E>           the type of elements.
      * @param  entries       the entries to store in the map, or {@code null} if none.
      * @param  namesLocale   the locale to use for creating the "all lower cases" names.
@@ -905,10 +908,10 @@ public final class CollectionsExt extends Static {
     public static <E> Map<String,E> toCaseInsensitiveNameMap(
             final Collection<Map.Entry<String,E>> entries, final Locale namesLocale)
     {
-        if (entries == null) {
+        if (entries == null || entries.isEmpty()) {
             return Collections.emptyMap();
         }
-        final Map<String,E> map = new HashMap<>(hashMapCapacity(entries.size()));
+        final Map<String,E> map = new LinkedHashMap<>(hashMapCapacity(entries.size()));
         final Set<String> generated = new HashSet<>();
         for (final Map.Entry<String, ? extends E> entry : entries) {
             final String name = entry.getKey();
