@@ -52,18 +52,9 @@ public strictfp class VariableTest extends TestCase {
     private static final int NUM_BASIC_PROPERTY_COLUMNS = 5;
 
     /**
-     * Whether the {@code "runtime"} variable in {@link TestData#NETCDF_4D_PROJECTED} is considered an axis or not.
-     * The UCAR library considers it as an axis because it has an {@code "_CoordinateAxisType"} attribute.
-     * Apache SIS does not consider it as an axis because that variable does not match any dimension and is not used
-     * in any other variable.
-     */
-    protected boolean isRuntimeAnAxis;
-
-    /**
      * Creates a new test.
      */
     public VariableTest() {
-        isRuntimeAnAxis = true;
     }
 
     /**
@@ -109,7 +100,7 @@ public strictfp class VariableTest extends TestCase {
             "y0",             "projection_y_coordinate",       DataType.FLOAT,  1, VariableRole.AXIS,
             "z0",             "Flight levels in 100s of feet", DataType.FLOAT,  1, VariableRole.AXIS,
             "time",           "Data time",                     DataType.DOUBLE, 1, VariableRole.AXIS,
-            "runtime",        "Data generation time",          DataType.DOUBLE, 1, isRuntimeAnAxis ? VariableRole.AXIS : VariableRole.OTHER,
+            "runtime",        "Data generation time",          DataType.DOUBLE, 1, VariableRole.AXIS,
             "CIP",            "Current Icing Product",         DataType.FLOAT,  4, VariableRole.COVERAGE
         }, getVariablesCIP(selectDataset(TestData.NETCDF_4D_PROJECTED)));
     }

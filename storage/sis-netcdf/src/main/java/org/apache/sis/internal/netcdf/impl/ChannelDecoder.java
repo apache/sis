@@ -936,10 +936,10 @@ public final class ChannelDecoder extends Decoder {
      * @param  names       names of variables containing axis data, or {@code null} if none.
      * @param  axes        where to add named variables.
      * @param  dimensions  where to report all dimensions used by added axes.
-     * @return whether {@code names} was non-null.
+     * @return whether {@code names} was non-null and non-empty.
      */
     private boolean listAxes(final CharSequence[] names, final Set<VariableInfo> axes, final Set<DimensionInfo> dimensions) {
-        if (names == null) {
+        if (names == null || names.length == 0) {
             return false;
         }
         for (final CharSequence name : names) {
@@ -1002,7 +1002,7 @@ nextVar:    for (final VariableInfo variable : variables) {
                 /*
                  * The axes can be inferred in two ways: if the variable contains a "coordinates" attribute,
                  * that attribute lists explicitly the variables to use as axes. Otherwise we have to infer
-                 * the axes from the variable dimensions, using the 'dimToVars' map computed at the beginning
+                 * the axes from the variable dimensions, using the `dimToAxes` map computed at the beginning
                  * of this method. If and only if we can find all axes, we create the GridGeometryInfo.
                  * This is a "all or nothing" operation.
                  */

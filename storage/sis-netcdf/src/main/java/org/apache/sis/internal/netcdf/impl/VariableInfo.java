@@ -245,11 +245,17 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             }
         }
         /*
+         * According CF conventions, a variable is considered a coordinate system axis if it has the same name
+         * as its dimension. But the "_CoordinateAxisType" attribute is often used for making explicit that a
+         * variable is an axis. We check that case before to check variable name.
+         */
+        isCoordinateSystemAxis = (dimensions.length == 1 || dimensions.length == 2) && (getAxisType() != null);
+        /*
          * If the "_CoordinateAliasForDimension" attribute is defined, then its value will be used
          * instead of the variable name when determining if the variable is a coordinate system axis.
          * "_CoordinateVariableAlias" seems to be a legacy attribute name for the same purpose.
          */
-        if (dimensions.length == 1) {
+        if (!isCoordinateSystemAxis && dimensions.length == 1) {
             Object value = getAttributeValue(_Coordinate.AliasForDimension, "_coordinatealiasfordimension");
             if (value == null) {
                 value = getAttributeValue("_CoordinateVariableAlias", "_coordinatevariablealias");
