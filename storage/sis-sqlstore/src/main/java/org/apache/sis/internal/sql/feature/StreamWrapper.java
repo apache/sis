@@ -49,7 +49,7 @@ import java.util.stream.Stream;
  *
  * Another example would be intermediate operations. Let's keep SQL queries as example. If a stream is executing
  * a statement on terminal operations, a subclasses can override {@link #limit(long)} and {@link #skip(long)}
- * methods to set LIMIT and OFFSET criterion in an SQL query.</div>
+ * methods to set LIMIT and OFFSET criteria in an SQL query.</div>
  *
  * For an advanced example, see the {@link org.apache.sis.internal.sql.feature.StreamSQL} class.
  *

@@ -618,7 +618,7 @@ public abstract class Variable extends Node {
         /*
          * At this point we finished collecting all dimensions to use in the grid. Search a grid containing
          * those dimensions in the same order (the order is enforced by Grid.forDimensions(…) method call).
-         * If we find a grid meting all criterion, we return it immediately. Otherwise select a fallback in
+         * If we find a grid meting all criteria, we return it immediately. Otherwise select a fallback in
          * the following precedence order:
          *
          *   1) grid having all axes requested by the customized convention (usually there is none).

@@ -387,7 +387,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * in EPSG dataset version 8.9, all datum shifts that can be represented by this method use Greenwich as the
      * prime meridian, both in source and target datum.</div>
      *
-     * <h4>Search criterion</h4>
+     * <h4>Search criteria</h4>
      * If the given {@code areaOfInterest} is non-null and contains at least one geographic bounding box, then this
      * method ignores any Bursa-Wolf parameters having a {@linkplain BursaWolfParameters#getDomainOfValidity() domain
      * of validity} that does not intersect the given geographic extent.

@@ -38,6 +38,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
     org.apache.sis.internal.referencing.ReferencingUtilitiesTest.class,
     org.apache.sis.internal.referencing.WraparoundAdjustmentTest.class,
+    org.apache.sis.internal.referencing.ExtentSelectorTest.class,
     org.apache.sis.internal.referencing.WKTKeywordsTest.class,
     org.apache.sis.internal.referencing.WKTUtilitiesTest.class,
     org.apache.sis.internal.jaxb.referencing.CodeTest.class,
