@@ -172,12 +172,11 @@ public final class ExtentSelector<T> {
      * Otherwise other criteria documented in class javadoc are applied.
      *
      * @param  extent  the extent to evaluate, or {@code null} if none.
-     * @param  object  an optional user object associated to the given extent.
+     * @param  object  an user object associated to the given extent.
      */
     public void evaluate(final Extent extent, final T object) {
         final GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(extent);
-        final GeographicBoundingBox intersection = Extents.intersection(bbox, areaOfInterest);
-        final double area = Extents.area(intersection);
+        final double area = Extents.area(Extents.intersection(bbox, areaOfInterest));
         /*
          * Accept the given object if it is the first one (`best = null`), or if it covers a larger area than
          * previous object, or if the previous object had no extent information at all (`largestArea` is NaN)
@@ -199,17 +198,17 @@ public final class ExtentSelector<T> {
                 if (notEquals(out, outsideArea)) {
                     return;
                 }
-                final double pd = pseudoDistance(intersection);
+                final double pd = pseudoDistance(bbox);
                 if (!(pd < pseudoDistance)) {
                     return;
                 }
                 pseudoDistance = pd;
             } else {
-                pseudoDistance = pseudoDistance(intersection);
+                pseudoDistance = pseudoDistance(bbox);
             }
             outsideArea = out;
         } else {
-            pseudoDistance = pseudoDistance(intersection);
+            pseudoDistance = pseudoDistance(bbox);
             outsideArea    = Extents.area(bbox) - area;
         }
         largestArea = area;
