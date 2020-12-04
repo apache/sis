@@ -16,10 +16,13 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Date;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.test.TestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -68,6 +71,18 @@ public final strictfp class ExtentSelectorTest extends TestCase {
     }
 
     /**
+     * Tests using temporal ranges.
+     */
+    @Test
+    @Ignore("Require temporal module, not yet available in SIS.")
+    public void testTemporal() {
+        assertBestEquals(time(1000, 2000), 2,
+                         time(1500, 3000),
+                         time(1300, 1800),      // Same duration than above, but better centered.
+                         time(1400, 1600));     // Well centered but intersection is small.
+    }
+
+    /**
      * Creates an extent for a geographic bounding box having the given boundaries.
      */
     private static Extent extent(final double westBoundLongitude,
@@ -79,6 +94,15 @@ public final strictfp class ExtentSelectorTest extends TestCase {
                 westBoundLongitude, eastBoundLongitude,
                 southBoundLatitude, northBoundLatitude),
                 null, null);
+    }
+
+    /**
+     * Creates an extent for a temporal range having the given boundaries.
+     */
+    private static Extent time(final long startTime, final long endTime) {
+        final DefaultTemporalExtent range = new DefaultTemporalExtent();
+        range.setBounds(new Date(startTime), new Date(endTime));
+        return new DefaultExtent(null, null, null, range);
     }
 
     /**

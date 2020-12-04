@@ -16,16 +16,37 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Date;
+import java.time.Instant;
+import java.time.Duration;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
-
-import static java.lang.Double.isNaN;
+import org.apache.sis.math.MathFunctions;
+import org.apache.sis.measure.Range;
 
 
 /**
  * Selects an object in a sequence of objects using their extent as a criterion.
- * The selection is based on the geographic area using the following rules:
+ * The selection is based on the temporal extent and geographic area using the following rules:
+ *
+ * <ol>
+ *   <li>Object having largest intersection with the time of interest (TOI) is selected.</li>
+ *   <li>If two or more candidates have the same intersection with TOI,
+ *       then the one with less "overtime" (time outside TOI) is selected.</li>
+ *   <li>If two or more candidates are considered equal after above criteria,
+ *       then the one best centered on the TOI is selected.</li>
+ * </ol>
+ *
+ * <div class="note"><b>Rational:</b>
+ * the "smallest time outside" criterion (rule 2) is before "best centered" criterion (rule 3)
+ * because of the following scenario: if a user specifies a "time of interest" (TOI) of 1 day
+ * and if the candidates are a raster of monthly averages and a raster of daily data, we want
+ * the daily data to be selected even if by coincidence the monthly averages is more centered.</div>
+ *
+ * If there is no time of interest, or the candidate objects do not declare time range,
+ * or some objects are still at equality after application of above criteria,
+ * then the selection continues on the basis of geographic criteria:
  *
  * <ol>
  *   <li>Largest intersection with the {@linkplain #areaOfInterest area of interest} (AOI) is selected.</li>
@@ -37,16 +58,8 @@ import static java.lang.Double.isNaN;
  *       then the first of those candidates is selected.</li>
  * </ol>
  *
- * <div class="note"><b>Rational:</b>
- * the "minimize area outside" criterion (rule 2) is before "best centered" criterion (rule 3)
- * for consistency with criteria applied on the temporal axis. If "geographic area" is replaced
- * by "time range", we could have the following scenario: a user specified a "time of interest"
- * (TOI) of 1 day. By coincidence a raster containing monthly averages has a median time closer
- * to TOI center than raster containing daily averages. If rules 2 and 3 were interchanged, the
- * monthly averages would be selected. By checking time outside TOI first, the daily data is
- * returned instead.</div>
- *
- * Usage:
+ * <h2>Usage</h2>
+ * Example!
  *
  * {@preformat java
  *     ExtentSelector<Foo> selector = new ExtentSelector<>(areaOfInterest);
@@ -66,12 +79,20 @@ import static java.lang.Double.isNaN;
  */
 public final class ExtentSelector<T> {
     /**
-     * The area of interest, or {@code null} if none.
-     * This is specified at construction time, but can be modified later.
+     * The area of interest (AOI), or {@code null} if unbounded.
+     * This is initialized at construction time, but can be modified later.
      *
-     * @see #setAreaOfInterest(GeographicBoundingBox, Extent)
+     * @see #setExtentOfInterest(Extent, GeographicBoundingBox, Instant[])
      */
     private GeographicBoundingBox areaOfInterest;
+
+    /**
+     * Start/end of the time of interest (TOI), or {@code null} if unbounded.
+     * This is initialized at construction time, but can be modified later.
+     *
+     * @see #setExtentOfInterest(Extent, GeographicBoundingBox, Instant[])
+     */
+    private Instant minTOI, maxTOI;
 
     /**
      * The best object found so far.
@@ -79,22 +100,32 @@ public final class ExtentSelector<T> {
     private T best;
 
     /**
-     * The area covered by the {@linkplain #best} object (m²). The initial value is zero,
-     * which imply that only intersection areas greater than zero will be accepted.
-     * This is the desired behavior in order to filter out empty intersections.
-     *
-     * <p>This is the first criterion cited in class javadoc.</p>
+     * The area covered by the {@linkplain #best} object (m²).
+     * This is the first criterion cited in class javadoc.
      */
     private double largestArea;
+
+    /**
+     * Duration of the {@linkplain #best} object, or {@code null} if none.
+     * This is equivalent to {@link #largestArea} in the temporal domain.
+     */
+    private Duration longestTime;
 
     /**
      * Area of {@linkplain #best} object which is outside the area of interest.
      * This is used as a discriminatory criterion only when {@link #largestArea}
      * has the same value for two or more objects.
-     *
-     * <p>This is the second criterion cited in class javadoc.</p>
+     * This is the second criterion cited in class javadoc.
      */
     private double outsideArea;
+
+    /**
+     * Duration of {@linkplain #best} object which is outside the time of interest.
+     * This is used as a discriminatory criterion only when {@link #longestTime}
+     * has the same value for two or more objects.
+     * This is equivalent to {@link #outsideArea} in the temporal domain.
+     */
+    private Duration overtime;
 
     /**
      * A pseudo-distance from {@linkplain #best} object center to {@link #areaOfInterest} center.
@@ -109,12 +140,67 @@ public final class ExtentSelector<T> {
     private double pseudoDistance;
 
     /**
+     * Time between {@linkplain #best} entry center and TOI center.
+     * This value is used as a discriminatory criterion only when {@link #longestTime}
+     * and {@link #overtime} have the same values for two or more objects.
+     * This is equivalent to {@link #pseudoDistance} in the temporal domain.
+     */
+    private double temporalDistance;
+
+    /**
      * Creates a selector for the given area of interest.
      *
-     * @param areaOfInterest  the area of interest, or {@code null} if none.
+     * @param  domain  the area and time of interest, or {@code null} if none.
+     * @throws IllegalArgumentException if AOI or TOI has an invalid range.
      */
-    public ExtentSelector(final Extent areaOfInterest) {
-        this.areaOfInterest = Extents.getGeographicBoundingBox(areaOfInterest);
+    public ExtentSelector(final Extent domain) {
+        if (!setExtentOfInterest(domain, null, null)) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    /**
+     * Sets the area of interest (AOI) and time of interest (TOI) to the intersection of given arguments.
+     * This method should be invoked only if {@link #best()} returned {@code null}. It allows to make new
+     * attempts with a different domain of interest when the search using previous AOI/TOI gave no result.
+     *
+     * <p>Callers should not use this {@code ExtentSelector} if this method returns {@code false},
+     * except for invoking this {@code setExtentOfInterest(…)} method again with different values
+     * until this method returns {@code true}.</p>
+     *
+     * @param  domain  the area and time of interest, or {@code null} if none.
+     * @param  aoi     second area of interest as a bounding box, or {@code null} if none.
+     * @param  toi     second time of interest as a an array of length 2, 1 or 0, or {@code null}.
+     *                 If array length is 2, it contains start time and end time in that order.
+     *                 If array length is 1, start time and end time are assumed the same.
+     *                 If array length is 0 or array reference is null, there is no temporal range to intersect.
+     * @return whether the intersections of {@code domain} with {@code aoi} and {@code toi} have valid ranges.
+     */
+    public final boolean setExtentOfInterest(final Extent domain, final GeographicBoundingBox aoi, final Instant[] toi) {
+        areaOfInterest = Extents.intersection(aoi, Extents.getGeographicBoundingBox(domain));
+        minTOI = maxTOI = null;
+        final Range<Date> tr = Extents.getTimeRange(domain);
+        if (tr != null) {
+            Date t;
+            if ((t = tr.getMinValue()) != null) minTOI = t.toInstant();
+            if ((t = tr.getMaxValue()) != null) maxTOI = t.toInstant();
+        }
+        if (toi != null && toi.length != 0) {
+            Instant t = toi[0];
+            if (minTOI == null || (t != null && t.isAfter(minTOI))) {
+                minTOI = t;
+            }
+            if (toi.length >= 2) t = toi[1];
+            if (maxTOI == null || (t != null && t.isBefore(maxTOI))) {
+                maxTOI = t;
+            }
+        }
+        return (minTOI == null || maxTOI == null || !minTOI.isAfter(maxTOI)) &&
+                ((areaOfInterest == null) ||
+                    (areaOfInterest.getNorthBoundLatitude() >= areaOfInterest.getSouthBoundLatitude()
+                        && Double.isFinite(areaOfInterest.getWestBoundLongitude())
+                        && Double.isFinite(areaOfInterest.getEastBoundLongitude())
+                        && !Boolean.FALSE.equals(areaOfInterest.getInclusion())));
     }
 
     /**
@@ -127,16 +213,12 @@ public final class ExtentSelector<T> {
     }
 
     /**
-     * Sets the area of interest to the intersection of the two given arguments.
-     * This method should be invoked only if {@link #best()} returned {@code null}.
-     * It allows to make a second search with a different AOI when the search using
-     * previous AOI gave no result.
+     * Returns the time of interest as an array of length 2, or {@code null} if none.
      *
-     * @param  a1  first area of interest as a bounding box, or {@code null}.
-     * @param  a2  second area of interest as an extent, or {@code null}.
+     * @return the start time and end time of interest, or {@code null} if none.
      */
-    public final void setAreaOfInterest(final GeographicBoundingBox a1, final Extent a2) {
-        areaOfInterest = Extents.intersection(a1, Extents.getGeographicBoundingBox(a2));
+    public final Instant[] getTimeOfInterest() {
+        return (minTOI == null && maxTOI == null) ? null : new Instant[] {minTOI, maxTOI};
     }
 
     /**
@@ -158,70 +240,214 @@ public final class ExtentSelector<T> {
          */
         final double cφ = areaOfInterest.getNorthBoundLatitude()
                         + areaOfInterest.getSouthBoundLatitude();
-        final double dφ = (area.getNorthBoundLatitude() + area.getSouthBoundLatitude()) - cφ;
-        final double dλ = (area.getEastBoundLongitude() - areaOfInterest.getEastBoundLongitude())
-                        + (area.getWestBoundLongitude() - areaOfInterest.getWestBoundLongitude())
+        final double dφ =  (area.getNorthBoundLatitude() + area.getSouthBoundLatitude()) - cφ;
+        final double dλ = ((area.getEastBoundLongitude() - areaOfInterest.getEastBoundLongitude())
+                        +  (area.getWestBoundLongitude() - areaOfInterest.getWestBoundLongitude()))
                         * Math.cos(cφ * (Math.PI/180 / 2));
         return dφ*dφ + dλ*dλ;
     }
 
     /**
-     * Evaluates the given extent against the criteria represented by this {@code ExtentSelector}.
-     * If the intersection between the given extent and the area of interest is greater than any
-     * previous intersection, then the given object is remembered as the best match found so far.
-     * Otherwise other criteria documented in class javadoc are applied.
+     * Computes a temporal distance between the center of given range and center of time of interest.
+     * This is always a positive value or {@link Double#NaN}. Unit is irrelevant (as long as constant)
+     * because we only compare distances with other distances.
      *
-     * @param  extent  the extent to evaluate, or {@code null} if none.
+     * @see #temporalDistance
+     */
+    private double temporalDistance(final Instant startTime, final Instant endTime) {
+        return Math.abs(median(startTime, endTime) - median(minTOI, maxTOI));
+    }
+
+    /**
+     * Returns instant (in milliseconds) in the middle of given time range, or {@link Double#NaN} if none.
+     * Used for {@link #temporalDistance(Instant, Instant)} implementation only.
+     */
+    private static double median(final Instant startTime, final Instant endTime) {
+        if (startTime != null) {
+            final long t = startTime.toEpochMilli();
+            return (endTime != null) ? MathFunctions.average(t, endTime.toEpochMilli()) : t;
+        } else {
+            return (endTime != null) ? endTime.toEpochMilli() : Double.NaN;
+        }
+    }
+
+    /**
+     * Computes the amount of time outside the time of interest (TOI). The returned value is always positive
+     * because {@code intersection} should always be less than {@code endTime} − {@code startTime} duration.
+     */
+    private static Duration overtime(final Instant startTime, final Instant endTime, final Duration intersection) {
+        return (startTime != null && endTime != null && intersection != null)
+                ? Duration.between(startTime, endTime).minus(intersection) : null;
+    }
+
+    /**
+     * Evaluates the given extent against the criteria represented by this {@code ExtentSelector}.
+     * See class javadoc for a list of criteria and the order in which they are applied.
+     * Implementation delegates to {@link #evaluate(GeographicBoundingBox, Instant, Instant, Object)}.
+     *
+     * @param  domain  the extent to evaluate, or {@code null} if none.
      * @param  object  an user object associated to the given extent.
      */
-    public void evaluate(final Extent extent, final T object) {
-        final GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(extent);
-        final double area = Extents.area(Extents.intersection(bbox, areaOfInterest));
+    public void evaluate(final Extent domain, final T object) {
+        Date t;
+        final Range<Date> tr = Extents.getTimeRange(domain);
+        evaluate(Extents.getGeographicBoundingBox(domain),
+                 (tr != null && (t = tr.getMinValue()) != null) ? t.toInstant() : null,
+                 (tr != null && (t = tr.getMaxValue()) != null) ? t.toInstant() : null,
+                 object);
+    }
+
+    /**
+     * Evaluates the given bounding box and time range against the criteria represented by this {@code ExtentSelector}.
+     * See class javadoc for a list of criteria and the order in which they are applied.
+     *
+     * @param  bbox       the geographic extent of {@code object}, or {@code null} if none.
+     * @param  startTime  start time of {@code object}, or {@code null} if none (unbounded).
+     * @param  endTime    end time of {@code object}, or {@code null} if none (unbounded).
+     * @param  object     an user object associated to the given extent.
+     */
+    @SuppressWarnings("fallthrough")
+    public void evaluate(final GeographicBoundingBox bbox, final Instant startTime, final Instant endTime, final T object) {
         /*
-         * Accept the given object if it is the first one (`best = null`), or if it covers a larger area than
-         * previous object, or if the previous object had no extent information at all (`largestArea` is NaN)
-         * while the new object has a valid extent.
+         * Get the geographic and temporal intersections. If there is no intersection, no more analysis is done.
+         * Note that the intersection is allowed to be zero (empty), which is not the same as no intersection.
+         * An empty intersection may happen if the AOI is a single point or the TOI is a single instant.
          */
-        // Use `!(…)` form for accepting NaN in `area > largestArea`.
-        if (!(best == null || area > largestArea || (isNaN(largestArea) && !isNaN(area)))) {
-            if (notEquals(area, largestArea)) {
-                return;
-            }
-            /*
-             * If the two extents have the same area, second criterion is to select the object having
-             * smallest amount of area outside the AOI, with same NaN handling than for intersection.
-             * If still equal, third and last criterion is to select the object closest to center
-             * (determined in an approximated way).
-             */
-            final double out = Extents.area(bbox) - area;
-            if (!(out < outsideArea || (isNaN(outsideArea) && !isNaN(out)))) {
-                if (notEquals(out, outsideArea)) {
-                    return;
-                }
-                final double pd = pseudoDistance(bbox);
-                if (!(pd < pseudoDistance)) {
-                    return;
-                }
-                pseudoDistance = pd;
-            } else {
-                pseudoDistance = pseudoDistance(bbox);
-            }
-            outsideArea = out;
+        Instant tmin = startTime;
+        Instant tmax = endTime;
+        if (tmin != null && minTOI != null && tmin.isBefore(minTOI)) tmin = minTOI;
+        if (tmax != null && maxTOI != null && tmax.isAfter (maxTOI)) tmax = maxTOI;
+        final Duration duration;
+        if (tmin != null && tmax != null) {
+            duration = Duration.between(tmin, tmax);
+            if (duration.isNegative()) return;
         } else {
-            pseudoDistance = pseudoDistance(bbox);
-            outsideArea    = Extents.area(bbox) - area;
+            duration = null;
         }
+        final double area = Extents.area(Extents.intersection(bbox, areaOfInterest));
+        if (Double.isNaN(area) && bbox != null) {
+            return;
+        }
+        /*
+         * Accept the given object if it is the first one (`best == null`) or if it meets the first
+         * criterion documented in class javadoc (i.e. covers a longer time than previous object).
+         * Other special cases:
+         *
+         *   - duration == null while old value has  a duration: reject (with comparison < 0).
+         *   - duration != null while old value had no duration: accept (with comparison > 0).
+         *
+         * Those special cases are controlled by the +1 or -1 argument in calls to `compare(…)`.
+         * The same pattern is applied for all criteria in inner conditions, using one of:
+         *
+         *     comparison(…, -1) <= 0
+         *     comparison(…, +1) >= 0
+         *
+         * The criteria are always tested as below:
+         *
+         *     if ((comparison = comparison(…, ±1)) ⪌ 0) {
+         *         if (comparison != 0) return;
+         *         // Compute and test criteria.
+         *     }
+         */
+        int comparison, remainingFieldsToCompute = OVERTIME;
+        if (best != null && (comparison = compare(duration, longestTime, -1)) <= 0) {
+            if (comparison != 0) return;
+            /*
+             * Criterion #2: select the object having smallest amount of time outside Time Of Interest (TOI).
+             * See class javadoc for a rational about why this criterion is applied before `temporalDistance`.
+             */
+            remainingFieldsToCompute = TEMPORAL_DISTANCE;
+            final Duration et = overtime(startTime, endTime, duration);
+            if ((comparison = compare(et, overtime, +1)) >= 0) {
+                if (comparison != 0) return;
+                /*
+                 * Criterion #3: select the object having median time closest to TOI median time.
+                 */
+                remainingFieldsToCompute = OUTSIDE_AREA;
+                final double td = temporalDistance(startTime, endTime);
+                if ((comparison = compare(td, temporalDistance, +1)) >= 0) {
+                    if (comparison != 0) return;
+                    /*
+                     * Criterion #4: select the object covering largest geographic area.
+                     */
+                    if ((comparison = compare(area, largestArea, -1)) <= 0) {
+                        if (comparison != 0) return;
+                        /*
+                         * Criterion #5: select the object having less surface outside Area Of Interest (AOI).
+                         * Tested before `pseudoDistance` criterion for consistency with temporal domain.
+                         */
+                        remainingFieldsToCompute = PSEUDO_DISTANCE;
+                        final double out = Extents.area(bbox) - area;
+                        if ((comparison = compare(out, outsideArea, +1)) >= 0) {
+                            if (comparison != 0) return;
+                            /*
+                             * Criterion #5: select the object having center closest to AOI center.
+                             * Distances are computed with inexact formulas (not a real distance).
+                             */
+                            remainingFieldsToCompute = NONE;
+                            final double pd = pseudoDistance(bbox);
+                            if (compare(pd, pseudoDistance, +1) >= 0) {
+                                return;
+                            }
+                            pseudoDistance = pd;
+                        }
+                        outsideArea = out;
+                    }
+                }
+                temporalDistance = td;
+            }
+            overtime = et;
+        }
+        longestTime = duration;
         largestArea = area;
+        switch (remainingFieldsToCompute) {           // Intentional fallthrough in every cases.
+            case OVERTIME:          overtime          = overtime(startTime, endTime, duration);
+            case TEMPORAL_DISTANCE: temporalDistance  = temporalDistance(startTime, endTime);
+            case OUTSIDE_AREA:      outsideArea       = Extents.area(bbox) - area;
+            case PSEUDO_DISTANCE:   pseudoDistance    = pseudoDistance(bbox);
+        }
         best = object;
     }
 
     /**
-     * Returns {@code true} if the given values are not equals.
-     * {@link Double#NaN} values are compared equal to other NaN values.
-     * Sign of positive/negative zero is ignored.
+     * Identification of which fields need to be recomputed. This is an ordered enumeration:
+     * recomputing a field implies recomputing all following fields (identified by greater values).
+     * For example if the {@link #temporalDistance} field needs to be recomputed,
+     * then the {@link #outsideArea} and {@link #pseudoDistance} fields must be recomputed as well.
+     * This is a consequence of the order in which criteria documented in class javadoc are applied.
      */
-    private static boolean notEquals(final double a, final double b) {
-        return (a != b) && !(isNaN(a) && isNaN(b));
+    private static final int OVERTIME = 0, TEMPORAL_DISTANCE = 1, OUTSIDE_AREA = 2, PSEUDO_DISTANCE = 3, NONE = 4;
+
+    /**
+     * Compares the given duration as documented in {@link Duration#compareTo(Duration)} with the addition
+     * of supporting {@code null} values. The {@code missing} argument tells whether null values shall be
+     * considered smaller (-1) or greater (+1) than all non-null values.
+     */
+    private static int compare(final Duration a, final Duration b, final int missing) {
+        if (a != null) {
+            return (b != null) ? a.compareTo(b) : -missing;
+        } else {
+            return (b != null) ? missing : 0;
+        }
+    }
+
+    /**
+     * Compares the given values as documented in {@link Double#compareTo(Double)} except in the handling
+     * of zero and NaN values.
+     *
+     * <ul>
+     *   <li>The {@code missing} argument tells whether NaN values shall be considered smaller (-1)
+     *       or greater (+1) than all non-NaN values.</li>
+     *   <li>Positive and negative zeros are considered equal.</li>
+     * </ul>
+     */
+    private static int compare(final double a, final double b, int missing) {
+        if (a < b) return -1;
+        if (a > b) return +1;
+        final boolean n = Double.isNaN(b);
+        if (Double.isNaN(a) == n) return 0;
+        if (n) missing = -missing;
+        return missing;
     }
 
     /**
@@ -231,14 +457,5 @@ public final class ExtentSelector<T> {
      */
     public T best() {
         return best;
-    }
-
-    /**
-     * Returns {@code true} if an intersection has been found.
-     *
-     * @return whether an intersection has been found.
-     */
-    public boolean hasIntersection() {
-        return largestArea > 0;
     }
 }

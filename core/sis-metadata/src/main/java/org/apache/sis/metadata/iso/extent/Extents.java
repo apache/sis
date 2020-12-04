@@ -550,7 +550,8 @@ public final class Extents extends Static {
     /**
      * Returns the intersection of the given geographic bounding boxes. If any of the arguments is {@code null},
      * then this method returns the other argument (which may be null). Otherwise this method returns a box which
-     * is the intersection of the two given boxes.
+     * is the intersection of the two given boxes. If there is no intersection, the returned bounding box contains
+     * {@link Double#NaN} bounds.
      *
      * <p>This method never modify the given boxes, but may return directly one of the given arguments if it
      * already represents the intersection result.</p>
@@ -558,7 +559,7 @@ public final class Extents extends Static {
      * @param  b1  the first bounding box, or {@code null}.
      * @param  b2  the second bounding box, or {@code null}.
      * @return the intersection (may be any of the {@code b1} or {@code b2} argument if unchanged),
-     *         or {@code null} if the two given boxes are null.
+     *         or {@code null} if the two given boxes are null. May contain {@link Double#NaN} bounds.
      * @throws IllegalArgumentException if the {@linkplain DefaultGeographicBoundingBox#getInclusion() inclusion status}
      *         is not the same for both boxes.
      *
