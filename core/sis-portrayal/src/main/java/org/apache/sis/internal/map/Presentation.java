@@ -16,10 +16,11 @@
  */
 package org.apache.sis.internal.map;
 
-import org.opengis.feature.Feature;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.portrayal.MapLayer;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.Resource;
+import org.opengis.feature.Feature;
 
 
 /**
@@ -51,12 +52,13 @@ import org.apache.sis.portrayal.MapLayer;
 public abstract class Presentation {
 
     private MapLayer layer;
+    private Resource resource;
     private Object candidate;
 
     public Presentation() {
     }
 
-    public Presentation(MapLayer layer, Object candidate) {
+    public Presentation(MapLayer layer, Resource resource, Feature candidate) {
         this.layer = layer;
         this.candidate = candidate;
     }
@@ -77,6 +79,14 @@ public abstract class Presentation {
      */
     public void setLayer(MapLayer layer) {
         this.layer = layer;
+    }
+
+    public Resource getResource() {
+        return resource;
+    }
+
+    public void setResource(Resource resource) {
+        this.resource = resource;
     }
 
     /**
