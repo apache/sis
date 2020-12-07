@@ -37,7 +37,6 @@ import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
-import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.ExpressionVisitor;
 
@@ -97,6 +96,7 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
     static final class Property extends LeafExpression implements org.opengis.filter.expression.PropertyName {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 3417789380239058201L;
+        private static final Object MISSING = new Object();
 
         /** Name of the property from which to retrieve the value. */
         private final String name;
@@ -135,11 +135,14 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
          */
         @Override
         public Object evaluate(final Object candidate) {
-            if (candidate instanceof Feature) try {
-                return ((Feature) candidate).getPropertyValue(name);
-            } catch (PropertyNotFoundException ex) {
-                warning(ex);
-                // Null will be returned below.
+            if (candidate instanceof Feature) {
+                Object value = ((Feature) candidate).getValueOrFallback(name, MISSING);
+                if (value == MISSING) {
+                    warning("Property " + name + " undefined on type " + ((Feature) candidate).getType().getName());
+                    // Null will be returned below.
+                } else {
+                    return value;
+                }
             } else if (candidate instanceof Map<?,?>) {
                 return ((Map<?,?>) candidate).get(name);
             }

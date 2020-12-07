@@ -20,7 +20,6 @@ import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.opengis.feature.Feature;
-import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.identity.GmlObjectId;
 
@@ -70,11 +69,12 @@ final class DefaultObjectId implements FeatureId, GmlObjectId, Serializable {
      */
     @Override
     public boolean matches(final Object feature) {
-        if (feature instanceof Feature) try {
-            Object id = ((Feature) feature).getPropertyValue(AttributeConvention.IDENTIFIER);
-            return identifier.equals(String.valueOf(id));
-        } catch (PropertyNotFoundException ex) {
-            // Feature does not contain the identifier property.
+        if (feature instanceof Feature) {
+            Object value = ((Feature) feature).getValueOrFallback(AttributeConvention.IDENTIFIER, null);
+            // Feature does not contain the identifier property if null.
+            if (value != null) {
+                return identifier.equals(String.valueOf(value));
+            }
         }
         return false;
     }

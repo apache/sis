@@ -37,7 +37,6 @@ import org.locationtech.jts.io.WKBWriter;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.io.WKTWriter;
 import org.opengis.feature.Feature;
-import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.PropertyName;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -137,11 +136,7 @@ public final class FilterGeometryUtils {
         Object value = null;
         if ((exp instanceof PropertyName) && object instanceof Feature && ((PropertyName) exp).getPropertyName().isEmpty()) {
             //Search for a default geometry.
-            try {
-                value = ((Feature) object).getPropertyValue(AttributeConvention.GEOMETRY_PROPERTY.toString());
-            } catch (PropertyNotFoundException ex) {
-                //no defined default geometry
-            }
+            value = ((Feature) object).getValueOrFallback(AttributeConvention.GEOMETRY, null);
         } else {
             value = exp.evaluate(object);
         }

@@ -28,7 +28,6 @@ import org.apache.sis.internal.filter.Node;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
-import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.FilterVisitor;
 import org.opengis.filter.Id;
 import org.opengis.filter.identity.Identifier;
@@ -109,8 +108,8 @@ final class FilterByIdentifier extends Node implements Id {
      */
     @Override
     public boolean evaluate(Object object) {
-        if (object instanceof Feature) try {
-            final Object id = ((Feature) object).getPropertyValue(AttributeConvention.IDENTIFIER);
+        if (object instanceof Feature) {
+            Object id = ((Feature) object).getValueOrFallback(AttributeConvention.IDENTIFIER, null);
             if (identifiers.containsKey(id)) {
                 return true;
             }
@@ -121,8 +120,6 @@ final class FilterByIdentifier extends Node implements Id {
                  */
                 return identifiers.containsKey(id.toString());
             }
-        } catch (PropertyNotFoundException ex) {
-            // No identifier property. This is okay.
         }
         return false;
     }
