@@ -108,7 +108,8 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.ConvertedGridCoverageTest.class,
     org.apache.sis.coverage.grid.ResampledGridCoverageTest.class,
 
-    // Index
+    // Index and processing
+    org.apache.sis.internal.processing.image.IsolinesTest.class,
     org.apache.sis.index.tree.PointTreeNodeTest.class,
     org.apache.sis.index.tree.PointTreeTest.class
 })
