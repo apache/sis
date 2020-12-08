@@ -177,18 +177,4 @@ public abstract class Node implements Serializable {
     protected final void warning(final Exception e) {
         Logging.recoverableException(Logging.getLogger(Loggers.FILTER), getClass(), "evaluate", e);
     }
-
-    /**
-     * Reports that an operation failed because of an unusual case.
-     * This method assumes that the warning occurred in an {@code evaluate(…)} method.
-     *
-     * @param  message : the description of the error.
-     *
-     * @todo Consider defining a {@code Context} class providing, among other information, listeners where to report warnings.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-460">SIS-460</a>
-     */
-    protected final void warning(final String message) {
-        Logging.recoverableException(Logging.getLogger(Loggers.FILTER), getClass(), message, null);
-    }
 }
