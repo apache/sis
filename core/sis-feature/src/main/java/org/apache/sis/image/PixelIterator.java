@@ -275,9 +275,9 @@ public abstract class PixelIterator {
          *
          * <table class="sis">
          *   <caption>Supported iteration order</caption>
-         *   <tr><th>Value</th>                         <th>Iteration order</th>                                <th>Supported on</th></tr>
-         *   <tr><td>{@code null}</td>                  <td>Most efficient iteration order.</td>                <td>Image and raster</td></tr>
-         *   <tr><td>{@link SequenceType#LINEAR}</td>   <td>From left to right, then from top to bottom.</td>   <td>Raster only</td></tr>
+         *   <tr><th>Value</th>                         <th>Iteration order</th></tr>
+         *   <tr><td>{@code null}</td>                  <td>Most efficient iteration order.</td></tr>
+         *   <tr><td>{@link SequenceType#LINEAR}</td>   <td>From left to right, then from top to bottom.</td></tr>
          * </table>
          *
          * Any other {@code order} value will cause an {@link IllegalArgumentException} to be thrown.
@@ -333,9 +333,6 @@ public abstract class PixelIterator {
         public PixelIterator create(RenderedImage data) {
             ArgumentChecks.ensureNonNull("data", data);
             data = unwrap(data);
-            if (data instanceof BufferedImage) {
-                return create(((BufferedImage) data).getRaster());
-            }
             /*
              * Note: As of Java 14, `BufferedImage.getTileGridXOffset()` and `getTileGridYOffset()` have a bug.
              * They should return `BufferedImage.getMinX()` (which is always 0) because the image contains only
@@ -345,6 +342,9 @@ public abstract class PixelIterator {
              *
              * Issue tracker: https://bugs.openjdk.java.net/browse/JDK-8166038
              */
+            if (data instanceof BufferedImage) {
+                return create(((BufferedImage) data).getRaster());
+            }
             if (order == SequenceType.LINEAR) {
                 return new LinearIterator(data, null, subArea, window);
             } else if (order != null) {
