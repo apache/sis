@@ -24,11 +24,11 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -145,8 +145,8 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
                 side = 1;
             }
         }
-        throw new MismatchedDimensionException(Resources.format(
-                Resources.Keys.MismatchedTransformDimension_3, side, expectedDimension, actual));
+        throw new MismatchedDimensionException(Errors.format(
+                Errors.Keys.MismatchedTransformDimension_4, name, side, expectedDimension, actual));
     }
 
     /**

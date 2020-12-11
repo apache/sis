@@ -236,8 +236,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
                     return;
                 }
             }
-            throw new IllegalArgumentException(Resources.format(
-                    Resources.Keys.MismatchedTransformDimension_3, 0, SOURCE_DIMENSION, n));
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedTransformDimension_4,
+                                               "localizations", 0, SOURCE_DIMENSION, n));
         }
     }
 
@@ -380,8 +380,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
                 return;
             }
         }
-        throw new MismatchedDimensionException(Resources.format(
-                Resources.Keys.MismatchedTransformDimension_3, isTarget, SOURCE_DIMENSION, dim));
+        throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedTransformDimension_4,
+                                               "sourceToGrid", isTarget, SOURCE_DIMENSION, dim));
     }
 
     /**

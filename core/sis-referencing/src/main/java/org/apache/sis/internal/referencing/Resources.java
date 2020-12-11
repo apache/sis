@@ -340,12 +340,6 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MismatchedPrimeMeridian_2 = 36;
 
         /**
-         * The transform has {2} {0,choice,0#source|1#target} dimension{2,choice,1#|2#s}, while {1} was
-         * expected.
-         */
-        public static final short MismatchedTransformDimension_3 = 37;
-
-        /**
          * Despite its name, this parameter is effectively “{0}”.
          */
         public static final short MisnamedParameter_1 = 38;
@@ -353,7 +347,7 @@ public final class Resources extends IndexedResourceBundle {
         /**
          * Missing or empty “ID[…]” element for “{0}”.
          */
-        public static final short MissingAuthorityCode_1 = 99;
+        public static final short MissingAuthorityCode_1 = 37;
 
         /**
          * No authority was specified for code “{0}”. The expected syntax is “AUTHORITY:CODE”.

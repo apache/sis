@@ -543,6 +543,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MismatchedMatrixSize_4 = 83;
 
         /**
+         * The “{0}” transform has {3} {1,choice,0#source|1#target} dimension{3,choice,1#|2#s}, while
+         * {2} was expected.
+         */
+        public static final short MismatchedTransformDimension_4 = 190;
+
+        /**
          * Missing a ‘{1}’ character in “{0}” element.
          */
         public static final short MissingCharacterInElement_2 = 84;

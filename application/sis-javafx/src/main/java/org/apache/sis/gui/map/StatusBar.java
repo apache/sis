@@ -969,19 +969,11 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         @Override public void set(final MathTransform newValue) {
             ArgumentChecks.ensureNonNull("newValue", newValue);
             final MathTransform oldValue = get();
-            int expected = oldValue.getSourceDimensions();
-            int actual   = newValue.getSourceDimensions();
-            if (expected == actual) {
-                expected = oldValue.getTargetDimensions();
-                actual   = newValue.getTargetDimensions();
-                if (expected == actual) {
-                    super.set(newValue);
-                    updateLocalToPositionCRS();
-                    return;
-                }
-            }
-            throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, "newValue", expected, actual));
+            ArgumentChecks.ensureDimensionsMatch("newValue",
+                    oldValue.getSourceDimensions(),
+                    oldValue.getTargetDimensions(), newValue);
+            super.set(newValue);
+            updateLocalToPositionCRS();
         }
     }
 

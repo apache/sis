@@ -18,14 +18,12 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -57,10 +55,6 @@ final class TransformAdapter2D extends AbstractMathTransform2D implements Serial
      */
     TransformAdapter2D(final MathTransform impl) {
         this.impl = impl;
-        int dim;
-        if ((dim = impl.getSourceDimensions()) != 2 || (dim = impl.getTargetDimensions()) != 2) {
-            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "transform", 2, dim));
-        }
     }
 
     /** Transforms a single point and opportunistically compute its derivative. */

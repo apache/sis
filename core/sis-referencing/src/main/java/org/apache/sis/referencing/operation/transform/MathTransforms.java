@@ -543,6 +543,7 @@ public final class MathTransforms extends Static {
         if (transform == null || transform instanceof MathTransform2D) {
             return (MathTransform2D) transform;
         } else {
+            ArgumentChecks.ensureDimensionsMatch("transform", 2, 2, transform);
             return new TransformAdapter2D(transform);
         }
     }
