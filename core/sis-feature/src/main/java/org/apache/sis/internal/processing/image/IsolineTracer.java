@@ -181,9 +181,11 @@ final class IsolineTracer {
         private final Polyline[] polylinesOnTop;
 
         /**
-         * The isolines as a Java2D shape, created when first needed. The {@link Polyline} coordinates are copied in
-         * this path when a geometry is closed or when iteration finished on a row and the polyline is not reused by
-         * next row. This is the shape to be returned to user for this level after we finished to process all cells.
+         * The isolines as a Java2D shape, created when first needed. The {@link Polyline} coordinates are copied
+         * in this path when a geometry is closed. This is the shape to be returned to user for this level after
+         * we finished to process all cells.
+         *
+         * @see #writeTo(Path2D, Polyline...)
          */
         Path2D path;
 
@@ -227,6 +229,7 @@ final class IsolineTracer {
          * like real values. Those NaN values will be filtered later in another method, when copying coordinates in
          * {@link Path2D} objects.
          */
+        @SuppressWarnings("AssertWithSideEffects")
         final void interpolate() throws TransformException {
             switch (isDataAbove) {
                 default: {
@@ -251,10 +254,8 @@ final class IsolineTracer {
                 case LOWER_LEFT | LOWER_RIGHT:
                 case UPPER_LEFT | UPPER_RIGHT: {
                     assert polylinesOnTop[x].isEmpty();
-                    if (polylineOnLeft.isEmpty()) {
-                        interpolateOnLeftSide();
-                    }
-                    interpolateOnRightSide(polylineOnLeft);     // Will be the left side of next column.
+                    interpolateMissingLeftSide();
+                    interpolateOnRightSide();                   // Will be the left side of next column.
                     break;
                 }
                 /*     ○╌╌╌┼╌╌●        ●╌╌╌┼╌╌○
@@ -266,9 +267,7 @@ final class IsolineTracer {
                 case UPPER_LEFT  | LOWER_LEFT: {
                     assert polylineOnLeft.isEmpty();
                     final Polyline polylineOnTop = polylinesOnTop[x];
-                    if (polylineOnTop.isEmpty()) {
-                        interpolateOnTopSide(polylineOnTop);
-                    }
+                    interpolateMissingTopSide(polylineOnTop);
                     interpolateOnBottomSide(polylineOnTop);     // Will be top side of next row.
                     break;
                 }
@@ -280,9 +279,7 @@ final class IsolineTracer {
                 case LOWER_LEFT:
                 case UPPER_LEFT | UPPER_RIGHT | LOWER_RIGHT: {
                     assert polylinesOnTop[x].isEmpty();
-                    if (polylineOnLeft.isEmpty()) {
-                        interpolateOnLeftSide();
-                    }
+                    interpolateMissingLeftSide();
                     interpolateOnBottomSide(polylinesOnTop[x].transferFrom(polylineOnLeft));
                     break;
                 }
@@ -294,10 +291,8 @@ final class IsolineTracer {
                 case UPPER_RIGHT:
                 case UPPER_LEFT | LOWER_LEFT | LOWER_RIGHT: {
                     assert polylineOnLeft.isEmpty();
-                    if (polylineOnLeft.transferFrom(polylinesOnTop[x]).isEmpty()) {
-                        interpolateOnTopSide(polylineOnLeft);
-                    }
-                    interpolateOnRightSide(polylineOnLeft);
+                    interpolateMissingTopSide(polylineOnLeft.transferFrom(polylinesOnTop[x]));
+                    interpolateOnRightSide();
                     break;
                 }
                 /*     ○╌╌╌╌╌╌○╱       ●╌╌╌╌╌╌●╱
@@ -309,7 +304,7 @@ final class IsolineTracer {
                 case UPPER_LEFT | UPPER_RIGHT | LOWER_LEFT: {
                     assert polylinesOnTop[x].isEmpty();
                     assert polylineOnLeft   .isEmpty();
-                    interpolateOnRightSide (polylineOnLeft);
+                    interpolateOnRightSide();
                     interpolateOnBottomSide(polylinesOnTop[x].attach(polylineOnLeft));
                     // Bottom of this cell will be top of next row.
                     break;
@@ -321,11 +316,9 @@ final class IsolineTracer {
                  */
                 case UPPER_LEFT:
                 case UPPER_RIGHT | LOWER_LEFT | LOWER_RIGHT: {
-                    if (polylineOnLeft.isEmpty()) {
-                        interpolateOnLeftSide();
-                    }
+                    interpolateMissingLeftSide();
                     interpolateOnTopSide(polylineOnLeft);
-                    path = close(polylineOnLeft, polylinesOnTop[x], path);
+                    closeLeftWithTop(polylinesOnTop[x]);
                     break;
                 }
                 /*     ○╌╱╌╌╌╌●╱      ╲●╌╌╌╌╲╌○
@@ -353,51 +346,70 @@ final class IsolineTracer {
                         int p = data.position();
                         do average += data.get(p);
                         while ((p += pixelStride) < limit);
+                        assert (p -= data.position()) == pixelStride * 4 : p;
                         average /= 4;
                     }
                     boolean LLtoUR = isDataAbove == (LOWER_LEFT | UPPER_RIGHT);
                     LLtoUR ^= (average <= value);
-                    if (polylineOnLeft.isEmpty()) {
-                        interpolateOnLeftSide();
-                    }
+                    interpolateMissingLeftSide();
+                    final Polyline polylineOnTop = polylinesOnTop[x];
                     if (LLtoUR) {
                         interpolateOnTopSide(polylineOnLeft);
-                        path = close(polylineOnLeft, polylinesOnTop[x], path);
-                        interpolateOnRightSide (polylineOnLeft);
-                        interpolateOnBottomSide(polylinesOnTop[x].attach(polylineOnLeft));
+                        closeLeftWithTop(polylineOnTop);
+                        interpolateOnRightSide();
+                        interpolateOnBottomSide(polylineOnTop.attach(polylineOnLeft));
                     } else {
-                        final Polyline swap = new Polyline();
-                        final Polyline polylineOnTop = polylinesOnTop[x];
-                        if (swap.transferFrom(polylineOnTop).isEmpty()) {
-                            interpolateOnTopSide(swap);
-                        }
-                        interpolateOnRightSide(swap);
+                        final Polyline swap = new Polyline().transferFrom(polylineOnTop);
                         interpolateOnBottomSide(polylineOnTop.transferFrom(polylineOnLeft));
-                        polylineOnLeft.transferFrom(swap);
+                        interpolateMissingTopSide(polylineOnLeft.transferFrom(swap));
+                        interpolateOnRightSide();
                     }
                     break;
                 }
             }
         }
 
-        /** Appends to {@link #polylineOnLeft} a point interpolated on the left side. */
-        private void interpolateOnLeftSide() {
-            polylineOnLeft.append(x, y + interpolate(0, 2 * pixelStride));
+        /**
+         * Appends to {@link #polylineOnLeft} a point interpolated on the left side if that point is missing.
+         * This interpolation should happens only in the first column.
+         */
+        private void interpolateMissingLeftSide() {
+            if (polylineOnLeft.size == 0) {
+                polylineOnLeft.append(x, y + interpolate(0, 2*pixelStride));
+            }
         }
 
-        /** Appends to the given polyline a point interpolated on the right side. */
-        private void interpolateOnRightSide(final Polyline appendTo) {
-            appendTo.append(x + 1, y + interpolate(pixelStride, 3 * pixelStride));
+        /**
+         * Appends to {@code polylineOnTop} a point interpolated on the top side if that point is missing.
+         * This interpolation should happens only in the first row.
+         */
+        private void interpolateMissingTopSide(final Polyline polylineOnTop) {
+            if (polylineOnTop.size == 0) {
+                interpolateOnTopSide(polylineOnTop);
+            }
         }
 
-        /** Appends to the given polyline a point interpolated on the top side. */
+        /**
+         * Appends to the given polyline a point interpolated on the top side.
+         */
         private void interpolateOnTopSide(final Polyline appendTo) {
             appendTo.append(x + interpolate(0, pixelStride), y);
         }
 
-        /** Appends to the given polyline a point interpolated on the bottom side. */
-        private void interpolateOnBottomSide(final Polyline appendTo) {
-            appendTo.append(x + interpolate(2 * pixelStride, 3 * pixelStride), y + 1);
+        /**
+         * Appends to {@link #polylineOnLeft} a point interpolated on the right side.
+         * The polyline on right side will become {@code polylineOnLeft} in next column.
+         */
+        private void interpolateOnRightSide() {
+            polylineOnLeft.append(x + 1, y + interpolate(pixelStride, 3*pixelStride));
+        }
+
+        /**
+         * Appends to the given polyline a point interpolated on the bottom side.
+         * The polyline on top side will become a {@code polylineOnBottoù} in next row.
+         */
+        private void interpolateOnBottomSide(final Polyline polylineOnTop) {
+            polylineOnTop.append(x + interpolate(2*pixelStride, 3*pixelStride), y + 1);
         }
 
         /**
@@ -415,6 +427,19 @@ final class IsolineTracer {
             final double v1 = data.get(p + i1);
             final double v2 = data.get(p + i2);
             return (value - v1) / (v2 - v1);
+        }
+
+        /**
+         * Joins {@link #polylineOnLeft} with {@code polylineOnTop}, then writes to {@link #path} if the result
+         * is a closed polygon. The two polylines (left and top) will become empty after this method call.
+         */
+        private void closeLeftWithTop(final Polyline polylineOnTop) throws TransformException {
+            if (polylineOnLeft.opposite == polylineOnTop) {
+                // The polygon can be closed.
+                path = writeTo(path, polylineOnTop, polylineOnLeft);
+            } else {
+                path = writeTo(path, polylineOnLeft.opposite, polylineOnLeft, polylineOnTop, polylineOnTop.opposite);
+            }
         }
 
         /**
@@ -455,24 +480,26 @@ final class IsolineTracer {
         /**
          * Number of coordinates in a tuple.
          */
-        private static final int DIMENSION = 2;
+        static final int DIMENSION = 2;
 
         /**
          * Coordinates as (x,y) tuples. This array is expanded as needed.
          */
-        private double[] coordinates;
+        double[] coordinates;
 
         /**
          * Number of valid elements in the {@link #coordinates} array.
          * This is twice the number of points.
          */
-        private int size;
+        int size;
 
         /**
-         * If the polyline has points added to its two extremities, the other extremity.
-         * Otherwise {@code null}.
+         * If the polyline has points added to its two extremities, the other extremity. Otherwise {@code null}.
+         * The first point of {@code opposite} polyline is connected to the first point of this polyline.
+         * Consequently when those two polylines are joined in a single polyline, the coordinates of either
+         * {@code this} or {@code opposite} must be iterated in reverse order.
          */
-        private Polyline opposite;
+        Polyline opposite;
 
         /**
          * Creates an initially empty polyline.
@@ -493,7 +520,7 @@ final class IsolineTracer {
          * Returns whether this polyline is empty.
          */
         final boolean isEmpty() {
-            return size == 0;
+            return size == 0 & (opposite == null);
         }
 
         /**
@@ -522,7 +549,7 @@ final class IsolineTracer {
          */
         final Polyline transferFrom(final Polyline source) {
             assert isEmpty();
-            final double[] buffer = coordinates;
+            final double[] swap = coordinates;
             coordinates = source.coordinates;
             size        = source.size;
             opposite    = source.opposite;
@@ -530,7 +557,7 @@ final class IsolineTracer {
                 opposite.opposite = this;
             }
             source.clear();
-            source.coordinates = buffer;
+            source.coordinates = swap;
             return this;
         }
 
@@ -571,7 +598,7 @@ final class IsolineTracer {
          */
         final void append(final double x, final double y) {
             if (size >= coordinates.length) {
-                coordinates = Arrays.copyOf(coordinates, Math.max(size * 2, 32));
+                coordinates = Arrays.copyOf(coordinates, Math.max(Math.multiplyExact(size, 2), 32));
             }
             coordinates[size++] = x;
             coordinates[size++] = y;
@@ -589,25 +616,13 @@ final class IsolineTracer {
                 if (n >= DIMENSION) {
                     b.append(", ");
                     if (size >= DIMENSION*3) {
-                        b.append(" … (").append(size / DIMENSION).append(" pts) … ");
+                        b.append(" … (").append(size / DIMENSION - 2).append(" pts) … ");
                     }
                     b.append((float) coordinates[n]).append(", ").append((float) coordinates[n+1]);
                 }
             }
             return b.append(']').toString();
         }
-    }
-
-    /**
-     * Creates a polygon by joining first polyline with the specified polyline, then writes
-     * it to the specified path. The two polylines will become empty after this method call.
-     *
-     * @param  join  the other polyline to join.
-     * @param  path  where to write the polygon, or {@code null} if not yet created.
-     * @return the given path, or a newly created path if the argument was null.
-     */
-    final Path2D close(final Polyline polyline, final Polyline join, final Path2D path) throws TransformException {
-        return writeTo(path, polyline.opposite, polyline, join, join.opposite);
     }
 
     /**
@@ -624,15 +639,16 @@ final class IsolineTracer {
     /**
      * Writes all given polylines to the specified path. Null {@code Polyline} instances are ignored.
      * {@code Polyline} instances at even index are written with their coordinates in reverse order.
+     * All given polylines are cleared by this method.
      *
      * @param  path       where to write the polylines, or {@code null} if not yet created.
      * @param  polylines  the polylines to write.
      * @return the given path, or a newly created path if the argument was null.
      */
     private Path2D writeTo(Path2D path, final Polyline... polylines) throws TransformException {
-        double xo = Double.NaN;
+        double xo = Double.NaN;     // First point of current polygon.
         double yo = Double.NaN;
-        double px = Double.NaN;
+        double px = Double.NaN;     // Previous point.
         double py = Double.NaN;
         int state = PathIterator.SEG_MOVETO;
         for (int pi=0; pi < polylines.length; pi++) {
@@ -640,11 +656,16 @@ final class IsolineTracer {
             if (p == null) {
                 continue;
             }
-            final boolean reverse = (pi & 1) == 0;
-            final double[] coordinates = p.coordinates;
             final int size = p.size;
+            if (size == 0) {
+                assert p.isEmpty();
+                continue;
+            }
+            final boolean  reverse     = (pi & 1) == 0;
+            final double[] coordinates = p.coordinates;
             gridToCRS.transform(coordinates, 0, coordinates, 0, size / Polyline.DIMENSION);
-            for (int i=0; i<size;) {
+            int i = 0;
+            do {
                 final double x, y;
                 if (reverse) {
                     y = coordinates[size - ++i];
@@ -653,43 +674,46 @@ final class IsolineTracer {
                     x = coordinates[i++];
                     y = coordinates[i++];
                 }
-                if (Double.isNaN(x) || Double.isNaN(y) || (Math.abs(x - px) <= tolerance && Math.abs(y - py) <= tolerance)) {
-                    continue;
-                }
-                switch (state) {
-                    case PathIterator.SEG_MOVETO: {
-                        px = xo = x;
-                        py = yo = y;
-                        state = PathIterator.SEG_LINETO;
-                        break;
-                    }
-                    case PathIterator.SEG_LINETO: {
-                        if (path == null) {
-                            int s = size - (i - 2*Polyline.DIMENSION);
-                            for (int k=pi; ++k < polylines.length;) {
-                                final Polyline next = polylines[k];
-                                if (next != null) {
-                                    s = Math.addExact(s, next.size);
+                if (!(Math.abs(x - px) <= tolerance && Math.abs(y - py) <= tolerance)) {
+                    if (Double.isNaN(x) || Double.isNaN(y)) {
+                        state = PathIterator.SEG_MOVETO;        // Next point will be in a separated polygon.
+                    } else switch (state) {
+                        case PathIterator.SEG_MOVETO: {
+                            xo = x;
+                            yo = y;
+                            state = PathIterator.SEG_LINETO;
+                            break;
+                        }
+                        case PathIterator.SEG_LINETO: {
+                            if (path == null) {
+                                int s = size - (i - 2*Polyline.DIMENSION);
+                                for (int k=pi; ++k < polylines.length;) {
+                                    final Polyline next = polylines[k];
+                                    if (next != null) {
+                                        s = Math.addExact(s, next.size);
+                                    }
                                 }
+                                path = new Path2D.Double(Path2D.WIND_NON_ZERO, s / Polyline.DIMENSION);
                             }
-                            path = new Path2D.Double(Path2D.WIND_NON_ZERO, s / Polyline.DIMENSION);
-                        }
-                        path.moveTo(xo, yo);
-                        path.lineTo(x, y);
-                        state = PathIterator.SEG_CLOSE;
-                        break;
-                    }
-                    default: {
-                        if (Math.abs(x - xo) <= tolerance && Math.abs(y - yo) <= tolerance) {
-                            path.closePath();
-                            state = PathIterator.SEG_MOVETO;
-                        } else {
+                            path.moveTo(xo, yo);
                             path.lineTo(x, y);
+                            state = PathIterator.SEG_CLOSE;
+                            break;
                         }
-                        break;
+                        default: {
+                            if (Math.abs(x - xo) <= tolerance && Math.abs(y - yo) <= tolerance) {
+                                path.closePath();
+                                state = PathIterator.SEG_MOVETO;
+                            } else {
+                                path.lineTo(x, y);
+                            }
+                            break;
+                        }
                     }
                 }
-            }
+                px = x;
+                py = y;
+            } while (i < size);
             p.clear();
         }
         return path;

@@ -208,9 +208,9 @@ public final strictfp class IsolinesTest extends TestCase {
         assertEquals("x3", 1,   buffer[0], TOLERANCE);
         assertEquals("y3", 1.5, buffer[1], TOLERANCE);
 
-//      it.next();
-//      assertFalse(it.isDone());
-//      assertEquals(PathIterator.SEG_CLOSE, it.currentSegment(buffer));
+        it.next();
+        assertFalse(it.isDone());
+        assertEquals(PathIterator.SEG_CLOSE, it.currentSegment(buffer));
 
         it.next();
         assertTrue(it.isDone());
