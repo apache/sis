@@ -177,8 +177,8 @@ final class DesktopPane extends JDesktopPane {
         final int numRows = (numTests + numCols - 1) / numCols;
         final int deltaX  = getWidth()  / numCols;
         final int deltaY  = getHeight() / numRows;
-        frame.setLocation(deltaX * (index % numRows) + (deltaX - frame.getWidth())  / 2,
-                          deltaY * (index / numRows) + (deltaY - frame.getHeight()) / 2);
+        frame.setLocation(Math.max(0, deltaX * (index % numRows) + (deltaX - frame.getWidth())  / 2),
+                          Math.max(0, deltaY * (index / numRows) + (deltaY - frame.getHeight()) / 2));
         frame.setVisible(true);
         add(frame);
         try {

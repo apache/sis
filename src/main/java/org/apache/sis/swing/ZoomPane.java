@@ -185,7 +185,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
     /**
      * Minimum width and height of this component.
      */
-    private static final int MINIMUM_SIZE = 10;
+    private static final int MINIMUM_SIZE = 40;
 
     /**
      * Default width and height of this component.
@@ -195,7 +195,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
     /**
      * Default width and height of the magnifying glass.
      */
-    private static final int DEFAULT_MAGNIFIER_SIZE = 150;
+    private static final int DEFAULT_MAGNIFIER_SIZE = 250;
 
     /**
      * Default color with which to tint magnifying glass.
@@ -2319,7 +2319,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
      * @param  exception   the exception to log.
      */
     private static void unexpectedException(String methodName, Exception exception) {
-        Logging.unexpectedException(Logging.getLogger("org.apache.sis.swing"), ZoomPane.class, methodName, exception);
+        Logging.unexpectedException(null, ZoomPane.class, methodName, exception);
     }
 
     /**

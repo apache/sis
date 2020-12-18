@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.awt.Color;
 import java.awt.BasicStroke;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
@@ -98,6 +100,8 @@ public final class IsolinesView extends Visualization {
 
             /** Paints isolines on top of the image. */
             @Override protected void paintComponent(final Graphics2D graphics) {
+                graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                        RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
                 graphics.transform(zoom);
                 graphics.drawRenderedImage(image, new AffineTransform());
                 graphics.setStroke(new BasicStroke(0));
@@ -108,6 +112,7 @@ public final class IsolinesView extends Visualization {
                 }
             }
         };
+        pane.setPreferredSize(new Dimension(width, height));
         pane.setPaintingWhileAdjusting(true);
         return pane.createScrollPane();
     }

@@ -110,9 +110,9 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
     private static final int MIN_HEIGHT = 12;
 
     /**
-     * If the user moves the mouse by less than RESIZE_POS, then we assume the
-     * user wants to resize rather than move the rectangle. This distance is
-     * measured in pixels from one of the rectangle's edges.
+     * If user moves the mouse at a position less than {@code RESIZE_POS} from shape border,
+     * then we assume the user wants to resize rather than to move the rectangle.
+     * This distance is measured in pixels from one of the rectangle's edges.
      */
     private static final int RESIZE_POS = 4;
 
@@ -364,6 +364,7 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
                 }
                 drawnShape.setFrame(x, y, tmp.x, tmp.y);
             } catch (NoninvertibleTransformException exception) {
+                unexpectedException("update", exception);
                 drawnShape = logicalShape;
             }
         } else {
@@ -426,6 +427,7 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
             }
             return adjusting;
         } catch (NoninvertibleTransformException exception) {
+            unexpectedException("inverseTransform", exception);
             return adjusting;
         }
     }
@@ -959,37 +961,29 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
     @Override
     public void mouseMoved(final MouseEvent event) {
         if (!isDragging) {
-            final Component source=event.getComponent();
+            final Component source = event.getComponent();
             if (source != null) {
-                int x = event.getX(); tmp.x = x;
-                int y = event.getY(); tmp.y = y;
-                final boolean mouseOverRect;
+                int ex = event.getX(); tmp.x = ex;
+                int ey = event.getY(); tmp.y = ey;
+                final boolean isMouseOver;
                 try {
-                    mouseOverRect = drawnShape.contains(transform.inverseTransform(tmp, tmp));
+                    isMouseOver = drawnShape.contains(transform.inverseTransform(tmp, tmp));
                 } catch (NoninvertibleTransformException exception) {
-                    // Ignore this exception.
+                    unexpectedException("mouseMoved", exception);
                     return;
                 }
-                final boolean mouseOverRectChanged = (mouseOverRect != this.mouseOverRect);
-                if (mouseOverRect) {
+                final boolean mouseOverRectChanged = (isMouseOver != mouseOverRect);
+                if (isMouseOver) {
                     /*
                      * We do not use "adjustingLogicalSides" because we are working
                      * with pixel coordinates and not logical coordinates.
                      */
                     final int old = adjustingSides;
                     adjustingSides = 0;
-                    if (Math.abs(x -= this.x)<=RESIZE_POS){
-                        adjustingSides |= WEST;
-                    }
-                    if (Math.abs(y -= this.y)<=RESIZE_POS){
-                        adjustingSides |= NORTH;
-                    }
-                    if (Math.abs(x - this.width)<=RESIZE_POS) {
-                        adjustingSides |= EAST;
-                    }
-                    if (Math.abs(y - this.height)<=RESIZE_POS) {
-                        adjustingSides |= SOUTH;
-                    }
+                    if (Math.abs(ex -= x)      <= RESIZE_POS) adjustingSides |= WEST;
+                    if (Math.abs(ey -= y)      <= RESIZE_POS) adjustingSides |= NORTH;
+                    if (Math.abs(ex -  width)  <= RESIZE_POS) adjustingSides |= EAST;
+                    if (Math.abs(ey -  height) <= RESIZE_POS) adjustingSides |= SOUTH;
                     adjustingSides &= adjustableSides;
                     if (adjustingSides != old || mouseOverRectChanged) {
                         if (adjustingSides == 0 && !moveable) {
@@ -1001,19 +995,12 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
                         }
                     }
                     if (mouseOverRectChanged) {
-                        /*
-                         * Adding and removing listeners worked well, but had the disadvantage
-                         * of changing the order of the listeners. This caused problems when
-                         * the order was important.
-                         */
-                        //source.addMouseListener(this);
-                        this.mouseOverRect = mouseOverRect;
+                        mouseOverRect = isMouseOver;
                     }
                 } else if (mouseOverRectChanged) {
                     adjustingSides = 0;
                     source.setCursor(null);
-                    //source.removeMouseListener(this);
-                    this.mouseOverRect = mouseOverRect;
+                    mouseOverRect = isMouseOver;
                 }
             }
         }
@@ -1038,16 +1025,15 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
                         e.consume();
                     }
                 } catch (NoninvertibleTransformException exception) {
-                    // Ignore this exception.
+                    unexpectedException("mousePressed", exception);
                 }
             }
         }
     }
 
     /**
-     * Invoked during mouse drags. The default implementation applies the mouse movement
-     * to the rectangle and notifies the component where the event which it needs to redraw, at least in part,
-     * came from.
+     * Invoked during mouse drags. Default implementation moves the rectangle and notifies
+     * the component where the event come from that it needs repaint.
      */
     @Override
     public void mouseDragged(final MouseEvent e) {
@@ -1061,9 +1047,9 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
                 /*
                  * Calculates the (x0,y0) coordinates of the corner of the rectangle. The (mouseDX, mouseDY)
                  * coordinates represent the position of the mouse at the moment the button is pressed and
-                 * don't normally change (except during certain adjustments). In determining (mouseDX, mouseDY),
-                 * they is calculated as if the user began to drag the rectangle at the very corner,
-                 * though in reality they could have clicked anywhere.
+                 * should not change (except during some adjustments). In determining (mouseDX, mouseDY),
+                 * we calculate as if user began to drag the rectangle at the very corner,
+                 * though in reality (s)he could have clicked anywhere.
                  */
                 double x0 = tmp.x - mouseDX;
                 double y0 = tmp.y - mouseDY;
@@ -1124,11 +1110,11 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
                     }
                 }
                 /*
-                 * The (x0, y0, dx, dy) coordinates now give the new position and size of the
-                 * rectangle. But, before making the change, check whether only one edge was
-                 * being adjusted. If so, we cancel the changes with respect to the other edge
-                 * (if not, the user could move the rectangle vertically at the same time as
-                 * adjusting its right or left edge, which is not at all practical...)
+                 * The (x0, y0, dx, dy) coordinates now give the new position and size of the rectangle.
+                 * But before making the change, check whether only one edge was being adjusted. If so,
+                 * we cancel the changes with respect to the other edge (otherwise the user could move
+                 * the rectangle vertically at the same time as adjusting its right or left edge,
+                 * which is not convenient).
                  */
                 if ((adjustingLogicalSides & (NORTH | SOUTH)) != 0 &&
                     (adjustingLogicalSides & (EAST  |  WEST)) == 0)
@@ -1149,8 +1135,8 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
                 if (adjustingLogicalSides == 0) {
                     final double old_dx = logicalShape.getWidth();
                     final double old_dy = logicalShape.getHeight();
-                    x0 += (dx - old_dx)/2;
-                    y0 += (dy - old_dy)/2;
+                    x0 += (dx - old_dx) / 2;
+                    y0 += (dy - old_dy) / 2;
                     dx = old_dx;
                     dy = old_dy;
                 }
@@ -1162,7 +1148,7 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
                 try {
                     setFrame(x0, y0, dx, dy);
                 } catch (RuntimeException exception) {
-                    Logging.unexpectedException(null, MouseReshapeTracker.class, "mouseDragged", exception);
+                    unexpectedException("mouseDragged", exception);
                 }
                 source.repaint(x, y, width, height);
                 /*
@@ -1175,19 +1161,19 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
                     mouseDY += (drawnShape.getHeight() - oldHeight);
                 }
             } catch (NoninvertibleTransformException exception) {
-                // Ignore.
+                unexpectedException("mouseDragged", exception);
             }
         }
     }
 
     /**
-     * Invoked when the user releases the mouse button. The default
-     * implementation calls {@link #stateChanged} with the argument {@code false}, in
-     * order to inform the derived classes that the changes are finished.
+     * Invoked when the user releases the mouse button. The default implementation invokes
+     * {@link #stateChanged(boolean)} with {@code false} argument value, in order to notify
+     * subclasses that changes are finished.
      */
     @Override
     public void mouseReleased(final MouseEvent event) {
-        if (isDragging && (event.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0) {
+        if (isDragging && (event.getButton() == MouseEvent.BUTTON1)) {
             isDragging = false;
             final Component source = event.getComponent();
             try {
@@ -1197,7 +1183,7 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
                 if (!mouseOverRect && source != null) source.setCursor(null);
                 event.consume();
             } catch (NoninvertibleTransformException exception) {
-                // Ignore this exception.
+                unexpectedException("mouseReleased", exception);
             } try {
                 // It is essential that `isDragging == false`.
                 fireStateChanged();
@@ -1413,6 +1399,17 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
     @Override
     public String toString() {
         return Classes.getShortClassName(this) + '[' + Classes.getShortClassName(logicalShape) + ']';
+    }
+
+    /**
+     * Invoked when an unexpected exception occurs.
+     * Current implementation logs the stack trace.
+     *
+     * @param  methodName  the caller's method name.
+     * @param  exception   the exception to log.
+     */
+    private static void unexpectedException(String methodName, Exception exception) {
+        Logging.unexpectedException(null, MouseReshapeTracker.class, methodName, exception);
     }
 
     /**
