@@ -632,6 +632,13 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
     private Paint magnifierBorder = DEFAULT_MAGNIFIER_BORDER;
 
     /**
+     * Creates a new zoom pane allowing all actions.
+     */
+    public ZoomPane() {
+        this(UNIFORM_SCALE | ROTATE | TRANSLATE_X | TRANSLATE_Y | RESET | DEFAULT_ZOOM);
+    }
+
+    /**
      * Constructs a {@code ZoomPane}.
      *
      * @param allowedActions

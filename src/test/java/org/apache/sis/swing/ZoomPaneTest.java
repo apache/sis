@@ -56,11 +56,7 @@ public final strictfp class ZoomPaneTest extends TestCase {
     protected JComponent create(final int index) {
         final Rectangle rect = new Rectangle(100,200,100,93);
         final Polygon   poly = new Polygon(new int[] {125,175,150}, new int[] {225,225,268}, 3);
-        final ZoomPane  pane = new ZoomPane(
-                ZoomPane.UNIFORM_SCALE | ZoomPane.ROTATE      |
-                ZoomPane.TRANSLATE_X   | ZoomPane.TRANSLATE_Y |
-                ZoomPane.RESET         | ZoomPane.DEFAULT_ZOOM)
-        {
+        final ZoomPane  pane = new ZoomPane() {
             @Override public Rectangle2D getArea() {
                 return rect;
             }

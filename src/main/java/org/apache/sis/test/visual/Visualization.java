@@ -62,9 +62,10 @@ public abstract class Visualization {
      * Creates a widget showing the object to test.
      *
      * @param  index  index of test occurrence, from 0 inclusive to the value given at construction time, exclusive.
+     * @throws Exception if an error occurred while computing data for the widget.
      * @return a widget showing the object to test.
      */
-    protected abstract JComponent create(int index);
+    protected abstract JComponent create(int index) throws Exception;
 
     /**
      * Creates and shows a widget visualizing the object to test.

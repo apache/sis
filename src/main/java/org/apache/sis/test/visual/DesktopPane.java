@@ -109,7 +109,7 @@ final class DesktopPane extends JDesktopPane {
         frame.setJMenuBar(menuBar);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setContentPane(this);
-        frame.setSize(1000, 600);
+        frame.setSize(1500, 1000);
         frame.setLocationRelativeTo(null);                          // Put at screen center.
         frame.setVisible(true);
     }
@@ -133,9 +133,14 @@ final class DesktopPane extends JDesktopPane {
      * Shows the widget created by the given test case.
      */
     private void show(final Visualization testCase) {
-        final int n = testCase.numTests;
-        for (int i=0; i<n; i++) {
-            show(testCase.create(i), i, n);
+        try {
+            final int n = testCase.numTests;
+            for (int i=0; i<n; i++) {
+                show(testCase.create(i), i, n);
+            }
+        } catch (Exception e) {
+            // Not acceptable for a real application, but this widget is only for testing purpose.
+            e.printStackTrace();
         }
     }
 
