@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -30,10 +31,13 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
 import javax.swing.JComponent;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.swing.ZoomPane;
+import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
+import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.internal.processing.image.Isolines;
+import org.apache.sis.swing.ZoomPane;
 
 
 /**
@@ -66,10 +70,22 @@ public final class IsolinesView extends Visualization {
     private final Color[] colors;
 
     /**
+     * The image with data as as integer numbers. Created together with floating-point version of same image,
+     * and restored to {@code null} after {@code dataAsIntegers} has been assigned to a {@link ZoomPane}.
+     */
+    private BufferedImage dataAsIntegers;
+
+    /**
+     * The zoom pane of the image using floating-point values. This is a temporary value and is discarded
+     * after the two zoom panes (on floating-point values and on integer values) have been created.
+     */
+    private ZoomPane zoomOnFloats;
+
+    /**
      * Creates a new viewer for {@link Isolines}.
      */
     public IsolinesView() {
-        super(Isolines.class, 4);
+        super(Isolines.class, 2);
         width  = 800;
         height = 600;
         colors = new Color[] {
@@ -81,13 +97,18 @@ public final class IsolinesView extends Visualization {
      * Creates a widget showing a random image with isolines on it.
      * The widget uses {@link ZoomPane}.
      *
-     * @param  index  a sequence number for the isoline window.
+     * @param  index  a sequence number for the isoline window. Shall be 0 or 1.
      * @return a widget showing isolines.
      * @throws TransformException if an error occurred while computing isolines.
      */
     @Override
     protected JComponent create(final int index) throws TransformException {
-        final BufferedImage image = createImage(index * 1000);
+        final BufferedImage image;
+        switch (index) {
+            case 0: image = createImages(); break;
+            case 1: image = dataAsIntegers; dataAsIntegers = null; break;
+            default: throw new AssertionError(index);
+        }
         final List<Shape> shapes = new ArrayList<>();
         for (final Isolines isolines : Isolines.generate(image, new double[][] {{0x20, 0x40, 0x60, 0x80, 0xA0, 0xC0, 0xE0}}, 0, null)) {
             shapes.addAll(isolines.polylines().values());
@@ -102,6 +123,7 @@ public final class IsolinesView extends Visualization {
             @Override protected void paintComponent(final Graphics2D graphics) {
                 graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                         RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+                final AffineTransform otr = graphics.getTransform();
                 graphics.transform(zoom);
                 graphics.drawRenderedImage(image, new AffineTransform());
                 graphics.setStroke(new BasicStroke(0));
@@ -110,20 +132,58 @@ public final class IsolinesView extends Visualization {
                     graphics.setColor(colors[count++ % colors.length]);
                     graphics.draw(shape);
                 }
+                graphics.setTransform(otr);
+                /*
+                 * If the zoom allows us to have at least 20 pixels between cells, draw a grid.
+                 */
+                if (AffineTransforms2D.getScale(zoom) >= 20) {
+                    final Rectangle2D bounds = getVisibleArea();
+                    final int sx = (int) bounds.getX();     // Rounding toward zero is what we want.
+                    final int sy = (int) bounds.getY();
+                    final int mx = (int) bounds.getMaxX();
+                    final int my = (int) bounds.getMaxY();
+                    final Point       srcPt = new Point();
+                    final Point.Float tgtPt = new Point.Float();
+                    final Dimension   size  = new Dimension(3,3);
+                    graphics.setColor(Color.MAGENTA);
+                    for (srcPt.y = sy; srcPt.y <= my; srcPt.y++) {
+                        for (srcPt.x = sx; srcPt.x <= mx; srcPt.x++) {
+                            bounds.setFrame(zoom.transform(srcPt, tgtPt), size);
+                            graphics.fill(bounds);
+                        }
+                    }
+                }
             }
         };
         pane.setPreferredSize(new Dimension(width, height));
-        pane.setPaintingWhileAdjusting(true);
+        pane.reset();
+        /*
+         * When user moves on the pane showing floating point values, apply the same move on the
+         * pane showing integer values. We do not synchronize in the reverse direction for now.
+         */
+        switch (index) {
+            case 0: zoomOnFloats = pane; break;
+            case 1: {
+                zoomOnFloats.addZoomChangeListener((event) -> pane.transform(event.getChange()));
+                zoomOnFloats = null;
+                break;
+            }
+        }
         return pane.createScrollPane();
     }
 
     /**
-     * Creates a grayscale image of given size with random mounts.
+     * Creates grayscale images (floating and integer versions) with random mounts.
+     * This method returns the floating point version and stores the integer version
+     * in {@link #dataAsIntegers} for future use.
      */
-    private BufferedImage createImage(final int seed) {
-        final Random         random = new Random(seed);
-        final BufferedImage  image  = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-        final WritableRaster raster = image.getRaster();
+    private BufferedImage createImages() {
+        final BufferedImage dataAsFloats;
+        dataAsFloats   = RasterFactory.createGrayScaleImage(DataBuffer.TYPE_FLOAT, width, height, 1, 0, 0, 255);
+        dataAsIntegers = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        final WritableRaster rasterAsFloats   = dataAsFloats.getRaster();
+        final WritableRaster rasterAsIntegers = dataAsIntegers.getRaster();
+        final Random random = new Random(1000);
         for (int i=0; i<10; i++) {
             final int centerX = random.nextInt(width);
             final int centerY = random.nextInt(height);
@@ -135,11 +195,14 @@ public final class IsolinesView extends Visualization {
                     final int dx = x - centerX;
                     final int dy = y - centerY;
                     double value = magnitude * Math.exp(dx*dx*fx + dy*dy*fy);
-                    value += raster.getSample(x, y, 0);
-                    raster.setSample(x, y, 0, (int) Math.min(255, Math.round(value)));
+                    int intValue = (int) Math.round(value);
+                    value += rasterAsFloats.getSampleDouble(x, y, 0);
+                    intValue +=  rasterAsIntegers.getSample(x, y, 0);
+                    rasterAsIntegers.setSample(x, y, 0, Math.min(255, intValue));
+                    rasterAsFloats.setSample(x, y, 0, value);
                 }
             }
         }
-        return image;
+        return dataAsFloats;
     }
 }

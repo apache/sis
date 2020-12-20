@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import java.util.prefs.Preferences;
+import java.awt.Toolkit;
 import java.awt.Desktop;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -38,7 +39,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
-import javax.swing.UIManager;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameAdapter;
 import org.apache.sis.util.Classes;
@@ -59,13 +59,6 @@ final class DesktopPane extends JDesktopPane {
      */
     private static final String SCREENSHOT_DIRECTORY_PREFS = "Screenshots";
 
-    static {
-        try {
-            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-        } catch (Exception e) {
-            Logging.unexpectedException(null, DesktopPane.class, "<init>", e);
-        }
-    }
     /**
      * The desktop which contain the internal frame for each widget.
      */
@@ -109,7 +102,7 @@ final class DesktopPane extends JDesktopPane {
         frame.setJMenuBar(menuBar);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setContentPane(this);
-        frame.setSize(1500, 1000);
+        frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
         frame.setLocationRelativeTo(null);                          // Put at screen center.
         frame.setVisible(true);
     }
@@ -177,8 +170,8 @@ final class DesktopPane extends JDesktopPane {
         final int numRows = (numTests + numCols - 1) / numCols;
         final int deltaX  = getWidth()  / numCols;
         final int deltaY  = getHeight() / numRows;
-        frame.setLocation(Math.max(0, deltaX * (index % numRows) + (deltaX - frame.getWidth())  / 2),
-                          Math.max(0, deltaY * (index / numRows) + (deltaY - frame.getHeight()) / 2));
+        frame.setLocation(Math.max(0, deltaX * (index % numCols) + (deltaX - frame.getWidth())  / 2),
+                          Math.max(0, deltaY * (index / numCols) + (deltaY - frame.getHeight()) / 2));
         frame.setVisible(true);
         add(frame);
         try {

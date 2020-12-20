@@ -584,13 +584,12 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
 
     /**
      * Indicates if this {@code ZoomPane} should be repainted when the user adjusts the scrollbars.
-     * The default value is {@code false}, which means that {@code ZoomPane} will wait until user
-     * has released the scrollbar before repainting the component.
+     * The default value is {@code true}.
      *
      * @see #isPaintingWhileAdjusting()
      * @see #setPaintingWhileAdjusting(boolean)
      */
-    private boolean paintingWhileAdjusting;
+    private boolean paintingWhileAdjusting = true;
 
     /**
      * Object in which to write coordinates computed by {@link #getZoomableBounds()}.
@@ -1772,8 +1771,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
     /**
      * Invoked when component size or position changed.
      * The {@link #repaint()} method is not invoked because there is already a repaint command in the queue.
-     * The {@link #transform(AffineTransform)} method is not invoked neither because the zoom has not really
-     * changed; we have only uncovered a part of the window previously hidden.
+     * The {@link #transform(AffineTransform)} method is not invoked neither because the zoom has not really changed;
      * However, we still need to adjust the scrollbars.
      */
     private void processSizeEvent(final ComponentEvent event) {
@@ -2129,8 +2127,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
     /**
      * Indicates whether this {@code ZoomPane} should be repainted when the user is still adjusting scrollbar slider.
      * The scrollbars (or other models) are those which have been synchronized with this {@code ZoomPane} object by a
-     * call to the {@link #tieModels(BoundedRangeModel, BoundedRangeModel)} method. The default value is {@code false},
-     * which means that {@code ZoomPane} will wait until the user releases the slider before repainting.
+     * call to the {@link #tieModels(BoundedRangeModel, BoundedRangeModel)} method. The default value is {@code true},
      *
      * @return {@code true} if the zoom pane is painted while the user is scrolling.
      */
@@ -2192,15 +2189,16 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
         graphics.setPaint (magnifierBorder);
         graphics.draw     (magnifier);
         graphics.setStroke(stroke);
-        graphics.clip     (magnifier); // Coordinates in pixels!
+        graphics.clip     (magnifier);                  // Coordinates in pixels.
         graphics.setPaint (magnifierGlass);
         graphics.fill     (magnifier.getBounds2D());
         graphics.setPaint (paint);
         graphics.translate(+centerX, +centerY);
         graphics.scale    (magnifierPower, magnifierPower);
         graphics.translate(-centerX, -centerY);
-        // Note: the transformations performed here must be identical to those
-        //       performed in pixelToLogical(...).
+        /*
+         * Note: the transformations performed here must be identical to those performed in pixelToLogical(…).
+         */
         paintComponent(graphics);
     }
 
@@ -2255,8 +2253,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
         renderingType = IS_PRINTING;
         super.paintComponent(graphics);
         /*
-         * Do not invoke `super.printComponent` because we don't want
-         * above `paintComponent(…)` to be invoked.
+         * Do not invoke `super.printComponent(…)` because we do not want above `paintComponent(…)` to be invoked.
          */
     }
 
