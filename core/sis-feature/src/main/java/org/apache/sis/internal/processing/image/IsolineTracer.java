@@ -443,13 +443,21 @@ final class IsolineTracer {
         }
 
         /**
+         * Writes the content of given polyline.
+         * The given polyline will become empty after this method call.
+         */
+        private void writeUnclosed(final Polyline polyline) throws TransformException {
+            path = writeTo(path, polyline.opposite, polyline);
+        }
+
+        /**
          * Invoked after iteration on a single row has been completed. If there is a polyline
          * finishing on the right image border, that polyline needs to be written now because
          * it will not be continued by cells on next rows.
          */
         final void finishedRow() throws TransformException {
             if (!polylineOnLeft.transferToOpposite()) {
-                path = writeTo(polylineOnLeft, path);
+                writeUnclosed(polylineOnLeft);
             }
             isDataAbove = 0;
         }
@@ -461,7 +469,7 @@ final class IsolineTracer {
          */
         final void finish() throws TransformException {
             for (int i=0; i < polylinesOnTop.length; i++) {
-                path = writeTo(polylinesOnTop[i], path);
+                writeUnclosed(polylinesOnTop[i]);
                 polylinesOnTop[i] = null;
             }
         }
@@ -626,14 +634,144 @@ final class IsolineTracer {
     }
 
     /**
-     * Writes the content of this polyline to the given path.
-     * This polyline will become empty after this method call.
+     * If the shape delimited by given polylines has a part with zero width or height ({@literal i.e.} a spike),
+     * truncates the polylines for removing that spike. This situation happens when some pixel values are exactly
+     * equal to isoline value, as in the picture below:
      *
-     * @param  path  where to write the polylines, or {@code null} if not yet created.
-     * @return the given path, or a newly created path if the argument was null.
+     * {@preformat text
+     *     ●╌╌╌╲╌╌○╌╌╌╌╌╌○╌╌╌╌╌╌○╌╌╌╌╌╌○
+     *     ╎    ╲ ╎      ╎      ╎      ╎
+     *     ╎     ╲╎      ╎   →  ╎      ╎
+     *     ●╌╌╌╌╌╌●──────●──────●⤸╌╌╌╌╌○
+     *     ╎     ╱╎      ╎   ←  ╎      ╎
+     *     ╎    ╱ ╎      ╎      ╎      ╎
+     *     ●╌╌╌╱╌╌○╌╌╌╌╌╌○╌╌╌╌╌╌○╌╌╌╌╌╌○
+     * }
+     *
+     * The spike may appear or not depending on the convention adopted for strictly equal values.
+     * In above picture, the spike appears because the convention used in this implementation is:
+     *
+     * <ul>
+     *   <li>○: {@literal pixel value < isoline value}.</li>
+     *   <li>●: {@literal pixel value ≥ isoline value}.</li>
+     * </ul>
+     *
+     * If the following convention was used instead, the spike would not appear in above figure
+     * (but would appear in different situations):
+     *
+     * <ul>
+     *   <li>○: {@literal pixel value ≤ isoline value}.</li>
+     *   <li>●: {@literal pixel value > isoline value}.</li>
+     * </ul>
+     *
+     * This method detects and removes those spikes for avoiding convention-dependent results.
+     * We assume that spikes can appear only at the junction between two {@link Polyline} instances.
+     * Rational: having a spike require that we move forward then backward on the same coordinates,
+     * which is possible only with a non-null {@link Polyline#opposite} field.
+     *
+     * @param  p0       first polyline, or {@code null}.
+     * @param  p1       second polyline, or {@code null}.
+     * @param  reverse  whether points in {@code p0} shall be read in reverse order.
+     *                  If {@code true},  (p0, p1) are read in (reverse, forward) point order.
+     *                  If {@code false}, (p0, p1) are read in (forward, reverse) point order.
      */
-    final Path2D writeTo(final Polyline polyline, final Path2D path) throws TransformException {
-        return writeTo(path, polyline.opposite, polyline);
+    private static void removeSpikes(final Polyline p0, final Polyline p1, final boolean reverse) {
+        if (p0 == null || p1 == null || p0.size == 0 || p1.size == 0) {
+            return;
+        }
+        double xo = Double.NaN;     // First point.
+        double yo = Double.NaN;
+        int equalityMask = 0;       // Bit 1 and 2 set when x and y values (respectively) are equal.
+        int spike0 = 0;             // Index where both coordinates become different than (xo,yo).
+        int spike1;
+        for (boolean first = true;;) {              // Executed exactly 2 times: for p0 and for p1.
+            final Polyline p = first ? p0 : p1;
+            final double[] coordinates = p.coordinates;
+            final int size = p.size;
+            spike1 = 0;
+            do {
+                final double x, y;
+                if (reverse == first) {
+                    y = coordinates[size - ++spike1];
+                    x = coordinates[size - ++spike1];
+                } else {
+                    x = coordinates[spike1++];
+                    y = coordinates[spike1++];
+                }
+                if (equalityMask == 0) {            // This condition is true only for the first point.
+                    equalityMask = 3;
+                    xo = x;
+                    yo = y;
+                } else {
+                    final int before = equalityMask;
+                    if (x != xo) equalityMask &= ~1;
+                    if (y != yo) equalityMask &= ~2;
+                    if (equalityMask == 0) {
+                        equalityMask = before;              // For comparison of next polyline.
+                        spike1 -= Polyline.DIMENSION;       // Restore previous position.
+                        if (spike1 == 0) return;
+                        break;
+                    }
+                }
+            } while (spike1 < size);
+            /*
+             * Here we found a point which is not on the spike,
+             * or we finished examining all points on a polyline.
+             */
+            if (first) {
+                first  = false;
+                spike0 = spike1;
+            } else {
+                break;
+            }
+        }
+        /*
+         * Here we have range of indices where the polygon has a width or height of zero.
+         * Search for a common point, then truncate at that point. If `reverse` is false,
+         * then the two polylines are attached as below and the spike to remove is at the
+         * end of both polylines:
+         *
+         *     0       p0.size|p1.size       0
+         *     ●──●──●──●──●──●──●──●──●──●──●
+         *              └ remove ┘
+         *
+         * If `reverse` is true, then the two polylines are attached as below and the spike
+         * to remove is at the beginning of both polylines:
+         *
+         *     p0.size        0        p1.size
+         *     ●──●──●──●──●──●──●──●──●──●──●
+         *              └ remove ┘
+         */
+        int i0 = spike0;
+        do {
+            if (reverse) {
+                yo = p0.coordinates[--i0];
+                xo = p0.coordinates[--i0];
+            } else {
+                xo = p0.coordinates[p0.size - i0--];
+                yo = p0.coordinates[p0.size - i0--];
+            }
+            int i1 = spike1;
+            do {
+                final double x, y;
+                if (reverse) {
+                    y = p1.coordinates[--i1];
+                    x = p1.coordinates[--i1];
+                } else {
+                    x = p1.coordinates[p1.size - i1--];
+                    y = p1.coordinates[p1.size - i1--];
+                }
+                if (x == xo && y == yo) {
+                    p0.size -= i0;
+                    p1.size -= i1;
+                    if (reverse) {
+                        System.arraycopy(p0.coordinates, i0, p0.coordinates, 0, p0.size);
+                        System.arraycopy(p1.coordinates, i1, p1.coordinates, 0, p1.size);
+                    }
+                    return;
+                }
+            } while (i1 > 0);
+        } while (i0 > 0);
     }
 
     /**
@@ -646,6 +784,9 @@ final class IsolineTracer {
      * @return the given path, or a newly created path if the argument was null.
      */
     private Path2D writeTo(Path2D path, final Polyline... polylines) throws TransformException {
+        for (int i=1; i<polylines.length; i++) {
+            removeSpikes(polylines[i-1], polylines[i], (i & 1) != 0);
+        }
         double xo = Double.NaN;     // First point of current polygon.
         double yo = Double.NaN;
         double px = Double.NaN;     // Previous point.
