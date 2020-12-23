@@ -17,7 +17,12 @@
 package org.apache.sis.internal.processing.image;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.nio.DoubleBuffer;
+import java.awt.Point;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import org.opengis.referencing.operation.MathTransform;
@@ -181,11 +186,31 @@ final class IsolineTracer {
         private final Polyline[] polylinesOnTop;
 
         /**
+         * Paths that have not yet been closed. The {@link Polyline} coordinates are copied in this map when iteration
+         * finished on a row and the polyline is not reused by next row, or when the {@link #closeLeftWithTop(Polyline)}
+         * method has been invoked but the geometry to close is still not complete. This map accumulates those partial
+         * shapes for assembling them later when missing parts become available.
+         *
+         * <h4>Map keys</h4>
+         * Keys are grid coordinates rounded toward 0. The coordinate having fraction digits has its bits inverted
+         * by the {@code ~} operator. For each point, there is at most one coordinate having such fraction digits.
+         *
+         * <h4>Map values</h4>
+         * {@code Unclosed} instances are list of {@code double[]} arrays to be concatenated in a single polygon later.
+         * For a given {@code Unclosed} list, all {@code double[]} arrays at even indices shall have their points read
+         * in reverse order and all {@code double[]} arrays at odd indices shall have their points read in forward order.
+         * The list may contain null elements when there is no data in the corresponding iteration order.
+         *
+         * @see #closeLeftWithTop(Polyline)
+         */
+        private final Map<Point,Unclosed> partialPaths;
+
+        /**
          * The isolines as a Java2D shape, created when first needed. The {@link Polyline} coordinates are copied
          * in this path when a geometry is closed. This is the shape to be returned to user for this level after
          * we finished to process all cells.
          *
-         * @see #writeTo(Path2D, Polyline...)
+         * @see #writeTo(Path2D, Polyline[], boolean)
          */
         Path2D path;
 
@@ -196,7 +221,8 @@ final class IsolineTracer {
          * @param  width  the contouring grid cell width (one cell smaller than image width).
          */
         Level(final double value, final int width) {
-            this.value = value;
+            this.value     = value;
+            partialPaths   = new HashMap<>();
             polylineOnLeft = new Polyline();
             polylinesOnTop = new Polyline[width];
             for (int i=0; i<width; i++) {
@@ -316,8 +342,6 @@ final class IsolineTracer {
                  */
                 case UPPER_LEFT:
                 case UPPER_RIGHT | LOWER_LEFT | LOWER_RIGHT: {
-                    interpolateMissingLeftSide();
-                    interpolateOnTopSide(polylineOnLeft);
                     closeLeftWithTop(polylinesOnTop[x]);
                     break;
                 }
@@ -351,14 +375,13 @@ final class IsolineTracer {
                     }
                     boolean LLtoUR = isDataAbove == (LOWER_LEFT | UPPER_RIGHT);
                     LLtoUR ^= (average <= value);
-                    interpolateMissingLeftSide();
                     final Polyline polylineOnTop = polylinesOnTop[x];
                     if (LLtoUR) {
-                        interpolateOnTopSide(polylineOnLeft);
                         closeLeftWithTop(polylineOnTop);
                         interpolateOnRightSide();
                         interpolateOnBottomSide(polylineOnTop.attach(polylineOnLeft));
                     } else {
+                        interpolateMissingLeftSide();
                         final Polyline swap = new Polyline().transferFrom(polylineOnTop);
                         interpolateOnBottomSide(polylineOnTop.transferFrom(polylineOnLeft));
                         interpolateMissingTopSide(polylineOnLeft.transferFrom(swap));
@@ -430,30 +453,85 @@ final class IsolineTracer {
         }
 
         /**
-         * Joins {@link #polylineOnLeft} with {@code polylineOnTop}, then writes to {@link #path} if the result
-         * is a closed polygon. The two polylines (left and top) will become empty after this method call.
+         * Joins {@link #polylineOnLeft} with {@code polylineOnTop}, saves their coordinates and clear
+         * those {@code Polyline} instances for use in next cell. The coordinates are written directly
+         * to {@link #path} if we got a closed polygon, or otherwise are saved in {@link #partialPaths}
+         * for later processing. This method is invoked for cells like below:
+         *
+         * {@preformat text
+         *     ●╌╱╌╌╌╌○        ○╌╱╌╌╌╌●        ○╌╱╌╌╌╌●╱
+         *     ╎╱     ╎        ╎╱     ╎        ╎╱     ╱
+         *     ╱      ╎        ╱      ╎        ╱     ╱╎
+         *    ╱○╌╌╌╌╌╌○       ╱●╌╌╌╌╌╌●       ╱●╌╌╌╌╱╌○
+         * }
+         *
+         * This method does itself the interpolations on left side and top side. The two polylines
+         * {@link #polylineOnLeft} and {@code polylineOnTop} will become empty after this method call.
+         *
+         * @param  polylineOnTop  value of {@code polylinesOnTop[x]}.
+         * @throws TransformException if the {@link IsolineTracer#gridToCRS} transform can not be applied.
          */
         private void closeLeftWithTop(final Polyline polylineOnTop) throws TransformException {
+            interpolateMissingLeftSide();
+            interpolateMissingTopSide(polylineOnTop);
+            final Polyline[] polylines;
             if (polylineOnLeft.opposite == polylineOnTop) {
-                // The polygon can be closed.
-                path = writeTo(path, polylineOnTop, polylineOnLeft);
+                assert polylineOnTop.opposite == polylineOnLeft;
+                /*
+                 * We have a loop: the polygon can be closed now, without copying coordinates to temporary buffers.
+                 * Points in the two `Polyline` instances will be iterated in (reverse, forward) order respectively.
+                 * Consequently the points we just interpolated will be first point and last point before closing.
+                 */
+                polylines = new Polyline[] {polylineOnTop, polylineOnLeft};     // (reverse, forward) point order.
             } else {
-                path = writeTo(path, polylineOnLeft.opposite, polylineOnLeft, polylineOnTop, polylineOnTop.opposite);
+                /*
+                 * Joining left and top polylines do not yet create a closed shape. Consequently we may not write
+                 * in the `path` now. But maybe we can close the polygon later after more polylines are attached.
+                 */
+                final Unclosed fragment = new Unclosed(polylineOnLeft, polylineOnTop);
+                if (fragment.isEmpty()) {
+                    /*
+                     * Fragment starts and ends with NaN values. We will not be able to complete a polygon.
+                     * Better to write the polylines now for avoiding temporary copies of their coordinates.
+                     */
+                    polylines = new Polyline[] {
+                        polylineOnLeft.opposite, polylineOnLeft, polylineOnTop, polylineOnTop.opposite
+                    };
+                } else if (fragment.addOrMerge(partialPaths)) {
+                    /*
+                     * The fragment has been merged with previously existing fragments and became a polygon.
+                     * We can write the polygon immediately. There is no more reference to those coordinates
+                     * in the `partialPaths` map.
+                     */
+                    polylines = fragment.toPolylines();
+                } else {
+                    return;
+                }
             }
+            path = writeTo(path, polylines, true);
         }
 
         /**
-         * Writes the content of given polyline.
+         * Writes the content of given polyline without closing it as a polygon.
          * The given polyline will become empty after this method call.
          */
         private void writeUnclosed(final Polyline polyline) throws TransformException {
-            path = writeTo(path, polyline.opposite, polyline);
+            final Unclosed fragment = new Unclosed(polyline, null);
+            final Polyline[] polylines;
+            if (fragment.isEmpty()) {
+                polylines = new Polyline[] {polyline.opposite, polyline};       // (reverse, forward) point order.
+            } else if (fragment.addOrMerge(partialPaths)) {
+                polylines = fragment.toPolylines();
+            } else {
+                return;
+            }
+            path = writeTo(path, polylines, false);
         }
 
         /**
          * Invoked after iteration on a single row has been completed. If there is a polyline
-         * finishing on the right image border, that polyline needs to be written now because
-         * it will not be continued by cells on next rows.
+         * finishing on the right image border, the coordinates needs to be saved somewhere
+         * because that {@code Polyline} will not be continued by cells on next rows.
          */
         final void finishedRow() throws TransformException {
             if (!polylineOnLeft.transferToOpposite()) {
@@ -463,14 +541,24 @@ final class IsolineTracer {
         }
 
         /**
-         * Invoked after the iteration has been completed on the full image.
-         * This method flushes all reminding polylines to the {@link #path}.
+         * Invoked after the iteration has been completed on the full area of interest.
+         * This method writes all remaining polylines to {@link #path} or {@link #partialPaths}.
          * It assumes that {@link #finishedRow()} has already been invoked.
          */
         final void finish() throws TransformException {
+            assert polylineOnLeft.isEmpty();
             for (int i=0; i < polylinesOnTop.length; i++) {
                 writeUnclosed(polylinesOnTop[i]);
                 polylinesOnTop[i] = null;
+            }
+            for (final Map.Entry<Point,Unclosed> entry : partialPaths.entrySet()) {
+                final Unclosed fragment = entry.getValue();
+                assert fragment.isExtremity(entry.getKey());
+                if (!fragment.isEmpty()) {
+                    path = writeTo(path, fragment.toPolylines(), false);
+                    fragment.clear();       // Necessary because the same list appears twice in the map.
+                }
+                entry.setValue(null);       // Let the garbage collector do its work.
             }
         }
     }
@@ -517,7 +605,18 @@ final class IsolineTracer {
         }
 
         /**
-         * Discards all coordinates in this polyline.
+         * Creates a new polyline wrapping the given coordinates. Used for wrapping {@link Unclosed}
+         * instances in objects expected by {@link IsolineTracer#writeTo(Path2D, Polyline[], boolean)}.
+         * Those {@code Polyline} instances are temporary.
+         */
+        Polyline(final double[] data) {
+            coordinates = data;
+            size = data.length;
+        }
+
+        /**
+         * Discards all coordinates in this polyline. This method does not clear
+         * the {@link #opposite} polyline; it is caller's responsibility to do so.
          */
         final void clear() {
             opposite = null;
@@ -525,7 +624,9 @@ final class IsolineTracer {
         }
 
         /**
-         * Returns whether this polyline is empty.
+         * Returns whether this polyline is empty. This method is used only for {@code assert isEmpty()}
+         * statement because of the check for {@code opposite == null}: an empty polyline should not have
+         * a non-null {@link #opposite} value.
          */
         final boolean isEmpty() {
             return size == 0 & (opposite == null);
@@ -535,6 +636,13 @@ final class IsolineTracer {
          * Declares that the specified polyline will add points in the direction opposite to this polyline.
          * This happens when the polyline crosses the bottom side and the right side of a cell (assuming an
          * iteration from left to right and top to bottom).
+         *
+         * <p>This method is typically invoked in the following pattern (but this is not mandatory).
+         * An important aspect is that {@code this} and {@code other} should be on perpendicular axes:</p>
+         *
+         * {@preformat java
+         *     interpolateOnBottomSide(polylinesOnTop[x].attach(polylineOnLeft));
+         * }
          *
          * @return {@code this} for method calls chaining.
          */
@@ -613,7 +721,7 @@ final class IsolineTracer {
         }
 
         /**
-         * Returns a string representation for debugging purposes.
+         * Returns a string representation of this {@code Polyline} for debugging purposes.
          */
         @Override
         public String toString() {
@@ -630,6 +738,246 @@ final class IsolineTracer {
                 }
             }
             return b.append(']').toString();
+        }
+    }
+
+    /**
+     * List of {@code Polyline} coordinates that have not yet been closed. Each {@code double[]} in this list is
+     * a copy of a {@code Polyline} used by {@link Level}. Those copies are performed for saving data before they
+     * are overwritten by next iterated cell.
+     *
+     * <h2>List indices and ordering of points</h2>
+     * For a given {@code Unclosed} list, all {@code double[]} arrays at even indices shall have their points read
+     * in reverse order and all {@code double[]} arrays at odd indices shall have their points read in forward order.
+     * The list size must be even and the list may contain null elements when there is no data in the corresponding
+     * iteration order. This convention makes easy to reverse the order of all points, simply by reversing the order
+     * of {@code double[]} arrays: because even indices become odd and odd indices become even, points order are
+     * implicitly reverted without the need to rewrite all {@code double[]} array contents.
+     *
+     * @see Level#partialPaths
+     */
+    @SuppressWarnings({"CloneableImplementsClone", "serial"})           // Not intended to be cloned or serialized.
+    private static final class Unclosed extends ArrayList<double[]> {
+        /**
+         * The first points and last point in this list of polylines. By convention the coordinate having fraction
+         * digits has all its bits inverted by the {@code ~} operator. May be {@code null} if a coordinate is NaN.
+         * Do not modify {@link Point} field values, because those instances are keys in {@link Level#partialPaths}.
+         */
+        private Point firstPoint, lastPoint;
+
+        /**
+         * Creates a list of polylines initialized to the given items.
+         * The given polylines and their opposite directions are cleared by this method.
+         *
+         * @param  polylineOnLeft  first polyline with points in forward order. Shall not be null.
+         * @param  polylineOnTop    next polyline with points in reverse order, or {@code null} if none.
+         */
+        Unclosed(final Polyline polylineOnLeft, final Polyline polylineOnTop) {
+            /*
+             * Search for first point and last point by inspecting `Polyline`s in the order shown below.
+             * The first 4 rows and the last 4 rows search for first point and last point respectively.
+             * The empty rows in the middle are an intentional gap for creating a regular pattern that
+             * we can exploit for 3 decisions that need to be done during the loop:
+             *
+             *     ✓ (index & 2) = 0    if using `polylineOnLeft` (otherwise `polylineOnTop`).
+             *     ✓ (index % 3) = 0    if using `opposite` value of polyline (may be null).
+             *     ✓ (index & 1) = 0    if fetching last point (otherwise fetch first point).
+             *
+             *  Index   Polyline   (iteration order)  !(i & 2)  !(i % 3)  !(i & 1)   Comment
+             *  ────────────────────────────────────────────────────────────────────────────
+             *   [0]    polylineOnLeft.opposite  (←)      ✓         ✓         ✓        (1)
+             *   [1]    polylineOnLeft           (→)      ✓                            (2)
+             *   [2]    polylineOnTop            (←)                          ✓        (1)
+             *   [3]    polylineOnTop.opposite   (→)                ✓                  (2)
+             *   [4]                                      ✓                   ✓
+             *   |5]                                      ✓
+             *   [6]    polylineOnTop.opposite   (→)                ✓         ✓        (3)
+             *   [7]    polylineOnTop            (←)                                   (4)
+             *   [8]    polylineOnLeft           (→)      ✓                   ✓        (3)
+             *   [9]    polylineOnLeft.opposite  (←)      ✓         ✓                  (4)
+             *
+             * Comments:
+             *   (1) Last  `Polyline` point is first `Unclosed` point because of reverse iteration order.
+             *   (2) First `Polyline` point is first `Unclosed` point because of forward iteration order.
+             *   (3) Last  `Polyline` point is last  `Unclosed` point because of forward iteration order.
+             *   (4) First `Polyline` point is last  `Unclosed` point because of reverse iteration order.
+             */
+            int index = 0;
+            do {
+                Polyline polyline = ((index & 2) == 0) ? polylineOnLeft : polylineOnTop;  // See above table (column 4).
+                if (index % 3 == 0 && polyline != null) polyline = polyline.opposite;     // See above table (column 5).
+                if (polyline != null) {
+                    int n = polyline.size;
+                    if (n != 0) {
+                        final double[] coordinates = polyline.coordinates;
+                        final double x, y;
+                        if (((index & 1) == 0)) {                          // See above table in comment (column 6).
+                            y = coordinates[--n];
+                            x = coordinates[--n];
+                        } else {
+                            x = coordinates[0];
+                            y = coordinates[1];
+                        }
+                        final boolean isLastPoint = (index >= 6);          // See row [6] in above table.
+                        if (Double.isFinite(x) && Double.isFinite(y)) {
+                            final Point p = new Point((int) x, (int) y);
+                            if (x != Math.floor(x)) p.x = ~p.x;
+                            if (y != Math.floor(y)) p.y = ~p.y;
+                            if (isLastPoint) {
+                                lastPoint = p;
+                                break;                                     // Done searching both points.
+                            }
+                            firstPoint = p;
+                        } else if (isLastPoint) {
+                            /*
+                             * If the last point was NaN, check if it was also the case of first point.
+                             * If yes, we will not be able to store this `Unclosed` in `partialPaths`
+                             * because we have no point that we can use as key (it would be pointless
+                             * to search for another point further in the `coordinates` array because
+                             * that point could never be matched with another `Unclosed`). Leave this
+                             * list empty for avoiding the copies done by `take(…)` calls. Instead,
+                             * callers should write polylines in `Level.path` immediately.
+                             */
+                            if (firstPoint == null) return;
+                            break;
+                        }
+                        /*
+                         * Done searching the first point (may still be null if that point is NaN).
+                         * Row [6] in above table is the first row for the search of last point.
+                         */
+                        index = 6;
+                        continue;
+                    }
+                }
+                if (++index == 4) {
+                    // Found no non-empty polylines during search for first point. No need to continue searching.
+                    return;
+                }
+            } while (index <= 9);
+            /*
+             * Copies coordinates only if at least one of `firstPoint` or `lastPoint` is a valid point.
+             */
+            take(polylineOnLeft.opposite);          // Point will be iterated in reverse order.
+            take(polylineOnLeft);                   // Point will be iterated in forward order.
+            if (polylineOnTop != null) {
+                Polyline suffix = polylineOnTop.opposite;
+                take(polylineOnTop);                // Inverse order. Set `polylineOnTop.opposite` to null.
+                take(suffix);                       // Forward order.
+            }
+        }
+
+        /**
+         * Takes a copy of coordinate values of given polyline, then clears that polyline.
+         */
+        private void take(final Polyline polyline) {
+            if (polyline != null && polyline.size != 0) {
+                add(Arrays.copyOf(polyline.coordinates, polyline.size));
+                polyline.clear();
+            } else {
+                add(null);                  // No data for iteration order at this position.
+            }
+        }
+
+        /**
+         * Returns {@code true} if the given point is equal to the start point or end point.
+         * This is used in assertions for checking key validity in {@link Level#partialPaths}.
+         */
+        final boolean isExtremity(final Point key) {
+            return key.equals(firstPoint) || key.equals(lastPoint);
+        }
+
+        /**
+         * Associates this polyline to its two extremities in the given map. If other polylines already exist
+         * for one or both extremities, then this polyline will be merged with previously existing polylines.
+         * This method returns {@code true} if the polyline has been closed, in which case caller should store
+         * the coordinates in {@link Level#path} immediately.
+         *
+         * @param  partialPaths  where to add or merge polylines.
+         * @return {@code true} if this polyline became a closed polygon as a result of merge operation.
+         */
+        final boolean addOrMerge(final Map<Point,Unclosed> partialPaths) {
+            final Unclosed before = partialPaths.remove(firstPoint);
+            final Unclosed after  = partialPaths.remove(lastPoint);
+            if (before != null) partialPaths.remove(addAll(before, true));
+            if (after  != null) partialPaths.remove(addAll(after, false));
+            if (firstPoint != null && firstPoint.equals(lastPoint)) {       // First/last points may have changed.
+                partialPaths.remove(firstPoint);
+                partialPaths.remove(lastPoint);
+                return true;
+            } else {
+                // Intentionally replace previous values.
+                if (firstPoint != null) partialPaths.put(firstPoint, this);
+                if (lastPoint  != null) partialPaths.put(lastPoint,  this);
+                return false;
+            }
+        }
+
+        /**
+         * Prepends or appends the given polylines to this list of polylines.
+         * Points order will be changed as needed in order to match extremities.
+         * The {@code other} instance should be forgotten after this method call.
+         *
+         * @param  other    the other polyline to append or prepend to this polyline.
+         * @param  prepend  {@code true} for prepend operation, {@code false} for append.
+         * @return extremity of {@code other} which has not been assigned to {@code this}.
+         */
+        private Point addAll(final Unclosed other, final boolean prepend) {
+            assert ((size() | other.size()) & 1) == 0;      // Must have even number of elements in both lists.
+            /*
+             * In figures below, ● are the extremities to attach together.
+             * `r` is a bitmask telling which polylines to reverse:
+             * 1=this, 2=other, together with combinations 0=none and 3=other.
+             */
+            int r; if ( lastPoint != null &&  lastPoint.equals(other.firstPoint)) r = 0;    // ○──────● ●──────○
+            else   if (firstPoint != null && firstPoint.equals(other.firstPoint)) r = 1;    // ●──────○ ●──────○
+            else   if ( lastPoint != null &&  lastPoint.equals(other. lastPoint)) r = 2;    // ○──────● ○──────●
+            else   if (firstPoint != null && firstPoint.equals(other. lastPoint)) r = 3;    // ●──────○ ○──────●
+            else {
+                // Should never happen because `other` has been obtained using a point of `this`.
+                throw new AssertionError();
+            }
+            if (prepend) r ^= 3;                      // Swap order in above  ○──○ ○──○  figures.
+            if ((r & 1) != 0)  this.reverse();
+            if ((r & 2) != 0) other.reverse();
+            if (prepend) {
+                addAll(0, other);
+                firstPoint = other.firstPoint;
+                return other.lastPoint;
+            } else {
+                addAll(other);
+                lastPoint = other.lastPoint;
+                return other.firstPoint;
+            }
+        }
+
+        /**
+         * Reverse the order of all points. The last polyline will become the first polyline and vice-versa.
+         * For each polyline, points will be iterated in opposite order. The trick on point order is done by
+         * moving polylines at even indices to odd indices, and conversely (see class javadoc for convention
+         * about even/odd indices).
+         */
+        private void reverse() {
+            Collections.reverse(this);
+            final Point swap = firstPoint;
+            firstPoint = lastPoint;
+            lastPoint = swap;
+        }
+
+        /**
+         * Returns the content of this list as an array of {@link Polyline} instances.
+         * {@code Polyline} instances at even index should be written with their points in reverse order.
+         *
+         * @see #writeTo(Path2D, Polyline[], boolean)
+         */
+        final Polyline[] toPolylines() {
+            final Polyline[] polylines = new Polyline[size()];
+            for (int i=0; i<polylines.length; i++) {
+                final double[] coordinates = get(i);
+                if (coordinates != null) {
+                    polylines[i] = new Polyline(coordinates);
+                }
+            }
+            return polylines;
         }
     }
 
@@ -776,22 +1124,27 @@ final class IsolineTracer {
 
     /**
      * Writes all given polylines to the specified path. Null {@code Polyline} instances are ignored.
-     * {@code Polyline} instances at even index are written with their coordinates in reverse order.
+     * {@code Polyline} instances at even index are written with their points in reverse order.
      * All given polylines are cleared by this method.
      *
      * @param  path       where to write the polylines, or {@code null} if not yet created.
      * @param  polylines  the polylines to write.
+     * @param  close      whether to close the polygon.
      * @return the given path, or a newly created path if the argument was null.
+     * @throws TransformException if the {@link #gridToCRS} transform can not be applied.
      */
-    private Path2D writeTo(Path2D path, final Polyline... polylines) throws TransformException {
+    private Path2D writeTo(Path2D path, final Polyline[] polylines, final boolean close) throws TransformException {
         for (int i=1; i<polylines.length; i++) {
             removeSpikes(polylines[i-1], polylines[i], (i & 1) != 0);
         }
-        double xo = Double.NaN;     // First point of current polygon.
+        if (close) {
+            removeSpikes(polylines[polylines.length - 1], polylines[0], false);
+        }
+        double xo = Double.NaN;                         // First point of current polygon.
         double yo = Double.NaN;
-        double px = Double.NaN;     // Previous point.
+        double px = Double.NaN;                         // Previous point.
         double py = Double.NaN;
-        int state = PathIterator.SEG_MOVETO;
+        int nxpst = PathIterator.SEG_MOVETO;            // Next path segment type.
         for (int pi=0; pi < polylines.length; pi++) {
             final Polyline p = polylines[pi];
             if (p == null) {
@@ -817,12 +1170,12 @@ final class IsolineTracer {
                 }
                 if (!(Math.abs(x - px) <= tolerance && Math.abs(y - py) <= tolerance)) {
                     if (Double.isNaN(x) || Double.isNaN(y)) {
-                        state = PathIterator.SEG_MOVETO;        // Next point will be in a separated polygon.
-                    } else switch (state) {
+                        nxpst = PathIterator.SEG_MOVETO;        // Next point will be in a separated polygon.
+                    } else switch (nxpst) {
                         case PathIterator.SEG_MOVETO: {
                             xo = x;
                             yo = y;
-                            state = PathIterator.SEG_LINETO;
+                            nxpst = PathIterator.SEG_LINETO;
                             break;
                         }
                         case PathIterator.SEG_LINETO: {
@@ -838,13 +1191,13 @@ final class IsolineTracer {
                             }
                             path.moveTo(xo, yo);
                             path.lineTo(x, y);
-                            state = PathIterator.SEG_CLOSE;
+                            nxpst = PathIterator.SEG_CLOSE;
                             break;
                         }
                         default: {
                             if (Math.abs(x - xo) <= tolerance && Math.abs(y - yo) <= tolerance) {
                                 path.closePath();
-                                state = PathIterator.SEG_MOVETO;
+                                nxpst = PathIterator.SEG_MOVETO;
                             } else {
                                 path.lineTo(x, y);
                             }
@@ -856,6 +1209,9 @@ final class IsolineTracer {
                 py = y;
             } while (i < size);
             p.clear();
+        }
+        if (close && nxpst == PathIterator.SEG_CLOSE) {
+            path.closePath();
         }
         return path;
     }
