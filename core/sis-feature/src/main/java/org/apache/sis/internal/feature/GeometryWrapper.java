@@ -52,7 +52,7 @@ import org.apache.sis.util.Debug;
  * @since 0.8
  * @module
  */
-public abstract class GeometryWrapper<G> implements Geometry {
+public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geometry {
     /**
      * Creates a new geometry object.
      */
