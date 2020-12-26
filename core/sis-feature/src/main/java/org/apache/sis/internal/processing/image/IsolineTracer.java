@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.nio.DoubleBuffer;
 import java.awt.Point;
-import java.awt.geom.Path2D;
-import java.awt.geom.PathIterator;
+import java.awt.Shape;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.feature.j2d.PathBuilder;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -78,23 +78,20 @@ final class IsolineTracer {
     int y;
 
     /**
-     * Threshold for considering two coordinates as equal.
-     * Shall be a value between 0 and 0.5.
-     */
-    private final double tolerance;
-
-    /**
      * Final transform to apply on coordinates.
      */
     private final MathTransform gridToCRS;
 
     /**
      * Creates a new position for the given data window.
+     *
+     * @param  window       the 2×2 window containing pixel values in the 4 corners of current contouring grid cell.
+     * @param  pixelStride  increment to the position in {@code window} for reading next sample value.
+     * @param  gridToCRS    final transform to apply on coordinates.
      */
-    IsolineTracer(final DoubleBuffer window, final int pixelStride, double tolerance, final MathTransform gridToCRS) {
+    IsolineTracer(final DoubleBuffer window, final int pixelStride, final MathTransform gridToCRS) {
         this.window      = window;
         this.pixelStride = pixelStride;
-        this.tolerance   = (tolerance = Math.min(Math.abs(tolerance), 0.5)) >= 0 ? tolerance : 0;
         this.gridToCRS   = gridToCRS;
     }
 
@@ -206,13 +203,18 @@ final class IsolineTracer {
         private final Map<Point,Unclosed> partialPaths;
 
         /**
-         * The isolines as a Java2D shape, created when first needed. The {@link Polyline} coordinates are copied
-         * in this path when a geometry is closed. This is the shape to be returned to user for this level after
-         * we finished to process all cells.
+         * Builder of isolines as a Java2D shape, created when first needed.
+         * The {@link Polyline} coordinates are copied in this path when a geometry is closed.
          *
-         * @see #writeTo(Path2D, Polyline[], boolean)
+         * @see #writeTo(Joiner, Polyline[], boolean)
          */
-        Path2D path;
+        private Joiner path;
+
+        /**
+         * The isolines as a Java2D shape, created by {@link #finish()}.
+         * This is the shape to be returned to user for this level after we finished to process all cells.
+         */
+        Shape shape;
 
         /**
          * Creates new isoline levels for the given value.
@@ -253,7 +255,7 @@ final class IsolineTracer {
          * This algorithm does not need special attention for {@link Double#NaN} values. Interpolations will produce
          * {@code NaN} values and append them to the correct polyline (which does not depend on interpolation result)
          * like real values. Those NaN values will be filtered later in another method, when copying coordinates in
-         * {@link Path2D} objects.
+         * the {@link PathBuilder}.
          */
         @SuppressWarnings("AssertWithSideEffects")
         final void interpolate() throws TransformException {
@@ -544,9 +546,16 @@ final class IsolineTracer {
          * Invoked after the iteration has been completed on the full area of interest.
          * This method writes all remaining polylines to {@link #path} or {@link #partialPaths}.
          * It assumes that {@link #finishedRow()} has already been invoked.
+         * This {@code Isoline} can not be used anymore after this call.
          */
         final void finish() throws TransformException {
             assert polylineOnLeft.isEmpty();
+            polylineOnLeft.coordinates = null;
+            /*
+             * This method sets various values to null for letting the garbage collector do its work.
+             * This is okay for a `Level` instance which is not going to be used anymore, except for
+             * reading the `shape` field.
+             */
             for (int i=0; i < polylinesOnTop.length; i++) {
                 writeUnclosed(polylinesOnTop[i]);
                 polylinesOnTop[i] = null;
@@ -559,6 +568,10 @@ final class IsolineTracer {
                     fragment.clear();       // Necessary because the same list appears twice in the map.
                 }
                 entry.setValue(null);       // Let the garbage collector do its work.
+            }
+            if (path != null) {
+                shape = path.build();
+                path  = null;
             }
         }
     }
@@ -606,7 +619,7 @@ final class IsolineTracer {
 
         /**
          * Creates a new polyline wrapping the given coordinates. Used for wrapping {@link Unclosed}
-         * instances in objects expected by {@link IsolineTracer#writeTo(Path2D, Polyline[], boolean)}.
+         * instances in objects expected by {@link IsolineTracer#writeTo(Joiner, Polyline[], boolean)}.
          * Those {@code Polyline} instances are temporary.
          */
         Polyline(final double[] data) {
@@ -725,19 +738,7 @@ final class IsolineTracer {
          */
         @Override
         public String toString() {
-            final StringBuilder b = new StringBuilder(30).append('[');
-            if (size >= DIMENSION) {
-                b.append((float) coordinates[0]).append(", ").append((float) coordinates[1]);
-                final int n = size - DIMENSION;
-                if (n >= DIMENSION) {
-                    b.append(", ");
-                    if (size >= DIMENSION*3) {
-                        b.append(" … (").append(size / DIMENSION - 2).append(" pts) … ");
-                    }
-                    b.append((float) coordinates[n]).append(", ").append((float) coordinates[n+1]);
-                }
-            }
-            return b.append(']').toString();
+            return PathBuilder.toString(coordinates, size);
         }
     }
 
@@ -967,7 +968,7 @@ final class IsolineTracer {
          * Returns the content of this list as an array of {@link Polyline} instances.
          * {@code Polyline} instances at even index should be written with their points in reverse order.
          *
-         * @see #writeTo(Path2D, Polyline[], boolean)
+         * @see #writeTo(Joiner, Polyline[], boolean)
          */
         final Polyline[] toPolylines() {
             final Polyline[] polylines = new Polyline[size()];
@@ -982,6 +983,11 @@ final class IsolineTracer {
     }
 
     /**
+     * Assembles arbitrary amount of {@link Polyline}s in a single Java2D {@link Shape} for a specific isoline level.
+     * This class extends {@link PathBuilder} with two additional features: remove spikes caused by ambiguities, then
+     * apply a {@link MathTransform} on all coordinate values.
+     *
+     * <h2>Spikes</h2>
      * If the shape delimited by given polylines has a part with zero width or height ({@literal i.e.} a spike),
      * truncates the polylines for removing that spike. This situation happens when some pixel values are exactly
      * equal to isoline value, as in the picture below:
@@ -1012,139 +1018,121 @@ final class IsolineTracer {
      *   <li>●: {@literal pixel value > isoline value}.</li>
      * </ul>
      *
-     * This method detects and removes those spikes for avoiding convention-dependent results.
+     * This class detects and removes those spikes for avoiding convention-dependent results.
      * We assume that spikes can appear only at the junction between two {@link Polyline} instances.
      * Rational: having a spike require that we move forward then backward on the same coordinates,
      * which is possible only with a non-null {@link Polyline#opposite} field.
-     *
-     * @param  p0       first polyline, or {@code null}.
-     * @param  p1       second polyline, or {@code null}.
-     * @param  reverse  whether points in {@code p0} shall be read in reverse order.
-     *                  If {@code true},  (p0, p1) are read in (reverse, forward) point order.
-     *                  If {@code false}, (p0, p1) are read in (forward, reverse) point order.
      */
-    private static void removeSpikes(final Polyline p0, final Polyline p1, final boolean reverse) {
-        if (p0 == null || p1 == null || p0.size == 0 || p1.size == 0) {
-            return;
+    private static final class Joiner extends PathBuilder {
+        /**
+         * Final transform to apply on coordinates.
+         */
+        private final MathTransform gridToCRS;
+
+        /**
+         * Creates an initially empty set of isoline shapes.
+         */
+        Joiner(final MathTransform gridToCRS) {
+            this.gridToCRS = gridToCRS;
         }
-        double xo = Double.NaN;     // First point.
-        double yo = Double.NaN;
-        int equalityMask = 0;       // Bit 1 and 2 set when x and y values (respectively) are equal.
-        int spike0 = 0;             // Index where both coordinates become different than (xo,yo).
-        int spike1;
-        for (boolean first = true;;) {              // Executed exactly 2 times: for p0 and for p1.
-            final Polyline p = first ? p0 : p1;
-            final double[] coordinates = p.coordinates;
-            final int size = p.size;
-            spike1 = 0;
-            do {
-                final double x, y;
-                if (reverse == first) {
-                    y = coordinates[size - ++spike1];
-                    x = coordinates[size - ++spike1];
-                } else {
-                    x = coordinates[spike1++];
-                    y = coordinates[spike1++];
-                }
-                if (equalityMask == 0) {            // This condition is true only for the first point.
-                    equalityMask = 3;
-                    xo = x;
-                    yo = y;
-                } else {
+
+        /**
+         * Detects and removes spikes for avoiding convention-dependent results.
+         * See {@link Joiner} class-javadoc for a description of the problem.
+         *
+         * <p>We perform the analysis in this method instead than in {@link #filterFull(double[], int)} on the
+         * the assumption that spikes can appear only between two calls to {@code append(…)} (because having a
+         * spike require that we move forward then backward on the same coordinates, which happen only with two
+         * distinct {@link Polyline} instances). It reduce the amount of coordinates to examine since we can check
+         * only the extremities instead than looking for spikes anywhere in the array.</p>
+         *
+         * @param  coordinates  the coordinates to filter. Values can be modified in-place.
+         * @param  lower        index of first coordinate to filter. Always even.
+         * @param  upper        index after the last coordinate to filter. Always even.
+         * @return number of valid coordinates after filtering.
+         */
+        @Override
+        protected int filterChunk(final double[] coordinates, final int lower, final int upper) {
+            int spike0 = lower;         // Will be index where (x,y) become different than (xo,yo).
+            int spike1 = lower;         // Idem, but searching forward instead than backward.
+            if (spike1 < upper) {
+                final double xo = coordinates[spike1++];
+                final double yo = coordinates[spike1++];
+                int equalityMask = 3;                   // Bit 1 set if (x == xo), bit 2 set if (y == yo).
+                while (spike1 < upper) {
                     final int before = equalityMask;
-                    if (x != xo) equalityMask &= ~1;
-                    if (y != yo) equalityMask &= ~2;
+                    if (coordinates[spike1++] != xo) equalityMask &= ~1;
+                    if (coordinates[spike1++] != yo) equalityMask &= ~2;
                     if (equalityMask == 0) {
-                        equalityMask = before;              // For comparison of next polyline.
-                        spike1 -= Polyline.DIMENSION;       // Restore previous position.
-                        if (spike1 == 0) return;
+                        equalityMask = before;              // For keeping same search criterion.
+                        spike1 -= Polyline.DIMENSION;       // Restore previous position before mismatch.
                         break;
                     }
                 }
-            } while (spike1 < size);
-            /*
-             * Here we found a point which is not on the spike,
-             * or we finished examining all points on a polyline.
-             */
-            if (first) {
-                first  = false;
-                spike0 = spike1;
-            } else {
-                break;
-            }
-        }
-        /*
-         * Here we have range of indices where the polygon has a width or height of zero.
-         * Search for a common point, then truncate at that point. If `reverse` is false,
-         * then the two polylines are attached as below and the spike to remove is at the
-         * end of both polylines:
-         *
-         *     0       p0.size|p1.size       0
-         *     ●──●──●──●──●──●──●──●──●──●──●
-         *              └ remove ┘
-         *
-         * If `reverse` is true, then the two polylines are attached as below and the spike
-         * to remove is at the beginning of both polylines:
-         *
-         *     p0.size        0        p1.size
-         *     ●──●──●──●──●──●──●──●──●──●──●
-         *              └ remove ┘
-         */
-        int i0 = spike0;
-        do {
-            if (reverse) {
-                yo = p0.coordinates[--i0];
-                xo = p0.coordinates[--i0];
-            } else {
-                xo = p0.coordinates[p0.size - i0--];
-                yo = p0.coordinates[p0.size - i0--];
-            }
-            int i1 = spike1;
-            do {
-                final double x, y;
-                if (reverse) {
-                    y = p1.coordinates[--i1];
-                    x = p1.coordinates[--i1];
-                } else {
-                    x = p1.coordinates[p1.size - i1--];
-                    y = p1.coordinates[p1.size - i1--];
-                }
-                if (x == xo && y == yo) {
-                    p0.size -= i0;
-                    p1.size -= i1;
-                    if (reverse) {
-                        System.arraycopy(p0.coordinates, i0, p0.coordinates, 0, p0.size);
-                        System.arraycopy(p1.coordinates, i1, p1.coordinates, 0, p1.size);
+                while (spike0 > 0) {
+                    if (coordinates[--spike0] != yo) equalityMask &= ~2;
+                    if (coordinates[--spike0] != xo) equalityMask &= ~1;
+                    if (equalityMask == 0) {
+                        spike0 += Polyline.DIMENSION;
+                        break;
                     }
-                    return;
                 }
-            } while (i1 > 0);
-        } while (i0 > 0);
+            }
+            /*
+             * Here we have range of indices where the polygon has a width or height of zero.
+             * Search for a common point, then truncate at that point. Indices are like below:
+             *
+             *     0       spike0    lower          spike1         upper
+             *     ●────●────●────●────●────●────●────●────●────●────●
+             *                    └╌╌╌╌remove╌╌╌╌┘
+             * where:
+             *  - `lower` and `spike0` are inclusive.
+             *  - `upper` and `spike1` are exclusive.
+             *  - the region to remove are sowewhere between `spike0` and `spike1`.
+             */
+            final int limit = spike1;
+            int base;
+            while ((base = spike0 + 2*Polyline.DIMENSION) < limit) {    // Spikes exist only with at least 3 points.
+                final double xo = coordinates[spike0++];
+                final double yo = coordinates[spike0++];
+                spike1 = limit;
+                do {
+                    if (coordinates[spike1 - 2] == xo && coordinates[spike1 - 1] == yo) {
+                        /*
+                         * Remove points between the common point (xo,yo). The common point is kept on the
+                         * left side (`spike0` is already after that point) and removed on the right side.
+                         */
+                        System.arraycopy(coordinates, spike1, coordinates, spike0, upper - spike1);
+                        return upper - (spike1 - spike0);
+                    }
+                } while ((spike1 -= Polyline.DIMENSION) > base);
+            }
+            return upper;       // Nothing to remove.
+        }
+
+        /**
+         * Applies user-specified coordinate transform on all points of the whole polyline.
+         * This method is invoked after {@link #filterChunk(double[], int, int)}.
+         */
+        @Override
+        protected int filterFull(final double[] coordinates, final int upper) throws TransformException {
+            gridToCRS.transform(coordinates, 0, coordinates, 0, upper / Polyline.DIMENSION);
+            return upper;
+        }
     }
 
     /**
-     * Writes all given polylines to the specified path. Null {@code Polyline} instances are ignored.
+     * Writes all given polylines to the specified path builder. Null {@code Polyline} instances are ignored.
      * {@code Polyline} instances at even index are written with their points in reverse order.
      * All given polylines are cleared by this method.
      *
      * @param  path       where to write the polylines, or {@code null} if not yet created.
      * @param  polylines  the polylines to write.
      * @param  close      whether to close the polygon.
-     * @return the given path, or a newly created path if the argument was null.
+     * @return the given path builder, or a newly created builder if the argument was null.
      * @throws TransformException if the {@link #gridToCRS} transform can not be applied.
      */
-    private Path2D writeTo(Path2D path, final Polyline[] polylines, final boolean close) throws TransformException {
-        for (int i=1; i<polylines.length; i++) {
-            removeSpikes(polylines[i-1], polylines[i], (i & 1) != 0);
-        }
-        if (close) {
-            removeSpikes(polylines[polylines.length - 1], polylines[0], false);
-        }
-        double xo = Double.NaN;                         // First point of current polygon.
-        double yo = Double.NaN;
-        double px = Double.NaN;                         // Previous point.
-        double py = Double.NaN;
-        int nxpst = PathIterator.SEG_MOVETO;            // Next path segment type.
+    private Joiner writeTo(Joiner path, final Polyline[] polylines, final boolean close) throws TransformException {
         for (int pi=0; pi < polylines.length; pi++) {
             final Polyline p = polylines[pi];
             if (p == null) {
@@ -1155,63 +1143,14 @@ final class IsolineTracer {
                 assert p.isEmpty();
                 continue;
             }
-            final boolean  reverse     = (pi & 1) == 0;
-            final double[] coordinates = p.coordinates;
-            gridToCRS.transform(coordinates, 0, coordinates, 0, size / Polyline.DIMENSION);
-            int i = 0;
-            do {
-                final double x, y;
-                if (reverse) {
-                    y = coordinates[size - ++i];
-                    x = coordinates[size - ++i];
-                } else {
-                    x = coordinates[i++];
-                    y = coordinates[i++];
-                }
-                if (!(Math.abs(x - px) <= tolerance && Math.abs(y - py) <= tolerance)) {
-                    if (Double.isNaN(x) || Double.isNaN(y)) {
-                        nxpst = PathIterator.SEG_MOVETO;        // Next point will be in a separated polygon.
-                    } else switch (nxpst) {
-                        case PathIterator.SEG_MOVETO: {
-                            xo = x;
-                            yo = y;
-                            nxpst = PathIterator.SEG_LINETO;
-                            break;
-                        }
-                        case PathIterator.SEG_LINETO: {
-                            if (path == null) {
-                                int s = size - (i - 2*Polyline.DIMENSION);
-                                for (int k=pi; ++k < polylines.length;) {
-                                    final Polyline next = polylines[k];
-                                    if (next != null) {
-                                        s = Math.addExact(s, next.size);
-                                    }
-                                }
-                                path = new Path2D.Double(Path2D.WIND_NON_ZERO, s / Polyline.DIMENSION);
-                            }
-                            path.moveTo(xo, yo);
-                            path.lineTo(x, y);
-                            nxpst = PathIterator.SEG_CLOSE;
-                            break;
-                        }
-                        default: {
-                            if (Math.abs(x - xo) <= tolerance && Math.abs(y - yo) <= tolerance) {
-                                path.closePath();
-                                nxpst = PathIterator.SEG_MOVETO;
-                            } else {
-                                path.lineTo(x, y);
-                            }
-                            break;
-                        }
-                    }
-                }
-                px = x;
-                py = y;
-            } while (i < size);
+            if (path == null) {
+                path = new Joiner(gridToCRS);
+            }
+            path.append(p.coordinates, size, (pi & 1) == 0);
             p.clear();
         }
-        if (close && nxpst == PathIterator.SEG_CLOSE) {
-            path.closePath();
+        if (path != null) {
+            path.createPolyline(close);
         }
         return path;
     }

@@ -148,7 +148,7 @@ public class PathBuilder {
      * @param  upper        index after the last coordinate to filter. Always even.
      * @return number of valid coordinates after filtering.
      *         Should be {@code upper}, unless some coordinates have been removed.
-     *         Must be an even number ≥ lower and ≤ upper.
+     *         Must be an even number ≥ 0 and ≤ upper.
      */
     protected int filterChunk(double[] coordinates, int lower, int upper) {
         return upper;

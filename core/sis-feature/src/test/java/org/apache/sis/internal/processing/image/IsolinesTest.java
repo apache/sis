@@ -255,7 +255,7 @@ public final strictfp class IsolinesTest extends TestCase {
         for (int i=0; i<values.length; i++) {
             raster.setSample(i % size, i / size, 0, values[i]);
         }
-        final Isolines[] isolines = Isolines.generate(image, new double[][] {{threshold}}, 0, null);
+        final Isolines[] isolines = Isolines.generate(image, new double[][] {{threshold}}, null);
         assertEquals("Number of bands", 1, isolines.length);
         final Map<Double, Shape> polylines = isolines[0].polylines();
         assertTrue(polylines.size() <= 1);

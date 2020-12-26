@@ -40,8 +40,7 @@ import static org.apache.sis.internal.processing.image.IsolineTracer.LOWER_RIGHT
 
 /**
  * Creates isolines at specified levels from grid values provided in a {@link RenderedImage}.
- * Isolines are created by calls to the {@link #generate(RenderedImage, double[][], double,
- * MathTransform)} static method.
+ * Isolines are created by calls to the {@link #generate generate(…)} static method.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -128,12 +127,11 @@ public final class Isolines {
      * @param  levels     values for which to compute isolines. An array should be provided for each band.
      *                    If there is more bands than {@code levels.length}, the last array is reused for
      *                    all remaining bands.
-     * @param  tolerance  threshold for considering two coordinates as equal.
      * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
      * @return the isolines for each band in the given image.
      * @throws TransformException if an interpolated point can not be transformed using the given transform.
      */
-    public static Isolines[] generate(final RenderedImage data, final double[][] levels, final double tolerance,
+    public static Isolines[] generate(final RenderedImage data, final double[][] levels,
                                       MathTransform gridToCRS) throws TransformException
     {
         ArgumentChecks.ensureNonNull("data",   data);
@@ -155,7 +153,7 @@ public final class Isolines {
         final PixelIterator.Window<DoubleBuffer> window = iterator.createWindow(TransferType.DOUBLE);
         final DoubleBuffer buffer = window.values;
         final int numBands = iterator.getNumBands();
-        final IsolineTracer tracer = new IsolineTracer(buffer, numBands, tolerance, gridToCRS);
+        final IsolineTracer tracer = new IsolineTracer(buffer, numBands, gridToCRS);
         /*
          * Prepare the set of isolines for each band in the image.
          * The number of cells on the horizontal axis is one less
@@ -240,17 +238,15 @@ abort:  while (iterator.next()) {
     }
 
     /**
-     * Returns the polylines for each level specified to the
-     * {@link #generate(RenderedImage, double[][], double, MathTransform)} method.
+     * Returns the polylines for each level specified to the {@link #generate generate(…)} method.
      *
      * @return the polylines for each level.
      */
     public final NavigableMap<Double,Shape> polylines() {
         final TreeMap<Double,Shape> paths = new TreeMap<>();
         for (final IsolineTracer.Level level : levels) {
-            final Path2D path = level.path;
+            final Shape path = level.shape;
             if (path != null) {
-                // TODO: invoke path.trimToSize() with JDK10.
                 paths.put(level.value, path);
             }
         }
