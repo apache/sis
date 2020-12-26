@@ -53,17 +53,7 @@ import static org.apache.sis.internal.processing.image.IsolineTracer.LOWER_RIGHT
  */
 public final class Isolines {
     /**
-     * Values for which to compute isolines, sorted in ascending order and without NaN values.
-     * This array is used for {@linkplain Arrays#binarySearch(double[], double) binary searches}.
-     * Each value is associated to an instance in the {@link #levels} array.
-     *
-     * @see IsolineTracer.Level#value
-     */
-    private final double[] levelValues;
-
-    /**
-     * Isoline data for each level.
-     * The length of this array is equal to the {@link #levelValues} array length.
+     * Isoline data for each level, sorted in ascending order of {@link IsolineTracer.Level#value}.
      */
     private final IsolineTracer.Level[] levels;
 
@@ -82,10 +72,9 @@ public final class Isolines {
                 System.arraycopy(values, i, values, i-1, n-- - i);
             }
         }
-        levelValues = ArraysExt.resize(values, n);
         levels = new IsolineTracer.Level[n];
         for (int i=0; i<n; i++) {
-            levels[i] = tracer.new Level(levelValues[i], width);
+            levels[i] = tracer.new Level(values[i], width);
         }
     }
 
@@ -112,10 +101,10 @@ public final class Isolines {
      *               {@value IsolineTracer#LOWER_LEFT} or {@value IsolineTracer#LOWER_RIGHT}.
      */
     private void setMaskBit(final DoubleBuffer data, final int bit) {
-        int i = Arrays.binarySearch(levelValues, data.get());
-        if (i < 0) i = ~i;          // Really tild, not minus.
-        while (--i >= 0) {          // Value is higher than all levels below `i`.
-            levels[i].isDataAbove |= bit;
+        final double value = data.get();
+        for (final IsolineTracer.Level level : levels) {
+            if (level.value > value) break;                 // See above javadoc for NaN handling.
+            level.isDataAbove |= bit;
         }
     }
 

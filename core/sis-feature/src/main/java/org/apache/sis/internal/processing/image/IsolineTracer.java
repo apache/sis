@@ -103,7 +103,7 @@ final class IsolineTracer {
      */
     final class Level {
         /**
-         * The level value. This is a copy of {@link Isolines#levelValues} at the index of this level.
+         * The level value.
          *
          * @see #interpolate(int, int)
          */
