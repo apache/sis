@@ -49,7 +49,7 @@ import static org.junit.Assert.*;
  * @since   1.0
  * @module
  */
-public strictfp class DefaultIteratorTest extends TestCase {
+public strictfp class PixelIteratorTest extends TestCase {
     /**
      * The pixel iterator being tested.
      * This field is initialized by a call to one of the {@code createPixelIterator(…)} methods.
@@ -119,14 +119,14 @@ public strictfp class DefaultIteratorTest extends TestCase {
      *
      * @param  dataType  the raster or image data type as one of the {@link DataBuffer} constants.
      */
-    DefaultIteratorTest(final int dataType) {
+    PixelIteratorTest(final int dataType) {
         this.dataType = dataType;
     }
 
     /**
      * Creates a new test case.
      */
-    public DefaultIteratorTest() {
+    public PixelIteratorTest() {
         this(DataBuffer.TYPE_SHORT);
     }
 
@@ -321,14 +321,14 @@ public strictfp class DefaultIteratorTest extends TestCase {
      * Creates a {@code PixelIterator} for a sub-area of given raster.
      * The iterator shall be assigned to the {@link #iterator} field.
      *
-     * <p>The default implementation creates {@link DefaultIterator} instances.
+     * <p>The default implementation creates {@link PixelIterator} instances.
      * Tests for other kinds of iterator need to override.</p>
      *
      * @param  raster   the data on which to perform iteration.
      * @param  subArea  the boundary of the raster sub-area where to perform iteration.
      */
     void createPixelIterator(WritableRaster raster, Rectangle subArea) {
-        iterator = new DefaultIterator(raster, isWritable ? raster : null, subArea, null);
+        iterator = new WritablePixelIterator(raster, isWritable ? raster : null, subArea, null);
         assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder().get());
         assertEquals("isWritable", isWritable, iterator.isWritable());
     }
@@ -337,14 +337,14 @@ public strictfp class DefaultIteratorTest extends TestCase {
      * Creates a {@code PixelIterator} for a sub-area of given image.
      * The iterator shall be assigned to the {@link #iterator} field.
      *
-     * <p>The default implementation creates {@link DefaultIterator} instances.
+     * <p>The default implementation creates {@link PixelIterator} instances.
      * Tests for other kinds of iterator need to override.</p>
      *
      * @param  image    the data on which to perform iteration.
      * @param  subArea  the boundary of the image sub-area where to perform iteration.
      */
     void createPixelIterator(WritableRenderedImage image, Rectangle subArea) {
-        iterator = new DefaultIterator(image, isWritable ? image : null, subArea, null);
+        iterator = new WritablePixelIterator(image, isWritable ? image : null, subArea, null);
         assertEquals("isWritable", isWritable, iterator.isWritable());
     }
 
@@ -352,14 +352,14 @@ public strictfp class DefaultIteratorTest extends TestCase {
      * Creates a {@code PixelIterator} for a window in the given image.
      * The iterator shall be assigned to the {@link #iterator} field.
      *
-     * <p>The default implementation creates {@link DefaultIterator} instances.
+     * <p>The default implementation creates {@link PixelIterator} instances.
      * Tests for other kinds of iterator need to override.</p>
      *
      * @param  image    the data on which to perform iteration.
      * @param  window   size of the window to use in {@link PixelIterator#createWindow(TransferType)} method.
      */
     void createWindowIterator(WritableRenderedImage image, Dimension window) {
-        iterator = new DefaultIterator(image, isWritable ? image : null, null, window);
+        iterator = new WritablePixelIterator(image, isWritable ? image : null, null, window);
         assertEquals("isWritable", isWritable, iterator.isWritable());
     }
 

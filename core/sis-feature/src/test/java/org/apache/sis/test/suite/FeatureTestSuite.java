@@ -83,7 +83,7 @@ import org.junit.runners.Suite;
     org.apache.sis.image.DataTypeTest.class,
     org.apache.sis.image.PlanarImageTest.class,
     org.apache.sis.image.ComputedImageTest.class,
-    org.apache.sis.image.DefaultIteratorTest.class,
+    org.apache.sis.image.PixelIteratorTest.class,
     org.apache.sis.image.LinearIteratorTest.class,
     org.apache.sis.image.StatisticsCalculatorTest.class,
     org.apache.sis.image.BandSelectImageTest.class,

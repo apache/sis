@@ -43,11 +43,11 @@ import org.apache.sis.internal.feature.Resources;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-final class LinearIterator extends DefaultIterator {
+final class LinearIterator extends WritablePixelIterator {
     /**
      * Creates an iterator for the given region in the given raster.
      *
@@ -92,12 +92,12 @@ final class LinearIterator extends DefaultIterator {
     public boolean next() {
         if (++x >= currentUpperX) {                 // Move to next column, potentially on a different tile.
             if (x < upperX) {
-                close();                            // Must be invoked before `tileX` change.
+                releaseTile();                      // Must be invoked before `tileX` change.
                 tileX++;
             } else {
                 x = lowerX;                         // Beginning of next row.
                 if (++y >= currentUpperY) {         // Move to next line.
-                    close();                        // Must be invoked before `tileY` change.
+                    releaseTile();                  // Must be invoked before `tileY` change.
                     if (++tileY >= tileUpperY) {
                         endOfIteration();
                         return false;
@@ -105,7 +105,7 @@ final class LinearIterator extends DefaultIterator {
                 } else if (tileX == tileLowerX) {
                     return true;                    // Beginning of next row is in the same tile.
                 }
-                close();                            // Must be invoked before `tileX` change.
+                releaseTile();                      // Must be invoked before `tileX` change.
                 tileX = tileLowerX;
             }
             /*
