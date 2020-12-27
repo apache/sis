@@ -110,16 +110,21 @@ public final class IsolinesView extends Visualization {
             default: throw new AssertionError(index);
         }
         final List<Shape> shapes = new ArrayList<>();
-        for (final Isolines isolines : Isolines.generate(image, new double[][] {{0x20, 0x40, 0x60, 0x80, 0xA0, 0xC0, 0xE0}}, 0, null)) {
+        for (final Isolines isolines : Isolines.generate(image, new double[][] {{0x20, 0x40, 0x60, 0x80, 0xA0, 0xC0, 0xE0}}, null)) {
             shapes.addAll(isolines.polylines().values());
         }
         final ZoomPane pane = new ZoomPane() {
-            /** Requests a window of the size of the image to show. */
+            /**
+             * Requests a window of the size of the image to show.
+             */
             @Override public Rectangle2D getArea() {
                 return new Rectangle(width, height);
             }
 
-            /** Paints isolines on top of the image. */
+            /**
+             * Paints isolines on top of the image. Isolines interior are filled with transparent colors
+             * for making easier to see if the shapes are closed polygons. If zoomed, paint pixel positions.
+             */
             @Override protected void paintComponent(final Graphics2D graphics) {
                 graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                         RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
@@ -129,14 +134,18 @@ public final class IsolinesView extends Visualization {
                 graphics.setStroke(new BasicStroke(0));
                 int count = 0;
                 for (final Shape shape : shapes) {
-                    graphics.setColor(colors[count++ % colors.length]);
+                    final Color color = colors[count++ % colors.length];
+                    graphics.setColor(new Color(color.getRGB() & 0x20FFFFFF, true));
+                    graphics.fill(shape);
+                    graphics.setColor(color);
                     graphics.draw(shape);
                 }
                 graphics.setTransform(otr);
                 /*
-                 * If the zoom allows us to have at least 20 pixels between cells, draw a grid.
+                 * If the zoom allows us to have at least 10 pixels between cells, draw a grid.
                  */
-                if (AffineTransforms2D.getScale(zoom) >= 20) {
+                final double scale = AffineTransforms2D.getScale(zoom);
+                if (scale >= 10) {
                     final Rectangle2D bounds = getVisibleArea();
                     final int sx = (int) bounds.getX();     // Rounding toward zero is what we want.
                     final int sy = (int) bounds.getY();
@@ -145,11 +154,24 @@ public final class IsolinesView extends Visualization {
                     final Point       srcPt = new Point();
                     final Point.Float tgtPt = new Point.Float();
                     final Dimension   size  = new Dimension(3,3);
+                    final StringBuilder buffer = (scale >= 100) ? new StringBuilder("(") : null;
                     graphics.setColor(Color.MAGENTA);
                     for (srcPt.y = sy; srcPt.y <= my; srcPt.y++) {
                         for (srcPt.x = sx; srcPt.x <= mx; srcPt.x++) {
                             bounds.setFrame(zoom.transform(srcPt, tgtPt), size);
                             graphics.fill(bounds);
+                            if (buffer != null) {
+                                buffer.append(srcPt.x).append(", ").append(srcPt.y).append(')');
+                                final int x = Math.round(srcPt.x);
+                                final int y = Math.round(srcPt.y);
+                                if (x >= 0 && x < image.getWidth() && y >= 0 && y < image.getHeight()) {
+                                    buffer.append(": ").append(image.getRaster().getSampleFloat(x, y, 0));
+                                }
+                                graphics.setColor(Color.BLACK);
+                                graphics.drawString(buffer.toString(), tgtPt.x, tgtPt.y);
+                                graphics.setColor(Color.MAGENTA);
+                                buffer.setLength(1);
+                            }
                         }
                     }
                 }
@@ -183,7 +205,7 @@ public final class IsolinesView extends Visualization {
         dataAsIntegers = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         final WritableRaster rasterAsFloats   = dataAsFloats.getRaster();
         final WritableRaster rasterAsIntegers = dataAsIntegers.getRaster();
-        final Random random = new Random(1000);
+        final Random random = new Random();
         for (int i=0; i<10; i++) {
             final int centerX = random.nextInt(width);
             final int centerY = random.nextInt(height);
