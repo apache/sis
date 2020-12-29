@@ -98,7 +98,8 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
                 width, height,                  // Image size
                 width, height,                  // Tile size
                 random.nextInt(32) - 10,        // minTileX
-                random.nextInt(32) - 10);       // minTileY
+                random.nextInt(32) - 10,        // minTileY
+                random.nextBoolean());          // Banded or interleaved sample model
         image.validate();
         image.initializeAllTiles(0);
         final int x = random.nextInt(32) - 10;

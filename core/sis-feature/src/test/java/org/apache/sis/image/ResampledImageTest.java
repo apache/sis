@@ -92,7 +92,8 @@ public final strictfp class ResampledImageTest extends TestCase {
                 tileWidth,
                 tileHeight,
                 random.nextInt(32) - 10,        // minTileX
-                random.nextInt(32) - 10);       // minTileY
+                random.nextInt(32) - 10,        // minTileY
+                random.nextBoolean());          // Banded or interleaved sample model
         image.validate();
         image.initializeAllTiles(0);
         image.setRandomValues(1, random, 1024);

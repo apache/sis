@@ -25,7 +25,6 @@ import java.nio.DoubleBuffer;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.BufferedImage;
@@ -33,11 +32,15 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.SampleModel;
+import java.awt.image.ComponentSampleModel;
+import java.awt.image.MultiPixelPackedSampleModel;
+import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
 import java.util.NoSuchElementException;
 import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.feature.Resources;
@@ -103,7 +106,7 @@ public class PixelIterator {
      * Number of bands in all tiles in the {@linkplain #image}.
      * The {@link #currentRaster} shall always have this number of bands.
      */
-    private final int numBands;
+    final int numBands;
 
     /**
      * The domain, in pixel coordinates, of the region traversed by this pixel iterator.
@@ -150,10 +153,27 @@ public class PixelIterator {
     int x, y;
 
     /**
-     * Bounds of the region traversed by the iterator in current raster.
+     * Bounds of the region traversed by the iterator in {@linkplain #currentRaster current raster}.
      * When iteration reaches the upper coordinates, the iterator needs to move to next tile.
+     * This the raster bounds clipped to the area of interest.
+     *
+     * @see #currentUpperX()
+     * @see #currentUpperY()
      */
-    int currentLowerX, currentUpperX, currentUpperY;
+    private int currentLowerX, currentUpperX, currentUpperY;
+
+    /**
+     * Maximal {@linkplain #x} and {@linkplain #y} coordinates (exclusive) that {@link Window} can use for
+     * fetching values in current tile. If some (x,y) coordinates inside the window are equal or greater,
+     * then the window will need to fetch some values on neighbor tiles (i.e. the window is overlapping
+     * two or more tiles).
+     *
+     * <p>This is initialized by {@link #fetchTile()} to the same values than {@link #currentUpperX} and
+     * {@link #currentUpperY} but without clipping to the area of interest. We want to keep the flexibility
+     * to overwrite with other coordinate system in future versions, if useful for {@link Window} performance.
+     * Consequently hose values should not be used in other context than {@link #fetchValues(Window, Object)}.</p>
+     */
+    private int windowLimitX, windowLimitY;
 
     /**
      * Creates an iterator for the given region in the given raster.
@@ -186,7 +206,9 @@ public class PixelIterator {
         currentLowerX   = lowerX;
         currentUpperX   = upperX;
         currentUpperY   = upperY;
-        x               = Math.decrementExact(lowerX);          // Set to the position before first pixel.
+        windowLimitX    = Math.addExact(tileGridXOffset, tileWidth);    // Initialized here because `fetchTile()` will not be invoked.
+        windowLimitY    = Math.addExact(tileGridYOffset, tileHeight);
+        x               = Math.decrementExact(lowerX);                  // Set to the position before first pixel.
         y               = lowerY;
     }
 
@@ -361,6 +383,36 @@ public class PixelIterator {
         }
 
         /**
+         * If the given sample model is compatible with {@link BandedIterator}, returns the model scanline stride.
+         * Otherwise returns 0. A {@code BandedIterator} can be used only if the returned value is greater than 0.
+         */
+        static int getScanlineStride(final SampleModel sm) {
+            if (sm instanceof ComponentSampleModel) {
+                final ComponentSampleModel csm = (ComponentSampleModel) sm;
+                if (csm.getPixelStride() == 1) {
+                    for (final int offset : csm.getBandOffsets()) {
+                        if (offset != 0) return 0;
+                    }
+                    if (ArraysExt.isRange(0, csm.getBankIndices())) {
+                        return csm.getScanlineStride();
+                    }
+                }
+            } else if (sm instanceof SinglePixelPackedSampleModel) {
+                final SinglePixelPackedSampleModel csm = (SinglePixelPackedSampleModel) sm;
+                final int[] offsets = csm.getBitOffsets();
+                if (offsets.length == 1 && offsets[0] == 0) {
+                    return csm.getScanlineStride();
+                }
+            } else if (sm instanceof MultiPixelPackedSampleModel) {
+                final MultiPixelPackedSampleModel csm = (MultiPixelPackedSampleModel) sm;
+                if (csm.getDataBitOffset() == 0 && csm.getPixelBitStride() == DataBuffer.getDataTypeSize(csm.getDataType())) {
+                    return csm.getScanlineStride();
+                }
+            }
+            return 0;
+        }
+
+        /**
          * Creates a read-only iterator for the given raster.
          *
          * @param  data  the raster which contains the sample values on which to iterate.
@@ -368,13 +420,19 @@ public class PixelIterator {
          */
         public PixelIterator create(final Raster data) {
             ArgumentChecks.ensureNonNull("data", data);
-            if (order == SequenceType.LINEAR) {
-                return new LinearIterator(data, null, subArea, window);
-            } else if (order != null) {
+            if (order != null && order != SequenceType.LINEAR) {
                 throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
             }
-            // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
-            return new PixelIterator(data, subArea, window);
+            /*
+             * No need to instantiate `LinearIterator` because the default iterator
+             * has the same iteration order when there is only one tile.
+             */
+            final int scanlineStride = getScanlineStride(data.getSampleModel());
+            if (scanlineStride > 0) {
+                return new BandedIterator(data, null, subArea, window, scanlineStride);
+            } else {
+                return new PixelIterator(data, subArea, window);
+            }
         }
 
         /**
@@ -403,8 +461,12 @@ public class PixelIterator {
             } else if (order != null) {
                 throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
             }
-            // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
-            return new PixelIterator(data, subArea, window);
+            final int scanlineStride = getScanlineStride(data.getSampleModel());
+            if (scanlineStride > 0) {
+                return new BandedIterator(data, null, subArea, window, scanlineStride);
+            } else {
+                return new PixelIterator(data, subArea, window);
+            }
         }
 
         /**
@@ -434,6 +496,7 @@ public class PixelIterator {
 
         /**
          * Creates an iterator which will read and write in two different rasters.
+         * The two rasters must use the same sample model and have the same bounds.
          *
          * @param  input    the raster which contains the sample values to read.
          * @param  output   the raster where to write the sample values. Can be the same than {@code input}.
@@ -442,17 +505,24 @@ public class PixelIterator {
         public WritablePixelIterator createWritable(final Raster input, final WritableRaster output) {
             ArgumentChecks.ensureNonNull("input",  input);
             ArgumentChecks.ensureNonNull("output", output);
-            if (order == SequenceType.LINEAR) {
-                return new LinearIterator(input, output, subArea, window);
-            } else if (order != null) {
+            if (order != null && order != SequenceType.LINEAR) {
                 throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
             }
-            // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
-            return new WritablePixelIterator(input, output, subArea, window);
+            /*
+             * No need to instantiate `LinearIterator` because the default iterator
+             * has the same iteration order when there is only one tile.
+             */
+            final int scanlineStride = getScanlineStride(input.getSampleModel());
+            if (scanlineStride > 0) {
+                return new BandedIterator(input, output, subArea, window, scanlineStride);
+            } else {
+                return new WritablePixelIterator(input, output, subArea, window);
+            }
         }
 
         /**
          * Creates an iterator which will read and write in two different images.
+         * The two images must use the same sample model and have the same bounds.
          *
          * @param  input    the image which contains the sample values to read.
          * @param  output   the image where to write the sample values. Can be the same than {@code input}.
@@ -467,8 +537,12 @@ public class PixelIterator {
             } else if (order != null) {
                 throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
             }
-            // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
-            return new WritablePixelIterator(input, output, subArea, window);
+            final int scanlineStride = getScanlineStride(input.getSampleModel());
+            if (scanlineStride > 0) {
+                return new BandedIterator(input, output, subArea, window, scanlineStride);
+            } else {
+                return new WritablePixelIterator(input, output, subArea, window);
+            }
         }
     }
 
@@ -582,7 +656,7 @@ public class PixelIterator {
      * @return order in which pixels are traversed.
      */
     public Optional<SequenceType> getIterationOrder() {
-        if (image == null || (tileUpperX - tileLowerX) <=1 && (tileUpperY - tileLowerY) <= 1) {
+        if (image == null || (tileUpperX - tileLowerX) <= 1 && (tileUpperY - tileLowerY) <= 1) {
             return Optional.of(SequenceType.LINEAR);
         } else {
             return Optional.empty();                // Undefined order.
@@ -627,18 +701,6 @@ public class PixelIterator {
             return new Point(x,y);
         }
         throw new IllegalStateException(Resources.format(message));
-    }
-
-    /**
-     * Returns {@code true} if current iterator position is inside the given shape.
-     * Current version does not verify if iteration started or finished
-     * (this method is non-public for that reason).
-     *
-     * @param  domain  the shape for which to test inclusion.
-     * @return whether current iterator position is inside the given shape.
-     */
-    final boolean isInside(final Shape domain) {
-        return domain.contains(x, y);
     }
 
     /**
@@ -713,28 +775,58 @@ public class PixelIterator {
     }
 
     /**
+     * Returns the lower limit of the region traversed by the iterator in current raster.
+     */
+    final int currentLowerX() {
+        return currentLowerX;
+    }
+
+    /**
+     * Returns the upper limit of the region traversed by the iterator in current raster.
+     * When iteration reaches this limit, the iterator needs to move to next row or next tile.
+     */
+    final int currentUpperX() {
+        return currentUpperX;
+    }
+
+    /**
+     * Returns the upper limit of the region traversed by the iterator in current raster.
+     * When iteration reaches this limit, the iterator needs to move to next tile.
+     */
+    final int currentUpperY() {
+        return currentUpperY;
+    }
+
+    /**
      * Fetches from the image a tile for the current {@link #tileX} and {@link #tileY} coordinates.
      * All fields prefixed by {@code current} are updated by this method. The caller is responsible
      * for updating the {@link #x} and {@link #y} fields.
      *
-     * <p>Note that there is no {@code currentLowerY} field in this {@code PixelIterator} class.
+     * <p>Note 1: {@link #releaseTile()} is always invoked before this method.
+     * Consequently {@link #currentRaster} is already {@code null}.</p>
+     *
+     * <p>Note 2: there is no {@code currentLowerY} field in this {@code PixelIterator} class.
      * Instead, that value is returned by this method.</p>
      *
      * @return the {@link #y} value of the first row of new tile.
      */
     final int fetchTile() {
-        currentRaster = fetchWritableTile();
-        if (currentRaster == null) {
-            currentRaster = image.getTile(tileX, tileY);
+        Raster tile = fetchWritableTile();
+        if (tile == null) {
+            tile = image.getTile(tileX, tileY);
         }
-        final int minX = currentRaster.getMinX();
-        final int minY = currentRaster.getMinY();
-        currentLowerX  = Math.max(lowerX, minX);
-        currentUpperX  = Math.min(upperX, minX + tileWidth);
-        currentUpperY  = Math.min(upperY, minY + tileHeight);
-        if (currentRaster.getNumBands() != numBands) {
+        if (tile.getNumBands() != numBands || tile.getWidth() != tileWidth || tile.getHeight() != tileHeight) {
             throw new RasterFormatException(Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY));
         }
+        final int minX = tile.getMinX();
+        final int minY = tile.getMinY();
+        windowLimitX   = Math.addExact(minX, tileWidth);
+        windowLimitY   = Math.addExact(minY, tileHeight);
+        currentUpperX  = Math.min(upperX, windowLimitX);
+        currentUpperY  = Math.min(upperY, windowLimitY);
+        currentLowerX  = Math.max(lowerX, minX);
+        currentRaster  = tile;
+        acquiredTile(tile);
         return Math.max(lowerY, minY);
     }
 
@@ -752,15 +844,31 @@ public class PixelIterator {
     }
 
     /**
+     * Invoked when the iterator fetched a new tile. This is a hook for subclasses.
+     * The default implementation does nothing. This is overridden when a subclass
+     * needs to store additional raster properties, for example its buffer for more
+     * direct access to sample values.
+     *
+     * @param  tile  the new tile from which to read sample values.
+     */
+    void acquiredTile(Raster tile) {
+    }
+
+    /**
      * Releases the tiles acquired by this iterator, if any.
-     * This method does nothing if the iterator is read-only.
      */
     void releaseTile() {
+        if (image != null) {
+            currentRaster = null;
+        }
     }
 
     /**
      * Invoked when a call to {@link #next()} moved to the end of iteration. This method sets fields to values
      * that will allow {@link #moveTo(int,int)} and {@link #next()} to detect that we already finished iteration.
+     *
+     * <p>Note: {@link #releaseTile()} is always invoked before this method.
+     * Consequently {@link #currentRaster} is already {@code null}.</p>
      */
     final void endOfIteration() {
         /*
@@ -890,7 +998,7 @@ public class PixelIterator {
      * in the image. By contrast this {@code getDataElements​(…)} method may return an array of length 1 with
      * all sample values packed as a single ARGB value.</div>
      *
-     * Data elements are useful for copying efficiently values in another image using the same sample model,
+     * Data elements are useful for copying values in another image using the same sample model,
      * or for getting colors with a call to {@link java.awt.image.ColorModel#getRGB(Object)}.
      *
      * @param  dest  a pre-allocated array where to store the data elements, or {@code null} if none.
@@ -964,12 +1072,22 @@ public class PixelIterator {
         final int transferLength = length - numBands * Math.min(windowWidth, windowHeight);
         // `transfer` will always have at least one row or one column less than `data`.
         switch (type.dataBufferType) {
-            case DataBuffer.TYPE_INT:    return (Window<T>) new IntWindow   (new int   [length], new int   [transferLength]);
-            case DataBuffer.TYPE_FLOAT:  return (Window<T>) new FloatWindow (new float [length], new float [transferLength]);
-            case DataBuffer.TYPE_DOUBLE: return (Window<T>) new DoubleWindow(new double[length], new double[transferLength]);
+            case DataBuffer.TYPE_INT:    return (Window<T>) new IntWindow(new int   [length], new int   [transferLength]);
+            case DataBuffer.TYPE_FLOAT:  return (Window<T>)  createWindow(new float [length], new float [transferLength]);
+            case DataBuffer.TYPE_DOUBLE: return (Window<T>)  createWindow(new double[length], new double[transferLength]);
             default: throw new AssertionError(type);  // Should never happen unless we updated TransferType and forgot to update this method.
         }
     }
+
+    /**
+     * Creates a window for floating point values using the given arrays. This is a hook for allowing subclasses
+     * to specify alternative implementations. We provide hooks only for floating point types, not for integers,
+     * because the {@code int} type is already optimized by Java2D with specialized {@code Raster.getPixels(…)}
+     * method implementations. By contract the {@code float} and {@code double} types in Java2D use generic and
+     * slower code path.
+     */
+    Window<FloatBuffer>  createWindow( float[] data,  float[] transfer) {return new  FloatWindow(data, transfer);}
+    Window<DoubleBuffer> createWindow(double[] data, double[] transfer) {return new DoubleWindow(data, transfer);}
 
     /**
      * Contains the sample values in a moving window over the image. Windows are created by calls to
@@ -985,6 +1103,17 @@ public class PixelIterator {
      * @module
      */
     public abstract static class Window<T extends Buffer> {
+        /**
+         * Enumeration values for the last argument in {@link #getPixels(Raster, int, int, int, int, int)}.
+         * <ul>
+         *   <li>{@code DIRECT}: store sample values directly in the final destination array.</li>
+         *   <li>{@code TRANSFER}: store sample values in a temporary buffer (copied to destination by caller).</li>
+         *   <li>{@code TRANSFER_FROM_OTHER}: same as {@code TRANSFER}, but also notify that the given raster is not
+         *       {@link PixelIterator#currentRaster}.</li>
+         * </ul>
+         */
+        static final int DIRECT = 0, TRANSFER = 1, TRANSFER_FROM_OTHER = 2;
+
         /**
          * A buffer containing all sample values fetched by the last call to {@link #update()}. The buffer
          * capacity is <var>(number of bands)</var> × <var>(window width)</var> × <var>(window height)</var>.
@@ -1040,16 +1169,22 @@ public class PixelIterator {
          * per array element. Subclasses should delegate to one of the {@code Raster#getPixels(…)} methods
          * depending on the buffer data type.
          *
+         * <h4>Constraints</h4>
+         * If {@code mode} == {@link #DIRECT} or {@link #TRANSFER}, then {@code subX}={@link #x} and
+         * {@code subY}={@link #y}. This constraint allows subclasses to use cached values for current position.
+         * Otherwise ({@code mode} == {@link #TRANSFER_FROM_OTHER}), {@code subX} and {@code subY} can be anything.
+         *
+         * <p>{@code subWidth} and {@code subHeight} shall always be greater than zero.</p>
+         *
          * @param  raster     the raster from which to get the pixel values.
          * @param  subX       the X coordinate of the upper-left pixel location.
          * @param  subY       the Y coordinate of the upper-left pixel location.
          * @param  subWidth   width of the pixel rectangle.
          * @param  subHeight  height of the pixel rectangle.
-         * @param  direct     {@code true} for storing directly in the final array,
-         *                    or {@code false} for using the transfer array.
+         * @param  mode       one of {@link #DIRECT}, {@link #TRANSFER} or {@link #TRANSFER_FROM_OTHER}.
          * @return the array in which sample values have been stored.
          */
-        abstract Object getPixels(Raster raster, int subX, int subY, int subWidth, int subHeight, boolean direct);
+        abstract Object getPixels(Raster raster, int subX, int subY, int subWidth, int subHeight, int mode);
     }
 
     /**
@@ -1092,8 +1227,8 @@ public class PixelIterator {
          * Performs the transfer between the underlying raster and this window.
          */
         @Override
-        Object getPixels(Raster raster, int subX, int subY, int subWidth, int subHeight, boolean direct) {
-            return raster.getPixels(subX, subY, subWidth, subHeight, direct ? data : transfer);
+        Object getPixels(Raster raster, int subX, int subY, int subWidth, int subHeight, int mode) {
+            return raster.getPixels(subX, subY, subWidth, subHeight, (mode == DIRECT) ? data : transfer);
         }
 
         /**
@@ -1103,7 +1238,7 @@ public class PixelIterator {
         @Override
         public void update() {
             values.clear();
-            PixelIterator.this.update(this, data);
+            fetchValues(this, data);
         }
     }
 
@@ -1138,8 +1273,8 @@ public class PixelIterator {
          * Performs the transfer between the underlying raster and this window.
          */
         @Override
-        Object getPixels(Raster raster, int subX, int subY, int subWidth, int subHeight, boolean direct) {
-            return raster.getPixels(subX, subY, subWidth, subHeight, direct ? data : transfer);
+        Object getPixels(Raster raster, int subX, int subY, int subWidth, int subHeight, int mode) {
+            return raster.getPixels(subX, subY, subWidth, subHeight, (mode == DIRECT) ? data : transfer);
         }
 
         /**
@@ -1149,7 +1284,7 @@ public class PixelIterator {
         @Override
         public void update() {
             values.clear();
-            PixelIterator.this.update(this, data);
+            fetchValues(this, data);
         }
     }
 
@@ -1184,8 +1319,8 @@ public class PixelIterator {
          * Performs the transfer between the underlying raster and this window.
          */
         @Override
-        Object getPixels(Raster raster, int subX, int subY, int subWidth, int subHeight, boolean direct) {
-            return raster.getPixels(subX, subY, subWidth, subHeight, direct ? data : transfer);
+        Object getPixels(Raster raster, int subX, int subY, int subWidth, int subHeight, int mode) {
+            return raster.getPixels(subX, subY, subWidth, subHeight, (mode == DIRECT) ? data : transfer);
         }
 
         /**
@@ -1195,7 +1330,7 @@ public class PixelIterator {
         @Override
         public void update() {
             values.clear();
-            PixelIterator.this.update(this, data);
+            fetchValues(this, data);
         }
     }
 
@@ -1206,10 +1341,9 @@ public class PixelIterator {
      * @param  data    the array of primitive type where sample values are stored.
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
-    final void update(final Window<?> window, final Object data) {
-        Raster  raster    = currentRaster;
-        int     subEndX   = (raster.getMinX() - x) + raster.getWidth();
-        int     subEndY   = (raster.getMinY() - y) + raster.getHeight();
+    final void fetchValues(final Window<?> window, final Object data) {
+        int     subEndX   = windowLimitX - x;
+        int     subEndY   = windowLimitY - y;
         int     subWidth  = Math.min(windowWidth,  subEndX);
         int     subHeight = Math.min(windowHeight, subEndY);
         boolean fullWidth = (subWidth == windowWidth);
@@ -1219,7 +1353,7 @@ public class PixelIterator {
              * This is the vast majority of cases, so we perform this check soon before
              * to compute more internal variables.
              */
-            final Object transfer = window.getPixels(raster, x, y, subWidth, subHeight, true);
+            final Object transfer = window.getPixels(currentRaster, x, y, subWidth, subHeight, Window.DIRECT);
             assert transfer == data;
             return;
         }
@@ -1227,6 +1361,8 @@ public class PixelIterator {
          * At this point, we determined that the window is overlapping two or more tiles.
          * We will need more variables for iterating over the tiles around `currentRaster`.
          */
+        Raster raster    = currentRaster;
+        int mode         = Window.TRANSFER;
         int destOffset   = 0;                       // Index in `window` array where to copy the sample values.
         int subX         = 0;                       // Upper-left corner of a sub-window inside the window.
         int subY         = 0;
@@ -1236,7 +1372,7 @@ public class PixelIterator {
         final int rewind = subEndX;
         for (;;) {
             if (subWidth > 0 && subHeight > 0) {
-                final Object transfer = window.getPixels(raster, x + subX, y + subY, subWidth, subHeight, false);
+                final Object transfer = window.getPixels(raster, x + subX, y + subY, subWidth, subHeight, mode);
                 if (fullWidth) {
                     System.arraycopy(transfer, 0, data, destOffset, stride * subHeight);
                 } else {
@@ -1267,6 +1403,7 @@ public class PixelIterator {
                 subEndX  = rewind;
                 subX     = 0;                               // Move x position back to the window left border.
             }
+            mode       = Window.TRANSFER_FROM_OTHER;
             raster     = image.getTile(tileSubX, tileSubY);
             destOffset = (subY * windowWidth + subX) * numBands;
             subWidth   = Math.min(windowWidth,  subEndX) - subX;
@@ -1284,15 +1421,13 @@ public class PixelIterator {
         if (image == null) {
             tileX = 0;
             tileY = 0;
-            currentUpperX = upperX;
-            currentUpperY = upperY;
         } else {
             tileX = tileLowerX - 1;     // Note: no need for decrementExact(…) because already checked by constructor.
             tileY = tileLowerY;
+            currentLowerX = lowerX;
             currentUpperX = lowerX;     // Really `lower`, so the position is the tile before the first tile.
             currentUpperY = lowerY;
         }
-        currentLowerX = lowerX;
         x = lowerX - 1;                 // Set to the position before first pixel.
         y = lowerY;
     }

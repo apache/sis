@@ -266,6 +266,13 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
     }
 
     /**
+     * The current raster destination raster, or {@code null} if none.
+     */
+    final WritableRaster destination() {
+        return destRaster;
+    }
+
+    /**
      * Invoked by {@link #fetchTile()} when iteration switch to a new tile.
      *
      * @return if the new writable tile can also be used for reading, that tile. Otherwise {@code null}.
@@ -284,7 +291,8 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
      * This method does nothing if the iterator is read-only.
      */
     @Override
-    final void releaseTile() {
+    void releaseTile() {
+        super.releaseTile();
         if (destination != null && destRaster != null) {
             destRaster = null;
             destination.releaseWritableTile(tileX, tileY);

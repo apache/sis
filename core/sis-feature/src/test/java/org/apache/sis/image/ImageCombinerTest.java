@@ -54,7 +54,8 @@ public final strictfp class ImageCombinerTest extends ImageTestCase {
                  3,  4,                         // minX, minY
                 12,  8,                         // width, height
                  4,  4,                         // tileWidth, tileHeight
-                -2,  3);                        // minTileX, minTileY
+                -2,  3,                         // minTileX, minTileY
+                false);
         /*
          * An image intersecting the destination, with a small part outside.
          * Intentionally use a different data type and different tile layout.
@@ -64,7 +65,8 @@ public final strictfp class ImageCombinerTest extends ImageTestCase {
                  5,  3,                         // minX, minY
                  9,  6,                         // width, height
                  3,  2,                         // tileWidth, tileHeight
-                 5,  9);                        // minTileX, minTileY
+                 5,  9,                         // minTileX, minTileY
+                false);
 
         source.validate();
         source.initializeAllTiles(0);

@@ -85,7 +85,7 @@ final class StatisticsCalculator extends AnnotatedImage {
     private void compute(final Statistics[] accumulator, final PixelIterator it) {
         double[] samples = null;
         while (it.next()) {
-            if (areaOfInterest == null || it.isInside(areaOfInterest)) {
+            if (areaOfInterest == null || areaOfInterest.contains(it.x, it.y)) {
                 samples = it.getPixel(samples);                 // Get values in all bands.
                 for (int i=0; i<accumulator.length; i++) {
                     accumulator[i].accept(samples[i]);

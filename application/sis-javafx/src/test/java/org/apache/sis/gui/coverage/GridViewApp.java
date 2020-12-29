@@ -84,7 +84,8 @@ public final strictfp class GridViewApp extends Application {
                 TILE_WIDTH,
                 TILE_HEIGHT,
                 3,                              // minTileX
-                -5);                            // minTileY
+                -5,                             // minTileY
+                false);
         image.validate();
         image.initializeAllTiles(0);
         image.failRandomly(new Random());

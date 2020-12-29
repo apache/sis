@@ -61,7 +61,8 @@ public final strictfp class BandedSampleConverterTest extends ImageTestCase {
                 TILE_WIDTH,
                 TILE_HEIGHT,
                 random.nextInt(20) - 10,        // minTileX
-                random.nextInt(20) - 10);       // minTileY
+                random.nextInt(20) - 10,        // minTileY
+                random.nextBoolean());          // Banded or interleaved sample model
         source.validate();
         source.initializeAllTiles(0);
         image = BandedSampleConverter.create(source, ImageLayout.DEFAULT, null,

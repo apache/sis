@@ -90,13 +90,13 @@ final class LinearIterator extends WritablePixelIterator {
      */
     @Override
     public boolean next() {
-        if (++x >= currentUpperX) {                 // Move to next column, potentially on a different tile.
+        if (++x >= currentUpperX()) {               // Move to next column, potentially on a different tile.
             if (x < upperX) {
                 releaseTile();                      // Must be invoked before `tileX` change.
                 tileX++;
             } else {
                 x = lowerX;                         // Beginning of next row.
-                if (++y >= currentUpperY) {         // Move to next line.
+                if (++y >= currentUpperY()) {       // Move to next line.
                     releaseTile();                  // Must be invoked before `tileY` change.
                     if (++tileY >= tileUpperY) {
                         endOfIteration();

@@ -24,6 +24,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
+import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.nio.FloatBuffer;
@@ -115,6 +116,11 @@ public strictfp class PixelIteratorTest extends TestCase {
     boolean isWritable;
 
     /**
+     * {@code true} for using {@link BandedSampleModel} instead of {@link PixelInterleavedSampleModel}.
+     */
+    boolean useBandedSampleModel;
+
+    /**
      * Creates a new test case for the given data type.
      *
      * @param  dataType  the raster or image data type as one of the {@link DataBuffer} constants.
@@ -157,8 +163,14 @@ public strictfp class PixelIteratorTest extends TestCase {
             subMaxY = StrictMath.min(ymax, subArea.y + subArea.height);
         }
         expected = new float[StrictMath.max(subMaxX - subMinX, 0) * StrictMath.max(subMaxY - subMinY, 0) * numBands];
-        final WritableRaster raster = Raster.createWritableRaster(new PixelInterleavedSampleModel(dataType,
-                width, height, numBands, width * numBands, ArraysExt.range(0, numBands)), new Point(xmin, ymin));
+        final SampleModel sm;
+        if (useBandedSampleModel) {
+            sm = new BandedSampleModel(dataType, width, height, numBands);
+        } else {
+            sm = new PixelInterleavedSampleModel(dataType, width, height, numBands,
+                        width * numBands, ArraysExt.range(0, numBands));
+        }
+        final WritableRaster raster = Raster.createWritableRaster(sm, new Point(xmin, ymin));
         /*
          * At this point, all data structures have been created an initialized to zero sample values.
          * Now fill the data structures with arbitrary values.
@@ -212,7 +224,8 @@ public strictfp class PixelIteratorTest extends TestCase {
             subMaxY = StrictMath.min(ymax, subArea.y + subArea.height);
         }
         expected = new float[StrictMath.max(subMaxX - subMinX, 0) * StrictMath.max(subMaxY - subMinY, 0) * numBands];
-        final TiledImageMock image = new TiledImageMock(dataType, numBands, xmin, ymin, width, height, tileWidth, tileHeight, minTileX, minTileY);
+        final TiledImageMock image = new TiledImageMock(dataType, numBands, xmin, ymin, width, height,
+                                        tileWidth, tileHeight, minTileX, minTileY, useBandedSampleModel);
         image.validate();
         /*
          * At this point, all data structures have been created an initialized to zero sample values.

@@ -56,7 +56,8 @@ public final strictfp class PlanarImageTest extends TestCase {
                 TILE_WIDTH,
                 TILE_HEIGHT,
                 random.nextInt(20) - 10,        // minTileX
-                random.nextInt(20) - 10);       // minTileY
+                random.nextInt(20) - 10,        // minTileY
+                random.nextBoolean());          // Banded or interleaved sample model
         image.validate();
         image.initializeAllTiles(0);
         return image;

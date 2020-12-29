@@ -18,6 +18,7 @@ package org.apache.sis.image;
 
 import java.awt.Point;
 import java.awt.image.ColorModel;
+import java.awt.image.BandedSampleModel;
 import java.awt.image.ImagingOpException;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
@@ -127,12 +128,14 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      * @param tileHeight   number of pixels along Y axis in a single tile of the image.
      * @param minTileX     minimum tile index in the X direction.
      * @param minTileY     minimum tile index in the Y direction.
+     * @param banded       whether to use {@link BandedSampleModel} instead of {@link PixelInterleavedSampleModel}.
      */
     public TiledImageMock(final int dataType,  final int numBands,
                           final int minX,      final int minY,
                           final int width,     final int height,
                           final int tileWidth, final int tileHeight,
-                          final int minTileX,  final int minTileY)
+                          final int minTileX,  final int minTileY,
+                          final boolean banded)
     {
         this.minX        = minX;
         this.minY        = minY;
@@ -145,8 +148,9 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
         this.numXTiles   = Numerics.ceilDiv(width,  tileWidth);
         this.numYTiles   = Numerics.ceilDiv(height, tileHeight);
         this.tiles       = new WritableRaster[numXTiles * numYTiles];
-        this.sampleModel = new PixelInterleavedSampleModel(dataType, tileWidth, tileHeight,
-                                numBands, tileWidth * numBands, ArraysExt.range(0, numBands));
+        this.sampleModel = banded ? new BandedSampleModel(dataType, tileWidth, tileHeight, numBands) :
+                          new PixelInterleavedSampleModel(dataType, tileWidth, tileHeight, numBands,
+                                 StrictMath.multiplyExact(numBands, tileWidth), ArraysExt.range(0, numBands));
     }
 
     /**

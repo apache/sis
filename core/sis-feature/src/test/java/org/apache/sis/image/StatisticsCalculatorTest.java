@@ -69,7 +69,8 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
                 TILE_WIDTH,
                 TILE_HEIGHT,
                 -3,                             // minTileX
-                +2);                            // minTileY
+                +2,                             // minTileY
+                false);
         image.initializeAllTiles(0);
         image.setRandomValues(1, new Random(), 1000);
         image.validate();
