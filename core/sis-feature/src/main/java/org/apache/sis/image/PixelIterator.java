@@ -133,7 +133,7 @@ public class PixelIterator {
      * The tile index ranges may be smaller than the ranges of valid indices in image,
      * but not greater. The lower values are inclusive and the upper values exclusive.
      */
-    final int tileLowerX, tileLowerY, tileUpperX, tileUpperY;
+    private final int tileLowerX, tileLowerY, tileUpperX, tileUpperY;
 
     /**
      * Size of the window to use in {@link #createWindow(TransferType)} method, or {@code 0} if none.
@@ -156,9 +156,6 @@ public class PixelIterator {
      * Bounds of the region traversed by the iterator in {@linkplain #currentRaster current raster}.
      * When iteration reaches the upper coordinates, the iterator needs to move to next tile.
      * This the raster bounds clipped to the area of interest.
-     *
-     * @see #currentUpperX()
-     * @see #currentUpperY()
      */
     private int currentLowerX, currentUpperX, currentUpperY;
 
@@ -176,14 +173,21 @@ public class PixelIterator {
     private int windowLimitX, windowLimitY;
 
     /**
+     * {@code true} for default iteration order, or {@code false} for {@link SequenceType#LINEAR}.
+     * Note that the order is equivalent to linear order when there is only one tile.
+     */
+    private final boolean isDefaultOrder;
+
+    /**
      * Creates an iterator for the given region in the given raster.
      *
      * @param  data     the raster which contains the sample values on which to iterate.
      * @param  subArea  the raster region where to perform the iteration, or {@code null}
      *                  for iterating over all the raster domain.
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
+     * @param  order    {@code null} or {@link SequenceType#LINEAR}. Other values may be added in future versions.
      */
-    PixelIterator(final Raster data, final Rectangle subArea, final Dimension window) {
+    PixelIterator(final Raster data, final Rectangle subArea, final Dimension window, final SequenceType order) {
         final Rectangle bounds;
         image           = null;
         currentRaster   = data;
@@ -210,6 +214,7 @@ public class PixelIterator {
         windowLimitY    = Math.addExact(tileGridYOffset, tileHeight);
         x               = Math.decrementExact(lowerX);                  // Set to the position before first pixel.
         y               = lowerY;
+        isDefaultOrder  = true;
     }
 
     /**
@@ -219,8 +224,9 @@ public class PixelIterator {
      * @param  subArea  the image region where to perform the iteration, or {@code null}
      *                  for iterating over all the image domain.
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
+     * @param  order    {@code null} or {@link SequenceType#LINEAR}. Other values may be added in future versions.
      */
-    PixelIterator(final RenderedImage data, final Rectangle subArea, final Dimension window) {
+    PixelIterator(final RenderedImage data, final Rectangle subArea, final Dimension window, final SequenceType order) {
         final Rectangle bounds;
         image           = data;
         numBands        = data.getSampleModel().getNumBands();
@@ -246,6 +252,7 @@ public class PixelIterator {
         currentUpperY   = lowerY;
         x               = Math.decrementExact(lowerX);          // Set to the position before first pixel.
         y               = lowerY;
+        isDefaultOrder  = (order == null) || (tileUpperX - tileLowerX) <= 1;
         /*
          * We need to ensure that `tileUpperY+1 > tileUpperY` will alway be true because `tileY` may be equal
          * to `tileUpperY` when the `if (++tileY >= tileUpperY)` statement is excuted in the `next()` method.
@@ -420,18 +427,11 @@ public class PixelIterator {
          */
         public PixelIterator create(final Raster data) {
             ArgumentChecks.ensureNonNull("data", data);
-            if (order != null && order != SequenceType.LINEAR) {
-                throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
-            }
-            /*
-             * No need to instantiate `LinearIterator` because the default iterator
-             * has the same iteration order when there is only one tile.
-             */
             final int scanlineStride = getScanlineStride(data.getSampleModel());
             if (scanlineStride > 0) {
-                return new BandedIterator(data, null, subArea, window, scanlineStride);
+                return new BandedIterator(data, null, subArea, window, order, scanlineStride);
             } else {
-                return new PixelIterator(data, subArea, window);
+                return new PixelIterator(data, subArea, window, order);
             }
         }
 
@@ -445,7 +445,7 @@ public class PixelIterator {
             ArgumentChecks.ensureNonNull("data", data);
             data = unwrap(data);
             /*
-             * Note: As of Java 14, `BufferedImage.getTileGridXOffset()` and `getTileGridYOffset()` have a bug.
+             * Note: Before Java 16, `BufferedImage.getTileGridXOffset()` and `getTileGridYOffset()` had a bug.
              * They should return `BufferedImage.getMinX()` (which is always 0) because the image contains only
              * one tile at index (0,0).  But they return `raster.getSampleModelTranslateX()` instead, which may
              * be non-zero if the image is a sub-region of another image.  Delegating to `create(Raster)` avoid
@@ -456,16 +456,11 @@ public class PixelIterator {
             if (data instanceof BufferedImage) {
                 return create(((BufferedImage) data).getRaster());
             }
-            if (order == SequenceType.LINEAR) {
-                return new LinearIterator(data, null, subArea, window);
-            } else if (order != null) {
-                throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
-            }
             final int scanlineStride = getScanlineStride(data.getSampleModel());
             if (scanlineStride > 0) {
-                return new BandedIterator(data, null, subArea, window, scanlineStride);
+                return new BandedIterator(data, null, subArea, window, order, scanlineStride);
             } else {
-                return new PixelIterator(data, subArea, window);
+                return new PixelIterator(data, subArea, window, order);
             }
         }
 
@@ -505,18 +500,11 @@ public class PixelIterator {
         public WritablePixelIterator createWritable(final Raster input, final WritableRaster output) {
             ArgumentChecks.ensureNonNull("input",  input);
             ArgumentChecks.ensureNonNull("output", output);
-            if (order != null && order != SequenceType.LINEAR) {
-                throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
-            }
-            /*
-             * No need to instantiate `LinearIterator` because the default iterator
-             * has the same iteration order when there is only one tile.
-             */
             final int scanlineStride = getScanlineStride(input.getSampleModel());
             if (scanlineStride > 0) {
-                return new BandedIterator(input, output, subArea, window, scanlineStride);
+                return new BandedIterator(input, output, subArea, window, order, scanlineStride);
             } else {
-                return new WritablePixelIterator(input, output, subArea, window);
+                return new WritablePixelIterator(input, output, subArea, window, order);
             }
         }
 
@@ -532,16 +520,11 @@ public class PixelIterator {
             ArgumentChecks.ensureNonNull("input",  input);
             ArgumentChecks.ensureNonNull("output", output);
             input = unwrap(input);
-            if (order == SequenceType.LINEAR) {
-                return new LinearIterator(input, output, subArea, window);
-            } else if (order != null) {
-                throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
-            }
             final int scanlineStride = getScanlineStride(input.getSampleModel());
             if (scanlineStride > 0) {
-                return new BandedIterator(input, output, subArea, window, scanlineStride);
+                return new BandedIterator(input, output, subArea, window, order, scanlineStride);
             } else {
-                return new WritablePixelIterator(input, output, subArea, window);
+                return new WritablePixelIterator(input, output, subArea, window, order);
             }
         }
     }
@@ -656,10 +639,10 @@ public class PixelIterator {
      * @return order in which pixels are traversed.
      */
     public Optional<SequenceType> getIterationOrder() {
-        if (image == null || (tileUpperX - tileLowerX) <= 1 && (tileUpperY - tileLowerY) <= 1) {
-            return Optional.of(SequenceType.LINEAR);
+        if (isDefaultOrder && (tileUpperX - tileLowerX) > 1) {
+            return Optional.empty();                                // Undefined iteration order.
         } else {
-            return Optional.empty();                // Undefined order.
+            return Optional.of(SequenceType.LINEAR);
         }
     }
 
@@ -757,44 +740,80 @@ public class PixelIterator {
      *         to {@code next()}, and {@link #rewind()} or {@link #moveTo(int,int)} have not been invoked.
      */
     public boolean next() {
+        /*
+         * Current implementation supports two iteration orders: default and SequenceType.LINEAR.
+         * They are the two most frequent orders and have in common an iteration over x values of
+         * current tile before to make any decision. It is reasonably cheap to implement them in
+         * the same method because the cost of checking for iteration order happens only once per
+         * tile row (instead than at every pixel). Providing the two implementations here makes
+         * easier for subclasses such as `BandedIterator` to support those two iteration orders.
+         *
+         * All other iteration orders (Cantor, Morton, Hilbert, etc.) should have a dedicated
+         * class overriding this method. We do not intent to support all iteration order here.
+         */
         if (++x >= currentUpperX) {
-            if (++y >= currentUpperY) {             // Strict equality (==) would work, but use >= as a safety.
-                releaseTile();                      // Release current writable raster, if any.
-                if (++tileX >= tileUpperX) {        // Strict equality (==) would work, but use >= as a safety.
-                    if (++tileY >= tileUpperY) {
-                        endOfIteration();
-                        return false;
+            if (isDefaultOrder) {
+                if (++y >= currentUpperY) {             // Strict equality (==) would work, but use >= as a safety.
+                    releaseTile();                      // Release current writable raster, if any.
+                    if (++tileX >= tileUpperX) {        // Strict equality (==) would work, but use >= as a safety.
+                        if (++tileY >= tileUpperY) {
+                            endOfIteration();
+                            return false;
+                        }
+                        tileX = tileLowerX;
+                    }
+                    y = fetchTile();
+                }
+                x = currentLowerX;
+            } else {
+                /*
+                 * SequenceType.LINEAR iteration order: before to move to next row, verify if there is
+                 * more tiles to traverse on the right side.
+                 */
+                releaseTile();                          // Must be invoked before (tileX, tileY) change.
+                if (x < upperX) {
+                    tileX++;
+                } else {
+                    if (++y >= currentUpperY) {         // Move to next line only after full image row.
+                        if (++tileY >= tileUpperY) {
+                            endOfIteration();
+                            return false;
+                        }
                     }
                     tileX = tileLowerX;
+                    x = lowerX;                         // Beginning of next row.
                 }
-                y = fetchTile();
+                /*
+                 * At this point the (x,y) pixel coordinates have been updated and are inside the domain of validity.
+                 * We need to change tile, either because we moved to the tile on the right or because we started a
+                 * new row (in which case we need to move to the leftmost tile).
+                 */
+                if (fetchTile() > y) {
+                    throw new RasterFormatException(Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY));
+                }
             }
-            x = currentLowerX;
+            changedRowOrTile();
         }
         return true;
     }
 
     /**
-     * Returns the lower limit of the region traversed by the iterator in current raster.
+     * Invoked by the default {@link #next()} implementation when the iterator moved to a new row or a new tile.
+     * Subclasses can override for updating some <var>y</var>-dependent cached values.
+     *
+     * <p>Note that this method is not invoked by {@link #moveTo(int, int)} for performance reason.
+     * Subclasses can get equivalent functionality by overriding {@code moveTo(…)} and checking
+     * {@code isSameRowAndTile(px, py)}.</p>
      */
-    final int currentLowerX() {
-        return currentLowerX;
+    void changedRowOrTile() {
     }
 
     /**
-     * Returns the upper limit of the region traversed by the iterator in current raster.
-     * When iteration reaches this limit, the iterator needs to move to next row or next tile.
+     * Returns whether given position is on the same row and same tile than current (x,y) position.
+     * This method is provided as a complement to {@link #changedRowOrTile()}.
      */
-    final int currentUpperX() {
-        return currentUpperX;
-    }
-
-    /**
-     * Returns the upper limit of the region traversed by the iterator in current raster.
-     * When iteration reaches this limit, the iterator needs to move to next tile.
-     */
-    final int currentUpperY() {
-        return currentUpperY;
+    final boolean isSameRowAndTile(final int px, final int py) {
+        return (py == y) && px >= currentLowerX && px < currentUpperX;
     }
 
     /**
@@ -810,7 +829,7 @@ public class PixelIterator {
      *
      * @return the {@link #y} value of the first row of new tile.
      */
-    final int fetchTile() {
+    private int fetchTile() {
         Raster tile = fetchWritableTile();
         if (tile == null) {
             tile = image.getTile(tileX, tileY);
@@ -870,7 +889,7 @@ public class PixelIterator {
      * <p>Note: {@link #releaseTile()} is always invoked before this method.
      * Consequently {@link #currentRaster} is already {@code null}.</p>
      */
-    final void endOfIteration() {
+    private void endOfIteration() {
         /*
          * The `tileY` value is used for checking if next() is invoked again, in order to avoid a
          * common misuse pattern. In principle `tileY` needs to be compared only to `tileUpperY`,
@@ -1430,5 +1449,6 @@ public class PixelIterator {
         }
         x = lowerX - 1;                 // Set to the position before first pixel.
         y = lowerY;
+        changedRowOrTile();
     }
 }

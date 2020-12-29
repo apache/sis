@@ -38,7 +38,7 @@ public final strictfp class BandedIteratorTest extends PixelIteratorTest {
      * Creates a new test case.
      */
     public BandedIteratorTest() {
-        super(DataBuffer.TYPE_FLOAT);
+        super(DataBuffer.TYPE_FLOAT, null);
         useBandedSampleModel = true;
     }
 
@@ -49,7 +49,7 @@ public final strictfp class BandedIteratorTest extends PixelIteratorTest {
     void createPixelIterator(final WritableRaster raster, final Rectangle subArea) {
         final int scanlineStride = PixelIterator.Builder.getScanlineStride(raster.getSampleModel());
         assertTrue(scanlineStride >= raster.getWidth());
-        iterator = new BandedIterator(raster, isWritable ? raster : null, subArea, null, scanlineStride);
+        iterator = new BandedIterator(raster, isWritable ? raster : null, subArea, null, null, scanlineStride);
         assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder().get());
         assertEquals("isWritable", isWritable, iterator.isWritable());
     }
@@ -61,7 +61,7 @@ public final strictfp class BandedIteratorTest extends PixelIteratorTest {
     void createPixelIterator(final WritableRenderedImage image, final Rectangle subArea) {
         final int scanlineStride = PixelIterator.Builder.getScanlineStride(image.getSampleModel());
         assertTrue(scanlineStride >= image.getTileWidth());
-        iterator = new BandedIterator(image, isWritable ? image : null, subArea, null, scanlineStride);
+        iterator = new BandedIterator(image, isWritable ? image : null, subArea, null, null, scanlineStride);
         assertEquals("isWritable", isWritable, iterator.isWritable());
     }
 
@@ -73,7 +73,7 @@ public final strictfp class BandedIteratorTest extends PixelIteratorTest {
     void createWindowIterator(final WritableRenderedImage image, final Dimension window) {
         final int scanlineStride = PixelIterator.Builder.getScanlineStride(image.getSampleModel());
         assertTrue(scanlineStride >= image.getTileWidth());
-        iterator = new BandedIterator(image, isWritable ? image : null, null, window, scanlineStride);
+        iterator = new BandedIterator(image, isWritable ? image : null, null, window, null, scanlineStride);
         assertEquals("isWritable", isWritable, iterator.isWritable());
     }
 }

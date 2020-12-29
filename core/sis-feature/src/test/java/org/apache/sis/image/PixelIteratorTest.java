@@ -111,6 +111,13 @@ public strictfp class PixelIteratorTest extends TestCase {
     private float[] expected;
 
     /**
+     * Iteration order to request at construction time. This is not necessarily the same
+     * than the actual iteration order chosen by the iterator because the iterator may
+     * replace default order by a more specific one.
+     */
+    private final SequenceType requestedOrder;
+
+    /**
      * {@code true} for testing write operations in addition of read operations.
      */
     boolean isWritable;
@@ -125,15 +132,17 @@ public strictfp class PixelIteratorTest extends TestCase {
      *
      * @param  dataType  the raster or image data type as one of the {@link DataBuffer} constants.
      */
-    PixelIteratorTest(final int dataType) {
+    PixelIteratorTest(final int dataType, final SequenceType requestedOrder) {
         this.dataType = dataType;
+        this.requestedOrder = requestedOrder;
     }
 
     /**
      * Creates a new test case.
      */
     public PixelIteratorTest() {
-        this(DataBuffer.TYPE_SHORT);
+        dataType = DataBuffer.TYPE_SHORT;
+        requestedOrder = null;
     }
 
     /**
@@ -341,7 +350,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * @param  subArea  the boundary of the raster sub-area where to perform iteration.
      */
     void createPixelIterator(WritableRaster raster, Rectangle subArea) {
-        iterator = new WritablePixelIterator(raster, isWritable ? raster : null, subArea, null);
+        iterator = new WritablePixelIterator(raster, isWritable ? raster : null, subArea, null, requestedOrder);
         assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder().get());
         assertEquals("isWritable", isWritable, iterator.isWritable());
     }
@@ -357,7 +366,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * @param  subArea  the boundary of the image sub-area where to perform iteration.
      */
     void createPixelIterator(WritableRenderedImage image, Rectangle subArea) {
-        iterator = new WritablePixelIterator(image, isWritable ? image : null, subArea, null);
+        iterator = new WritablePixelIterator(image, isWritable ? image : null, subArea, null, requestedOrder);
         assertEquals("isWritable", isWritable, iterator.isWritable());
     }
 
@@ -372,7 +381,7 @@ public strictfp class PixelIteratorTest extends TestCase {
      * @param  window   size of the window to use in {@link PixelIterator#createWindow(TransferType)} method.
      */
     void createWindowIterator(WritableRenderedImage image, Dimension window) {
-        iterator = new WritablePixelIterator(image, isWritable ? image : null, null, window);
+        iterator = new WritablePixelIterator(image, isWritable ? image : null, null, window, requestedOrder);
         assertEquals("isWritable", isWritable, iterator.isWritable());
     }
 

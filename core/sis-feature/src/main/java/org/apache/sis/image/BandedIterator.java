@@ -28,6 +28,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
+import org.opengis.coverage.grid.SequenceType;
 
 
 /**
@@ -80,7 +81,7 @@ final class BandedIterator extends WritablePixelIterator {
      *
      * Then {@code xToBuffer} is above value with <var>x</var> = 0. This value may be negative.
      *
-     * @see #updateForRowChange()
+     * @see #changedRowOrTile()
      */
     private int xToBuffer;
 
@@ -97,15 +98,16 @@ final class BandedIterator extends WritablePixelIterator {
      * @param  output   the raster where to write the sample values, or {@code null} for read-only iterator.
      * @param  subArea  the raster region where to perform the iteration, or {@code null} for iterating over all the raster domain.
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
+     * @param  order    {@code null} or {@link SequenceType#LINEAR}. Other values may be added in future versions.
      * @param  scanlineStride  value of {@code getScanlineStride(input.getSampleModel()}. Shall be greater than zero.
      */
     BandedIterator(final Raster input, final WritableRaster output, final Rectangle subArea,
-                   final Dimension window, final int scanlineStride)
+                   final Dimension window, final SequenceType order, final int scanlineStride)
     {
-        super(input, output, subArea, window);
+        super(input, output, subArea, window, order);
         this.scanlineStride = scanlineStride;
         acquiredTile(input);
-        updateForRowChange();
+        changedRowOrTile();
     }
 
     /**
@@ -115,32 +117,25 @@ final class BandedIterator extends WritablePixelIterator {
      * @param  output   the image where to write the sample values, or {@code null} for read-only iterator.
      * @param  subArea  the image region where to perform the iteration, or {@code null} for iterating over all the image domain.
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
+     * @param  order    {@code null} or {@link SequenceType#LINEAR}. Other values may be added in future versions.
      * @param  scanlineStride  value of {@code getScanlineStride(input.getSampleModel()}. Shall be greater than zero.
      */
     BandedIterator(final RenderedImage input, final WritableRenderedImage output, final Rectangle subArea,
-                   final Dimension window, final int scanlineStride)
+                   final Dimension window, final SequenceType order, final int scanlineStride)
     {
-        super(input, output, subArea, window);
+        super(input, output, subArea, window, order);
         this.scanlineStride = scanlineStride;
         // `acquiredTile(…)` will be invoked later by `fetchTile()`.
     }
 
     /**
      * Recomputes {@link #xToBuffer} for the new {@link #y} value. This method shall be invoked
-     * when the iterator moved to new row, or when the iterator fetched a new tile but only after
-     * the (x,y) coordinates have been updated.
-     */
-    private void updateForRowChange() {
-        xToBuffer = (y - sampleModelTranslateY) * scanlineStride - sampleModelTranslateX;
-    }
-
-    /**
-     * Restores the iterator to the start position.
+     * when the iterator moved to a new row, or when the iterator fetched a new tile but only
+     * after the (x,y) coordinates have been updated.
      */
     @Override
-    public void rewind() {
-        super.rewind();
-        updateForRowChange();
+    final void changedRowOrTile() {
+        xToBuffer = (y - sampleModelTranslateY) * scanlineStride - sampleModelTranslateX;
     }
 
     /**
@@ -150,47 +145,19 @@ final class BandedIterator extends WritablePixelIterator {
      */
     @Override
     public void moveTo(final int px, final int py) {
-        if (py == y && px >= currentLowerX() && px < currentUpperX()) {
+        if (isSameRowAndTile(px, py)) {
             x = px;
         } else {
             super.moveTo(px, py);
-            updateForRowChange();
+            changedRowOrTile();
         }
-    }
-
-    /**
-     * Moves the iterator to the next pixel. This implementation is a copy of {@link PixelIterator#next()}
-     * with only a call to {@link #updateForRowChange()} added when the {@link #y} value changed.
-     *
-     * @return {@code true} if the current pixel is valid, or {@code false} if there is no more pixels.
-     */
-    @Override
-    public boolean next() {
-        if (++x >= currentUpperX()) {
-            if (++y >= currentUpperY()) {
-                releaseTile();
-                if (++tileX >= tileUpperX) {
-                    if (++tileY >= tileUpperY) {
-                        endOfIteration();
-                        return false;
-                    }
-                    tileX = tileLowerX;
-                }
-                y = fetchTile();
-                updateForRowChange();
-            } else {
-                xToBuffer += scanlineStride;
-            }
-            x = currentLowerX();
-        }
-        return true;
     }
 
     /**
      * Invoked when the iterator fetched a new tile. This method updates {@code BandedIterator} fields
      * with raster properties, except {@link #xToBuffer} which is not updated here because {@link #y}
      * is not yet updated to its new value. {@code BandedIterator} must override all methods invoking
-     * {@link #fetchTile()} ane ensure that {@link #updateForRowChange()} is invoked after (x,y) have
+     * {@link #fetchTile()} ane ensure that {@link #changedRowOrTile()} is invoked after (x,y) have
      * been updated.
      */
     @Override
