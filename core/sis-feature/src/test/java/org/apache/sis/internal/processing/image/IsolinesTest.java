@@ -185,6 +185,14 @@ public final strictfp class IsolinesTest extends TestCase {
              0,0,0,
              0,1,0,
              0,0,0);
+        verifyIsolineFromMultiCells();
+    }
+
+    /**
+     * Verifies the result of {@link #testMultiCells()}.
+     * The shape to verify shall be stored in the {@link #isoline} field.
+     */
+    private void verifyIsolineFromMultiCells() {
         /*
          * Expected coordinates:
          *
@@ -214,6 +222,62 @@ public final strictfp class IsolinesTest extends TestCase {
 
         it.next();
         assertTrue(it.isDone());
+    }
+
+    /**
+     * Tests isolines computed in a contouring grid having more than one band.
+     * The same values than {@link #testSingleCell()} are used.
+     *
+     * @throws TransformException if a point can not be transformed to its final coordinate space.
+     */
+    @Test
+    public void testSingleCellMultiBands() throws TransformException {
+        final BufferedImage image = new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB);
+        final WritableRaster raster = image.getRaster();
+        threshold = 2;
+        /*
+         *    0╌╌╌╌5▝       1╌╌╌╌5▝      ▘11╌╌╌1
+         *    ╎    ╎        ╎    ╎        ╎    ╎
+         *   ▖10╌╌20▗       0╌╌╌╌0        1╌╌╌╌5▗
+         */
+        raster.setPixel(0, 0, new int[] { 0, 1, 11});
+        raster.setPixel(1, 0, new int[] { 5, 5,  1});
+        raster.setPixel(0, 1, new int[] {10, 0,  1});
+        raster.setPixel(1, 1, new int[] {20, 0,  5});
+        final Isolines[] isolines = Isolines.generate(image, new double[][] {{threshold}}, null);
+        assertEquals("Number of bands", 3, isolines.length);
+        for (int b=0; b<3; b++) {
+            final Map<Double, Shape> polylines = isolines[b].polylines();
+            assertEquals(1, polylines.size());
+            isoline = polylines.get(threshold);
+            switch (b) {
+                case 0: assertSegmentEquals(0,  0.2, 0.4, 0); break;
+                case 1: assertSegmentEquals(0.25, 0, 1, 0.6); break;
+                case 2: assertSegmentsEqual(0.9,  0, 1, 0.25,
+                                            0, 0.9, 0.25, 1);
+            }
+        }
+    }
+
+    /**
+     * Tests isolines computed in a contouring grid having more than one band.
+     * The same values than {@link #testMultiCells()} are used, but it tests a different
+     * code path because {@link Isolines} contains a special case for one-banded image.
+     *
+     * @throws TransformException if a point can not be transformed to its final coordinate space.
+     */
+    @Test
+    public void testMultiCellsMultiBands() throws TransformException {
+        final BufferedImage image = new BufferedImage(3, 3, BufferedImage.TYPE_INT_RGB);
+        final WritableRaster raster = image.getRaster();
+        raster.setSample(1, 1, 1, 6);
+        threshold = 3;
+        final Isolines[] isolines = Isolines.generate(image, new double[][] {{threshold}}, null);
+        assertEquals("Number of bands", 3, isolines.length);
+        assertTrue(isolines[0].polylines().isEmpty());
+        assertTrue(isolines[2].polylines().isEmpty());
+        isoline =  isolines[1].polylines().get(threshold);
+        verifyIsolineFromMultiCells();
     }
 
     /**
