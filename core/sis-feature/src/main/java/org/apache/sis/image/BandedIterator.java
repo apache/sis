@@ -338,10 +338,9 @@ final class BandedIterator extends WritablePixelIterator {
          */
         @Override
         Object getPixels(final Raster raster, int subX, int subY, final int subWidth, int subHeight, final int mode) {
-            if (mode != TRANSFER_FROM_OTHER) {
-                assert subX == x && subY == y;          // Constraint documented in parent class.
+            final float[] target = (mode == DIRECT) ? data : transfer;
+            if (mode != TRANSFER_FROM_OTHER && subY == y) {
                 final DataBuffer source = buffer;
-                final float[]    target = (mode == DIRECT) ? data : transfer;
                 final int        toNext = scanlineStride - subWidth;
                 final int        numBds = numBands;
                 int srcOff = subX + xToBuffer;
@@ -360,7 +359,7 @@ final class BandedIterator extends WritablePixelIterator {
                 return target;
             }
             // Fallback for all cases that we can not handle with above loop.
-            return raster.getPixels(subX, subY, subWidth, subHeight, transfer);
+            return raster.getPixels(subX, subY, subWidth, subHeight, target);
         }
 
         /**
@@ -408,10 +407,9 @@ final class BandedIterator extends WritablePixelIterator {
          */
         @Override
         Object getPixels(final Raster raster, int subX, int subY, final int subWidth, int subHeight, final int mode) {
-            if (mode != TRANSFER_FROM_OTHER) {
-                assert subX == x && subY == y;          // Constraint documented in parent class.
+            final double[] target = (mode == DIRECT) ? data : transfer;
+            if (mode != TRANSFER_FROM_OTHER && subY == y) {
                 final DataBuffer source = buffer;
-                final double[]   target = (mode == DIRECT) ? data : transfer;
                 final int        toNext = scanlineStride - subWidth;
                 final int        numBds = numBands;
                 int srcOff = subX + xToBuffer;
@@ -430,7 +428,7 @@ final class BandedIterator extends WritablePixelIterator {
                 return target;
             }
             // Fallback for all cases that we can not handle with above loop.
-            return raster.getPixels(subX, subY, subWidth, subHeight, transfer);
+            return raster.getPixels(subX, subY, subWidth, subHeight, target);
         }
 
         /**

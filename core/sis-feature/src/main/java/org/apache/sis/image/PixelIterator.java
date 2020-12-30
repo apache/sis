@@ -566,7 +566,14 @@ public class PixelIterator {
      * @return the most efficient data type for transferring data.
      */
     public TransferType<?> getTransferType() {
-        return TransferType.valueOf(image != null ? image.getSampleModel().getTransferType() : currentRaster.getTransferType());
+        return TransferType.valueOf(getSampleModel().getTransferType());
+    }
+
+    /**
+     * Returns the sample model of the image or raster.
+     */
+    private SampleModel getSampleModel() {
+        return (image != null) ? image.getSampleModel() : currentRaster.getSampleModel();
     }
 
     /**
@@ -587,7 +594,7 @@ public class PixelIterator {
          * stay consistent at least with the fact that all getter methods in PixelIterator return information relative
          * to current iterator position.
          */
-        final SampleModel model = (currentRaster != null) ? currentRaster.getSampleModel() : image.getSampleModel();
+        final SampleModel model = getSampleModel();
         final NumberRange<?>[] ranges = new NumberRange<?>[model.getNumBands()];
         if (ranges.length != 0) {
             final int dataType = model.getDataType();
@@ -1088,22 +1095,24 @@ public class PixelIterator {
     public <T extends Buffer> Window<T> createWindow(final TransferType<T> type) {
         ArgumentChecks.ensureNonNull("type", type);
         final int length = numBands * windowWidth * windowHeight;
+        // `transfer` array needs one row or one column less than `data`.
         final int transferLength = length - numBands * Math.min(windowWidth, windowHeight);
-        // `transfer` will always have at least one row or one column less than `data`.
+        final Window<?> window;
         switch (type.dataBufferType) {
-            case DataBuffer.TYPE_INT:    return (Window<T>) new IntWindow(new int   [length], new int   [transferLength]);
-            case DataBuffer.TYPE_FLOAT:  return (Window<T>)  createWindow(new float [length], new float [transferLength]);
-            case DataBuffer.TYPE_DOUBLE: return (Window<T>)  createWindow(new double[length], new double[transferLength]);
+            case DataBuffer.TYPE_INT:    window = new IntWindow(new int   [length], new int   [transferLength]); break;
+            case DataBuffer.TYPE_FLOAT:  window =  createWindow(new float [length], new float [transferLength]); break;
+            case DataBuffer.TYPE_DOUBLE: window =  createWindow(new double[length], new double[transferLength]); break;
             default: throw new AssertionError(type);  // Should never happen unless we updated TransferType and forgot to update this method.
         }
+        return (Window<T>) window;
     }
 
     /**
      * Creates a window for floating point values using the given arrays. This is a hook for allowing subclasses
      * to specify alternative implementations. We provide hooks only for floating point types, not for integers,
      * because the {@code int} type is already optimized by Java2D with specialized {@code Raster.getPixels(…)}
-     * method implementations. By contract the {@code float} and {@code double} types in Java2D use generic and
-     * slower code path.
+     * method implementations. By contrast the {@code float} and {@code double} types in Java2D use generic and
+     * slower code paths.
      */
     Window<FloatBuffer>  createWindow( float[] data,  float[] transfer) {return new  FloatWindow(data, transfer);}
     Window<DoubleBuffer> createWindow(double[] data, double[] transfer) {return new DoubleWindow(data, transfer);}
@@ -1189,11 +1198,7 @@ public class PixelIterator {
          * depending on the buffer data type.
          *
          * <h4>Constraints</h4>
-         * If {@code mode} == {@link #DIRECT} or {@link #TRANSFER}, then {@code subX}={@link #x} and
-         * {@code subY}={@link #y}. This constraint allows subclasses to use cached values for current position.
-         * Otherwise ({@code mode} == {@link #TRANSFER_FROM_OTHER}), {@code subX} and {@code subY} can be anything.
-         *
-         * <p>{@code subWidth} and {@code subHeight} shall always be greater than zero.</p>
+         * {@code subWidth} and {@code subHeight} shall always be greater than zero.
          *
          * @param  raster     the raster from which to get the pixel values.
          * @param  subX       the X coordinate of the upper-left pixel location.
@@ -1263,6 +1268,8 @@ public class PixelIterator {
 
     /**
      * {@link Window} implementation backed by an array of {@code float[]}.
+     * This implementation is provided for completeness but is rarely used.
+     * We do not attempt performance optimization for this case.
      */
     private final class FloatWindow extends Window<FloatBuffer> {
         /**
@@ -1309,6 +1316,16 @@ public class PixelIterator {
 
     /**
      * {@link Window} implementation backed by an array of {@code double[]}.
+     * This is the implementation used by Apache SIS for most computations.
+     *
+     * <div class="note"><b>Performance note</b>
+     * Java2D has numerous optimizations for the integer cases, with no equivalent for the floating point cases.
+     * Consequently if the data buffer is known to use some integer type, it is faster to get integer values and
+     * convert them to {@code double} values instead than to request directly floating-point values. However the
+     * improvement is not as much as using {@link BandedIterator} as least for small windows. For that reason,
+     * we do not provide the "integers converted to doubles" performance workaround for now. Even if we provided
+     * it, this {@code DoubleWindow} would still be necessary for the general case (non-integer data buffers).
+     * </div>
      */
     private final class DoubleWindow extends Window<DoubleBuffer> {
         /**
@@ -1356,6 +1373,12 @@ public class PixelIterator {
     /**
      * Updates the content of given window with the sample values in the region starting at current iterator position.
      *
+     * <div class="note"><b>Performance note</b>
+     * we could store the position of last update in the {@code Window} object and invoke {@code getPixels(…)}
+     * only for window area that changed. Sample values that are still inside the window could be moved with
+     * {@code System.arraycopy(…)}. We tried that approach, but performance at least on small windows was worst
+     * than current naive implementation.</div>
+     *
      * @param  window  the window to update.
      * @param  data    the array of primitive type where sample values are stored.
      */
@@ -1370,7 +1393,7 @@ public class PixelIterator {
             /*
              * Optimization for the case where the full window is inside current raster.
              * This is the vast majority of cases, so we perform this check soon before
-             * to compute more internal variables.
+             * to compute more local variables.
              */
             final Object transfer = window.getPixels(currentRaster, x, y, subWidth, subHeight, Window.DIRECT);
             assert transfer == data;

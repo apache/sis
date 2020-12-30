@@ -16,7 +16,11 @@
  */
 package org.apache.sis.image;
 
+import java.util.Random;
 import java.util.Optional;
+import java.nio.IntBuffer;
+import java.nio.FloatBuffer;
+import java.nio.DoubleBuffer;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -27,11 +31,11 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import java.nio.FloatBuffer;
 import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.After;
 import org.junit.Test;
@@ -1148,33 +1152,106 @@ public strictfp class PixelIteratorTest extends TestCase {
     /**
      * Verifies {@link PixelIterator#createWindow(TransferType)}.
      * This method assumes that the iterator traverses the full image (no sub-area).
+     * All 3 window types are tested, but values are not necessarily fetched at each iteration step.
+     * Fetching values or not is determined randomly for testing {@code Window} capability to reuse
+     * values from previous iteration step.
      *
      * @see #verifyIteration(boolean)
      * @see #verifyIterationAfterMove(int, int)
      */
     private void verifyWindow(final Dimension window) {
-        final PixelIterator.Window<FloatBuffer> w = iterator.createWindow(TransferType.FLOAT);
-        final FloatBuffer values = w.values;
-        final float[] windowValues = new float[window.width * window.height * numBands];
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        final WindowVerifier verifier = new WindowVerifier(window);
         while (iterator.next()) {
             final Point pos = iterator.getPosition();
             pos.translate(-xmin, -ymin);
-            w.update();
+            verifier.test(pos, random.nextBoolean(), random.nextBoolean(), random.nextBoolean());
+        }
+        /*
+         * Test again, but moving the window at random positions.
+         */
+        iterator.rewind();
+        for (int i=0; i<50; i++) {
+            final int x = random.nextInt(width  - window.width);
+            final int y = random.nextInt(height - window.height);
+            iterator.moveTo(x + xmin, y + ymin);
+            verifier.test(new Point(x,y), true, true, true);
+        }
+    }
+
+    /**
+     * Helper class for testing {@link org.apache.sis.image.PixelIterator.Window} values
+     * at current iterator position. This class tests all 3 window types.
+     */
+    private final class WindowVerifier {
+        private final Dimension window;
+        private final float[] windowValues;
+        private final PixelIterator.Window<IntBuffer> wi;
+        private final PixelIterator.Window<FloatBuffer> wf;
+        private final PixelIterator.Window<DoubleBuffer> wd;
+
+        /**
+         * Creates a new verifier for windows of the given size.
+         */
+        WindowVerifier(final Dimension window) {
+            this.window = window;
+            wi = iterator.createWindow(TransferType.INT);
+            wf = iterator.createWindow(TransferType.FLOAT);
+            wd = iterator.createWindow(TransferType.DOUBLE);
+            windowValues = new float[window.width * window.height * numBands];
+        }
+
+        /**
+         * Tests window values at current iterator position.
+         *
+         * @param  pos  (0,0)-based position of expected values.
+         * @param  ti   whether to test {@code int} values.
+         * @param  tf   whether to test {@code float} values.
+         * @param  td   whether to test {@code double} values.
+         */
+        public void test(final Point pos, final boolean ti, final boolean tf, final boolean td) {
             getExpectedWindowValues(new Rectangle(pos, window), windowValues);
+            if (ti) wi.update();
+            if (tf) wf.update();
+            if (td) wd.update();
             int indexOfExpected = 0;
             for (int y=0; y<window.height; y++) {
                 for (int x=0; x<window.width; x++) {
                     for (int b=0; b<numBands; b++) {
-                        final float a = values.get();
-                        final float e = windowValues[indexOfExpected++];
-                        if (Float.floatToRawIntBits(a) != Float.floatToRawIntBits(e)) {
-                            fail("Index (" + x + ", " + y + ") in window starting at index ("
-                                    + pos.x + ", " + pos.y + "), band " + b + ": expected " + e + " but got " + a);
+                        final float expected = windowValues[indexOfExpected++];
+                        TransferType<?> type = null;
+                        float actual = Float.NaN;
+                        boolean success = true;
+                        if (tf) {
+                            type    = TransferType.FLOAT;
+                            actual  = wf.values.get();
+                            success = Float.floatToRawIntBits(actual) == Float.floatToRawIntBits(expected);
                         }
+                        if (success) {
+                            if (td) {
+                                type    = TransferType.DOUBLE;
+                                actual  = (float) wd.values.get();
+                                success = Float.floatToRawIntBits(actual) == Float.floatToRawIntBits(expected);
+                            }
+                            if (success) {
+                                if (ti) {
+                                    type    = TransferType.INT;
+                                    actual  = wi.values.get();
+                                    success = !(StrictMath.abs(actual - expected) >= 1);  // Use `!` for accepting NaN.
+                                }
+                                if (success) {
+                                    continue;
+                                }
+                            }
+                        }
+                        fail("Type " + type + " index (" + x + ", " + y + ") in window starting at index (" +
+                             pos.x + ", " + pos.y + "), band " + b + ": expected " + expected + " but got " + actual);
                     }
                 }
             }
-            assertEquals("buffer.remaining()", 0, values.remaining());
+            if (ti) assertEquals("buffer.remaining()", 0, wi.values.remaining());
+            if (tf) assertEquals("buffer.remaining()", 0, wf.values.remaining());
+            if (td) assertEquals("buffer.remaining()", 0, wd.values.remaining());
         }
     }
 
