@@ -19,8 +19,6 @@ package org.apache.sis.internal.processing.image;
 import java.util.Arrays;
 import java.util.TreeMap;
 import java.util.NavigableMap;
-import java.nio.DoubleBuffer;
-import java.awt.Dimension;
 import java.awt.Shape;
 import java.awt.geom.Path2D;
 import java.awt.image.RenderedImage;
@@ -29,7 +27,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.image.PixelIterator;
-import org.apache.sis.image.TransferType;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 
@@ -62,7 +59,7 @@ public final class Isolines {
      * The given array should be a clone of user-provided array because
      * this constructor may modify it in-place.
      */
-    private Isolines(final IsolineTracer tracer, final double[] values, final int width) {
+    private Isolines(final IsolineTracer tracer, final int band, final double[] values, final int width) {
         Arrays.sort(values);
         int n = values.length;
         while (n > 0 && Double.isNaN(values[n-1])) n--;
@@ -74,15 +71,12 @@ public final class Isolines {
         }
         levels = new IsolineTracer.Level[n];
         for (int i=0; i<n; i++) {
-            levels[i] = tracer.new Level(values[i], width);
+            levels[i] = tracer.new Level(band, values[i], width);
         }
     }
 
     /**
-     * Sets the specified bit on {@link IsolineTracer.Level#isDataAbove} for all levels lower than buffer value.
-     * The {@code window} buffer shall be positioned on the value to read, consistently with {@code bit} value.
-     * After this method call, the buffer position will be incremented to the next band if there is more bands
-     * to read, or to the next pixel otherwise.
+     * Sets the specified bit on {@link IsolineTracer.Level#isDataAbove} for all levels lower than given value.
      *
      * <h4>How strict equalities are handled</h4>
      * Sample values exactly equal to the isoline value are handled as if they were greater. It does not matter
@@ -96,12 +90,13 @@ public final class Isolines {
      * will produce NaN values and append them to polylines like real values.  Those NaN values will be filtered
      * out in the final stage, when copying coordinates in {@link Path2D} objects.
      *
-     * @param  data  a 2×2 view on pixel values in the image.
+     * @param  value a sample values from the image.
      * @param  bit   {@value IsolineTracer#UPPER_LEFT}, {@value IsolineTracer#UPPER_RIGHT},
      *               {@value IsolineTracer#LOWER_LEFT} or {@value IsolineTracer#LOWER_RIGHT}.
+     *
+     * @see IsolineTracer.Level#nextColumn()
      */
-    private void setMaskBit(final DoubleBuffer data, final int bit) {
-        final double value = data.get();
+    private void setMaskBit(final double value, final int bit) {
         for (final IsolineTracer.Level level : levels) {
             if (level.value > value) break;                 // See above javadoc for NaN handling.
             level.isDataAbove |= bit;
@@ -134,21 +129,21 @@ public final class Isolines {
                 gridToCRS = MathTransforms.concatenate(gridToImage, gridToCRS);
             }
         }
-        final PixelIterator iterator = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR)
-                                                        .setWindowSize(new Dimension(2,2)).create(data);
+        final PixelIterator iterator = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR).create(data);
         /*
-         * A window of size 2×2 pixels over pixel values.
+         * Prepares a window of size 2×2 pixels over pixel values. Window elements are traversed
+         * by incrementing indices in following order: band, column, row. The window content will
+         * be written in this method and read by IsolineTracer.
          */
-        final PixelIterator.Window<DoubleBuffer> window = iterator.createWindow(TransferType.DOUBLE);
-        final DoubleBuffer buffer = window.values;
         final int numBands = iterator.getNumBands();
-        final IsolineTracer tracer = new IsolineTracer(buffer, numBands, gridToCRS);
+        final double[] window = new double[numBands * 4];
+        final IsolineTracer tracer = new IsolineTracer(window, numBands, gridToCRS);
         /*
          * Prepare the set of isolines for each band in the image.
          * The number of cells on the horizontal axis is one less
          * than the image width.
          */
-        final int width = data.getWidth() - 1;
+        final int width = iterator.getDomain().width - 1;
         final Isolines[] isolines = new Isolines[numBands];
         {   // For keeping variable locale.
             double[] levelValues = ArraysExt.EMPTY_DOUBLE;
@@ -158,46 +153,77 @@ public final class Isolines {
                     ArgumentChecks.ensureNonNullElement("levels", b, levelValues);
                     levelValues = levelValues.clone();
                 }
-                isolines[b] = new Isolines(tracer, levelValues, width);
+                isolines[b] = new Isolines(tracer, b, levelValues, width);
             }
+        }
+        /*
+         * Cache sample values on the top row. Those values are reused by the row just below row
+         * of cached values. This array is updated during iteration with values of current cell.
+         */
+        final double[] pixelValues = new double[numBands];
+        final double[] valuesOnPreviousRow = new double[numBands * (width+1)];
+        for (int i=0; i < valuesOnPreviousRow.length; i += numBands) {
+            if (!iterator.next()) return isolines;
+            System.arraycopy(iterator.getPixel(pixelValues), 0, valuesOnPreviousRow, i, numBands);
         }
         /*
          * Compute isolines for all bands. Iteration over bands must be the innermost loop because
          * data layout in buffer is band index varying fastest, then column index, then row index.
          */
+        final int twoPixels = numBands * 2;
         final int lastPixel = numBands * 3;
 abort:  while (iterator.next()) {
             /*
-             * First pixel of a new row.
+             * Process the first cell of a new row:
+             *
+             *  - Get values on the 4 corners.
+             *  - Save value of lower-left corner for use by next row.
+             *  - Initialize `IsolineTracer.Level.isDataAbove` bits for all levels.
+             *  - Interpolate the first cell.
              */
-            window.update();        // Also reset buffer position to zero.
-            for (int flag = UPPER_LEFT; flag <= LOWER_RIGHT; flag <<= 1) {
+            System.arraycopy(valuesOnPreviousRow, 0, window, 0, twoPixels);
+            System.arraycopy(iterator.getPixel(pixelValues), 0, window, twoPixels, numBands);
+            if (!iterator.next()) break;
+            System.arraycopy(iterator.getPixel(pixelValues), 0, window, lastPixel, numBands);
+            System.arraycopy(window, twoPixels, valuesOnPreviousRow, 0, twoPixels);
+            for (int i=0, flag = UPPER_LEFT; flag <= LOWER_RIGHT; flag <<= 1) {
                 for (int b=0; b<numBands; b++) {        // Must be the inner loop (see above comment).
-                    isolines[b].setMaskBit(buffer, flag);
+                    isolines[b].setMaskBit(window[i++], flag);
                 }
             }
-            for (int b=0; b<numBands; b++) {
-                buffer.position(b);
-                for (final IsolineTracer.Level level : isolines[b].levels) {
+            for (final Isolines iso : isolines) {
+                for (final IsolineTracer.Level level : iso.levels) {
                     level.interpolate();
                 }
             }
             /*
-             * All pixels on a row after the first column. We can reuse the bitmask of previous
-             * iteration with a simple bit shift operation.
+             * Process all pixels on a row after the first column. We can reuse the bitmask of previous
+             * iteration with a simple bit shift operation. This is done by the `nextColumn()` call.
+             * The series for `System.arraycopy(…)` calls are for moving 3 pixel values of previous
+             * iteration that we can reuse, then fetch the only new value from the iterator.
              */
             for (tracer.x = 1; tracer.x < width; tracer.x++) {
-                if (!iterator.next()) break abort;
-                window.update();
+                final int offsetOnPreviousRow = (tracer.x + 1) * numBands;
+                if (!iterator.next()) break abort;                              // Should never abort
+                if (numBands == 1) {                                            // Optimization for a common case
+                    window[2] = window[3];                                      // Lower-right → Lower-left
+                    window[0] = window[1];                                      // Upper-right → Upper-left
+                    window[1] = valuesOnPreviousRow[offsetOnPreviousRow];       // Take upper-right from previous row
+                    window[3] = valuesOnPreviousRow[offsetOnPreviousRow] = iterator.getSampleDouble(0);
+                } else {
+                    System.arraycopy(window, numBands,  window, 0,         numBands);   // Upper-right → Upper-left
+                    System.arraycopy(window, lastPixel, window, twoPixels, numBands);   // Lower-right → Lower-left
+                    System.arraycopy(valuesOnPreviousRow, offsetOnPreviousRow, window, numBands, numBands);
+                    System.arraycopy(iterator.getPixel(pixelValues), 0, window, lastPixel, numBands);
+                    System.arraycopy(window, lastPixel, valuesOnPreviousRow, offsetOnPreviousRow, numBands);
+                }
                 for (int b=0; b<numBands; b++) {
                     final Isolines iso = isolines[b];
                     for (final IsolineTracer.Level level : iso.levels) {
                         level.nextColumn();
                     }
-                    // TODO! remove cast on JDK9.
-                    iso.setMaskBit((DoubleBuffer) buffer.position(numBands  + b), UPPER_RIGHT);
-                    iso.setMaskBit((DoubleBuffer) buffer.position(lastPixel + b), LOWER_RIGHT);
-                    buffer.position(b);
+                    iso.setMaskBit(window[numBands  + b], UPPER_RIGHT);
+                    iso.setMaskBit(window[lastPixel + b], LOWER_RIGHT);
                     for (final IsolineTracer.Level level : iso.levels) {
                         level.interpolate();
                     }

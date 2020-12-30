@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.nio.DoubleBuffer;
 import java.awt.Point;
 import java.awt.Shape;
 import org.opengis.referencing.operation.MathTransform;
@@ -57,9 +56,9 @@ final class IsolineTracer {
     /**
      * The 2×2 window containing pixel values in the 4 corners of current contouring grid cell.
      * Values are always stored with band index varying fastest, then column index, then row index.
-     * Capacity and limit of data buffer is <var>(number of bands)</var> × 2 (width) × 2 (height).
+     * The length of this array is <var>(number of bands)</var> × 2 (width) × 2 (height).
      */
-    private final DoubleBuffer window;
+    private final double[] window;
 
     /**
      * Increment to the position for reading next sample value.
@@ -89,7 +88,7 @@ final class IsolineTracer {
      * @param  pixelStride  increment to the position in {@code window} for reading next sample value.
      * @param  gridToCRS    final transform to apply on coordinates.
      */
-    IsolineTracer(final DoubleBuffer window, final int pixelStride, final MathTransform gridToCRS) {
+    IsolineTracer(final double[] window, final int pixelStride, final MathTransform gridToCRS) {
         this.window      = window;
         this.pixelStride = pixelStride;
         this.gridToCRS   = gridToCRS;
@@ -102,6 +101,11 @@ final class IsolineTracer {
      * except that this implementation uses different values.
      */
     final class Level {
+        /**
+         * Band number where to read values in the {@link #window} array.
+         */
+        private final int band;
+
         /**
          * The level value.
          *
@@ -122,8 +126,8 @@ final class IsolineTracer {
          * }
          *
          * Bits are set to 1 where the data value is above the isoline {@linkplain #value}, and 0 where the data
-         * value is equal or below the isoline value. Data values exactly equal to the isoline value are handled
-         * as if they were greater. It does not matter for interpolations: we could flip this convention randomly,
+         * value is below the isoline value. Data values exactly equal to the isoline value are handled as if
+         * they were greater. It does not matter for interpolations: we could flip this convention randomly,
          * the interpolated points would still the same. It could change the way line segments are assembled in a
          * single {@link Polyline}, but the algorithm stay consistent if we always apply the same rule for all points.
          *
@@ -219,10 +223,12 @@ final class IsolineTracer {
         /**
          * Creates new isoline levels for the given value.
          *
+         * @param  band   band number where to read values in the {@link #window} array.
          * @param  value  the isoline level value.
          * @param  width  the contouring grid cell width (one cell smaller than image width).
          */
-        Level(final double value, final int width) {
+        Level(final int band, final double value, final int width) {
+            this.band      = band;
             this.value     = value;
             partialPaths   = new HashMap<>();
             polylineOnLeft = new Polyline();
@@ -235,6 +241,8 @@ final class IsolineTracer {
         /**
          * Initializes the {@link #isDataAbove} value with values for the column on the right side.
          * After this method call, the {@link #UPPER_RIGHT} and {@link #LOWER_RIGHT} bits still need to be set.
+         *
+         * @see Isolines#setMaskBit(double, int)
          */
         final void nextColumn() {
             /*
@@ -367,12 +375,11 @@ final class IsolineTracer {
                 case UPPER_LEFT | LOWER_RIGHT: {
                     double average = 0;
                     {   // Compute sum of 4 corners.
-                        final DoubleBuffer data = window;
-                        final int limit = data.limit();
-                        int p = data.position();
-                        do average += data.get(p);
-                        while ((p += pixelStride) < limit);
-                        assert (p -= data.position()) == pixelStride * 4 : p;
+                        final double[] data = window;
+                        int p = band;
+                        do average += data[p];
+                        while ((p += pixelStride) < data.length);
+                        assert (p -= band) == pixelStride * 4 : p;
                         average /= 4;
                     }
                     boolean LLtoUR = isDataAbove == (LOWER_LEFT | UPPER_RIGHT);
@@ -439,18 +446,16 @@ final class IsolineTracer {
 
         /**
          * Interpolates the position where the isoline passes between two values.
-         * The {@link #window} buffer position shall be the first sample value
-         * for the band to process.
          *
          * @param  i1  index of first value in the buffer, ignoring band offset.
          * @param  i2  index of second value in the buffer, ignoring band offset.
          * @return a value interpolated between the values at the two given indices.
          */
         private double interpolate(final int i1, final int i2) {
-            final DoubleBuffer data = window;
-            final int    p  = data.position();
-            final double v1 = data.get(p + i1);
-            final double v2 = data.get(p + i2);
+            final double[] data = window;
+            final int    p  = band;
+            final double v1 = data[p + i1];
+            final double v2 = data[p + i2];
             return (value - v1) / (v2 - v1);
         }
 
