@@ -18,6 +18,7 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Arrays;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
@@ -25,8 +26,9 @@ import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Paint;
 import javafx.scene.paint.Stop;
 import org.apache.sis.internal.gui.ColorName;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.GUIUtilities;
+import org.apache.sis.internal.gui.control.ColorCell;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -37,7 +39,7 @@ import org.apache.sis.internal.gui.GUIUtilities;
  * @since   1.1
  * @module
  */
-final class CategoryColors {
+final class CategoryColors extends ColorCell.Item {
     /**
      * Default color palette.
      */
@@ -74,6 +76,21 @@ final class CategoryColors {
     }
 
     /**
+     * Updates a control with the current color of this view.
+     *
+     * @return whether the given control has been recognized.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    protected boolean updateControl(final Node control) {
+        if (!super.updateControl(control)) {
+            // A ClassCastException here would be a bug in CategoryColorsCell editors management.
+            asSelectedItem((ComboBox<CategoryColors>) control);
+        }
+        return true;
+    }
+
+    /**
      * Declares this {@code CategoryColors} as the selected item in the given chooser.
      * If this instance is not found, then it is added to the chooser list.
      */
@@ -91,7 +108,8 @@ final class CategoryColors {
      * Returns the first color, or {@code null} if none.
      * This is used for qualitative categories, which are expected to contain only one color.
      */
-    final Color firstColor() {
+    @Override
+    protected final Color color() {
         if (colors != null && colors.length != 0) {
             return GUIUtilities.fromARGB(colors[0]);
         } else {
@@ -103,7 +121,8 @@ final class CategoryColors {
      * Gets the paint to use for filling a rectangle using this color palette.
      * Returns {@code null} if this {@code CategoryColors} contains no color.
      */
-    final Paint paint() {
+    @Override
+    protected final Paint paint() {
         if (paint == null) {
             switch (colors.length) {
                 case 0: break;

@@ -16,9 +16,7 @@
  */
 package org.apache.sis.gui.coverage;
 
-import javafx.scene.Node;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ComboBoxBase;
@@ -26,16 +24,14 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ContentDisplay;
 import javafx.geometry.Pos;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.GUIUtilities;
+import org.apache.sis.internal.gui.control.ColorCell;
 import org.apache.sis.coverage.Category;
 
 
@@ -51,17 +47,7 @@ import org.apache.sis.coverage.Category;
  * @since   1.1
  * @module
  */
-final class CategoryColorsCell extends TableCell<Category,CategoryColors> implements EventHandler<ActionEvent> {
-    /**
-     * Space (in pixels) to remove on right side of the rectangle representing colors.
-     */
-    private static final double WIDTH_ADJUST = -9;
-
-    /**
-     * Height (in pixels) of the rectangle representing colors.
-     */
-    private static final double HEIGHT = 16;
-
+final class CategoryColorsCell extends ColorCell<Category,CategoryColors> {
     /**
      * The function that determines which colors to apply on a given category.
      * This same instance is shared by all cells of the same category table.
@@ -69,28 +55,13 @@ final class CategoryColorsCell extends TableCell<Category,CategoryColors> implem
     private final CoverageStyling styling;
 
     /**
-     * The control for selecting a single color, or {@code null} if not yet created.
-     * This applies to qualitative categories.
-     */
-    private ColorPicker colorPicker;
-
-    /**
      * The control for selecting a color ramp, or {@code null} if not yet created.
-     * This applies to quantitative categories.
+     * This applies to quantitative categories. By contrast, {@link #colorPicker}
+     * applies to qualitative categories.
      *
      * @see Category#isQuantitative()
      */
     private ComboBox<CategoryColors> colorRampChooser;
-
-    /**
-     * The single color shown in the table. Created when first needed.
-     */
-    private Rectangle singleColor;
-
-    /**
-     * Colors to restore if user cancels an edit action.
-     */
-    private CategoryColors restoreOnCancel;
 
     /**
      * Creates a cell for the colors column.
@@ -98,38 +69,59 @@ final class CategoryColorsCell extends TableCell<Category,CategoryColors> implem
      */
     private CategoryColorsCell(final CoverageStyling styling) {
         this.styling = styling;
-        setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
     }
 
     /**
-     * Invoked when the color in this cell changed. It may be because of user selection in the combo box,
-     * or because this cell is now used for a new {@link Category} instance.
-     *
-     * <div class="note"><b>Implementation note:</b>
-     * this method should not invoke {@link #setGraphic(Node)} if the current graphic is a {@link ComboBoxBase}
-     * because this method may be invoked at any time, including during execution of {@link #startEdit()} or
-     * {@link #commitEdit(Object)}. Adding or removing {@link ColorPicker} or {@link ComboBox} in this method
-     * cause problems with focus system. In particular we must be sure to remove {@link ColorPicker} only after
-     * it has lost focus.</div>
+     * Returns the initial item for a new cell.
      */
     @Override
-    @SuppressWarnings("unchecked")
-    protected void updateItem(final CategoryColors colors, final boolean empty) {
-        super.updateItem(colors, empty);
-        final Node control = getGraphic();
-        if (colors != null) {
-            if (control == null) {
-                setColorView(colors);
-            } else if (control instanceof Rectangle) {
-                ((Rectangle) control).setFill(colors.paint());
-            } else if (control instanceof ColorPicker) {
-                ((ColorPicker) control).setValue(colors.firstColor());
-            } else {
-                // A ClassCastException here would be a bug in CategoryColorsCell editors management.
-                colors.asSelectedItem(((ComboBox<CategoryColors>) control));
+    protected CategoryColors getDefaultItem() {
+        return CategoryColors.GRAYSCALE;
+    }
+
+    /**
+     * Creates an item for a new color selected by user.
+     * The given object may be an instance of one of the following classes:
+     *
+     * <ul>
+     *   <li>{@link Color} if the chooser was {@link javafx.scene.control.ColorPicker}.</li>
+     *   <li>{@link CategoryColors} if the chooser was {@code ComboBox<CategoryColors>}.</li>
+     * </ul>
+     *
+     * @param  value  the color or gradient paint selected by the user.
+     * @return the item to store in this cell for the given color or gradient.
+     */
+    @Override
+    protected CategoryColors createItemForSelection(final Object value) {
+        if (value instanceof Color) {
+            return new CategoryColors(GUIUtilities.toARGB((Color) value));
+        } else {
+            // A ClassCastException here would be a bug in ColorsCell editors management.
+            return (CategoryColors) value;
+        }
+    }
+
+    /**
+     * Returns a color or gradient chooser initialized to the given item.
+     * This is invoked when the user clicks on a cell for modifying the color value.
+     *
+     * @param  colors  the initial color or gradient to show.
+     * @return the control to show to user.
+     */
+    @Override
+    protected ComboBoxBase<?> getControlForEdit(final CategoryColors colors) {
+        if (getTableRow().getItem().isQuantitative()) {
+            if (colorRampChooser == null) {
+                colorRampChooser = new ComboBox<>();
+                colorRampChooser.setEditable(false);
+                colorRampChooser.setCellFactory((column) -> new Ramp());
+                colorRampChooser.getItems().setAll(CategoryColors.GRAYSCALE, CategoryColors.BELL);
+                addListeners(colorRampChooser);
             }
-        } else if (control instanceof Rectangle) {
-            setGraphic(null);
+            colors.asSelectedItem(colorRampChooser);
+            return colorRampChooser;
+        } else {
+            return super.getControlForEdit(colors);
         }
     }
 
@@ -137,43 +129,9 @@ final class CategoryColorsCell extends TableCell<Category,CategoryColors> implem
      * Returns {@code true} if neither {@link #colorPicker} or {@link #colorRampChooser} has the focus.
      * This is used for assertions.
      */
-    private boolean controlNotFocused() {
-        return (colorPicker == null || !colorPicker.isFocused()) &&
-                (colorRampChooser == null || !colorRampChooser.isFocused());
-    }
-
-    /**
-     * Sets the color representation when no editing is under way. It is caller responsibility to ensure
-     * that the current graphic is not a combo box, or that it is safe to remove that combo box from the
-     * scene (i.e. that combo box does not have focus anymore).
-     */
-    private void setColorView(final CategoryColors colors) {
-        assert controlNotFocused();
-        Rectangle view = null;
-        if (colors != null) {
-            final Paint paint = colors.paint();
-            if (paint != null) {
-                if (singleColor == null) {
-                    singleColor = createRectangle(WIDTH_ADJUST);
-                }
-                view = singleColor;
-                view.setFill(paint);
-            }
-        }
-        setGraphic(view);
-    }
-
-    /**
-     * Creates the graphic to draw in a table cell or combo box cell for representing a color or color ramp.
-     *
-     * @param  adjust  amount of space (in pixels) to add or remove on the right size.
-     *                 Should be a negative number for removing space.
-     */
-    private Rectangle createRectangle(final double adjust) {
-        final Rectangle gr = new Rectangle();
-        gr.setHeight(HEIGHT);
-        gr.widthProperty().bind(widthProperty().add(adjust));
-        return gr;
+    @Override
+    protected boolean controlNotFocused() {
+        return super.controlNotFocused() && (colorRampChooser == null || !colorRampChooser.isFocused());
     }
 
     /**
@@ -204,89 +162,6 @@ final class CategoryColorsCell extends TableCell<Category,CategoryColors> implem
     }
 
     /**
-     * Transitions from non-editing state to editing state. This method is automatically invoked when a
-     * row is selected and the user clicks on the color cell in that row. This method sets the combo box
-     * as the graphic element in that cell and shows it immediately. The immediate {@code control.show()}
-     * is for avoiding to force users to perform a third mouse click.
-     */
-    @Override
-    public void startEdit() {
-        restoreOnCancel = getItem();
-        final CategoryColors colors = (restoreOnCancel != null) ? restoreOnCancel : CategoryColors.GRAYSCALE;
-        final ComboBoxBase<?> control;
-        if (getTableRow().getItem().isQuantitative()) {
-            if (colorRampChooser == null) {
-                colorRampChooser = new ComboBox<>();
-                colorRampChooser.setEditable(false);
-                colorRampChooser.setCellFactory((column) -> new Ramp());
-                colorRampChooser.getItems().setAll(CategoryColors.GRAYSCALE, CategoryColors.BELL);
-                addListeners(colorRampChooser);
-            }
-            colors.asSelectedItem(colorRampChooser);
-            control = colorRampChooser;
-        } else {
-            if (colorPicker == null) {
-                colorPicker = new ColorPicker();
-                addListeners(colorPicker);
-            }
-            colorPicker.setValue(colors.firstColor());
-            control = colorPicker;
-        }
-        /*
-         * Call `startEdit()` only after above call to `setValue(…)` because we want `isEditing()`
-         * to return false during above value change. This is for preventing change listeners to
-         * misinterpret the value change as a user selection.
-         */
-        super.startEdit();
-        setGraphic(control);            // Must be before `requestFocus()`, otherwise focus request is ignored.
-        control.requestFocus();         // Must be before `show()`, otherwise there is apparent focus confusion.
-        control.show();
-    }
-
-    /**
-     * Finishes configuration of a newly created combo box.
-     */
-    private void addListeners(final ComboBoxBase<?> control) {
-        control.setOnAction(this);
-        control.setOnHidden((e) -> hidden());
-    }
-
-    /**
-     * Invoked when a combo box has been hidden. This method sets the focus to the table before to remove
-     * the combo box. This is necessary for causing the combo box to lost focus, otherwise focus problems
-     * appear next time that the combo box is shown.
-     *
-     * <p>IF the cell was in editing mode when this method is invoked, it means that the user clicked outside
-     * the combo box area without validating his/her choice. In this case {@link #commitEdit(Object)} has not
-     * been invoked and we need to either commit now or cancel. Current implementation cancels.</p>
-     */
-    private void hidden() {
-        if (isEditing()) {
-            if (isHover()) {
-                return;                 // Keep editing state.
-            }
-            setItem(restoreOnCancel);
-            super.cancelEdit();
-        }
-        restoreOnCancel = null;
-        getTableView().requestFocus();  // Must be before `setGraphic(…)` for causing ColorPicker to lost focus.
-        setColorView(getItem());
-    }
-
-    /**
-     * Transitions from an editing state into a non-editing state without saving any user input.
-     * This method is automatically invoked when the user click on another table row.
-     */
-    @Override
-    public void cancelEdit() {
-        setItem(restoreOnCancel);
-        restoreOnCancel = null;
-        super.cancelEdit();
-        assert controlNotFocused();
-        setColorView(getItem());
-    }
-
-    /**
      * Invoked when users confirmed that (s)he wants to use the selected colors.
      *
      * @param  colors  the colors to use.
@@ -295,26 +170,6 @@ final class CategoryColorsCell extends TableCell<Category,CategoryColors> implem
     public void commitEdit(final CategoryColors colors) {
         super.commitEdit(colors);
         styling.setARGB(getTableRow().getItem(), colors.colors);
-    }
-
-    /**
-     * Invoked when the user selected a new value in the color picker or color ramp chooser.
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public void handle(final ActionEvent event) {
-        if (isEditing()) {
-            final Object source = event.getSource();
-            final CategoryColors value;
-            if (source instanceof ColorPicker) {
-                final Color color = ((ColorPicker) source).getValue();
-                value = (color != null) ? new CategoryColors(GUIUtilities.toARGB(color)) : null;
-            } else {
-                // A ClassCastException here would be a bug in CategoryColorsCell editors management.
-                value = ((ComboBox<CategoryColors>) source).getValue();
-            }
-            commitEdit(value);
-        }
     }
 
     /**
