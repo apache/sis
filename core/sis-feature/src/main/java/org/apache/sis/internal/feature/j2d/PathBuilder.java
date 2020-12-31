@@ -211,8 +211,7 @@ public class PathBuilder {
                 if (y > ymax) ymax = y;
             }
             final IntervalRectangle bounds = new IntervalRectangle(xmin, ymin, xmax, ymax);
-            final double[] points = Arrays.copyOf(coordinates, size);
-            polylines.add(close ? new Polygon(bounds, points) : new Polyline(bounds, points));
+            polylines.add(close ? new Polygon(bounds, coordinates, size) : new Polyline(bounds, coordinates, size));
         }
         size = 0;
     }

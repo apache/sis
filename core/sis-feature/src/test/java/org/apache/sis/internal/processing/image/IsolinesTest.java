@@ -41,10 +41,11 @@ import static org.junit.Assert.*;
  */
 public final strictfp class IsolinesTest extends TestCase {
     /**
-     * Tolerance threshold for rounding errors.
-     * Could be zero, but we nevertheless keep a margin for safety.
+     * Tolerance threshold for rounding errors. Needs to take in account that
+     * {@link org.apache.sis.internal.feature.j2d.Polyline} stores coordinate
+     * values a single-precision {@code float} numbers.
      */
-    private static final double TOLERANCE = 1E-14;
+    private static final double TOLERANCE = 1E-8;
 
     /**
      * The threshold value. This is used by {@code generateFromXXX(…)} methods.

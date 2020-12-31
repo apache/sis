@@ -34,9 +34,29 @@ import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
  *   <li>Line segments only (no Bézier curves).</li>
  *   <li>No multi-polylines (e.g. no "move to" operation in the middle).</li>
  *   <li>Naive {@code intersect(…)} and {@code contains(…)} methods.</li>
+ *   <li>Coordinates "compressed" (with a simple translation) as {@code float}.</li>
  * </ul>
  *
  * The {@code intersect(…)} and {@code contains(…)} methods may be improved in a future version.
+ *
+ * <h2>Precision and pseudo-compression</h2>
+ * Coordinates are stored with {@code float} precision for reducing memory usage with large polylines.
+ * This is okay if coordinates are approximate anyway, for example if they are values interpolated by
+ * the {@code Isolines} class. For attenuating the precision lost, coordinate values are converted by
+ * applications of the two following steps:
+ *
+ * <ol class="verbose">
+ *   <li>First, translate coordinates toward zero. For example latitude or longitude values in the
+ *       [50 … 60]° range have a precision of about 4E-6° (about 0.4 meter). But translating those
+ *       coordinates to the [-5 … 5]° range increases their precision to 0.05 meter. The precision
+ *       gain is more important when the original coordinates are projected coordinates with high
+ *       "false easting" / "false northing" parameters.</li>
+ *   <li>Next, if minimum or maximum coordinate values are outside the range allowed by {@code float}
+ *       exponent values, multiply coordinates by a power of 2 (<strong>Not yet implemented)</strong>.
+ *       Note that precision gain happens only when values are made closer to zero by a translation.
+ *       Making coordinates closer to zero by a multiplication has no effect on the precision.
+ *       This step is required only for avoiding overflow or underflow.</li>
+ * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -45,22 +65,42 @@ import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
  */
 class Polyline extends FlatShape {
     /**
-     * The coordinate values as (x,y) tuples.
+     * The "compressed" coordinate values as (x,y) tuples. To get the desired coordinates,
+     * those values must be converted by the {@link #inflate} transform.
      */
-    private final double[] coordinates;
+    private final float[] coordinates;
+
+    /**
+     * The transform from {@link #coordinates} values to the values given by {@link Iter}.
+     * This transform is usually only a translation.
+     */
+    private final AffineTransform inflate;
 
     /**
      * Creates a new polylines with the given coordinates.
-     * The given arguments are stored by reference; they are not cloned.
-     * The array shall not be empty.
+     * The {@code coordinates} array shall not be empty.
      *
      * @param  bounds       the polyline bounds (not cloned).
-     * @param  coordinates  the coordinate values as (x,y) tuples (not cloned).
+     * @param  coordinates  the coordinate values as (x,y) tuples.
+     * @param  size         number of valid value in {@code coordinates} array.
      */
-    Polyline(final IntervalRectangle bounds, final double[] coordinates) {
+    Polyline(final IntervalRectangle bounds, final double[] coordinates, final int size) {
         super(bounds);
-        assert coordinates.length != 0;         // Required by our PathIterator.
-        this.coordinates = coordinates;
+        assert size >= 2 : size;                // Required by our PathIterator.
+        this.coordinates = new float[size];
+        final double tx = round(bounds.getCenterX(), bounds.xmin, bounds.xmax);
+        final double ty = round(bounds.getCenterY(), bounds.ymin, bounds.ymax);
+        inflate = AffineTransform.getTranslateInstance(tx, ty);
+        AffineTransform.getTranslateInstance(-tx, -ty).transform(coordinates, 0, this.coordinates, 0, size / 2);
+    }
+
+    /**
+     * Rounds the translation to an arbitrary number of bits (currently 8).
+     * The intent is to avoid that zero values become something like 1E-9.
+     */
+    private static double round(final double center, final double min, final double max) {
+        final int e = Math.getExponent(Math.max(Math.abs(min), Math.abs(max))) - 8;
+        return Math.scalb(Math.round(Math.scalb(center, -e)), e);
     }
 
     /**
@@ -87,9 +127,15 @@ class Polyline extends FlatShape {
      */
     static final class Iter implements PathIterator {
         /**
-         * The transform to apply on each coordinate tuple.
+         * The user-specified transform, or {@code null} if none.
          */
-        private final AffineTransform at;
+        private final AffineTransform toUserSpace;
+
+        /**
+         * The transform to apply on each coordinate tuple. This is the concatenation of user-specified
+         * transform with {@link Polyline#inflate}. Shall not be null, unless the iterator is empty.
+         */
+        private AffineTransform inflate;
 
         /**
          * Next polylines on which to iterate, or an empty iterator if none.
@@ -97,9 +143,9 @@ class Polyline extends FlatShape {
         private final Iterator<Polyline> polylines;
 
         /**
-         * Coordinates to return in calls to {@link #currentSegment(double[])}.
+         * Coordinates to return (after conversion by {@link #inflate}) in calls to {@link #currentSegment(double[])}.
          */
-        private double[] coordinates;
+        private float[] coordinates;
 
         /**
          * Current position in {@link #coordinates} array.
@@ -126,9 +172,9 @@ class Polyline extends FlatShape {
          * Creates an empty iterator.
          */
         Iter() {
-            at        = null;
-            polylines = null;
-            isDone    = true;
+            toUserSpace = null;
+            polylines   = null;
+            isDone      = true;
         }
 
         /**
@@ -139,10 +185,27 @@ class Polyline extends FlatShape {
          * @param  next   all other polylines or polygons.
          */
         Iter(final AffineTransform at, final Polyline first, final Iterator<Polyline> next) {
-            this.at     = (at != null) ? at : new AffineTransform();
-            polylines   = next;
-            coordinates = first.coordinates;
-            isPolygon   = (first instanceof Polygon);
+            if (at != null) {
+                inflate = new AffineTransform();
+            }
+            toUserSpace = at;
+            polylines = next;
+            setSource(first);
+        }
+
+        /**
+         * Initializes the {@link #coordinates}, {@link #isPolygon} and {@link #inflate} fields
+         * for iteration over coordinate values given by the specified polyline.
+         */
+        private void setSource(final Polyline polyline) {
+            isPolygon = (polyline instanceof Polygon);
+            coordinates = polyline.coordinates;
+            if (toUserSpace != null) {
+                inflate.setTransform(toUserSpace);
+                inflate.concatenate(polyline.inflate);
+            } else {
+                inflate = polyline.inflate;
+            }
         }
 
         /**
@@ -172,10 +235,8 @@ class Polyline extends FlatShape {
                     if (closing) return;
                 }
                 if (polylines.hasNext()) {
-                    final Polyline next = polylines.next();
-                    isPolygon   = (next instanceof Polygon);
-                    coordinates = next.coordinates;
-                    position    = 0;
+                    setSource(polylines.next());
+                    position = 0;
                 } else {
                     isDone = true;
                 }
@@ -188,7 +249,7 @@ class Polyline extends FlatShape {
         @Override
         public int currentSegment(final float[] coords) {
             if (closing) return SEG_CLOSE;
-            at.transform(coordinates, position, coords, 0, 1);
+            inflate.transform(coordinates, position, coords, 0, 1);
             return (position == 0) ? SEG_MOVETO : SEG_LINETO;
         }
 
@@ -198,7 +259,7 @@ class Polyline extends FlatShape {
         @Override
         public int currentSegment(final double[] coords) {
             if (closing) return SEG_CLOSE;
-            at.transform(coordinates, position, coords, 0, 1);
+            inflate.transform(coordinates, position, coords, 0, 1);
             return (position == 0) ? SEG_MOVETO : SEG_LINETO;
         }
     }

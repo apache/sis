@@ -30,12 +30,13 @@ import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 final class Polygon extends Polyline {
     /**
      * Creates a new polygon with the given coordinates.
-     * The given arguments are stored by reference; they are not cloned.
+     * The {@code coordinates} array shall not be empty.
      *
      * @param  bounds       the polygon bounds (not cloned).
-     * @param  coordinates  the coordinate values as (x,y) tuples (not cloned).
+     * @param  coordinates  the coordinate values as (x,y) tuples.
+     * @param  size         number of valid value in {@code coordinates} array.
      */
-    Polygon(final IntervalRectangle bounds, final double[] coordinates) {
-        super(bounds, coordinates);
+    Polygon(final IntervalRectangle bounds, final double[] coordinates, final int size) {
+        super(bounds, coordinates, size);
     }
 }

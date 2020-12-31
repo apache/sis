@@ -58,8 +58,8 @@ public final strictfp class FlatShapeTest extends TestCase {
             4,5, 6,3, 8,5, -2,5, 10,4
         };
         final IntervalRectangle bounds = new IntervalRectangle(-2,3, 19,5);
-        final Polyline p = closed ? new Polygon (bounds, coordinates)
-                                  : new Polyline(bounds, coordinates);
+        final Polyline p = closed ? new Polygon (bounds, coordinates, coordinates.length)
+                                  : new Polyline(bounds, coordinates, coordinates.length);
 
         final Path2D.Double r = new Path2D.Double(Path2D.WIND_NON_ZERO);
         createReferenceShape(r, coordinates, closed);
@@ -100,7 +100,7 @@ public final strictfp class FlatShapeTest extends TestCase {
         final Polyline[] polylines = new Polyline[coordinates.length];
         final Path2D.Double r = new Path2D.Double(Path2D.WIND_NON_ZERO);
         for (int i=0; i < polylines.length; i++) {
-            polylines[i] = new Polyline(bounds, coordinates[i]);
+            polylines[i] = new Polyline(bounds, coordinates[i], coordinates[i].length);
             createReferenceShape(r, coordinates[i], false);
         }
         final MultiPolylines p = new MultiPolylines(polylines);
