@@ -267,6 +267,27 @@ final class IsolineTracer {
          */
         @SuppressWarnings("AssertWithSideEffects")
         final void interpolate() throws TransformException {
+            /*
+             * Note: `interpolateMissingLeftSide()` and `interpolateMissingTopSide(…)` should do interpolations
+             * only for cells in the first column and first row respectively. We could avoid those method calls
+             * for all other cells if we add two flags in the `isDataAbove` bitmask: FIRST_ROW and FIRST_COLUMN.
+             * The switch cases then become something like below:
+             *
+             *     case <bitmask> | FIRST_COLUMN | FIRST_ROW:
+             *     case <bitmask> | FIRST_COLUMN: {
+             *         interpolateMissingLeftSide();
+             *         // Fall through
+             *     }
+             *     case <bitmask> | FIRST_ROW:
+             *     case <bitmask>: {
+             *         // Interpolations on other borders.
+             *         break;
+             *     }
+             *
+             * We tried that approach, but benchmarking on Java 15 suggested a small performance decrease
+             * instead than an improvement. It may be worth to try again in the future, after advancement
+             * in compiler technology.
+             */
             switch (isDataAbove) {
                 default: {
                     throw new AssertionError(isDataAbove);      // Should never happen.
