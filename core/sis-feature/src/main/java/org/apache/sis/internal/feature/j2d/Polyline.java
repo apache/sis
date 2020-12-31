@@ -19,6 +19,7 @@ package org.apache.sis.internal.feature.j2d;
 import java.util.Iterator;
 import java.util.Collections;
 import java.awt.Shape;
+import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
@@ -33,11 +34,8 @@ import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
  *   <li>No synchronization.</li>
  *   <li>Line segments only (no Bézier curves).</li>
  *   <li>No multi-polylines (e.g. no "move to" operation in the middle).</li>
- *   <li>Naive {@code intersect(…)} and {@code contains(…)} methods.</li>
  *   <li>Coordinates "compressed" (with a simple translation) as {@code float}.</li>
  * </ul>
- *
- * The {@code intersect(…)} and {@code contains(…)} methods may be improved in a future version.
  *
  * <h2>Precision and pseudo-compression</h2>
  * Coordinates are stored with {@code float} precision for reducing memory usage with large polylines.
@@ -104,14 +102,57 @@ class Polyline extends FlatShape {
     }
 
     /**
-     * Delegates operations to {@link Rectangle2D} bounds. This naive implementation
-     * is not compliant with Java2D contract. We may need to revisit in a future version.
+     * Tests if the given coordinates are inside the boundary of this shape.
      */
-    @Override public final boolean contains  (Rectangle2D r)                          {return bounds.contains  (r);}
-    @Override public final boolean intersects(Rectangle2D r)                          {return bounds.intersects(r);}
-    @Override public final boolean contains  (double x, double y)                     {return bounds.contains  (x,y);}
-    @Override public final boolean contains  (double x, double y, double w, double h) {return bounds.contains  (x,y,w,h);}
-    @Override public final boolean intersects(double x, double y, double w, double h) {return bounds.intersects(x,y,w,h);}
+    @Override
+    public boolean contains(final double x, final double y) {
+        return bounds.contains(x, y) && Path2D.contains(iterator(), x, y);
+    }
+
+    /**
+     * Tests if the interior of this shape intersects the interior of the given rectangle.
+     * May conservatively return {@code true} if an intersection is probable but accurate
+     * answer would be too costly to compute.
+     */
+    @Override
+    public boolean intersects(final double x, final double y, final double w, final double h) {
+        return bounds.intersects(x, y, w, h) && Path2D.intersects(iterator(), x, y, w, h);
+    }
+
+    /**
+     * Tests if the interior of this shape intersects the interior of the given rectangle.
+     * May conservatively return {@code true} if an intersection is probable but accurate
+     * answer would be too costly to compute.
+     */
+    @Override
+    public boolean intersects(final Rectangle2D r) {
+        return bounds.intersects(r) && Path2D.intersects(iterator(), r);
+    }
+
+    /**
+     * Tests if the interior of this shape entirely contains the interior of the given rectangle.
+     * May conservatively return {@code false} if an accurate answer would be too costly to compute.
+     */
+    @Override
+    public boolean contains(final double x, final double y, final double w, final double h) {
+        return bounds.contains(x, y, w, h) && Path2D.contains(iterator(), x, y, w, h);
+    }
+
+    /**
+     * Tests if the interior of this shape entirely contains the interior of the given rectangle.
+     * May conservatively return {@code false} if an accurate answer would be too costly to compute.
+     */
+    @Override
+    public boolean contains(final Rectangle2D r) {
+        return bounds.contains(r) && Path2D.contains(iterator(), r);
+    }
+
+    /**
+     * Returns an iterator over coordinates without user transform.
+     */
+    private PathIterator iterator() {
+        return getPathIterator(null);
+    }
 
     /**
      * Returns an iterator over coordinates in this polyline.
