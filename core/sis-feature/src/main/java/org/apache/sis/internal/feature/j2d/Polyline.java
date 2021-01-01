@@ -23,7 +23,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
-import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -78,13 +78,11 @@ class Polyline extends FlatShape {
      * Creates a new polylines with the given coordinates.
      * The {@code coordinates} array shall not be empty.
      *
-     * @param  bounds       the polyline bounds (not cloned).
      * @param  coordinates  the coordinate values as (x,y) tuples.
      * @param  size         number of valid value in {@code coordinates} array.
      */
-    Polyline(final IntervalRectangle bounds, final double[] coordinates, final int size) {
-        super(bounds);
-        assert size >= 2 : size;                // Required by our PathIterator.
+    Polyline(final double[] coordinates, final int size) {
+        super(coordinates, size);
         this.coordinates = new float[size];
         final double tx = round(bounds.getCenterX(), bounds.xmin, bounds.xmax);
         final double ty = round(bounds.getCenterY(), bounds.ymin, bounds.ymax);
@@ -93,11 +91,13 @@ class Polyline extends FlatShape {
     }
 
     /**
-     * Rounds the translation to an arbitrary number of bits (currently 8).
+     * Rounds the translation to an arbitrary number of bits (currently 20).
      * The intent is to avoid that zero values become something like 1E-9.
+     * The number of bits that we kept should be less that the number of bits
+     * in the significand (mantissa) of {@code float} type.
      */
     private static double round(final double center, final double min, final double max) {
-        final int e = Math.getExponent(Math.max(Math.abs(min), Math.abs(max))) - 8;
+        final int e = Math.getExponent(Math.max(Math.abs(min), Math.abs(max))) - (Numerics.SIGNIFICAND_SIZE_OF_FLOAT - 3);
         return Math.scalb(Math.round(Math.scalb(center, -e)), e);
     }
 

@@ -16,8 +16,6 @@
  */
 package org.apache.sis.internal.feature.j2d;
 
-import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
-
 
 /**
  * A polygons as a Java2D {@link java.awt.Shape}.
@@ -32,11 +30,10 @@ final class Polygon extends Polyline {
      * Creates a new polygon with the given coordinates.
      * The {@code coordinates} array shall not be empty.
      *
-     * @param  bounds       the polygon bounds (not cloned).
      * @param  coordinates  the coordinate values as (x,y) tuples.
      * @param  size         number of valid value in {@code coordinates} array.
      */
-    Polygon(final IntervalRectangle bounds, final double[] coordinates, final int size) {
-        super(bounds, coordinates, size);
+    Polygon(final double[] coordinates, final int size) {
+        super(coordinates, size);
     }
 }

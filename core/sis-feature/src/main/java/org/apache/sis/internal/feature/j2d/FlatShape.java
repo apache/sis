@@ -54,6 +54,28 @@ abstract class FlatShape extends AbstractGeometry implements Shape {
     }
 
     /**
+     * Creates a shape with bounds initialized to minimum and maximum coordinates of given array.
+     * The {@code coordinates} array shall not be empty.
+     *
+     * @param  coordinates  the coordinate values as (x,y) tuples.
+     * @param  size         number of valid value in {@code coordinates} array.
+     */
+    FlatShape(final double[] coordinates, final int size) {
+        double xmax, ymax;
+        double xmin = xmax = coordinates[0];
+        double ymin = ymax = coordinates[1];
+        for (int i=2; i<size;) {
+            final double x = coordinates[i++];
+            final double y = coordinates[i++];
+            if (x < xmin) xmin = x;
+            if (x > xmax) xmax = x;
+            if (y < ymin) ymin = y;
+            if (y > ymax) ymax = y;
+        }
+        bounds = new IntervalRectangle(xmin, ymin, xmax, ymax);
+    }
+
+    /**
      * Returns an integer rectangle that completely encloses the shape.
      * There is no guarantee that the rectangle is the smallest bounding box that encloses the shape.
      */

@@ -18,7 +18,6 @@ package org.apache.sis.internal.feature.j2d;
 
 import java.awt.geom.Path2D;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -57,9 +56,8 @@ public final strictfp class FlatShapeTest extends TestCase {
         final double[] coordinates = {
             4,5, 6,3, 8,5, -2,5, 10,4
         };
-        final IntervalRectangle bounds = new IntervalRectangle(-2,3, 19,5);
-        final Polyline p = closed ? new Polygon (bounds, coordinates, coordinates.length)
-                                  : new Polyline(bounds, coordinates, coordinates.length);
+        final Polyline p = closed ? new Polygon (coordinates, coordinates.length)
+                                  : new Polyline(coordinates, coordinates.length);
 
         final Path2D.Double r = new Path2D.Double(Path2D.WIND_NON_ZERO);
         createReferenceShape(r, coordinates, closed);
@@ -96,11 +94,10 @@ public final strictfp class FlatShapeTest extends TestCase {
             {9,3, 7,5, -4,3},
             {3,5, 6,1, -2,7, 3,8}
         };
-        final IntervalRectangle bounds = new IntervalRectangle();           // Dummy bounds for this test.
         final Polyline[] polylines = new Polyline[coordinates.length];
         final Path2D.Double r = new Path2D.Double(Path2D.WIND_NON_ZERO);
         for (int i=0; i < polylines.length; i++) {
-            polylines[i] = new Polyline(bounds, coordinates[i], coordinates[i].length);
+            polylines[i] = new Polyline(coordinates[i], coordinates[i].length);
             createReferenceShape(r, coordinates[i], false);
         }
         final MultiPolylines p = new MultiPolylines(polylines);

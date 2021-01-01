@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.awt.Shape;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 
 
 /**
@@ -192,26 +191,13 @@ public class PathBuilder {
          * be equal because `append(…)` filtered repetitive points.
          */
         if (size >= 2*DIMENSION) {
-            double xmin = coordinates[0];
-            double ymin = coordinates[1];
-            if (xmin == coordinates[size - 2] &&
-                ymin == coordinates[size - 1])
+            if (coordinates[0] == coordinates[size - 2] &&
+                coordinates[1] == coordinates[size - 1])
             {
                 size -= DIMENSION;
                 close = true;
             }
-            double xmax = xmin;
-            double ymax = ymin;
-            for (int i=DIMENSION; i<size;) {
-                final double x = coordinates[i++];
-                final double y = coordinates[i++];
-                if (x < xmin) xmin = x;
-                if (x > xmax) xmax = x;
-                if (y < ymin) ymin = y;
-                if (y > ymax) ymax = y;
-            }
-            final IntervalRectangle bounds = new IntervalRectangle(xmin, ymin, xmax, ymax);
-            polylines.add(close ? new Polygon(bounds, coordinates, size) : new Polyline(bounds, coordinates, size));
+            polylines.add(close ? new Polygon(coordinates, size) : new Polyline(coordinates, size));
         }
         size = 0;
     }
