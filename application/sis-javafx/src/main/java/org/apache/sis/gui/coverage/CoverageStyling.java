@@ -22,12 +22,18 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.function.Function;
-import javafx.util.Callback;
+import javafx.geometry.Pos;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.beans.value.ObservableValue;
-import javafx.beans.property.SimpleObjectProperty;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.internal.coverage.j2d.Colorizer;
+import org.apache.sis.internal.gui.ImmutableObjectProperty;
+import org.apache.sis.internal.gui.control.ColorRamp;
+import org.apache.sis.internal.gui.control.ColorColumnHandler;
+import org.apache.sis.util.resources.Vocabulary;
+import org.opengis.util.InternationalString;
 
 
 /**
@@ -41,9 +47,7 @@ import org.apache.sis.internal.coverage.j2d.Colorizer;
  * @since   1.1
  * @module
  */
-final class CoverageStyling implements Function<Category,Color[]>,
-        Callback<TableColumn.CellDataFeatures<Category,CategoryColors>, ObservableValue<CategoryColors>>
-{
+final class CoverageStyling extends ColorColumnHandler<Category> implements Function<Category,Color[]> {
     /**
      * Customized colors selected by user. Keys are English names of categories.
      *
@@ -86,6 +90,8 @@ final class CoverageStyling implements Function<Category,Color[]>,
 
     /**
      * Associates colors to the given category.
+     *
+     * @param  colors  the new color for the given category, or {@code null} for resetting default value.
      */
     final void setARGB(final Category category, final int[] colors) {
         final String key = key(category);
@@ -101,11 +107,13 @@ final class CoverageStyling implements Function<Category,Color[]>,
     }
 
     /**
-     * Same as {@link #apply(Category)}, but returns colors as an array of ARGB codes.
-     * Contrarily to {@link #apply(Category)}, this method may return references to
-     * internal arrays; <strong>do not modify.</strong>
+     * Invoked by {@link TableColumn} for computing value of a {@link ColorCell}.
+     * Does the same work as {@link #apply(Category)}, but returns colors as an array of ARGB codes.
+     * Contrarily to {@link #apply(Category)}, this method may return references to internal arrays;
+     * <strong>do not modify.</strong>
      */
-    private int[] getARGB(final Category category) {
+    @Override
+    protected int[] getARGB(final Category category) {
         int[] ARGB = customizedColors.get(key(category));
         if (ARGB == null) {
             final Color[] colors = fallback.apply(category);
@@ -141,18 +149,55 @@ final class CoverageStyling implements Function<Category,Color[]>,
     }
 
     /**
-     * Invoked by {@link TableColumn} for computing value of a {@link CategoryColorsCell}.
-     * This method is public as an implementation side-effect; do not rely on that.
+     * Invoked when users confirmed that (s)he wants to use the selected colors.
+     *
+     * @param  value    the category for which to assign new color(s).
+     * @param  newItem  the new color for the given category, or {@code null} for resetting default value.
+     * @return the type of color (solid or gradient) shown for the given value.
      */
     @Override
-    public ObservableValue<CategoryColors> call(final TableColumn.CellDataFeatures<Category,CategoryColors> cell) {
-        final Category category = cell.getValue();
-        if (category != null) {
-            final int[] ARGB = getARGB(category);
-            if (ARGB != null) {
-                return new SimpleObjectProperty<>(new CategoryColors(ARGB));
-            }
-        }
-        return null;
+    protected ColorRamp.Type applyColors(final Category value, ColorRamp newItem) {
+        setARGB(value, (newItem != null) ? newItem.colors : null);
+        return value.isQuantitative() ? ColorRamp.Type.GRADIENT : ColorRamp.Type.SOLID;
+    }
+
+    /**
+     * Creates a table showing the color of a qualitative or quantitative coverage categories.
+     * The color can be modified by selecting the table row, then clicking on the color.
+     *
+     * @param  vocabulary  resources for the locale in use.
+     */
+    final TableView<Category> createCategoryTable(final Vocabulary vocabulary) {
+        final TableColumn<Category,String> name = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Name));
+        name.setCellValueFactory(CoverageStyling::getCategoryName);
+        name.setCellFactory(CoverageStyling::createNameCell);
+        name.setEditable(false);
+        name.setId("name");
+
+        final TableView<Category> table = new TableView<>();
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.getColumns().add(name);
+        addColumnTo(table, vocabulary);
+        table.setEditable(true);
+        return table;
+    }
+
+    /**
+     * Invoked for creating a cell for the "name" column.
+     * Returns the JavaFX default cell except for vertical alignment, which is centered.
+     */
+    private static TableCell<Category,String> createNameCell(final TableColumn<Category,String> column) {
+        @SuppressWarnings("unchecked")
+        final TableCell<Category,String> cell = (TableCell<Category,String>) TableColumn.DEFAULT_CELL_FACTORY.call(column);
+        cell.setAlignment(Pos.CENTER_LEFT);
+        return cell;
+    }
+
+    /**
+     * Invoked when the table needs to render a text in the "Name" column of the category table.
+     */
+    private static ObservableValue<String> getCategoryName(final TableColumn.CellDataFeatures<Category,String> cell) {
+        final InternationalString name = cell.getValue().getName();
+        return (name != null) ? new ImmutableObjectProperty<>(name.toString()) : null;
     }
 }

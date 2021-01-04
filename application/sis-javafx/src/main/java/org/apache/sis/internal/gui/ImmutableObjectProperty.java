@@ -26,7 +26,10 @@ import javafx.beans.property.ReadOnlyObjectProperty;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @param  <T>  the type of value stored in the property.
+ *
+ * @since 1.1
  * @module
  */
 public class ImmutableObjectProperty<T> extends ReadOnlyObjectProperty<T> {

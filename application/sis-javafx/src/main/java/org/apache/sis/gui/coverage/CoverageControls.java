@@ -130,7 +130,7 @@ final class CoverageControls extends Controls {
         final VBox colorsPane;
         {   // Block for making variables locale to this scope.
             final CoverageStyling styling = new CoverageStyling(view);
-            categoryTable = CategoryColorsCell.createTable(styling, vocabulary);
+            categoryTable = styling.createCategoryTable(vocabulary);
             final GridPane gp = Styles.createControlGrid(0,
                 label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStyling(n))));
 

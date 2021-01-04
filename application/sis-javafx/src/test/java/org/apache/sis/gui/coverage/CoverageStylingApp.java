@@ -20,6 +20,7 @@ import java.util.Locale;
 import javafx.stage.Stage;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import org.apache.sis.coverage.Category;
@@ -55,7 +56,8 @@ public final strictfp class CoverageStylingApp extends Application {
     public void start(final Stage window) {
         final BorderPane pane = new BorderPane();
         pane.setCenter(createCategoryTable());
-        window.setTitle("BandColorsTable Test");
+        pane.setBottom(new Button("Focus here"));
+        window.setTitle("CategoryTable Test");
         window.setScene(new Scene(pane));
         window.setWidth (400);
         window.setHeight(300);
@@ -76,7 +78,7 @@ public final strictfp class CoverageStylingApp extends Application {
 
         final CoverageStyling styling = new CoverageStyling(null);
         styling.setARGB(band.getCategories().get(1), new int[] {0xFF607080});
-        final TableView<Category> table = CategoryColorsCell.createTable(styling, Vocabulary.getResources((Locale) null));
+        final TableView<Category> table = styling.createCategoryTable(Vocabulary.getResources((Locale) null));
         table.getItems().setAll(band.getCategories());
         return table;
     }

@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui.coverage;
+package org.apache.sis.internal.gui.control;
 
 import java.util.Arrays;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
@@ -27,102 +26,107 @@ import javafx.scene.paint.Paint;
 import javafx.scene.paint.Stop;
 import org.apache.sis.internal.gui.ColorName;
 import org.apache.sis.internal.gui.GUIUtilities;
-import org.apache.sis.internal.gui.control.ColorCell;
 import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Represents a single color or a color ramp that can be represented in {@link CategoryColorsCell}.
+ * A single color or a gradient of colors shown as a rectangle in a {@link ColorCell}.
+ * Can also produce a string representation to be shown in a list.
+ * Instances should be considered immutable.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @see ColorCell#getItem()
+ *
+ * @since 1.1
  * @module
  */
-final class CategoryColors extends ColorCell.Item {
+public final class ColorRamp {
     /**
-     * Default color palette.
+     * The type of colors to shown in a cell.
+     * The type determines how user can choose a value.
      */
-    static final CategoryColors GRAYSCALE = new CategoryColors(0xFF000000, 0xFFFFFFFF);
+    public enum Type {
+        /**
+         * Single color selected by {@link ColorPicker}.
+         */
+        SOLID,
+
+        /**
+         * Gradient of colors (or a color ramp) selected by {@link ComboBox}.
+         */
+        GRADIENT
+    }
+
+    /**
+     * Default color ramp.
+     */
+    static final ColorRamp GRAYSCALE = new ColorRamp(0xFF000000, 0xFFFFFFFF);
 
     /**
      * Blue – Cyan – White – Yellow – Red.
      */
-    static final CategoryColors BELL = new CategoryColors(0xFF0000FF, 0xFF00FFFF, 0xFFFFFFFF, 0xFFFFFF00, 0xFFFF0000);
+    static final ColorRamp BELL = new ColorRamp(0xFF0000FF, 0xFF00FFFF, 0xFFFFFFFF, 0xFFFFFF00, 0xFFFF0000);
 
     /**
      * ARGB codes of this single color or color ramp.
      * If null or empty, then default to transparent.
+     *
+     * <p><strong>This array should be read-only.</strong> We make it public because this class is internal.
+     * If this {@code ColorRamp} class moves to public API, then we would need to replace this public access
+     * by an accessor doing a copy.</p>
      */
-    final int[] colors;
+    public final int[] colors;
 
     /**
-     * The paint for this palette, created when first needed.
+     * A single color created from {@link #colors} when first needed.
+     *
+     * @see #color()
+     */
+    private transient Color color;
+
+    /**
+     * A gradient of colors created from {@link #colors} when first needed.
+     *
+     * @see #paint()
      */
     private transient Paint paint;
 
     /**
-     * A name for this palette, computed when first needed.
+     * A name for this color ramp created from {@link #colors} when first needed.
      *
      * @see #toString()
      */
     private transient String name;
 
     /**
-     * Creates a new palette for the given colors.
+     * Creates a new item for the given colors.
      */
-    CategoryColors(final int... colors) {
+    ColorRamp(final int... colors) {
         this.colors = colors;
     }
 
     /**
-     * Updates a control with the current color of this view.
+     * Returns a solid color to use for filling a rectangle in {@link ColorCell}.
+     * If this item has many colors (for example because it uses a gradient),
+     * then an arbitrary color is returned.
      *
-     * @return whether the given control has been recognized.
+     * @return single color to shown in table cell, or {@code null} if none.
      */
-    @Override
-    @SuppressWarnings("unchecked")
-    protected boolean updateControl(final Node control) {
-        if (!super.updateControl(control)) {
-            // A ClassCastException here would be a bug in CategoryColorsCell editors management.
-            asSelectedItem((ComboBox<CategoryColors>) control);
+    final Color color() {
+        if (color == null && colors != null && colors.length != 0) {
+            color = GUIUtilities.fromARGB(colors[colors.length / 2]);
         }
-        return true;
+        return color;
     }
 
     /**
-     * Declares this {@code CategoryColors} as the selected item in the given chooser.
-     * If this instance is not found, then it is added to the chooser list.
+     * Returns the paint to use for filling a rectangle in {@link ColorCell}, or {@code null} if none.
+     *
+     * @return color or gradient paint for table cell, or {@code null} if none.
      */
-    final void asSelectedItem(final ComboBox<CategoryColors> colorRampChooser) {
-        final ObservableList<CategoryColors> items = colorRampChooser.getItems();
-        int i = items.indexOf(this);
-        if (i < 0) {
-            i = items.size();
-            items.add(this);
-        }
-        colorRampChooser.getSelectionModel().select(i);
-    }
-
-    /**
-     * Returns the first color, or {@code null} if none.
-     * This is used for qualitative categories, which are expected to contain only one color.
-     */
-    @Override
-    protected final Color color() {
-        if (colors != null && colors.length != 0) {
-            return GUIUtilities.fromARGB(colors[0]);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Gets the paint to use for filling a rectangle using this color palette.
-     * Returns {@code null} if this {@code CategoryColors} contains no color.
-     */
-    @Override
-    protected final Paint paint() {
+    final Paint paint() {
         if (paint == null) {
             switch (colors.length) {
                 case 0: break;
@@ -137,6 +141,7 @@ final class CategoryColors extends ColorCell.Item {
                         stops[i] = new Stop(scale*i, GUIUtilities.fromARGB(colors[i]));
                     }
                     paint = new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE, stops);
+                    break;
                 }
             }
         }
@@ -144,8 +149,8 @@ final class CategoryColors extends ColorCell.Item {
     }
 
     /**
-     * Returns a string representation of this color palette.
-     * This string representation will appear in the combo box when that box is shown.
+     * Returns a string representation of this color ramp.
+     * It may be used as an alternative to colored rectangle.
      */
     @Override
     public String toString() {
@@ -170,8 +175,10 @@ final class CategoryColors extends ColorCell.Item {
     }
 
     /**
-     * Returns a hash code value for this palette.
+     * Returns a hash code value for this color ramp.
      * Defined mostly for consistency with {@link #equals(Object)}.
+     *
+     * @return a hash code value for this color ramp.
      */
     @Override
     public int hashCode() {
@@ -179,10 +186,14 @@ final class CategoryColors extends ColorCell.Item {
     }
 
     /**
-     * Returns whether the given object is equal to this {@code CategoryColors}.
+     * Returns whether the given object is equal to this {@code ColorRamp}.
+     * This is used for locating this {@code ColorRamp} in a {@link ComboBox}.
+     *
+     * @param  other  the object to compare with {@code this} for equality.
+     * @return whether the given object is equal to this color ramp.
      */
     @Override
     public boolean equals(final Object other) {
-        return (other instanceof CategoryColors) && Arrays.equals(colors, ((CategoryColors) other).colors);
+        return (other instanceof ColorRamp) && Arrays.equals(colors, ((ColorRamp) other).colors);
     }
 }
