@@ -292,11 +292,15 @@ next:       for (final String name : axisNames) {
          * in the same order we presume that this is the "netCDF" order (as opposed to a "coordinates"
          * attribute value order).
          */
-        for (int i = Math.min(domain.size(), range.size()); --i >= 0;) {
+        int i = range.size();
+        int j = domain.size();
+        while (--i >= 0) {
             final List<Dimension> dimensions = range.get(i).getDimensions();
-            if (dimensions.size() != 1 || !dimensions.get(0).equals(domain.get(i))) {
-                return axes;
+            switch (dimensions.size()) {
+                case 0: continue;           // Ignore scalars as they can appear anywhere.
+                case 1: if (--j >= 0 && dimensions.get(0).equals(domain.get(j))) continue;
             }
+            return axes;
         }
         ArraysExt.reverse(axes);
         return axes;

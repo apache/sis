@@ -228,6 +228,30 @@ public abstract class Grid extends NamedElement {
                     i++;
                 }
             }
+            /*
+             * If some variables are scalar, those variables can safely be moved anywhere because they do not
+             * use any input coordinate (their output coordinates are constant). Try to move those scalars to
+             * more natural positions. We rely on `AxisDirection` ordering: North, East, South, West, Up/Down,
+             * Future/Past directions in that order.
+             */
+            for (i=0; i < axes.length; i++) {
+                final Axis axis = axes[i];
+                if (axis.getNumDimensions() == 0) {
+                    int p = i;
+                    for (int j=0; j<axes.length; j++) {
+                        if (axis.direction.compareTo(axes[j].direction) > 0) {
+                            p = j + 1;      // After the last element that should be ordered before `axis`.
+                        }
+                    }
+                    if (p != i) {
+                        if (p > i) p--;
+                        System.arraycopy(axes, i+1, axes, i, axes.length - (i+1));      // Remove element at i.
+                        System.arraycopy(axes, p, axes, p+1, axes.length - (p+1));      // Insert a space at p.
+                        axes[p] = axis;
+                        break;
+                    }
+                }
+            }
         }
         return axes;
     }

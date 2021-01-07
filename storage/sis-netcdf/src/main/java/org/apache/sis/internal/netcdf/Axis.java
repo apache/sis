@@ -669,9 +669,17 @@ public final class Axis extends NamedElement {
     {
         switch (getNumDimensions()) {
             /*
-             * Defined as a matter of principle, but should never happen.
+             * Variable is a scalar, which is represented by an array of length 1.
+             * There is no source dimension, only a target dimension fixed to a constant value.
+             * Consequently the scale factor does not exist in the matrix, only the translation.
              */
-            case 0: return true;
+            case 0: {
+                final Vector data = read();
+                if (!data.isEmpty()) {
+                    gridToCRS.setElement(tgtDim, gridToCRS.getNumCol() - 1, data.doubleValue(0));
+                }
+                return true;
+            }
             /*
              * Normal case where the axis has only one dimension.
              */
