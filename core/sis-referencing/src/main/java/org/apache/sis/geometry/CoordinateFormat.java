@@ -1079,7 +1079,7 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
     private void updateAccuracyVisibility() {
         isAccuracyVisible = (accuracyText != null);
         if (isAccuracyVisible && desiredPrecisions != null) {
-            long dimensions = groundDimensions;
+            long dimensions = groundDimensions & (Numerics.bitmask(desiredPrecisions.length) - 1);
             if (dimensions != 0) {
                 isAccuracyVisible = false;
                 do {
