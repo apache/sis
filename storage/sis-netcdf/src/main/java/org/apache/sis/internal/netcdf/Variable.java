@@ -88,6 +88,13 @@ public abstract class Variable extends Node {
     protected static final int STRING_DIMENSION = 2;
 
     /**
+     * The role of this variable (axis, coverage, feature, <i>etc.</i>), or {@code null} if not yet determined.
+     *
+     * @see #getRole()
+     */
+    private VariableRole role;
+
+    /**
      * The unit of measurement, parsed from {@link #getUnitsString()} when first needed.
      * We do not try to parse the unit at construction time because this variable may be
      * never requested by the user.
@@ -443,14 +450,25 @@ public abstract class Variable extends Node {
 
     /**
      * Returns whether this variable is used as a coordinate system axis, a coverage or something else.
-     * This is a shortcut for {@link Convention#roleOf(Variable)}, except that {@code this} can not be null.
+     * The role is determined by {@linkplain Convention#roleOf conventions}, except {@link VariableRole#BOUNDS}
+     * which is determined by this method (because it depends on other variables).
      *
      * @return role of this variable.
      *
      * @see Convention#roleOf(Variable)
      */
     public final VariableRole getRole() {
-        return decoder.convention().roleOf(this);
+        if (role == null) {
+            final String name = getName();
+            for (final Variable variable : decoder.getVariables()) {
+                if (name.equalsIgnoreCase(variable.getAttributeAsString(CF.BOUNDS))) {
+                    role = VariableRole.BOUNDS;
+                    return role;
+                }
+            }
+            role = decoder.convention().roleOf(this);
+        }
+        return role;
     }
 
     /**

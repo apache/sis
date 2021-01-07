@@ -42,6 +42,12 @@ public enum VariableRole {
     FEATURE,
 
     /**
+     * Values of the variable are bounds of values of another variable.
+     * For example it may be the bounds of coordinate values specified by an axis.
+     */
+    BOUNDS,
+
+    /**
      * Unidentified kind of variable.
      */
     OTHER

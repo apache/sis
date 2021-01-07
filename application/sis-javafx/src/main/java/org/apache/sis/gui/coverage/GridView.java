@@ -381,6 +381,7 @@ public class GridView extends Control {
         @Override
         protected void failed() {
             terminated(null);
+            setImage((RenderedImage) null);
             final GridCoverageResource resource = request.resource;
             final GridView owner = GridView.this;
             if (resource instanceof StoreListeners) {
