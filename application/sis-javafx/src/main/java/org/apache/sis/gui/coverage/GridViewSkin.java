@@ -26,6 +26,7 @@ import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.control.skin.VirtualContainerBase;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -157,7 +158,9 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         topBackground .fillProperty().bind(view.headerBackground);
         /*
          * Rectangle around the selected cell (for example the cell below mouse position).
-         * Become visible only when the mouse enter in the widget area.
+         * Become visible only when the mouse enter in the widget area. The rectangles are
+         * declared unmanaged for avoiding relayout of the whole widget every time that a
+         * rectangle position changed.
          */
         selection      = new Rectangle();
         selectedRow    = new Rectangle();
@@ -168,18 +171,26 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         selection     .setVisible(false);
         selectedRow   .setVisible(false);
         selectedColumn.setVisible(false);
-        flow.setOnMouseExited((e) -> hideSelection());
+        selection     .setManaged(false);
+        selectedRow   .setManaged(false);
+        selectedColumn.setManaged(false);
         /*
          * The status bar where to show coordinates of selected cell.
          * Mouse exit event is handled by `hideSelection(…)`.
          */
         flow.setOnMouseEntered(view.statusBar);
+        flow.setOnMouseExited((e) -> hideSelection());
         /*
-         * The list of children is initially empty. We need to
-         * add the virtual flow, otherwise nothing will appear.
+         * The list of children is initially empty. We need to add the virtual flow
+         * (together with headers, selection, etc.), otherwise nothing will appear.
+         * The status bar is declared unmanaged for avoiding relayout of the whole
+         * widget every time that coordinates are formatted. This is okay because
+         * the `layoutChildren(…)` method in this class does layout itself.
          */
-        getChildren().addAll(topBackground, leftBackground, selectedColumn, selectedRow,
-                             headerRow, selection, view.statusBar.getView(), flow);
+        final Region bar = view.statusBar.getView();
+        bar.setManaged(false);
+        getChildren().addAll(topBackground, leftBackground, selectedColumn,
+                             selectedRow, headerRow, selection, bar, flow);
     }
 
     /**
@@ -203,10 +214,11 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
                 if (visible) {
                     x  = visibleColumn * cellWidth + leftBackground.getWidth() + row.getLayoutX();
                     y += topBackground.getHeight();
-                    selection.relocate(x, y);
+                    selection.setX(x);                  // NOT equivalent to `relocate(x,y)`.
+                    selection.setY(y);
                     selectedRow.setY(y);
                     selectedColumn.setX(x);
-                    getSkinnable().formatCoordinates(((int) visibleColumn) + firstVisibleColumn, row.getIndex());
+                    getSkinnable().formatCoordinates(firstVisibleColumn + (int) visibleColumn, row.getIndex());
                 }
             }
         }
@@ -517,10 +529,32 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
              * received a non-empty text string. Doing a full layout again makes them appear. So as a workaround
              * we request the next layout to be full again if it seems that we have done the initial layout. The
              * very first layout create one cell (count = 0 & missing = 1), the next layout create missing cells
-             * (count = 1 & missing = 18) — this is where we want to force a third layou — then the third layout
+             * (count = 1 & missing = 18) — this is where we want to force a third layout — then the third layout
              * is stable (count = 19 & missing = 0).
              */
             layoutAll = count <= missing;
+        }
+        /*
+         * Update position of the highlights at mouse cursor position. Usually the correction computed below is
+         * zero and this block does not change any position (but it may change the geographic coordinates shown
+         * in status bar). However if the user was scrolling and reached the end of the virtial flow, the last
+         * scrolling action may have caused a displacement which is a fractional amount of cells, in which case
+         * the highlights appear misaligned if we do not apply the correction below.
+         */
+        if (selection.isVisible()) {
+            GridRow row = flow.getFirstVisibleCell();
+            double sy = selection.getY() - (row.getLayoutY() + headerHeight);
+            final int i = ((int) Math.rint(sy / cellHeight)) + row.getIndex();
+            row = flow.getCell(i);                      // Empty cell if beyond the range.
+            sy  = row.getLayoutY() + headerHeight;      // Usually same as `selection.y` (see above comment).
+            final double offset = row.getLayoutX() + leftBackground.getWidth();
+            final double column = Math.rint((selection.getX() - offset) / cellWidth);
+            final double sx     = column * cellWidth + offset;
+            selection.setX(sx);
+            selection.setY(sy);
+            selectedRow.setY(sy);
+            selectedColumn.setX(sx);
+            getSkinnable().formatCoordinates(firstVisibleColumn + (int) column, i);
         }
         if (hasErrors) {
             computeErrorBounds(flow);
