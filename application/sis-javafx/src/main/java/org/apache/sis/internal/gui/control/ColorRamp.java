@@ -88,6 +88,7 @@ public final class ColorRamp {
 
     /**
      * A gradient of colors created from {@link #colors} when first needed.
+     * May be an instance of {@link Color} if there is only one color.
      *
      * @see #paint()
      */
@@ -99,6 +100,14 @@ public final class ColorRamp {
      * @see #toString()
      */
     private transient String name;
+
+    /**
+     * Creates a new item for the given color.
+     */
+    ColorRamp(final Color color) {
+        paint = this.color = color;
+        colors = new int[] {GUIUtilities.toARGB(color)};
+    }
 
     /**
      * Creates a new item for the given colors.
@@ -114,9 +123,13 @@ public final class ColorRamp {
      *
      * @return single color to shown in table cell, or {@code null} if none.
      */
-    final Color color() {
-        if (color == null && colors != null && colors.length != 0) {
-            color = GUIUtilities.fromARGB(colors[colors.length / 2]);
+    public final Color color() {
+        if (color == null) {
+            if (paint instanceof Color) {
+                color = (Color) paint;
+            } else if (colors != null && colors.length != 0) {
+                color = GUIUtilities.fromARGB(colors[colors.length / 2]);
+            }
         }
         return color;
     }
@@ -131,7 +144,10 @@ public final class ColorRamp {
             switch (colors.length) {
                 case 0: break;
                 case 1: {
-                    paint = GUIUtilities.fromARGB(colors[0]);
+                    if (color == null) {
+                        color = GUIUtilities.fromARGB(colors[0]);
+                    }
+                    paint = color;
                     break;
                 }
                 default: {

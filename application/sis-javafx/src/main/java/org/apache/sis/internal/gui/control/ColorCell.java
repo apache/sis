@@ -29,6 +29,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
@@ -102,7 +103,17 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
     ColorCell(final ColorColumnHandler<S> handler) {
         this.handler = handler;
         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-        setOnMouseClicked((event) -> requestEdit());
+        setOnMouseClicked(ColorCell::mouseClicked);
+    }
+
+    /**
+     * Invoked when user clicked on the cell. If the cell was not already in editing state, this method
+     * transitions to editing state. It has the effect of showing the color picker or color ramp chooser.
+     */
+    private static void mouseClicked(final MouseEvent event) {
+        if (((ColorCell<?>) event.getSource()).requestEdit()) {
+            event.consume();
+        }
     }
 
     /**
@@ -169,8 +180,6 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
              */
             if (isNewControl) {
                 control.setOnAction(this);
-                control.setOnShown((event) -> requestEdit());
-                control.setOnHidden((event) -> hidden());
             }
         }
         setGraphic(control);
@@ -331,8 +340,12 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
     }
 
     /**
-     * Hides the control button for choosing color(s) in this cell. The focus is transferred to the parent table.
+     * Removes the control in the cell and paint the color in a rectangle instead.
      * This method does nothing if the control is already hidden.
+     *
+     * <p>This method sets the focus to the table before to remove the combo box.
+     * This is necessary for causing the combo box to lost focus, otherwise focus
+     * problems appear next time that the combo box is shown.</p>
      *
      * @see #showControlButton()
      */
@@ -350,17 +363,22 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
     /**
      * Requests this cell to transition to editing state. The request is made on the {@link TableView},
      * which will invoke {@link #startEdit()}. The edition request must be done on {@code TableView} for
-     * allowing the table to know to row and column index of the cell being edited.
+     * allowing the table to know the row and column indices of the cell being edited.
+     *
+     * @return {@code true} if this cell transitioned to editing state,
+     *         or {@code false} if this cell was already in editing state.
      */
-    private void requestEdit() {
+    private boolean requestEdit() {
         if (isEditing()) {
-            showControlButton();
+            popup(showControlButton());
+            return false;
         } else {
             final int row = getTableRow().getIndex();
             final TableView<S> table = getTableView();
             table.getSelectionModel().select(row);
             table.edit(row, getTableColumn());
             // JavaFX will call `startEdit()`.
+            return true;
         }
     }
 
@@ -381,6 +399,13 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
          * misinterpret the value change as a user selection.
          */
         super.startEdit();
+        popup(control);
+    }
+
+    /**
+     * Shows the popup window of the given control. This method does nothing if the control is null.
+     */
+    private static void popup(final ComboBoxBase<?> control) {
         if (control != null) {
             control.requestFocus();     // Must be before `show()`, otherwise there is apparent focus confusion.
             control.show();             // For requiring one less mouse click by user.
@@ -395,24 +420,6 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
     public final void cancelEdit() {
         super.cancelEdit();
         hideControlButton();
-    }
-
-    /**
-     * Invoked when a combo box has been hidden. This method sets the focus to the table before to remove
-     * the combo box. This is necessary for causing the combo box to lost focus, otherwise focus problems
-     * appear next time that the combo box is shown.
-     *
-     * <p>If the cell was in editing mode when this method is invoked, it means that the user clicked outside
-     * the combo box area without validating his/her choice. In this case {@link #commitEdit(Object)} has not
-     * been invoked and we need to either commit now or cancel. Current implementation cancels.</p>
-     */
-    private void hidden() {
-        if (!isHover()) {
-            if (isEditing()) {
-                getTableView().edit(-1, null);          // Cancel editing.
-            }
-            hideControlButton();
-        }
     }
 
     /**
@@ -432,18 +439,16 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
     @Override
     public final void handle(final ActionEvent event) {
         if (isEditing()) {
+            final Object value = ((ComboBoxBase<?>) event.getSource()).getValue();
             final ColorRamp colors;
-            final Object source = event.getSource();
-            if (source instanceof ComboBoxBase<?>) {
-                final Object value = ((ComboBoxBase<?>) source).getValue();
-                if (value instanceof Color) {
-                    colors = new ColorRamp(GUIUtilities.toARGB((Color) value));
-                } else {
-                    // A ClassCastException here would be a bug in ColorCell editors management.
-                    colors = (ColorRamp) value;
-                }
-                commitEdit(colors);
+            if (value instanceof Color) {
+                colors = new ColorRamp(GUIUtilities.toARGB((Color) value));
+            } else {
+                // A ClassCastException here would be a bug in ColorCell editors management.
+                colors = (ColorRamp) value;
             }
+            commitEdit(colors);
         }
+        hideControlButton();
     }
 }

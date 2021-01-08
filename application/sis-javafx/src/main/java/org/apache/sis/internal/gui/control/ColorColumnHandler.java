@@ -17,10 +17,12 @@
 package org.apache.sis.internal.gui.control;
 
 import javafx.util.Callback;
+import javafx.scene.paint.Color;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TablePosition;
 import javafx.beans.value.ObservableValue;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.ImmutableObjectProperty;
@@ -66,9 +68,21 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
      * Gets the ARGB codes of colors to shown in the cell for the given row data.
      *
      * @param  row  the row item for which to get ARGB codes to show in color cell.
-     * @return the colors as ARGB codes.
+     * @return the colors as ARGB codes, or {@code null} if none (transparent).
      */
     protected abstract int[] getARGB(S row);
+
+    /**
+     * If a {@code Color} instance already exists for the given row, that instance. Otherwise {@code null}.
+     * In that later case, a {@code Color} or {@code Paint} instance will be created from {@link #getARGB(S)}.
+     * This method is only for avoiding to create new {@code Color} instances when it already exists.
+     *
+     * @param  row  the row item for which to get ARGB codes to show in color cell.
+     * @return the color to use for the given row, if an instance already exists.
+     */
+    protected Color getColor(S row) {
+        return null;
+    }
 
     /**
      * Invoked by {@link TableColumn} for computing the value of a {@link ColorCell}.
@@ -80,13 +94,21 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
     @Override
     public final ObservableValue<ColorRamp> call(final TableColumn.CellDataFeatures<S,ColorRamp> cell) {
         final S value = cell.getValue();
-        if (value != null) {
-            final int[] ARGB = getARGB(value);
-            if (ARGB != null) {
-                return new ImmutableObjectProperty<>(new ColorRamp(ARGB));
-            }
+        if (value == null) {
+            return null;
         }
-        return null;
+        final ColorRamp ramp;
+        final Color color = getColor(value);
+        if (color != null) {
+            ramp = new ColorRamp(color);
+        } else {
+            final int[] ARGB = getARGB(value);
+            if (ARGB == null) {
+                return null;
+            }
+            ramp = new ColorRamp(ARGB);
+        }
+        return new ImmutableObjectProperty<>(ramp);
     }
 
     /**
@@ -103,22 +125,31 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
         colors.setSortable(false);
         colors.setId("colors");
         /*
-         * Filters are invoked during the phase when events are propagated from root to target (in contrast
-         * to handlers which are invoked in a later phase when events are propagated in opposite direction).
-         * By registering a filter, we intercept (consume) the event early and avoid that `TableCell` tries
-         * to handle it. This is necessary for avoiding `NullPointerException` observed in our experiments.
-         * That exception occurred in JavaFX code that we do not control. Note: we tried to register filter
-         * directly on the cell, but it is apparently too late for preventing the `NullPointerException`.
+         * Handlers are invoked during the phase when events are propagated from target to root (in contrast
+         * to filters which are invoked in a sooner phase when events are propagated in opposite direction).
+         * By registering a handler, we intercept (consume) the event and prevent `TableView` to handle it.
+         * This is necessary for avoiding `NullPointerException` observed in our experiments. That exception
+         * occurred in JavaFX code that we do not control. Note: we tried to register filter directly on the
+         * cell, but it didn't prevented the `NullPointerException`.
          */
-        table.addEventFilter(KeyEvent.KEY_PRESSED, (event) -> {
+        table.addEventHandler(KeyEvent.KEY_PRESSED, (event) -> {
             if (event.getCode() == KeyCode.ENTER) {
-                event.consume();
-                final int row = table.getSelectionModel().getSelectedIndex();
-                if (row >= 0) {
-                    table.edit(row, colors);
+                final TablePosition<?,?> focused = table.getFocusModel().getFocusedCell();
+                if (focused != null) {
+                    final TableColumn<?,?> column = focused.getTableColumn();
+                    if (column == null || column == colors) {
+                        event.consume();
+                        final TablePosition<?,?> editing = table.getEditingCell();
+                        final int row = (editing != null ? editing : focused).getRow();
+                        if (row >= 0) {
+                            table.edit(row, colors);
+                        }
+                    }
                 }
             }
         });
         table.getColumns().add(colors);
+        table.setEditable(true);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
 }

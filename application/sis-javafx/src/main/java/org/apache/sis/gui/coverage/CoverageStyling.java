@@ -107,7 +107,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
     }
 
     /**
-     * Invoked by {@link TableColumn} for computing value of a {@link ColorCell}.
+     * Returns the colors to apply for the given category, or {@code null} for transparent.
      * Does the same work as {@link #apply(Category)}, but returns colors as an array of ARGB codes.
      * Contrarily to {@link #apply(Category)}, this method may return references to internal arrays;
      * <strong>do not modify.</strong>
@@ -175,10 +175,8 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
         name.setId("name");
 
         final TableView<Category> table = new TableView<>();
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.getColumns().add(name);
         addColumnTo(table, vocabulary);
-        table.setEditable(true);
         return table;
     }
 
