@@ -215,6 +215,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Code_1 = 29;
 
         /**
+         * Color
+         */
+        public static final short Color = 251;
+
+        /**
          * Color index
          */
         public static final short ColorIndex = 30;
@@ -648,6 +653,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Inverse operation
          */
         public static final short InverseOperation = 108;
+
+        /**
+         * Isolines
+         */
+        public static final short Isolines = 252;
 
         /**
          * Java extensions

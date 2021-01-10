@@ -103,8 +103,10 @@ public final class ColorRamp {
 
     /**
      * Creates a new item for the given color.
+     *
+     * @param  color  the solid color.
      */
-    ColorRamp(final Color color) {
+    public ColorRamp(final Color color) {
         paint = this.color = color;
         colors = new int[] {GUIUtilities.toARGB(color)};
     }

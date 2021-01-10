@@ -17,7 +17,6 @@
 package org.apache.sis.internal.gui.control;
 
 import javafx.util.Callback;
-import javafx.scene.paint.Color;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.control.TableView;
@@ -58,14 +57,17 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
      * item instead, at implementation choice. The type determines which control (color picker, combo box,
      * <i>etc.</i>) will be shown if user wants to edit the color.
      *
-     * @param  row      the row to update.
-     * @param  newItem  the new color(s) to assign to the given row item. May be {@code null}.
+     * @param  row     the row to update.
+     * @param  colors  the new color(s) to assign to the given row item. May be {@code null}.
      * @return the type of color (solid or gradient) shown for the given value.
      */
-    protected abstract ColorRamp.Type applyColors(S row, ColorRamp newItem);
+    protected abstract ColorRamp.Type applyColors(S row, ColorRamp colors);
 
     /**
      * Gets the ARGB codes of colors to shown in the cell for the given row data.
+     * This method is sufficient when the color(s) can be changed only by calls to
+     * {@link #applyColors(S, ColorRamp)}. If the color(s) may change externally,
+     * then {@link #getObservableValue(S)} should be overridden too.
      *
      * @param  row  the row item for which to get ARGB codes to show in color cell.
      * @return the colors as ARGB codes, or {@code null} if none (transparent).
@@ -73,14 +75,19 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
     protected abstract int[] getARGB(S row);
 
     /**
-     * If a {@code Color} instance already exists for the given row, that instance. Otherwise {@code null}.
-     * In that later case, a {@code Color} or {@code Paint} instance will be created from {@link #getARGB(S)}.
-     * This method is only for avoiding to create new {@code Color} instances when it already exists.
+     * Returns the color associated to given row as an observable value. The default implementation creates
+     * an unmodifiable value derived from {@link #getARGB(S)}. It is okay if the color(s) can not be changed
+     * in other way than by calls to {@link #applyColors(Object, ColorRamp)}. If this assumption does not hold,
+     * then subclasses should override this method and return the observable which is mutated when the value change.
      *
-     * @param  row  the row item for which to get ARGB codes to show in color cell.
-     * @return the color to use for the given row, if an instance already exists.
+     * @param  row  the row item for which to get color to show in color cell. Never {@code null}.
+     * @return the color(s) to use for the given row, or {@code null} if none (transparent).
      */
-    protected Color getColor(S row) {
+    protected ObservableValue<ColorRamp> getObservableValue(S row) {
+        final int[] ARGB = getARGB(row);
+        if (ARGB != null) {
+            return new ImmutableObjectProperty<>(new ColorRamp(ARGB));
+        }
         return null;
     }
 
@@ -89,26 +96,12 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
      * This method is public as an implementation side-effect; do not rely on that.
      *
      * @param  cell  the row value together with references to column and table where the show the color cell.
-     * @return the color cell value.
+     * @return the color cell value, or {@code null} if none (transparent).
      */
     @Override
     public final ObservableValue<ColorRamp> call(final TableColumn.CellDataFeatures<S,ColorRamp> cell) {
         final S value = cell.getValue();
-        if (value == null) {
-            return null;
-        }
-        final ColorRamp ramp;
-        final Color color = getColor(value);
-        if (color != null) {
-            ramp = new ColorRamp(color);
-        } else {
-            final int[] ARGB = getARGB(value);
-            if (ARGB == null) {
-                return null;
-            }
-            ramp = new ColorRamp(ARGB);
-        }
-        return new ImmutableObjectProperty<>(ramp);
+        return (value != null) ? getObservableValue(value) : null;
     }
 
     /**
@@ -116,7 +109,8 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
      * This method also modifies the table configuration.
      *
      * @param  table       the table where to add a colors column.
-     * @param  vocabulary  localized resources, provided in argument because often already known by caller.
+     * @param  vocabulary  localized resources, given because already known by the caller
+     *                     (this argument would be removed if this method was public API).
      */
     protected final void addColumnTo(final TableView<S> table, final Vocabulary vocabulary) {
         final TableColumn<S,ColorRamp> colors = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Colors));

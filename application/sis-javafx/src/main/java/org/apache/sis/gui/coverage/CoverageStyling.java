@@ -151,21 +151,22 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
     /**
      * Invoked when users confirmed that (s)he wants to use the selected colors.
      *
-     * @param  value    the category for which to assign new color(s).
-     * @param  newItem  the new color for the given category, or {@code null} for resetting default value.
+     * @param  category  the category for which to assign new color(s).
+     * @param  colors    the new color for the given category, or {@code null} for resetting default value.
      * @return the type of color (solid or gradient) shown for the given value.
      */
     @Override
-    protected ColorRamp.Type applyColors(final Category value, ColorRamp newItem) {
-        setARGB(value, (newItem != null) ? newItem.colors : null);
-        return value.isQuantitative() ? ColorRamp.Type.GRADIENT : ColorRamp.Type.SOLID;
+    protected ColorRamp.Type applyColors(final Category category, ColorRamp colors) {
+        setARGB(category, (colors != null) ? colors.colors : null);
+        return category.isQuantitative() ? ColorRamp.Type.GRADIENT : ColorRamp.Type.SOLID;
     }
 
     /**
      * Creates a table showing the color of a qualitative or quantitative coverage categories.
      * The color can be modified by selecting the table row, then clicking on the color.
      *
-     * @param  vocabulary  resources for the locale in use.
+     * @param  vocabulary  localized resources, given because already known by the caller
+     *                     (this argument would be removed if this method was public API).
      */
     final TableView<Category> createCategoryTable(final Vocabulary vocabulary) {
         final TableColumn<Category,String> name = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Name));
@@ -173,7 +174,10 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
         name.setCellFactory(CoverageStyling::createNameCell);
         name.setEditable(false);
         name.setId("name");
-
+        /*
+         * Create the table with above "category name" column (read-only),
+         * and add an editable column for color(s).
+         */
         final TableView<Category> table = new TableView<>();
         table.getColumns().add(name);
         addColumnTo(table, vocabulary);

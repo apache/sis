@@ -54,6 +54,11 @@ public final class Styles extends Static {
     public static final int SCROLLBAR_WIDTH = 20;
 
     /**
+     * Width of a checkbox or radio item in a table cell.
+     */
+    public static final int CHECKBOX_WIDTH = 40;
+
+    /**
      * "Standard" height of table rows. Can be approximate.
      */
     public static final double ROW_HEIGHT = 30;

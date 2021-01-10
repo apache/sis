@@ -138,16 +138,27 @@ final class CoverageControls extends Controls {
                     labelOfGroup(vocabulary, Vocabulary.Keys.Categories, categoryTable, true), categoryTable, gp);
         }
         /*
+         * "Isolines" section with the following controls:
+         *    - Colors for each isoline levels
+         */
+        final VBox isolinesPane;
+        {   // Block for making variables locale to this scope.
+            final IsolineTable table = new IsolineTable();
+            final TableView<IsolineLevel> isolinesTable = table.createIsolineTable(vocabulary);
+            isolinesPane = new VBox(isolinesTable); // TODO: add band selector
+        }
+        /*
          * Put all sections together and have the first one expanded by default.
          * The "Properties" section will be built by `PropertyPaneCreator` only if requested.
          */
         final TitledPane p1 = new TitledPane(vocabulary.getString(Vocabulary.Keys.SpatialRepresentation), displayPane);
         final TitledPane p2 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Colors), colorsPane);
-        final TitledPane p3 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null);
-        controls = new Accordion(p1, p2, p3);
+        final TitledPane p3 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Isolines), isolinesPane);
+        final TitledPane p4 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null);
+        controls = new Accordion(p1, p2, p3, p4);
         controls.setExpandedPane(p1);
         view.coverageProperty.bind(coverage);
-        p3.expandedProperty().addListener(new PropertyPaneCreator(view, p3));
+        p4.expandedProperty().addListener(new PropertyPaneCreator(view, p4));
     }
 
     /**
