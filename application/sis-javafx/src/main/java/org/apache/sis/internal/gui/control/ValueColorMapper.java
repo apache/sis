@@ -14,33 +14,81 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui.coverage;
+package org.apache.sis.internal.gui.control;
 
 import java.text.NumberFormat;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import org.apache.sis.internal.gui.control.FormatTableCell;
-import org.apache.sis.internal.gui.control.ColorColumnHandler;
-import org.apache.sis.internal.gui.control.ColorRamp;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Table of isolines (values and colors).
+ * Provides a widget for associating numeric values to solid colors.
+ * It can be used as a table of isolines or as a {@link ColorRamp} editor.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-final class IsolineTable extends ColorColumnHandler<IsolineLevel> {
+public final class ValueColorMapper extends ColorColumnHandler<ValueColorMapper.Step> {
     /**
-     * The format to use for formatting isoline levels.
+     * Colors to associate to a given value.
+     */
+    public static final class Step {
+        /**
+         * The value for which to associate a color. The initial value is {@link Double#NaN},
+         * but that value should be used only for the insertion row.
+         */
+        public final DoubleProperty value;
+
+        /**
+         * Color associated to the {@linkplain #value}.
+         *
+         * The value type is {@link ColorRamp} for now, but if this property become public in a future version
+         * then the type should be changed to {@link Color} and bidirectionally binded to another property
+         * (package-private) of type {@link ColorRamp}.
+         */
+        final ObjectProperty<ColorRamp> color;
+
+        /**
+         * Whether this step should be used. For example if {@code ValueColorMapper} is used as an isoline table,
+         * then this property determines whether the isoline should be drawn on the map.
+         */
+        public final BooleanProperty visible;
+
+        /**
+         * Creates an empty step to be used as a placeholder for the insertion row.
+         */
+        Step() {
+            value   = new SimpleDoubleProperty  (this, "value", Double.NaN);
+            color   = new SimpleObjectProperty<>(this, "color");
+            visible = new SimpleBooleanProperty (this, "visible");
+        }
+
+        /**
+         * Creates a step associating the given color to the given value.
+         */
+        Step(final double value, final Color color) {
+            this();
+            this.value.set(value);
+            this.color.set(new ColorRamp(color));
+            visible.set(true);
+        }
+    }
+    /**
+     * The format to use for formatting numerical values.
      * The same instance will be shared by all {@link FormatTableCell}s in this table.
      */
     private final NumberFormat format;
@@ -48,16 +96,18 @@ final class IsolineTable extends ColorColumnHandler<IsolineLevel> {
     /**
      * Creates a new handler.
      */
-    IsolineTable() {
+    public ValueColorMapper() {
         format = NumberFormat.getInstance();
     }
 
     /**
-     * Returns the colors to apply for the given isoline level, or {@code null} for transparent.
+     * Returns the colors to apply for the given step, or {@code null} for transparent.
      * This method is defined for safety but should not be invoked; use {@link #getObservableValue(S)} instead.
+     *
+     * @param  level  the value for which to get the color to show in color cell.
      */
     @Override
-    protected int[] getARGB(final IsolineLevel level) {
+    protected int[] getARGB(final Step level) {
         final ColorRamp r = level.color.get();
         return (r != null) ? r.colors : null;
     }
@@ -65,33 +115,33 @@ final class IsolineTable extends ColorColumnHandler<IsolineLevel> {
     /**
      * Returns the color associated to given row as an observable value.
      *
-     * @param  level  the isoline level for which to get color to show in color cell.
-     * @return the color(s) to use for the given isoline, or {@code null} if none (transparent).
+     * @param  level  the value for which to get the color to show in color cell.
+     * @return the color(s) to use for the given value, or {@code null} if none (transparent).
      */
     @Override
-    protected ObservableValue<ColorRamp> getObservableValue(final IsolineLevel level) {
+    protected ObservableValue<ColorRamp> getObservableValue(final Step level) {
         return level.color;
     }
 
     /**
      * Invoked when users confirmed that (s)he wants to use the selected colors.
      *
-     * @param  level   the isoline level for which to assign new color(s).
-     * @param  colors  the new color for the given isoline, or {@code null} for resetting default value.
+     * @param  level   the value for which to assign new color(s).
+     * @param  colors  the new color for the given value, or {@code null} for resetting default value.
      * @return the type of color (always solid for this class).
      */
     @Override
-    protected ColorRamp.Type applyColors(final IsolineLevel level, ColorRamp colors) {
+    protected ColorRamp.Type applyColors(final Step level, ColorRamp colors) {
         level.color.set(colors);
         return ColorRamp.Type.SOLID;
     }
 
     /**
-     * Invoked when an isoline value has been edited. This method saves the value, checks the isoline
-     * as visible and set a default color if no color was already set.
+     * Invoked when a numerical value has been edited. This method saves the value,
+     * checks the step as visible and set a default color if no color was already set.
      */
-    private static void commitEdit(final TableColumn.CellEditEvent<IsolineLevel,Number> event) {
-        final IsolineLevel level = event.getRowValue();
+    private static void commitEdit(final TableColumn.CellEditEvent<Step,Number> event) {
+        final Step level = event.getRowValue();
         final Number obj = event.getNewValue();
         final double value = (obj != null) ? obj.doubleValue() : Double.NaN;
         level.value.set(value);
@@ -103,8 +153,8 @@ final class IsolineTable extends ColorColumnHandler<IsolineLevel> {
          * worth the additional complexity. We do not use `items.sort(…)` because we want
          * to move only one row and its new position will determine the default color.
          */
-        final TableView<IsolineLevel> table = event.getTableView();
-        final ObservableList<IsolineLevel> items = table.getItems();
+        final TableView<Step> table = event.getTableView();
+        final ObservableList<Step> items = table.getItems();
         final int row = event.getTablePosition().getRow();
         int dst = row;
         while (--dst >= 0) {
@@ -123,11 +173,11 @@ final class IsolineTable extends ColorColumnHandler<IsolineLevel> {
         }
         if (row >= size) {
             // If the edited line was the insertion row, add a new insertion row.
-            items.add(new IsolineLevel());
+            items.add(new Step());
         }
         /*
          * If the row has no color (should be the case only for insertion row), interpolate a default color
-         * using the isolines before and after the new row. If we are at the beginning or end of the list,
+         * using the steps before and after the new row. If we are at the beginning or end of the list,
          * then interpolation will actually be an extrapolation.
          */
         if (level.color.get() == null) {
@@ -143,8 +193,8 @@ final class IsolineTable extends ColorColumnHandler<IsolineLevel> {
                     iup = last - 1;
                     ilo = last - 2;
                 }
-                final IsolineLevel lo = items.get(ilo);
-                final IsolineLevel up = items.get(iup);
+                final Step lo = items.get(ilo);
+                final Step up = items.get(iup);
                 final double base = lo.value.get();
                 final double f = (value - base) / (up.value.get() - base);
                 final Color clo = lo.color.get().color();
@@ -179,13 +229,14 @@ final class IsolineTable extends ColorColumnHandler<IsolineLevel> {
      *
      * @param  vocabulary  localized resources, given because already known by the caller
      *                     (this argument would be removed if this method was public API).
+     * @return table of isolines.
      */
-    final TableView<IsolineLevel> createIsolineTable(final Vocabulary vocabulary) {
+    public final TableView<Step> createIsolineTable(final Vocabulary vocabulary) {
         /*
          * First column containing a checkbox for choosing whether the isoline should be drawn or not.
          * Header text is 🖉 (lower left pencil).
          */
-        final TableColumn<IsolineLevel,Boolean> visible = new TableColumn<>("\uD83D\uDD89");
+        final TableColumn<Step,Boolean> visible = new TableColumn<>("\uD83D\uDD89");
         visible.setCellFactory(CheckBoxTableCell.forTableColumn(visible));
         visible.setCellValueFactory((cell) -> cell.getValue().visible);
         visible.setSortable(false);
@@ -196,18 +247,18 @@ final class IsolineTable extends ColorColumnHandler<IsolineLevel> {
          * Second column containing the level value.
          * The number can be edited using a `NumberFormat` in current locale.
          */
-        final TableColumn<IsolineLevel,Number> level = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Level));
-        final FormatTableCell.Trigger<IsolineLevel> trigger = new FormatTableCell.Trigger<>(level, format);
+        final TableColumn<Step,Number> level = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Level));
+        final FormatTableCell.Trigger<Step> trigger = new FormatTableCell.Trigger<>(level, format);
         level.setCellFactory((column) -> new FormatTableCell<>(Number.class, format, trigger));
         level.setCellValueFactory((cell) -> cell.getValue().value);
-        level.setOnEditCommit(IsolineTable::commitEdit);
+        level.setOnEditCommit(ValueColorMapper::commitEdit);
         level.setSortable(false);                           // We will do our own sorting.
         level.setId("level");
         /*
          * Create the table with above "category name" column (read-only),
          * and add an editable column for color(s).
          */
-        final TableView<IsolineLevel> table = new TableView<>();
+        final TableView<Step> table = new TableView<>();
         table.getColumns().setAll(visible, level);
         addColumnTo(table, vocabulary);
         /*
@@ -215,7 +266,7 @@ final class IsolineTable extends ColorColumnHandler<IsolineLevel> {
          * when a digit is typed (this is the purpose of `trigger`). For making easier to edit the cell in current row,
          * a listener on F2 key (same as Excel and OpenOffice) is also registered.
          */
-        table.getItems().add(new IsolineLevel());
+        table.getItems().add(new Step());
         trigger.registerTo(table);
         return table;
     }

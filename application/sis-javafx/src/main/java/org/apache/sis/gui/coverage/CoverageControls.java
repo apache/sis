@@ -47,6 +47,7 @@ import org.apache.sis.image.Interpolation;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.gui.control.ValueColorMapper;
 
 
 /**
@@ -143,8 +144,8 @@ final class CoverageControls extends Controls {
          */
         final VBox isolinesPane;
         {   // Block for making variables locale to this scope.
-            final IsolineTable table = new IsolineTable();
-            final TableView<IsolineLevel> isolinesTable = table.createIsolineTable(vocabulary);
+            final ValueColorMapper table = new ValueColorMapper();
+            final TableView<ValueColorMapper.Step> isolinesTable = table.createIsolineTable(vocabulary);
             isolinesPane = new VBox(isolinesTable); // TODO: add band selector
         }
         /*

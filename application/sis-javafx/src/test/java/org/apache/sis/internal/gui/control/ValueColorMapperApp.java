@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui.coverage;
+package org.apache.sis.internal.gui.control;
 
 import java.util.Locale;
 import javafx.stage.Stage;
@@ -28,14 +28,14 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Shows isoline table built by {@link IsolineTable} with arbitrary data.
+ * Shows isoline table built by {@link ValueColorMapper} with arbitrary data.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-public final strictfp class IsolineTableApp extends Application {
+public final strictfp class ValueColorMapperApp extends Application {
     /**
      * Starts the test application.
      *
@@ -55,7 +55,7 @@ public final strictfp class IsolineTableApp extends Application {
         final BorderPane pane = new BorderPane();
         pane.setCenter(createIsolineTable());
         pane.setBottom(new Button("Focus here"));
-        window.setTitle("IsolineTable Test");
+        window.setTitle("ValueColorMapper Test");
         window.setScene(new Scene(pane));
         window.setWidth (400);
         window.setHeight(300);
@@ -65,15 +65,15 @@ public final strictfp class IsolineTableApp extends Application {
     /**
      * Creates a table with arbitrary isolines to show.
      */
-    private static TableView<IsolineLevel> createIsolineTable() {
-        final IsolineTable handler = new IsolineTable();
-        final TableView<IsolineLevel> table = handler.createIsolineTable(Vocabulary.getResources((Locale) null));
+    private static TableView<ValueColorMapper.Step> createIsolineTable() {
+        final ValueColorMapper handler = new ValueColorMapper();
+        final TableView<ValueColorMapper.Step> table = handler.createIsolineTable(Vocabulary.getResources((Locale) null));
         table.getItems().setAll(
-                new IsolineLevel( 10, Color.BLUE),
-                new IsolineLevel( 25, Color.GREEN),
-                new IsolineLevel( 50, Color.ORANGE),
-                new IsolineLevel(100, Color.RED),
-                new IsolineLevel());                    // Empty row for inserting new values.
+                new ValueColorMapper.Step( 10, Color.BLUE),
+                new ValueColorMapper.Step( 25, Color.GREEN),
+                new ValueColorMapper.Step( 50, Color.ORANGE),
+                new ValueColorMapper.Step(100, Color.RED),
+                new ValueColorMapper.Step());                    // Empty row for inserting new values.
         return table;
     }
 }
