@@ -52,7 +52,7 @@ import org.apache.sis.util.CharSequences;
  * @since 1.1
  * @module
  */
-public final class FormatTableCell<S,T> extends TableCell<S,T> {
+final class FormatTableCell<S,T> extends TableCell<S,T> {
     /**
      * The type of objects expected and returned by {@link #format}.
      */
@@ -243,7 +243,7 @@ public final class FormatTableCell<S,T> extends TableCell<S,T> {
      *
      * @param  <S>  the type of elements contained in {@link javafx.scene.control.TableView}.
      */
-    public static final class Trigger<S> implements EventHandler<KeyEvent> {
+    static final class Trigger<S> implements EventHandler<KeyEvent> {
         /**
          * The column containing the cells to transition to edition state.
          */
@@ -315,6 +315,7 @@ public final class FormatTableCell<S,T> extends TableCell<S,T> {
                     final char c = t.charAt(0);
                     if ((c >= '0' && c <= '9') || c == minusSign || c == zeroDigit) {
                         final int row = table.getItems().size() - 1;
+                        table.getSelectionModel().select(row);
                         try {
                             initialText = t;
                             table.edit(row, column);
