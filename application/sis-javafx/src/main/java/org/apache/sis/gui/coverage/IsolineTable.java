@@ -92,20 +92,85 @@ final class IsolineTable extends ColorColumnHandler<IsolineLevel> {
      */
     private static void commitEdit(final TableColumn.CellEditEvent<IsolineLevel,Number> event) {
         final IsolineLevel level = event.getRowValue();
-        final Number value = event.getNewValue();
-        level.value.set(value != null ? value.doubleValue() : Double.NaN);
-        if (level.color.get() == null) {
-            level.color.set(new ColorRamp(Color.BLACK));
-        }
+        final Number obj = event.getNewValue();
+        final double value = (obj != null) ? obj.doubleValue() : Double.NaN;
+        level.value.set(value);
         level.visible.set(true);
         /*
-         * If the edited line was the insertion row, we need to add a new insertion row.
+         * Search for index where to move the row in order to keep ascending value order.
+         * The algorithm below is okay if the new position is close to current position.
+         * A binary search would be more efficient in the general case, but it may not be
+         * worth the additional complexity. We do not use `items.sort(…)` because we want
+         * to move only one row and its new position will determine the default color.
          */
-        final ObservableList<IsolineLevel> items = event.getTableView().getItems();
+        final TableView<IsolineLevel> table = event.getTableView();
+        final ObservableList<IsolineLevel> items = table.getItems();
         final int row = event.getTablePosition().getRow();
-        if (row >= items.size() - 1) {
+        int dst = row;
+        while (--dst >= 0) {
+            // Use `!` for stopping if `value` is NaN.
+            if (!(items.get(dst).value.get() >= value)) break;
+        }
+        final int size = items.size() - 1;                  // Excluding insertion row.
+        while (++dst < size) {
+            // No `!` for continuing until the end if `value` is NaN.
+            if (dst != row && items.get(dst).value.get() >= value) break;
+        }
+        if (dst != row) {
+            if (dst >= row) dst--;
+            items.add(dst, items.remove(row));
+            table.getSelectionModel().select(dst);
+        }
+        if (row >= size) {
+            // If the edited line was the insertion row, add a new insertion row.
             items.add(new IsolineLevel());
         }
+        /*
+         * If the row has no color (should be the case only for insertion row), interpolate a default color
+         * using the isolines before and after the new row. If we are at the beginning or end of the list,
+         * then interpolation will actually be an extrapolation.
+         */
+        if (level.color.get() == null) {
+            Color color = Color.BLACK;
+            final int last = items.size() - 2;      // -1 for excluding insertion row, -1 again for last item.
+            if (last >= 2) {                        // Need 3 items: the new row + 2 items for interpolation.
+                int ilo = dst - 1;
+                int iup = dst + 1;
+                if (ilo < 0) {                       // (row index) == 0
+                    ilo = 1;
+                    iup = 2;
+                } else if (iup > last) {             // (row index) == last
+                    iup = last - 1;
+                    ilo = last - 2;
+                }
+                final IsolineLevel lo = items.get(ilo);
+                final IsolineLevel up = items.get(iup);
+                final double base = lo.value.get();
+                final double f = (value - base) / (up.value.get() - base);
+                final Color clo = lo.color.get().color();
+                final Color cup = up.color.get().color();
+                color = new Color(interpolate(f, clo.getRed(),     cup.getRed()),
+                                  interpolate(f, clo.getGreen(),   cup.getGreen()),
+                                  interpolate(f, clo.getBlue(),    cup.getBlue()),
+                                  interpolate(f, clo.getOpacity(), cup.getOpacity()));
+            }
+            level.color.set(new ColorRamp(color));
+        }
+    }
+
+    /**
+     * Interpolates or extrapolates a color component. Note: JavaFX provides a
+     * {@code Color.interpolate(…)} method, but it does not perform extrapolations.
+     *
+     * @param  f   factor between 0 and 1 for interpolations, outside that range for extrapolations.
+     * @param  lo  color component at f = 0.
+     * @param  up  color component at f = 1.
+     * @return interpolated or extrapolated color component.
+     *
+     * @see Color#interpolate(Color, double)
+     */
+    private static double interpolate(final double f, final double lo, final double up) {
+        return Math.max(0, Math.min(1, (up - lo) * f + lo));
     }
 
     /**
@@ -118,6 +183,7 @@ final class IsolineTable extends ColorColumnHandler<IsolineLevel> {
     final TableView<IsolineLevel> createIsolineTable(final Vocabulary vocabulary) {
         /*
          * First column containing a checkbox for choosing whether the isoline should be drawn or not.
+         * Header text is 🖉 (lower left pencil).
          */
         final TableColumn<IsolineLevel,Boolean> visible = new TableColumn<>("\uD83D\uDD89");
         visible.setCellFactory(CheckBoxTableCell.forTableColumn(visible));
@@ -131,8 +197,9 @@ final class IsolineTable extends ColorColumnHandler<IsolineLevel> {
          * The number can be edited using a `NumberFormat` in current locale.
          */
         final TableColumn<IsolineLevel,Number> level = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Level));
+        final FormatTableCell.Trigger<IsolineLevel> trigger = new FormatTableCell.Trigger<>(level, format);
+        level.setCellFactory((column) -> new FormatTableCell<>(Number.class, format, trigger));
         level.setCellValueFactory((cell) -> cell.getValue().value);
-        level.setCellFactory((column) -> new FormatTableCell<>(Number.class, format));
         level.setOnEditCommit(IsolineTable::commitEdit);
         level.setSortable(false);                           // We will do our own sorting.
         level.setId("level");
@@ -144,9 +211,12 @@ final class IsolineTable extends ColorColumnHandler<IsolineLevel> {
         table.getColumns().setAll(visible, level);
         addColumnTo(table, vocabulary);
         /*
-         * Add an empty row that user can edit for adding new data.
+         * Add an empty row that user can edit for adding new data. This row will automatically enter in edition state
+         * when a digit is typed (this is the purpose of `trigger`). For making easier to edit the cell in current row,
+         * a listener on F2 key (same as Excel and OpenOffice) is also registered.
          */
         table.getItems().add(new IsolineLevel());
+        trigger.registerTo(table);
         return table;
     }
 }

@@ -18,9 +18,16 @@ package org.apache.sis.internal.gui.control;
 
 import java.text.Format;
 import java.text.ParsePosition;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import javafx.geometry.Pos;
+import javafx.event.EventHandler;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TablePosition;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Background;
 import org.apache.sis.internal.gui.Styles;
@@ -53,6 +60,7 @@ public final class FormatTableCell<S,T> extends TableCell<S,T> {
 
     /**
      * The format to use for parsing and formatting {@code <T>} values.
+     * The same instance can be shared by all cells in a table.
      */
     private final Format format;
 
@@ -68,14 +76,23 @@ public final class FormatTableCell<S,T> extends TableCell<S,T> {
     private Background backgroundToRestore;
 
     /**
+     * A listener for enabling automatic transition to insertion state when a digit is pressed,
+     * or {@code null} if none. The same instance is shared by all cells in the same column.
+     */
+    private final Trigger<S> trigger;
+
+    /**
      * Creates a new table cell for parsing and formatting values of the given type.
      *
      * @param valueType  the type of objects expected and returned by {@code format}.
      * @param format     the format to use for parsing and formatting {@code <T>} values.
+     * @param trigger    listener for automatic transition to insertion state when a digit is pressed,
+     *                   or {@code null} if none.
      */
-    public FormatTableCell(final Class<T> valueType, final Format format) {
+    public FormatTableCell(final Class<T> valueType, final Format format, final Trigger<S> trigger) {
         this.valueType = valueType;
         this.format    = format;
+        this.trigger   = trigger;
         setAlignment(Pos.CENTER_LEFT);
     }
 
@@ -167,6 +184,8 @@ public final class FormatTableCell<S,T> extends TableCell<S,T> {
     @Override
     public void startEdit() {
         super.startEdit();
+        String text = (trigger != null) ? trigger.initialText : null;
+        if (text == null) text = getText();
         if (editor != null) {
             /*
              * If the editor background color has been changed because of an error,
@@ -176,9 +195,9 @@ public final class FormatTableCell<S,T> extends TableCell<S,T> {
                 editor.setBackground(backgroundToRestore);
                 backgroundToRestore = null;
             }
-            editor.setText(getText());
+            editor.setText(text);
         } else {
-            editor = new TextField(getText());
+            editor = new TextField(text);
             editor.setOnAction((event) -> {
                 event.consume();
                 parseAndCommit();
@@ -192,17 +211,120 @@ public final class FormatTableCell<S,T> extends TableCell<S,T> {
         }
         setText(null);
         setGraphic(editor);
-        editor.selectAll();
         editor.requestFocus();
+        if (trigger.initialText == null) {
+            editor.selectAll();
+        } else {
+            editor.deselect();
+            editor.end();
+        }
     }
 
     /**
      * Invoked when edition has been cancelled.
+     * The current item value is reformatted.
      */
     @Override
     public void cancelEdit() {
         super.cancelEdit();
         setGraphic(null);
         setText(format(getItem()));
+    }
+
+    /**
+     * A key event handler that can be registered on the table for transitioning automatically to edition state
+     * in the insertion row when a digit is pressed. This trigger frees user from the need to select the cell
+     * before editing the value. Current implementation reacts to digit keys, which is okay for number format.
+     * Future version may be extended to more keys if there is a need for that.
+     *
+     * <p>Note: for making easier to edit current row instead than insertion row, it is recommended to register
+     * also a listener for the F2 key (same key than Excel and OpenOffice). The {@link #registerTo(TableView)}
+     * convenience method does that.</p>
+     *
+     * @param  <S>  the type of elements contained in {@link javafx.scene.control.TableView}.
+     */
+    public static final class Trigger<S> implements EventHandler<KeyEvent> {
+        /**
+         * The column containing the cells to transition to edition state.
+         */
+        private final TableColumn<S,?> column;
+
+        /**
+         * A few special character to recognize in addition to digits.
+         */
+        private char minusSign, zeroDigit;
+
+        /**
+         * The text to initially show in the editor, or {@code null} if none.
+         * If a key has been pressed, then it should be that key.
+         */
+        String initialText;
+
+        /**
+         * Creates a new trigger for transitioning cells in the specified column.
+         *
+         * @param  column  the column containing the cells to transition to edition state.
+         * @param  format  the format used for formatting values.
+         */
+        public Trigger(final TableColumn<S,?> column, final Format format) {
+            this.column = column;
+            if (format instanceof DecimalFormat) {
+                final DecimalFormatSymbols symbols = ((DecimalFormat) format).getDecimalFormatSymbols();
+                minusSign = symbols.getMinusSign();
+                zeroDigit = symbols.getZeroDigit();
+            }
+        }
+
+        /**
+         * Registers this trigger to the given table. This method registers also a listener on the
+         * F2 key for editing cell on the current row instead than cell in the insertion row.
+         * It assumes that only one column should get the focus when F2 is pressed,
+         * and that column is the one given in constructor to this {@code Trigger}.
+         *
+         * @param  target  table where to register listeners.
+         */
+        public void registerTo(final TableView<S> target) {
+            target.addEventHandler(KeyEvent.KEY_TYPED, this);
+            target.addEventHandler(KeyEvent.KEY_PRESSED, (event) -> {
+                if (event.getCode() == KeyCode.F2) {
+                    final TableView<S> table = column.getTableView();
+                    if (table.getEditingCell() == null) {
+                        final TablePosition<?,?> cell = table.getFocusModel().getFocusedCell();
+                        if (cell != null) {
+                            table.edit(cell.getRow(), column);
+                        }
+                    }
+                    event.consume();
+                }
+            });
+        }
+
+        /**
+         * Invoked when user typed a key. If the key is one of the keys used for entering numbers
+         * and if no edition is already under way, transition to edition state on the last row.
+         * This method is public as an implementation side-effect and should not be invoked directly.
+         *
+         * @param  event  event that describe the key typed.
+         */
+        @Override
+        public void handle(final KeyEvent event) {
+            final TableView<S> table = column.getTableView();
+            if (table.getEditingCell() == null) {
+                final String t = event.getCharacter();
+                if (t.length() == 1) {
+                    final char c = t.charAt(0);
+                    if ((c >= '0' && c <= '9') || c == minusSign || c == zeroDigit) {
+                        final int row = table.getItems().size() - 1;
+                        try {
+                            initialText = t;
+                            table.edit(row, column);
+                        } finally {
+                            initialText = null;
+                        }
+                        event.consume();
+                    }
+                }
+            }
+        }
     }
 }
