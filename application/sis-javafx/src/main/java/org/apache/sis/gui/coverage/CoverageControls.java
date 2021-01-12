@@ -70,6 +70,11 @@ final class CoverageControls extends Controls {
     private final TableView<Category> categoryTable;
 
     /**
+     * The renderer of isolines.
+     */
+    private final IsolineRenderer isolines;
+
+    /**
      * The controls for changing {@link #view}.
      */
     private final Accordion controls;
@@ -144,9 +149,11 @@ final class CoverageControls extends Controls {
          */
         final VBox isolinesPane;
         {   // Block for making variables locale to this scope.
-            final ValueColorMapper table = new ValueColorMapper();
-            final TableView<ValueColorMapper.Step> isolinesTable = table.createIsolineTable(vocabulary);
-            isolinesPane = new VBox(isolinesTable); // TODO: add band selector
+            final ValueColorMapper mapper = new ValueColorMapper();
+            final TableView<ValueColorMapper.Step> table = mapper.createIsolineTable(vocabulary);
+            isolines = new IsolineRenderer(view);
+            isolines.setIsolineTables(java.util.Collections.singletonList(table));
+            isolinesPane = new VBox(table);                         // TODO: add band selector
         }
         /*
          * Put all sections together and have the first one expanded by default.

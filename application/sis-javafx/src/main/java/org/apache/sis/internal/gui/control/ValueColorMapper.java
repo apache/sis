@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.gui.control;
 
+import java.util.Objects;
 import java.text.NumberFormat;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -30,6 +31,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -45,8 +47,13 @@ import org.apache.sis.util.resources.Vocabulary;
 public final class ValueColorMapper extends ColorColumnHandler<ValueColorMapper.Step> {
     /**
      * Colors to associate to a given value.
+     *
+     * <h2>Ordering</h2>
+     * {@code Step} natural ordering is inconsistent with equals.
+     * Natural ordering is based on the {@linkplain #value} only,
+     * while the {@link #equals(Object)} method compares all properties.
      */
-    public static final class Step {
+    public static final class Step implements Comparable<Step> {
         /**
          * The value for which to associate a color. The initial value is {@link Double#NaN},
          * but that value should be used only for the insertion row.
@@ -56,11 +63,11 @@ public final class ValueColorMapper extends ColorColumnHandler<ValueColorMapper.
         /**
          * Color associated to the {@linkplain #value}.
          *
-         * The value type is {@link ColorRamp} for now, but if this property become public in a future version
-         * then the type should be changed to {@link Color} and bidirectionally binded to another property
-         * (package-private) of type {@link ColorRamp}.
+         * The value type is {@link ColorRamp} for now. But if this property become public (i.e. located
+         * in a non-internal package) in a future version then the type should be changed to {@link Color}
+         * and bidirectionally binded to another property (package-private) of type {@link ColorRamp}.
          */
-        final ObjectProperty<ColorRamp> color;
+        public final ObjectProperty<ColorRamp> color;
 
         /**
          * Whether this step should be used. For example if {@code ValueColorMapper} is used as an isoline table,
@@ -86,7 +93,59 @@ public final class ValueColorMapper extends ColorColumnHandler<ValueColorMapper.
             this.color.set(new ColorRamp(color));
             visible.set(true);
         }
+
+        /**
+         * Compares this step value with the given value for order.
+         * The comparison is applied only on the {@linkplain #value}.
+         * The color and visibility state are ignored.
+         *
+         * @param  other  the other value to compare with this step.
+         * @return +1 if the value of this step is higher than value of given step, -1 if smaller or 0 if equal.
+         */
+        @Override
+        public int compareTo(final Step other) {
+            return Double.compare(value.get(), other.value.get());
+        }
+
+        /**
+         * Compares the given object with this value for equality.
+         * This method compares all properties, including visibility and color.
+         *
+         * @param  other  the other object to compare with this step.
+         * @return whether the other object is equals to this step.
+         */
+        @Override
+        public boolean equals(final Object other) {
+            if (other instanceof Step) {
+                final Step that = (Step) other;
+                return Numerics.equals(value.get(), that.value.get()) &&
+                        Objects.equals(color.get(), that.color.get()) &&
+                        visible.get() == that.visible.get();
+            }
+            return false;
+        }
+
+        /**
+         * Returns a hash code value for this step.
+         *
+         * @return a hash code value for this step.
+         */
+        @Override
+        public int hashCode() {
+            return Double.hashCode(value.get()) + Objects.hashCode(color.get()) + Boolean.hashCode(visible.get());
+        }
+
+        /**
+         * Returns a string representation of this step for debugging purposes.
+         *
+         * @return a string representation of this step.
+         */
+        @Override
+        public String toString() {
+            return Double.toString(value.get()) + " = " + Objects.toString(color.get());
+        }
     }
+
     /**
      * The format to use for formatting numerical values.
      * The same instance will be shared by all {@link FormatTableCell}s in this table.

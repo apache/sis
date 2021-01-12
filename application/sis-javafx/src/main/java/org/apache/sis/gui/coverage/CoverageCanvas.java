@@ -26,6 +26,8 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
+import java.awt.Stroke;
+import java.awt.BasicStroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.lang.ref.Reference;
@@ -163,7 +165,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      *
      * @see #createPropertyExplorer()
      */
-    private ImagePropertyExplorer imageProperty;
+    private ImagePropertyExplorer propertyExplorer;
 
     /**
      * The status bar associated to this {@code MapCanvas}.
@@ -178,6 +180,14 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see #setOriginator(Reference)
      */
     private Reference<Resource> originator;
+
+    /**
+     * Renderer of isolines, or {@code null} if none. The presence of this field in this class may be temporary.
+     * A future version may replace this field by a more complete styling framework. Note that this class holds
+     * references to {@link javafx.scene.control.TableView} list of items, which are the list of isoline levels
+     * with their colors.
+     */
+    IsolineRenderer isolines;
 
     /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
@@ -211,9 +221,9 @@ public class CoverageCanvas extends MapCanvasAWT {
      * is being shown.
      */
     final ImagePropertyExplorer createPropertyExplorer() {
-        imageProperty = new ImagePropertyExplorer(getLocale(), fixedPane.backgroundProperty());
-        imageProperty.setImage(resampledImage, getVisibleImageBounds());
-        return imageProperty;
+        propertyExplorer = new ImagePropertyExplorer(getLocale(), fixedPane.backgroundProperty());
+        propertyExplorer.setImage(resampledImage, getVisibleImageBounds());
+        return propertyExplorer;
     }
 
     /**
@@ -442,11 +452,15 @@ public class CoverageCanvas extends MapCanvasAWT {
      * without resampling and without color ramp stretching. The call to this method is followed by a
      * a repaint event, which will cause the image to be resampled in a background thread.
      *
-     * <p>All arguments can be {@code null} for clearing the canvas.</p>
+     * <p>All arguments can be {@code null} for clearing the canvas.
+     * This method is invoked in JavaFX thread.</p>
      */
     private void setRawImage(final RenderedImage image, final GridGeometry domain, final List<SampleDimension> ranges) {
         if (TRACE) {
             trace(".setRawImage(%s)", image);
+        }
+        if (isolines != null) {
+            isolines.clear();
         }
         resampledImage = null;
         derivedImages.clear();
@@ -564,7 +578,12 @@ public class CoverageCanvas extends MapCanvasAWT {
         private final Reference<Resource> originator;
 
         /**
-         * Creates a new renderer.
+         * Snapshot of information required for rendering isolines, or {@code null} if none.
+         */
+        private IsolineRenderer.Snapshot[] isolines;
+
+        /**
+         * Creates a new renderer. Shall be invoked in JavaFX thread.
          */
         Worker(final CoverageCanvas canvas) {
             originator         = canvas.originator;
@@ -576,6 +595,9 @@ public class CoverageCanvas extends MapCanvasAWT {
             recoloredImage     = canvas.derivedImages.get(data.selectedDerivative);
             if (data.validateCRS(objectiveCRS)) {
                 resampledImage = canvas.resampledImage;
+            }
+            if (canvas.isolines != null) {
+                isolines = canvas.isolines.prepare();
             }
         }
 
@@ -642,6 +664,12 @@ public class CoverageCanvas extends MapCanvasAWT {
                     }
                 }
                 prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);
+                /*
+                 * Create isolines if requested.
+                 */
+                if (isolines != null) {
+                    data.complete(isolines);
+                }
             } finally {
                 LogHandler.loadingStop(id);
             }
@@ -656,6 +684,17 @@ public class CoverageCanvas extends MapCanvasAWT {
         protected void paint(final Graphics2D gr) {
             gr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             gr.drawRenderedImage(prefetchedImage, resampledToDisplay);
+            if (isolines != null) {
+                AffineTransform at = gr.getTransform();
+                final Stroke st = gr.getStroke();
+                gr.setStroke(new BasicStroke(0));
+                gr.transform((AffineTransform) objectiveToDisplay);     // This cast is safe in PlanarCanvas subclass.
+                for (final IsolineRenderer.Snapshot s : isolines) {
+                    s.paint(gr);
+                }
+                gr.setTransform(at);
+                gr.setStroke(st);
+            }
         }
 
         /**
@@ -665,6 +704,11 @@ public class CoverageCanvas extends MapCanvasAWT {
         @Override
         protected boolean commit(final MapCanvas canvas) {
             ((CoverageCanvas) canvas).cacheRenderingData(this);
+            if (isolines != null) {
+                for (final IsolineRenderer.Snapshot s : isolines) {
+                    s.commit();
+                }
+            }
             return super.commit(canvas);
         }
     }
@@ -684,16 +728,20 @@ public class CoverageCanvas extends MapCanvasAWT {
             trace(": New objective bounds:%n%s", this);
         }
         /*
-         * Notify the "Image properties" tab that the image changed. The `imageProperty` field is non-null
+         * Notify the "Image properties" tab that the image changed. The `propertyExplorer` field is non-null
          * only if the "Properties" section in `CoverageControls` has been shown at least once.
          */
-        if (imageProperty != null) {
-            imageProperty.setImage(resampledImage, worker.getVisibleImageBounds());
+        if (propertyExplorer != null) {
+            propertyExplorer.setImage(resampledImage, worker.getVisibleImageBounds());
             if (TRACE) {
                 trace(": Update image property view with visible area %s.",
-                      imageProperty.getVisibleImageBounds(resampledImage));
+                      propertyExplorer.getVisibleImageBounds(resampledImage));
             }
         }
+        /*
+         * Adjust the accuracy of coordinates shown in the status bar.
+         * The number of fraction digits depend on the zoom factor.
+         */
         if (statusBar != null) {
             final Object value = resampledImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY);
             Quantity<Length> accuracy = null;

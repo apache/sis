@@ -146,7 +146,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * It does not apply to the immediate feedback that the user gets from JavaFX affine transforms
      * (an image with lower quality used until the higher quality image become ready).
      */
-    private static final long REPAINT_DELAY = 500;
+    private static final long REPAINT_DELAY = 100;
 
     /**
      * The pane showing the map and any other JavaFX nodes to scale and translate together with the map.
@@ -323,7 +323,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     private void onSizeChanged(final Observable property) {
         sizeChanged = true;
-        repaintLater();
+        requestRepaint();
     }
 
     /**
@@ -374,7 +374,7 @@ public abstract class MapCanvas extends PlanarCanvas {
             final Point2D p = changeInProgress.deltaTransform(tx, ty);
             transformOnNewImage.appendTranslation(p.getX(), p.getY());
             if (!isFinal) {
-                repaintLater();
+                requestRepaint();
             }
         }
         if (isFinal && !transform.isIdentity()) {
@@ -445,7 +445,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                 transform.appendRotation(angle, x, y);
                 transformOnNewImage.appendRotation(angle, p.getX(), p.getY());
             }
-            repaintLater();
+            requestRepaint();
         }
         if (event != null) {
             event.consume();
@@ -828,18 +828,9 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Requests the map to be rendered again, possibly with new data. Invoking this
      * method does not necessarily causes the repaint process to start immediately.
-     * The request will be queued and executed at an arbitrary time.
+     * The request will be queued and executed at an arbitrary (short) time later.
      */
-    protected void requestRepaint() {
-        contentChangeCount++;
-        floatingPane.requestLayout();
-    }
-
-    /**
-     * Invokes {@link #repaint()} after a short delay. This method is used when the
-     * repaint event is caused by some gesture like pan, zoom or resizing the window.
-     */
-    private void repaintLater() {
+    public final void requestRepaint() {
         contentChangeCount++;
         if (renderingInProgress == null) {
             executeRendering(new Delayed());
@@ -1022,7 +1013,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * as an idle thread, and it is unlikely that other parts of this JavaFX application need that thread in same
      * time (if it happens, other threads will be created).</div>
      *
-     * @see #repaintLater()
+     * @see #requestRepaint()
      */
     private final class Delayed extends Task<Void> {
         @Override protected Void call() {

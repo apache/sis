@@ -119,6 +119,23 @@ public final class ColorRamp {
     }
 
     /**
+     * Returns {@code true} if this ramp has no color with a non-zero transparency.
+     * If this method returns {@code false}, then {@link #colors} is guaranteed non-empty.
+     *
+     * @return whether this color ramp is fully transparent.
+     */
+    public final boolean isTransparent() {
+        if (colors != null) {
+            for (final int code : colors) {
+                if ((code & 0xFF000000) != 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns a solid color to use for filling a rectangle in {@link ColorCell}.
      * If this item has many colors (for example because it uses a gradient),
      * then an arbitrary color is returned.

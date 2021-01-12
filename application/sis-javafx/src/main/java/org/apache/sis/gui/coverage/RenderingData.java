@@ -37,6 +37,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.PixelTranslation;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
@@ -531,6 +532,21 @@ final class RenderingData implements Cloneable {
      */
     private static void recoverableException(final Exception e) {
         Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), CoverageCanvas.class, "render", e);
+    }
+
+    /**
+     * Prepares isolines by computing the the Java2D shapes that were not already computed in a previous rendering.
+     * This method shall be invoked in a background thread after image rendering has been completed (because this
+     * method uses some image computation results).
+     *
+     * @param  isolines  value of {@link IsolineRenderer#prepare()}. Shall not be {@code null}.
+     * @return the {@code isolines} array, potentially with less elements.
+     * @throws TransformException if an interpolated point can not be transformed using the given transform.
+     */
+    final IsolineRenderer.Snapshot[] complete(final IsolineRenderer.Snapshot[] isolines) throws TransformException {
+        final MathTransform centerToObjective = PixelTranslation.translate(
+                cornerToObjective, PixelInCell.CELL_CORNER, PixelInCell.CELL_CENTER);
+        return IsolineRenderer.complete(isolines, data, centerToObjective);
     }
 
     /**

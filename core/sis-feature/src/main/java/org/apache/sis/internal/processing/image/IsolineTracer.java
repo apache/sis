@@ -77,7 +77,7 @@ final class IsolineTracer {
     int y;
 
     /**
-     * Final transform to apply on coordinates.
+     * Final transform to apply on coordinates (integer source coordinates at pixel centers).
      */
     private final MathTransform gridToCRS;
 
@@ -86,7 +86,7 @@ final class IsolineTracer {
      *
      * @param  window       the 2×2 window containing pixel values in the 4 corners of current contouring grid cell.
      * @param  pixelStride  increment to the position in {@code window} for reading next sample value.
-     * @param  gridToCRS    final transform to apply on coordinates.
+     * @param  gridToCRS    final transform to apply on coordinates (integer source coordinates at pixel centers).
      */
     IsolineTracer(final double[] window, final int pixelStride, final MathTransform gridToCRS) {
         this.window      = window;

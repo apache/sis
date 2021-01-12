@@ -112,6 +112,7 @@ public final class Isolines {
      *                    If there is more bands than {@code levels.length}, the last array is reused for
      *                    all remaining bands.
      * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
+     *                    Integer source coordinates are located at pixel centers.
      * @return the isolines for each band in the given image.
      * @throws TransformException if an interpolated point can not be transformed using the given transform.
      */
