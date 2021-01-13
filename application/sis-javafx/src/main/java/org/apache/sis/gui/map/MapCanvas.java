@@ -33,7 +33,6 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.GestureEvent;
 import javafx.scene.Cursor;
 import javafx.event.EventType;
-import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -73,6 +72,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.DelayedExecutor;
+import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
@@ -81,6 +82,8 @@ import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.referencing.IdentifiedObjects;
+
+import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISECOND;
 
 
 /**
@@ -146,8 +149,19 @@ public abstract class MapCanvas extends PlanarCanvas {
      * This delay allows to collect more events before to run a potentially costly {@link #repaint()}.
      * It does not apply to the immediate feedback that the user gets from JavaFX affine transforms
      * (an image with lower quality used until the higher quality image become ready).
+     *
+     * @see #requestRepaint()
+     * @see Delayed
      */
     private static final long REPAINT_DELAY = 100;
+
+    /**
+     * Number of nanoseconds to wait before to set mouse cursor shape to {@link Cursor#WAIT} during rendering.
+     * If the rendering complete in a shorter time, the mouse cursor will be unchanged.
+     *
+     * @see #renderingStartTime
+     */
+    private static final long WAIT_CURSOR_DELAY = (1000 - REPAINT_DELAY) * NANOS_PER_MILLISECOND;
 
     /**
      * The pane showing the map and any other JavaFX nodes to scale and translate together with the map.
@@ -197,6 +211,12 @@ public abstract class MapCanvas extends PlanarCanvas {
      * themselves new layout events. It is okay if this value overflows.
      */
     private int renderedContentStamp;
+
+    /**
+     * Value of {@link System#nanoTime()} when the last rendering started. This is used together with
+     * {@link #WAIT_CURSOR_DELAY} for deciding if mouse cursor should be {@link Cursor#WAIT}.
+     */
+    private long renderingStartTime;
 
     /**
      * Non-null if a rendering task is in progress. Used for avoiding to send too many {@link #repaint()}
@@ -255,6 +275,11 @@ public abstract class MapCanvas extends PlanarCanvas {
     private boolean isDragging;
 
     /**
+     * Whether a {@link CursorChange} is already scheduled, in which case there is no need to schedule more.
+     */
+    private boolean isMouseChangeScheduled;
+
+    /**
      * Whether a rendering is in progress. This property is set to {@code true} when {@code MapCanvas}
      * is about to start a background thread for performing a rendering, and is reset to {@code false}
      * after the {@code MapCanvas} has been updated with new rendering result.
@@ -309,7 +334,7 @@ public abstract class MapCanvas extends PlanarCanvas {
          * invoked twice anyway, but without preferred size the width appears to be 0, in which case nothing
          * is repainted.
          */
-        view.layoutBoundsProperty().addListener(this::onSizeChanged);
+        view.layoutBoundsProperty().addListener((p) -> onSizeChanged());
         view.setCursor(Cursor.CROSSHAIR);
         floatingPane = view;
         fixedPane = new StackPane(view);
@@ -322,7 +347,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Invoked when the size of the {@linkplain #floatingPane} has changed.
      * This method requests a new repaint after a short wait, in order to collect more resize events.
      */
-    private void onSizeChanged(final Observable property) {
+    private void onSizeChanged() {
         sizeChanged = true;
         requestRepaint();
     }
@@ -351,7 +376,9 @@ public abstract class MapCanvas extends PlanarCanvas {
             }
         } else if (isDragging) {
             if (type != MouseEvent.MOUSE_DRAGGED) {
-                floatingPane.setCursor(renderingInProgress != null ? Cursor.WAIT : Cursor.CROSSHAIR);
+                if (floatingPane.getCursor() == Cursor.CLOSED_HAND) {
+                    floatingPane.setCursor(Cursor.CROSSHAIR);
+                }
                 isDragging = false;
             }
             applyTranslation(x - xPanStart, y - yPanStart, type == MouseEvent.MOUSE_RELEASED);
@@ -360,9 +387,10 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Restores the cursor to its normal state after {@link Cursor#WAIT}.
+     * Restores the cursor to its normal state after rendering completion.
+     * The purpose of this method is to hide the {@link Cursor#WAIT} shape.
      */
-    private void restoreCursor() {
+    private void restoreCursorAfterPaint() {
         floatingPane.setCursor(isDragging ? Cursor.CLOSED_HAND : Cursor.CROSSHAIR);
     }
 
@@ -710,7 +738,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * <var>y</var> axis is oriented toward down. It may also swap axis order.
      *
      * <p>The rules implemented in this method are empirical and may be augmented in any future version.
-     * This method may become {@code protected} if a future version if we want to allow user to override
+     * This method may become {@code protected} in a future version if we want to allow user to override
      * with her own rules.</p>
      *
      * @param  srcAxes  axis directions in objective CRS.
@@ -752,9 +780,6 @@ public abstract class MapCanvas extends PlanarCanvas {
      *   <li>{@link MapCanvas} invokes {@link #commit(MapCanvas)} in the JavaFX thread. The nodes prepared
      *     at step 2 can be transferred to {@link MapCanvas#floatingPane} in that method.</li>
      * </ol>
-     *
-     * This class should not access any {@link MapCanvas} property from a method invoked in background thread
-     * ({@link #render()}). It may access {@link MapCanvas} properties from the {@link #commit(MapCanvas)} method.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
@@ -842,19 +867,10 @@ public abstract class MapCanvas extends PlanarCanvas {
     public final void requestRepaint() {
         contentChangeCount++;
         if (renderingInProgress == null) {
-            executeRendering(new Delayed());
+            final Delayed delay = new Delayed();
+            BackgroundThreads.execute(delay);
+            renderingInProgress = delay;    // Set last after we know that the task has been scheduled.
         }
-    }
-
-    /**
-     * Executes a rendering task in a background thread. This method applies configurations
-     * specific to the rendering process before and after delegating to the overrideable method.
-     */
-    private void executeRendering(final Task<?> worker) {
-        assert renderingInProgress == null;
-        floatingPane.setCursor(Cursor.WAIT);
-        execute(worker);
-        renderingInProgress = worker;       // Set last after we know that the task has been scheduled.
     }
 
     /**
@@ -879,6 +895,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                 return;
             }
         }
+        renderingStartTime   = System.nanoTime();
         renderedContentStamp = contentChangeCount;
         /*
          * If a new canvas size is known, inform the parent `PlanarCanvas` about that.
@@ -934,7 +951,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                 transform.setToIdentity();
             }
         } catch (TransformException | RenderException ex) {
-            restoreCursor();
+            restoreCursorAfterPaint();
             errorOccurred(ex);
             return;
         }
@@ -958,10 +975,18 @@ public abstract class MapCanvas extends PlanarCanvas {
          */
         final Renderer context = createRenderer();
         if (context != null && context.initialize(floatingPane)) {
-            executeRendering(createWorker(context));
+            final Task<?> worker = createWorker(context);
+            assert renderingInProgress == null;
+            BackgroundThreads.execute(worker);
+            renderingInProgress = worker;       // Set after we know that the task has been scheduled.
+            if (!isMouseChangeScheduled) {
+                DelayedExecutor.schedule(new CursorChange());
+                isMouseChangeScheduled = true;
+            }
         } else {
             error.set(null);
             isRendering.set(false);
+            restoreCursorAfterPaint();
         }
     }
 
@@ -1001,8 +1026,11 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     final void renderingCompleted(final Task<?> task) {
         assert Platform.isFxApplicationThread();
+        // Keep cursor unchanged if contents changed because caller will invoke `repaint()`.
+        if (!contentsChanged() || task.getState() != Task.State.SUCCEEDED) {
+            restoreCursorAfterPaint();
+        }
         renderingInProgress = null;
-        restoreCursor();
         final Point2D p = changeInProgress.transform(xPanStart, yPanStart);
         xPanStart = p.getX();
         yPanStart = p.getY();
@@ -1052,26 +1080,50 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Starts a background task for any process loading or rendering the map.
-     * This {@code MapCanvas} class invokes this method for rendering the map,
-     * but subclasses can also invoke this method for other purposes.
-     *
-     * <p>Tasks need to be careful to not access any {@code MapCanvas} property in their {@link Task#call()} method.
-     * If a canvas property is needed by the task, its value should be copied before the background thread is started.
-     * However {@link Task#succeeded()} and similar methods can safety read and write those properties.</p>
-     *
-     * <h4>Overriding</h4>
-     * Subclasses can override this method for configuring the task before execution.
-     * For example the following methods may be invoked before to call {@code super.execute(task)}:
-     * <ul>
-     *   <li><code>{@linkplain Task#runningProperty()}.addListener(…)</code></li>
-     *   <li><code>{@linkplain Task#setOnFailed Task.setOnFailed}(…)</code></li>
-     * </ul>
-     *
-     * @param  task  the task to execute in a background thread for loading or rendering the map.
+     * The action to execute if rendering appear to be slow. If the rendering did not completed
+     * after about one second, the mouse cursor shaped will be set to the wait cursor. We do not
+     * do this change immediately because the mouse cursor changes become disturbing if applied
+     * continuously for a series of fast renderings.
      */
-    protected void execute(final Task<?> task) {
-        BackgroundThreads.execute(task);
+    private final class CursorChange extends DelayedRunnable {
+        /**
+         * Value of {@link #renderingStartTime} when this delayed task has been created.
+         */
+        private final long startTime;
+
+        /**
+         * Creates a new action to execute if rendering takes longer than
+         * {@link #WAIT_CURSOR_DELAY} nanoseconds.
+         */
+        CursorChange() {
+            super(renderingStartTime + WAIT_CURSOR_DELAY);
+            startTime = renderingStartTime;
+        }
+
+        /**
+         * Invoked in a daemon thread after the delay elapsed.
+         * The mouse cursor change must be done in JavaFX thread.
+         */
+        @Override public void run() {
+            Platform.runLater(() -> setWaitCursor(startTime));
+        }
+    }
+
+    /**
+     * Invoked in JavaFX thread {@link #WAIT_CURSOR_DELAY} nanoseconds after a rendering started.
+     * If the same rendering is still under progress, the mouse cursor is set to {@link Cursor#WAIT}.
+     * If a different rendering is in progress, do not set the cursor because the GUI is fast enough
+     * but schedule a new {@link CursorChange} in case the next rendering is slow.
+     */
+    private void setWaitCursor(final long startTime) {
+        isMouseChangeScheduled = false;
+        if (renderingInProgress != null) {
+            if (startTime == renderingStartTime) {
+                floatingPane.setCursor(Cursor.WAIT);
+            }
+            DelayedExecutor.schedule(new CursorChange());
+            isMouseChangeScheduled = true;
+        }
     }
 
     /**

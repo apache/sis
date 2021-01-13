@@ -64,6 +64,7 @@ import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.portrayal.RenderException;
+import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.system.Modules;
@@ -401,7 +402,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             clear();
         } else {
             final GridExtent sliceExtent = getSliceExtent();
-            execute(new Task<RenderedImage>() {
+            BackgroundThreads.execute(new Task<RenderedImage>() {
                 /**
                  * The coverage geometry reduced to two dimensions and with a translation taking in account
                  * the {@code sliceExtent}. That value will be stored in {@link CoverageCanvas#dataGeometry}.
