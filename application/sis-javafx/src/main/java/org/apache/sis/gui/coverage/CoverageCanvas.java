@@ -61,7 +61,6 @@ import org.apache.sis.image.Interpolation;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
-import org.apache.sis.gui.map.RenderingMode;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.internal.gui.GUIUtilities;
@@ -211,7 +210,6 @@ public class CoverageCanvas extends MapCanvasAWT {
         coverageProperty     .addListener((p,o,n) -> onImageSpecified());
         sliceExtentProperty  .addListener((p,o,n) -> onImageSpecified());
         interpolationProperty.addListener((p,o,n) -> onInterpolationSpecified(n));
-        super.setRenderingMode(RenderingMode.DIRECT);
     }
 
     /**
@@ -677,8 +675,7 @@ public class CoverageCanvas extends MapCanvasAWT {
 
         /**
          * Draws the image after {@link #render()} finished to prepare data.
-         * This method may be invoked in a background thread or in JavaFX thread,
-         * depending on {@link RenderingMode}.
+         * This method is invoked in a background thread.
          */
         @Override
         protected void paint(final Graphics2D gr) {

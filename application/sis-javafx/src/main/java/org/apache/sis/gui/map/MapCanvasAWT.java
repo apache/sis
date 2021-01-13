@@ -22,7 +22,6 @@ import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.GraphicsConfiguration;
-import java.awt.RenderingHints;
 import java.awt.image.DataBufferInt;
 import java.awt.image.RenderedImage;
 import java.awt.image.BufferedImage;
@@ -35,7 +34,6 @@ import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.concurrent.Task;
 import javafx.util.Callback;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 
 
@@ -62,17 +60,6 @@ public abstract class MapCanvasAWT extends MapCanvas {
     private static final boolean NATIVE_ACCELERATION = false;
 
     /**
-     * Whether {@link Renderer} will write directly into the {@link #buffer} in JavaFX thread,
-     * instead of writing into {@link #doubleBuffer} in a background thread and copy the result
-     * in {@link #buffer} later. This flag should be set to {@code true} only when the painting
-     * is known to be fast.
-     *
-     * @see #getRenderingMode()
-     * @see #setRenderingMode(RenderingMode)
-     */
-    private boolean isDirect;
-
-    /**
      * A buffer where to draw the content of the map for the region to be displayed.
      * This buffer uses ARGB color model, contrarily to the {@link RenderedImage} of
      * {@link org.apache.sis.coverage.grid.GridCoverage} which may have any color model.
@@ -93,7 +80,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * A temporary buffer where to draw the {@link RenderedImage} in a background thread.
      * We use this double-buffering when the {@link #buffer} is already wrapped by JavaFX.
      * After creating the image in background, its content is copied to {@link #buffer} in
-     * JavaFX thread. This is used only with {@link RenderingMode#DOUBLE_BUFFERED}.
+     * JavaFX thread.
      */
     private VolatileImage doubleBuffer;
 
@@ -103,7 +90,6 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * This configuration determines whether native acceleration will be enabled or not.
      *
      * @see #NATIVE_ACCELERATION
-     * @see RenderingMode#DOUBLE_BUFFERED
      */
     private GraphicsConfiguration bufferConfiguration;
 
@@ -148,35 +134,6 @@ public abstract class MapCanvasAWT extends MapCanvas {
     }
 
     /**
-     * Returns the current strategy (double buffering) for painting the map.
-     * The use of double buffering is related to the thread doing the painting.
-     * If double buffering is enabled (the default), then {@link Renderer#paint(Graphics2D)} is invoked
-     * in a background thread and the result is copied into {@link #image} in JavaFX thread when ready.
-     * If double buffering is disabled, then {@link Renderer#paint(Graphics2D)} is invoked in JavaFX thread
-     * and modifies {@link #image} data in a more direct way.
-     *
-     * @return the current strategy (double buffering) for painting the map.
-     */
-    public RenderingMode getRenderingMode() {
-        return isDirect ? RenderingMode.DIRECT : RenderingMode.DOUBLE_BUFFERED;
-    }
-
-    /**
-     * Specifies whether to use double buffering when rendering the map.
-     * The default value is {@link RenderingMode#DOUBLE_BUFFERED}.
-     * That value should be changed to {@link RenderingMode#DIRECT} only if painting is known to be fast
-     * because that mode causes {@link Renderer#paint(Graphics2D)} to be invoked in JavaFX thread.
-     *
-     * @param  mode  the new rendering strategy.
-     */
-    public void setRenderingMode(final RenderingMode mode) {
-        ArgumentChecks.ensureNonNull("mode", mode);
-        if (isDirect != (isDirect = RenderingMode.DIRECT.equals(mode))) {
-            clearBuffer();
-        }
-    }
-
-    /**
      * Invoked in JavaFX thread for creating a renderer to be executed in a background thread.
      * Subclasses should copy in this method all {@code MapCanvas} properties that the background thread
      * will need for performing the rendering process.
@@ -195,11 +152,11 @@ public abstract class MapCanvasAWT extends MapCanvas {
      *
      * <table class="sis">
      *   <caption>Methods invoked during a map rendering process</caption>
-     *   <tr><th>Method</th>                     <th>Thread</th>                      <th>Remarks</th></tr>
-     *   <tr><td>{@link #createRenderer()}</td>  <td>JavaFX thread</td>               <td>Collects all needed information.</td></tr>
-     *   <tr><td>{@link #render()}</td>          <td>Background thread</td>           <td>Computes what can be done in advance.</td></tr>
-     *   <tr><td>{@link #paint(Graphics2D)}</td> <td>{@link #getRenderingMode()}</td> <td>May be invoked many times.</td></tr>
-     *   <tr><td>{@link #commit(MapCanvas)}</td> <td>JavaFX thread</td>               <td>Saves data to cache for reuse.</td></tr>
+     *   <tr><th>Method</th>                     <th>Thread</th>            <th>Remarks</th></tr>
+     *   <tr><td>{@link #createRenderer()}</td>  <td>JavaFX thread</td>     <td>Collects all needed information.</td></tr>
+     *   <tr><td>{@link #render()}</td>          <td>Background thread</td> <td>Computes what can be done in advance.</td></tr>
+     *   <tr><td>{@link #paint(Graphics2D)}</td> <td>Background thread</td> <td>Holds a {@link Graphics2D}.</td></tr>
+     *   <tr><td>{@link #commit(MapCanvas)}</td> <td>JavaFX thread</td>     <td>Saves data to cache for reuse.</td></tr>
      * </table>
      *
      * This class should not access any {@link MapCanvasAWT} property from a method invoked in background thread
@@ -246,12 +203,9 @@ public abstract class MapCanvasAWT extends MapCanvas {
 
         /**
          * Invoked after {@link #render()} for doing the actual map painting.
-         * This method is invoked in the JavaFX thread if the rendering mode is {@link RenderingMode#DIRECT},
-         * or in a background thread otherwise. This method should not access any {@link MapCanvas} property;
-         * if some canvas properties are needed, they should have been copied at construction time.
-         *
-         * <p>This method may be invoked many times if the rendering is done in a {@link VolatileImage}.
-         * It may happen only with {@link RenderingMode#DOUBLE_BUFFERED}.</p>
+         * This method is invoked in a background thread, potentially many times if {@link VolatileImage} content
+         * is invalidated in the middle of rendering process. This method should not access any {@link MapCanvas}
+         * property; if some canvas properties are needed, they should have been copied at construction time.
          *
          * @param  gr  the Java2D handler to use for rendering the map.
          */
@@ -281,7 +235,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * It may be because the map has new content, or because the viewed region moved or
      * has been zoomed.
      *
-     * <p>There is three possible situations:</p>
+     * <p>There is two possible situations:</p>
      * <ul class="verbose">
      *   <li>If the current buffers are not suitable, then we clear everything related to Java2D buffered images.
      *     Those resources will be recreated from scratch in background thread. There is no need for double-buffering
@@ -289,12 +243,8 @@ public abstract class MapCanvasAWT extends MapCanvas {
      *     of this task.</li>
      *   <li>Otherwise (current buffer it still valid), we should not update {@link BufferedImage} in a background
      *     thread because the internal array of that image is shared with JavaFX image. That image can be updated
-     *     only in JavaFX thread through the {@code PixelBuffer.update(…)} method. We do that in two possible ways:
-     *     <ul>
-     *       <li>{@link RenderingMode#DIRECT}: paint directly in the JavaFX thread.</li>
-     *       <li>{@link RenderingMode#DOUBLE_BUFFERED}: use a {@link VolatileImage} as a temporary buffer.</li>
-     *     </ul>
-     *   </li>
+     *     only in JavaFX thread through the {@code PixelBuffer.update(…)} method. A {@link VolatileImage} is used
+     *     as a temporary buffer.</li>
      * </ul>
      *
      * In all cases we need to be careful to not use directly any {@link MapCanvas} field from the {@code call()}
@@ -310,8 +260,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
             clearBuffer();
             return new Creator(context);
         } else {
-            return isDirect ? new Direct (context)
-                            : new Updater(context);
+            return new Updater(context);
         }
     }
 
@@ -346,16 +295,10 @@ public abstract class MapCanvasAWT extends MapCanvas {
         private GraphicsConfiguration configuration;
 
         /**
-         * Value of {@link MapCanvasAWT#isDirect} at creation time.
-         */
-        private final boolean isDirect;
-
-        /**
          * Creates a new task for painting without resource recycling.
          */
         Creator(final Renderer context) {
             renderer = context;
-            isDirect = MapCanvasAWT.this.isDirect;
         }
 
         /**
@@ -371,9 +314,6 @@ public abstract class MapCanvasAWT extends MapCanvas {
             drawTo = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
             final Graphics2D gr = drawTo.createGraphics();
             try {
-                gr.setRenderingHint(RenderingHints.KEY_RENDERING,
-                        isDirect ? RenderingHints.VALUE_RENDER_SPEED
-                                 : RenderingHints.VALUE_RENDER_QUALITY);
                 configuration = gr.getDeviceConfiguration();
                 renderer.paint(gr);
             } finally {
@@ -406,70 +346,6 @@ public abstract class MapCanvasAWT extends MapCanvas {
             buffer              = drawTo;
             bufferWrapper       = wrapper;
             bufferConfiguration = configuration;
-            final boolean done  = renderer.commit(MapCanvasAWT.this);
-            renderingCompleted(this);
-            if (!done || contentsChanged()) {
-                repaint();
-            }
-        }
-
-        @Override protected void failed()    {renderingCompleted(this);}
-        @Override protected void cancelled() {renderingCompleted(this);}
-    }
-
-    /**
-     * Tasks for updating {@link BufferedImage} directly in the JavaFX thread.
-     * This task is used if the rendering mode is {@link RenderingMode#DIRECT}.
-     */
-    private final class Direct extends Task<Void> implements Callback<PixelBuffer<IntBuffer>, Rectangle2D> {
-        /**
-         * The user-provided object which will perform the actual rendering.
-         * Its {@link Renderer#paint(Graphics2D)} method will be invoked in JavaFX thread.
-         */
-        private final Renderer renderer;
-
-        /**
-         * Creates a new task for painting directly into the buffer shared by JavaFX image.
-         */
-        Direct(final Renderer context) {
-            renderer = context;
-        }
-
-        /**
-         * Invoked in background thread for preparing the image.
-         */
-        @Override
-        protected Void call() throws Exception {
-            renderer.render();                                  // Arbitrary user-specified action.
-            return null;
-        }
-
-        /**
-         * Invoked by {@link PixelBuffer#updateBuffer(Callback)} for updating the {@link #buffer} content.
-         * This method shall be invoked in JavaFX thread. It is user responsibility to use this more only
-         * when the image is known to be very fast to draw.
-         */
-        @Override
-        public Rectangle2D call(final PixelBuffer<IntBuffer> wrapper) {
-            final BufferedImage drawTo = buffer;
-            final Graphics2D gr = drawTo.createGraphics();
-            try {
-                gr.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-                gr.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
-                gr.clearRect(0, 0, drawTo.getWidth(), drawTo.getHeight());
-                renderer.paint(gr);
-            } finally {
-                gr.dispose();
-            }
-            return null;
-        }
-
-        /**
-         * Invoked in JavaFX thread on success.
-         */
-        @Override
-        protected void succeeded() {
-            bufferWrapper.updateBuffer(this);       // This will invoke the `call(PixelBuffer)` method above.
             final boolean done  = renderer.commit(MapCanvasAWT.this);
             renderingCompleted(this);
             if (!done || contentsChanged()) {
@@ -543,7 +419,6 @@ public abstract class MapCanvasAWT extends MapCanvas {
                     }
                     final Graphics2D gr = drawTo.createGraphics();
                     try {
-                        gr.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
                         gr.setBackground(ColorModelFactory.TRANSPARENT);
                         gr.clearRect(0, 0, drawTo.getWidth(), drawTo.getHeight());
                         renderer.paint(gr);
@@ -562,6 +437,11 @@ public abstract class MapCanvasAWT extends MapCanvas {
 
         /**
          * Invoked by {@link PixelBuffer#updateBuffer(Callback)} for updating the {@link #buffer} content.
+         * This method must be invoked in JavaFX thread. It copies the {@link VolatileImage} content to the
+         * {@link BufferedImage} shared with JavaFX in a single {@code Graphics2D.drawImage(…)} operation.
+         * The whole destination surface shall be written by {@code drawImage(…)}, so there is no need to invoke
+         * {@link Graphics2D#clearRect} first. It is important because the small delay between {@code clearRect(…)}
+         * and {@code drawImage(…)} can cause twinkle.
          */
         @Override
         public Rectangle2D call(final PixelBuffer<IntBuffer> wrapper) {
