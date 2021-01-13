@@ -211,6 +211,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         coverageProperty     .addListener((p,o,n) -> onImageSpecified());
         sliceExtentProperty  .addListener((p,o,n) -> onImageSpecified());
         interpolationProperty.addListener((p,o,n) -> onInterpolationSpecified(n));
+        imageMargin.set(new Insets(64));
     }
 
     /**
@@ -596,10 +597,12 @@ public class CoverageCanvas extends MapCanvasAWT {
                 resampledImage = canvas.resampledImage;
             }
             final Insets margin = canvas.imageMargin.get();
-            displayBounds.x      -= margin.getLeft();
-            displayBounds.width  += margin.getLeft() + margin.getRight();
-            displayBounds.y      -= margin.getTop();
-            displayBounds.height += margin.getTop() + margin.getBottom();
+            if (margin != null) {
+                displayBounds.x      -= margin.getLeft();
+                displayBounds.width  += margin.getLeft() + margin.getRight();
+                displayBounds.y      -= margin.getTop();
+                displayBounds.height += margin.getTop() + margin.getBottom();
+            }
             if (canvas.isolines != null) {
                 isolines = canvas.isolines.prepare();
             }

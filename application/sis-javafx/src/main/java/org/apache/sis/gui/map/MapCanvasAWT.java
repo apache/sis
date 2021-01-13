@@ -34,9 +34,9 @@ import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.util.Callback;
-import org.apache.sis.internal.gui.NonNullObjectProperty;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 
 
@@ -65,8 +65,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
     /**
      * Number of additional pixels to paint on each sides of the image, outside the viewing area.
      * Computing a larger image reduces the black borders that user sees during translations or
-     * during zoom out before the new image is repainted.
-     * This property value can not be null but can be {@link Insets#EMPTY}.
+     * during zoom out before the new image is repainted. The default value is {@code null}.
      */
     public final ObjectProperty<Insets> imageMargin;
 
@@ -129,7 +128,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      */
     public MapCanvasAWT(final Locale locale) {
         super(locale);
-        imageMargin = new NonNullObjectProperty<>(this, "imageMargin", new Insets(128));
+        imageMargin = new SimpleObjectProperty<>(this, "imageMargin");
         image = new ImageView();
         image.setPreserveRatio(true);
         floatingPane.getChildren().add(image);
@@ -215,13 +214,17 @@ public abstract class MapCanvasAWT extends MapCanvas {
          * @param  buffer  value of {@link #buffer}.
          */
         private boolean isValid(final Insets margin, final BufferedImage buffer) {
-            final int right, bottom;
-            top    = clamp(margin.getTop());
-            right  = clamp(margin.getRight());
-            bottom = clamp(margin.getBottom());
-            left   = clamp(margin.getLeft());
-            width  = Math.addExact(getWidth(), left + right);
-            height = Math.addExact(getHeight(), top + bottom);
+            width  = getWidth();
+            height = getHeight();
+            if (margin != null) {
+                final int right, bottom;
+                top    = clamp(margin.getTop());
+                right  = clamp(margin.getRight());
+                bottom = clamp(margin.getBottom());
+                left   = clamp(margin.getLeft());
+                width  = Math.addExact(width, left + right);
+                height = Math.addExact(height, top + bottom);
+            }
             return (buffer != null)
                     && buffer.getWidth()  == width
                     && buffer.getHeight() == height;
