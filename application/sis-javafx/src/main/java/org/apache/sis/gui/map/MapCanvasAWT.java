@@ -27,13 +27,16 @@ import java.awt.image.RenderedImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
+import javafx.beans.property.ObjectProperty;
 import javafx.concurrent.Task;
 import javafx.util.Callback;
+import org.apache.sis.internal.gui.NonNullObjectProperty;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 
 
@@ -58,6 +61,14 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * Consequently before to enable this acceleration, we should benchmark to see if it is worth.
      */
     private static final boolean NATIVE_ACCELERATION = false;
+
+    /**
+     * Number of additional pixels to paint on each sides of the image, outside the viewing area.
+     * Computing a larger image reduces the black borders that user sees during translations or
+     * during zoom out before the new image is repainted.
+     * This property value can not be null but can be {@link Insets#EMPTY}.
+     */
+    public final ObjectProperty<Insets> imageMargin;
 
     /**
      * A buffer where to draw the content of the map for the region to be displayed.
@@ -118,6 +129,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      */
     public MapCanvasAWT(final Locale locale) {
         super(locale);
+        imageMargin = new NonNullObjectProperty<>(this, "imageMargin", new Insets(128));
         image = new ImageView();
         image.setPreserveRatio(true);
         floatingPane.getChildren().add(image);
@@ -170,6 +182,18 @@ public abstract class MapCanvasAWT extends MapCanvas {
      */
     protected abstract static class Renderer extends MapCanvas.Renderer {
         /**
+         * Values of the {@link MapCanvasAWT#imageMargin} property at construction time.
+         * Those values are initialized by {@link #isValid(Insets, BufferedImage)}.
+         */
+        private int left, top;
+
+        /**
+         * Image width and height, taking in account the margins.
+         * Those values are initialized by {@link #isValid(Insets, BufferedImage)}.
+         */
+        private int width, height;
+
+        /**
          * Creates a new renderer. The {@linkplain #getWidth() width} and {@linkplain #getHeight() height}
          * are initially zero; they will get a non-zero values before {@link #paint(Graphics2D)} is invoked.
          */
@@ -177,15 +201,48 @@ public abstract class MapCanvasAWT extends MapCanvas {
         }
 
         /**
+         * Rounds and clamp the given value. The upper limit is arbitrary.
+         */
+        private static int clamp(final double value) {
+            return (int) Math.max(0, Math.min(Short.MAX_VALUE, Math.round(value)));
+        }
+
+        /**
          * Returns whether the given buffer is non-null and has the expected size.
          * This verification shall be done only after {@link #initialize(Pane)} has been invoked.
          *
+         * @param  margin  value of {@link #imageMargin}.
          * @param  buffer  value of {@link #buffer}.
          */
-        final boolean isValid(final BufferedImage buffer) {
+        private boolean isValid(final Insets margin, final BufferedImage buffer) {
+            final int right, bottom;
+            top    = clamp(margin.getTop());
+            right  = clamp(margin.getRight());
+            bottom = clamp(margin.getBottom());
+            left   = clamp(margin.getLeft());
+            width  = Math.addExact(getWidth(), left + right);
+            height = Math.addExact(getHeight(), top + bottom);
             return (buffer != null)
-                    && buffer.getWidth()  == super.getWidth()
-                    && buffer.getHeight() == super.getHeight();
+                    && buffer.getWidth()  == width
+                    && buffer.getHeight() == height;
+        }
+
+        /**
+         * Applies translation on the given graphics before {@link #paint(Graphics2D)}.
+         */
+        private void translate(final Graphics2D gr) {
+            gr.translate(left, top);
+        }
+
+        /**
+         * Compensates the translation applied by {@link #translate(Graphics2D)}.
+         * This method is invoked only if the image painting has been successful,
+         * otherwise we assume that old content is still present and require the
+         * old translations.
+         */
+        private void translate(final ImageView image) {
+            image.setTranslateX(-left);
+            image.setTranslateY(-top);
         }
 
         /**
@@ -256,7 +313,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
     final Task<?> createWorker(final MapCanvas.Renderer mc) {
         assert Platform.isFxApplicationThread();
         final Renderer context = (Renderer) mc;
-        if (!context.isValid(buffer)) {
+        if (!context.isValid(imageMargin.get(), buffer)) {
             clearBuffer();
             return new Creator(context);
         } else {
@@ -309,12 +366,13 @@ public abstract class MapCanvasAWT extends MapCanvas {
         @Override
         protected WritableImage call() throws Exception {
             renderer.render();
-            final int width  = renderer.getWidth();
-            final int height = renderer.getHeight();
+            final int width  = renderer.width;
+            final int height = renderer.height;
             drawTo = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
             final Graphics2D gr = drawTo.createGraphics();
             try {
                 configuration = gr.getDeviceConfiguration();
+                renderer.translate(gr);
                 renderer.paint(gr);
             } finally {
                 gr.dispose();
@@ -343,6 +401,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
         @Override
         protected void succeeded() {
             image.setImage(getValue());
+            renderer.translate(image);
             buffer              = drawTo;
             bufferWrapper       = wrapper;
             bufferConfiguration = configuration;
@@ -404,8 +463,8 @@ public abstract class MapCanvasAWT extends MapCanvas {
         @Override
         protected VolatileImage call() throws Exception {
             renderer.render();
-            final int width  = renderer.getWidth();
-            final int height = renderer.getHeight();
+            final int width  = renderer.width;
+            final int height = renderer.height;
             VolatileImage drawTo = previousBuffer;
             previousBuffer = null;                      // For letting GC do its work.
             if (drawTo == null) {
@@ -421,6 +480,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
                     try {
                         gr.setBackground(ColorModelFactory.TRANSPARENT);
                         gr.clearRect(0, 0, drawTo.getWidth(), drawTo.getHeight());
+                        renderer.translate(gr);
                         renderer.paint(gr);
                     } finally {
                         gr.dispose();
@@ -471,6 +531,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
             } finally {
                 drawTo.flush();                     // Release native resources.
             }
+            renderer.translate(image);
             final boolean done = renderer.commit(MapCanvasAWT.this);
             renderingCompleted(this);
             if (!done || contentsLost || contentsChanged()) {

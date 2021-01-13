@@ -40,6 +40,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.geometry.Insets;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
@@ -528,9 +529,9 @@ public class CoverageCanvas extends MapCanvasAWT {
         private final LinearTransform objectiveToDisplay;
 
         /**
-         * Value of {@link CoverageCanvas#getDisplayBounds()} at the time this worker has been initialized.
-         * This is the size and location of the display device, in pixel units.
-         * This value is usually constant when the widget is not resized.
+         * Value of {@link CoverageCanvas#getDisplayBounds()} at the time this worker has been initialized,
+         * expanded by {@link CoverageCanvas#imageMargin}. This is the size and location of the display device
+         * in pixel units, plus the margin. This value is usually constant when the widget is not resized.
          */
         private final Envelope2D displayBounds;
 
@@ -594,6 +595,11 @@ public class CoverageCanvas extends MapCanvasAWT {
             if (data.validateCRS(objectiveCRS)) {
                 resampledImage = canvas.resampledImage;
             }
+            final Insets margin = canvas.imageMargin.get();
+            displayBounds.x      -= margin.getLeft();
+            displayBounds.width  += margin.getLeft() + margin.getRight();
+            displayBounds.y      -= margin.getTop();
+            displayBounds.height += margin.getTop() + margin.getBottom();
             if (canvas.isolines != null) {
                 isolines = canvas.isolines.prepare();
             }

@@ -461,7 +461,7 @@ final class RenderingData implements Cloneable {
      *
      * @param  resampledImage      the image computed by {@link #resampleAndConvert resampleAndConvert(…)}.
      * @param  resampledToDisplay  the transform computed by {@link #getTransform(LinearTransform)}.
-     * @param  displayBounds       size and location of the display device, in pixel units.
+     * @param  displayBounds       size and location of the display device (plus margin), in pixel units.
      * @return a temporary image with tiles intersecting the display region already computed.
      */
     final RenderedImage prefetch(final RenderedImage resampledImage, final AffineTransform resampledToDisplay,

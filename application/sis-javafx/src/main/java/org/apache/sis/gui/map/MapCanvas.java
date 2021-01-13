@@ -530,7 +530,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * the geographic location where the click occurred. This information is used for changing the projection
      * while preserving approximately the location, scale and rotation of pixels around the mouse cursor.
      */
-    @SuppressWarnings("serial")                                         // Not intended to be serialized.
+    @SuppressWarnings({"serial","CloneableImplementsClone"})            // Not intended to be serialized.
     final class MenuHandler extends DirectPosition2D
             implements EventHandler<MouseEvent>, ChangeListener<ReferenceSystem>, PropertyChangeListener
     {
@@ -781,7 +781,7 @@ public abstract class MapCanvas extends PlanarCanvas {
          * <p>This method is invoked after {@link #createRenderer()}
          * and before {@link #createWorker(Renderer)}.</p>
          */
-        final boolean initialize(final Pane view) {
+        private boolean initialize(final Pane view) {
             width  = Numerics.clamp(Math.round(view.getWidth()));
             height = Numerics.clamp(Math.round(view.getHeight()));
             return width > 0 && height > 0;
