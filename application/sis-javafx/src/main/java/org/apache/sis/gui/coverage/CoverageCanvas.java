@@ -102,7 +102,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see #trace(String, Object...)
      */
     @Debug
-    private static final boolean TRACE = false;
+    static final boolean TRACE = false;
 
     /**
      * The data shown in this canvas. Note that setting this property to a non-null value may not
@@ -336,7 +336,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     final void setCategoryColors(final Function<Category, java.awt.Color[]> colors) {
         if (TRACE) {
-            trace(".setCategoryColors(…)");
+            trace("setCategoryColors(Function): causes repaint.");
         }
         data.processor.setCategoryColors(colors);
         resampledImage = null;
@@ -457,7 +457,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     private void setRawImage(final RenderedImage image, final GridGeometry domain, final List<SampleDimension> ranges) {
         if (TRACE) {
-            trace(".setRawImage(%s)", image);
+            trace("setRawImage(…): the new source of data is:%n\t%s", image);
         }
         if (isolines != null) {
             isolines.clear();
@@ -480,7 +480,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     private void onInterpolationSpecified(final Interpolation newValue) {
         if (TRACE) {
-            trace(".onInterpolationSpecified(%s)", newValue);
+            trace("onInterpolationSpecified(%s)", newValue);
         }
         data.processor.setInterpolation(newValue);
         resampledImage = null;
@@ -646,7 +646,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                                            Math.abs(resampledToDisplay.getTranslateY()))
                                   < Integer.MAX_VALUE - OVERFLOW_SAFETY_MARGIN;
                         if (TRACE && !isValid) {
-                            trace(": New resample for avoiding overflow caused by translation.");
+                            trace("render(): new resample for avoiding overflow caused by translation.");
                         }
                     }
                 }
@@ -654,13 +654,13 @@ public class CoverageCanvas extends MapCanvasAWT {
                     if (recoloredImage == null) {
                         recoloredImage = data.recolor();
                         if (TRACE) {
-                            trace(": Recolor by application of %s.", data.selectedDerivative.name());
+                            trace("render(): recolor by application of %s.", data.selectedDerivative);
                         }
                     }
                     resampledImage = data.resampleAndConvert(recoloredImage, objectiveCRS, objectiveToDisplay, objectivePOI);
                     resampledToDisplay = data.getTransform(objectiveToDisplay);
                     if (TRACE) {
-                        trace(" resampling result: %s.", resampledImage);
+                        trace("render(): resampling result:%n\t%s", resampledImage);
                     }
                 }
                 prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);
@@ -719,13 +719,13 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     private void cacheRenderingData(final Worker worker) {
         if (TRACE && data.changed(worker.data)) {
-            trace(".cacheRenderingData(…):%n%s", worker.data);
+            trace("cacheRenderingData(…): new visual coverage:%n%s", worker.data);
         }
         data = worker.data;
         derivedImages.put(data.selectedDerivative, worker.recoloredImage);
         resampledImage = worker.resampledImage;
         if (TRACE) {
-            trace(": New objective bounds:%n%s", this);
+            trace("cacheRenderingData(…): objective bounds after rendering at %tT:%n%s", System.currentTimeMillis(), this);
         }
         /*
          * Notify the "Image properties" tab that the image changed. The `propertyExplorer` field is non-null
@@ -734,7 +734,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         if (propertyExplorer != null) {
             propertyExplorer.setImage(resampledImage, worker.getVisibleImageBounds());
             if (TRACE) {
-                trace(": Update image property view with visible area %s.",
+                trace("cacheRenderingData(…): Update image property view with visible area %s.",
                       propertyExplorer.getVisibleImageBounds(resampledImage));
             }
         }
@@ -783,7 +783,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     final void setStyling(final Stretching selection) {
         if (TRACE) {
-            trace(".setStyling(%s)", selection);
+            trace("setStyling(%s)", selection);
         }
         if (data.selectedDerivative != selection) {
             data.selectedDerivative = selection;
@@ -805,7 +805,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     @Override
     protected void clear() {
         if (TRACE) {
-            trace("CoverageCanvas.clear()");
+            trace("clear()");
         }
         setRawImage(null, null, null);
         super.clear();
@@ -822,7 +822,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private static void trace(final String format, final Object... arguments) {
         if (TRACE) {
-            System.out.print("CoverageCanvas");
+            System.out.print("CoverageCanvas.");
             System.out.printf(format, arguments);
             System.out.println();
         }

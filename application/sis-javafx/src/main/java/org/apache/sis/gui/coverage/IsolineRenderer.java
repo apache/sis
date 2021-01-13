@@ -294,6 +294,7 @@ final class IsolineRenderer {
      * @return the {@code snapshots} array, potentially with less elements.
      * @throws TransformException if an interpolated point can not be transformed using the given transform.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")      // Used only for debugging.
     static Snapshot[] complete(final Snapshot[] snapshots, final RenderedImage data, final MathTransform gridToCRS)
             throws TransformException
     {
@@ -322,6 +323,12 @@ final class IsolineRenderer {
          * all bands in one single call to `Isolines.generate(…)`. Results are written in empty slots of `shapes`.
          */
         if (levels != null) {
+            if (CoverageCanvas.TRACE) {
+                System.out.println("IsolineRenderer.complete(…):");
+                for (int i=0; i<levels.length; i++) {
+                    System.out.printf("\tFor band %d: %s%n", i, Arrays.toString(levels[i]));
+                }
+            }
             final Isolines[] isolines = Isolines.generate(data, levels, gridToCRS);
             for (int i=0; i<numViews; i++) {
                 snapshots[i].complete(isolines[i]);
