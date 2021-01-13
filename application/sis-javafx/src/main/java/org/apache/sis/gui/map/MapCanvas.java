@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
@@ -301,7 +302,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         view.setOnMouseDragged(this::onDrag);
         view.setOnMouseReleased(this::onDrag);
         view.setFocusTraversable(true);
-        view.addEventFilter(KeyEvent.KEY_PRESSED, this::onKeyTyped);
+        view.addEventHandler(KeyEvent.KEY_PRESSED, this::onKeyTyped);
         /*
          * Do not set a preferred size, otherwise `repaint()` is invoked twice: once with the preferred size
          * and once with the actual size of the parent window. Actually the `repaint()` method appears to be
@@ -356,6 +357,13 @@ public abstract class MapCanvas extends PlanarCanvas {
             applyTranslation(x - xPanStart, y - yPanStart, type == MouseEvent.MOUSE_RELEASED);
             event.consume();
         }
+    }
+
+    /**
+     * Restores the cursor to its normal state after {@link Cursor#WAIT}.
+     */
+    private void restoreCursor() {
+        floatingPane.setCursor(isDragging ? Cursor.CLOSED_HAND : Cursor.CROSSHAIR);
     }
 
     /**
@@ -460,8 +468,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         double tx = 0, ty = 0, zoom = 1, angle = 0;
         if (event.isAltDown()) {
             switch (event.getCode()) {
-                case RIGHT: case KP_RIGHT: angle = +15; break;
-                case LEFT:  case KP_LEFT:  angle = -15; break;
+                case RIGHT: case KP_RIGHT: angle = +7.5; break;
+                case LEFT:  case KP_LEFT:  angle = -7.5; break;
                 default:                   return;
             }
         } else {
@@ -820,6 +828,7 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Returns {@code true} if content changed since the last {@link #repaint()} execution.
+     * This is used for checking if a new call to {@link #repaint()} is necessary.
      */
     final boolean contentsChanged() {
         return contentChangeCount != renderedContentStamp;
@@ -855,6 +864,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #requestRepaint()
      */
     final void repaint() {
+        assert Platform.isFxApplicationThread();
         /*
          * If a rendering is already in progress, do not send a new request now.
          * Wait for current rendering to finish; a new one will be automatically
@@ -924,7 +934,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                 transform.setToIdentity();
             }
         } catch (TransformException | RenderException ex) {
-            floatingPane.setCursor(Cursor.CROSSHAIR);
+            restoreCursor();
             errorOccurred(ex);
             return;
         }
@@ -943,7 +953,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                     transform.getTx(),  transform.getTy()));
         }
         /*
-         * Invoke `createRenderer()` only after we finished above configuration, because that method
+         * Invoke `createWorker(…)` only after we finished above configuration, because that method
          * may take a snapshot of current canvas state in preparation for use in background threads.
          */
         final Renderer context = createRenderer();
@@ -990,8 +1000,9 @@ public abstract class MapCanvas extends PlanarCanvas {
      * It may be identity if no zoom, rotation or pan gesture has been applied since last rendering.
      */
     final void renderingCompleted(final Task<?> task) {
+        assert Platform.isFxApplicationThread();
         renderingInProgress = null;
-        floatingPane.setCursor(Cursor.CROSSHAIR);
+        restoreCursor();
         final Point2D p = changeInProgress.transform(xPanStart, yPanStart);
         xPanStart = p.getX();
         yPanStart = p.getY();
@@ -1032,6 +1043,8 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Invoked after {@link #REPAINT_DELAY} has been elapsed for performing the real repaint request.
+     *
+     * @see #requestRepaint()
      */
     private void paintAfterDelay() {
         renderingInProgress = null;

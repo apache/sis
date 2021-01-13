@@ -446,6 +446,8 @@ public abstract class MapCanvasAWT extends MapCanvas {
 
         /**
          * Invoked by {@link PixelBuffer#updateBuffer(Callback)} for updating the {@link #buffer} content.
+         * This method shall be invoked in JavaFX thread. It is user responsibility to use this more only
+         * when the image is known to be very fast to draw.
          */
         @Override
         public Rectangle2D call(final PixelBuffer<IntBuffer> wrapper) {
