@@ -27,6 +27,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.CheckBoxTableCell;
@@ -327,6 +329,21 @@ public final class ValueColorMapper extends ColorColumnHandler<ValueColorMapper.
          */
         table.getItems().add(new Step());
         trigger.registerTo(table);
+        table.setOnKeyPressed(ValueColorMapper::deleteRow);
         return table;
+    }
+
+    /**
+     * Invoked when user presses a key. If the key is "delete", then the current row is removed.
+     */
+    private static void deleteRow(final KeyEvent event) {
+        final TableView<?> table = (TableView<?>) event.getSource();
+        if (event.getCode() == KeyCode.DELETE) {
+            final int row = table.getSelectionModel().getSelectedIndex();
+            final ObservableList<?> items = table.getItems();
+            if (row >= 0 && row < items.size() - 1) {           // Do not delete last row, which is insertion row.
+                items.remove(row);
+            }
+        }
     }
 }
