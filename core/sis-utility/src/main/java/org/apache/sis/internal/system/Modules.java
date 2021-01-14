@@ -100,6 +100,11 @@ public final class Modules {
     /**
      * The {@value} module name.
      */
+    public static final String PORTRAYAL = "org.apache.sis.portrayal";
+
+    /**
+     * The {@value} module name.
+     */
     public static final String CONSOLE = "org.apache.sis.console";
 
     /**

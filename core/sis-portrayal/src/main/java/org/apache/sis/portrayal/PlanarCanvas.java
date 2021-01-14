@@ -17,10 +17,12 @@
 package org.apache.sis.portrayal;
 
 import java.util.Locale;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -28,6 +30,8 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -62,6 +66,12 @@ public abstract class PlanarCanvas extends Canvas {
      * @see #transformDisplayCoordinates(AffineTransform)
      */
     protected final AffineTransform objectiveToDisplay;
+
+    /**
+     * The display bounds in objective CRS, or {@code null} if this value needs to be recomputed.
+     * This value is invalidated every time that {@link #objectiveToDisplay} transform changes.
+     */
+    private Rectangle2D areaOfInterest;
 
     /**
      * Creates a new two-dimensional canvas.
@@ -104,6 +114,19 @@ public abstract class PlanarCanvas extends Canvas {
     }
 
     /**
+     * Sets the size and location of the display device in pixel coordinates.
+     * The given envelope shall be two-dimensional. If the given value is different than the previous value,
+     * then a change event is sent to all listeners registered for the {@value #DISPLAY_BOUNDS_PROPERTY} property.
+     *
+     * @see #getDisplayBounds()
+     */
+    @Override
+    public void setDisplayBounds(final Envelope newValue) throws RenderException {
+        areaOfInterest = null;
+        super.setDisplayBounds(newValue);
+    }
+
+    /**
      * Returns the size and location of the display device. The unit of measurement is
      * {@link Units#PIXEL} and coordinate values are usually (but not necessarily) integers.
      *
@@ -112,13 +135,39 @@ public abstract class PlanarCanvas extends Canvas {
      * The returned envelope is a copy; display changes happening after this method invocation will not be
      * reflected in the returned envelope.</p>
      *
-     * @return size and location of the display device.
+     * @return size and location of the display device in pixel coordinates.
      *
      * @see #setDisplayBounds(Envelope)
      */
     @Override
     public Envelope2D getDisplayBounds() {
         return displayBounds.isAllNaN() ? null : new Envelope2D(displayBounds);
+    }
+
+    /**
+     * Returns the bounds of the currently visible area in objective CRS.
+     * New Area Of Interests (AOI) are computed when the {@linkplain #getDisplayBounds() display bounds}
+     * or the {@linkplain #getObjectiveToDisplay() objective to display transform} change.
+     * The AOI can be used as a hint, for example in order to clip data for faster rendering.
+     *
+     * @return bounds of currently visible area in objective CRS, or {@code null} if unavailable.
+     */
+    public Rectangle2D getAreaOfInterest() {
+        if (areaOfInterest == null) {
+            final Envelope2D bounds = getDisplayBounds();
+            if (bounds != null) try {
+                /*
+                 * Following cast is safe because of the way `updateObjectiveToDisplay()` is implemented.
+                 * The `inverse()` method is invoked on `LinearTransform` instead than `AffineTransform`
+                 * because the former is cached.
+                 */
+                final AffineTransform displayToObjective = (AffineTransform) super.getObjectiveToDisplay().inverse();
+                areaOfInterest = AffineTransforms2D.transform(displayToObjective, bounds, null);
+            } catch (NoninvertibleTransformException e) {
+                Logging.unexpectedException(Logging.getLogger(Modules.PORTRAYAL), PlanarCanvas.class, "getAreaOfInterest", e);
+            }
+        }
+        return (areaOfInterest != null) ? (Rectangle2D) areaOfInterest.clone() : null;
     }
 
     /**
@@ -153,6 +202,7 @@ public abstract class PlanarCanvas extends Canvas {
      */
     @Override
     final void updateObjectiveToDisplay(final LinearTransform newValue) {
+        areaOfInterest = null;
         objectiveToDisplay.setTransform(AffineTransforms2D.castOrCopy(newValue.getMatrix()));
         super.updateObjectiveToDisplay(newValue);
     }
@@ -166,6 +216,7 @@ public abstract class PlanarCanvas extends Canvas {
      */
     public void transformObjectiveCoordinates(final AffineTransform before) {
         if (!before.isIdentity()) {
+            areaOfInterest = null;
             final LinearTransform old = hasListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
             objectiveToDisplay.concatenate(before);
             invalidateObjectiveToDisplay(old);
@@ -181,6 +232,7 @@ public abstract class PlanarCanvas extends Canvas {
      */
     public void transformDisplayCoordinates(final AffineTransform after) {
         if (!after.isIdentity()) {
+            areaOfInterest = null;
             final LinearTransform old = hasListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
             objectiveToDisplay.preConcatenate(after);
             invalidateObjectiveToDisplay(old);

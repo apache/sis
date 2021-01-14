@@ -35,7 +35,7 @@ import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
  * @since   1.1
  * @module
  */
-abstract class FlatShape extends AbstractGeometry implements Shape {
+public abstract class FlatShape extends AbstractGeometry implements Shape {
     /**
      * Cached values of shape bounds.
      *
@@ -113,5 +113,17 @@ abstract class FlatShape extends AbstractGeometry implements Shape {
     @Override
     public final PathIterator getPathIterator(final AffineTransform at, final double flatness) {
         return getPathIterator(at);
+    }
+
+    /**
+     * Returns a potentially smaller shape containing all polylines that intersect the given area of interest.
+     * This method performs only a quick check based on bounds intersections. It does not test individual points.
+     * The returned shape may still have many points outside the given bounds.
+     *
+     * @param  areaOfInterest  the area of interest. Edges are considered exclusive.
+     * @return a potentially smaller shape, or {@code null} if this shape is fully outside the AOI.
+     */
+    public FlatShape fastClip(final Rectangle2D areaOfInterest) {
+        return bounds.intersects(areaOfInterest) ? this : null;
     }
 }

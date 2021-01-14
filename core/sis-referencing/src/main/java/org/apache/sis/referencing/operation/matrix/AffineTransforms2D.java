@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
@@ -250,7 +251,7 @@ public final class AffineTransforms2D extends Static {
             dest.setRect(xmin, ymin, xmax-xmin, ymax-ymin);
             return dest;
         }
-        return new Rectangle2D.Double(xmin, ymin, xmax-xmin, ymax-ymin);
+        return new IntervalRectangle(xmin, ymin, xmax, ymax);
     }
 
     /**
@@ -294,7 +295,7 @@ public final class AffineTransforms2D extends Static {
             dest.setRect(xmin, ymin, xmax-xmin, ymax-ymin);
             return dest;
         }
-        return new Rectangle2D.Double(xmin, ymin, xmax-xmin, ymax-ymin);
+        return new IntervalRectangle(xmin, ymin, xmax, ymax);
     }
 
     /**

@@ -30,6 +30,7 @@ import java.awt.Stroke;
 import java.awt.BasicStroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Rectangle2D;
 import java.lang.ref.Reference;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Region;
@@ -548,6 +549,13 @@ public class CoverageCanvas extends MapCanvasAWT {
         private final Envelope2D displayBounds;
 
         /**
+         * Value of {@link CoverageCanvas#getAreaOfInterest()} at the time this worker has been initialized.
+         * This is the bounds of the are shown in the widget, converted to objective CRS.
+         * This is needed only if {@link #isolines} is non-null.
+         */
+        private Rectangle2D objectiveAOI;
+
+        /**
          * The coordinates of the point to show typically (but not necessarily) in the center of display area.
          * The coordinate is expressed in objective CRS.
          */
@@ -616,6 +624,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             }
             if (canvas.isolines != null) {
                 isolines = canvas.isolines.prepare();
+                objectiveAOI = canvas.getAreaOfInterest();
             }
         }
 
@@ -707,7 +716,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 gr.setStroke(new BasicStroke(0));
                 gr.transform((AffineTransform) objectiveToDisplay);     // This cast is safe in PlanarCanvas subclass.
                 for (final IsolineRenderer.Snapshot s : isolines) {
-                    s.paint(gr);
+                    s.paint(gr, objectiveAOI);
                 }
                 gr.setTransform(at);
                 gr.setStroke(st);
@@ -861,33 +870,31 @@ public class CoverageCanvas extends MapCanvasAWT {
         try {
             table.nextLine('═');
             getGridGeometry().getGeographicExtent().ifPresent((bbox) -> {
-                table.append("Geographic bounding box of display canvas:")
-                     .append(String.format("%nLongitudes: % 10.5f … % 10.5f%n"
-                                           + "Latitudes:  % 10.5f … % 10.5f",
-                             bbox.getWestBoundLongitude(), bbox.getEastBoundLongitude(),
-                             bbox.getSouthBoundLatitude(), bbox.getNorthBoundLatitude()))
+                table.append(String.format("Canvas geographic bounding box (λ,ɸ):%n"
+                             + "Max: % 10.5f°  % 10.5f°%n"
+                             + "Min: % 10.5f°  % 10.5f°",
+                             bbox.getEastBoundLongitude(), bbox.getNorthBoundLatitude(),
+                             bbox.getWestBoundLongitude(), bbox.getSouthBoundLatitude()))
                      .appendHorizontalSeparator();
             });
+            final Rectangle2D aoi = getAreaOfInterest();
             final DirectPosition poi = getPointOfInterest(true);
-            if (poi != null) {
-                table.append("Median in objective CRS:");
-                final int dimension = poi.getDimension();
-                for (int i=0; i<dimension; i++) {
-                    table.append(String.format("%n%, 16.4f", poi.getOrdinate(i)));
-                }
-                table.appendHorizontalSeparator();
+            if (aoi != null && poi != null) {
+                table.append(String.format("A/P of interest in objective CRS (x,y):%n"
+                             + "Max: %, 16.4f  %, 16.4f%n"
+                             + "POI: %, 16.4f  %, 16.4f%n"
+                             + "Min: %, 16.4f  %, 16.4f%n",
+                             aoi.getMaxX(),      aoi.getMaxY(),
+                             poi.getOrdinate(0), poi.getOrdinate(1),
+                             aoi.getMinX(),      aoi.getMinY()))
+                     .appendHorizontalSeparator();
             }
-            final Envelope2D bounds = getDisplayBounds();
-            final Rectangle db = data.displayToData(bounds, getObjectiveToDisplay().inverse());
-            table.append("Display bounds in objective CRS:").append(lineSeparator);
-            final int dimension = bounds.getDimension();
-            for (int i=0; i<dimension; i++) {
-                table.append(String.format("%, 16.4f … %, 16.4f%n", bounds.getMinimum(i), bounds.getMaximum(i)));
+            final Rectangle source = data.objectiveToData(aoi);
+            if (source != null) {
+                table.append("Extent in source coverage:").append(lineSeparator)
+                     .append(String.valueOf(new GridExtent(source))).append(lineSeparator)
+                     .nextLine();
             }
-            table.appendHorizontalSeparator();
-            table.append("Display bounds in source coverage pixels:").append(lineSeparator)
-                 .append(String.valueOf(new GridExtent(db))).append(lineSeparator)
-                 .nextLine();
             table.nextLine('═');
             table.flush();
         } catch (RenderException | TransformException | IOException e) {

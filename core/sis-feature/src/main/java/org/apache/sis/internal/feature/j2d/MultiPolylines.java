@@ -153,4 +153,29 @@ final class MultiPolylines extends FlatShape {
         final Iterator<Polyline> it = Arrays.asList(polylines).iterator();
         return it.hasNext() ? new Polyline.Iter(at, it.next(), it) : new Polyline.Iter();
     }
+
+    /**
+     * Returns a potentially smaller shape containing all polylines that intersect the given area of interest.
+     * This method performs only a quick check based on bounds intersections.
+     * The returned shape may still have many points outside the given bounds.
+     */
+    @Override
+    public FlatShape fastClip(final Rectangle2D areaOfInterest) {
+        if (bounds.intersects(areaOfInterest)) {
+            final Polyline[] clipped = new Polyline[polylines.length];
+            int count = 0;
+            for (final Polyline p : polylines) {
+                if (p.bounds.intersects(areaOfInterest)) {
+                    clipped[count++] = p;
+                }
+            }
+            if (count != 0) {
+                if (count == polylines.length) {
+                    return this;
+                }
+                return new MultiPolylines(Arrays.copyOf(clipped, count));
+            }
+        }
+        return null;
+    }
 }

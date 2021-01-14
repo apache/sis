@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.awt.Shape;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
 import javafx.application.Platform;
 import javafx.scene.control.TableView;
@@ -39,6 +40,7 @@ import org.apache.sis.internal.processing.image.Isolines;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.gui.control.ValueColorMapper.Step;
 import org.apache.sis.internal.feature.j2d.EmptyShape;
+import org.apache.sis.internal.feature.j2d.FlatShape;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -285,7 +287,7 @@ final class IsolineRenderer {
     /**
      * Continues isoline preparation by computing the missing Java2D shapes.
      * This method shall be invoked in a background thread. After this call,
-     * isolines can be painted with {@link Snapshot#paint(Graphics2D)}.
+     * isolines can be painted with {@link Snapshot#paint(Graphics2D, Rectangle2D)}.
      *
      * @param  snapshots  value of {@link #prepare()}. Shall not be {@code null}.
      * @param  data       the source of data. Used only if there is new isolines to compute.
@@ -433,12 +435,17 @@ final class IsolineRenderer {
          * Paints all isolines in the given graphics.
          * This method should be invoked in a background thread.
          *
-         * @param  target  where to draw isolines.
+         * @param  target          where to draw isolines.
+         * @param  areaOfInterest  the area where isolines will be drawn, or {@code null} if unknown.
          */
-        final void paint(final Graphics2D target) {
+        final void paint(final Graphics2D target, final Rectangle2D areaOfInterest) {
             for (int i=0; i<count; i++) {
-                final Shape shape = shapes[i];
+                Shape shape = shapes[i];
                 if (shape != null) {
+                    if (areaOfInterest != null && shape instanceof FlatShape) {
+                        shape = ((FlatShape) shape).fastClip(areaOfInterest);
+                        if (shape == null) continue;
+                    }
                     target.setColor(new Color(colors[i], true));
                     target.draw(shape);
                 }

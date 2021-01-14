@@ -25,6 +25,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
@@ -497,21 +498,14 @@ final class RenderingData implements Cloneable {
     }
 
     /**
-     * Converts the given bounds from pixel coordinates on the screen to pixel coordinates in the source coverage.
-     * As a side effect, the given {@code bounds} rectangle is updated to display bounds in objective CRS.
+     * Converts the given bounds from objective coordinates to pixel coordinates in the source coverage.
      *
-     * @param  bounds              display coordinates (in pixels).
-     * @param  displayToObjective  inverse of {@link CoverageCanvas#getObjectiveToDisplay()}.
-     *         Equivalent to {@link #displayToObjective} on the first rendering for a new zoom level,
-     *         before translations are applied by pan actions.
+     * @param  bounds  objective coordinates.
      * @return data coverage cell coordinates (in pixels).
      * @throws TransformException if the bounds can not be transformed.
      */
-    final Rectangle displayToData(final Envelope2D bounds, final LinearTransform displayToObjective) throws TransformException {
-        return (Rectangle) Shapes2D.transform(
-                MathTransforms.bidimensional(objectiveToCenter),
-                Shapes2D.transform(MathTransforms.bidimensional(displayToObjective), bounds, bounds),
-                new Rectangle());
+    final Rectangle objectiveToData(final Rectangle2D bounds) throws TransformException {
+        return (Rectangle) Shapes2D.transform(MathTransforms.bidimensional(objectiveToCenter), bounds, new Rectangle());
     }
 
     /**
