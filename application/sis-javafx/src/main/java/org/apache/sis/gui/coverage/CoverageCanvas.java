@@ -372,6 +372,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         } finally {
             LogHandler.loadingStop(id);
         }
+        clearIsolines();
     }
 
     /**
@@ -390,6 +391,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         } finally {
             LogHandler.loadingStop(id);
         }
+        clearIsolines();
     }
 
     /**
@@ -460,9 +462,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         if (TRACE) {
             trace("setRawImage(…): the new source of data is:%n\t%s", image);
         }
-        if (isolines != null) {
-            isolines.clear();
-        }
+        clearIsolines();
         resampledImage = null;
         derivedImages.clear();
         data.setImage(image, domain, ranges);
@@ -472,6 +472,16 @@ public class CoverageCanvas extends MapCanvasAWT {
         }
         setObjectiveBounds(bounds);
         requestRepaint();                       // Cause `Worker` class to be executed.
+    }
+
+    /**
+     * Clears all information that are derived from the raw image projected to objective CRS.
+     * In current version this is only isolines.
+     */
+    private void clearIsolines() {
+        if (isolines != null) {
+            isolines.clear();
+        }
     }
 
     /**
