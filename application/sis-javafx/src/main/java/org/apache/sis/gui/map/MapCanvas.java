@@ -915,8 +915,12 @@ public abstract class MapCanvas extends PlanarCanvas {
              * This code is executed only once for a new map.
              */
             if (invalidObjectiveToDisplay) {
-                invalidObjectiveToDisplay = false;
                 final Envelope2D target = getDisplayBounds();
+                if (target == null) {
+                    // Bounds are still unknown. Another repaint event will happen when they will become known.
+                    return;
+                }
+                invalidObjectiveToDisplay = false;
                 final GridExtent extent = new GridExtent(null,
                         new long[] {Math.round(target.getMinX()), Math.round(target.getMinY())},
                         new long[] {Math.round(target.getMaxX()), Math.round(target.getMaxY())}, false);
