@@ -711,9 +711,10 @@ public class CoverageCanvas extends MapCanvasAWT {
             gr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             gr.drawRenderedImage(prefetchedImage, resampledToDisplay);
             if (isolines != null) {
-                AffineTransform at = gr.getTransform();
+                final AffineTransform at = gr.getTransform();
                 final Stroke st = gr.getStroke();
-                gr.setStroke(new BasicStroke(0));
+                // Arbitrarily use a line tickness of 1/8 of source pixel size for making apparent when zoom is strong.
+                gr.setStroke(new BasicStroke(data.getDataPixelSize(objectivePOI) / 8));
                 gr.transform((AffineTransform) objectiveToDisplay);     // This cast is safe in PlanarCanvas subclass.
                 for (final IsolineRenderer.Snapshot s : isolines) {
                     s.paint(gr, objectiveAOI);

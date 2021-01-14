@@ -31,6 +31,7 @@ import java.awt.geom.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -495,6 +496,32 @@ final class RenderingData implements Cloneable {
         resampledToDisplay.concatenate(displayToObjective);
         ImageUtilities.roundIfAlmostInteger(resampledToDisplay);
         return resampledToDisplay;
+    }
+
+    /**
+     * Returns an estimation of the size of data pixels, in objective CRS.
+     *
+     * @param  objectivePOI  point of interest in objective CRS.
+     * @return an estimation of the source pixel size at the given location.
+     */
+    final float getDataPixelSize(final DirectPosition objectivePOI) {
+        if (objectiveToCenter != null) try {
+            final Matrix d = objectiveToCenter.derivative(objectivePOI);
+            double sum = 0;
+            for (int j=d.getNumRow(); --j >= 0;) {
+                for (int i=d.getNumCol(); --i >= 0;) {
+                    final double v = d.getElement(j, i);
+                    sum += v*v;
+                }
+            }
+            final float r = (float) (1 / Math.sqrt(sum));
+            if (r > 0 && r != Float.POSITIVE_INFINITY) {
+                return r;
+            }
+        } catch (TransformException e) {
+            recoverableException(e);
+        }
+        return 0;
     }
 
     /**
