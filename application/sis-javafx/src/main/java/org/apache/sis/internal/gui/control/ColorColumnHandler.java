@@ -23,7 +23,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.beans.value.ObservableValue;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.ImmutableObjectProperty;
 
 
@@ -108,12 +107,12 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
      * Adds a colors column to the specified table.
      * This method also modifies the table configuration.
      *
-     * @param  table       the table where to add a colors column.
-     * @param  vocabulary  localized resources, given because already known by the caller
-     *                     (this argument would be removed if this method was public API).
+     * @param  table   the table where to add a colors column.
+     * @param  header  column title to shown in header row. This is typically "Color" or "Colors".
+     *                 The use of singular or plural depends on whether the column allows color gradients.
      */
-    protected final void addColumnTo(final TableView<S> table, final Vocabulary vocabulary) {
-        final TableColumn<S,ColorRamp> colors = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Colors));
+    protected final void addColumnTo(final TableView<S> table, final String header) {
+        final TableColumn<S,ColorRamp> colors = new TableColumn<>(header);
         colors.setCellFactory((column) -> new ColorCell<S>(this));
         colors.setCellValueFactory(this);
         colors.setSortable(false);

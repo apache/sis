@@ -180,7 +180,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
          */
         final TableView<Category> table = new TableView<>();
         table.getColumns().add(name);
-        addColumnTo(table, vocabulary);
+        addColumnTo(table, vocabulary.getString(Vocabulary.Keys.Colors));
         return table;
     }
 

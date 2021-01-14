@@ -321,7 +321,7 @@ public final class ValueColorMapper extends ColorColumnHandler<ValueColorMapper.
          */
         final TableView<Step> table = new TableView<>();
         table.getColumns().setAll(visible, level);
-        addColumnTo(table, vocabulary);
+        addColumnTo(table, vocabulary.getString(Vocabulary.Keys.Color));
         /*
          * Add an empty row that user can edit for adding new data. This row will automatically enter in edition state
          * when a digit is typed (this is the purpose of `trigger`). For making easier to edit the cell in current row,
