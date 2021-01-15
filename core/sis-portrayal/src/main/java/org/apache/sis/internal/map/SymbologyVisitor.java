@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.map;
 
+import java.util.Collection;
+import java.util.List;
 import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.BinaryLogicOperator;
 import org.opengis.filter.ExcludeFilter;
@@ -88,19 +90,19 @@ public abstract class SymbologyVisitor {
 
     public void visit(Style candidate) {
         for (FeatureTypeStyle fts : candidate.featureTypeStyles()) {
-            visit(fts);
+            if (fts != null) visit(fts);
         }
     }
 
     public void visit(FeatureTypeStyle candidate) {
         for (Rule rule : candidate.rules()) {
-            visit(rule);
+            if (rule != null) visit(rule);
         }
     }
 
     public void visit(Rule candidate) {
         for (Symbolizer symbolizer : candidate.symbolizers()) {
-            visit(symbolizer);
+            if (symbolizer != null) visit(symbolizer);
         }
     }
 
@@ -123,59 +125,79 @@ public abstract class SymbologyVisitor {
     }
 
     public void visit(PointSymbolizer candidate) {
-        visit(candidate.getGeometry());
-        visit(candidate.getGraphic());
+        visitNoNull(candidate.getGeometry());
+        final Graphic graphic = candidate.getGraphic();
+        if (graphic != null) visit(graphic);
     }
 
     public void visit(LineSymbolizer candidate) {
-        visit(candidate.getGeometry());
-        visit(candidate.getPerpendicularOffset());
-        visit(candidate.getStroke());
+        visitNoNull(candidate.getGeometry());
+        visitNoNull(candidate.getPerpendicularOffset());
+        final Stroke stroke = candidate.getStroke();
+        if (stroke != null) visit(stroke);
     }
 
     public void visit(PolygonSymbolizer candidate) {
-        visit(candidate.getDisplacement());
-        visit(candidate.getFill());
-        visit(candidate.getGeometry());
-        visit(candidate.getPerpendicularOffset());
-        visit(candidate.getStroke());
+        visitNoNull(candidate.getGeometry());
+        visitNoNull(candidate.getPerpendicularOffset());
+
+        final Displacement displacement = candidate.getDisplacement();
+        final Fill fill = candidate.getFill();
+        final Stroke stroke = candidate.getStroke();
+        if (displacement != null) visit(displacement);
+        if (fill != null) visit(fill);
+        if (stroke != null) visit(stroke);
     }
 
     public void visit(TextSymbolizer candidate) {
-        visit(candidate.getFill());
-        visit(candidate.getFont());
-        visit(candidate.getGeometry());
-        visit(candidate.getHalo());
-        visit(candidate.getLabel());
-        visit(candidate.getLabelPlacement());
+        visitNoNull(candidate.getGeometry());
+        visitNoNull(candidate.getLabel());
+        final Fill fill = candidate.getFill();
+        final Font font = candidate.getFont();
+        final Halo halo = candidate.getHalo();
+        final LabelPlacement labelPlacement = candidate.getLabelPlacement();
+        if (fill != null) visit(fill);
+        if (font != null) visit(font);
+        if (halo != null) visit(halo);
+        if (labelPlacement != null) visit(labelPlacement);
     }
 
     public void visit(RasterSymbolizer candidate) {
-        visit(candidate.getChannelSelection());
-        visit(candidate.getColorMap());
-        visit(candidate.getContrastEnhancement());
-        visit(candidate.getGeometry());
-        visit(candidate.getImageOutline());
-        visit(candidate.getOpacity());
-        visit(candidate.getShadedRelief());
+        visitNoNull(candidate.getGeometry());
+        visitNoNull(candidate.getOpacity());
+        final ChannelSelection channelSelection = candidate.getChannelSelection();
+        final ColorMap colorMap = candidate.getColorMap();
+        final ContrastEnhancement contrastEnhancement = candidate.getContrastEnhancement();
+        final Symbolizer imageOutline = candidate.getImageOutline();
+        final ShadedRelief shadedRelief = candidate.getShadedRelief();
+        if (channelSelection != null) visit(channelSelection);
+        if (colorMap != null) visit(colorMap);
+        if (contrastEnhancement != null) visit(contrastEnhancement);
+        if (imageOutline != null) visit(imageOutline);
+        if (shadedRelief != null) visit(shadedRelief);
     }
 
     public void visit(ExtensionSymbolizer candidate) {
-        visit(candidate.getGeometry());
+        visitNoNull(candidate.getGeometry());
         for (Expression exp : candidate.getParameters().values()) {
-            visit(exp);
+            visitNoNull(exp);
         }
     }
 
     public void visit(Graphic candidate) {
-        visit(candidate.getAnchorPoint());
-        visit(candidate.getDisplacement());
-        visit(candidate.getOpacity());
-        visit(candidate.getRotation());
-        visit(candidate.getSize());
+        visitNoNull(candidate.getOpacity());
+        visitNoNull(candidate.getRotation());
+        visitNoNull(candidate.getSize());
 
-        for (GraphicalSymbol gs : candidate.graphicalSymbols()) {
-            visit(gs);
+        final AnchorPoint anchorPoint = candidate.getAnchorPoint();
+        final Displacement displacement = candidate.getDisplacement();
+        final List<GraphicalSymbol> graphicalSymbols = candidate.graphicalSymbols();
+        if (anchorPoint != null) visit(anchorPoint);
+        if (displacement != null) visit(displacement);
+        if (graphicalSymbols != null) {
+            for (GraphicalSymbol gs : graphicalSymbols) {
+                visit(gs);
+            }
         }
     }
 
@@ -190,15 +212,21 @@ public abstract class SymbologyVisitor {
     }
 
     public void visit(Mark candidate) {
-        visit(candidate.getExternalMark());
-        visit(candidate.getFill());
-        visit(candidate.getStroke());
-        visit(candidate.getWellKnownName());
+        final ExternalMark externalMark = candidate.getExternalMark();
+        final Fill fill = candidate.getFill();
+        final Stroke stroke = candidate.getStroke();
+        if (externalMark != null) visit(externalMark);
+        if (fill != null) visit(fill);
+        if (stroke != null) visit(stroke);
+        visitNoNull(candidate.getWellKnownName());
     }
 
     public void visit(ExternalGraphic candidate) {
-        for (ColorReplacement cr : candidate.getColorReplacements()) {
-            visit(cr);
+        final Collection<ColorReplacement> colorReplacements = candidate.getColorReplacements();
+        if (colorReplacements != null) {
+            for (ColorReplacement cr : colorReplacements) {
+                visit(cr);
+            }
         }
     }
 
@@ -206,37 +234,40 @@ public abstract class SymbologyVisitor {
     }
 
     public void visit(Stroke candidate) {
-        visit(candidate.getColor());
-        visit(candidate.getDashOffset());
-        visit(candidate.getGraphicFill());
-        visit(candidate.getGraphicStroke());
-        visit(candidate.getLineCap());
-        visit(candidate.getLineJoin());
-        visit(candidate.getOpacity());
-        visit(candidate.getWidth());
+        final GraphicFill graphicFill = candidate.getGraphicFill();
+        final GraphicStroke graphicStroke = candidate.getGraphicStroke();
+        visitNoNull(candidate.getColor());
+        visitNoNull(candidate.getDashOffset());
+        if (graphicFill != null) visit(graphicFill);
+        if (graphicStroke != null) visit(graphicStroke);
+        visitNoNull(candidate.getLineCap());
+        visitNoNull(candidate.getLineJoin());
+        visitNoNull(candidate.getOpacity());
+        visitNoNull(candidate.getWidth());
     }
 
     public void visit(Description candidate) {
     }
 
     public void visit(Displacement candidate) {
-        visit(candidate.getDisplacementX());
-        visit(candidate.getDisplacementY());
+        visitNoNull(candidate.getDisplacementX());
+        visitNoNull(candidate.getDisplacementY());
     }
 
     public void visit(Fill candidate) {
-        visit(candidate.getColor());
-        visit(candidate.getGraphicFill());
-        visit(candidate.getOpacity());
+        final GraphicFill graphicFill = candidate.getGraphicFill();
+        if (graphicFill != null) visit(graphicFill);
+        visitNoNull(candidate.getColor());
+        visitNoNull(candidate.getOpacity());
     }
 
     public void visit(Font candidate) {
         for (Expression exp : candidate.getFamily()) {
-            visit(exp);
+            visitNoNull(exp);
         }
-        visit(candidate.getSize());
-        visit(candidate.getStyle());
-        visit(candidate.getWeight());
+        visitNoNull(candidate.getSize());
+        visitNoNull(candidate.getStyle());
+        visitNoNull(candidate.getWeight());
     }
 
     public void visit(GraphicFill candidate) {
@@ -245,8 +276,8 @@ public abstract class SymbologyVisitor {
 
     public void visit(GraphicStroke candidate) {
         visit((Graphic) candidate);
-        visit(candidate.getGap());
-        visit(candidate.getInitialGap());
+        visitNoNull(candidate.getGap());
+        visitNoNull(candidate.getInitialGap());
     }
 
     public void visit(LabelPlacement candidate) {
@@ -260,20 +291,22 @@ public abstract class SymbologyVisitor {
     }
 
     public void visit(PointPlacement candidate) {
-        visit(candidate.getAnchorPoint());
-        visit(candidate.getDisplacement());
-        visit(candidate.getRotation());
+        final AnchorPoint anchorPoint = candidate.getAnchorPoint();
+        final Displacement displacement = candidate.getDisplacement();
+        if (anchorPoint != null) visit(anchorPoint);
+        if (displacement != null) visit(displacement);
+        visitNoNull(candidate.getRotation());
     }
 
     public void visit(AnchorPoint candidate) {
-        visit(candidate.getAnchorPointX());
-        visit(candidate.getAnchorPointY());
+        visitNoNull(candidate.getAnchorPointX());
+        visitNoNull(candidate.getAnchorPointY());
     }
 
     public void visit(LinePlacement candidate) {
-        visit(candidate.getGap());
-        visit(candidate.getInitialGap());
-        visit(candidate.getPerpendicularOffset());
+        visitNoNull(candidate.getGap());
+        visitNoNull(candidate.getInitialGap());
+        visitNoNull(candidate.getPerpendicularOffset());
     }
 
     public void visit(GraphicLegend candidate) {
@@ -281,35 +314,40 @@ public abstract class SymbologyVisitor {
     }
 
     public void visit(Halo candidate) {
-        visit(candidate.getFill());
-        visit(candidate.getRadius());
+        final Fill fill = candidate.getFill();
+        if (fill != null) visit(fill);
+        visitNoNull(candidate.getRadius());
     }
 
     public void visit(ColorMap candidate) {
-        visit(candidate.getFunction());
+        visitNoNull(candidate.getFunction());
     }
 
     public void visit(ColorReplacement candidate) {
-        visit(candidate.getRecoding());
+        visitNoNull(candidate.getRecoding());
     }
 
     public void visit(ContrastEnhancement candidate) {
-        visit(candidate.getGammaValue());
+        visitNoNull(candidate.getGammaValue());
     }
 
     public void visit(ChannelSelection candidate) {
-        visit(candidate.getGrayChannel());
-        for (SelectedChannelType sct : candidate.getRGBChannels()) {
-            visit(sct);
+        final SelectedChannelType grayChannel = candidate.getGrayChannel();
+        final SelectedChannelType[] rgbChannels = candidate.getRGBChannels();
+        if (grayChannel != null) visit(grayChannel);
+        if (rgbChannels != null) {
+            for (SelectedChannelType sct : rgbChannels) {
+                visit(sct);
+            }
         }
     }
 
     public void visit(SelectedChannelType candidate) {
-        visit(candidate.getContrastEnhancement());
+        if (candidate.getContrastEnhancement() != null) visit(candidate.getContrastEnhancement());
     }
 
     public void visit(ShadedRelief candidate) {
-        visit(candidate.getReliefFactor());
+        visitNoNull(candidate.getReliefFactor());
     }
 
     public void visit(Filter candidate) {
@@ -342,52 +380,56 @@ public abstract class SymbologyVisitor {
         }
     }
 
+    protected final void visitNoNull(Filter candidate) {
+        if (candidate != null) visit(candidate);
+    }
+
     public void visit(BinaryLogicOperator candidate) {
         for (Filter f : candidate.getChildren()) {
-            visit(f);
+            visitNoNull(f);
         }
     }
 
     public void visit(Not candidate) {
-        visit(candidate.getFilter());
+        visitNoNull(candidate.getFilter());
     }
 
     public void visit(PropertyIsBetween candidate) {
-        visit(candidate.getExpression());
-        visit(candidate.getLowerBoundary());
-        visit(candidate.getUpperBoundary());
+        visitNoNull(candidate.getExpression());
+        visitNoNull(candidate.getLowerBoundary());
+        visitNoNull(candidate.getUpperBoundary());
     }
 
     public void visit(BinaryComparisonOperator candidate) {
-        visit(candidate.getExpression1());
-        visit(candidate.getExpression2());
+        visitNoNull(candidate.getExpression1());
+        visitNoNull(candidate.getExpression2());
     }
 
     public void visit(BinarySpatialOperator candidate) {
-        visit(candidate.getExpression1());
-        visit(candidate.getExpression2());
+        visitNoNull(candidate.getExpression1());
+        visitNoNull(candidate.getExpression2());
     }
 
     public void visit(DistanceBufferOperator candidate) {
-        visit(candidate.getExpression1());
-        visit(candidate.getExpression2());
+        visitNoNull(candidate.getExpression1());
+        visitNoNull(candidate.getExpression2());
     }
 
     public void visit(BinaryTemporalOperator candidate) {
-        visit(candidate.getExpression1());
-        visit(candidate.getExpression2());
+        visitNoNull(candidate.getExpression1());
+        visitNoNull(candidate.getExpression2());
     }
 
     public void visit(PropertyIsLike candidate) {
-        visit(candidate.getExpression());
+        visitNoNull(candidate.getExpression());
     }
 
     public void visit(PropertyIsNull candidate) {
-        visit(candidate.getExpression());
+        visitNoNull(candidate.getExpression());
     }
 
     public void visit(PropertyIsNil candidate) {
-        visit(candidate.getExpression());
+        visitNoNull(candidate.getExpression());
     }
 
     public void visit(ExcludeFilter candidate) {
@@ -415,18 +457,22 @@ public abstract class SymbologyVisitor {
         }
     }
 
+    protected final void visitNoNull(Expression candidate) {
+        if (candidate != null) visit(candidate);
+    }
+
     public void visit(PropertyName candidate) {
     }
 
     public void visit(Function candidate) {
         for (Expression ex : candidate.getParameters()) {
-            visit(ex);
+            visitNoNull(ex);
         }
     }
 
     public void visit(BinaryExpression candidate) {
-        visit(candidate.getExpression1());
-        visit(candidate.getExpression2());
+        visitNoNull(candidate.getExpression1());
+        visitNoNull(candidate.getExpression2());
     }
 
     public void visit(NilExpression candidate) {

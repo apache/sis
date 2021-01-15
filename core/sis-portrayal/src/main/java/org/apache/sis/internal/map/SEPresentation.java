@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.map;
 
+import java.util.Objects;
 import org.apache.sis.portrayal.MapLayer;
 import org.apache.sis.storage.Resource;
 import org.opengis.feature.Feature;
@@ -33,7 +34,7 @@ import org.opengis.style.Symbolizer;
  * @since   2.0
  * @module
  */
-public class SEPresentation extends Presentation {
+public final class SEPresentation extends Presentation {
 
     private Symbolizer symbolizer;
 
@@ -54,6 +55,31 @@ public class SEPresentation extends Presentation {
 
     public void setSymbolizer(Symbolizer symbolizer) {
         this.symbolizer = symbolizer;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 71 * hash + Objects.hashCode(this.symbolizer);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SEPresentation other = (SEPresentation) obj;
+        if (!Objects.equals(this.symbolizer, other.symbolizer)) {
+            return false;
+        }
+        return super.equals(obj);
     }
 
 }

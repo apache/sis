@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.map;
 
+import java.util.Objects;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.portrayal.MapLayer;
 import org.apache.sis.storage.DataStore;
@@ -107,4 +108,38 @@ public abstract class Presentation {
     public void setCandidate(Feature feature) {
         this.candidate = feature;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + Objects.hashCode(this.layer);
+        hash = 89 * hash + Objects.hashCode(this.resource);
+        hash = 89 * hash + Objects.hashCode(this.candidate);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Presentation other = (Presentation) obj;
+        if (!Objects.equals(this.layer, other.layer)) {
+            return false;
+        }
+        if (!Objects.equals(this.resource, other.resource)) {
+            return false;
+        }
+        if (!Objects.equals(this.candidate, other.candidate)) {
+            return false;
+        }
+        return true;
+    }
+
 }
