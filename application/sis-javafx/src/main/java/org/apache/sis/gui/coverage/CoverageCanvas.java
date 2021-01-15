@@ -57,7 +57,9 @@ import org.apache.sis.coverage.grid.ImageRenderer;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.coverage.Category;
@@ -549,9 +551,11 @@ public class CoverageCanvas extends MapCanvasAWT {
         private final Envelope2D displayBounds;
 
         /**
-         * Value of {@link CoverageCanvas#getAreaOfInterest()} at the time this worker has been initialized.
-         * This is the bounds of the are shown in the widget, converted to objective CRS.
+         * Bounds of the currently visible area (plus margin) in units of objective CRS.
+         * The AOI can be used as a hint, for example in order to clip data for faster rendering.
          * This is needed only if {@link #isolines} is non-null.
+         *
+         * @see CoverageCanvas#getAreaOfInterest()
          */
         private Rectangle2D objectiveAOI;
 
@@ -622,15 +626,18 @@ public class CoverageCanvas extends MapCanvasAWT {
                 displayBounds.y      -= margin.getTop();
                 displayBounds.height += margin.getTop() + margin.getBottom();
             }
-            if (canvas.isolines != null) {
+            if (canvas.isolines != null) try {
                 isolines = canvas.isolines.prepare();
-                objectiveAOI = canvas.getAreaOfInterest();
+                objectiveAOI = Shapes2D.transform(MathTransforms.bidimensional(objectiveToDisplay.inverse()), displayBounds, null);
+            } catch (TransformException e) {
+                unexpectedException(e);                     // Should never happen.
             }
         }
 
         /**
-         * Returns the bounds of the image part which is currently shown. This method can be invoked
-         * only after {@link #render()}. It returns {@code null} if the visible bounds are unknown.
+         * Returns the region of source image which is currently shown, in units of source coverage pixels.
+         * This method can be invoked only after {@link #render()}. It returns {@code null} if the visible
+         * bounds are unknown.
          *
          * @see CoverageCanvas#getVisibleImageBounds()
          */
@@ -787,21 +794,39 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Returns the bounds of the image part which is currently shown. This method performs the same work
-     * than {@link Worker#getVisibleImageBounds()} in a less efficient way. It is used when no worker is
-     * available.
+     * Returns the region of source image which is currently shown, in units of source coverage pixels.
+     * This method performs the same work than {@link Worker#getVisibleImageBounds()} in a less efficient way.
+     * It is used when no worker is available.
      *
      * @see Worker#getVisibleImageBounds()
      */
     private Rectangle getVisibleImageBounds() {
         final Envelope2D displayBounds = getDisplayBounds();
-        final AffineTransform resampledToDisplay = data.getTransform(getObjectiveToDisplay());
-        try {
+        if (displayBounds != null) try {
+            final AffineTransform resampledToDisplay = data.getTransform(getObjectiveToDisplay());
             return (Rectangle) AffineTransforms2D.inverseTransform(resampledToDisplay, displayBounds, new Rectangle());
         } catch (NoninvertibleTransformException e) {
             unexpectedException(e);                     // Should never happen.
         }
         return null;
+    }
+
+    /**
+     * Returns the bounds of the currently visible area in units of objective CRS.
+     * This AOI changes when the {@linkplain #getDisplayBounds() display bounds} or
+     * the {@linkplain #getObjectiveToDisplay() objective to display transform} changed.
+     * The AOI can be used as a hint, for example in order to clip data for faster rendering.
+     *
+     * @return bounds of currently visible area in objective CRS, or {@code null} if unavailable.
+     *
+     * @see Worker#objectiveAOI
+     */
+    private Rectangle2D getAreaOfInterest() throws TransformException {
+        final Envelope2D displayBounds = getDisplayBounds();
+        if (displayBounds == null) {
+            return null;
+        }
+        return Shapes2D.transform(MathTransforms.bidimensional(getObjectiveToDisplay().inverse()), displayBounds, null);
     }
 
     /**
