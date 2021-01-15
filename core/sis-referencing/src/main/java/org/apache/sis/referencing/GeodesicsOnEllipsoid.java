@@ -796,6 +796,9 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
              */
             if (α1 == (α1 -= dα1)) {
                 moreRefinements = 0;
+                if (STORE_LOCAL_VARIABLES) {
+                    store("dα₁ ≪ α₁", dα1);                         // Flag for `iterationReachedPrecisionLimit` in tests.
+                }
             }
             if (STORE_LOCAL_VARIABLES) {                            // For comparing values against Karney table 5 and 6.
                 final double I1_σ2;

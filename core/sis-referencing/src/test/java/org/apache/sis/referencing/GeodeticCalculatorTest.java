@@ -120,6 +120,15 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
+     * Clears test data before to test a new point. The default implementation does nothing.
+     * This is overridden when specialized {@link GeodesicsOnEllipsoid} subclasses are used
+     * for tracking local variables, for making sure that we do not mix the variables of two
+     * different test cases.
+     */
+    void clear() {
+    }
+
+    /**
      * Tests some simple azimuth directions. The expected directions are approximately North, East,
      * South and West, but not exactly because of Earth curvature. The test verify merely that the
      * azimuths are approximately correct.
@@ -150,6 +159,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
         c.setEndGeographicPoint  (-20,  30);  assertEquals( 180, c.getStartingAzimuth(), tolerance);
         c.setEndGeographicPoint  (-90,  30);  assertEquals( 180, c.getStartingAzimuth(), tolerance);
 
+        clear();
         c.setStartGeographicPoint( 90,   0);
         c.setEndGeographicPoint  ( 20,  20);  assertEquals( 160, c.getStartingAzimuth(), tolerance);
         c.setEndGeographicPoint  ( 20, -20);  assertEquals(-160, c.getStartingAzimuth(), tolerance);
@@ -367,6 +377,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
                     }
                 }
             }
+            clear();
         }
         if (errors != null) {
             out.println("Distance between points on Bézier curve and points on geodesic.");
@@ -456,12 +467,14 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
                 final double cosφ1 = abs(cos(toRadians(expected[COLUMN_φ1])));          // For adjusting longitude tolerance.
                 final double cosφ2 = abs(cos(toRadians(expected[COLUMN_φ2])));
                 double linearTolerance, latitudeTolerance, longitudeTolerance, azimuthTolerance;
+                final boolean isLongArcOnEquator;
                 if (isSphere) {
                     /*
                      * When spherical formulas are used instead than ellipsoidal formulas, an error up to 1% is expected
                      * in distance calculations (source: Wikipedia). A yet larger error is observed for azimuth values,
                      * especially near poles and between antipodal points. Following are empirical thresholds.
                      */
+                    isLongArcOnEquator = false;                                 // Not a problem in spherical case.
                     linearTolerance    = expected[COLUMN_Δs] * 0.01;
                     latitudeTolerance  = toDegrees(linearTolerance / c.semiMajorAxis);
                     longitudeTolerance = expected[COLUMN_φ2] > 89.5 ? 180 : latitudeTolerance / cosφ2;
@@ -492,13 +505,12 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
                         }
                     }
                     /*
-                     * If the start and end points are both within about 3 meters from equator and their
-                     * distance is more than 10,000 km, relax the tolerance to 2 millimetres instead of 1.
+                     * If the start and end points are both within about 3 meters from equator and
+                     * their distance is more than 10,000 km, we may need to relax the tolerance.
                      * This is an empirical adjustment based on test failures observation.
                      */
-                    if (Math.min(cosφ1, cosφ2) >= 0.9999999999999 && expected[COLUMN_Δs] > 1E+7) {
-                        linearTolerance *= 2;
-                    }
+                    isLongArcOnEquator = Math.min(cosφ1, cosφ2) >= 0.9999999999999 && expected[COLUMN_Δs] > 1E+7;
+                    assertEquals("Consistency with accuracy reported in Javadoc.", 0.001, linearTolerance, 0.0005);
                 }
                 /*
                  * Set input values, compute then verify results. The azimuth tolerance is divided by cos(φ).
@@ -523,7 +535,9 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
                     assertEquals("φ₂", expected[COLUMN_φ2], end.getOrdinate(0),      latitudeTolerance);
                     assertEquals("λ₂", expected[COLUMN_λ2], end.getOrdinate(1),      longitudeTolerance);
                     assertEquals("α₂", expected[COLUMN_α2], c.getEndingAzimuth(),    azimuthTolerance / cosφ2);
-                    assertEquals("∆s", expected[COLUMN_Δs], c.getGeodesicDistance(), linearTolerance);
+                    assertEquals("∆s", expected[COLUMN_Δs], c.getGeodesicDistance(), linearTolerance *
+                                       (isLongArcOnEquator && iterationReachedPrecisionLimit() ? 2 : 1));
+                    clear();
                 } catch (GeodeticException | AssertionError e) {
                     if (!isTestingInverse || e instanceof AssertionError || isFailure(expected)) {
                         out.printf("Test failure at line %d: %s%n"
@@ -544,6 +558,21 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
+     * Returns {@code true} if iteration stopped before to reach the desired accuracy because the correction
+     * to apply in iterative steps is smaller than what can be applied using IEEE 754 double arithmetic.
+     * It never happen in the spherical case because there is no iteration in that case.
+     *
+     * <p>This method is invoked only in situations empirically identified as susceptible to have this problem:</p>
+     * <uL>
+     *   <li>When start point and end point are both within about 3 meters from equator
+     *       and their distance is more than 10,000 km.</li>
+     * </ul>
+     */
+    boolean iterationReachedPrecisionLimit() {
+        return false;
+    }
+
+    /**
      * Tells whether failure to compute geodesic for the given data should cause the test case to fail.
      * The default implementation always return {@code true}. Subclass can override if some points are
      * known to fail.
@@ -557,7 +586,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
-     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using points given by Bennett (1996).
+     * Tests {@link GeodeticCalculator#getRhumblineLength()} using points given by Bennett (1996).
      * This is an anti-regression test since the result was computed by SIS for the spherical case.
      */
     @Test
@@ -570,7 +599,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
-     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using points given by Bennett (1996).
+     * Tests {@link GeodeticCalculator#getRhumblineLength()} using points given by Bennett (1996).
      * This is an anti-regression test since the result was computed by SIS for the spherical case.
      */
     @Test
@@ -583,7 +612,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
-     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using points given by Bennett (1996).
+     * Tests {@link GeodeticCalculator#getRhumblineLength()} using points given by Bennett (1996).
      * This is an anti-regression test since the result was computed by SIS for the spherical case.
      */
     @Test
@@ -602,7 +631,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
      * @throws TransformException if an error occurred while projection the test point.
      */
     @Test
-    public void test() throws TransformException {
+    public void testProjectionAroundStart() throws TransformException {
         final GeodeticCalculator c = create(false);
         final double distance = 600000;                         // In metres.
         final double azimuth  = 37;                             // Geographic angle (degrees relative to North).
