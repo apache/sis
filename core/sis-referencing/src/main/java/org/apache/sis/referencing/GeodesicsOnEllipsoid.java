@@ -87,7 +87,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     static final boolean STORE_LOCAL_VARIABLES = false;
 
     /**
-     * Accuracy threshold iterative computations, in radians.
+     * Accuracy threshold for iterative computations, in radians.
      * We take a finer accuracy than default SIS configuration in order to met the accuracy of numbers
      * published in Karney (2013). If this value is modified, the effect can be verified by executing
      * the {@code GeodesicsOnEllipsoidTest} methods that compare computed values against Karney's tables.
@@ -786,7 +786,17 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                 }
             }
             final double dα1 = Δλ_error / dΔλ_dα1;                  // Opposite sign of Karney δα₁ term.
-            α1 -= dα1;
+            /*
+             * We need to compute α₁ -= dα₁ then iterate again. But sometime the subtraction has no effect
+             * because dα₁ ≪ α₁ and iteration continues with unchanged α₁ value until no convergence error.
+             * If we detect this situation, assume that we have the best accuracy that we can get.
+             *
+             * Note: we tried Kahan summation algorithm but it didn't solved the problem.
+             * No convergence were still happening, but in more indirect ways (after a cycle in iterations).
+             */
+            if (α1 == (α1 -= dα1)) {
+                moreRefinements = 0;
+            }
             if (STORE_LOCAL_VARIABLES) {                            // For comparing values against Karney table 5 and 6.
                 final double I1_σ2;
                 I1_σ1 = sphericalToEllipsoidalAngle(σ1, false);     // Required for computation of s₁ in `snapshot()`.

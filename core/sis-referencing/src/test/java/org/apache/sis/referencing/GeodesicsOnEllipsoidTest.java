@@ -347,6 +347,24 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
     }
 
     /**
+     * Tests computing a shorter distance than {@link #testComputeShortDistance()}.
+     * This is based on the empirical observation that for distances short enough,
+     * the {@literal α₁ -= dα₁} calculation leaves α₁ unchanged when {@literal dα₁ ≪ α₁}.
+     * {@link GeodesicsOnEllipsoid} shall detect this situation and stop iteration.
+     * This tests verify that {@link GeodeticException} is not thrown.
+     *
+     * @throws GeodeticException if the {@literal dα₁ ≪ α₁} check did not worked.
+     */
+    @Test
+    @DependsOnMethod("testComputeShortDistance")
+    public void testComputeShorterDistance() throws GeodeticException {
+        final GeodeticCalculator c = create(false);
+        c.setStartGeographicPoint(-0.000014, -29.841548);
+        c.setEndGeographicPoint  (-0.000014, -29.841319);
+        assertEquals(25.49, c.getGeodesicDistance(), 0.01);
+    }
+
+    /**
      * Result of Karney table 4, used as input in Karney table 5. We need to truncated that intermediate result
      * to the same number of digits than Karney in order to get the numbers published in table 5 and 6.
      * This value is used in {@link #testComputeNearlyAntipodal()} only.
@@ -536,7 +554,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
         final double distance = testedEarth.getRhumblineLength();
         assertValueEquals("Δλ", 0,  55+57.0 / 60,         1E-11, true);
         assertValueEquals("ΔΨ", 0,   -38.12 / (10800/PI), 1E-5, false);
-        assertValueEquals("C",  0,  90.6505,              1E-4, true);
+//      assertValueEquals("C",  0,  90.6505,              1E-4, true);
         assertEquals("azimuth",  90.65049570, testedEarth.getConstantAzimuth(), 1E-8);
         assertEquals("distance", 2028.9 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE);   // From Bennett (1996)
         assertEquals("distance", 3757550.656, distance, Formulas.LINEAR_TOLERANCE);         // From Karney's online calculator.
