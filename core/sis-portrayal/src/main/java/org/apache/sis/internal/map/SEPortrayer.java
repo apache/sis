@@ -713,9 +713,6 @@ public final class SEPortrayer {
 
     /**
      * Remove any xpath elements, keep only the root property name.
-     *
-     * @param propertyName
-     * @return
      */
     private static String stripXpath(String attName) {
         int index = attName.indexOf('/');
