@@ -463,24 +463,25 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
                  * We execute only one test for each row instead than executing both tests,
                  * for making sure that `GeodeticCalculator` never see the expected values.
                  */
+                KnownProblem  potentialProblem = null;
                 final boolean isTestingInverse = random.nextBoolean();
-                final double cosφ1 = abs(cos(toRadians(expected[COLUMN_φ1])));          // For adjusting longitude tolerance.
-                final double cosφ2 = abs(cos(toRadians(expected[COLUMN_φ2])));
+                final double φ1    = expected[COLUMN_φ1];
+                final double φ2    = expected[COLUMN_φ2];
+                final double cosφ1 = abs(cos(toRadians(φ1)));       // For adjusting longitude tolerance.
+                final double cosφ2 = abs(cos(toRadians(φ2)));
+                final double Δλ    = abs(expected[COLUMN_λ2] - expected[COLUMN_λ1]);
                 double linearTolerance, latitudeTolerance, longitudeTolerance, azimuthTolerance;
-                final boolean isLongArcOnEquator;
                 if (isSphere) {
                     /*
                      * When spherical formulas are used instead than ellipsoidal formulas, an error up to 1% is expected
                      * in distance calculations (source: Wikipedia). A yet larger error is observed for azimuth values,
                      * especially near poles and between antipodal points. Following are empirical thresholds.
                      */
-                    isLongArcOnEquator = false;                                 // Not a problem in spherical case.
                     linearTolerance    = expected[COLUMN_Δs] * 0.01;
                     latitudeTolerance  = toDegrees(linearTolerance / c.semiMajorAxis);
-                    longitudeTolerance = expected[COLUMN_φ2] > 89.5 ? 180 : latitudeTolerance / cosφ2;
+                    longitudeTolerance = φ2 > 89.5 ? 180 : latitudeTolerance / cosφ2;
                     azimuthTolerance   = 0.5;                                   // About 8.8 metres at distance of 1 km.
                     if (isTestingInverse) {
-                        final double Δλ = abs(expected[COLUMN_λ2] - expected[COLUMN_λ1]);
                              if (Δλ > 179) azimuthTolerance = 100;
                         else if (Δλ > 178) azimuthTolerance = 20;
                         else if (Δλ > 175) azimuthTolerance = 10;
@@ -498,18 +499,16 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
                     longitudeTolerance = Formulas.ANGULAR_TOLERANCE / cosφ2;
                     azimuthTolerance   = Formulas.LINEAR_TOLERANCE * (180/PI) / 10000;
                     if (isTestingInverse) {
-                        final double Δ = max(abs(180 - abs(expected[COLUMN_λ2] - expected[COLUMN_λ1])),
-                                                       abs(expected[COLUMN_φ1] + expected[COLUMN_φ2]));
-                        if (Δ < 1) {
+                        if (max(abs(180 - Δλ), abs(φ1 + φ2)) < 1) {
                             azimuthTolerance = 1 * (180/PI) / 10000;                // 1 meter for 10 km.
                         }
+                        if (Δλ > 90 && max(abs(φ1), abs(φ2)) < 2E-4) {
+                            potentialProblem = KnownProblem.ITERATION_REACHED_PRECISION_LIMIT;
+                        }
+                        if (Δλ > 179 && abs(φ1 + φ2) < 0.002) {
+                            potentialProblem = KnownProblem.NO_CONVERGENCE_ON_ANTIPODAL_POINTS;
+                        }
                     }
-                    /*
-                     * If the start and end points are both within about 3 meters from equator and
-                     * their distance is more than 10,000 km, we may need to relax the tolerance.
-                     * This is an empirical adjustment based on test failures observation.
-                     */
-                    isLongArcOnEquator = Math.min(cosφ1, cosφ2) >= 0.9999999999999 && expected[COLUMN_Δs] > 1E+7;
                     assertEquals("Consistency with accuracy reported in Javadoc.", 0.001, linearTolerance, 0.0005);
                 }
                 /*
@@ -536,21 +535,24 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
                     assertEquals("λ₂", expected[COLUMN_λ2], end.getOrdinate(1),      longitudeTolerance);
                     assertEquals("α₂", expected[COLUMN_α2], c.getEndingAzimuth(),    azimuthTolerance / cosφ2);
                     assertEquals("∆s", expected[COLUMN_Δs], c.getGeodesicDistance(), linearTolerance *
-                                       (isLongArcOnEquator && iterationReachedPrecisionLimit() ? 2 : 1));
+                                                            relaxIfConfirmed(potentialProblem));
                     clear();
                 } catch (GeodeticException | AssertionError e) {
-                    if (!isTestingInverse || e instanceof AssertionError || isFailure(expected)) {
-                        out.printf("Test failure at line %d: %s%n"
-                                + "The values provided in the test file are:%n"
-                                + "(φ₁,λ₁) = %16.12f %16.12f%n"
-                                + "(φ₂,λ₂) = %16.12f %16.12f%n"
-                                + "The values computed by the geodesic calculator are:%n",
-                                reader.getLineNumber(), e.getLocalizedMessage(),
-                                expected[0], expected[1], expected[3], expected[4]);
-                        out.println(c);
-                        throw e;
+                    if (e instanceof GeodeticException) {
+                        if (potentialProblem == KnownProblem.NO_CONVERGENCE_ON_ANTIPODAL_POINTS) {
+                            noConvergenceCount++;
+                            continue;
+                        }
                     }
-                    noConvergenceCount++;
+                    out.printf("Test failure at line %d: %s%n"
+                            + "The values provided in the test file are:%n"
+                            + "(φ₁,λ₁) = %16.12f %16.12f%n"
+                            + "(φ₂,λ₂) = %16.12f %16.12f%n"
+                            + "The values computed by the geodesic calculator are:%n",
+                            reader.getLineNumber(), e.getLocalizedMessage(),
+                            expected[0], expected[1], expected[3], expected[4]);
+                    out.println(c);
+                    throw e;
                 }
             }
         }
@@ -558,31 +560,44 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
-     * Returns {@code true} if iteration stopped before to reach the desired accuracy because the correction
-     * to apply in iterative steps is smaller than what can be applied using IEEE 754 double arithmetic.
-     * It never happen in the spherical case because there is no iteration in that case.
+     * Returns the factor by which to relax the linear tolerance, or 1 for no relaxation.
+     * This method is invoked after {@link GeodeticCalculator#computeDistance()} has been invoked.
+     * It should check if the potential problem really occurred, and if yes return a value greater
+     * than 1. If no problem (other than IEEE 754 rounding errors) is expected to occur, then this
+     * method should return exactly 1.
      *
-     * <p>This method is invoked only in situations empirically identified as susceptible to have this problem:</p>
-     * <uL>
-     *   <li>When start point and end point are both within about 3 meters from equator
-     *       and their distance is more than 10,000 km.</li>
-     * </ul>
+     * @param  potentialProblem  the problem that may happen, or {@code null} if none.
+     * @return factor by which to relax the linear tolerance threshold, or 1 if no relaxation.
      */
-    boolean iterationReachedPrecisionLimit() {
-        return false;
+    double relaxIfConfirmed(KnownProblem potentialProblem) {
+        return 1;
     }
 
     /**
-     * Tells whether failure to compute geodesic for the given data should cause the test case to fail.
-     * The default implementation always return {@code true}. Subclass can override if some points are
-     * known to fail.
+     * Known problems with our implementation of inverse geodetic with ellipsoidal formulas.
+     * Those problems may occur in {@link #compareAgainstDataset()} test when ellipsoidal formulas
+     * are used (those problems do not occur with spherical formulas). This is an enumeration
+     * of cases where {@link GeodesicsOnEllipsoid#computeDistance()} does not converge.
      *
-     * @param  expected  a row from the {@code $SIS_DATA/Tests/GeodTest.dat} file.
-     *         Use {@code COLUMN_*} constant for accessing values by column indices.
-     * @return whether the JUnit test should fail.
+     * @see #compareAgainstDataset()
+     * @see #relaxIfConfirmed(KnownProblem)
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-467">SIS-467</a>
      */
-    boolean isFailure(final double[] expected) {
-        return true;
+    enum KnownProblem {
+        /**
+         * Iteration stopped before to reach the desired accuracy because the correction to apply in iterative
+         * steps is smaller than what can be applied using IEEE 754 double arithmetic. This problem occurs in
+         * {@literal α₁ -= dα₁} expression when {@literal dα₁ ≪ α₁}, in which case the subtraction has no effect.
+         * It has been observed on the equator between 2 close points. This is not considered a failure because
+         * the precision is still in 1 cm precision target. We only need to relax the 1 mm precision check.
+         */
+        ITERATION_REACHED_PRECISION_LIMIT,
+
+        /**
+         * Iteration failed with a "no convergence error". It sometime happens during distance calculation between
+         * antipodal points.
+         */
+        NO_CONVERGENCE_ON_ANTIPODAL_POINTS;
     }
 
     /**

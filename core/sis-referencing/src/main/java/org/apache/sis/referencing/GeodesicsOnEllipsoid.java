@@ -88,16 +88,21 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
 
     /**
      * Accuracy threshold for iterative computations, in radians.
-     * We take a finer accuracy than default SIS configuration in order to met the accuracy of numbers
-     * published in Karney (2013). If this value is modified, the effect can be verified by executing
-     * the {@code GeodesicsOnEllipsoidTest} methods that compare computed values against Karney's tables.
-     * Remember to update {@link GeodeticCalculator} class javadoc if this value is changed.
+     * This accuracy must be at least {@value Formulas#ANGULAR_TOLERANCE} degrees (converted to radians) for
+     * conformance with the accuracy reported in {@link GeodeticCalculator} class javadoc. Actually we take
+     * a finer accuracy than above value in order to met the accuracy of numbers published in Karney (2013),
+     * but this extra accuracy is not guaranteed because it is hard to achieve in all cases.
      *
      * <p><b>Note:</b> when the iteration loop detects that it reached this requested accuracy, the loop
      * completes the iteration step which was in progress. Consequently the final accuracy is one iteration
      * better than the accuracy computed from this value.</p>
+     *
+     * <h4>Maintenance</h4>
+     * If this value is modified, the effect can be verified by executing the {@code GeodesicsOnEllipsoidTest}
+     * methods that compare computed values against Karney's tables. The {@link GeodeticCalculator} javadoc may
+     * need to be edited accordingly.
      */
-    static final double ITERATION_TOLERANCE = Formulas.ANGULAR_TOLERANCE * (PI/180) / 20;
+    static final double ITERATION_TOLERANCE = (Formulas.ANGULAR_TOLERANCE / 20) * (PI/180);
 
     /**
      * Difference between ending point and antipode of starting point for considering them as nearly antipodal.

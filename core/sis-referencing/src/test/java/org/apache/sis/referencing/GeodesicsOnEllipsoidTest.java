@@ -126,7 +126,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
          * {@code true} if iteration stopped before to reach the desired accuracy because of limitation
          * in {@code double} precision. This field must be reset to {@code false} before any new point.
          *
-         * @see #iterationReachedPrecisionLimit()
+         * @see #relaxIfConfirmed(KnownProblem)
          * @see #clear()
          */
         private boolean iterationReachedPrecisionLimit;
@@ -143,8 +143,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
         @Override void store(final String name, final double value) {
             if (name.equals("dα₁ ≪ α₁")) {
                 iterationReachedPrecisionLimit = true;
-            }
-            if (name.length() == 1) {
+            } else if (name.length() == 1) {
                 switch (name.charAt(0)) {
                     case 'x': x = value; break;
                     case 'y': y = value; break;
@@ -523,40 +522,24 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
     }
 
     /**
-     * Returns {@code true} if iteration stopped before to reach the desired accuracy because of limitation in
-     * {@code double} precision. This problem may happen in the {@link GeodesicsOnEllipsoid#computeDistance()}
+     * Returns a value {@literal > 1} if iteration stopped before to reach the desired accuracy because of limitation
+     * in {@code double} precision. This problem may happen in the {@link GeodesicsOnEllipsoid#computeDistance()}
      * method when {@literal dα₁ ≪ α₁}. If locale variable storage is enabled, this situation is flagged by the
      * {@code "dα₁ ≪ α₁"} key. Otherwise we conservatively assume that this situation occurred.
      */
     @Override
-    boolean iterationReachedPrecisionLimit() {
-        if (GeodesicsOnEllipsoid.STORE_LOCAL_VARIABLES) {
-            return testedEarth.iterationReachedPrecisionLimit;
-        } else {
-            // Conservative value in absence of information.
-            return true;
+    double relaxIfConfirmed(final KnownProblem potentialProblem) {
+        if (potentialProblem == KnownProblem.ITERATION_REACHED_PRECISION_LIMIT) {
+            if (GeodesicsOnEllipsoid.STORE_LOCAL_VARIABLES) {
+                if (testedEarth.iterationReachedPrecisionLimit) {
+                    return 2;
+                }
+            } else {
+                // No information about whether the problem really occurred.
+                return 2;
+            }
         }
-    }
-
-    /**
-     * Tells whether failure to compute geodesic for the given data should cause the test case to fail.
-     * This is invoked by {@link #compareAgainstDataset()}.
-     *
-     * @param  expected  a row from the {@code $SIS_DATA/Tests/GeodTest.dat} file.
-     * @return whether the JUnit test should fail.
-     */
-    @Override
-    boolean isFailure(final double[] expected) {
-        final double φ1 = expected[COLUMN_φ1];
-        final double φ2 = expected[COLUMN_φ2];
-        final double Δλ = expected[COLUMN_λ2] - expected[COLUMN_λ1];
-        if (Δλ > 90 && max(abs(φ1), abs(φ2)) < 2E-4) {
-            return true;                            // Ignore equatorial case in previous version (not anymore).
-        }
-        if (Δλ > 179 && abs(φ1 + φ2) < 0.002) {
-            return false;                           // Ignore antipodal case.
-        }
-        return super.isFailure(expected);
+        return super.relaxIfConfirmed(potentialProblem);
     }
 
     /**

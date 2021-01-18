@@ -43,6 +43,12 @@ public final class Formulas extends Static {
      * assuming that the unit of measurement is metre. This constant determines also
      * (indirectly) the minimum accuracy of iterative methods in map projections.
      *
+     * <h4>Maintenance</h4>
+     * If this value is modified, then all usages of this constant should be verified.
+     * Some usages may need to be compensated. For example {@code GeodesicsOnEllipsoid}
+     * uses a millimetric precision by dividing the tolerance by 10 or more. We way want
+     * to keep the same precision there even if {@code LINEAR_TOLERANCE} was made smaller.
+     *
      * @see #ANGULAR_TOLERANCE
      * @see org.apache.sis.internal.util.Numerics#COMPARISON_THRESHOLD
      */

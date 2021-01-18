@@ -84,7 +84,7 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  *   </li>
  * </ul>
  *
- * <h2>Algorithms and accuracy</h2>
+ * <h2>Algorithms</h2>
  * {@code GeodeticCalculator} uses two set of formulas, depending if the figure of the Earth
  * {@linkplain Ellipsoid#isSphere() is a sphere} or an ellipsoid.
  * Publications relevant to this class are:
@@ -104,7 +104,9 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  *       for the reference implementation.</li>
  * </ul>
  *
+ * <h2>Accuracy</h2>
  * {@code GeodeticCalculator} aims for a positional accuracy of one centimetre.
+ * The accuracy is often better (about one millimetre), but not everywhere.
  * Azimuthal accuracy corresponds to an error of one centimetre at a distance of one kilometer,
  * except for nearly antipodal points (less than 1° of longitude and latitude from antipode)
  * and points close to the poles where the azimuthal errors are larger.
