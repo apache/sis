@@ -30,7 +30,7 @@ import org.junit.runners.Suite;
  * @module
  */
 @Suite.SuiteClasses({
-//  org.apache.sis.internal.map.SEPortrayerTest.class,
+    org.apache.sis.internal.map.SEPortrayerTest.class,
 })
 public final strictfp class PortrayalTestSuite extends TestSuite {
     /**
