@@ -98,8 +98,8 @@ import org.opengis.util.GenericName;
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public final class SEPortrayer {

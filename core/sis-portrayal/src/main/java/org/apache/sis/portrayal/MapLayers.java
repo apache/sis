@@ -16,13 +16,15 @@
  */
 package org.apache.sis.portrayal;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.internal.map.ListChangeEvent;
+import org.apache.sis.internal.map.NotifiedList;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.storage.DataSet;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.storage.DataSet;
 
 
 /**
@@ -55,11 +57,44 @@ public class MapLayers extends MapItem {
     public static final String AREA_OF_INTEREST_PROPERTY = "areaOfInterest";
 
     /**
+     * The {@value} property name, used for notifications about changes in map item components.
+     *
+     * @see #getComponents()
+     * @see #addPropertyChangeListener(String, PropertyChangeListener)
+     */
+    public static final String COMPONENTS_PROPERTY = "components";
+
+    /**
      * The components in this group, or an empty list if none.
      *
      * @todo Should be an observable list with event sent when an element is added/removed/modified.
      */
-    private final List<MapItem> components;
+    private final List<MapItem> components = new NotifiedList<MapItem>() {
+        @Override
+        protected void notifyAdd(MapItem item, int index) {
+            firePropertyChange(ListChangeEvent.added(MapLayers.this, COMPONENTS_PROPERTY, components, item, index));
+        }
+
+        @Override
+        protected void notifyAdd(List<MapItem> items, NumberRange<Integer> range) {
+            firePropertyChange(ListChangeEvent.added(MapLayers.this, COMPONENTS_PROPERTY, components, items, range));
+        }
+
+        @Override
+        protected void notifyRemove(MapItem item, int index) {
+            firePropertyChange(ListChangeEvent.removed(MapLayers.this, COMPONENTS_PROPERTY, components, item, index));
+        }
+
+        @Override
+        protected void notifyRemove(List<MapItem> items, NumberRange<Integer> range) {
+            firePropertyChange(ListChangeEvent.removed(MapLayers.this, COMPONENTS_PROPERTY, components, items, range));
+        }
+
+        @Override
+        protected void notifyReplace(MapItem olditem, MapItem newitem, int index) {
+            firePropertyChange(ListChangeEvent.changed(MapLayers.this, COMPONENTS_PROPERTY, components));
+        }
+    };
 
     /**
      * The area of interest, or {@code null} is unspecified.
@@ -70,7 +105,6 @@ public class MapLayers extends MapItem {
      * Creates an initially empty group of layers.
      */
     public MapLayers() {
-        components = new ArrayList<>();
     }
 
     /**

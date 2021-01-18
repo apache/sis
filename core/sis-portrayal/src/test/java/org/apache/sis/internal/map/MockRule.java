@@ -65,7 +65,7 @@ public final class MockRule implements Rule {
         return legend;
     }
 
-    public void setLegeng(GraphicLegend legend) {
+    public void setLegend(GraphicLegend legend) {
         this.legend = legend;
     }
 

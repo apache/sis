@@ -16,12 +16,12 @@
  */
 package org.apache.sis.portrayal;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Arrays;
-import java.util.ConcurrentModificationException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 
@@ -142,6 +142,28 @@ abstract class Observable {
             final PropertyChangeListener[] list = listeners.get(propertyName);
             if (list != null) {
                 final PropertyChangeEvent event = new PropertyChangeEvent(this, propertyName, oldValue, newValue);
+                for (final PropertyChangeListener listener : list) {
+                    listener.propertyChange(event);
+                }
+            }
+        }
+    }
+
+    /**
+     * Notifies all registered listeners that a property of the given name changed its value.
+     * It is caller responsibility to verify that the event source and property name are valid.
+     *
+     * @param  event the event to forward, can not be null.
+     *
+     * @see PropertyChangeEvent
+     * @see PropertyChangeListener
+     */
+    protected void firePropertyChange(final PropertyChangeEvent event) {
+        ArgumentChecks.ensureNonNull("event", event);
+
+        if (listeners != null) {
+            final PropertyChangeListener[] list = listeners.get(event.getPropertyName());
+            if (list != null) {
                 for (final PropertyChangeListener listener : list) {
                     listener.propertyChange(event);
                 }

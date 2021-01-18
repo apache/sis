@@ -30,8 +30,12 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
+import org.apache.sis.internal.storage.query.SimpleQuery;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.portrayal.MapItem;
 import org.apache.sis.portrayal.MapLayer;
 import org.apache.sis.portrayal.MapLayers;
@@ -48,6 +52,11 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.filter.Filter;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.FilterFactory2;
+import org.opengis.filter.identity.Identifier;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.style.SemanticType;
 import org.opengis.style.Symbolizer;
@@ -58,10 +67,17 @@ import org.opengis.style.Symbolizer;
  */
 public class SEPortrayerTest extends TestCase {
 
+    private final FilterFactory2 filterFactory;
     private final FeatureSet fishes;
     private final FeatureSet boats;
 
     public SEPortrayerTest() {
+
+        FilterFactory filterFactory = DefaultFactories.forClass(FilterFactory.class);
+        if (!(filterFactory instanceof FilterFactory2)) {
+            filterFactory = new DefaultFilterFactory();
+        }
+        this.filterFactory = (FilterFactory2) filterFactory;
 
         final GeometryFactory gf = new GeometryFactory();
         final CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
@@ -78,7 +94,7 @@ public class SEPortrayerTest extends TestCase {
         fish1.setPropertyValue("id", "1");
         fish1.setPropertyValue("geom", point1);
 
-        final Point point2 = gf.createPoint(new Coordinate(1, 1));
+        final Point point2 = gf.createPoint(new Coordinate(10, 20));
         point2.setUserData(crs);
         final Feature fish2 = fishType.newInstance();
         fish2.setPropertyValue("id", "2");
@@ -109,7 +125,11 @@ public class SEPortrayerTest extends TestCase {
     }
 
     private Set<Entry<String, Symbolizer>> present(MapItem item) {
-        final GridGeometry grid = new GridGeometry(new GridExtent(360, 180), CRS.getDomainOfValidity(CommonCRS.WGS84.normalizedGeographic()), GridOrientation.REFLECTION_Y);
+        return present(item, CRS.getDomainOfValidity(CommonCRS.WGS84.normalizedGeographic()));
+    }
+
+    private Set<Entry<String, Symbolizer>> present(MapItem item, Envelope env) {
+        final GridGeometry grid = new GridGeometry(new GridExtent(360, 180), env, GridOrientation.REFLECTION_Y);
         final SEPortrayer portrayer = new SEPortrayer();
         final Stream<Presentation> stream = portrayer.present(grid, item);
         final List<Presentation> presentations = stream.collect(Collectors.toList());
@@ -160,6 +180,81 @@ public class SEPortrayerTest extends TestCase {
         assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("1", symbolizer)));
         assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("2", symbolizer)));
         assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("10", symbolizer)));
+        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("20", symbolizer)));
+    }
+
+    /**
+     * Test portrayer includes the bounding box of the canvas while querying features.
+     * Only fish feature with identifier "2" matches in this test.
+     */
+    @Test
+    public void testCanvasBboxfilter() {
+
+        final GeneralEnvelope env = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
+        env.setRange(0, 9, 11);
+        env.setRange(1, 19, 21);
+
+        final MockStyle style = new MockStyle();
+        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final MockRule rule = new MockRule();
+        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        style.featureTypeStyles().add(fts);
+        fts.rules().add(rule);
+        rule.symbolizers().add(symbolizer);
+
+
+        final MapLayer fishLayer = new MapLayer();
+        fishLayer.setData(fishes);
+        fishLayer.setStyle(style);
+        final MapLayer boatLayer = new MapLayer();
+        boatLayer.setData(boats);
+        boatLayer.setStyle(style);
+        final MapLayers layers = new MapLayers();
+        layers.getComponents().add(fishLayer);
+        layers.getComponents().add(boatLayer);
+
+        final Set<Entry<String, Symbolizer>> presentations = present(layers, env);
+        assertEquals(1, presentations.size());
+        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("2", symbolizer)));
+    }
+
+    /**
+     * Test portrayer uses the user defined query when portraying.
+     * Only fish feature with identifier "1" and boat feature with identifier "20" matches in this test.
+     */
+    @Test
+    public void testUserQuery() {
+
+        final MockStyle style = new MockStyle();
+        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final MockRule rule = new MockRule();
+        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        style.featureTypeStyles().add(fts);
+        fts.rules().add(rule);
+        rule.symbolizers().add(symbolizer);
+
+        final Set<Identifier> ids = new HashSet<>();
+        ids.add(filterFactory.featureId("1"));
+        ids.add(filterFactory.featureId("20"));
+        final Filter filter = filterFactory.id(ids);
+        final SimpleQuery query = new SimpleQuery();
+        query.setFilter(filter);
+
+        final MapLayer fishLayer = new MapLayer();
+        fishLayer.setData(fishes);
+        fishLayer.setStyle(style);
+        fishLayer.setQuery(query);
+        final MapLayer boatLayer = new MapLayer();
+        boatLayer.setData(boats);
+        boatLayer.setStyle(style);
+        boatLayer.setQuery(query);
+        final MapLayers layers = new MapLayers();
+        layers.getComponents().add(fishLayer);
+        layers.getComponents().add(boatLayer);
+
+        final Set<Entry<String, Symbolizer>> presentations = present(layers);
+        assertEquals(2, presentations.size());
+        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("1", symbolizer)));
         assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("20", symbolizer)));
     }
 
@@ -228,4 +323,139 @@ public class SEPortrayerTest extends TestCase {
         assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("1", symbolizer)));
         assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("2", symbolizer)));
     }
+
+    /**
+     * Portray using defined rule filter
+     * Test expect only features with identifier equals "2" to match.
+     */
+    @Test
+    public void testRuleFilter() {
+
+        final Set<Identifier> ids = new HashSet<>();
+        ids.add(filterFactory.featureId("2"));
+        final Filter filter = filterFactory.id(ids);
+
+        final MockStyle style = new MockStyle();
+        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final MockRule rule = new MockRule();
+        rule.setFilter(filter);
+        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        style.featureTypeStyles().add(fts);
+        fts.rules().add(rule);
+        rule.symbolizers().add(symbolizer);
+
+
+        final MapLayer fishLayer = new MapLayer();
+        fishLayer.setData(fishes);
+        fishLayer.setStyle(style);
+        final MapLayer boatLayer = new MapLayer();
+        boatLayer.setData(boats);
+        boatLayer.setStyle(style);
+        final MapLayers layers = new MapLayers();
+        layers.getComponents().add(fishLayer);
+        layers.getComponents().add(boatLayer);
+
+        final Set<Entry<String, Symbolizer>> presentations = present(layers);
+        assertEquals(1, presentations.size());
+        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("2", symbolizer)));
+    }
+
+    /**
+     * Portray using defined rule scale filter.
+     * Test expect only matching scale rule symbolizer to be portrayed.
+     */
+    @Test
+    public void testRuleScale() {
+
+        final MockLineSymbolizer symbolizerAbove = new MockLineSymbolizer();
+        final MockLineSymbolizer symbolizerUnder = new MockLineSymbolizer();
+        final MockLineSymbolizer symbolizerMatch = new MockLineSymbolizer();
+
+        //Symbology rendering scale here is 3.944391406060875E8
+        final MockRule ruleAbove = new MockRule();
+        ruleAbove.symbolizers().add(symbolizerAbove);
+        ruleAbove.setMinScaleDenominator(4e8);
+        ruleAbove.setMaxScaleDenominator(Double.MAX_VALUE);
+        final MockRule ruleUnder = new MockRule();
+        ruleUnder.symbolizers().add(symbolizerUnder);
+        ruleUnder.setMinScaleDenominator(0.0);
+        ruleUnder.setMaxScaleDenominator(3e8);
+        final MockRule ruleMatch = new MockRule();
+        ruleMatch.symbolizers().add(symbolizerMatch);
+        ruleMatch.setMinScaleDenominator(3e8);
+        ruleMatch.setMaxScaleDenominator(4e8);
+
+        final MockStyle style = new MockStyle();
+        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        style.featureTypeStyles().add(fts);
+        fts.rules().add(ruleAbove);
+        fts.rules().add(ruleUnder);
+        fts.rules().add(ruleMatch);
+
+
+        final MapLayer fishLayer = new MapLayer();
+        fishLayer.setData(fishes);
+        fishLayer.setStyle(style);
+        final MapLayer boatLayer = new MapLayer();
+        boatLayer.setData(boats);
+        boatLayer.setStyle(style);
+        final MapLayers layers = new MapLayers();
+        layers.getComponents().add(fishLayer);
+        layers.getComponents().add(boatLayer);
+
+        final Set<Entry<String, Symbolizer>> presentations = present(layers);
+        assertEquals(4, presentations.size());
+        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("1", symbolizerMatch)));
+        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("2", symbolizerMatch)));
+        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("10", symbolizerMatch)));
+        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("20", symbolizerMatch)));
+    }
+
+    /**
+     * Portray using defined rule 'is else' property.
+     * Test expect only feature with identifier "10" to be rendered with the base rule
+     * and other features to rendered with the fallback rule.
+     */
+    @Test
+    public void testRuleElseCondition() {
+
+        final Set<Identifier> ids = new HashSet<>();
+        ids.add(filterFactory.featureId("10"));
+        final Filter filter = filterFactory.id(ids);
+
+        final MockLineSymbolizer symbolizerBase = new MockLineSymbolizer();
+        final MockLineSymbolizer symbolizerElse = new MockLineSymbolizer();
+
+        final MockRule ruleBase = new MockRule();
+        ruleBase.symbolizers().add(symbolizerBase);
+        ruleBase.setFilter(filter);
+        final MockRule ruleOther = new MockRule();
+        ruleOther.setIsElseFilter(true);
+        ruleOther.symbolizers().add(symbolizerElse);
+
+        final MockStyle style = new MockStyle();
+        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        style.featureTypeStyles().add(fts);
+        fts.rules().add(ruleBase);
+        fts.rules().add(ruleOther);
+
+        final MapLayer fishLayer = new MapLayer();
+        fishLayer.setData(fishes);
+        fishLayer.setStyle(style);
+        final MapLayer boatLayer = new MapLayer();
+        boatLayer.setData(boats);
+        boatLayer.setStyle(style);
+        final MapLayers layers = new MapLayers();
+        layers.getComponents().add(fishLayer);
+        layers.getComponents().add(boatLayer);
+
+        final Set<Entry<String, Symbolizer>> presentations = present(layers);
+        assertEquals(4, presentations.size());
+        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("1", symbolizerElse)));
+        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("2", symbolizerElse)));
+        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("10", symbolizerBase)));
+        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("20", symbolizerElse)));
+    }
+
+
 }
