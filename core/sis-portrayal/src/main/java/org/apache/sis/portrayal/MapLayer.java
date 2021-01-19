@@ -17,13 +17,17 @@
 package org.apache.sis.portrayal;
 
 import java.util.Objects;
-import org.opengis.style.Style;
-import org.opengis.feature.Feature;
-import org.opengis.coverage.Coverage;
+import java.util.Optional;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.DataSet;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.DataSet;
-import org.apache.sis.storage.Aggregate;
+import org.apache.sis.util.ArgumentChecks;
+import org.opengis.coverage.Coverage;
+import org.opengis.feature.Feature;
+import org.opengis.geometry.Envelope;
+import org.opengis.style.Style;
 
 
 /**
@@ -74,6 +78,15 @@ public class MapLayer extends MapItem {
     public static final String STYLE_PROPERTY = "style";
 
     /**
+     * The {@value} property name, used for notifications about changes in map layer opacity.
+     * The opacity specifies the gloabal opacity of the data to be rendered.
+     *
+     * @see #getOpacity()
+     * @see #setOpacity(double)
+     */
+    public static final String OPACITY_PROPERTY = "opacity";
+
+    /**
      * Data to be rendered, or {@code null} if unavailable.
      *
      * @see #DATA_PROPERTY
@@ -96,6 +109,14 @@ public class MapLayer extends MapItem {
      * @see #getStyle()
      */
     private Style style;
+
+    /**
+     * Visual transparency of data, or {@code null} if none.
+     *
+     * @see #OPACITY_PROPERTY
+     * @see #getOpacity()
+     */
+    private double opacity;
 
     /**
      * Constructs an initially empty map layer.
@@ -198,4 +219,46 @@ public class MapLayer extends MapItem {
             firePropertyChange(STYLE_PROPERTY, oldValue, newValue);
         }
     }
+
+    /**
+     * Returns the global opacity of this layer.
+     * Based on the rendering context this property may be impossible to implement,
+     * it is therefor recommended to modify the style symbolizer opacity properties.
+     *
+     * @return opacity between 0.0 and 1.0
+     */
+    public double getOpacity() {
+        return opacity;
+    }
+
+    /**
+     * Sets the global rendering opacity of this layer.
+     *
+     * @param opacity must be betwen 0.0 and 1.0
+     */
+    public void setOpacity(double opacity) {
+        ArgumentChecks.ensureBetween(OPACITY_PROPERTY, 0.0, 1.0, opacity);
+        if (this.opacity != opacity) {
+            double old = this.opacity;
+            this.opacity = opacity;
+            firePropertyChange(OPACITY_PROPERTY, old, opacity);
+        }
+    }
+
+    /**
+     * Returns the envelope of this {@code MapLayer}.
+     * The envelope is the resource data envelope.
+     *
+     * @return the spatiotemporal extent. May be absent if none or too costly to compute.
+     * @throws DataStoreException if an error occurred while reading or computing the envelope.
+     */
+    @Override
+    public Optional<Envelope> getEnvelope() throws DataStoreException {
+        Resource data = getData();
+        if (data instanceof DataSet) {
+            return ((DataSet) data).getEnvelope();
+        }
+        return Optional.empty();
+    }
+
 }

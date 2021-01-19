@@ -16,15 +16,20 @@
  */
 package org.apache.sis.portrayal;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.internal.map.ListChangeEvent;
 import org.apache.sis.internal.map.NotifiedList;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.storage.DataSet;
+import org.apache.sis.storage.DataStoreException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 
 /**
@@ -156,4 +161,34 @@ public class MapLayers extends MapItem {
             firePropertyChange(AREA_OF_INTEREST_PROPERTY, oldValue, imenv);
         }
     }
+
+    /**
+     * Returns the envelope of this {@code MapItem}.
+     * If this instance is a {@code MapLayers} the envelope is the concatenation of all it's components,
+     * in case of multiple CRS for each MapLayer, the resulting envelope CRS is unpredictable.
+     * If this instance is a {@code MapLayer} the envelope is the resource data envelope.
+     *
+     * @return the spatiotemporal extent. May be absent if none or too costly to compute.
+     * @throws DataStoreException if an error occurred while reading or computing the envelope.
+     */
+    @Override
+    public Optional<Envelope> getEnvelope() throws DataStoreException {
+        List<Envelope> envelopes = new ArrayList<>();
+        for (MapItem i : components) {
+            i.getEnvelope().ifPresent(envelopes::add);
+        }
+
+        switch (envelopes.size()) {
+            case 0 : return Optional.empty();
+            case 1 : return Optional.of(envelopes.get(0));
+            default : {
+                try {
+                    return Optional.ofNullable(Envelopes.union(envelopes.toArray(new Envelope[envelopes.size()])));
+                } catch (TransformException ex) {
+                    throw new DataStoreException(ex.getMessage(), ex);
+                }
+            }
+        }
+    }
+
 }
