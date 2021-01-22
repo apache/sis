@@ -68,7 +68,7 @@ abstract class TiledProcess<R> {
      * Minimal "tile" size for sub-tasks computation. That size should not be too small because the
      * fork/join processes have some extra cost compared to processing the whole image as one single tile.
      */
-    private static final int MIN_TILE_SIZE = 400;
+    private static final int MIN_TILE_SIZE = 1000;
 
     /**
      * Number of threads that are running. This is used for knowing when a thread is the last one.
