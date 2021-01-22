@@ -33,16 +33,20 @@ import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import javax.swing.JComponent;
-import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.internal.processing.image.Isolines;
 import org.apache.sis.swing.ZoomPane;
+import org.apache.sis.util.Classes;
 
 
 /**
  * Generate an image with synthetic mounts and draw isolines on that image.
  * This allows a visual check of {@link Isolines} results.
+ *
+ * <p><b>Note:</b> for useful test of parallel computation, the
+ * {@link org.apache.sis.internal.processing.image.TiledProcess#MIN_TILE_SIZE}
+ * constant may been to be temporarily set to a small value such as 100.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -70,7 +74,12 @@ public final class IsolinesView extends Visualization {
     private final Color[] colors;
 
     /**
-     * The image with data as as integer numbers. Created together with floating-point version of same image,
+     * The image with data as floating point numbers.
+     */
+    private BufferedImage dataAsFloats;
+
+    /**
+     * The image with data as integer numbers. Created together with floating-point version of same image,
      * and restored to {@code null} after {@code dataAsIntegers} has been assigned to a {@link ZoomPane}.
      */
     private BufferedImage dataAsIntegers;
@@ -85,7 +94,7 @@ public final class IsolinesView extends Visualization {
      * Creates a new viewer for {@link Isolines}.
      */
     public IsolinesView() {
-        super(Isolines.class, 2);
+        super(Isolines.class, 4);
         width  = 800;
         height = 600;
         colors = new Color[] {
@@ -94,23 +103,39 @@ public final class IsolinesView extends Visualization {
     }
 
     /**
+     * Returns a title for a window created by {@link #create(int)}.
+     */
+    @Override
+    protected String title(int index) {
+        return new StringBuilder(Classes.getShortName(testing)).append(" (")
+                .append((index & 2) == 0 ? "sequential" : "parallel").append(" on ")
+                .append((index & 1) == 0 ? "floats" : "integers").append(')')
+                .toString();
+    }
+
+    /**
      * Creates a widget showing a random image with isolines on it.
      * The widget uses {@link ZoomPane}.
      *
      * @param  index  a sequence number for the isoline window. Shall be 0 or 1.
      * @return a widget showing isolines.
-     * @throws TransformException if an error occurred while computing isolines.
+     * @throws Exception if an error occurred while computing isolines.
      */
     @Override
-    protected JComponent create(final int index) throws TransformException {
-        final BufferedImage image;
-        switch (index) {
-            case 0: image = createImages(); break;
-            case 1: image = dataAsIntegers; dataAsIntegers = null; break;
-            default: throw new AssertionError(index);
+    protected JComponent create(final int index) throws Exception {
+        if (index == 0) {
+            createImages();
+        }
+        final BufferedImage image = ((index & 1) == 0) ? dataAsFloats : dataAsIntegers;
+        final double[][] levels = {{0x20, 0x40, 0x60, 0x80, 0xA0, 0xC0, 0xE0}};
+        final Isolines[] result;
+        if ((index & 2) == 0) {
+            result = Isolines.generate(image, levels, null);
+        } else {
+            result = Isolines.parallelGenerate(image, levels, null).get();
         }
         final List<Shape> shapes = new ArrayList<>();
-        for (final Isolines isolines : Isolines.generate(image, new double[][] {{0x20, 0x40, 0x60, 0x80, 0xA0, 0xC0, 0xE0}}, null)) {
+        for (final Isolines isolines : result) {
             shapes.addAll(isolines.polylines().values());
         }
         final ZoomPane pane = new ZoomPane() {
@@ -196,11 +221,9 @@ public final class IsolinesView extends Visualization {
 
     /**
      * Creates grayscale images (floating and integer versions) with random mounts.
-     * This method returns the floating point version and stores the integer version
-     * in {@link #dataAsIntegers} for future use.
+     * This method stores the images in {@link #dataAsFloats} and {@link #dataAsIntegers}.
      */
-    private BufferedImage createImages() {
-        final BufferedImage dataAsFloats;
+    private void createImages() {
         dataAsFloats   = RasterFactory.createGrayScaleImage(DataBuffer.TYPE_FLOAT, width, height, 1, 0, 0, 255);
         dataAsIntegers = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         final WritableRaster rasterAsFloats   = dataAsFloats.getRaster();
@@ -225,6 +248,5 @@ public final class IsolinesView extends Visualization {
                 }
             }
         }
-        return dataAsFloats;
     }
 }

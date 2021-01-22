@@ -29,6 +29,7 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyVetoException;
 import javax.swing.AbstractAction;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
@@ -75,6 +76,11 @@ final class DesktopPane extends JDesktopPane {
     private JComponent active;
 
     /**
+     * Whether all previous windows should be closed before new windows are created.
+     */
+    private final JCheckBoxMenuItem autoClose;
+
+    /**
      * Creates the desktop, creates its frame and makes it visible.
      */
     private DesktopPane() {
@@ -96,6 +102,10 @@ final class DesktopPane extends JDesktopPane {
             menu.add(new AbstractAction("List") {
                 @Override public void actionPerformed(final ActionEvent event) {listWindows();}
             });
+            menu.add(new AbstractAction("Close all") {
+                @Override public void actionPerformed(final ActionEvent event) {closeAllWindows();}
+            });
+            menu.add(autoClose = new JCheckBoxMenuItem("Auto close"));
             menuBar.add(menu);
         }
         final JFrame frame = new JFrame("Widget tests");
@@ -126,10 +136,12 @@ final class DesktopPane extends JDesktopPane {
      * Shows the widget created by the given test case.
      */
     private void show(final Visualization testCase) {
+        if (autoClose.isSelected()) {
+            closeAllWindows();
+        }
         try {
-            final int n = testCase.numTests;
-            for (int i=0; i<n; i++) {
-                show(testCase.create(i), i, n);
+            for (int i=0; i<testCase.numTests; i++) {
+                show(testCase, testCase.create(i), i);
             }
         } catch (Exception e) {
             // Not acceptable for a real application, but this widget is only for testing purpose.
@@ -142,12 +154,8 @@ final class DesktopPane extends JDesktopPane {
      *
      * @param  component  the component to show.
      */
-    private void show(final JComponent component, final int index, final int numTests) {
-        String title = Classes.getShortClassName(component);
-        if (numTests != 1) {
-            title = title + " (" + index + ')';
-        }
-        final JInternalFrame frame = new JInternalFrame(title, true, true, true, true);
+    private void show(final Visualization testCase, final JComponent component, final int index) {
+        final JInternalFrame frame = new JInternalFrame(testCase.title(index), true, true, true, true);
         frame.addInternalFrameListener(new InternalFrameAdapter() {
             @Override public void internalFrameActivated(final InternalFrameEvent event) {
                 active = component;
@@ -166,8 +174,8 @@ final class DesktopPane extends JDesktopPane {
             frame.setSize(Math.max(frame.getWidth(),  size.width),
                           Math.max(frame.getHeight(), size.height));
         }
-        final int numCols = (int) Math.ceil(Math.sqrt(numTests));
-        final int numRows = (numTests + numCols - 1) / numCols;
+        final int numCols = (int) Math.ceil(Math.sqrt(testCase.numTests));
+        final int numRows = (testCase.numTests + numCols - 1) / numCols;
         final int deltaX  = getWidth()  / numCols;
         final int deltaY  = getHeight() / numRows;
         frame.setLocation(Math.max(0, deltaX * (index % numCols) + (deltaX - frame.getWidth())  / 2),
@@ -182,7 +190,7 @@ final class DesktopPane extends JDesktopPane {
     }
 
     /**
-     * List windows known to this desktop.
+     * Lists windows known to this desktop.
      */
     private void listWindows() {
         final Component[] components = getComponents();
@@ -191,9 +199,9 @@ final class DesktopPane extends JDesktopPane {
             Component c = components[i];
             String title = String.valueOf(c.getName());
             if (c instanceof JInternalFrame) {
-                final JInternalFrame ci = (JInternalFrame) c;
-                title = String.valueOf(ci.getTitle());
-                c = ci.getRootPane().getComponent(0);
+                final JInternalFrame frame = (JInternalFrame) c;
+                title = String.valueOf(frame.getTitle());
+                c = frame.getRootPane().getComponent(0);
             }
             final Dimension size = c.getSize();
             titles[i] = title + " : " + c.getClass().getSimpleName() +
@@ -204,6 +212,21 @@ final class DesktopPane extends JDesktopPane {
         frame.pack();
         frame.setVisible(true);
         add(frame);
+    }
+
+    /**
+     * Closes all windows known to this desktop.
+     */
+    private void closeAllWindows() {
+        final Component[] components = getComponents();
+        for (final Component c : components) {
+            if (c instanceof JInternalFrame) {
+                final JInternalFrame frame = (JInternalFrame) c;
+                frame.dispose();
+                remove(frame);
+            }
+        }
+        active = null;
     }
 
     /**

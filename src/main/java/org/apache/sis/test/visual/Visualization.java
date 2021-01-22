@@ -18,6 +18,7 @@ package org.apache.sis.test.visual;
 
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -56,6 +57,21 @@ public abstract class Visualization {
     protected Visualization(final Class<?> testing, final int numTests) {
         this.testing  = testing;
         this.numTests = numTests;
+    }
+
+    /**
+     * Returns a title for a window created by {@link #create(int)}.
+     * Default implementation returns testing class name followed by {@code index} value.
+     *
+     * @param  index  index of test occurrence, from 0 inclusive to the value given at construction time, exclusive.
+     * @return title for the window.
+     */
+    protected String title(int index) {
+        String title = Classes.getShortName(testing);
+        if (numTests != 1) {
+            title = title + " (" + index + ')';
+        }
+        return title;
     }
 
     /**
