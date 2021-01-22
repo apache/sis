@@ -17,11 +17,13 @@
 package org.apache.sis.internal.processing.image;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.Collections;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -77,7 +79,15 @@ final class IsolineTracer {
     int y;
 
     /**
+     * Translation to apply on coordinates. For isolines computed sequentially, this is the image origin
+     * (often 0,0 but not necessarily). For isolines computed in parallel, the translations are different
+     * for each computation tile.
+     */
+    private final double translateX, translateY;
+
+    /**
      * Final transform to apply on coordinates (integer source coordinates at pixel centers).
+     * Can be {@code null} if none.
      */
     private final MathTransform gridToCRS;
 
@@ -86,11 +96,14 @@ final class IsolineTracer {
      *
      * @param  window       the 2×2 window containing pixel values in the 4 corners of current contouring grid cell.
      * @param  pixelStride  increment to the position in {@code window} for reading next sample value.
+     * @param  domain       pixel coordinates where iteration will happen.
      * @param  gridToCRS    final transform to apply on coordinates (integer source coordinates at pixel centers).
      */
-    IsolineTracer(final double[] window, final int pixelStride, final MathTransform gridToCRS) {
+    IsolineTracer(final double[] window, final int pixelStride, final Rectangle domain, final MathTransform gridToCRS) {
         this.window      = window;
         this.pixelStride = pixelStride;
+        this.translateX  = domain.x;
+        this.translateY  = domain.y;
         this.gridToCRS   = gridToCRS;
     }
 
@@ -428,7 +441,8 @@ final class IsolineTracer {
          */
         private void interpolateMissingLeftSide() {
             if (polylineOnLeft.size == 0) {
-                polylineOnLeft.append(x, y + interpolate(0, 2*pixelStride));
+                polylineOnLeft.append(translateX + (x),
+                                      translateY + (y + interpolate(0, 2*pixelStride)));
             }
         }
 
@@ -446,7 +460,8 @@ final class IsolineTracer {
          * Appends to the given polyline a point interpolated on the top side.
          */
         private void interpolateOnTopSide(final Polyline appendTo) {
-            appendTo.append(x + interpolate(0, pixelStride), y);
+            appendTo.append(translateX + (x + interpolate(0, pixelStride)),
+                            translateY + (y));
         }
 
         /**
@@ -454,7 +469,8 @@ final class IsolineTracer {
          * The polyline on right side will become {@code polylineOnLeft} in next column.
          */
         private void interpolateOnRightSide() {
-            polylineOnLeft.append(x + 1, y + interpolate(pixelStride, 3*pixelStride));
+            polylineOnLeft.append(translateX + (x + 1),
+                                  translateY + (y + interpolate(pixelStride, 3*pixelStride)));
         }
 
         /**
@@ -462,7 +478,8 @@ final class IsolineTracer {
          * The polyline on top side will become a {@code polylineOnBottoù} in next row.
          */
         private void interpolateOnBottomSide(final Polyline polylineOnTop) {
-            polylineOnTop.append(x + interpolate(2*pixelStride, 3*pixelStride), y + 1);
+            polylineOnTop.append(translateX + (x + interpolate(2*pixelStride, 3*pixelStride)),
+                                 translateY + (y + 1));
         }
 
         /**
@@ -546,14 +563,19 @@ final class IsolineTracer {
         private void writeUnclosed(final Polyline polyline) throws TransformException {
             final Unclosed fragment = new Unclosed(polyline, null);
             final Polyline[] polylines;
+            final boolean close;
             if (fragment.isEmpty()) {
+                close = false;
                 polylines = new Polyline[] {polyline.opposite, polyline};       // (reverse, forward) point order.
-            } else if (fragment.addOrMerge(partialPaths)) {
-                polylines = fragment.toPolylines();
             } else {
-                return;
+                close = fragment.addOrMerge(partialPaths);
+                if (!close) {
+                    // Keep in `partialPaths`. Maybe it can be closed later.
+                    return;
+                }
+                polylines = fragment.toPolylines();
             }
-            path = writeTo(path, polylines, false);
+            path = writeTo(path, polylines, close);
         }
 
         /**
@@ -570,7 +592,7 @@ final class IsolineTracer {
 
         /**
          * Invoked after the iteration has been completed on the full area of interest.
-         * This method writes all remaining polylines to {@link #path} or {@link #partialPaths}.
+         * This method writes all remaining polylines to {@link #partialPaths}.
          * It assumes that {@link #finishedRow()} has already been invoked.
          * This {@code Isoline} can not be used anymore after this call.
          */
@@ -586,6 +608,58 @@ final class IsolineTracer {
                 writeUnclosed(polylinesOnTop[i]);
                 polylinesOnTop[i] = null;
             }
+            assert isConsistent();
+        }
+
+        /**
+         * Verifies that {@link #partialPaths} consistency. Used for assertions only.
+         */
+        private boolean isConsistent() {
+            for (final Map.Entry<Point,Unclosed> entry : partialPaths.entrySet()) {
+                if (!entry.getValue().isExtremity(entry.getKey())) return false;
+            }
+            return true;
+        }
+
+        /**
+         * Transfers all {@code other} polylines into this instance. The {@code other} instance should be a neighbor,
+         * i.e. an instance sharing a border with this instance. The {@code other} instance will become empty after
+         * this method call.
+         *
+         * @param  other  a neighbor level (on top, left, right or bottom) to merge with this level.
+         * @throws TransformException if an error occurred during polylines creation.
+         */
+        final void merge(final Level other) throws TransformException {
+            assert other != this && other.value == value;
+            if (path == null) {
+                path = other.path;
+            } else {
+                path.append(other.path);
+            }
+            other.path = null;
+            assert  this.isConsistent();
+            assert other.isConsistent();
+            final IdentityHashMap<Unclosed,Boolean> done = new IdentityHashMap<>(other.partialPaths.size() / 2);
+            for (final Map.Entry<Point,Unclosed> entry : other.partialPaths.entrySet()) {
+                final Unclosed fragment = entry.getValue();
+                if (done.put(fragment, Boolean.TRUE) == null) {
+                    assert fragment.isExtremity(entry.getKey());
+                    if (fragment.addOrMerge(partialPaths)) {
+                        path = writeTo(path, fragment.toPolylines(), true);
+                        fragment.clear();
+                    }
+                }
+            }
+        }
+
+        /**
+         * Flushes any pending {@link #partialPaths} to {@link #path}. This method is invoked after
+         * {@link #finish()} has been invoked for all sub-regions (many sub-regions may exist if
+         * isoline generation has been splitted for parallel computation).
+         *
+         * @throws TransformException if an error occurred during polylines creation.
+         */
+        final void flush() throws TransformException {
             for (final Map.Entry<Point,Unclosed> entry : partialPaths.entrySet()) {
                 final Unclosed fragment = entry.getValue();
                 assert fragment.isExtremity(entry.getKey());
@@ -1051,7 +1125,7 @@ final class IsolineTracer {
      */
     private static final class Joiner extends PathBuilder {
         /**
-         * Final transform to apply on coordinates.
+         * Final transform to apply on coordinates, or {@code null} if none.
          */
         private final MathTransform gridToCRS;
 
@@ -1142,7 +1216,9 @@ final class IsolineTracer {
          */
         @Override
         protected int filterFull(final double[] coordinates, final int upper) throws TransformException {
-            gridToCRS.transform(coordinates, 0, coordinates, 0, upper / Polyline.DIMENSION);
+            if (gridToCRS != null) {
+                gridToCRS.transform(coordinates, 0, coordinates, 0, upper / Polyline.DIMENSION);
+            }
             return upper;
         }
     }

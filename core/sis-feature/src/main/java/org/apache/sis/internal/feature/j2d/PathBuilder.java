@@ -65,8 +65,22 @@ public class PathBuilder {
      * Verifies that {@link #size} is even, positive and smaller than the given limit.
      * This method is used for assertions.
      */
-    private boolean validSize(final int limit) {
+    private boolean isValidSize(final int limit) {
         return size >= 0 && size <= limit && (size & 1) == 0;
+    }
+
+    /**
+     * Adds all polylines defined in the other builder. The other builder shall have no polylines under
+     * construction, i.e. {@link #append(double[], int, boolean)} shall not have been invoked since last
+     * {@link #createPolyline(boolean)} invocation.
+     *
+     * @param  other  the other builder for which to add polylines, or {@code null} if none.
+     */
+    public final void append(final PathBuilder other) {
+        if (other != null) {
+            assert other.size == 0;
+            polylines.addAll(other.polylines);
+        }
     }
 
     /**
@@ -115,7 +129,7 @@ public class PathBuilder {
                 if (Double.isNaN(x) || Double.isNaN(y)) {
                     if (offset != 0) {
                         size = filterChunk(coordinates, size, offset);
-                        assert validSize(offset) : size;
+                        assert isValidSize(offset) : size;
                         createPolyline(false);
                         offset = 0;
                     }
@@ -128,7 +142,7 @@ public class PathBuilder {
             }
         }
         size = filterChunk(coordinates, size, offset);
-        assert validSize(offset) : size;
+        assert isValidSize(offset) : size;
     }
 
     /**
@@ -184,7 +198,7 @@ public class PathBuilder {
      */
     public final void createPolyline(boolean close) throws TransformException {
         size = filterFull(coordinates, size);
-        assert validSize(coordinates.length) : size;
+        assert isValidSize(coordinates.length) : size;
         /*
          * If the point would be alone, discard the lonely point because it would be invisible
          * (a "move to" operation without "line to"). If there is two points, they should not

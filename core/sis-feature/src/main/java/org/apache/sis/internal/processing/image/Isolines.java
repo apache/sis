@@ -19,13 +19,13 @@ package org.apache.sis.internal.processing.image;
 import java.util.Arrays;
 import java.util.TreeMap;
 import java.util.NavigableMap;
+import java.util.concurrent.Future;
 import java.awt.Shape;
 import java.awt.geom.Path2D;
 import java.awt.image.RenderedImage;
 import org.opengis.coverage.grid.SequenceType;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -55,24 +55,37 @@ public final class Isolines {
     private final IsolineTracer.Level[] levels;
 
     /**
-     * Creates an initially empty set of isolines for the given levels.
-     * The given array should be a clone of user-provided array because
-     * this constructor may modify it in-place.
+     * Creates an initially empty set of isolines for the given levels. The given {@code values}
+     * array should be one of the arrays validated by {@link #cloneAndSort(double[][])}.
      */
     private Isolines(final IsolineTracer tracer, final int band, final double[] values, final int width) {
-        Arrays.sort(values);
-        int n = values.length;
-        while (n > 0 && Double.isNaN(values[n-1])) n--;
-        for (int i=n; --i>0;) {
-            if (values[i] == values[i-1]) {
-                // Remove duplicated elements. May replace -0 by +0.
-                System.arraycopy(values, i, values, i-1, n-- - i);
-            }
-        }
-        levels = new IsolineTracer.Level[n];
-        for (int i=0; i<n; i++) {
+        levels = new IsolineTracer.Level[values.length];
+        for (int i=0; i<values.length; i++) {
             levels[i] = tracer.new Level(band, values[i], width);
         }
+    }
+
+    /**
+     * Ensures that the given arrays are sorted and contains no NaN value.
+     */
+    private static double[][] cloneAndSort(double[][] levels) {
+        levels.clone();
+        for (int j=0; j<levels.length; j++) {
+            double[] values = levels[j];
+            ArgumentChecks.ensureNonNullElement("levels", j, values);
+            values = values.clone();
+            Arrays.sort(values);
+            int n = values.length;
+            while (n > 0 && Double.isNaN(values[n-1])) n--;
+            for (int i=n; --i>0;) {
+                if (values[i] == values[i-1]) {
+                    // Remove duplicated elements. May replace -0 by +0.
+                    System.arraycopy(values, i, values, i-1, n-- - i);
+                }
+            }
+            levels[j] = ArraysExt.resize(values, n);
+        }
+        return levels;
     }
 
     /**
@@ -106,6 +119,7 @@ public final class Isolines {
     /**
      * Generates isolines at the specified levels computed from data provided by the given image.
      * Isolines will be created for every bands in the given image.
+     * This method performs all computation sequentially in current thread.
      *
      * @param  data       image providing source values.
      * @param  levels     values for which to compute isolines. An array should be provided for each band.
@@ -117,20 +131,147 @@ public final class Isolines {
      * @throws TransformException if an interpolated point can not be transformed using the given transform.
      */
     public static Isolines[] generate(final RenderedImage data, final double[][] levels,
-                                      MathTransform gridToCRS) throws TransformException
+                                      final MathTransform gridToCRS) throws TransformException
     {
         ArgumentChecks.ensureNonNull("data",   data);
         ArgumentChecks.ensureNonNull("levels", levels);
-        {   // For keeping variable locale.
-            final MathTransform gridToImage = MathTransforms.translation(data.getMinX(), data.getMinY());
-            if (gridToCRS == null) {
-                gridToCRS = gridToImage;
-            } else {
-                ArgumentChecks.ensureDimensionsMatch("gridToCRS", 2, 2, gridToCRS);
-                gridToCRS = MathTransforms.concatenate(gridToImage, gridToCRS);
+        return flush(generate(iterators().create(data), cloneAndSort(levels), gridToCRS));
+    }
+
+    /**
+     * Generates isolines in background using an arbitrary amount of processors.
+     * This method returns immediately (i.e. the current thread is not used for isoline computation).
+     * The result will become available at a later time in the {@link Future} object.
+     *
+     * @param  data       image providing source values.
+     * @param  levels     values for which to compute isolines. An array should be provided for each band.
+     *                    If there is more bands than {@code levels.length}, the last array is reused for
+     *                    all remaining bands.
+     * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
+     *                    Integer source coordinates are located at pixel centers.
+     * @return a {@code Future} representing pending completion of isoline computation.
+     */
+    public static Future<Isolines[]> parallelGenerate(final RenderedImage data, final double[][] levels,
+                                                      final MathTransform gridToCRS)
+    {
+        ArgumentChecks.ensureNonNull("data",   data);
+        ArgumentChecks.ensureNonNull("levels", levels);
+        return new Process(data, cloneAndSort(levels), gridToCRS).execute();
+    }
+
+    /**
+     * Returns a provider of {@link PixelIterator} suitable to isoline computations.
+     * It is critical that iterators use {@link SequenceType#LINEAR} iterator order.
+     */
+    private static PixelIterator.Builder iterators() {
+        return new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR);
+    }
+
+    /**
+     * Creates all polylines that were still pending. This method should be the very last step,
+     * when all other computations finished. Pending polylines are sequences of points not yet
+     * stored in geometry objects because they were waiting to see if additional points would
+     * close them as polygons. This {@code flush()} method is invoked when we know that it will
+     * not be the case because there is no more points to add.
+     *
+     * @param  isolines  the isolines for which to write pending polylines.
+     * @return the {@code isolines} array, returned for convenience.
+     * @throws TransformException if an error occurred during polylines creation.
+     */
+    private static Isolines[] flush(final Isolines[] isolines) throws TransformException {
+        for (final Isolines isoline : isolines) {
+            for (final IsolineTracer.Level level : isoline.levels) {
+                level.flush();
             }
         }
-        final PixelIterator iterator = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR).create(data);
+        return isolines;
+    }
+
+    /**
+     * Wraps {@code Isolines.generate(…)} calculation in a process for parallel execution.
+     * The source image is divided in sub-region and the isolines in each sub-region will
+     * be computed in a different thread.
+     */
+    private static final class Process extends TiledProcess<Isolines[]> {
+        /**
+         * Values for which to compute isolines. An array should be provided for each band.
+         * If there is more bands than {@code levels.length}, the last array is reused for
+         * all remaining bands.
+         *
+         * @see #cloneAndSort(double[][])
+         */
+        private final double[][] levels;
+
+        /**
+         * Transform from image upper left corner (in pixel coordinates) to geometry coordinates.
+         */
+        private final MathTransform gridToCRS;
+
+        /**
+         * Creates a process for parallel isoline computation.
+         *
+         * @param  data       image providing source values.
+         * @param  levels     values for which to compute isolines.
+         * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
+         */
+        Process(final RenderedImage data, final double[][] levels, final MathTransform gridToCRS) {
+            super(data, 1, 1, iterators());
+            this.levels = levels;
+            this.gridToCRS = gridToCRS;
+        }
+
+        /**
+         * Invoked by {@link TiledProcess} for creating a sub-task
+         * doing isoline computation on a sub-region of the image.
+         */
+        @Override
+        protected Task createSubTask() {
+            return new Tile();
+        }
+
+        /**
+         * A sub-task doing isoline computation on a sub-region of the image.
+         * The region is determined by the {@link #iterator}.
+         */
+        private final class Tile extends Task {
+            /** Isolines computed in the sub-region of this sub-task. */
+            private Isolines[] isolines;
+
+            /** Creates a new sub-task. */
+            Tile() {
+            }
+
+            /** Invoked in a background thread for performing isoline computation. */
+            @Override protected void execute() throws TransformException {
+                isolines = generate(iterator, levels, gridToCRS);
+            }
+
+            /** Invoked in a background thread for merging results of two sub-tasks. */
+            @Override protected void merge(final Task neighbor) throws TransformException {
+                for (int i=0; i<isolines.length; i++) {
+                    final Isolines target = isolines[i];
+                    final Isolines source = ((Tile) neighbor).isolines[i];
+                    for (int j=0; j<target.levels.length; j++) {
+                        target.levels[j].merge(source.levels[j]);
+                    }
+                }
+            }
+
+            /** Invoked on the last sub-task (after all merges) for getting final result. */
+            @Override protected Isolines[] result() throws TransformException {
+                return flush(isolines);
+            }
+        }
+    }
+
+    /**
+     * Generates isolines for the specified levels in the region traversed by the given iterator.
+     * This is the implementation of {@link #generate(RenderedImage, double[][], MathTransform)}
+     * but potentially on a sub-region for parallel "fork-join" execution.
+     */
+    private static Isolines[] generate(final PixelIterator iterator, final double[][] levels,
+                                       final MathTransform gridToCRS) throws TransformException
+    {
         /*
          * Prepares a window of size 2×2 pixels over pixel values. Window elements are traversed
          * by incrementing indices in following order: band, column, row. The window content will
@@ -138,7 +279,7 @@ public final class Isolines {
          */
         final int numBands = iterator.getNumBands();
         final double[] window = new double[numBands * 4];
-        final IsolineTracer tracer = new IsolineTracer(window, numBands, gridToCRS);
+        final IsolineTracer tracer = new IsolineTracer(window, numBands, iterator.getDomain(), gridToCRS);
         /*
          * Prepare the set of isolines for each band in the image.
          * The number of cells on the horizontal axis is one less
