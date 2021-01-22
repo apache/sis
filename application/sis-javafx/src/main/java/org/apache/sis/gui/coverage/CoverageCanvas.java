@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.io.IOException;
 import java.awt.Graphics2D;
@@ -67,6 +68,7 @@ import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.portrayal.RenderException;
+import org.apache.sis.internal.processing.image.Isolines;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.LogHandler;
@@ -657,7 +659,7 @@ public class CoverageCanvas extends MapCanvasAWT {
          */
         @Override
         @SuppressWarnings("PointlessBitwiseExpression")
-        protected void render() throws TransformException {
+        protected void render() throws Exception {
             final Long id = LogHandler.loadingStart(originator);
             try {
                 /*
@@ -697,12 +699,15 @@ public class CoverageCanvas extends MapCanvasAWT {
                         trace("render(): resampling result:%n\t%s", resampledImage);
                     }
                 }
-                prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);
                 /*
-                 * Create isolines if requested.
+                 * Launch isolines creation if requested. We do this operation before `prefetch(…)`
+                 * because it will be executed in background threads while we process the coverage.
+                 * We can not invoke it sooner because it needs some `resampleAndConvert(…)` results.
                  */
-                if (isolines != null) {
-                    data.complete(isolines);
+                final Future<Isolines[]> newIsolines = data.generate(isolines);
+                prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);
+                if (newIsolines != null) {
+                    IsolineRenderer.complete(isolines, newIsolines);
                 }
             } finally {
                 LogHandler.loadingStop(id);

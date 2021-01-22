@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Arrays;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import java.awt.Shape;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -265,11 +267,11 @@ final class IsolineRenderer {
     }
 
     /**
-     * Prepares a list of isolines to draw for all bands, initially populated with shapes that are already available.
+     * Prepares a list of isolines to draw for each bands, initially populated with shapes that are already available.
      * This method shall be invoked in JavaFX thread for having consistent information. The snapshots returned by this
      * method will be completed and used in a background thread.
      *
-     * @return snapshots of information about isolines in all bands, or {@code null} if none.
+     * @return snapshots of information about isolines in each bands, or {@code null} if none.
      */
     final Snapshot[] prepare() {
         assert Platform.isFxApplicationThread();
@@ -287,17 +289,18 @@ final class IsolineRenderer {
     /**
      * Continues isoline preparation by computing the missing Java2D shapes.
      * This method shall be invoked in a background thread. After this call,
+     * {@link #complete(Snapshot[], Future)} needs to be invoked before
      * isolines can be painted with {@link Snapshot#paint(Graphics2D, Rectangle2D)}.
      *
      * @param  snapshots  value of {@link #prepare()}. Shall not be {@code null}.
      * @param  data       the source of data. Used only if there is new isolines to compute.
      * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
      *                    Integer source coordinates are located at pixel centers.
-     * @return the {@code snapshots} array, potentially with less elements.
+     * @return result of isolines generation, or {@code null} if there is no isoline to compute.
      * @throws TransformException if an interpolated point can not be transformed using the given transform.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")      // Used only for debugging.
-    static Snapshot[] complete(final Snapshot[] snapshots, final RenderedImage data, final MathTransform gridToCRS)
+    static Future<Isolines[]> generate(final Snapshot[] snapshots, final RenderedImage data, final MathTransform gridToCRS)
             throws TransformException
     {
         assert !Platform.isFxApplicationThread();
@@ -331,12 +334,31 @@ final class IsolineRenderer {
                     System.out.printf("\tFor band %d: %s%n", i, Arrays.toString(levels[i]));
                 }
             }
-            final Isolines[] isolines = Isolines.generate(data, levels, gridToCRS);
-            for (int i=0; i<numViews; i++) {
-                snapshots[i].complete(isolines[i]);
-            }
+            return Isolines.parallelGenerate(data, levels, gridToCRS);
         }
-        return ArraysExt.resize(snapshots, numViews);
+        return null;
+    }
+
+    /**
+     * Waits for completion of isolines generation if not already finished, then stores the result.
+     * The {@code isolines} argument is the {@link #generate(Snapshot[], RenderedImage, MathTransform)}
+     * return value. Caller shall verify that {@code snapshots} is non-null.
+     *
+     * @param  snapshots    where to store the result of isoline computations.
+     * @param  newIsolines  the result of isolines generation, or {@code null} if none.
+     */
+    static void complete(final Snapshot[] snapshots, final Future<Isolines[]> newIsolines)
+            throws ExecutionException, InterruptedException
+    {
+        final Isolines[] isolines = newIsolines.get();
+        final int n = Math.min(snapshots.length, isolines.length);
+        int i;
+        for (i=0; i<n; i++) {
+            snapshots[i].complete(isolines[i]);
+        }
+        while (i < snapshots.length) {              // Clear remaining snapshots if any.
+            snapshots[i++].clear();
+        }
     }
 
     /**
@@ -400,6 +422,17 @@ final class IsolineRenderer {
             missingLevels = new HashMap<>();
             shapes = new Shape[capacity];
             colors = new int[capacity];
+        }
+
+        /**
+         * Removes all isolines.
+         */
+        private void clear() {
+            isolines.clear();
+            missingLevels.clear();
+            newIsolines = null;
+            Arrays.fill(shapes, null);
+            count = 0;
         }
 
         /**

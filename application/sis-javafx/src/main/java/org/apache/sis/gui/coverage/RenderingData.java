@@ -19,6 +19,7 @@ package org.apache.sis.gui.coverage;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.awt.Graphics2D;
@@ -48,6 +49,7 @@ import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.internal.coverage.j2d.ColorModelType;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.referencing.WraparoundApplicator;
+import org.apache.sis.internal.processing.image.Isolines;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
@@ -560,14 +562,15 @@ final class RenderingData implements Cloneable {
      * This method shall be invoked in a background thread after image rendering has been completed (because this
      * method uses some image computation results).
      *
-     * @param  isolines  value of {@link IsolineRenderer#prepare()}. Shall not be {@code null}.
-     * @return the {@code isolines} array, potentially with less elements.
+     * @param  isolines  value of {@link IsolineRenderer#prepare()}, or {@code null} if none.
+     * @return result of isolines generation, or {@code null} if there is no isoline to compute.
      * @throws TransformException if an interpolated point can not be transformed using the given transform.
      */
-    final IsolineRenderer.Snapshot[] complete(final IsolineRenderer.Snapshot[] isolines) throws TransformException {
+    final Future<Isolines[]> generate(final IsolineRenderer.Snapshot[] isolines) throws TransformException {
+        if (isolines == null) return null;
         final MathTransform centerToObjective = PixelTranslation.translate(
                 cornerToObjective, PixelInCell.CELL_CORNER, PixelInCell.CELL_CENTER);
-        return IsolineRenderer.complete(isolines, data, centerToObjective);
+        return IsolineRenderer.generate(isolines, data, centerToObjective);
     }
 
     /**
