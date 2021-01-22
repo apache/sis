@@ -24,7 +24,6 @@ import java.lang.reflect.Array;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.NullArgumentException;
 
@@ -136,19 +135,12 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      *
      * @param  type  the type of the element to be included in this set.
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})    // Generic array creation.
     public WeakHashSet(final Class<E> type) {
         elementType            = type;
         mayContainArrays       = type.isArray() || type.equals(Object.class);
         lastTimeNormalCapacity = System.nanoTime();
-        /*
-         * Workaround for the "generic array creation" compiler error.
-         * Otherwise we would use the commented-out line instead.
-         */
-        @SuppressWarnings("unchecked")
-        @Workaround(library="JDK", version="1.7")
-        final Entry[] table = (Entry[]) Array.newInstance(Entry.class, MIN_CAPACITY);
-//      table = new Entry[size];
-        this.table = table;
+        table = new WeakHashSet.Entry[MIN_CAPACITY];
     }
 
     /**
