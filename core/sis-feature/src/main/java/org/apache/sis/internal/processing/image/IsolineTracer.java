@@ -649,6 +649,7 @@ final class IsolineTracer {
                         fragment.clear();
                     }
                 }
+                entry.setValue(null);       // Let the garbage collector do its work.
             }
         }
 

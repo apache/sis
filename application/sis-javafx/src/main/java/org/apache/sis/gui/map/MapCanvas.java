@@ -866,7 +866,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     public final void requestRepaint() {
         contentChangeCount++;
-        if (renderingInProgress == null) {
+        if (renderingInProgress == null && !isRendering.get()) {
             final Delayed delay = new Delayed();
             BackgroundThreads.execute(delay);
             renderingInProgress = delay;    // Set last after we know that the task has been scheduled.
@@ -895,8 +895,8 @@ public abstract class MapCanvas extends PlanarCanvas {
                 return;
             }
         }
-        renderingStartTime   = System.nanoTime();
-        renderedContentStamp = contentChangeCount;
+        isRendering.set(true);                      // Avoid that `requestRepaint(…)` trig new paints.
+        renderingStartTime = System.nanoTime();
         /*
          * If a new canvas size is known, inform the parent `PlanarCanvas` about that.
          * It may cause a recomputation of the "objective to display" transform.
@@ -956,6 +956,7 @@ public abstract class MapCanvas extends PlanarCanvas {
             }
         } catch (TransformException | RenderException ex) {
             restoreCursorAfterPaint();
+            isRendering.set(false);
             errorOccurred(ex);
             return;
         }
@@ -966,7 +967,6 @@ public abstract class MapCanvas extends PlanarCanvas {
          */
         changeInProgress.setToTransform(transform);
         transformOnNewImage.setToIdentity();
-        isRendering.set(true);
         if (!transform.isIdentity()) {
             transformDisplayCoordinates(new AffineTransform(
                     transform.getMxx(), transform.getMyx(),
@@ -976,7 +976,10 @@ public abstract class MapCanvas extends PlanarCanvas {
         /*
          * Invoke `createWorker(…)` only after we finished above configuration, because that method
          * may take a snapshot of current canvas state in preparation for use in background threads.
+         * Take the value of `contentChangeCount` only now because above code may have indirect calls
+         * to `requestRepaint()`.
          */
+        renderedContentStamp = contentChangeCount;
         final Renderer context = createRenderer();
         if (context != null && context.initialize(floatingPane)) {
             final Task<?> worker = createWorker(context);
@@ -1175,6 +1178,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #reset()
      */
     protected void clear() {
+        assert Platform.isFxApplicationThread();
         transform.setToIdentity();
         changeInProgress.setToIdentity();
         invalidObjectiveToDisplay = true;
