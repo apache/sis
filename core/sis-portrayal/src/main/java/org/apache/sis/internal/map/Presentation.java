@@ -54,7 +54,7 @@ public abstract class Presentation {
 
     private MapLayer layer;
     private Resource resource;
-    private Object candidate;
+    private Feature candidate;
 
     public Presentation() {
     }
@@ -96,7 +96,7 @@ public abstract class Presentation {
      *
      * @return can be null if the presentation is not associated to any identifiable object.
      */
-    public Object getCandidate() {
+    public Feature getCandidate() {
         return candidate;
     }
 

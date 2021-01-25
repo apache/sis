@@ -16,7 +16,10 @@
  */
 package org.apache.sis.internal.map;
 
+import org.apache.sis.portrayal.MapLayer;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
+import org.opengis.feature.Feature;
 
 /**
  * Produced by the portrayal engines when an exception occures.
@@ -40,6 +43,15 @@ public class ExceptionPresentation extends Presentation {
      * @param exception not null.
      */
     public ExceptionPresentation(Exception exception) {
+        ArgumentChecks.ensureNonNull("exception", exception);
+        this.exception = exception;
+    }
+
+    /**
+     * @param exception not null.
+     */
+    public ExceptionPresentation(MapLayer layer, Resource resource, Feature candidate, Exception exception) {
+        super(layer,resource, candidate);
         ArgumentChecks.ensureNonNull("exception", exception);
         this.exception = exception;
     }
