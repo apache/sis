@@ -116,7 +116,7 @@ public class MapLayer extends MapItem {
      * @see #OPACITY_PROPERTY
      * @see #getOpacity()
      */
-    private double opacity;
+    private double opacity = 1.0;
 
     /**
      * Constructs an initially empty map layer.
