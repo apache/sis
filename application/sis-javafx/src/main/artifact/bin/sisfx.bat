@@ -22,7 +22,7 @@ SET SIS_DATA=%BASE_DIR%\data
 
 IF "%PATH_TO_FX%"=="" (
     java --class-path "%BASE_DIR%\lib\*" org.apache.sis.internal.setup.FXFinder "%BASE_DIR%\conf\setenv.bat"
-    if %ERRORLEVEL% GEQ 1 EXIT /B 1
+    IF %ERRORLEVEL% GEQ 1 EXIT /B 1
     CALL "%BASE_DIR%\conf\setenv.bat"
 )
 

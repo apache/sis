@@ -18,9 +18,11 @@
 
 set -o errexit
 
-BASE_DIR="`readlink --canonicalize-existing $0`"
-BASE_DIR="`dirname $BASE_DIR`/.."
+BASE_DIR="`dirname $0`/.."
 source "$BASE_DIR/conf/setenv.sh"
+
+SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"
+export SIS_DATA
 
 if [ -z "$PATH_TO_FX" ]
 then
@@ -31,9 +33,6 @@ then
     fi
     source "$BASE_DIR/conf/setenv.sh"
 fi
-
-SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"
-export SIS_DATA
 
 # Execute SIS with any optional JAR that the user may put in the `lib` directory.
 java -splash:"$BASE_DIR/lib/logo.jpg" \

@@ -33,6 +33,13 @@ import java.nio.file.Paths;
  * <p>This class should not use any SIS classes because it may be invoked early
  * while the application is still initializing.</p>
  *
+ * <p>This class is not referenced directly by other Java code. Instead, it is
+ * specified at JVM startup time like below:</p>
+ *
+ * {@preformat shell
+ *     java -Djava.util.logging.config.class="org.apache.sis.internal.setup.LoggingConfiguration"
+ * }
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1

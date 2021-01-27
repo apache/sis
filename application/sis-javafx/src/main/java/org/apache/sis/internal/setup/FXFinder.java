@@ -16,21 +16,17 @@
  */
 package org.apache.sis.internal.setup;
 
-import java.awt.Desktop;
-import java.awt.Font;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 
 /**
@@ -44,25 +40,51 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public final class FXFinder {
     /**
+     * Minimal version of JavaFX required by Apache SIS.
+     */
+    static final int JAVAFX_VERSION = 13;
+
+    /**
      * The URL where to download JavaFX.
      */
-    private static final String DOWNLOAD_URL = "https://openjfx.io/";
+    static final String JAVAFX_HOME = "https://openjfx.io/";
+
+    /**
+     * Prefix of JavaFX directory. This is checked only in ZIP files.
+     * We do not check that name in decompressed directory because the
+     * user is free to rename.
+     */
+    static final String JAVAFX_DIRECTORY_PREFIX = "javafx-sdk-";
 
     /**
      * The {@value} directory in JavaFX installation directory.
      * This is the directory where JAR files are expected to be found.
      */
-    private static final String LIB_DIRECTORY = "lib";
+    private static final String JAVAFX_LIB_DIRECTORY = "lib";
 
     /**
-     * A file to search in the {@value #LIB_DIRECTORY} directory for determining if JavaFX is present.
+     * A file to search in the {@value #JAVAFX_LIB_DIRECTORY} directory for determining if JavaFX is present.
      */
-    private static final String SENTINEL_FILE = "javafx.controls.jar";
+    private static final String JAVAFX_SENTINEL_FILE = "javafx.controls.jar";
 
     /**
-     * The environment variable containing the path to JavaFX {@value #LIB_DIRECTORY} directory.
+     * The environment variable containing the path to JavaFX {@value #JAVAFX_LIB_DIRECTORY} directory.
      */
-    private static final String PATH_VARIABLE = "PATH_TO_FX";
+    static final String PATH_VARIABLE = "PATH_TO_FX";
+
+    /**
+     * The {@value} directory in Apache SIS installation where the {@code setenv.sh} file
+     * is expected to be located.
+     */
+    private static final String SIS_CONF_DIRECTORY = "conf";
+
+    /**
+     * The {@value} directory in Apache SIS installation where to unzip JavaFX.
+     * This is relative to {@code $BASE_DIR} environment variable.
+     *
+     * @see #decompress(Wizard)
+     */
+    private static final String SIS_UNZIP_DIRECTORY = "opt";
 
     /**
      * File extension of Windows batch file. If the script file to edit does not have this extension,
@@ -71,9 +93,47 @@ public final class FXFinder {
     private static final String WINDOWS_BATCH_EXTENSION = ".bat";
 
     /**
-     * Do not allow instantiation of this class.
+     * Exit code to return when user cancelled the configuration process.
      */
-    private FXFinder() {
+    private static final int CANCEL_EXIT_CODE = 1;
+
+    /**
+     * Exit code to return if the wizard can not start.
+     */
+    private static final int ERROR_EXIT_CODE = 2;
+
+    /**
+     * The JavaFX directory as specified by the user, or {@code null} if none.
+     */
+    private File specified;
+
+    /**
+     * The JavaFX directory validated by {@code FXFinder}, or {@code null} if the directory is invalid.
+     * May be the same file than {@link #specified}, but not necessarily; it may be a subdirectory.
+     */
+    private File validated;
+
+    /**
+     * Path of the {@code setenv.sh} file to edit.
+     */
+    private final Path setenv;
+
+    /**
+     * The background task created if there is a JavaFX ZIP file to decompress.
+     */
+    private Inflater inflater;
+
+    /**
+     * {@code true} if this operation systems is Windows, or {@code false} if assumed Unix (Linux or MacOS).
+     */
+    private final boolean isWindows;
+
+    /**
+     * Creates a new finder.
+     */
+    private FXFinder(final String setenv) {
+        this.setenv = Paths.get(setenv).normalize();
+        isWindows = setenv.endsWith(WINDOWS_BATCH_EXTENSION);
     }
 
     /**
@@ -82,110 +142,229 @@ public final class FXFinder {
      * @param  args  command line arguments. Should have a length of 1,
      *               with {@code args[0]} containing the path of the file to edit.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void main(String[] args) {
-        boolean success = false;
-        try {
-            success = askDirectory(Paths.get(args[0]).normalize());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e.toString(), "Error", JOptionPane.ERROR_MESSAGE);
+        if (args.length == 1) {
+            if (Wizard.show(new FXFinder(args[0]))) {
+                // Call to `System.exit(int)` will be done by `Wizard`.
+                return;
+            }
+        } else {
+            System.out.println("Required: path to setenv.sh");
         }
-        System.exit(success ? 0 : 1);
+        System.exit(ERROR_EXIT_CODE);
     }
 
     /**
-     * Popups a modal dialog box asking user to choose a directory.
-     *
-     * @param  setenv  path of the {@code setenv.sh} file to edit.
-     * @return {@code true} if we can continue with application launch,
-     *         or {@code false} on error or cancellation.
+     * Returns {@code null} if the configuration file has been found and can be edited.
+     * If this method returns a non-null, then the setup wizard should be cancelled.
+     * The returned value can be used as an error message.
      */
-    private static boolean askDirectory(final Path setenv) throws Exception {
+    final String diagnostic() {
+        if (Files.isReadable(setenv) && Files.isWritable(setenv)) {
+            return null;
+        }
+        return "Can not edit " + setenv;
+    }
+
+    /**
+     * Returns the values of environment variables relevant to Apache SIS.
+     * This is used for showing a summary after configuration finished.
+     */
+    final String[][] getEnvironmentVariables() {
+        return new String[][] {
+            getEnvironmentVariable("JAVA_HOME"),
+            getEnvironmentVariable(PATH_VARIABLE),
+            getEnvironmentVariable("SIS_DATA"),
+            getEnvironmentVariable("SIS_OPTS"),
+        };
+    }
+
+    /**
+     * Returns the value of the environment variable of given name.
+     * The returned array contains the following elements:
+     *
+     * <ul>
+     *   <li>Variable name</li>
+     *   <li>Value to show (never null)</li>
+     * </ul>
+     */
+    private String[] getEnvironmentVariable(final String name) {
+        String value;
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ReflectiveOperationException | UnsupportedLookAndFeelException e) {
-            // Ignore.
-        }
-        /*
-         * Checks now that we can edit `setenv.sh` content in order to not show the next
-         * dialog box if we czn not read that file (e.g. because the file was not found).
-         */
-        if (!Files.isReadable(setenv) || !Files.isWritable(setenv)) {
-            JOptionPane.showMessageDialog(null, "Can not edit " + setenv,
-                    "Configuration error", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
-        /*
-         * Ask the user what he wants to do.
-         */
-        final JLabel description = new JLabel(
-                "<html><body><p style=\"width:400px; text-align:justify;\">" +
-                "This application requires <b>JavaFX</b> version 13 or later. " +
-                "Click on “Download” for opening the free download page. " +
-                "If JavaFX is already installed on this computer, " +
-                "click on “Set directory” for specifying the installation directory." +
-                "</p></body></html>");
-
-        description.setFont(description.getFont().deriveFont(Font.PLAIN));
-        final Object[] options = {"Download", "Set directory", "Cancel"};
-        final int choice = JOptionPane.showOptionDialog(null, description,
-                "JavaFX installation directory",
-                JOptionPane.YES_NO_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                options,
-                options[2]);
-
-        if (choice == 0) {
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create(DOWNLOAD_URL));
-            } else {
-                JOptionPane.showMessageDialog(null, "See " + DOWNLOAD_URL,
-                        "JavaFX download", JOptionPane.INFORMATION_MESSAGE);
+            value = System.getenv(name);
+            if (value == null) {
+                value = "(undefined)";
+            } else if (value.isEmpty()) {
+                value = "(blank)";
+            } else if (name.equals("SIS_DATA") && value.equals("bin/../data")) {
+                value = Paths.get(value).toAbsolutePath().toString();
             }
-        } else if (choice == 1) {
-            final JFileChooser fd = new JFileChooser();
-            fd.setDialogTitle("JavaFX installation directory");
-            fd.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            while (fd.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                final File dir = findSubDirectory(fd.getSelectedFile());
-                if (dir == null) {
-                    JOptionPane.showMessageDialog(null, "Not a JavaFX directory.",
-                            "JavaFX installation directory", JOptionPane.WARNING_MESSAGE);
-                } else {
-                    setDirectory(setenv, dir);
-                    return true;
-                }
-            }
+        } catch (SecurityException e) {
+            value  = "(unreadable)";
+        }
+        return new String[] {name, value};
+    }
+
+    /**
+     * Returns the name of JavaFX bundle to download, including the operating system name.
+     * Example: "JavaFX Linux SDK". This is for helping the user to choose which file to
+     * download on the {@value Constants#JAVAFX_HOME} web page.
+     */
+    static String getJavafxBundleName() {
+        String name;
+        try {
+            name = System.getProperty("os.name");
+        } catch (SecurityException e) {
+            name = null;
+        }
+        if (name == null) {
+            name = "<operating system>";
+        }
+        return "JavaFX " + name + " SDK";
+    }
+
+    /**
+     * Returns the directory as validated by {@code FXFinder}.
+     * May be slightly different than the user-specified directory.
+     */
+    final String getValidatedDirectory() {
+        return (validated != null) ? validated.getPath() : null;
+    }
+
+    /**
+     * Returns the directory specified by the user, or {@code null} if none.
+     */
+    final File getDirectory() {
+        return specified;
+    }
+
+    /**
+     * Sets the JavaFX directory to the given value and checks its validity.
+     * This method tries to locate the {@code lib} sub-folder that we expect
+     * in a JavaFX installation directory.
+     *
+     * @param  dir  the directory from where to start the search.
+     * @return whether the given directory seems valid.
+     */
+    final boolean setDirectory(final File dir) {
+        specified = dir;
+        validated = null;
+        if (new File(dir, JAVAFX_SENTINEL_FILE).exists()) {
+            validated = dir;
+            return true;
+        }
+        final File lib = new File(dir, JAVAFX_LIB_DIRECTORY);
+        if (new File(lib, JAVAFX_SENTINEL_FILE).exists()) {
+            validated = lib;
+            return true;
         }
         return false;
     }
 
     /**
-     * Tries to locate the {@code lib} sub-folder in a JavaFX installation directory.
+     * Verifies whether the given file seems to be a valid ZIP file.
+     * This method checks for a sentinel value in the ZIP entries.
+     * The entry may be:
      *
-     * @param  dir  the directory from where to start the search.
-     * @return      the {@code lib} directory, or {@code null} if not found.
+     * <pre>javafx-sdk-&lt;version&gt;/lib/javafx.controls.jar</pre>
+     *
+     * If the file seems valid, {@code null} is returned.
+     * Otherwise an error message is HTML is returned.
      */
-    private static File findSubDirectory(final File dir) {
-        if (new File(dir, SENTINEL_FILE).exists()) {
-            return dir;
+    static String checkZip(final File file) throws IOException {
+        try (ZipFile zip = new ZipFile(file)) {
+            final Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                final ZipEntry entry = entries.nextElement();
+                if (entry.isDirectory()) {
+                    final String basedir = entry.getName();
+                    if (basedir.startsWith(JAVAFX_DIRECTORY_PREFIX)) {
+                        final int start = JAVAFX_DIRECTORY_PREFIX.length();
+                        int end = basedir.indexOf('.', start);
+                        if (end < start) end = basedir.length();
+                        final int version = Integer.parseInt(basedir.substring(start, end));
+                        if (version < JAVAFX_VERSION) {
+                            return "<html>Apache SIS requires JavaFX version " + JAVAFX_VERSION + " or later. "
+                                    + "The given file contains JavaFX version " + version + ".</html>";
+                        }
+                        if (zip.getEntry(basedir + JAVAFX_LIB_DIRECTORY + '/' + JAVAFX_SENTINEL_FILE) != null) {
+                            return null;        // Valid file.
+                        }
+                    }
+                    break;
+                }
+            }
         }
-        final File lib = new File(dir, LIB_DIRECTORY);
-        if (new File(lib, SENTINEL_FILE).exists()) {
-            return lib;
-        }
-        return null;
+        return "<html>Not a recognized ZIP file for JavaFX SDK.</html>";
     }
 
     /**
-     * Sets the JavaFX directory.
+     * Returns the destination directory where to decompress ZIP files.
+     * This method assumes the following directory structure:
      *
-     * @param  setenv  path to the {@code setenv.sh} file to edit.
-     * @param  dir     directory selected by user.
+     * {@preformat text
+     *     apache-sis       (can be any name)
+     *     ├─ conf
+     *     │  └─ setenv.sh
+     *     └─ opt
+     * }
      */
-    private static void setDirectory(final Path setenv, final File dir) throws IOException {
+    final File getDestinationDirectory() throws IOException {
+        File basedir = setenv.toAbsolutePath().toFile().getParentFile();
+        if (basedir != null && SIS_CONF_DIRECTORY.equals(basedir.getName())) {
+            basedir = basedir.getParentFile();
+            if (basedir != null) {
+                final File destination = new File(basedir, SIS_UNZIP_DIRECTORY);
+                if (destination.isDirectory() || destination.mkdir()) {
+                    return destination;
+                }
+                throw new IOException("Can not create directory: " + destination);
+            }
+        }
+        throw new FileNotFoundException("No parent directory to " + setenv + '.');
+    }
+
+    /**
+     * If the user-specified file is a ZIP file, starts decompression in a background thread.
+     *
+     * @return whether decompression started.
+     */
+    final boolean decompress(final Wizard wizard) {
+        if (validated == null) {
+            inflater = new Inflater(wizard, specified);
+            final Thread t = new Thread(inflater, "Inflater");
+            t.start();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Cancels configuration, deletes decompressed files if any and exits.
+     * This method is invoked by {@link Wizard} in the following situations:
+     *
+     * <ul>
+     *   <li>User clicked on the "Cancel" button.</li>
+     *   <li>User clicked on the "Close window" button in window title bar.</li>
+     * </ul>
+     *
+     * If a decompression is in progress, it is stopped and all files are deleted.
+     */
+    final void cancel() {
+        if (inflater != null) {
+            inflater.cancel();
+        }
+        System.exit(CANCEL_EXIT_CODE);
+    }
+
+    /**
+     * Commits the configuration by writing the JavaFX directory in the {@code setenv.sh} file.
+     */
+    final void commit() throws IOException {
+        inflater = null;
         String command = PATH_VARIABLE;
-        if (setenv.getFileName().toString().endsWith(WINDOWS_BATCH_EXTENSION)) {
+        if (isWindows) {
             command = "SET " + command;                             // Microsoft Windows syntax.
         }
         final ArrayList<String> content = new ArrayList<>();
@@ -201,7 +380,7 @@ public final class FXFinder {
         if (insertAt < 0) {
             insertAt = content.size();
         }
-        content.add(insertAt, command + '=' + dir);
+        content.add(insertAt, command + '=' + validated);
         Files.write(setenv, content, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 }
