@@ -500,6 +500,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
         } else {
             isValid = setJavafxPath(destination);
         }
+        javafxFinder.useRelativePath = isValid;     // Must be before the call to `nextOrPreviousPage(…)`.
         nextOrPreviousPage(isValid ? +1 : -1);
     }
 
@@ -745,7 +746,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
          */
         final String diagnostic = javafxFinder.diagnostic();
         if (diagnostic != null) {
-            JOptionPane.showMessageDialog(null, diagnostic, "Configuration error", JOptionPane.ERROR);
+            JOptionPane.showMessageDialog(null, diagnostic, "Configuration error", JOptionPane.ERROR_MESSAGE);
             return false;
         } else {
             final Wizard wizard = new Wizard(javafxFinder);

@@ -124,6 +124,12 @@ public final class FXFinder {
     private Inflater inflater;
 
     /**
+     * Whether to use the relative path {@code $BASE_DIR/opt/javafx-sdk} instead than an absolute path.
+     * This is {@code true} if we have decompressed the JavaFX ZIP file with the {@link Inflater}.
+     */
+    boolean useRelativePath;
+
+    /**
      * {@code true} if this operation systems is Windows, or {@code false} if assumed Unix (Linux or MacOS).
      */
     private final boolean isWindows;
@@ -367,6 +373,11 @@ public final class FXFinder {
         if (isWindows) {
             command = "SET " + command;                             // Microsoft Windows syntax.
         }
+        /*
+         * Read content of `setenv.sh` file excluding the line starting with `command` if any.
+         * We remember the position where we found `command` in order to insert replacement at
+         * the same line.
+         */
         final ArrayList<String> content = new ArrayList<>();
         int insertAt = -1;
         for (String line : Files.readAllLines(setenv)) {
@@ -380,7 +391,43 @@ public final class FXFinder {
         if (insertAt < 0) {
             insertAt = content.size();
         }
-        content.add(insertAt, command + '=' + validated);
+        /*
+         * Insert the new line for setting the `PATH_TO_FX` variable.
+         * It will be either an absolute path, or a path relative to
+         * the SIS installation directory.
+         */
+        final StringBuilder value = new StringBuilder(100).append(command).append('=');
+        if (useRelativePath) {
+            final File relative = relativeToBase(validated);
+            if (relative != null) {
+                value.append(isWindows ? "%BASE_DIR%" : "$BASE_DIR")
+                     .append(File.separatorChar).append(relative);
+            } else {
+                useRelativePath = false;
+            }
+        }
+        if (!useRelativePath) {
+            value.append(validated);
+        }
+        content.add(insertAt, value.toString());
         Files.write(setenv, content, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
+    /**
+     * Makes the current directory relative to the SIS base directory. This method assumes that
+     * the last directory named {@value #SIS_UNZIP_DIRECTORY} is the first directory relative to
+     * the base. This is okay only if the JavaFX zip file does not contain directory of that name.
+     */
+    private static File relativeToBase(final File dir) {
+        if (dir != null) {
+            if (SIS_UNZIP_DIRECTORY.equals(dir.getName())) {
+                return new File(SIS_UNZIP_DIRECTORY);
+            }
+            final File parent = relativeToBase(dir.getParentFile());
+            if (parent != null) {
+                return new File(parent, dir.getName());
+            }
+        }
+        return null;
     }
 }
