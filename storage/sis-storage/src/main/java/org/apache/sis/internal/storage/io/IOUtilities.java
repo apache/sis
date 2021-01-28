@@ -65,6 +65,11 @@ import org.apache.sis.internal.storage.Resources;
  */
 public final class IOUtilities extends Static {
     /**
+     * The symbol for current directory.
+     */
+    public static final String CURRENT_DIRECTORY_SYMBOL = ".";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private IOUtilities() {

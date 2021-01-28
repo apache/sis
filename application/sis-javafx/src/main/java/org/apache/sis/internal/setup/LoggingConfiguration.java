@@ -24,17 +24,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static org.apache.sis.internal.storage.io.IOUtilities.CURRENT_DIRECTORY_SYMBOL;
+
 
 /**
- * Loads {@code conf/logging.properties} file and filter the {@code %b} pattern
+ * Loads {@code conf/logging.properties} file and filter the {@code %p} pattern
  * before to delegate to Java logging system. The filtering replaces {@code "%p"}
  * by the parent directory of configuration file.
  *
- * <p>This class should not use any SIS classes because it may be invoked early
- * while the application is still initializing.</p>
+ * <p>This class should not use any SIS classes (except constants inlined at compile-time)
+ * because it may be invoked early while the application is still initializing.</p>
  *
- * <p>This class is not referenced directly by other Java code. Instead, it is
- * specified at JVM startup time like below:</p>
+ * <p>This class is not referenced directly by other Java code.
+ * Instead, it is specified at JVM startup time like below:</p>
  *
  * {@preformat shell
  *     java -Djava.util.logging.config.class="org.apache.sis.internal.setup.LoggingConfiguration"
@@ -79,7 +81,7 @@ public final class LoggingConfiguration {
                             for (int j=Math.min(parent.getNameCount(), 2); --j >= 0;) {
                                 parent = parent.getParent();
                             }
-                            String replacement = parent.toString();
+                            String replacement = (parent != null) ? parent.toString() : CURRENT_DIRECTORY_SYMBOL;
                             replacement = replacement.replace(File.separatorChar, '/');
                             buffer.replace(i, i + PATTERN.length(), replacement);
                         }
