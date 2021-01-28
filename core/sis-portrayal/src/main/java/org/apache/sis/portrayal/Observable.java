@@ -16,12 +16,10 @@
  */
 package org.apache.sis.portrayal;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 
@@ -72,22 +70,9 @@ abstract class Observable {
         if (listeners == null) {
             listeners = new HashMap<>(4);       // Assume few properties will be listened.
         }
-        final PropertyChangeListener[] oldList = listeners.get(propertyName);
-        final PropertyChangeListener[] newList;
-        final boolean success;
-        if (oldList != null) {
-            final int n = oldList.length;
-            newList = Arrays.copyOf(oldList, n+1);
-            newList[n] = listener;
-            success = listeners.replace(propertyName, oldList, newList);
-        } else {
-            newList = new PropertyChangeListener[] {listener};
-            success = (listeners.putIfAbsent(propertyName, newList) == null);
-        }
-        if (!success) {
-            // Opportunistic safety against some multi-threading misuse.
-            throw new ConcurrentModificationException();
-        }
+        listeners.compute(propertyName, (key, oldList) ->
+                (oldList != null) ? ArraysExt.append(oldList, listener)
+                                  : new PropertyChangeListener[] {listener});
     }
 
     /**
@@ -104,23 +89,18 @@ abstract class Observable {
         ArgumentChecks.ensureNonEmpty("propertyName", propertyName);
         ArgumentChecks.ensureNonNull("listener", listener);
         if (listeners != null) {
-            final PropertyChangeListener[] oldList = listeners.get(propertyName);
-            if (oldList != null) {
+            listeners.computeIfPresent(propertyName, (key, oldList) -> {
                 for (int i=oldList.length; --i >= 0;) {
                     if (oldList[i] == listener) {
                         if (oldList.length != 1) {
-                            final PropertyChangeListener[] newList = ArraysExt.remove(oldList, i, 1);
-                            if (listeners.replace(propertyName, oldList, newList)) {
-                                return;
-                            }
-                        } else if (listeners.remove(propertyName, oldList)) {
-                            return;
+                            return ArraysExt.remove(oldList, i, 1);
+                        } else {
+                            return null;
                         }
-                        // Opportunistic safety against some multi-threading misuse.
-                        throw new ConcurrentModificationException();
                     }
                 }
-            }
+                return oldList;
+            });
         }
     }
 
@@ -150,17 +130,16 @@ abstract class Observable {
     }
 
     /**
-     * Notifies all registered listeners that a property of the given name changed its value.
+     * Notifies all registered listeners that a property changed its value.
      * It is caller responsibility to verify that the event source and property name are valid.
      *
-     * @param  event the event to forward, can not be null.
+     * @param  event  the event to forward. Can not be null.
      *
      * @see PropertyChangeEvent
      * @see PropertyChangeListener
      */
     protected void firePropertyChange(final PropertyChangeEvent event) {
         ArgumentChecks.ensureNonNull("event", event);
-
         if (listeners != null) {
             final PropertyChangeListener[] list = listeners.get(event.getPropertyName());
             if (list != null) {
