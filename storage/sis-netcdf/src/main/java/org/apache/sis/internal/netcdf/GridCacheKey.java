@@ -116,9 +116,9 @@ class GridCacheKey {
      */
     static final class Global extends GridCacheKey {
         /**
-         * The global cache shared by all netCDF files. All grids are retained by soft references.
+         * The global cache shared by all netCDF files. All grids are retained by weak references.
          */
-        private static final Cache<GridCacheKey,MathTransform> CACHE = new Cache<>(12, 0, true);
+        private static final Cache<GridCacheKey,MathTransform> CACHE = new Cache<>(12, 0, false);
 
         /**
          * The algorithms tried for making the localization grids more linear.
