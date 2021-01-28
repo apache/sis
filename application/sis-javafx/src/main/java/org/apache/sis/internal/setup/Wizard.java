@@ -328,7 +328,9 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
         content.add(Box.createVerticalStrut(30));
         switch (page) {
             case DOWNLOAD_JAVAFX: {
-                createButton(content, JAVAFX_HOME).setToolTipText(FXFinder.JAVAFX_HOME);
+                final JButton button = createButton(content, JAVAFX_HOME);
+                button.setToolTipText(FXFinder.JAVAFX_HOME);
+                button.setEnabled(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
                 final JLabel instruction = new JLabel(WizardPage.downloadSteps());
                 instruction.setFont(font.deriveFont(12f));
                 content.add(instruction);
@@ -520,15 +522,10 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
      * for opening the {@value Constants#JAVAFX_HOME} URL in a browser.
      */
     private void openJavafxHomePage() {
-        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) try {
+        try {
             Desktop.getDesktop().browse(new URI(FXFinder.JAVAFX_HOME));
-            nextOrPreviousPage(1);
-        } catch (URISyntaxException | IOException e) {
+        } catch (URISyntaxException | IOException | RuntimeException e) {
             JOptionPane.showMessageDialog(wizard, e.toString(), "Error", JOptionPane.ERROR_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(wizard, "Can not find internet browser on this computer.\n"
-                    + "See " + FXFinder.JAVAFX_HOME + " for download information.",
-                    "JavaFX download", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

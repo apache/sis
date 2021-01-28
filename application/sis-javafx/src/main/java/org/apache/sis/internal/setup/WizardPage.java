@@ -50,7 +50,7 @@ enum WizardPage {
             + "This application requires <i>JavaFX</i> (or <i>OpenJFX</i>) version " + FXFinder.JAVAFX_VERSION + " or later. "
             + "OpenJFX is free software, licensed under the GPL with the class path exception. "
             + "Click on <u>Open JavaFX home page</u> for opening the JavaFX home page. "
-            + "If JavaFX or OpenJFX has already been downloaded on this computer, "
+            + "If JavaFX has already been downloaded on this computer, "
             + "skip download and click on <u>Next</u> for specifying its installation directory."
             + "</p></html>"),
 
