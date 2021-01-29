@@ -32,9 +32,11 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.layout.Region;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.gui.Widget;
 
 
 /**
@@ -46,7 +48,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @since   1.1
  * @module
  */
-public final class ValueColorMapper extends ColorColumnHandler<ValueColorMapper.Step> {
+public final class ValueColorMapper extends Widget {
     /**
      * Colors to associate to a given value.
      *
@@ -155,46 +157,87 @@ public final class ValueColorMapper extends ColorColumnHandler<ValueColorMapper.
     private final NumberFormat format;
 
     /**
-     * Creates a new handler.
+     * The table showing values associated to colors.
      */
-    public ValueColorMapper() {
+    private final TableView<Step> table;
+
+    /**
+     * Creates a new "value-color mapper" widget.
+     *
+     * @param  vocabulary  localized resources, given because already known by the caller
+     *                     (this argument would be removed if this constructor was public API).
+     */
+    public ValueColorMapper(final Vocabulary vocabulary) {
         format = NumberFormat.getInstance();
+        table  = createIsolineTable(vocabulary);
     }
 
     /**
-     * Returns the colors to apply for the given step, or {@code null} for transparent.
-     * This method is defined for safety but should not be invoked; use {@link #getObservableValue(S)} instead.
+     * Returns the encapsulated JavaFX component to add in a scene graph for making the table visible.
+     * The {@code Region} subclass is implementation dependent and may change in any future SIS version.
      *
-     * @param  level  the value for which to get the color to show in color cell.
+     * @return the JavaFX component to insert in a scene graph.
      */
     @Override
-    protected int[] getARGB(final Step level) {
-        final ColorRamp r = level.color.get();
-        return (r != null) ? r.colors : null;
+    public Region getView() {
+        return table;
     }
 
     /**
-     * Returns the color associated to given row as an observable value.
+     * Returns the "value-color" entries shown in the table.
      *
-     * @param  level  the value for which to get the color to show in color cell.
-     * @return the color(s) to use for the given value, or {@code null} if none (transparent).
+     * @return the "value-color" entries.
      */
-    @Override
-    protected ObservableValue<ColorRamp> getObservableValue(final Step level) {
-        return level.color;
+    public ObservableList<Step> getSteps() {
+        return table.getItems();
     }
 
     /**
-     * Invoked when users confirmed that (s)he wants to use the selected colors.
-     *
-     * @param  level   the value for which to assign new color(s).
-     * @param  colors  the new color for the given value, or {@code null} for resetting default value.
-     * @return the type of color (always solid for this class).
+     * Manages the {@link TableColumn} showing colors.
+     * This class uses only solid colors (no gradients).
      */
-    @Override
-    protected ColorRamp.Type applyColors(final Step level, ColorRamp colors) {
-        level.color.set(colors);
-        return ColorRamp.Type.SOLID;
+    private static final class ColumnHandler extends ColorColumnHandler<Step> {
+        /**
+         * Creates a new handler for the color column.
+         */
+        ColumnHandler() {
+        }
+
+        /**
+         * Returns the colors to apply for the given step, or {@code null} for transparent.
+         * This method is defined for safety but should not be invoked; use {@link #getObservableValue(S)} instead.
+         *
+         * @param  level  the value for which to get the color to show in color cell.
+         */
+        @Override
+        protected int[] getARGB(final Step level) {
+            final ColorRamp r = level.color.get();
+            return (r != null) ? r.colors : null;
+        }
+
+        /**
+         * Returns the color associated to given row as an observable value.
+         *
+         * @param  level  the value for which to get the color to show in color cell.
+         * @return the color(s) to use for the given value, or {@code null} if none (transparent).
+         */
+        @Override
+        protected ObservableValue<ColorRamp> getObservableValue(final Step level) {
+            return level.color;
+        }
+
+        /**
+         * Invoked when users confirmed that (s)he wants to use the selected colors.
+         *
+         * @param  level   the value for which to assign new color(s).
+         * @param  colors  the new color for the given value, or {@code null} for resetting default value.
+         * @return the type of color (always solid for this class).
+         */
+        @Override
+        protected ColorRamp.Type applyColors(final Step level, ColorRamp colors) {
+            level.color.set(colors);
+            return ColorRamp.Type.SOLID;
+        }
     }
 
     /**
@@ -292,7 +335,7 @@ public final class ValueColorMapper extends ColorColumnHandler<ValueColorMapper.
      *                     (this argument would be removed if this method was public API).
      * @return table of isolines.
      */
-    public final TableView<Step> createIsolineTable(final Vocabulary vocabulary) {
+    private TableView<Step> createIsolineTable(final Vocabulary vocabulary) {
         /*
          * First column containing a checkbox for choosing whether the isoline should be drawn or not.
          * Header text is 🖉 (lower left pencil).
@@ -321,7 +364,8 @@ public final class ValueColorMapper extends ColorColumnHandler<ValueColorMapper.
          */
         final TableView<Step> table = new TableView<>();
         table.getColumns().setAll(visible, level);
-        addColumnTo(table, vocabulary.getString(Vocabulary.Keys.Color));
+        final ColumnHandler handler = new ColumnHandler();
+        handler.addColumnTo(table, vocabulary.getString(Vocabulary.Keys.Color));
         /*
          * Add an empty row that user can edit for adding new data. This row will automatically enter in edition state
          * when a digit is typed (this is the purpose of `trigger`). For making easier to edit the cell in current row,

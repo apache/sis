@@ -21,7 +21,7 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Button;
-import javafx.scene.control.TableView;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.BorderPane;
 import javafx.application.Application;
 import org.apache.sis.util.resources.Vocabulary;
@@ -65,15 +65,14 @@ public final strictfp class ValueColorMapperApp extends Application {
     /**
      * Creates a table with arbitrary isolines to show.
      */
-    private static TableView<ValueColorMapper.Step> createIsolineTable() {
-        final ValueColorMapper handler = new ValueColorMapper();
-        final TableView<ValueColorMapper.Step> table = handler.createIsolineTable(Vocabulary.getResources((Locale) null));
-        table.getItems().setAll(
+    private static Region createIsolineTable() {
+        final ValueColorMapper handler = new ValueColorMapper(Vocabulary.getResources((Locale) null));
+        handler.getSteps().setAll(
                 new ValueColorMapper.Step( 10, Color.BLUE),
                 new ValueColorMapper.Step( 25, Color.GREEN),
                 new ValueColorMapper.Step( 50, Color.ORANGE),
                 new ValueColorMapper.Step(100, Color.RED),
                 new ValueColorMapper.Step());                    // Empty row for inserting new values.
-        return table;
+        return handler.getView();
     }
 }

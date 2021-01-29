@@ -114,10 +114,10 @@ final class IsolineRenderer {
 
     /**
      * Sets the isoline values for all bands from the content of tables edited by user.
-     * This method registers listener on the given tables for repainting the isolines
+     * This method registers listener on the given lists for repainting the isolines
      * when table content changed.
      */
-    public void setIsolineTables(final List<TableView<Step>> tables) {
+    public void setIsolineTables(final List<ObservableList<Step>> tables) {
         if (bands != null) {
             for (final Band band : bands) {
                 band.dispose();
@@ -127,7 +127,7 @@ final class IsolineRenderer {
         if (tables != null && !tables.isEmpty()) {
             bands = new Band[tables.size()];
             for (int i=0; i<bands.length; i++) {
-                bands[i] = new Band(tables.get(i).getItems());
+                bands[i] = new Band(tables.get(i));
             }
         }
     }
