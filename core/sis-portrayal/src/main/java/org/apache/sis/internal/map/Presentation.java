@@ -61,6 +61,7 @@ public abstract class Presentation {
 
     public Presentation(MapLayer layer, Resource resource, Feature candidate) {
         this.layer = layer;
+        this.resource = resource;
         this.candidate = candidate;
     }
 

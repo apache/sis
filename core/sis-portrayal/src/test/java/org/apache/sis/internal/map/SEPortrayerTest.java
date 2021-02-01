@@ -16,11 +16,12 @@
  */
 package org.apache.sis.internal.map;
 
-import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -41,7 +42,12 @@ import org.apache.sis.portrayal.MapLayer;
 import org.apache.sis.portrayal.MapLayers;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.iso.Names;
 import static org.junit.Assert.*;
@@ -57,9 +63,11 @@ import org.opengis.filter.FilterFactory;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.identity.Identifier;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.style.SemanticType;
 import org.opengis.style.Symbolizer;
+import org.opengis.util.GenericName;
 
 /**
  *
@@ -124,25 +132,28 @@ public class SEPortrayerTest extends TestCase {
         boats = new MemoryFeatureSet(null, boatType, Arrays.asList(boat1, boat2));
     }
 
-    private Set<Entry<String, Symbolizer>> present(MapItem item) {
+    private Set<Match> present(MapItem item) {
         return present(item, CRS.getDomainOfValidity(CommonCRS.WGS84.normalizedGeographic()));
     }
 
-    private Set<Entry<String, Symbolizer>> present(MapItem item, Envelope env) {
+    private Set<Match> present(MapItem item, Envelope env) {
         final GridGeometry grid = new GridGeometry(new GridExtent(360, 180), env, GridOrientation.REFLECTION_Y);
         final SEPortrayer portrayer = new SEPortrayer();
         final Stream<Presentation> stream = portrayer.present(grid, item);
         final List<Presentation> presentations = stream.collect(Collectors.toList());
 
-        final Set<Entry<String,Symbolizer>> ids = new HashSet<>();
+        final Set<Match> ids = new HashSet<>();
 
         presentations.stream().forEach(new Consumer<Presentation>() {
             @Override
             public void accept(Presentation t) {
                 if (t instanceof SEPresentation) {
-                    Symbolizer symbolizer = ((SEPresentation) t).getSymbolizer();
-                    Feature Feature = (Feature) ((SEPresentation) t).getCandidate();
-                    ids.add(new AbstractMap.SimpleEntry<>(String.valueOf(Feature.getPropertyValue(AttributeConvention.IDENTIFIER)), symbolizer));
+                    SEPresentation se = (SEPresentation) t;
+                    Feature Feature = (Feature) se.getCandidate();
+                    ids.add(new Match(String.valueOf(Feature.getPropertyValue(AttributeConvention.IDENTIFIER)),
+                            se.getLayer(),
+                            se.getResource(),
+                            se.getSymbolizer()));
                 }
             }
         });
@@ -175,12 +186,12 @@ public class SEPortrayerTest extends TestCase {
         layers.getComponents().add(fishLayer);
         layers.getComponents().add(boatLayer);
 
-        final Set<Entry<String, Symbolizer>> presentations = present(layers);
+        final Set<Match> presentations = present(layers);
         assertEquals(4, presentations.size());
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("1", symbolizer)));
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("2", symbolizer)));
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("10", symbolizer)));
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("20", symbolizer)));
+        assertTrue(presentations.contains(new Match("1", fishLayer, fishes, symbolizer)));
+        assertTrue(presentations.contains(new Match("2", fishLayer, fishes, symbolizer)));
+        assertTrue(presentations.contains(new Match("10", boatLayer, boats, symbolizer)));
+        assertTrue(presentations.contains(new Match("20", boatLayer, boats, symbolizer)));
     }
 
     /**
@@ -213,9 +224,9 @@ public class SEPortrayerTest extends TestCase {
         layers.getComponents().add(fishLayer);
         layers.getComponents().add(boatLayer);
 
-        final Set<Entry<String, Symbolizer>> presentations = present(layers, env);
+        final Set<Match> presentations = present(layers, env);
         assertEquals(1, presentations.size());
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("2", symbolizer)));
+        assertTrue(presentations.contains(new Match("2", fishLayer, fishes, symbolizer)));
     }
 
     /**
@@ -252,10 +263,10 @@ public class SEPortrayerTest extends TestCase {
         layers.getComponents().add(fishLayer);
         layers.getComponents().add(boatLayer);
 
-        final Set<Entry<String, Symbolizer>> presentations = present(layers);
+        final Set<Match> presentations = present(layers);
         assertEquals(2, presentations.size());
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("1", symbolizer)));
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("20", symbolizer)));
+        assertTrue(presentations.contains(new Match("1", fishLayer, fishes, symbolizer)));
+        assertTrue(presentations.contains(new Match("20", boatLayer, boats, symbolizer)));
     }
 
     /**
@@ -285,10 +296,10 @@ public class SEPortrayerTest extends TestCase {
         layers.getComponents().add(fishLayer);
         layers.getComponents().add(boatLayer);
 
-        final Set<Entry<String, Symbolizer>> presentations = present(layers);
+        final Set<Match> presentations = present(layers);
         assertEquals(2, presentations.size());
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("10", symbolizer)));
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("20", symbolizer)));
+        assertTrue(presentations.contains(new Match("10", boatLayer, boats, symbolizer)));
+        assertTrue(presentations.contains(new Match("20", boatLayer, boats, symbolizer)));
     }
 
     /**
@@ -318,10 +329,10 @@ public class SEPortrayerTest extends TestCase {
         layers.getComponents().add(fishLayer);
         layers.getComponents().add(boatLayer);
 
-        final Set<Entry<String, Symbolizer>> presentations = present(layers);
+        final Set<Match> presentations = present(layers);
         assertEquals(2, presentations.size());
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("1", symbolizer)));
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("2", symbolizer)));
+        assertTrue(presentations.contains(new Match("1", fishLayer, fishes, symbolizer)));
+        assertTrue(presentations.contains(new Match("2", fishLayer, fishes, symbolizer)));
     }
 
     /**
@@ -355,9 +366,9 @@ public class SEPortrayerTest extends TestCase {
         layers.getComponents().add(fishLayer);
         layers.getComponents().add(boatLayer);
 
-        final Set<Entry<String, Symbolizer>> presentations = present(layers);
+        final Set<Match> presentations = present(layers);
         assertEquals(1, presentations.size());
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("2", symbolizer)));
+        assertTrue(presentations.contains(new Match("2", fishLayer, fishes, symbolizer)));
     }
 
     /**
@@ -403,12 +414,12 @@ public class SEPortrayerTest extends TestCase {
         layers.getComponents().add(fishLayer);
         layers.getComponents().add(boatLayer);
 
-        final Set<Entry<String, Symbolizer>> presentations = present(layers);
+        final Set<Match> presentations = present(layers);
         assertEquals(4, presentations.size());
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("1", symbolizerMatch)));
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("2", symbolizerMatch)));
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("10", symbolizerMatch)));
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("20", symbolizerMatch)));
+        assertTrue(presentations.contains(new Match("1", fishLayer, fishes, symbolizerMatch)));
+        assertTrue(presentations.contains(new Match("2", fishLayer, fishes, symbolizerMatch)));
+        assertTrue(presentations.contains(new Match("10", boatLayer, boats, symbolizerMatch)));
+        assertTrue(presentations.contains(new Match("20", boatLayer, boats, symbolizerMatch)));
     }
 
     /**
@@ -449,13 +460,118 @@ public class SEPortrayerTest extends TestCase {
         layers.getComponents().add(fishLayer);
         layers.getComponents().add(boatLayer);
 
-        final Set<Entry<String, Symbolizer>> presentations = present(layers);
+        final Set<Match> presentations = present(layers);
         assertEquals(4, presentations.size());
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("1", symbolizerElse)));
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("2", symbolizerElse)));
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("10", symbolizerBase)));
-        assertTrue(presentations.contains(new AbstractMap.SimpleEntry<>("20", symbolizerElse)));
+        assertTrue(presentations.contains(new Match("1", fishLayer, fishes, symbolizerElse)));
+        assertTrue(presentations.contains(new Match("2", fishLayer, fishes, symbolizerElse)));
+        assertTrue(presentations.contains(new Match("10", boatLayer, boats, symbolizerBase)));
+        assertTrue(presentations.contains(new Match("20", boatLayer, boats, symbolizerElse)));
     }
 
+    /**
+     * Portray using and aggregated resource.
+     * Test expect presentations to be correctly associated to each resource but on the same layer.
+     */
+    @Test
+    public void testAggregateResource() {
 
+        final MockLineSymbolizer symbolizerBase = new MockLineSymbolizer();
+
+        final MockRule ruleBase = new MockRule();
+        ruleBase.symbolizers().add(symbolizerBase);
+
+        final MockStyle style = new MockStyle();
+        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        style.featureTypeStyles().add(fts);
+        fts.rules().add(ruleBase);
+
+        final List<Resource> list = Arrays.asList(fishes, boats);
+        final Aggregate agg = new Aggregate() {
+            @Override
+            public Collection<? extends Resource> components() throws DataStoreException {
+                return list;
+            }
+
+            @Override
+            public Optional<GenericName> getIdentifier() throws DataStoreException {
+                return Optional.empty();
+            }
+
+            @Override
+            public Metadata getMetadata() throws DataStoreException {
+                return null;
+            }
+
+            @Override
+            public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {}
+
+            @Override
+            public <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {}
+        };
+
+        final MapLayer aggLayer = new MapLayer();
+        aggLayer.setData(agg);
+        aggLayer.setStyle(style);
+        final MapLayers layers = new MapLayers();
+        layers.getComponents().add(aggLayer);
+
+        final Set<Match> presentations = present(layers);
+        assertEquals(4, presentations.size());
+        assertTrue(presentations.contains(new Match("1", aggLayer, fishes, symbolizerBase)));
+        assertTrue(presentations.contains(new Match("2", aggLayer, fishes, symbolizerBase)));
+        assertTrue(presentations.contains(new Match("10", aggLayer, boats, symbolizerBase)));
+        assertTrue(presentations.contains(new Match("20", aggLayer, boats, symbolizerBase)));
+    }
+
+    private static class Match {
+        private final String identifier;
+        private final MapLayer layer;
+        private final Resource resource;
+        private final Symbolizer symbolizer;
+
+        public Match(String identifier, MapLayer layer, Resource resource, Symbolizer symbolizer) {
+            this.identifier = identifier;
+            this.layer = layer;
+            this.resource = resource;
+            this.symbolizer = symbolizer;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 29 * hash + Objects.hashCode(this.identifier);
+            hash = 29 * hash + Objects.hashCode(this.layer);
+            hash = 29 * hash + Objects.hashCode(this.resource);
+            hash = 29 * hash + Objects.hashCode(this.symbolizer);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Match other = (Match) obj;
+            if (!Objects.equals(this.identifier, other.identifier)) {
+                return false;
+            }
+            if (!Objects.equals(this.layer, other.layer)) {
+                return false;
+            }
+            if (!Objects.equals(this.resource, other.resource)) {
+                return false;
+            }
+            if (!Objects.equals(this.symbolizer, other.symbolizer)) {
+                return false;
+            }
+            return true;
+        }
+
+    }
 }

@@ -178,6 +178,7 @@ public final class SEPortrayer {
 
     private Stream<Presentation> present(GridGeometry canvas, MapLayer layer, Resource resource) {
 
+        final Resource refResource = resource;
         Stream<Presentation> stream = Stream.empty();
 
         FeatureType type;
@@ -282,7 +283,7 @@ public final class SEPortrayer {
 
                 boolean painted = false;
                 for (int i = 0; i < elseRuleIndex; i++) {
-                    final Stream<Presentation> subStream = present(rules.get(i), layer, resource, null);
+                    final Stream<Presentation> subStream = present(rules.get(i), layer, resource, refResource, null);
                     if (subStream != null) {
                         painted = true;
                         stream = Stream.concat(stream, subStream);
@@ -292,7 +293,7 @@ public final class SEPortrayer {
                 //the data hasn't been painted, paint it with the 'else' rules
                 if (!painted) {
                     for (int i = elseRuleIndex, n = rules.size(); i < n; i++) {
-                        final Stream<Presentation> subStream = present(rules.get(i), layer, resource, null);
+                        final Stream<Presentation> subStream = present(rules.get(i), layer, resource, refResource, null);
                         if (subStream != null) {
                             stream = Stream.concat(stream, subStream);
                         }
@@ -330,7 +331,7 @@ public final class SEPortrayer {
                             Stream<Presentation> stream = Stream.empty();
                             boolean painted = false;
                             for (int i = 0; i < elseRuleIndex; i++) {
-                                final Stream<Presentation> subStream = present(rules.get(i), layer, fs, feature);
+                                final Stream<Presentation> subStream = present(rules.get(i), layer, fs, refResource, feature);
                                 if (subStream != null) {
                                     painted = true;
                                     stream = Stream.concat(stream, subStream);
@@ -340,7 +341,7 @@ public final class SEPortrayer {
                             //the feature hasn't been painted, paint it with the 'else' rules
                             if (!painted) {
                                 for (int i = elseRuleIndex, n = rules.size(); i < n; i++) {
-                                    final Stream<Presentation> subStream = present(rules.get(i), layer, fs, feature);
+                                    final Stream<Presentation> subStream = present(rules.get(i), layer, fs, refResource, feature);
                                     if (subStream != null) {
                                         stream = Stream.concat(stream, subStream);
                                     }
@@ -360,13 +361,13 @@ public final class SEPortrayer {
         return stream;
     }
 
-    private static Stream<Presentation> present(Rule rule, MapLayer layer, Resource resource, Feature feature) {
+    private static Stream<Presentation> present(Rule rule, MapLayer layer, Resource resource, Resource refResource, Feature feature) {
         final Filter ruleFilter = rule.getFilter();
         //test if the rule is valid for this resource/feature
         if (ruleFilter == null || ruleFilter.evaluate(feature == null ? resource : feature)) {
             Stream<Presentation> stream = Stream.empty();
             for (final Symbolizer symbolizer : rule.symbolizers()) {
-                final SEPresentation presentation = new SEPresentation(layer, resource, feature, symbolizer);
+                final SEPresentation presentation = new SEPresentation(layer, refResource, feature, symbolizer);
                 stream = Stream.concat(stream, Stream.of(presentation));
             }
             return stream;
