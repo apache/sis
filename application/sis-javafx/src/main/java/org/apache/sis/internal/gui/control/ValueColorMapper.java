@@ -17,6 +17,7 @@
 package org.apache.sis.internal.gui.control;
 
 import java.util.Objects;
+import java.util.Locale;
 import java.text.NumberFormat;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -26,15 +27,26 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.GridPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ColorPicker;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.layout.Region;
-import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.Widget;
 
@@ -151,10 +163,10 @@ public final class ValueColorMapper extends Widget {
     }
 
     /**
-     * The format to use for formatting numerical values.
-     * The same instance will be shared by all {@link FormatTableCell}s in this table.
+     * Helper for parsing and formatting numerical values in {@link TextField}s.
+     * The same instance will be shared by all {@linkplain #table} cells.
      */
-    private final NumberFormat format;
+    private final FormatApplicator<Number> textConverter;
 
     /**
      * The table showing values associated to colors.
@@ -162,14 +174,31 @@ public final class ValueColorMapper extends Widget {
     private final TableView<Step> table;
 
     /**
+     * The dialog for specifying a range of values with increment.
+     * This is created when first needed if user selects "Range of values" menu item.
+     *
+     * @see #insertRangeOfValues()
+     */
+    private Dialog<Range> rangeEditor;
+
+    /**
      * Creates a new "value-color mapper" widget.
      *
+     * @param  resources   localized resources, given because already known by the caller.
      * @param  vocabulary  localized resources, given because already known by the caller
-     *                     (this argument would be removed if this constructor was public API).
+     *                     (those arguments would be removed if this constructor was public API).
      */
-    public ValueColorMapper(final Vocabulary vocabulary) {
-        format = NumberFormat.getInstance();
-        table  = createIsolineTable(vocabulary);
+    public ValueColorMapper(final Resources resources, final Vocabulary vocabulary) {
+        textConverter = new FormatApplicator<>(Number.class, NumberFormat.getInstance());
+        table = createIsolineTable(vocabulary);
+        final MenuItem rangeMenu = new MenuItem(resources.getString(Resources.Keys.RangeOfValues));
+        final MenuItem clearAll  = new MenuItem(resources.getString(Resources.Keys.ClearAll));
+        rangeMenu.setOnAction((e) -> insertRangeOfValues());
+        clearAll .setOnAction((e) -> {
+            final ObservableList<Step> steps = getSteps();
+            steps.remove(0, steps.size() - 1);                  // Keep insertion row, which is last.
+        });
+        table.setContextMenu(new ContextMenu(rangeMenu, clearAll));
     }
 
     /**
@@ -268,7 +297,7 @@ public final class ValueColorMapper extends Widget {
         final int size = items.size() - 1;                  // Excluding insertion row.
         while (++dst < size) {
             // No `!` for continuing until the end if `value` is NaN.
-            if (dst != row && items.get(dst).value.get() >= value) break;
+            if (dst != row && items.get(dst).value.get() > value) break;
         }
         if (dst != row) {
             if (dst >= row) dst--;
@@ -352,11 +381,11 @@ public final class ValueColorMapper extends Widget {
          * The number can be edited using a `NumberFormat` in current locale.
          */
         final TableColumn<Step,Number> level = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Level));
-        final FormatTableCell.Trigger<Step> trigger = new FormatTableCell.Trigger<>(level, format);
-        level.setCellFactory((column) -> new FormatTableCell<>(Number.class, format, trigger));
+        final FormatTableCell.Trigger<Step> trigger = new FormatTableCell.Trigger<>(level, textConverter.format);
+        level.setCellFactory((column) -> new FormatTableCell<>(textConverter, trigger));
         level.setCellValueFactory((cell) -> cell.getValue().value);
         level.setOnEditCommit(ValueColorMapper::commitEdit);
-        level.setSortable(false);                           // We will do our own sorting.
+        level.setSortable(false);                               // We will do our own sorting.
         level.setId("level");
         /*
          * Create the table with above "category name" column (read-only),
@@ -388,6 +417,122 @@ public final class ValueColorMapper extends Widget {
             if (row >= 0 && row < items.size() - 1) {           // Do not delete last row, which is insertion row.
                 items.remove(row);
             }
+        }
+    }
+
+    /**
+     * Shows a dialog box for generating values at a fixed interval in a range.
+     * This dialog box is shown by the "Range of values" contextual menu item.
+     */
+    private void insertRangeOfValues() {
+        if (rangeEditor == null) {
+            rangeEditor = Range.createDialog(textConverter, table);
+        }
+        rangeEditor.showAndWait().ifPresent((r) -> {
+            final ObservableList<Step> steps = getSteps();
+            int position = 0;
+increment:  for (double i=0, value; (value = i*r.interval + r.minimum) <= r.maximum; i++) {    // TODO: use Math.fma with JDK9.
+                while (position < steps.size()) {
+                    final double existing = steps.get(position).value.get();
+                    if (existing == value) continue increment;
+                    if (!(existing <= value)) break;            // Stop also on `existing = NaN` (the insertion row).
+                    position++;
+                }
+                steps.add(position, new Step(value, r.color));
+            }
+        });
+    }
+
+    /**
+     * The range of values and constant interval at which to create values associated to colors.
+     */
+    private static final class Range {
+        /**
+         * The bounds and interval of values to create.
+         */
+        final double minimum, maximum, interval;
+
+        /**
+         * The constant color to associate with all values.
+         */
+        final Color color;
+
+        /**
+         * Creates a new range.
+         */
+        Range(final double minimum, final double maximum, final double interval, final Color color) {
+            this.minimum  = minimum;
+            this.maximum  = maximum;
+            this.interval = interval;
+            this.color    = color;
+        }
+
+        /**
+         * Creates a dialog box for generating a range of values at constant interval.
+         * This is invoked the first time that {@link ValueColorMapper#rangeEditor} is needed.
+         */
+        static Dialog<Range> createDialog(final FormatApplicator<Number> textConverter, final Node owner) {
+            final Vocabulary  vocabulary   = Vocabulary.getResources((Locale) null);
+            final TextField   minimum      = new TextField();
+            final TextField   maximum      = new TextField();
+            final TextField   interval     = new TextField();
+            final ColorPicker colorInRange = new ColorPicker(Color.BLACK);
+            colorInRange.setMaxWidth(Double.MAX_VALUE);
+            final GridPane content = Styles.createControlGrid(0,
+                    createRow(minimum,      vocabulary, Vocabulary.Keys.Minimum),
+                    createRow(maximum,      vocabulary, Vocabulary.Keys.Maximum),
+                    createRow(interval,     vocabulary, Vocabulary.Keys.Interval),
+                    createRow(colorInRange, vocabulary, Vocabulary.Keys.Color));
+
+            final Dialog<Range> rangeEditor = new Dialog<>();
+            rangeEditor.initOwner(owner.getScene().getWindow());
+            rangeEditor.setTitle(vocabulary.getString(Vocabulary.Keys.Isolines));
+            rangeEditor.setHeaderText(Resources.format(Resources.Keys.IsolinesInRange));
+            final DialogPane pane = rangeEditor.getDialogPane();
+            pane.setContent(content);
+            pane.getButtonTypes().setAll(ButtonType.APPLY, ButtonType.CANCEL);
+            final Node apply = pane.lookupButton(ButtonType.APPLY);
+            apply.setDisable(true);
+            minimum.requestFocus();
+            /*
+             * Following listeners will parse values when the field lost focus or when user presses "Enter" key.
+             * The field text will get a light red background if the value is unparseable. The "Apply" button is
+             * disabled until all values become valid.
+             */
+            textConverter.setListenersOn(minimum);
+            textConverter.setListenersOn(maximum);
+            textConverter.setListenersOn(interval);
+            textConverter.listener = (p) -> {
+                final boolean isValid = valueOf(maximum) >= valueOf(minimum) && valueOf(interval) > 0;
+                apply.setDisable(!isValid);
+            };
+            rangeEditor.setResultConverter((button) -> {
+                if (button == ButtonType.APPLY) {
+                    return new Range(valueOf(minimum), valueOf(maximum), valueOf(interval), colorInRange.getValue());
+                }
+                return null;
+            });
+            return rangeEditor;
+        }
+
+        /**
+         * Creates one of the rows (minimum, maximum or increment) label to show in dialog box.
+         * The label are associated to a {@link TextField} or {@link ColorPicker}.
+         */
+        private static Label createRow(final Node editor, final Vocabulary vocabulary, final short key) {
+            final Label label = new Label(vocabulary.getLabel(key));
+            label.setLabelFor(editor);
+            return label;
+        }
+
+        /**
+         * Returns the value parsed in the given editor. Parsed values are stored by
+         * {@link FormatApplicator} as user data in the {@link TextField} instances.
+         */
+        private static double valueOf(final TextField editor) {
+            // A ClassCastException below would be a bug in this class.
+            final Number value = (Number) editor.getUserData();
+            return (value != null) ? value.doubleValue() : Double.NaN;
         }
     }
 }

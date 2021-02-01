@@ -24,6 +24,8 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.BorderPane;
 import javafx.application.Application;
+import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -39,7 +41,7 @@ public final strictfp class ValueColorMapperApp extends Application {
     /**
      * Starts the test application.
      *
-     * @param args  ignored.
+     * @param  args  ignored.
      */
     public static void main(final String[] args) {
         launch(args);
@@ -55,8 +57,10 @@ public final strictfp class ValueColorMapperApp extends Application {
         final BorderPane pane = new BorderPane();
         pane.setCenter(createIsolineTable());
         pane.setBottom(new Button("Focus here"));
+        final Scene scene = new Scene(pane);
+        scene.getStylesheets().add(Styles.STYLESHEET);
         window.setTitle("ValueColorMapper Test");
-        window.setScene(new Scene(pane));
+        window.setScene(scene);
         window.setWidth (400);
         window.setHeight(300);
         window.show();
@@ -66,7 +70,9 @@ public final strictfp class ValueColorMapperApp extends Application {
      * Creates a table with arbitrary isolines to show.
      */
     private static Region createIsolineTable() {
-        final ValueColorMapper handler = new ValueColorMapper(Vocabulary.getResources((Locale) null));
+        final ValueColorMapper handler = new ValueColorMapper(
+                Resources.forLocale(null),
+                Vocabulary.getResources((Locale) null));
         handler.getSteps().setAll(
                 new ValueColorMapper.Step( 10, Color.BLUE),
                 new ValueColorMapper.Step( 25, Color.GREEN),

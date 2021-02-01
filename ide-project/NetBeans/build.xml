@@ -110,6 +110,7 @@
       <fileset dir="${project.root}/application/sis-javafx/src/main/resources">
         <include name="**/*.fxml"/>
         <include name="**/*.png"/>
+        <include name="**/*.css"/>
       </fileset>
       <fileset dir="${project.root}/application/sis-console/src/main/resources">
         <include name="**/*.properties"/>

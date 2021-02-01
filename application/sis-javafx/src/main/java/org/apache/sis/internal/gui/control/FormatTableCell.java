@@ -17,7 +17,6 @@
 package org.apache.sis.internal.gui.control;
 
 import java.text.Format;
-import java.text.ParsePosition;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import javafx.geometry.Pos;
@@ -29,9 +28,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.Background;
 import org.apache.sis.internal.gui.Styles;
-import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -54,100 +51,33 @@ import org.apache.sis.util.CharSequences;
  */
 final class FormatTableCell<S,T> extends TableCell<S,T> {
     /**
-     * The type of objects expected and returned by {@link #format}.
-     */
-    private final Class<T> valueType;
-
-    /**
      * The format to use for parsing and formatting {@code <T>} values.
      * The same instance can be shared by all cells in a table.
      */
-    private final Format format;
+    private final FormatApplicator<T> textConverter;
 
     /**
-     * The control to use during edition.
+     * The control to use during edition. Created when first needed.
      */
     private TextField editor;
-
-    /**
-     * The {@link #editor} background to restore after successful parsing or cancellation.
-     * This is non-null only if the background has been changed for signaling a parsing error.
-     */
-    private Background backgroundToRestore;
 
     /**
      * A listener for enabling automatic transition to insertion state when a digit is pressed,
      * or {@code null} if none. The same instance is shared by all cells in the same column.
      */
-    private final Trigger<S> trigger;
+    private final Trigger<S> insertTrigger;
 
     /**
      * Creates a new table cell for parsing and formatting values of the given type.
      *
-     * @param valueType  the type of objects expected and returned by {@code format}.
-     * @param format     the format to use for parsing and formatting {@code <T>} values.
-     * @param trigger    listener for automatic transition to insertion state when a digit is pressed,
-     *                   or {@code null} if none.
+     * @param textConverter  the format to use for parsing and formatting {@code <T>} values.
+     * @param insertTrigger  listener for automatic transition to insertion state when a digit is pressed,
+     *                       or {@code null} if none.
      */
-    public FormatTableCell(final Class<T> valueType, final Format format, final Trigger<S> trigger) {
-        this.valueType = valueType;
-        this.format    = format;
-        this.trigger   = trigger;
+    public FormatTableCell(final FormatApplicator<T> textConverter, final Trigger<S> insertTrigger) {
+        this.textConverter = textConverter;
+        this.insertTrigger = insertTrigger;
         setAlignment(Pos.CENTER_LEFT);
-    }
-
-    /**
-     * Returns {@code true} if the given item is null or {@link Double#NaN}.
-     * Future version may give some control on the values to filter, if there is a need.
-     */
-    private static boolean isNil(final Object item) {
-        return (item == null) || ((item instanceof Double) && ((Double) item).isNaN());
-    }
-
-    /**
-     * Returns the given item as text, or {@code null} if none. The text will be given
-     * to different control depending on whether this cell is in editing state or not.
-     *
-     * <p>Current implementation does not format {@link Double#NaN} values.
-     * Future version may give some control on the values to filter, if there is a need.</p>
-     */
-    private String format(final T item) {
-        return isNil(item) ? null : format.format(item);
-    }
-
-    /**
-     * Parses the current editor content and, if the parsing is successful, commit.
-     * If the parsing failed, the cell background color is changed and the caret is
-     * moved to the error position.
-     */
-    private void parseAndCommit() {
-        String text = editor.getText();
-        if (text != null) {
-            final int end = CharSequences.skipTrailingWhitespaces(text, 0, text.length());
-            final int start = CharSequences.skipLeadingWhitespaces(text, 0, end);
-            if (start < end) {
-                final ParsePosition pos = new ParsePosition(start);
-                final T value = valueType.cast(format.parseObject(text, pos));
-                final int stop = pos.getIndex();
-                if (stop >= end && !isNil(value)) {
-                    commitEdit(value);
-                    return;
-                }
-                editor.positionCaret(value != null ? stop : pos.getErrorIndex());
-            }
-        }
-        /*
-         * If `format` did not used all characters, either we have a parsing error
-         * or the last characters have been ignored (which we consider as an error).
-         * The 2 cases can be distinguished by `value` being null or not.
-         */
-        if (backgroundToRestore == null) {
-            backgroundToRestore = editor.getBackground();
-            if (backgroundToRestore == null) {
-                backgroundToRestore = Background.EMPTY;
-            }
-        }
-        editor.setBackground(Styles.ERROR_BACKGROUND);
     }
 
     /**
@@ -166,10 +96,10 @@ final class FormatTableCell<S,T> extends TableCell<S,T> {
             if (isEditing()) {
                 g = editor;
                 if (g != null) {
-                    g.setText(format(item));
+                    textConverter.format(g, item);
                 }
             } else if (item != null) {
-                text = format(item);
+                text = textConverter.toString(item);
             }
         }
         setText(text);
@@ -184,23 +114,23 @@ final class FormatTableCell<S,T> extends TableCell<S,T> {
     @Override
     public void startEdit() {
         super.startEdit();
-        String text = (trigger != null) ? trigger.initialText : null;
+        String text = (insertTrigger != null) ? insertTrigger.initialText : null;
         if (text == null) text = getText();
         if (editor != null) {
             /*
              * If the editor background color has been changed because of an error,
              * restores the normal background.
              */
-            if (backgroundToRestore != null) {
-                editor.setBackground(backgroundToRestore);
-                backgroundToRestore = null;
-            }
+            editor.pseudoClassStateChanged(Styles.ERROR, false);
             editor.setText(text);
         } else {
             editor = new TextField(text);
             editor.setOnAction((event) -> {
                 event.consume();
-                parseAndCommit();
+                final T value = textConverter.parse(editor);
+                if (value != null) {
+                    commitEdit(value);
+                }
             });
             editor.setOnKeyReleased((event) -> {
                 if (event.getCode() == KeyCode.ESCAPE) {
@@ -212,7 +142,7 @@ final class FormatTableCell<S,T> extends TableCell<S,T> {
         setText(null);
         setGraphic(editor);
         editor.requestFocus();
-        if (trigger.initialText == null) {
+        if (insertTrigger.initialText == null) {
             editor.selectAll();
         } else {
             editor.deselect();
@@ -228,7 +158,7 @@ final class FormatTableCell<S,T> extends TableCell<S,T> {
     public void cancelEdit() {
         super.cancelEdit();
         setGraphic(null);
-        setText(format(getItem()));
+        setText(textConverter.toString(getItem()));
     }
 
     /**

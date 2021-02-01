@@ -121,6 +121,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CenteredProjection = 43;
 
         /**
+         * Clear all
+         */
+        public static final short ClearAll = 55;
+
+        /**
          * Close
          */
         public static final short Close = 10;
@@ -226,6 +231,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InconsistencyIn_2 = 39;
 
         /**
+         * Generate isolines at constant interval
+         * starting from given minimum.
+         */
+        public static final short IsolinesInRange = 57;
+
+        /**
          * Loading…
          */
         public static final short Loading = 24;
@@ -269,6 +280,11 @@ public final class Resources extends IndexedResourceBundle {
          * Orthographic
          */
         public static final short Orthographic = 52;
+
+        /**
+         * Range of values…
+         */
+        public static final short RangeOfValues = 56;
 
         /**
          * Select a coordinate reference system

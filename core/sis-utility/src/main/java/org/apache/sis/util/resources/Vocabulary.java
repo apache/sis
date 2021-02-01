@@ -645,6 +645,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Interpolation = 231;
 
         /**
+         * Interval
+         */
+        public static final short Interval = 253;
+
+        /**
          * Invalid
          */
         public static final short Invalid = 107;

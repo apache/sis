@@ -42,6 +42,7 @@ import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.RecentChoices;
+import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.storage.DataStoreProvider;
@@ -175,11 +176,13 @@ public class DataViewer extends Application {
         final BorderPane pane = new BorderPane();
         pane.setTop(menus);
         pane.setCenter(content.getView());
+        final Scene scene = new Scene(pane);
+        scene.getStylesheets().add(Styles.STYLESHEET);
         final Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
         window.setTitle("Apache Spatial Information System");
         window.getIcons().addAll(new Image(DataViewer.class.getResourceAsStream("SIS_64px.png")),
                                  new Image(DataViewer.class.getResourceAsStream("SIS_128px.png")));
-        window.setScene(new Scene(pane));
+        window.setScene(scene);
         window.setWidth (0.75 * bounds.getWidth());
         window.setHeight(0.75 * bounds.getHeight());
         window.show();

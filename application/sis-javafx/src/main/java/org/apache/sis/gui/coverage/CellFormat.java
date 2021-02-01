@@ -26,7 +26,6 @@ import java.awt.image.RenderedImage;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tooltip;
-import javafx.scene.layout.Background;
 import javafx.util.Duration;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.math.DecimalFunctions;
@@ -162,16 +161,16 @@ final class CellFormat extends SimpleStringProperty {
      */
     private void onPatternSelected(final ComboBox<String> choices, final String newValue) {
         if (!isAdjusting) {
-            Background background;
+            boolean error;
             String message;
             try {
                 isAdjusting = true;
                 setValue(newValue);
-                background = null;
                 message = null;
+                error = false;
             } catch (IllegalArgumentException e) {
-                background = Styles.ERROR_BACKGROUND;
                 message = e.getLocalizedMessage();
+                error = true;
             } finally {
                 isAdjusting = false;
             }
@@ -186,7 +185,7 @@ final class CellFormat extends SimpleStringProperty {
                 }
             }
             choices.setTooltip(tooltip);
-            choices.getEditor().setBackground(background);
+            choices.getEditor().pseudoClassStateChanged(Styles.ERROR, error);
         }
     }
 

@@ -19,13 +19,12 @@ package org.apache.sis.internal.gui;
 import java.util.Arrays;
 import java.io.IOException;
 import java.io.InputStream;
+import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -48,6 +47,13 @@ import org.apache.sis.util.Static;
  * @module
  */
 public final class Styles extends Static {
+    /**
+     * Path to the CSS file defining pseudo-classes. This is the file defining appearance
+     * of controls in some situation defining by pseudo-classes, for example when a text
+     * field is flagged with {@link #ERROR}.
+     */
+    public static final String STYLESHEET = "org/apache/sis/gui/pseudo-classes.css";
+
     /**
      * Approximate size of vertical scroll bar.
      */
@@ -109,10 +115,10 @@ public final class Styles extends Static {
     public static final Color SELECTION_BACKGROUND = Color.LIGHTBLUE;
 
     /**
-     * The background for cell having an illegal input value.
+     * Identifies the CSS pseudo-class from {@code "org/apache/sis/gui/stylesheet.css"}
+     * to apply if a {@link javafx.scene.control.TextInputControl} has an invalid value.
      */
-    public static final Background ERROR_BACKGROUND =
-            new Background(new BackgroundFill(Color.LIGHTPINK, null, null));
+    public static final PseudoClass ERROR = PseudoClass.getPseudoClass("error");
 
     /**
      * The Unicode character to put in a button for requesting more information about an error.

@@ -149,7 +149,7 @@ final class CoverageControls extends Controls {
          */
         final VBox isolinesPane;
         {   // Block for making variables locale to this scope.
-            final ValueColorMapper mapper = new ValueColorMapper(vocabulary);
+            final ValueColorMapper mapper = new ValueColorMapper(resources, vocabulary);
             isolines = new IsolineRenderer(view);
             isolines.setIsolineTables(java.util.Collections.singletonList(mapper.getSteps()));
             isolinesPane = new VBox(mapper.getView());              // TODO: add band selector

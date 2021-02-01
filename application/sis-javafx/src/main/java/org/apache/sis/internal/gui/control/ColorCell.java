@@ -29,6 +29,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -111,8 +112,10 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
      * transitions to editing state. It has the effect of showing the color picker or color ramp chooser.
      */
     private static void mouseClicked(final MouseEvent event) {
-        if (((ColorCell<?>) event.getSource()).requestEdit()) {
-            event.consume();
+        if (event.getButton() == MouseButton.PRIMARY) {
+            if (((ColorCell<?>) event.getSource()).requestEdit()) {
+                event.consume();
+            }
         }
     }
 
