@@ -16,7 +16,10 @@
  */
 package org.apache.sis.internal.gui.control;
 
+import java.math.BigDecimal;
 import java.text.Format;
+import java.text.NumberFormat;
+import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import javafx.util.StringConverter;
@@ -76,6 +79,22 @@ final class FormatApplicator<T> extends StringConverter<T>
     public FormatApplicator(final Class<T> valueType, final Format format) {
         this.valueType = valueType;
         this.format    = format;
+    }
+
+    /**
+     * Creates an instance using {@link NumberFormat}. If the {@linkplain DecimalFormat format is decimal},
+     * then it will parse {@link BigDecimal} values. The intent is to allow arithmetic operations without
+     * rounding errors that may surprise the user, for example if we need to compute {@code n * scale}
+     * where <var>scale</var> has been specified by user as 0.1.
+     *
+     * @return an instance for parsing and formatting numbers.
+     */
+    public static FormatApplicator<Number> createNumberFormat() {
+        final FormatApplicator<Number> f = new FormatApplicator<>(Number.class, NumberFormat.getInstance());
+        if (f.format instanceof DecimalFormat) {
+            ((DecimalFormat) f.format).setParseBigDecimal(true);
+        }
+        return f;
     }
 
     /**

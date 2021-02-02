@@ -18,7 +18,7 @@ package org.apache.sis.internal.gui.control;
 
 import java.util.Objects;
 import java.util.Locale;
-import java.text.NumberFormat;
+import java.math.BigDecimal;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -189,7 +189,7 @@ public final class ValueColorMapper extends Widget {
      *                     (those arguments would be removed if this constructor was public API).
      */
     public ValueColorMapper(final Resources resources, final Vocabulary vocabulary) {
-        textConverter = new FormatApplicator<>(Number.class, NumberFormat.getInstance());
+        textConverter = FormatApplicator.createNumberFormat();
         table = createIsolineTable(vocabulary);
         final MenuItem rangeMenu = new MenuItem(resources.getString(Resources.Keys.RangeOfValues));
         final MenuItem clearAll  = new MenuItem(resources.getString(Resources.Keys.ClearAll));
@@ -431,7 +431,10 @@ public final class ValueColorMapper extends Widget {
         rangeEditor.showAndWait().ifPresent((r) -> {
             final ObservableList<Step> steps = getSteps();
             int position = 0;
-increment:  for (double i=0, value; (value = i*r.interval + r.minimum) <= r.maximum; i++) {    // TODO: use Math.fma with JDK9.
+            BigDecimal decimal = r.minimum;
+increment:  while (decimal.compareTo(r.maximum) <= 0) {
+                final double value = decimal.doubleValue();
+                decimal = decimal.add(r.interval);
                 while (position < steps.size()) {
                     final double existing = steps.get(position).value.get();
                     if (existing == value) continue increment;
@@ -448,9 +451,10 @@ increment:  for (double i=0, value; (value = i*r.interval + r.minimum) <= r.maxi
      */
     private static final class Range {
         /**
-         * The bounds and interval of values to create.
+         * The bounds and interval of values to create. Use {@link BigDecimal}
+         * for avoiding arithmetic errors when computing intermediate values.
          */
-        final double minimum, maximum, interval;
+        final BigDecimal minimum, maximum, interval;
 
         /**
          * The constant color to associate with all values.
@@ -458,13 +462,29 @@ increment:  for (double i=0, value; (value = i*r.interval + r.minimum) <= r.maxi
         final Color color;
 
         /**
-         * Creates a new range.
+         * Creates a new range from the current values in given controls.
          */
-        Range(final double minimum, final double maximum, final double interval, final Color color) {
-            this.minimum  = minimum;
-            this.maximum  = maximum;
-            this.interval = interval;
-            this.color    = color;
+        private Range(final TextField minimum, final TextField maximum, final TextField interval, final ColorPicker color) {
+            this.minimum  = decimal(minimum);
+            this.maximum  = decimal(maximum);
+            this.interval = decimal(interval);
+            this.color    = color.getValue();
+        }
+
+        /**
+         * Returns the value of given field as a {@link BigDecimal} instance.
+         */
+        private static BigDecimal decimal(final TextField field) {
+            final Object value = field.getUserData();
+            if (value instanceof BigDecimal) {
+                return (BigDecimal) value;      // Should be the usual case.
+            } else {
+                /*
+                 * A NullPointerException or ClassCastException below would
+                 * be a bug in the validation checks performed by this class.
+                 */
+                return BigDecimal.valueOf(((Number) value).doubleValue());
+            }
         }
 
         /**
@@ -508,7 +528,7 @@ increment:  for (double i=0, value; (value = i*r.interval + r.minimum) <= r.maxi
             };
             rangeEditor.setResultConverter((button) -> {
                 if (button == ButtonType.APPLY) {
-                    return new Range(valueOf(minimum), valueOf(maximum), valueOf(interval), colorInRange.getValue());
+                    return new Range(minimum, maximum, interval, colorInRange);
                 }
                 return null;
             });
