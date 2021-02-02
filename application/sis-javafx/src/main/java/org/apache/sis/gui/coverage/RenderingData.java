@@ -530,10 +530,11 @@ final class RenderingData implements Cloneable {
      * Converts the given bounds from objective coordinates to pixel coordinates in the source coverage.
      *
      * @param  bounds  objective coordinates.
-     * @return data coverage cell coordinates (in pixels).
+     * @return data coverage cell coordinates (in pixels), or {@code null} if unknown.
      * @throws TransformException if the bounds can not be transformed.
      */
     final Rectangle objectiveToData(final Rectangle2D bounds) throws TransformException {
+        if (objectiveToCenter == null) return null;
         return (Rectangle) Shapes2D.transform(MathTransforms.bidimensional(objectiveToCenter), bounds, new Rectangle());
     }
 

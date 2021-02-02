@@ -241,8 +241,10 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
                 }
                 final LinearTransform translation = MathTransforms.translation(offset);
                 final MathTransformsOrFactory f = MathTransformsOrFactory.wrap(factory);
-                gridToCRS   = f.concatenate(translation, gridToCRS);
-                cornerToCRS = f.concatenate(translation, cornerToCRS);
+                if (gridToCRS != null) {
+                    gridToCRS   = f.concatenate(translation, gridToCRS);
+                    cornerToCRS = f.concatenate(translation, cornerToCRS);
+                }
             }
             extent = relativeExtent;
         }

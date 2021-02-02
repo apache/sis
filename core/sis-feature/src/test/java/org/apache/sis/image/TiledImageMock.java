@@ -17,8 +17,13 @@
 package org.apache.sis.image;
 
 import java.awt.Point;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.image.BandedSampleModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.ComponentSampleModel;
 import java.awt.image.ImagingOpException;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
@@ -116,6 +121,12 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
     private AtomicInteger errorSequence;
 
     /**
+     * The color model, created only if requested.
+     * This is needed only for visualizing the image on screen; most tests do not need it.
+     */
+    private ColorModel colorModel;
+
+    /**
      * Creates a new tiled image. Testers should invoke {@link #validate()} after construction.
      *
      * @param dataType     sample data type as one of the {@link java.awt.image.DataBuffer} constants.
@@ -154,9 +165,24 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
     }
 
     /**
-     * No color model since this test images is not for rendering on screen.
+     * Returns a gray scale color model if the data type is byte, or {@code null} otherwise.
+     * More color models may be supported in future versions if there is a need for them.
      */
-    @Override public ColorModel  getColorModel()  {return null;}
+    @Override
+    public ColorModel getColorModel() {
+        if (colorModel == null && sampleModel instanceof ComponentSampleModel && sampleModel.getNumBands() == 1) {
+            final int dataType = sampleModel.getDataType();
+            if (dataType <= DataBuffer.TYPE_USHORT) {
+                colorModel = new ComponentColorModel(
+                        ColorSpace.getInstance(ColorSpace.CS_GRAY),
+                        new int[] {DataBuffer.getDataTypeSize(dataType)},
+                        false, true, Transparency.OPAQUE, dataType);
+            }
+        }
+        return colorModel;
+    }
+
+    /** Returns a sample model for data type given to the constructor. */
     @Override public SampleModel getSampleModel() {return sampleModel;}
 
     /*

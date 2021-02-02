@@ -945,7 +945,12 @@ public abstract class MapCanvas extends PlanarCanvas {
                     crsToDisplay = MathTransforms.linear(m);
                     if (objectiveCRS == null) {
                         objectiveCRS = extent.toEnvelope(crsToDisplay.inverse()).getCoordinateReferenceSystem();
-                        // CRS computed above should not be null.
+                        /*
+                         * Above code tried to provide a non-null CRS on a "best effort" basis. The objective CRS
+                         * may still be null, there is no obvious answer against that. It is not the display CRS
+                         * if the "display to objective" transform is not identity. A grid CRS is not appropriate
+                         * neither, otherwise `extent.toEnvelope(…)` would have found it.
+                         */
                     }
                 } else {
                     objectiveCRS = getDisplayCRS();
