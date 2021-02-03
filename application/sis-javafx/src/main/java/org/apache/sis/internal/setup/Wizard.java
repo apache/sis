@@ -520,7 +520,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
 
     /**
      * Invoked when the user clicks on the {@value #JAVAFX_HOME} button
-     * for opening the {@value Constants#JAVAFX_HOME} URL in a browser.
+     * for opening the {@value FXFinder#JAVAFX_HOME} URL in a browser.
      */
     private void openJavafxHomePage() {
         try {

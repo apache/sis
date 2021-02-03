@@ -215,7 +215,7 @@ public final class FXFinder {
     /**
      * Returns the name of JavaFX bundle to download, including the operating system name.
      * Example: "JavaFX Linux SDK". This is for helping the user to choose which file to
-     * download on the {@value Constants#JAVAFX_HOME} web page.
+     * download on the {@value #JAVAFX_HOME} web page.
      */
     static String getJavafxBundleName() {
         String name;
