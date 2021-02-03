@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.awt.Color;
 import java.awt.Shape;
@@ -107,11 +106,11 @@ import org.apache.sis.measure.Units;
  *
  * <h2>Error handling</h2>
  * If an exception occurs during the computation of a tile, then the {@code ImageProcessor} behavior
- * is controlled by the {@link #getErrorAction() errorAction} property:
+ * is controlled by the {@link #getErrorHandler() errorHandler} property:
  *
  * <ul>
- *   <li>If {@link ErrorAction#THROW}, the exception is wrapped in an {@link ImagingOpException} and thrown.</li>
- *   <li>If {@link ErrorAction#LOG}, the exception is logged and a partial result is returned.</li>
+ *   <li>If {@link ErrorHandler#THROW}, the exception is wrapped in an {@link ImagingOpException} and thrown.</li>
+ *   <li>If {@link ErrorHandler#LOG}, the exception is logged and a partial result is returned.</li>
  *   <li>If any other value, the exception is wrapped in a {@link LogRecord} and sent to that filter.
  *     The filter can store the log record, for example for showing later in a graphical user interface (GUI).
  *     If the filter returns {@code true}, the log record is also logged, otherwise it is silently discarded.
@@ -265,58 +264,20 @@ public class ImageProcessor implements Cloneable {
      * If errors are wrapped in a {@link LogRecord}, this field specifies what to do with the record.
      * Only one log record is created for all tiles that failed for the same operation on the same image.
      *
-     * @see #getErrorAction()
-     * @see #setErrorAction(Filter)
+     * @see #getErrorHandler()
+     * @see #setErrorHandler(ErrorHandler)
      */
-    private Filter errorAction;
-
-    /**
-     * Specifies how exceptions occurring during calculation should be handled.
-     * This enumeration provides common actions, but the set of values that can
-     * be specified to {@link #setErrorAction(Filter)} is not limited to this enumeration.
-     *
-     * @see #getErrorAction()
-     * @see #setErrorAction(Filter)
-     */
-    public enum ErrorAction implements Filter {
-        /**
-         * Exceptions are wrapped in an {@link ImagingOpException} and thrown.
-         * In such case, no result is available. This is the default action.
-         */
-        THROW,
-
-        /**
-         * Exceptions are wrapped in a {@link LogRecord} and logged at {@link java.util.logging.Level#WARNING}.
-         * Only one log record is created for all tiles that failed for the same operation on the same image.
-         * A partial result may be available.
-         *
-         * <p>Users are encouraged to use {@link #THROW} or to specify their own {@link Filter}
-         * instead than using this error action, because not everyone read logging records.</p>
-         */
-        LOG;
-
-        /**
-         * Unconditionally returns {@code true} for allowing the given record to be logged.
-         * This method is not useful for this {@code ErrorAction} enumeration, but is useful
-         * for other instances given to {@link #setErrorAction(Filter)}.
-         *
-         * @param  record  the error that occurred during computation of a tile.
-         * @return always {@code true}.
-         */
-        @Override
-        public boolean isLoggable(final LogRecord record) {
-            return true;
-        }
-    }
+    private ErrorHandler errorHandler;
 
     /**
      * Creates a new processor with default configuration.
-     * The execution mode is initialized to {@link Mode#DEFAULT} and the error action to {@link ErrorAction#THROW}.
+     * The execution mode is initialized to {@link Mode#DEFAULT}
+     * and the error handler to {@link ErrorHandler#THROW}.
      */
     public ImageProcessor() {
         layout        = ImageLayout.DEFAULT;
         executionMode = Mode.DEFAULT;
-        errorAction   = ErrorAction.THROW;
+        errorHandler  = ErrorHandler.THROW;
         interpolation = Interpolation.BILINEAR;
     }
 
@@ -523,28 +484,33 @@ public class ImageProcessor implements Cloneable {
 
     /**
      * Returns whether exceptions occurring during computation are propagated or logged.
-     * If {@link ErrorAction#THROW} (the default), exceptions are wrapped in {@link ImagingOpException} and thrown.
-     * If any other value, exceptions are wrapped in a {@link LogRecord}, filtered then eventually logged.
+     * If {@link ErrorHandler#THROW} (the default), exceptions are wrapped in {@link ImagingOpException} and thrown.
+     * If {@link ErrorHandler#LOG}, exceptions are wrapped in a {@link LogRecord}, filtered then eventually logged.
      *
      * @return whether exceptions occurring during computation are propagated or logged.
      */
-    public synchronized Filter getErrorAction() {
-        return errorAction;
+    public synchronized ErrorHandler getErrorHandler() {
+        return errorHandler;
     }
 
     /**
      * Sets whether exceptions occurring during computation are propagated or logged.
      * The default behavior is to wrap exceptions in {@link ImagingOpException} and throw them.
-     * If this property is set to {@link ErrorAction#LOG} or any other value, then exceptions will
-     * be wrapped in {@link LogRecord} instead, in which case a partial result may be available.
+     * If this property is set to {@link ErrorHandler#LOG}, then exceptions will be wrapped in
+     * {@link LogRecord} instead, in which case a partial result may be available.
      * Only one log record is created for all tiles that failed for the same operation on the same image.
      *
-     * @param  action  filter to notify when an operation failed on one or more tiles,
-     *                 or {@link ErrorAction#THROW} for propagating the exception.
+     * <h4>Limitations</h4>
+     * In current {@code ImageProcessor} implementation, the error handler is not honored by all operations.
+     * Some operations may continue to throw an exception on failure (the behavior of default error handler)
+     * even if a different handler has been specified.
+     *
+     * @param  handler  handler to notify when an operation failed on one or more tiles,
+     *                  or {@link ErrorHandler#THROW} for propagating the exception.
      */
-    public synchronized void setErrorAction(final Filter action) {
-        ArgumentChecks.ensureNonNull("action", action);
-        errorAction = action;
+    public synchronized void setErrorHandler(final ErrorHandler handler) {
+        ArgumentChecks.ensureNonNull("handler", handler);
+        errorHandler = handler;
     }
 
     /**
@@ -553,25 +519,14 @@ public class ImageProcessor implements Cloneable {
      */
     private boolean failOnException() {
         assert Thread.holdsLock(this);
-        return errorAction == ErrorAction.THROW;
-    }
-
-    /**
-     * Where to send exceptions (wrapped in {@link LogRecord}) if an operation failed on one or more tiles.
-     * Only one log record is created for all tiles that failed for the same operation on the same image.
-     * This is always {@code null} if {@link #failOnException()} is {@code true}.
-     * This method shall be invoked in a method synchronized on {@code this}.
-     */
-    private Filter errorListener() {
-        assert Thread.holdsLock(this);
-        return (errorAction instanceof ErrorAction) ? null : errorAction;
+        return errorHandler == ErrorHandler.THROW;
     }
 
     /**
      * Returns statistics (minimum, maximum, mean, standard deviation) on each bands of the given image.
      * Invoking this method is equivalent to invoking {@link #statistics(RenderedImage, Shape)} and
      * extracting immediately the statistics property value, except that errors are handled by the
-     * {@linkplain #getErrorAction() error handler}.
+     * {@linkplain #getErrorHandler() error handler}.
      *
      * <p>If {@code areaOfInterest} is {@code null}, then the default is as below:</p>
      * <ul>
@@ -585,14 +540,14 @@ public class ImageProcessor implements Cloneable {
      * This operation uses the following properties in addition to method parameters:
      * <ul>
      *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
-     *   <li>{@linkplain #getErrorAction() Error action} (custom action executed if an exception is thrown).</li>
+     *   <li>{@linkplain #getErrorHandler() Error handler} (custom action executed if an exception is thrown).</li>
      * </ul>
      *
      * @param  source          the image for which to compute statistics.
      * @param  areaOfInterest  pixel coordinates of the area of interest, or {@code null} for the default.
      * @return the statistics of sample values in each band.
      * @throws ImagingOpException if an error occurred during calculation
-     *         and the error handler is {@link ErrorAction#THROW}.
+     *         and the error handler is {@link ErrorHandler#THROW}.
      *
      * @see #statistics(RenderedImage, Shape)
      * @see StatisticsCalculator#STATISTICS_KEY
@@ -606,11 +561,11 @@ public class ImageProcessor implements Cloneable {
             }
         }
         final boolean parallel, failOnException;
-        final Filter errorListener;
+        final ErrorHandler errorListener;
         synchronized (this) {
             parallel        = parallel(source);
             failOnException = failOnException();
-            errorListener   = errorListener();
+            errorListener   = errorHandler;
         }
         /*
          * No need to check if the given source is already an instance of StatisticsCalculator.
@@ -641,7 +596,7 @@ public class ImageProcessor implements Cloneable {
      * This operation uses the following properties in addition to method parameters:
      * <ul>
      *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
-     *   <li>{@linkplain #getErrorAction() Error action} (whether to fail if an exception is thrown).</li>
+     *   <li>{@linkplain #getErrorHandler() Error handler} (whether to fail if an exception is thrown).</li>
      * </ul>
      *
      * @param  source          the image for which to provide statistics.
@@ -906,7 +861,7 @@ public class ImageProcessor implements Cloneable {
      * Computations will use many threads if {@linkplain #getExecutionMode() execution mode} is parallel.
      *
      * <div class="note"><b>Note:</b>
-     * current implementation ignores the {@linkplain #getErrorAction() error action} because we do not yet
+     * current implementation ignores the {@linkplain #getErrorHandler() error handler} because we do not yet
      * have a mechanism for specifying which tile to produce in replacement of tiles that can not be computed.
      * This behavior may be changed in a future version.</div>
      *
@@ -1102,26 +1057,26 @@ public class ImageProcessor implements Cloneable {
         if (object != null && object.getClass() == getClass()) {
             final ImageProcessor other = (ImageProcessor) object;
             final Mode          executionMode;
-            final Filter        errorAction;
+            final ErrorHandler  errorHandler;
             final Interpolation interpolation;
             final Number[]      fillValues;
             final Function<Category,Color[]> colors;
             final Quantity<?>[] positionalAccuracyHints;
             synchronized (this) {
                 executionMode           = this.executionMode;
-                errorAction             = this.errorAction;
+                errorHandler            = this.errorHandler;
                 interpolation           = this.interpolation;
                 fillValues              = this.fillValues;
                 colors                  = this.colors;
                 positionalAccuracyHints = this.positionalAccuracyHints;
             }
             synchronized (other) {
-                return errorAction.equals(other.errorAction)     &&
-                     executionMode.equals(other.executionMode)   &&
-                     interpolation.equals(other.interpolation)   &&
-                     Objects.equals(colors, other.colors)        &&
-                     Arrays.equals(fillValues, other.fillValues) &&
-                     Arrays.equals(positionalAccuracyHints, other.positionalAccuracyHints);
+                return errorHandler.equals(other.errorHandler)    &&
+                      executionMode.equals(other.executionMode)   &&
+                      interpolation.equals(other.interpolation)   &&
+                      Objects.equals(colors, other.colors)        &&
+                      Arrays.equals(fillValues, other.fillValues) &&
+                      Arrays.equals(positionalAccuracyHints, other.positionalAccuracyHints);
             }
         }
         return false;
@@ -1134,7 +1089,7 @@ public class ImageProcessor implements Cloneable {
      */
     @Override
     public synchronized int hashCode() {
-        return Objects.hash(getClass(), errorAction, executionMode, interpolation)
+        return Objects.hash(getClass(), errorHandler, executionMode, interpolation)
                 + 37 * Arrays.hashCode(fillValues) + 31 * Objects.hashCode(colors)
                 + 39 * Arrays.hashCode(positionalAccuracyHints);
     }

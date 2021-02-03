@@ -16,12 +16,8 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
-import java.util.Locale;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.SimpleFormatter;
 import java.util.stream.Collector;
-import java.util.function.Consumer;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,6 +32,7 @@ import java.awt.image.ImagingOpException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.CommonExecutor;
 import org.apache.sis.internal.util.Strings;
@@ -83,6 +80,13 @@ public class TileOpExecutor {
     private final int minTileX, minTileY, maxTileX, maxTileY;
 
     /**
+     * Where to report exceptions, or {@link ErrorHandler#THROW} for throwing them.
+     * In current implementation this is used only during parallel computation.
+     * A future version may need to use it for sequential computations as well for consistency.
+     */
+    private ErrorHandler errorHandler;
+
+    /**
      * Creates a new operation for tiles in the specified region of the specified image.
      * It is caller responsibility to ensure that {@code aoi} is contained inside {@code image} bounds
      * (caller can invoke {@link ImageUtilities#clipBounds(RenderedImage, Rectangle)} if needed).
@@ -92,6 +96,7 @@ public class TileOpExecutor {
      * @throws ArithmeticException if some tile indices are too large.
      */
     public TileOpExecutor(final RenderedImage image, final Rectangle aoi) {
+        errorHandler = ErrorHandler.THROW;
         if (aoi != null) {
             final int  tileWidth       = image.getTileWidth();
             final int  tileHeight      = image.getTileHeight();
@@ -107,6 +112,18 @@ public class TileOpExecutor {
             maxTileX = Math.addExact(minTileX, image.getNumXTiles() - 1);
             maxTileY = Math.addExact(minTileY, image.getNumYTiles() - 1);
         }
+    }
+
+    /**
+     * Sets the handler where to report exceptions.
+     * In current implementation this is used only during parallel computation.
+     * A future version may need to use it for sequential computations as well for consistency.
+     *
+     * @param  errorHandler  where to report exceptions, or {@link ErrorHandler#THROW} for throwing them.
+     */
+    public final void setErrorHandler(final ErrorHandler errorHandler) {
+        ArgumentChecks.ensureNonNull("errorHandler", errorHandler);
+        this.errorHandler = errorHandler;
     }
 
     /**
@@ -273,7 +290,7 @@ public class TileOpExecutor {
                 } catch (Exception ex) {
                     throw Worker.rethrowOrWrap(ex);             // Will be caught again by Worker.run().
                 }
-            }), null);
+            }));
         } else {
             readFrom(source);
         }
@@ -312,7 +329,7 @@ public class TileOpExecutor {
                 } catch (Exception ex) {
                     throw Worker.rethrowOrWrap(ex);             // Will be caught again by Worker.run().
                 }
-            }), null);
+            }));
         } else {
             writeTo(target);
         }
@@ -362,12 +379,12 @@ public class TileOpExecutor {
      *
      * <ul class="verbose">
      *   <li>
-     *     If the {@code errorHandler} is {@code null}, then all threads will finish the tiles they were
+     *     If the {@code errorHandler} is {@code THROW}, then all threads will finish the tiles they were
      *     processing at the time the error occurred, but will not take any other tile (i.e. remaining tiles
      *     will be left unprocessed). The exception that occurred is wrapped in an {@link ImagingOpException}
      *     and thrown.
      *   </li><li>
-     *     If the {@code errorHandler} is non-null, then the exception is wrapped in a {@link LogRecord} and
+     *     If the {@code errorHandler} is {@code LOG}, then the exception is wrapped in a {@link LogRecord} and
      *     the processing continues with other tiles. If more exceptions happen, those subsequent exceptions
      *     will be added to the first one by {@link Exception#addSuppressed(Throwable)}.
      *     After all tiles have been processed, the error handler will be invoked with that {@link LogRecord}.
@@ -385,15 +402,13 @@ public class TileOpExecutor {
      *                       but other images are okay if they share the same pixel and tile coordinate systems.
      * @param  collector     the action to execute on each {@link Raster}, together with supplier and combiner
      *                       of thread-local objects of type <var>A</var>. See above javadoc for more information.
-     * @param  errorHandler  where to report exceptions, or {@code null} for throwing them.
      * @return the final result computed by finisher (may be {@code null}).
      * @throws ImagingOpException if an exception occurred during {@link RenderedImage#getTile(int, int)}
      *         or {@link #readFrom(Raster)} execution, and {@code errorHandler} is {@code null}.
      * @throws RuntimeException if an exception occurred elsewhere (for example in the combiner or finisher).
      */
     public final <A,R> R executeOnReadable(final RenderedImage source,
-                                           final Collector<? super Raster, A, R> collector,
-                                           final Consumer<LogRecord> errorHandler)
+                                           final Collector<? super Raster, A, R> collector)
     {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("collector", collector);
@@ -435,8 +450,8 @@ public class TileOpExecutor {
      * there is a choice:
      *
      * <ul>
-     *   <li>If the {@code errorHandler} is {@code null}, the exception is wrapped in an {@link ImagingOpException} and thrown.</li>
-     *   <li>If the {@code errorHandler} is non-null, the exception is wrapped in a {@link LogRecord} and given to the handler.
+     *   <li>If the {@code errorHandler} is {@code THROW}, the exception is wrapped in an {@link ImagingOpException} and thrown.</li>
+     *   <li>If the {@code errorHandler} is {@code LOG}, the exception is wrapped in a {@link LogRecord} and given to the handler.
      *       That {@code LogRecord} has the level, message and exception properties set, but not the source class name,
      *       source method name or logger name. The error handler should set those properties itself.</li>
      * </ul>
@@ -452,7 +467,6 @@ public class TileOpExecutor {
      *                       but other images are okay if they share the same pixel and tile coordinate systems.
      * @param  collector     the action to execute on each {@link WritableRaster}, together with supplier and combiner
      *                       of thread-local objects of type <var>A</var>. See above javadoc for more information.
-     * @param  errorHandler  where to report exceptions, or {@code null} for throwing them.
      * @return the final result computed by finisher. This is often {@code null} because the purpose of calling
      *         {@code executeOnWritable(…)} is more often to update existing tiles instead than to compute a value.
      * @throws ImagingOpException if an exception occurred during {@link WritableRenderedImage#getWritableTile(int, int)},
@@ -461,8 +475,7 @@ public class TileOpExecutor {
      * @throws RuntimeException if an exception occurred elsewhere (for example in the combiner or finisher).
      */
     public final <A,R> R executeOnWritable(final WritableRenderedImage target,
-                                           final Collector<? super WritableRaster,A,R> collector,
-                                           final Consumer<LogRecord> errorHandler)
+                                           final Collector<? super WritableRaster,A,R> collector)
     {
         ArgumentChecks.ensureNonNull("target", target);
         ArgumentChecks.ensureNonNull("collector", collector);
@@ -523,12 +536,13 @@ public class TileOpExecutor {
         private A accumulator;
 
         /**
-         * The errors that occurred while computing a tile, or {@code null} if none.
+         * The errors that occurred while computing a tile.
+         * Will be ignored if {@linkplain ErrorHandler.Report#isEmpty() empty}.
          *
          * @see #stopOnError
          * @see #recordError(Worker, Throwable)
          */
-        private LogRecord errors;
+        private final ErrorHandler.Report errors;
 
         /**
          * Whether to stop of the first error. If {@code true} the error will be reported as soon as possible.
@@ -551,6 +565,7 @@ public class TileOpExecutor {
             this.combiner    = collector.combiner();
             this.numXTiles   = Math.incrementExact(Math.subtractExact(maxTileX, minTileX));
             this.stopOnError = stopOnError;
+            this.errors      = new ErrorHandler.Report();
         }
 
         /**
@@ -605,13 +620,13 @@ public class TileOpExecutor {
          * @param  workers       handlers of all worker threads other than the current threads.
          *                       Content of this array may be modified by this method.
          * @param  collector     provides the finisher to use for computing final result of type <var>R</var>.
-         * @param  errorHandler  where to report exceptions, or {@code null} for throwing them.
+         * @param  errorHandler  where to report exceptions, or {@link ErrorHandler#THROW} for throwing them.
          * @return the final result computed by finisher (may be {@code null}).
          * @throws ImagingOpException if an exception occurred during {@link Worker#executeOnCurrentTile()}
          *         and the {@code errorHandler} is {@code null}.
          * @throws RuntimeException if an exception occurred elsewhere (for example in the combiner or finisher).
          */
-        final <R> R finish(final Future<?>[] workers, final Collector<?,A,R> collector, final Consumer<LogRecord> errorHandler) {
+        final <R> R finish(final Future<?>[] workers, final Collector<?,A,R> collector, final ErrorHandler errorHandler) {
             /*
              * Before to wait for other threads to complete their work, we need to remove from executor queue all
              * workers that did not yet started their run. Those threads may be waiting for an executor thread to
@@ -629,7 +644,7 @@ public class TileOpExecutor {
                  * This is not an exception that occurred in Worker.executeOnCurrentTile(), RenderedImage.getTile(…)
                  * or similar methods, otherwise it would have been handled by Worker.run(). This is an error or an
                  * exception that occurred elsewhere, for example in the combiner, in which case we do not wrap it
-                 * in an ImagingOpException.
+                 * in an ImagingOpException (unless we have to because the cause is a checked exception).
                  */
                 throw Worker.rethrowOrWrap(ex.getCause());
             } catch (InterruptedException ex) {
@@ -638,12 +653,7 @@ public class TileOpExecutor {
                  * We will report that interruption as an error.
                  */
                 synchronized (this) {
-                    if (errors == null) {
-                        errors = new LogRecord(Level.WARNING, ex.toString());
-                        errors.setThrown(ex);
-                    } else {
-                        errors.getThrown().addSuppressed(ex);
-                    }
+                    errors.addPropertyError(ex, null);
                 }
                 break;
             }
@@ -655,14 +665,8 @@ public class TileOpExecutor {
             final R result;
             synchronized (this) {
                 result = collector.finisher().apply(accumulator);
-                if (errors != null) {
-                    if (errorHandler != null) {
-                        errorHandler.accept(errors);
-                    } else {
-                        final Throwable ex = trimImagingWrapper(errors.getThrown());
-                        final String message = new SimpleFormatter().formatMessage(errors);
-                        throw (ImagingOpException) new ImagingOpException(message).initCause(ex);
-                    }
+                if (!errors.isEmpty()) {
+                    errorHandler.handle(errors);
                 }
             }
             return result;
@@ -681,13 +685,7 @@ public class TileOpExecutor {
                 set(Integer.MIN_VALUE);         // Will cause other threads to stop fetching tiles.
             }
             synchronized (this) {
-                if (errors == null) {
-                    errors = Resources.forLocale((Locale) null).getLogRecord(Level.WARNING,
-                             Resources.Keys.CanNotProcessTile_2, indices.tx, indices.ty);
-                    errors.setThrown(ex);
-                } else {
-                    errors.getThrown().addSuppressed(ex);
-                }
+                errors.addTileError(ex, indices.tx, indices.ty);
             }
         }
 
@@ -867,11 +865,11 @@ public class TileOpExecutor {
         }
 
         /**
-         * Implementation of {@link #executeOnReadable(RenderedImage, Collector, Consumer)}.
+         * Implementation of {@link #executeOnReadable(RenderedImage, Collector)}.
          * See the Javadoc of that method for details.
          */
         static <A,R> R execute(final TileOpExecutor executor, final RenderedImage source,
-                final Collector<? super Raster, A, R> collector, final Consumer<LogRecord> errorHandler)
+                final Collector<? super Raster, A, R> collector, final ErrorHandler errorHandler)
         {
             final Cursor<RenderedImage,A> cursor = executor.new Cursor<>(source, collector, errorHandler == null);
             final Future<?>[] workers = new Future<?>[cursor.getNumWorkers()];
@@ -924,11 +922,11 @@ public class TileOpExecutor {
         }
 
         /**
-         * Implementation of {@link #executeOnWritable(WritableRenderedImage, Collector, Consumer)}.
+         * Implementation of {@link #executeOnWritable(WritableRenderedImage, Collector)}.
          * See the Javadoc of that method for details.
          */
         static <A,R> R execute(final TileOpExecutor executor, final WritableRenderedImage target,
-                final Collector<? super WritableRaster,A,R> collector, final Consumer<LogRecord> errorHandler)
+                final Collector<? super WritableRaster,A,R> collector, final ErrorHandler errorHandler)
         {
             final Cursor<WritableRenderedImage,A> cursor = executor.new Cursor<>(target, collector, false);
             final Future<?>[] workers = new Future<?>[cursor.getNumWorkers()];

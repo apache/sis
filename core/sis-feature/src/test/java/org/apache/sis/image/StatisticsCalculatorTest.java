@@ -134,7 +134,7 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
     public void testWithLoggings() {
         final ImageProcessor operations = new ImageProcessor();
         operations.setExecutionMode(ImageProcessor.Mode.PARALLEL);
-        operations.setErrorAction(ImageProcessor.ErrorAction.LOG);
+        operations.setErrorHandler(ErrorHandler.LOG);
         final TiledImageMock image = createImage();
         image.failRandomly(new Random(8004277484984714811L));
         final Statistics[] stats = operations.valueOfStatistics(image, null);

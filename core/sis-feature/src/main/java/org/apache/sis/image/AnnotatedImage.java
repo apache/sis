@@ -16,12 +16,9 @@
  */
 package org.apache.sis.image;
 
-import java.util.Locale;
 import java.util.Objects;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Filter;
 import java.util.stream.Collector;
 import java.awt.Image;
 import java.awt.Shape;
@@ -30,7 +27,6 @@ import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.system.Modules;
@@ -170,7 +166,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * The errors that occurred while computing the result, or {@code null} if none or not yet determined.
      * This field is never set if {@link #failOnException} is {@code true}.
      */
-    private volatile LogRecord errors;
+    private volatile ErrorHandler.Report errors;
 
     /**
      * Whether parallel execution is authorized for the {@linkplain #source} image.
@@ -287,9 +283,10 @@ abstract class AnnotatedImage extends ImageAdapter {
      */
     @Override
     public String[] getPropertyNames() {
-        final String[] names = new String[(errors != null) ? 2 : 1];
+        final boolean hasErrors = (errors != null);
+        final String[] names = new String[hasErrors ? 2 : 1];
         names[0] = getComputedPropertyName();
-        if (errors != null) {
+        if (hasErrors) {
             names[1] = names[0] + WARNINGS_SUFFIX;
         }
         return ArraysExt.concatenate(source.getPropertyNames(), names);
@@ -354,14 +351,13 @@ abstract class AnnotatedImage extends ImageAdapter {
                             Errors.format(Errors.Keys.CanNotCompute_1, property)).initCause(e);
                 }
                 synchronized (this) {
-                    LogRecord record = errors;
-                    if (record != null) {
-                        record.getThrown().addSuppressed(e);
-                    } else {
-                        record = Errors.getResources((Locale) null).getLogRecord(Level.WARNING, Errors.Keys.CanNotCompute_1, property);
-                        record.setThrown(e);
-                        setError(record);
+                    ErrorHandler.Report report = errors;
+                    final boolean create = (report == null);
+                    if (create) {
+                        report = new ErrorHandler.Report();
                     }
+                    report.addPropertyError(e, property);
+                    if (create) setError(report);
                 }
             }
         } else if (isErrorProperty(property, name)) {
@@ -377,23 +373,18 @@ abstract class AnnotatedImage extends ImageAdapter {
      * Can also be invoked by {@link #getProperty(String)} directly if the error occurred
      * outside {@link TileOpExecutor}. This method shall be invoked at most once.
      *
-     * @param  record  a description of the error that occurred.
+     * @param  report  a description of the error that occurred.
      */
-    private void setError(final LogRecord record) {
+    private void setError(final ErrorHandler.Report report) {
         /*
          * Complete record with source identification as if the error occurred from
          * above `getProperty(String)` method (this is always the case, indirectly).
          */
+        final LogRecord record = report.getDescription();
         record.setSourceClassName(AnnotatedImage.class.getCanonicalName());
         record.setSourceMethodName("getProperty");
         record.setLoggerName(Modules.RASTER);
-        synchronized (this) {
-            if (errors == null) {
-                errors = record;
-            } else {
-                throw new IllegalStateException();      // If it happens, this is a bug in thie AnnotatedImage class.
-            }
-        }
+        errors = report;
     }
 
     /**
@@ -402,17 +393,20 @@ abstract class AnnotatedImage extends ImageAdapter {
      *
      * @param  classe   the class to report as the source of the logging message.
      * @param  method   the method to report as the source of the logging message.
-     * @param  handler  where to send the log message, or {@code null} for the standard logger.
+     * @param  handler  where to send the log message.
      */
-    final void logAndClearError(final Class<?> classe, final String method, final Filter handler) {
-        final LogRecord record;
+    final void logAndClearError(final Class<?> classe, final String method, final ErrorHandler handler) {
+        final ErrorHandler.Report report;
         synchronized (this) {
-            record = errors;
+            report = errors;
             errors = null;
         }
-        if (record != null) {
-            if (handler == null || handler.isLoggable(record)) {
-                Logging.log(classe, method, record);
+        if (report != null) {
+            final LogRecord record = report.getDescription();
+            if (record != null) {
+                record.setSourceClassName(classe.getCanonicalName());
+                record.setSourceMethodName(method);
+                handler.handle(report);
             }
         }
     }
@@ -437,10 +431,13 @@ abstract class AnnotatedImage extends ImageAdapter {
     protected Object computeProperty() throws Exception {
         if (parallel) {
             final TileOpExecutor executor = new TileOpExecutor(source, boundsOfInterest);
+            if (!failOnException) {
+                executor.setErrorHandler(this::setError);
+            }
             if (executor.isMultiTiled()) {
                 final Collector<? super Raster,?,?> collector = collector();
                 if (collector != null) {
-                    return executor.executeOnReadable(source, collector(), failOnException ? null : this::setError);
+                    return executor.executeOnReadable(source, collector());
                 }
             }
         }

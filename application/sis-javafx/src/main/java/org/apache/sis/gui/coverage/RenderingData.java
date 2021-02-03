@@ -45,6 +45,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
+import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.internal.coverage.j2d.ColorModelType;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
@@ -206,7 +207,7 @@ final class RenderingData implements Cloneable {
     RenderingData() {
         selectedDerivative = Stretching.NONE;
         processor = new ImageProcessor();
-        processor.setErrorAction(ImageProcessor.ErrorAction.LOG);
+        processor.setErrorHandler(ErrorHandler.LOG);
         processor.setImageResizingPolicy(ImageProcessor.Resizing.EXPAND);
     }
 
