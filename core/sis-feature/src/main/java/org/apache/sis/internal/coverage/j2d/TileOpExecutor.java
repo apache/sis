@@ -81,8 +81,10 @@ public class TileOpExecutor {
 
     /**
      * Where to report exceptions, or {@link ErrorHandler#THROW} for throwing them.
-     * In current implementation this is used only during parallel computation.
-     * A future version may need to use it for sequential computations as well for consistency.
+     * If at least one error occurred, then this handler will receive the {@link Cursor#errors} report
+     * after all computation {@linkplain Cursor#finish finished}.
+     *
+     * @see #setErrorHandler(ErrorHandler)
      */
     private ErrorHandler errorHandler;
 
@@ -116,6 +118,17 @@ public class TileOpExecutor {
 
     /**
      * Sets the handler where to report exceptions.
+     * The exception can be obtained by {@link LogRecord#getThrown()}
+     * on the value returned by {@link ErrorHandler.Report#getDescription()}.
+     * In addition the {@code LogRecord} will have the
+     * {@linkplain LogRecord#getLevel() level} and
+     * {@linkplain LogRecord#getMessage() message} properties set. But the
+     * {@linkplain LogRecord#getSourceClassName() source class name},
+     * {@linkplain LogRecord#getSourceMethodName() source method name} and
+     * {@linkplain LogRecord#getLoggerName() logger name} will be undefined;
+     * they should be set by the given {@link ErrorHandler}.
+     *
+     * <h4>Limitation</h4>
      * In current implementation this is used only during parallel computation.
      * A future version may need to use it for sequential computations as well for consistency.
      *
@@ -537,7 +550,18 @@ public class TileOpExecutor {
 
         /**
          * The errors that occurred while computing a tile.
-         * Will be ignored if {@linkplain ErrorHandler.Report#isEmpty() empty}.
+         * If this report {@linkplain ErrorHandler.Report#isEmpty() is empty},
+         * then it will be ignored. Otherwise it contains a log record with
+         * {@linkplain LogRecord#getLevel() level},
+         * {@linkplain LogRecord#getMessage() message} and
+         * {@linkplain LogRecord#getThrown() exception} properties set. But the
+         * {@linkplain LogRecord#getSourceClassName() source class name},
+         * {@linkplain LogRecord#getSourceMethodName() source method name} and
+         * {@linkplain LogRecord#getLoggerName() logger name} will be undefined.
+         *
+         * <p>If the report is non-empty, it will be given to the
+         * {@linkplain TileOpExecutor#errorHandler error handler}
+         * after all computation {@linkplain #finish finished}.</p>
          *
          * @see #stopOnError
          * @see #recordError(Worker, Throwable)
@@ -871,7 +895,7 @@ public class TileOpExecutor {
         static <A,R> R execute(final TileOpExecutor executor, final RenderedImage source,
                 final Collector<? super Raster, A, R> collector, final ErrorHandler errorHandler)
         {
-            final Cursor<RenderedImage,A> cursor = executor.new Cursor<>(source, collector, errorHandler == null);
+            final Cursor<RenderedImage,A> cursor = executor.new Cursor<>(source, collector, errorHandler == ErrorHandler.THROW);
             final Future<?>[] workers = new Future<?>[cursor.getNumWorkers()];
             for (int i=0; i<workers.length; i++) {
                 workers[i] = CommonExecutor.instance().submit(new ReadWork<>(cursor, collector));

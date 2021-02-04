@@ -19,6 +19,7 @@ package org.apache.sis.image;
 import java.awt.Point;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.awt.image.ImagingOpException;
@@ -99,13 +100,48 @@ public interface ErrorHandler {
         }
 
         /**
+         * Returns {@code true} if the given exceptions are of the same class, have the same message
+         * and the same stack trace. The cause and the suppressed exceptions are ignored.
+         */
+        private static boolean equals(final Throwable t1, final Throwable t2) {
+            return t1.getClass() == t2.getClass()
+                    && Objects.equals(t1.getMessage(),    t2.getMessage())
+                    &&  Arrays.equals(t1.getStackTrace(), t2.getStackTrace());
+        }
+
+        /**
+         * Adds the {@code more} exception to the list if suppressed exceptions if not already present.
+         */
+        private static void addSuppressed(final Throwable error, final Throwable more) {
+            if (equals(error, more)) return;
+            for (final Throwable s : error.getSuppressed()) {
+                if (equals(s, more)) return;
+            }
+            error.addSuppressed(more);
+        }
+
+        /**
          * Reports an error that occurred while computing an image property.
          * This method can be invoked many times on the same {@code Report} instance.
          *
-         * @param error     the error that occurred.
-         * @param property  name of the property which was computed, or {@code null} if none.
+         * <h4>Logging information</h4>
+         * {@code Report} creates a {@link LogRecord} the first time that an {@code add(…)} method is invoked.
+         * The record will have its
+         * {@linkplain LogRecord#getLevel() level},
+         * {@linkplain LogRecord#getMessage() message} and
+         * {@linkplain LogRecord#getThrown() exception} properties initialized. But the
+         * {@linkplain LogRecord#getSourceClassName() source class name},
+         * {@linkplain LogRecord#getSourceMethodName() source method name} and
+         * {@linkplain LogRecord#getLoggerName() logger name} may be undefined;
+         * they may need to be completed by the caller.
+         *
+         * @param  error     the error that occurred.
+         * @param  property  name of the property which was computed, or {@code null} if none.
+         * @return {@code true} if this is the first time that an error is reported
+         *         (in which case a {@link LogRecord} instance has been created),
+         *         or {@code false} if a {@link LogRecord} already exists.
          */
-        public void addPropertyError(final Throwable error, final String property) {
+        public boolean addPropertyError(final Throwable error, final String property) {
             ArgumentChecks.ensureNonNull("error", error);
             if (description == null) {
                 if (property != null) {
@@ -115,8 +151,10 @@ public interface ErrorHandler {
                     description = new LogRecord(Level.WARNING, error.toString());
                 }
                 description.setThrown(error);
+                return true;
             } else {
-                description.getThrown().addSuppressed(error);
+                addSuppressed(description.getThrown(), error);
+                return false;
             }
         }
 
@@ -124,11 +162,25 @@ public interface ErrorHandler {
          * Reports an error that occurred while computing an image tile.
          * This method can be invoked many times on the same {@code Report} instance.
          *
-         * @param error  the error that occurred.
-         * @param tx     column index of the tile where the error occurred.
-         * @param ty     row index of the tile where the error occurred.
+         * <h4>Logging information</h4>
+         * {@code Report} creates a {@link LogRecord} the first time that an {@code add(…)} method is invoked.
+         * The record will have its
+         * {@linkplain LogRecord#getLevel() level},
+         * {@linkplain LogRecord#getMessage() message} and
+         * {@linkplain LogRecord#getThrown() exception} properties initialized. But the
+         * {@linkplain LogRecord#getSourceClassName() source class name},
+         * {@linkplain LogRecord#getSourceMethodName() source method name} and
+         * {@linkplain LogRecord#getLoggerName() logger name} may be undefined;
+         * they may need to be completed by the caller.
+         *
+         * @param  error  the error that occurred.
+         * @param  tx     column index of the tile where the error occurred.
+         * @param  ty     row index of the tile where the error occurred.
+         * @return {@code true} if this is the first time that an error is reported
+         *         (in which case a {@link LogRecord} instance has been created),
+         *         or {@code false} if a {@link LogRecord} already exists.
          */
-        public void addTileError(final Throwable error, final int tx, final int ty) {
+        public boolean addTileError(final Throwable error, final int tx, final int ty) {
             ArgumentChecks.ensureNonNull("error", error);
             if (indices == null) {
                 indices = new int[8];
@@ -141,8 +193,10 @@ public interface ErrorHandler {
                 description = Resources.forLocale(null)
                         .getLogRecord(Level.WARNING, Resources.Keys.CanNotProcessTile_2, tx, ty);
                 description.setThrown(error);
+                return true;
             } else {
-                description.getThrown().addSuppressed(error);
+                addSuppressed(description.getThrown(), error);
+                return false;
             }
         }
 
@@ -160,14 +214,8 @@ public interface ErrorHandler {
         }
 
         /**
-         * Returns a description of errors as a log record. The exception can be obtained by
-         * {@link LogRecord#getThrown()}. In addition the {@code LogRecord} has the
-         * {@linkplain LogRecord#getLevel() level} and
-         * {@linkplain LogRecord#getMessage() message} properties set. But the
-         * {@linkplain LogRecord#getSourceClassName() source class name},
-         * {@linkplain LogRecord#getSourceMethodName() source method name} and
-         * {@linkplain LogRecord#getLoggerName() logger name} may be undefined;
-         * they should be set by the {@link ErrorHandler}.
+         * Returns a description of errors as a log record.
+         * The exception can be obtained by {@link LogRecord#getThrown()}.
          * The return value is never null unless this report {@linkplain #isEmpty() is empty}.
          *
          * @return errors description, or {@code null} if this report is empty.

@@ -62,6 +62,7 @@ enum ErrorAction implements ErrorHandler {
                 String logger = record.getLoggerName();
                 if (logger == null) {
                     logger = Modules.RASTER;
+                    record.setLoggerName(logger);
                 }
                 Logging.getLogger(logger).log(record);
             } else {
