@@ -494,6 +494,30 @@ public final class ImageUtilities extends Static {
     }
 
     /**
+     * Converts a tile column index to smallest <var>x</var> pixel coordinate inside the tile.
+     * The returned value is a coordinate of the pixel in upper-left corner.
+     *
+     * @param  image  the image containing tiles.
+     * @param  tileX  the tile coordinate for which to get pixel coordinate.
+     * @return smallest <var>x</var> pixel coordinate inside the tile.
+     */
+    public static int tileToPixelX(final RenderedImage image, final int tileX) {
+        return Math.addExact(Math.multiplyExact(tileX, image.getTileWidth()), image.getTileGridXOffset());
+    }
+
+    /**
+     * Converts a tile row index to smallest <var>y</var> pixel coordinate inside the tile.
+     * The returned value is a coordinate of the pixel in upper-left corner.
+     *
+     * @param  image  the image containing tiles.
+     * @param  tileY  the tile coordinate for which to get pixel coordinate.
+     * @return smallest <var>y</var> pixel coordinate inside the tile.
+     */
+    public static int tileToPixelY(final RenderedImage image, final int tileY) {
+        return Math.addExact(Math.multiplyExact(tileY, image.getTileHeight()), image.getTileGridYOffset());
+    }
+
+    /**
      * Suggests the height of a transfer region for a tile of the given size. The given region should be
      * contained inside {@link Raster#getBounds()}. This method modifies {@link Rectangle#height} in-place.
      * The {@link Rectangle#width} value is never modified, so caller can iterate on all raster rows without

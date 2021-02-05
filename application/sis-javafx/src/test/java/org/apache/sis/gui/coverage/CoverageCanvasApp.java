@@ -52,7 +52,7 @@ public class CoverageCanvasApp extends Application implements ChangeListener<Thr
      * Width and height should be different in order to increase the chance to see bugs
      * if some code confuse them.
      */
-    private static final int TILE_WIDTH = 60, TILE_HEIGHT = 50;
+    private static final int TILE_WIDTH = 200, TILE_HEIGHT = 300;
 
 
     /**
@@ -101,9 +101,14 @@ public class CoverageCanvasApp extends Application implements ChangeListener<Thr
      * have artificial errors in order to see the error controls.
      */
     private static GridCoverage2D createImage() {
-        final Random random = new Random();
-        final int width  = TILE_WIDTH  * 15;
-        final int height = TILE_HEIGHT * 12;
+        /*
+         * A few interresting seeds for debugging:
+         * -638852012230008460L, 987724905110811687L,
+         * 4120510106559901474L, 4533692522112080642L, 2518316107261433588L
+         */
+        final Random random = new Random(987724905110811687L);
+        final int width  = TILE_WIDTH  * 4;
+        final int height = TILE_HEIGHT * 2;
         final TiledImageMock image = new TiledImageMock(
                 DataBuffer.TYPE_BYTE, 1,
                 random.nextInt(50) - 25,            // minX
@@ -125,7 +130,7 @@ public class CoverageCanvasApp extends Application implements ChangeListener<Thr
             }
             it.setSample(0, value);
         }
-//      image.failRandomly(random);
+        image.failRandomly(random, false);
         return new GridCoverage2D(new GridGeometry(null, PixelInCell.CELL_CORNER,
                 MathTransforms.identity(2), CommonCRS.Engineering.DISPLAY.crs()), null, image);
     }

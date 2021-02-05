@@ -99,7 +99,7 @@ public final strictfp class GridViewApp extends Application {
                 false);
         image.validate();
         image.initializeAllTiles(0);
-        image.failRandomly(new Random());
+        image.failRandomly(new Random(), true);
         return image;
     }
 }

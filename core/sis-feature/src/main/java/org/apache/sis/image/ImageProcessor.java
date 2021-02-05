@@ -860,16 +860,18 @@ public class ImageProcessor implements Cloneable {
      * Computes immediately all tiles in the given region of interest, then return an image will those tiles ready.
      * Computations will use many threads if {@linkplain #getExecutionMode() execution mode} is parallel.
      *
-     * <div class="note"><b>Note:</b>
-     * current implementation ignores the {@linkplain #getErrorHandler() error handler} because we do not yet
-     * have a mechanism for specifying which tile to produce in replacement of tiles that can not be computed.
-     * This behavior may be changed in a future version.</div>
-     *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
      *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
+     *   <li>{@linkplain #getErrorHandler() Error handler} (whether to fail if an exception is thrown).</li>
      * </ul>
+     *
+     * <h4>Limitation</h4>
+     * Current implementation ignores the {@linkplain #getErrorHandler() error handler} in sequential execution
+     * (i.e. error handler is used only during parallel execution). In addition, there is not yet a mechanism
+     * for specifying which tile to produce in replacement of tiles that can not be computed.
+     * Those limitations may be addressed in a future version.
      *
      * @param  source          the image to compute immediately (may be {@code null}).
      * @param  areaOfInterest  pixel coordinates of the region to prefetch, or {@code null} for the whole image.
@@ -885,10 +887,12 @@ public class ImageProcessor implements Cloneable {
             source = ((PrefetchedImage) source).source;
         }
         final boolean parallel;
+        final ErrorHandler errorListener;
         synchronized (this) {
             parallel = parallel(source);
+            errorListener = errorHandler;
         }
-        final PrefetchedImage image = new PrefetchedImage(source, areaOfInterest, parallel);
+        final PrefetchedImage image = new PrefetchedImage(source, areaOfInterest, errorListener, parallel);
         return image.isEmpty() ? source : image;
     }
 

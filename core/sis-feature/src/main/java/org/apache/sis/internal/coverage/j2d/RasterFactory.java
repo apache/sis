@@ -137,8 +137,8 @@ public final class RasterFactory extends Static {
         final int dataType = buffer.getDataType();
         /*
          * This SampleModel variable is a workaround for WritableRaster static methods not supporting all data types.
-         * If 'dataType' is unsupported, then we create a SampleModel ourselves in the 'switch' statements below and
-         * use it for creating a WritableRaster at the end of this method. This variable, together with the 'switch'
+         * If `dataType` is unsupported, then we create a SampleModel ourselves in the `switch` statements below and
+         * use it for creating a WritableRaster at the end of this method. This variable, together with the `switch`
          * statements, may be removed in a future SIS version if all types become supported by the JDK.
          */
         @Workaround(library = "JDK", version = "10")
@@ -152,7 +152,7 @@ public final class RasterFactory extends Static {
             switch (dataType) {
                 case DataBuffer.TYPE_BYTE:
                 case DataBuffer.TYPE_USHORT: {
-                    // 'scanlineStride' and 'pixelStride' really interchanged in that method signature.
+                    // `scanlineStride` and `pixelStride` really interchanged in that method signature.
                     return WritableRaster.createInterleavedRaster(buffer, width, height, scanlineStride, pixelStride, bandOffsets, location);
                 }
                 case DataBuffer.TYPE_INT: {

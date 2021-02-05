@@ -115,7 +115,7 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
         final ImageProcessor operations = new ImageProcessor();
         operations.setExecutionMode(ImageProcessor.Mode.PARALLEL);
         final TiledImageMock image = createImage();
-        image.failRandomly(new Random(-8739538736973900203L));
+        image.failRandomly(new Random(-8739538736973900203L), true);
         try {
             operations.valueOfStatistics(image, null);
             fail("Expected ImagingOpException.");
@@ -136,7 +136,7 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
         operations.setExecutionMode(ImageProcessor.Mode.PARALLEL);
         operations.setErrorHandler(ErrorHandler.LOG);
         final TiledImageMock image = createImage();
-        image.failRandomly(new Random(8004277484984714811L));
+        image.failRandomly(new Random(8004277484984714811L), true);
         final Statistics[] stats = operations.valueOfStatistics(image, null);
         for (final Statistics a : stats) {
             assertTrue(a.count() > 0);
