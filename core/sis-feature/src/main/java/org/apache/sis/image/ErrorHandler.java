@@ -18,13 +18,12 @@ package org.apache.sis.image;
 
 import java.awt.Point;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.feature.Resources;
 
 
@@ -45,7 +44,7 @@ public interface ErrorHandler {
     ErrorHandler THROW = ErrorAction.THROW;
 
     /**
-     * Exceptions are wrapped in a {@link LogRecord} and logged at {@link java.util.logging.Level#WARNING}.
+     * Exceptions are wrapped in a {@link LogRecord} and logged, usually at {@link Level#WARNING}.
      * Only one log record is created for all tiles that failed for the same operation on the same image.
      * A partial result may be available.
      *
@@ -58,13 +57,25 @@ public interface ErrorHandler {
      * Invoked after errors occurred in one or many tiles. This method may be invoked an arbitrary
      * time after the error occurred, and may aggregate errors that occurred in more than one tile.
      *
-     * @param  details  information about errors.
+     * <h4>Multi-threading</h4>
+     * If the image processing was splitted between many worker threads, this method may be invoked
+     * from any of those threads. However the invocation should happen after all threads terminated,
+     * either successfully or with an error reported in {@code details}.
+     *
+     * @param  details  information about the first error. If more than one error occurred, the other
+     *         errors are reported as {@linkplain Throwable#getSuppressed() suppressed exceptions}.
      */
     void handle(Report details);
 
     /**
      * Information about errors that occurred while reading or writing tiles in an image.
      * A single {@code Report} may be generated for failures in more than one tiles.
+     *
+     * <h2>Multi-threading</h2>
+     * This class is safe for use in multi-threading. The synchronization lock is {@code this}.
+     * However the {@link LogRecord} instance returned by {@link #getDescription()} is not thread-safe.
+     * Operations applied on the {@code LogRecord} should be inside a block synchronized on the
+     * {@code Report.this} lock.
      */
     class Report {
         /**
@@ -84,18 +95,18 @@ public interface ErrorHandler {
 
         /**
          * Creates an initially empty report.
-         * Error reports can be added by calls to {@code add(Throwable, …)} methods.
+         * Error reports can be added by calls to {@link #add add(…)}.
          */
         public Report() {
         }
 
         /**
          * Returns {@code true} if no error has been reported.
-         * This is true only if no {@code add(Throwable, …)} method had been invoked.
+         * This is true only if the {@link #add add(…)} method has never been invoked.
          *
          * @return whether this report is empty.
          */
-        public boolean isEmpty() {
+        public synchronized boolean isEmpty() {
             return length == 0 && description == null;
         }
 
@@ -104,7 +115,8 @@ public interface ErrorHandler {
          * and the same stack trace. The cause and the suppressed exceptions are ignored.
          */
         private static boolean equals(final Throwable t1, final Throwable t2) {
-            return t1.getClass() == t2.getClass()
+            if (t1 == t2) return true;
+            return t1 != null && t2 != null && t1.getClass() == t2.getClass()
                     && Objects.equals(t1.getMessage(),    t2.getMessage())
                     &&  Arrays.equals(t1.getStackTrace(), t2.getStackTrace());
         }
@@ -113,7 +125,9 @@ public interface ErrorHandler {
          * Adds the {@code more} exception to the list if suppressed exceptions if not already present.
          */
         private static void addSuppressed(final Throwable error, final Throwable more) {
-            if (equals(error, more)) return;
+            if (equals(error, more) || equals(error.getCause(), more)) {
+                return;
+            }
             for (final Throwable s : error.getSuppressed()) {
                 if (equals(s, more)) return;
             }
@@ -121,77 +135,50 @@ public interface ErrorHandler {
         }
 
         /**
-         * Reports an error that occurred while computing an image property.
-         * This method can be invoked many times on the same {@code Report} instance.
-         *
-         * <h4>Logging information</h4>
-         * {@code Report} creates a {@link LogRecord} the first time that an {@code add(…)} method is invoked.
-         * The record will have its
-         * {@linkplain LogRecord#getLevel() level},
-         * {@linkplain LogRecord#getMessage() message} and
-         * {@linkplain LogRecord#getThrown() exception} properties initialized. But the
-         * {@linkplain LogRecord#getSourceClassName() source class name},
-         * {@linkplain LogRecord#getSourceMethodName() source method name} and
-         * {@linkplain LogRecord#getLoggerName() logger name} may be undefined;
-         * they may need to be completed by the caller.
-         *
-         * @param  error     the error that occurred.
-         * @param  property  name of the property which was computed, or {@code null} if none.
-         * @return {@code true} if this is the first time that an error is reported
-         *         (in which case a {@link LogRecord} instance has been created),
-         *         or {@code false} if a {@link LogRecord} already exists.
-         */
-        public boolean addPropertyError(final Throwable error, final String property) {
-            ArgumentChecks.ensureNonNull("error", error);
-            if (description == null) {
-                if (property != null) {
-                    description = Errors.getResources((Locale) null)
-                            .getLogRecord(Level.WARNING, Errors.Keys.CanNotCompute_1, property);
-                } else {
-                    description = new LogRecord(Level.WARNING, error.toString());
-                }
-                description.setThrown(error);
-                return true;
-            } else {
-                addSuppressed(description.getThrown(), error);
-                return false;
-            }
-        }
-
-        /**
          * Reports an error that occurred while computing an image tile.
          * This method can be invoked many times on the same {@code Report} instance.
          *
          * <h4>Logging information</h4>
-         * {@code Report} creates a {@link LogRecord} the first time that an {@code add(…)} method is invoked.
-         * The record will have its
+         * {@code Report} creates a {@link LogRecord} the first time that this {@code add(…)} method is invoked.
+         * The log record is created using the given supplier if non-null. That supplier should set the log
          * {@linkplain LogRecord#getLevel() level},
-         * {@linkplain LogRecord#getMessage() message} and
-         * {@linkplain LogRecord#getThrown() exception} properties initialized. But the
+         * {@linkplain LogRecord#getMessage() message},
          * {@linkplain LogRecord#getSourceClassName() source class name},
          * {@linkplain LogRecord#getSourceMethodName() source method name} and
-         * {@linkplain LogRecord#getLoggerName() logger name} may be undefined;
-         * they may need to be completed by the caller.
+         * {@linkplain LogRecord#getLoggerName() logger name}.
+         * The {@linkplain LogRecord#getThrown() exception} property will be set by this method.
          *
-         * @param  error  the error that occurred.
-         * @param  tx     column index of the tile where the error occurred.
-         * @param  ty     row index of the tile where the error occurred.
+         * @param  tile    column (x) and row (y) indices of the tile where the error occurred, or {@code null} if unknown.
+         * @param  error   the error that occurred.
+         * @param  record  the record supplier, invoked only when this method is invoked for the first time.
+         *                 If {@code null}, a default {@link LogRecord} will be created.
          * @return {@code true} if this is the first time that an error is reported
          *         (in which case a {@link LogRecord} instance has been created),
          *         or {@code false} if a {@link LogRecord} already exists.
          */
-        public boolean addTileError(final Throwable error, final int tx, final int ty) {
+        public synchronized boolean add(final Point tile, final Throwable error, final Supplier<LogRecord> record) {
             ArgumentChecks.ensureNonNull("error", error);
-            if (indices == null) {
-                indices = new int[8];
-            } else if (length >= indices.length) {
-                indices = Arrays.copyOf(indices, indices.length * 2);
+            if (tile != null) {
+                if (indices == null) {
+                    indices = new int[8];
+                } else if (length >= indices.length) {
+                    indices = Arrays.copyOf(indices, indices.length * 2);
+                }
+                indices[length++] = tile.x;
+                indices[length++] = tile.y;
             }
-            indices[length++] = tx;
-            indices[length++] = ty;
             if (description == null) {
-                description = Resources.forLocale(null)
-                        .getLogRecord(Level.WARNING, Resources.Keys.CanNotProcessTile_2, tx, ty);
+                if (record != null) {
+                    description = record.get();
+                }
+                if (description == null) {
+                    if (tile != null) {
+                        description = Resources.forLocale(null)
+                                .getLogRecord(Level.WARNING, Resources.Keys.CanNotProcessTile_2, tile.x, tile.y);
+                    } else {
+                        description = new LogRecord(Level.WARNING, error.toString());
+                    }
+                }
                 description.setThrown(error);
                 return true;
             } else {
@@ -205,7 +192,7 @@ public interface ErrorHandler {
          *
          * @return indices of all tiles in error, or an empty array if none.
          */
-        public Point[] getTileIndices() {
+        public synchronized Point[] getTileIndices() {
             final Point[] p = new Point[length >>> 1];
             for (int i=0; i<length;) {
                 p[i >>> 1] = new Point(indices[i++], indices[i++]);
@@ -214,13 +201,15 @@ public interface ErrorHandler {
         }
 
         /**
-         * Returns a description of errors as a log record.
+         * Returns a description of the first error as a log record.
          * The exception can be obtained by {@link LogRecord#getThrown()}.
+         * If more than one error occurred, the other errors are reported
+         * as {@linkplain Throwable#getSuppressed() suppressed exceptions}.
          * The return value is never null unless this report {@linkplain #isEmpty() is empty}.
          *
          * @return errors description, or {@code null} if this report is empty.
          */
-        public LogRecord getDescription() {
+        public synchronized LogRecord getDescription() {
             return description;
         }
     }

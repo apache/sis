@@ -56,24 +56,26 @@ enum ErrorAction implements ErrorHandler {
      */
     @Override
     public void handle(final Report details) {
-        final LogRecord record = details.getDescription();
-        if (record != null) {
-            if (this == LOG) {
-                String logger = record.getLoggerName();
-                if (logger == null) {
-                    logger = Modules.RASTER;
-                    record.setLoggerName(logger);
-                }
-                Logging.getLogger(logger).log(record);
-            } else {
-                final Throwable ex = record.getThrown();
-                if (ex instanceof Error) {
-                    throw (Error) ex;
-                } else if (ex instanceof ImagingOpException) {
-                    throw (ImagingOpException) ex;
+        synchronized (details) {
+            final LogRecord record = details.getDescription();
+            if (record != null) {
+                if (this == LOG) {
+                    String logger = record.getLoggerName();
+                    if (logger == null) {
+                        logger = Modules.RASTER;
+                        record.setLoggerName(logger);
+                    }
+                    Logging.getLogger(logger).log(record);
                 } else {
-                    final String message = new SimpleFormatter().formatMessage(record);
-                    throw (ImagingOpException) new ImagingOpException(message).initCause(ex);
+                    final Throwable ex = record.getThrown();
+                    if (ex instanceof Error) {
+                        throw (Error) ex;
+                    } else if (ex instanceof ImagingOpException) {
+                        throw (ImagingOpException) ex;
+                    } else {
+                        final String message = new SimpleFormatter().formatMessage(record);
+                        throw (ImagingOpException) new ImagingOpException(message).initCause(ex);
+                    }
                 }
             }
         }

@@ -1048,8 +1048,11 @@ public abstract class MapCanvas extends PlanarCanvas {
         yPanStart = p.getY();
         changeInProgress.setToIdentity();
         transform.setToTransform(transformOnNewImage);
-        error.set(task.getException());
         isRendering.set(false);
+        final Throwable ex = task.getException();
+        if (ex != null) {
+            errorOccurred(ex);
+        }
     }
 
     /**
@@ -1167,7 +1170,12 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @param  ex  the exception that occurred (can not be null).
      */
     protected void errorOccurred(final Throwable ex) {
-        error.set(Objects.requireNonNull(ex));
+        final Throwable current = error.get();
+        if (current != null) {
+            current.addSuppressed(ex);
+        } else {
+            error.set(Objects.requireNonNull(ex));
+        }
     }
 
     /**

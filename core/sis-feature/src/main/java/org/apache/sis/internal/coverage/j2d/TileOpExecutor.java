@@ -23,6 +23,7 @@ import java.util.function.BinaryOperator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -80,13 +81,13 @@ public class TileOpExecutor {
     private final int minTileX, minTileY, maxTileX, maxTileY;
 
     /**
-     * Where to report exceptions, or {@link ErrorHandler#THROW} for throwing them.
+     * Where to report exceptions, or {@link TileErrorHandler#THROW} for throwing them.
      * If at least one error occurred, then this handler will receive the {@link Cursor#errors} report
      * after all computation {@linkplain Cursor#finish finished}.
      *
-     * @see #setErrorHandler(ErrorHandler)
+     * @see #setErrorHandler(ErrorHandler, Class, String)
      */
-    private ErrorHandler errorHandler;
+    private TileErrorHandler errorHandler;
 
     /**
      * Creates a new operation for tiles in the specified region of the specified image.
@@ -98,7 +99,7 @@ public class TileOpExecutor {
      * @throws ArithmeticException if some tile indices are too large.
      */
     public TileOpExecutor(final RenderedImage image, final Rectangle aoi) {
-        errorHandler = ErrorHandler.THROW;
+        errorHandler = TileErrorHandler.THROW;
         if (aoi != null) {
             final int  tileWidth       = image.getTileWidth();
             final int  tileHeight      = image.getTileHeight();
@@ -120,23 +121,22 @@ public class TileOpExecutor {
      * Sets the handler where to report exceptions.
      * The exception can be obtained by {@link LogRecord#getThrown()}
      * on the value returned by {@link ErrorHandler.Report#getDescription()}.
-     * In addition the {@code LogRecord} will have the
-     * {@linkplain LogRecord#getLevel() level} and
-     * {@linkplain LogRecord#getMessage() message} properties set. But the
-     * {@linkplain LogRecord#getSourceClassName() source class name},
-     * {@linkplain LogRecord#getSourceMethodName() source method name} and
-     * {@linkplain LogRecord#getLoggerName() logger name} will be undefined;
-     * they should be set by the given {@link ErrorHandler}.
      *
      * <h4>Limitation</h4>
      * In current implementation this is used only during parallel computation.
      * A future version may need to use it for sequential computations as well for consistency.
      *
-     * @param  errorHandler  where to report exceptions, or {@link ErrorHandler#THROW} for throwing them.
+     * @param  handler       where to report exceptions, or {@link ErrorHandler#THROW} for throwing them.
+     * @param  sourceClass   class to declare in {@link LogRecord}, or {@code null} if none.
+     * @param  sourceMethod  method to declare in {@link LogRecord}, or {@code null} if none.
      */
-    public final void setErrorHandler(final ErrorHandler errorHandler) {
-        ArgumentChecks.ensureNonNull("errorHandler", errorHandler);
-        this.errorHandler = errorHandler;
+    public final void setErrorHandler(final ErrorHandler handler, final Class<?> sourceClass, final String sourceMethod) {
+        ArgumentChecks.ensureNonNull("handler", handler);
+        if (handler == ErrorHandler.THROW) {
+            errorHandler = TileErrorHandler.THROW;
+        } else {
+            errorHandler = new TileErrorHandler(handler, sourceClass, sourceMethod);
+        }
     }
 
     /**
@@ -388,36 +388,34 @@ public class TileOpExecutor {
      * </ul>
      *
      * <h4>Errors management</h4>
-     * If an error occurred during the processing of a tile, then there is a choice:
+     * If an error occurred during the processing of a tile, then there is a choice depending on the value given
+     * to {@link #setErrorHandler setErrorHandler(…)}:
      *
      * <ul class="verbose">
      *   <li>
-     *     If the {@code errorHandler} is {@code THROW}, then all threads will finish the tiles they were
-     *     processing at the time the error occurred, but will not take any other tile (i.e. remaining tiles
-     *     will be left unprocessed). The exception that occurred is wrapped in an {@link ImagingOpException}
-     *     and thrown.
+     *     If {@link ErrorHandler#THROW}, then all threads will finish the tiles they were processing at the time
+     *     the error occurred, but will not take any other tile (i.e. remaining tiles will be left unprocessed).
+     *     The exception that occurred is wrapped in an {@link ImagingOpException} and thrown.
      *   </li><li>
-     *     If the {@code errorHandler} is {@code LOG}, then the exception is wrapped in a {@link LogRecord} and
-     *     the processing continues with other tiles. If more exceptions happen, those subsequent exceptions
-     *     will be added to the first one by {@link Exception#addSuppressed(Throwable)}.
+     *     If {@link ErrorHandler#LOG}, then the exception is wrapped in a {@link LogRecord} and the processing
+     *     continues with other tiles. If more exceptions happen, those subsequent exceptions will be added to
+     *     the first one with {@link Exception#addSuppressed(Throwable)}.
      *     After all tiles have been processed, the error handler will be invoked with that {@link LogRecord}.
-     *     That {@code LogRecord} has the level, message and exception properties set, but not the source class name,
-     *     source method name or logger name. The error handler should set those properties itself.
      *   </li>
      * </ul>
      *
      * <h4>Concurrency requirements</h4>
      * The {@link RenderedImage#getTile(int, int)} implementation of the given image must support concurrency.
      *
-     * @param  <A>           the type of the thread-local object to be given to each thread.
-     * @param  <R>           the type of the final result. This is often the same as <var>A</var>.
-     * @param  source        the image to read. This is usually the image specified at construction time,
-     *                       but other images are okay if they share the same pixel and tile coordinate systems.
-     * @param  collector     the action to execute on each {@link Raster}, together with supplier and combiner
-     *                       of thread-local objects of type <var>A</var>. See above javadoc for more information.
+     * @param  <A>        the type of the thread-local object to be given to each thread.
+     * @param  <R>        the type of the final result. This is often the same as <var>A</var>.
+     * @param  source     the image to read. This is usually the image specified at construction time,
+     *                    but other images are okay if they share the same pixel and tile coordinate systems.
+     * @param  collector  the action to execute on each {@link Raster}, together with supplier and combiner
+     *                    of thread-local objects of type <var>A</var>. See above javadoc for more information.
      * @return the final result computed by finisher (may be {@code null}).
      * @throws ImagingOpException if an exception occurred during {@link RenderedImage#getTile(int, int)}
-     *         or {@link #readFrom(Raster)} execution, and {@code errorHandler} is {@code null}.
+     *         or {@link #readFrom(Raster)} execution, and the error handler is {@link ErrorHandler#THROW}.
      * @throws RuntimeException if an exception occurred elsewhere (for example in the combiner or finisher).
      */
     public final <A,R> R executeOnReadable(final RenderedImage source,
@@ -460,13 +458,11 @@ public class TileOpExecutor {
      * If an error occurred during the processing of a tile, the exception is remembered and the processing
      * continues with other tiles. If more exceptions happen, those subsequent exceptions will be added to
      * the first one by {@link Exception#addSuppressed(Throwable)}. After all tiles have been processed,
-     * there is a choice:
+     * there is a choice depending on the value given to {@link #setErrorHandler setErrorHandler(…)}:
      *
      * <ul>
-     *   <li>If the {@code errorHandler} is {@code THROW}, the exception is wrapped in an {@link ImagingOpException} and thrown.</li>
-     *   <li>If the {@code errorHandler} is {@code LOG}, the exception is wrapped in a {@link LogRecord} and given to the handler.
-     *       That {@code LogRecord} has the level, message and exception properties set, but not the source class name,
-     *       source method name or logger name. The error handler should set those properties itself.</li>
+     *   <li>If {@link ErrorHandler#THROW}, the exception is wrapped in an {@link ImagingOpException} and thrown.</li>
+     *   <li>If {@link ErrorHandler#LOG}, the exception is wrapped in a {@link LogRecord} and given to the handler.</li>
      * </ul>
      *
      * <h4>Concurrency requirements</h4>
@@ -474,17 +470,17 @@ public class TileOpExecutor {
      * {@link WritableRenderedImage#releaseWritableTile(int, int)} implementations
      * of the given image must support concurrency.
      *
-     * @param  <A>           the type of the thread-local object to be given to each thread.
-     * @param  <R>           the type of the final result. This is often the same as <var>A</var>.
-     * @param  target        the image where to write. This is usually the image specified at construction time,
-     *                       but other images are okay if they share the same pixel and tile coordinate systems.
-     * @param  collector     the action to execute on each {@link WritableRaster}, together with supplier and combiner
-     *                       of thread-local objects of type <var>A</var>. See above javadoc for more information.
+     * @param  <A>        the type of the thread-local object to be given to each thread.
+     * @param  <R>        the type of the final result. This is often the same as <var>A</var>.
+     * @param  target     the image where to write. This is usually the image specified at construction time,
+     *                    but other images are okay if they share the same pixel and tile coordinate systems.
+     * @param  collector  the action to execute on each {@link WritableRaster}, together with supplier and combiner
+     *                    of thread-local objects of type <var>A</var>. See above javadoc for more information.
      * @return the final result computed by finisher. This is often {@code null} because the purpose of calling
      *         {@code executeOnWritable(…)} is more often to update existing tiles instead than to compute a value.
      * @throws ImagingOpException if an exception occurred during {@link WritableRenderedImage#getWritableTile(int, int)},
      *         {@link #writeTo(WritableRaster)} or {@link WritableRenderedImage#releaseWritableTile(int, int)} execution,
-     *         and {@code errorHandler} is {@code null}.
+     *         and the error handler is {@link ErrorHandler#THROW}.
      * @throws RuntimeException if an exception occurred elsewhere (for example in the combiner or finisher).
      */
     public final <A,R> R executeOnWritable(final WritableRenderedImage target,
@@ -564,7 +560,7 @@ public class TileOpExecutor {
          * after all computation {@linkplain #finish finished}.</p>
          *
          * @see #stopOnError
-         * @see #recordError(Worker, Throwable)
+         * @see #recordError(Point, Throwable)
          */
         private final ErrorHandler.Report errors;
 
@@ -573,7 +569,7 @@ public class TileOpExecutor {
          * If {@code false}, processing of all tiles will be completed before the error is reported.
          *
          * @see #errors
-         * @see #recordError(Worker, Throwable)
+         * @see #recordError(Point, Throwable)
          */
         private final boolean stopOnError;
 
@@ -644,13 +640,13 @@ public class TileOpExecutor {
          * @param  workers       handlers of all worker threads other than the current threads.
          *                       Content of this array may be modified by this method.
          * @param  collector     provides the finisher to use for computing final result of type <var>R</var>.
-         * @param  errorHandler  where to report exceptions, or {@link ErrorHandler#THROW} for throwing them.
+         * @param  errorHandler  where to report exceptions, or {@link TileErrorHandler#THROW} for throwing them.
          * @return the final result computed by finisher (may be {@code null}).
          * @throws ImagingOpException if an exception occurred during {@link Worker#executeOnCurrentTile()}
-         *         and the {@code errorHandler} is {@code null}.
+         *         and the {@code errorHandler} is {@code THROW}.
          * @throws RuntimeException if an exception occurred elsewhere (for example in the combiner or finisher).
          */
-        final <R> R finish(final Future<?>[] workers, final Collector<?,A,R> collector, final ErrorHandler errorHandler) {
+        final <R> R finish(final Future<?>[] workers, final Collector<?,A,R> collector, final TileErrorHandler errorHandler) {
             /*
              * Before to wait for other threads to complete their work, we need to remove from executor queue all
              * workers that did not yet started their run. Those threads may be waiting for an executor thread to
@@ -676,9 +672,7 @@ public class TileOpExecutor {
                  * If someone does not want to let us wait, do not wait for other worker threads neither.
                  * We will report that interruption as an error.
                  */
-                synchronized (this) {
-                    errors.addPropertyError(ex, null);
-                }
+                recordError(null, ex);
                 break;
             }
             /*
@@ -689,28 +683,32 @@ public class TileOpExecutor {
             final R result;
             synchronized (this) {
                 result = collector.finisher().apply(accumulator);
-                if (!errors.isEmpty()) {
-                    errorHandler.handle(errors);
-                }
             }
+            /*
+             * If error(s) occurred, report them now. In the default configuration (`TileErrorHandler.THROW`),
+             * the exception is thrown.
+             */
+            errorHandler.publish(errors);
             return result;
         }
 
         /**
          * Stores the given exception in a log record. We use a log record in order to initialize
          * the timestamp and thread ID to the values they had at the time the first error occurred.
+         * The error is not notified immediately to the {@link ErrorHandler}; we wait for other errors
+         * in order to aggregate them in a single record. So the given error is <em>recorded</em>
+         * but not yet <em>reported</em>.
          *
-         * @param  indices  the worker thread where the exception occurred. Its {@link Worker#tx}
-         *                  and {@link Worker#ty} indices should identify the problematic tile.
-         * @param  ex       the exception that occurred.
+         * @param  tile  indices of the tile where an error occurred, or {@code null} if unknown.
+         * @param  ex    the exception that occurred.
+         *
+         * @see TileOpExecutor#setErrorHandler(ErrorHandler, Class, String)
          */
-        final void recordError(final Worker<RI,?,A> indices, final Throwable ex) {
+        final void recordError(final Point tile, final Throwable ex) {
             if (stopOnError) {
                 set(Integer.MIN_VALUE);         // Will cause other threads to stop fetching tiles.
             }
-            synchronized (this) {
-                errors.addTileError(ex, indices.tx, indices.ty);
-            }
+            errors.add(tile, ex, null);
         }
 
         /**
@@ -798,7 +796,7 @@ public class TileOpExecutor {
             while (cursor.next(this)) try {
                 executeOnCurrentTile();
             } catch (Exception ex) {
-                cursor.recordError(this, trimImagingWrapper(ex));
+                cursor.recordError(new Point(tx, ty), trimImagingWrapper(ex));
             }
             cursor.accumulate(accumulator);
         }
@@ -893,9 +891,9 @@ public class TileOpExecutor {
          * See the Javadoc of that method for details.
          */
         static <A,R> R execute(final TileOpExecutor executor, final RenderedImage source,
-                final Collector<? super Raster, A, R> collector, final ErrorHandler errorHandler)
+                final Collector<? super Raster, A, R> collector, final TileErrorHandler errorHandler)
         {
-            final Cursor<RenderedImage,A> cursor = executor.new Cursor<>(source, collector, errorHandler == ErrorHandler.THROW);
+            final Cursor<RenderedImage,A> cursor = executor.new Cursor<>(source, collector, errorHandler.isThrow());
             final Future<?>[] workers = new Future<?>[cursor.getNumWorkers()];
             for (int i=0; i<workers.length; i++) {
                 workers[i] = CommonExecutor.instance().submit(new ReadWork<>(cursor, collector));
@@ -950,7 +948,7 @@ public class TileOpExecutor {
          * See the Javadoc of that method for details.
          */
         static <A,R> R execute(final TileOpExecutor executor, final WritableRenderedImage target,
-                final Collector<? super WritableRaster,A,R> collector, final ErrorHandler errorHandler)
+                final Collector<? super WritableRaster,A,R> collector, final TileErrorHandler errorHandler)
         {
             final Cursor<WritableRenderedImage,A> cursor = executor.new Cursor<>(target, collector, false);
             final Future<?>[] workers = new Future<?>[cursor.getNumWorkers()];

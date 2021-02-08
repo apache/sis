@@ -16,8 +16,10 @@
  */
 package org.apache.sis.image;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.stream.Collector;
 import java.awt.Image;
@@ -29,7 +31,6 @@ import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Cache;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.util.Strings;
@@ -336,23 +337,21 @@ abstract class AnnotatedImage extends ImageAdapter {
                         if (value == null) value = NULL;
                         success = (errors == null);
                     } catch (Exception e) {
-                        /*
-                         * Stores the given exception in a log record. We use a log record in order to initialize
-                         * the timestamp and thread ID to the values they had at the time the first error occurred.
-                         */
                         if (failOnException) {
                             throw (ImagingOpException) new ImagingOpException(
                                     Errors.format(Errors.Keys.CanNotCompute_1, property)).initCause(e);
                         }
-                        synchronized (this) {
-                            ErrorHandler.Report report = errors;
-                            final boolean create = (report == null);
-                            if (create) {
-                                report = new ErrorHandler.Report();
-                            }
-                            report.addPropertyError(e, property);
-                            if (create) setError(report);
+                        /*
+                         * Stores the exception in a log record. We use a log record in order to initialize
+                         * the timestamp and thread ID to the values they had at the time the error occurred.
+                         * We do not synchronize because all worker threads should have finished now.
+                         */
+                        ErrorHandler.Report report = errors;
+                        if (report == null) {
+                            errors = report = new ErrorHandler.Report();
                         }
+                        report.add(null, e, () -> Errors.getResources((Locale) null)
+                                .getLogRecord(Level.WARNING, Errors.Keys.CanNotCompute_1, property));
                     }
                 } finally {
                     handler.putAndUnlock(success ? value : null);       // Cache only if no error occurred.
@@ -366,26 +365,6 @@ abstract class AnnotatedImage extends ImageAdapter {
             value = source.getProperty(name);
         }
         return value;
-    }
-
-    /**
-     * Invoked by {@link TileOpExecutor} if an error occurred during calculation on a tiles.
-     * Can also be invoked by {@link #getProperty(String)} directly if the error occurred
-     * outside {@link TileOpExecutor}. This method should be invoked at most once, unless
-     * the calculation is attempted again.
-     *
-     * @param  report  a description of the error that occurred.
-     */
-    private void setError(final ErrorHandler.Report report) {
-        /*
-         * Complete record with source identification as if the error occurred from
-         * above `getProperty(String)` method (this is always the case, indirectly).
-         */
-        final LogRecord record = report.getDescription();
-        record.setSourceClassName(AnnotatedImage.class.getCanonicalName());
-        record.setSourceMethodName("getProperty");
-        record.setLoggerName(Modules.RASTER);
-        errors = report;
     }
 
     /**
@@ -404,18 +383,16 @@ abstract class AnnotatedImage extends ImageAdapter {
      * @param  handler  where to send the log message.
      */
     final void logAndClearError(final Class<?> classe, final String method, final ErrorHandler handler) {
-        final ErrorHandler.Report report;
-        synchronized (this) {
-            report = errors;
-            if (report == null || report.isEmpty()) {
-                return;
+        final ErrorHandler.Report report = errors;
+        if (report != null) {
+            synchronized (report) {
+                final LogRecord record = report.getDescription();
+                record.setSourceClassName(classe.getCanonicalName());
+                record.setSourceMethodName(method);
+                errors = null;
             }
-            final LogRecord record = report.getDescription();
-            record.setSourceClassName(classe.getCanonicalName());
-            record.setSourceMethodName(method);
-            errors = null;          // Make sure that no other thread will use that `Report` instance.
+            handler.handle(report);
         }
-        handler.handle(report);
     }
 
     /**
@@ -442,7 +419,7 @@ abstract class AnnotatedImage extends ImageAdapter {
                 final Collector<? super Raster,?,?> collector = collector();
                 if (collector != null) {
                     if (!failOnException) {
-                        executor.setErrorHandler(this::setError);
+                        executor.setErrorHandler((e) -> errors = e, AnnotatedImage.class, "getProperty");
                     }
                     return executor.executeOnReadable(source, collector());
                 }

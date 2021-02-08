@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Future;
 import java.util.function.Function;
+import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -55,21 +56,23 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.ImageRenderer;
-import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.PlanarImage;
+import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.portrayal.RenderException;
+import org.apache.sis.internal.coverage.j2d.TileErrorHandler;
 import org.apache.sis.internal.processing.image.Isolines;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.system.Modules;
@@ -525,7 +528,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      *   <li>Paint the image.</li>
      * </ol>
      */
-    private static final class Worker extends Renderer {
+    private static final class Worker extends Renderer implements ErrorHandler {
         /**
          * Value of {@link CoverageCanvas#data} at the time this worker has been initialized.
          */
@@ -606,6 +609,11 @@ public class CoverageCanvas extends MapCanvasAWT {
          * Snapshot of information required for rendering isolines, or {@code null} if none.
          */
         private IsolineRenderer.Snapshot[] isolines;
+
+        /**
+         * If errors occurred during tile computations, details about the error. Otherwise {@code null}.
+         */
+        private LogRecord errorReport;
 
         /**
          * Creates a new renderer. Shall be invoked in JavaFX thread.
@@ -721,7 +729,13 @@ public class CoverageCanvas extends MapCanvasAWT {
         @Override
         protected void paint(final Graphics2D gr) {
             gr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-            gr.drawRenderedImage(prefetchedImage, resampledToDisplay);
+            if (prefetchedImage instanceof TileErrorHandler.Executor) {
+                ((TileErrorHandler.Executor) prefetchedImage).execute(
+                        () -> gr.drawRenderedImage(prefetchedImage, resampledToDisplay),
+                        new TileErrorHandler(this, CoverageCanvas.class, "paint"));
+            } else {
+                gr.drawRenderedImage(prefetchedImage, resampledToDisplay);
+            }
             if (isolines != null) {
                 final AffineTransform at = gr.getTransform();
                 final Stroke st = gr.getStroke();
@@ -734,6 +748,16 @@ public class CoverageCanvas extends MapCanvasAWT {
                 gr.setTransform(at);
                 gr.setStroke(st);
             }
+        }
+
+        /**
+         * Invoked if an error occurred during a call to {@link RenderedImage#getTile(int, int)}.
+         * This method stores information about the error and let the rendering process continue
+         * with a tile placeholder (by default a cross (X) in a box).
+         */
+        @Override
+        public void handle(final Report details) {
+            errorReport = details.getDescription();
         }
 
         /**
@@ -795,6 +819,13 @@ public class CoverageCanvas extends MapCanvasAWT {
                 }
             }
             statusBar.setLowestAccuracy(accuracy);
+        }
+        /*
+         * If error(s) occurred during calls to `RenderedImage.getTile(tx, ty)`, reports those errors.
+         */
+        final LogRecord errorReport = worker.errorReport;
+        if (errorReport != null) {
+            errorOccurred(errorReport.getThrown());
         }
     }
 
