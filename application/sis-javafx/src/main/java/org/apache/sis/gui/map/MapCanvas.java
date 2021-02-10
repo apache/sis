@@ -249,15 +249,8 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * The {@link #transform} values at the time the {@link #repaint()} method has been invoked.
      * This is a change applied on {@link #objectiveToDisplay} but not yet visible in the map.
-     * After the map has been updated, this transform is reset to identity.
      */
     private final Affine changeInProgress;
-
-    /**
-     * The value to assign to {@link #transform} after the {@link #floatingPane} has been updated
-     * with transformed content.
-     */
-    private final Affine transformOnNewImage;
 
     /**
      * Cursor position at the time pan event started.
@@ -308,9 +301,8 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     public MapCanvas(final Locale locale) {
         super(locale);
-        transform           = new Affine();
-        changeInProgress    = new Affine();
-        transformOnNewImage = new Affine();
+        transform        = new Affine();
+        changeInProgress = new Affine();
         final Pane view = new Pane() {
             @Override protected void layoutChildren() {
                 super.layoutChildren();
@@ -340,7 +332,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         fixedPane = new StackPane(view);
         GUIUtilities.setClipToBounds(fixedPane);
         isRendering = new ReadOnlyBooleanWrapper(this, "isRendering");
-        error = new ReadOnlyObjectWrapper<>(this, "exception");
+        error = new ReadOnlyObjectWrapper<>(this, "error");
     }
 
     /**
@@ -407,10 +399,9 @@ public abstract class MapCanvas extends PlanarCanvas {
     private void applyTranslation(final double tx, final double ty, final boolean isFinal) {
         if (tx != 0 || ty != 0) {
             transform.appendTranslation(tx, ty);
-            final Point2D p = changeInProgress.deltaTransform(tx, ty);
-            transformOnNewImage.appendTranslation(p.getX(), p.getY());
             if (!isFinal) {
                 requestRepaint();
+                return;
             }
         }
         if (isFinal && !transform.isIdentity()) {
@@ -472,14 +463,11 @@ public abstract class MapCanvas extends PlanarCanvas {
                     unexpectedException("onKeyTyped", e);
                 }
             }
-            final Point2D p = changeInProgress.transform(x, y);
             if (zoom != 1) {
                 transform.appendScale(zoom, zoom, x, y);
-                transformOnNewImage.appendScale(zoom, zoom, p.getX(), p.getY());
             }
             if (angle != 0) {
                 transform.appendRotation(angle, x, y);
-                transformOnNewImage.appendRotation(angle, p.getX(), p.getY());
             }
             requestRepaint();
         }
@@ -876,6 +864,7 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Invoked when the map content needs to be rendered again.
      * It may be because the map has new content, or because the viewed region moved or has been zoomed.
+     * This method starts the rendering process immediately, unless a rendering is already in progress.
      *
      * @see #requestRepaint()
      */
@@ -969,9 +958,10 @@ public abstract class MapCanvas extends PlanarCanvas {
          * If a temporary zoom, rotation or translation has been applied using JavaFX transform API,
          * replace that temporary transform by a "permanent" adjustment of the `objectiveToDisplay`
          * transform. It allows SIS to get new data for the new visible area and resolution.
+         * Do not reset `transform` to identity now; we need to continue accumulating gestures
+         * that may happen while the rendering is done in a background thread.
          */
         changeInProgress.setToTransform(transform);
-        transformOnNewImage.setToIdentity();
         if (!transform.isIdentity()) {
             transformDisplayCoordinates(new AffineTransform(
                     transform.getMxx(), transform.getMyx(),
@@ -1034,11 +1024,12 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Invoked after the background thread created by {@link #repaint()} finished to update map content.
      * The {@link #changeInProgress} is the JavaFX transform at the time the repaint event was trigged and
      * which is now integrated in the map. That transform will be removed from {@link #floatingPane} transforms.
-     * It may be identity if no zoom, rotation or pan gesture has been applied since last rendering.
+     * The {@link #transform} result is identity if no zoom, rotation or pan gesture has been applied since last
+     * rendering.
      */
     final void renderingCompleted(final Task<?> task) {
         assert Platform.isFxApplicationThread();
-        // Keep cursor unchanged if contents changed because caller will invoke `repaint()`.
+        // Keep cursor unchanged if contents changed, because caller will invoke `repaint()` again.
         if (!contentsChanged() || task.getState() != Task.State.SUCCEEDED) {
             restoreCursorAfterPaint();
         }
@@ -1046,8 +1037,12 @@ public abstract class MapCanvas extends PlanarCanvas {
         final Point2D p = changeInProgress.transform(xPanStart, yPanStart);
         xPanStart = p.getX();
         yPanStart = p.getY();
-        changeInProgress.setToIdentity();
-        transform.setToTransform(transformOnNewImage);
+        try {
+            changeInProgress.invert();
+            transform.prepend(changeInProgress);
+        } catch (NonInvertibleTransformException e) {
+            unexpectedException("repaint", e);
+        }
         isRendering.set(false);
         final Throwable ex = task.getException();
         if (ex != null) {
