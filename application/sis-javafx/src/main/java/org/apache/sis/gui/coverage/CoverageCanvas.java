@@ -228,7 +228,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         coverageProperty     .addListener((p,o,n) -> onImageSpecified());
         sliceExtentProperty  .addListener((p,o,n) -> onImageSpecified());
         interpolationProperty.addListener((p,o,n) -> onInterpolationSpecified(n));
-        imageMargin.set(new Insets(64));
+        imageMargin.set(new Insets(100));
     }
 
     /**
