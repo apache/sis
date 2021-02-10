@@ -202,12 +202,12 @@ final class RenderingData implements Cloneable {
     /**
      * Creates a new instance initialized to no image.
      *
-     * @todo Listen to logging messages. We need to create a logging panel first.
+     * @param  errorHandler  where to report errors during tile computations.
      */
-    RenderingData() {
+    RenderingData(final ErrorHandler errorHandler) {
         selectedDerivative = Stretching.NONE;
         processor = new ImageProcessor();
-        processor.setErrorHandler(ErrorHandler.LOG);
+        processor.setErrorHandler(errorHandler);
         processor.setImageResizingPolicy(ImageProcessor.Resizing.EXPAND);
     }
 
@@ -543,7 +543,7 @@ final class RenderingData implements Cloneable {
      * Returns whether {@link #dataGeometry} or {@link #objectiveToCenter} changed since a previous rendering.
      * This is used for information purposes only.
      */
-    final boolean changed(final RenderingData previous) {
+    final boolean hasChanged(final RenderingData previous) {
         /*
          * Really !=, not Object.equals(Object), because we rely on new instances to be created
          * (even if equal) as a way to detect that cached values have not been reused.

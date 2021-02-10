@@ -62,7 +62,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.PlanarImage;
-import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.gui.map.MapCanvas;
@@ -183,6 +182,15 @@ public class CoverageCanvas extends MapCanvasAWT {
     StatusBar statusBar;
 
     /**
+     * If errors occurred during tile computations, details about the error. Otherwise {@code null}.
+     * This field is set once by some background thread if one or more errors occurred during calls
+     * to {@link RenderedImage#getTile(int, int)}. In such case, we store information about the error
+     * and let the rendering process continue with a tile placeholder (by default a cross (X) in a box).
+     * This field is read in JavaFX thread for transferring the error description to {@link #errorProperty()}.
+     */
+    private volatile LogRecord errorReport;
+
+    /**
      * The resource from which the data has been read, or {@code null} if unknown.
      * This is used only for determining a target window for logging records.
      *
@@ -212,7 +220,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     CoverageCanvas(final Locale locale) {
         super(locale);
-        data                  = new RenderingData();
+        data                  = new RenderingData((report) -> errorReport = report.getDescription());
         derivedImages         = new EnumMap<>(Stretching.class);
         coverageProperty      = new SimpleObjectProperty<>(this, "coverage");
         sliceExtentProperty   = new SimpleObjectProperty<>(this, "sliceExtent");
@@ -528,7 +536,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      *   <li>Paint the image.</li>
      * </ol>
      */
-    private static final class Worker extends Renderer implements ErrorHandler {
+    private static final class Worker extends Renderer {
         /**
          * Value of {@link CoverageCanvas#data} at the time this worker has been initialized.
          */
@@ -609,11 +617,6 @@ public class CoverageCanvas extends MapCanvasAWT {
          * Snapshot of information required for rendering isolines, or {@code null} if none.
          */
         private IsolineRenderer.Snapshot[] isolines;
-
-        /**
-         * If errors occurred during tile computations, details about the error. Otherwise {@code null}.
-         */
-        private LogRecord errorReport;
 
         /**
          * Creates a new renderer. Shall be invoked in JavaFX thread.
@@ -732,7 +735,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             if (prefetchedImage instanceof TileErrorHandler.Executor) {
                 ((TileErrorHandler.Executor) prefetchedImage).execute(
                         () -> gr.drawRenderedImage(prefetchedImage, resampledToDisplay),
-                        new TileErrorHandler(this, CoverageCanvas.class, "paint"));
+                        new TileErrorHandler(data.processor.getErrorHandler(), CoverageCanvas.class, "paint"));
             } else {
                 gr.drawRenderedImage(prefetchedImage, resampledToDisplay);
             }
@@ -748,16 +751,6 @@ public class CoverageCanvas extends MapCanvasAWT {
                 gr.setTransform(at);
                 gr.setStroke(st);
             }
-        }
-
-        /**
-         * Invoked if an error occurred during a call to {@link RenderedImage#getTile(int, int)}.
-         * This method stores information about the error and let the rendering process continue
-         * with a tile placeholder (by default a cross (X) in a box).
-         */
-        @Override
-        public void handle(final Report details) {
-            errorReport = details.getDescription();
         }
 
         /**
@@ -781,7 +774,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * If the resampled image changed, all previously cached images are discarded.
      */
     private void cacheRenderingData(final Worker worker) {
-        if (TRACE && data.changed(worker.data)) {
+        if (TRACE && data.hasChanged(worker.data)) {
             trace("cacheRenderingData(…): new visual coverage:%n%s", worker.data);
         }
         data = worker.data;
@@ -822,10 +815,12 @@ public class CoverageCanvas extends MapCanvasAWT {
         }
         /*
          * If error(s) occurred during calls to `RenderedImage.getTile(tx, ty)`, reports those errors.
+         * The `errorReport` field is reset to `null` in preparation for the next rendering operation.
          */
-        final LogRecord errorReport = worker.errorReport;
-        if (errorReport != null) {
-            errorOccurred(errorReport.getThrown());
+        final LogRecord report = errorReport;
+        if (report != null) {
+            errorReport = null;
+            errorOccurred(report.getThrown());
         }
     }
 

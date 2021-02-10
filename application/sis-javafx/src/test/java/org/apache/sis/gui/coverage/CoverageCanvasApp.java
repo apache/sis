@@ -20,8 +20,6 @@ import java.util.Random;
 import java.awt.Point;
 import java.awt.image.DataBuffer;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -46,7 +44,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @since   1.1
  * @module
  */
-public class CoverageCanvasApp extends Application implements ChangeListener<Throwable> {
+public class CoverageCanvasApp extends Application {
     /**
      * Size of the artificial tiles. Should be small enough so we can have many of them.
      * Width and height should be different in order to increase the chance to see bugs
@@ -72,7 +70,6 @@ public class CoverageCanvasApp extends Application implements ChangeListener<Thr
     @Override
     public void start(final Stage window) {
         final CoverageCanvas canvas = new CoverageCanvas();
-        canvas.errorProperty().addListener(this);
         final StatusBar statusBar = new StatusBar(null, canvas);
         canvas.statusBar = statusBar;
         canvas.setCoverage(createImage());
@@ -101,12 +98,7 @@ public class CoverageCanvasApp extends Application implements ChangeListener<Thr
      * have artificial errors in order to see the error controls.
      */
     private static GridCoverage2D createImage() {
-        /*
-         * A few interresting seeds for debugging:
-         * -638852012230008460L, 987724905110811687L,
-         * 4120510106559901474L, 4533692522112080642L, 2518316107261433588L
-         */
-        final Random random = new Random(987724905110811687L);
+        final Random random = new Random();
         final int width  = TILE_WIDTH  * 4;
         final int height = TILE_HEIGHT * 2;
         final TiledImageMock image = new TiledImageMock(
@@ -133,20 +125,5 @@ public class CoverageCanvasApp extends Application implements ChangeListener<Thr
         image.failRandomly(random, false);
         return new GridCoverage2D(new GridGeometry(null, PixelInCell.CELL_CORNER,
                 MathTransforms.identity(2), CommonCRS.Engineering.DISPLAY.crs()), null, image);
-    }
-
-    /**
-     * Invoked when an exception occurred during rendering.
-     *
-     * @param  property  the {@link CoverageCanvas#errorProperty()}.
-     * @param  oldValue  the previous error, or {@code null} if none.
-     * @param  newValue  the new error, or {@code null} if cleared.
-     */
-    @Override
-    @SuppressWarnings("CallToPrintStackTrace")
-    public void changed(ObservableValue<? extends Throwable> property, Throwable oldValue, Throwable newValue) {
-        if (newValue != null) {
-            newValue.printStackTrace();
-        }
     }
 }
