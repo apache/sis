@@ -867,12 +867,6 @@ public class ImageProcessor implements Cloneable {
      *   <li>{@linkplain #getErrorHandler() Error handler} (whether to fail if an exception is thrown).</li>
      * </ul>
      *
-     * <h4>Limitation</h4>
-     * Current implementation ignores the {@linkplain #getErrorHandler() error handler} in sequential execution
-     * (i.e. error handler is used only during parallel execution). In addition, there is not yet a mechanism
-     * for specifying which tile to produce in replacement of tiles that can not be computed.
-     * Those limitations may be addressed in a future version.
-     *
      * @param  source          the image to compute immediately (may be {@code null}).
      * @param  areaOfInterest  pixel coordinates of the region to prefetch, or {@code null} for the whole image.
      * @return image with all tiles intersecting the AOI computed, or {@code null} if the given image was null.

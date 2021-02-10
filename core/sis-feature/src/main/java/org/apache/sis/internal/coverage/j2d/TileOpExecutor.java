@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.stream.Collector;
 import java.util.function.BiConsumer;
@@ -198,9 +199,9 @@ public class TileOpExecutor {
      * Only tiles intersecting the area of interest will be processed.
      * For each tile, the {@link #readFrom(Raster)} method will be invoked in current thread.
      *
-     * <p>If a tile processing throws an exception, then this method stops immediately;
-     * remaining tiles are not processed. This policy is suited to the cases where the
-     * caller will not return any result in case of error.</p>
+     * <p>If a tile processing throws an exception and the {@link #errorHandler} is {@link TileErrorHandler#THROW},
+     * then this method stops immediately; remaining tiles are not processed. This policy is suited to the cases
+     * where the caller will not return any result in case of error.</p>
      *
      * <p>This method does not parallelize tile operations, because it is invoked
      * in contexts where it should apply on exactly one tile most of the times.</p>
@@ -212,17 +213,16 @@ public class TileOpExecutor {
      *         {@linkplain ImagingOpException#getCause() cause}.
      */
     public final void readFrom(final RenderedImage source) {
+        final ErrorHandler.Report errors = new ErrorHandler.Report();
         for (int ty = minTileY; ty <= maxTileY; ty++) {
             for (int tx = minTileX; tx <= maxTileX; tx++) try {
                 readFrom(source.getTile(tx, ty));
             } catch (Exception ex) {
-                Throwable e = trimImagingWrapper(ex);
-                if (!(e instanceof ImagingOpException)) {
-                    e = new ImagingOpException(Resources.format(Resources.Keys.CanNotProcessTile_2, tx, ty)).initCause(ex);
-                }
-                throw (ImagingOpException) e;
+                errors.add(new Point(tx, ty), trimImagingWrapper(ex), null);
+                if (errorHandler == TileErrorHandler.THROW) break;
             }
         }
+        errorHandler.publish(errors);
     }
 
     /**
@@ -232,9 +232,9 @@ public class TileOpExecutor {
      * For each tile, the {@link #writeTo(WritableRaster)} method will be invoked in current thread.
      *
      * <p>If a tile processing throws an exception, then this method continues processing other tiles
-     * and will throw the wrapper exception only after all tiles have been processed. This policy is
+     * and will log or throw the exception only after all tiles have been processed. This policy is
      * suited to the cases where the target image will continue to exist after this method call and
-     * we want to have a relatively consistent state.</p>
+     * we want to have as much valid values as possible.</p>
      *
      * <p>This method does not parallelize tile operations, because it is invoked
      * in contexts where it should apply on exactly one tile most of the times.</p>
@@ -246,7 +246,7 @@ public class TileOpExecutor {
      *         This exception wraps the original exception as its {@linkplain ImagingOpException#getCause() cause}.
      */
     public final void writeTo(final WritableRenderedImage target) {
-        ImagingOpException error = null;
+        final ErrorHandler.Report errors = new ErrorHandler.Report();
         for (int ty = minTileY; ty <= maxTileY; ty++) {
             for (int tx = minTileX; tx <= maxTileX; tx++) try {
                 final WritableRaster tile = target.getWritableTile(tx, ty);
@@ -256,20 +256,12 @@ public class TileOpExecutor {
                     target.releaseWritableTile(tx, ty);
                 }
             } catch (Exception ex) {
-                final Throwable e = trimImagingWrapper(ex);
-                if (error != null) {
-                    error.addSuppressed(e);
-                } else if (e instanceof ImagingOpException) {
-                    error = (ImagingOpException) e;
-                } else {
-                    error = new ImagingOpException(Resources.format(Resources.Keys.CanNotUpdateTile_2, tx, ty));
-                    error.initCause(e);
-                }
+                final Point tile = new Point(tx, ty);
+                errors.add(tile, trimImagingWrapper(ex), () -> Resources.forLocale(null)
+                            .getLogRecord(Level.WARNING, Resources.Keys.CanNotUpdateTile_2, tile.x, tile.y));
             }
         }
-        if (error != null) {
-            throw error;
-        }
+        errorHandler.publish(errors);
     }
 
     /**
@@ -280,9 +272,9 @@ public class TileOpExecutor {
      * in an arbitrary thread (may be the current one).
      *
      * <h4>Errors management</h4>
-     * If a tile processing throws an exception, then the other threads will finish computing
-     * their current tile but no other tiles will be fetched; remaining tiles are not processed.
-     * This policy is suited to the cases where the caller will not return any result in case of error.
+     * If a tile processing throws an exception and the {@link #errorHandler} is {@link TileErrorHandler#THROW},
+     * then this method stops immediately; remaining tiles are not processed. This policy is suited to the cases
+     * where the caller will not return any result in case of error.
      *
      * <h4>Concurrency requirements</h4>
      * Subclasses must override {@link #readFrom(Raster)} with a concurrent implementation.
@@ -318,9 +310,9 @@ public class TileOpExecutor {
      *
      * <h4>Errors management</h4>
      * If a tile processing throws an exception, then this method continues processing other tiles
-     * and will throw the wrapper exception only after all tiles have been processed. This policy is
+     * and will log or throw the exception only after all tiles have been processed. This policy is
      * suited to the cases where the target image will continue to exist after this method call and
-     * we want to have a relatively consistent state.
+     * we want to have as much valid values as possible.
      *
      * <h4>Concurrency requirements</h4>
      * Subclasses must override {@link #writeTo(WritableRaster)} with a concurrent implementation.
