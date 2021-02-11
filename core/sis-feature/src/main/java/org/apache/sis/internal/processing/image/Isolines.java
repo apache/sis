@@ -16,10 +16,14 @@
  */
 package org.apache.sis.internal.processing.image;
 
+import java.util.AbstractList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.NavigableMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletionException;
 import java.awt.Shape;
 import java.awt.geom.Path2D;
 import java.awt.image.RenderedImage;
@@ -408,5 +412,89 @@ abort:  while (iterator.next()) {
             }
         }
         return paths;
+    }
+
+    /**
+     * Returns the isolines for each band, then for each values in the band.
+     *
+     * @param  isolines  result of {@code generate(…)} or {@code parallelGenerate(…)} method call.
+     * @return isoline shapes for each values in each band.
+     */
+    private static NavigableMap<Double,Shape>[] toArray(final Isolines[] isolines) {
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        final NavigableMap<Double,Shape>[] result = new NavigableMap[isolines.length];
+        for (int i=0; i<result.length; i++) {
+            result[i] = isolines[i].polylines();
+        }
+        return result;
+    }
+
+    /**
+     * Returns the isolines for each band, then for each values in the band.
+     *
+     * @param  isolines  result of {@code generate(…)} or {@code parallelGenerate(…)} method call.
+     * @return isoline shapes for each values in each band.
+     */
+    public static List<NavigableMap<Double,Shape>> toList(final Isolines[] isolines) {
+        return Arrays.asList(toArray(isolines));
+    }
+
+    /**
+     * Returns deferred isolines for each band, then for each values in the band.
+     * The {@link Future} result is requested the first time that {@link List#get(int)} is invoked.
+     *
+     * @param  isolines  result of {@code generate(…)} or {@code parallelGenerate(…)} method call.
+     * @return isoline shapes for each values in each band.
+     */
+    public static List<NavigableMap<Double,Shape>> toList(final Future<Isolines[]> isolines) {
+        return new Result(isolines);
+    }
+
+    /**
+     * Deferred isoline result, created when computation is continuing in background.
+     * The {@link Future} result is requested the first time that {@link #get(int)} is invoked.
+     */
+    private static final class Result extends AbstractList<NavigableMap<Double,Shape>> {
+        /** The task computing isolines result. Reset to {@code null} when no longer needed. */
+        private Future<Isolines[]> task;
+
+        /** The result of {@link Future#get()} fetched when first needed. */
+        private NavigableMap<Double,Shape>[] isolines;
+
+        /** Creates a new list for the given future isolines. */
+        Result(final Future<Isolines[]> task) {
+            this.task = task;
+        }
+
+        /** Fetches the isolines from the {@link Future} if not already done. */
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
+        private NavigableMap<Double,Shape>[] isolines() {
+            if (isolines == null) {
+                if (task == null) {
+                    throw new CompletionException(null);
+                }
+                try {
+                    isolines = Isolines.toArray(task.get());
+                    task = null;
+                } catch (InterruptedException e) {
+                    // Do not clear `task`: the result may become available later.
+                    throw new CompletionException(e);
+                } catch (ExecutionException e) {
+                    task = null;
+                    throw new CompletionException(e.getCause());
+                }
+            }
+            return isolines;
+        }
+
+        /** Returns the list length, which is the number of bands. */
+        @Override public int size() {
+            return isolines().length;
+        }
+
+        /** Returns the isolines in the given band. */
+        @Override public NavigableMap<Double,Shape> get(final int band) {
+            return isolines()[band];
+        }
     }
 }

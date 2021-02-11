@@ -186,14 +186,16 @@ public final strictfp class IsolinesTest extends TestCase {
              0,0,0,
              0,1,0,
              0,0,0);
-        verifyIsolineFromMultiCells();
+        verifyIsolineFromMultiCells(isoline);
     }
 
     /**
-     * Verifies the result of {@link #testMultiCells()}.
-     * The shape to verify shall be stored in the {@link #isoline} field.
+     * Verifies the isoline generated for level 0.5 on an image of 3×3 pixels having value 1 in the center
+     * and value zero everywhere else. This is the isoline tested by {@link #testMultiCells()}.
+     *
+     * @param  isoline  the isoline to verify.
      */
-    private void verifyIsolineFromMultiCells() {
+    public static void verifyIsolineFromMultiCells(final Shape isoline) {
         /*
          * Expected coordinates:
          *
@@ -278,7 +280,7 @@ public final strictfp class IsolinesTest extends TestCase {
         assertTrue(isolines[0].polylines().isEmpty());
         assertTrue(isolines[2].polylines().isEmpty());
         isoline =  isolines[1].polylines().get(threshold);
-        verifyIsolineFromMultiCells();
+        verifyIsolineFromMultiCells(isoline);
     }
 
     /**

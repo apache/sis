@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.NavigableMap;
 import java.util.function.Function;
 import java.util.logging.LogRecord;
 import java.awt.Color;
@@ -36,6 +37,7 @@ import javax.measure.Quantity;
 import org.apache.sis.coverage.Category;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
@@ -47,6 +49,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
+import org.apache.sis.internal.processing.image.Isolines;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
@@ -96,6 +99,11 @@ import org.apache.sis.measure.Units;
  * For example the {@link MathTransform} argument given to the {@link #resample resample(…)} operation depends
  * tightly on the source image and destination bounds (also given in arguments); those information usually need
  * to be recomputed for each image.</div>
+ *
+ * <h2>Deferred calculations</h2>
+ * Methods in this class may compute the result at some later time after the method returned, instead of computing
+ * the result immediately on method call. Consequently unless otherwise specified, {@link RenderedImage} arguments
+ * should be <em>stable</em>, i.e. pixel values should not be modified after method return.
  *
  * <h2>Area of interest</h2>
  * Some operations accept an optional <cite>area of interest</cite> argument specified as a {@link Shape} instance in
@@ -459,8 +467,7 @@ public class ImageProcessor implements Cloneable {
      * for processing {@link RenderedImage} implementations that may not be thread-safe.
      *
      * <p>It is safe to set this flag to {@link Mode#PARALLEL} with {@link java.awt.image.BufferedImage}
-     * (it will actually have no effect in this particular case) or with Apache SIS implementations of
-     * {@link RenderedImage}.</p>
+     * or with Apache SIS implementations of {@link RenderedImage}.</p>
      *
      * @param  mode  whether the operations can be executed in parallel.
      */
@@ -478,7 +485,12 @@ public class ImageProcessor implements Cloneable {
         switch (executionMode) {
             case PARALLEL:   return true;
             case SEQUENTIAL: return false;
-            default:         return source.getClass().getName().startsWith(Modules.CLASSNAME_PREFIX);
+            default: {
+                if (source instanceof BufferedImage) {
+                    return true;
+                }
+                return source.getClass().getName().startsWith(Modules.CLASSNAME_PREFIX);
+            }
         }
     }
 
@@ -504,6 +516,7 @@ public class ImageProcessor implements Cloneable {
      * In current {@code ImageProcessor} implementation, the error handler is not honored by all operations.
      * Some operations may continue to throw an exception on failure (the behavior of default error handler)
      * even if a different handler has been specified.
+     * Each operation specifies in its Javadoc whether the operation uses error handler or not.
      *
      * @param  handler  handler to notify when an operation failed on one or more tiles,
      *                  or {@link ErrorHandler#THROW} for propagating the exception.
@@ -542,6 +555,10 @@ public class ImageProcessor implements Cloneable {
      *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
      *   <li>{@linkplain #getErrorHandler() Error handler} (custom action executed if an exception is thrown).</li>
      * </ul>
+     *
+     * <h4>Result relationship with source</h4>
+     * This method computes statistics immediately.
+     * Changes in the {@code source} image after this method call do not change the results.
      *
      * @param  source          the image for which to compute statistics.
      * @param  areaOfInterest  pixel coordinates of the area of interest, or {@code null} for the default.
@@ -748,6 +765,10 @@ public class ImageProcessor implements Cloneable {
      *   <li>(none)</li>
      * </ul>
      *
+     * <h4>Result relationship with source</h4>
+     * Changes in the source image are reflected in the returned images
+     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.
+     *
      * @param  source        the image for which to convert sample values.
      * @param  sourceRanges  approximate ranges of values for each band in source image, or {@code null} if unknown.
      * @param  converters    the transfer functions to apply on each band of the source image.
@@ -766,7 +787,7 @@ public class ImageProcessor implements Cloneable {
         for (int i=0; i<converters.length; i++) {
             ArgumentChecks.ensureNonNullElement("converters", i, converters[i]);
         }
-        final ImageLayout   layout;
+        final ImageLayout layout;
         synchronized (this) {
             layout = this.layout;
         }
@@ -797,6 +818,10 @@ public class ImageProcessor implements Cloneable {
      *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
      *       for enabling faster resampling at the cost of lower precision.</li>
      * </ul>
+     *
+     * <h4>Result relationship with source</h4>
+     * Changes in the source image are reflected in the returned images
+     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.
      *
      * @param  source    the image to be resampled.
      * @param  bounds    domain of pixel coordinates of resampled image to create.
@@ -1041,6 +1066,45 @@ public class ImageProcessor implements Cloneable {
         }
         return unique(new Visualization(source, layout, bounds, toSource, toSource.isIdentity(),
                       interpolation, converters, fillValues, colorModel, positionalAccuracyHints));
+    }
+
+    /**
+     * Generates isolines at the specified levels computed from data provided by the given image.
+     * Isolines will be computed for every bands in the given image.
+     * For each band, the result is given as a {@code Map} where keys are the specified {@code levels}
+     * and values are the isolines at the associated level.
+     * If there is no isoline for a given level, there will be no corresponding entry in the map.
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
+     * </ul>
+     *
+     * @param  data       image providing source values.
+     * @param  levels     values for which to compute isolines. An array should be provided for each band.
+     *                    If there is more bands than {@code levels.length}, the last array is reused for
+     *                    all remaining bands.
+     * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
+     *                    Integer source coordinates are located at pixel centers.
+     * @return the isolines for specified levels in each band. The {@code List} size is the number of bands.
+     *         For each band, the {@code Map} size is equal or less than {@code levels[band].length}.
+     *         Map keys are the specified levels, excluding those for which there is no isoline.
+     *         Map values are the isolines as a Java2D {@link Shape}.
+     * @throws ImagingOpException if an error occurred during calculation.
+     */
+    public List<NavigableMap<Double,Shape>> isolines(final RenderedImage data, final double[][] levels, final MathTransform gridToCRS) {
+        final boolean parallel;
+        synchronized (this) {
+            parallel = parallel(data);
+        }
+        if (parallel) {
+            return Isolines.toList(Isolines.parallelGenerate(data, levels, gridToCRS));
+        } else try {
+            return Isolines.toList(Isolines.generate(data, levels, gridToCRS));
+        } catch (TransformException e) {
+            throw (ImagingOpException) new ImagingOpException(null).initCause(e);
+        }
     }
 
     /**
