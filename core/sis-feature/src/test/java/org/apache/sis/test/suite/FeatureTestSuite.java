@@ -80,6 +80,7 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.coverage.j2d.ImageLayoutTest.class,
     org.apache.sis.internal.coverage.j2d.ScaledColorSpaceTest.class,
     org.apache.sis.internal.coverage.j2d.ColorizerTest.class,
+    org.apache.sis.internal.processing.image.IsolinesTest.class,
     org.apache.sis.image.DataTypeTest.class,
     org.apache.sis.image.PlanarImageTest.class,
     org.apache.sis.image.ComputedImageTest.class,
@@ -112,7 +113,6 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.ResampledGridCoverageTest.class,
 
     // Index and processing
-    org.apache.sis.internal.processing.image.IsolinesTest.class,
     org.apache.sis.index.tree.PointTreeNodeTest.class,
     org.apache.sis.index.tree.PointTreeTest.class
 })

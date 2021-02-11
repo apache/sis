@@ -73,6 +73,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short AmbiguousName_3 = 1;
 
         /**
+         * Computation in background failed.
+         */
+        public static final short BackgroundComputationFailed = 191;
+
+        /**
          * This object can iterate only once.
          */
         public static final short CanIterateOnlyOnce = 172;
@@ -490,6 +495,11 @@ public final class Errors extends IndexedResourceBundle {
          * Integer overflow during {0} bits arithmetic operation.
          */
         public static final short IntegerOverflow_1 = 10;
+
+        /**
+         * Interrupted while waiting result.
+         */
+        public static final short InterruptedWhileWaitingResult = 192;
 
         /**
          * “{0}” is an invalid version identifier.

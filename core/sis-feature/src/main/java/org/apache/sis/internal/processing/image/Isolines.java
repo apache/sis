@@ -33,6 +33,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.internal.processing.image.IsolineTracer.UPPER_LEFT;
 import static org.apache.sis.internal.processing.image.IsolineTracer.UPPER_RIGHT;
@@ -471,17 +472,17 @@ abort:  while (iterator.next()) {
         private NavigableMap<Double,Shape>[] isolines() {
             if (isolines == null) {
                 if (task == null) {
-                    throw new CompletionException(null);
+                    throw new CompletionException(Errors.format(Errors.Keys.BackgroundComputationFailed), null);
                 }
                 try {
                     isolines = Isolines.toArray(task.get());
                     task = null;
                 } catch (InterruptedException e) {
                     // Do not clear `task`: the result may become available later.
-                    throw new CompletionException(e);
+                    throw new CompletionException(Errors.format(Errors.Keys.InterruptedWhileWaitingResult), e);
                 } catch (ExecutionException e) {
                     task = null;
-                    throw new CompletionException(e.getCause());
+                    throw new CompletionException(Errors.format(Errors.Keys.BackgroundComputationFailed), e.getCause());
                 }
             }
             return isolines;
@@ -495,6 +496,11 @@ abort:  while (iterator.next()) {
         /** Returns the isolines in the given band. */
         @Override public NavigableMap<Double,Shape> get(final int band) {
             return isolines()[band];
+        }
+
+        /** Returns the list content as an array. */
+        @Override public Object[] toArray() {
+            return isolines().clone();
         }
     }
 }
