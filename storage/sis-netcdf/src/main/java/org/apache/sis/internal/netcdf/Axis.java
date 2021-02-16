@@ -35,6 +35,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.util.Numerics;
@@ -380,7 +381,7 @@ public final class Axis extends NamedElement {
      *
      * @see #getMainSize()
      */
-    final int getMainDirection() {
+    private int getMainDirection() {
         return (getNumDimensions() < 2 || gridDimensionIndices[0] <= gridDimensionIndices[1]) ? 0 : 1;
     }
 
@@ -767,8 +768,11 @@ public final class Axis extends NamedElement {
      * @return the localization grid, or {@code null} if none can be built.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
+     * @throws TransformException if an unexpected error occurred during application of a linearizer.
      */
-    final MathTransform createLocalizationGrid(final Axis other) throws IOException, FactoryException, DataStoreException {
+    final GridCacheValue createLocalizationGrid(final Axis other)
+            throws IOException, FactoryException, TransformException, DataStoreException
+    {
         if (getNumDimensions() != 2 || other.getNumDimensions() != 2) {
             return null;
         }
@@ -803,7 +807,7 @@ public final class Axis extends NamedElement {
          */
         final Decoder decoder = coordinates.decoder;
         final GridCacheKey keyLocal = new GridCacheKey(width, height, this, other);
-        MathTransform tr = keyLocal.cached(decoder);
+        GridCacheValue tr = keyLocal.cached(decoder);
         if (tr != null) {
             return tr;
         }
@@ -816,7 +820,7 @@ public final class Axis extends NamedElement {
         final Vector vy = other.read();
         final Set<Linearizer> linearizers = decoder.convention().linearizers(decoder);
         final GridCacheKey.Global keyGlobal = new GridCacheKey.Global(keyLocal, vx, vy, linearizers);
-        final Cache.Handler<MathTransform> handler = keyGlobal.lock();
+        final Cache.Handler<GridCacheValue> handler = keyGlobal.lock();
         try {
             tr = handler.peek();
             if (tr == null) {
@@ -845,7 +849,8 @@ public final class Axis extends NamedElement {
                  */
                 final MathTransformFactory factory = decoder.getMathTransformFactory();
                 if (!linearizers.isEmpty()) {
-                    Linearizer.applyTo(linearizers, factory, grid, this, other);
+                    // Current version does not need the factory, but future version may use it.
+                    Linearizer.setCandidatesOnGrid(new Axis[] {this, other}, linearizers, grid);
                 }
                 /*
                  * There is usually a one-to-one relationship between localization grid cells and image pixels.
@@ -856,7 +861,7 @@ public final class Axis extends NamedElement {
                  * to take in account the case where dataToGridIndices() returns 0.1.
                  */
                 grid.setDesiredPrecision(0.001);
-                tr = grid.create(factory);
+                tr = new GridCacheValue(linearizers, grid, factory);
                 tr = keyLocal.cache(decoder, tr);
             }
         } finally {

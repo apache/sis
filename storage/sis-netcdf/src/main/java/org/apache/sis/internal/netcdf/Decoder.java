@@ -35,7 +35,6 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
@@ -130,16 +129,18 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
 
     /**
      * Cache of localization grids created for a given pair of (<var>x</var>,<var>y</var>) axes. Localization grids
-     * are expensive to compute and consume a significant amount of memory.  The {@link Grid} instances returned by
-     * {@link #getGrids()} allow to share localization grids only between variables using the exact same list of dimensions.
+     * are expensive to compute and consume a significant amount of memory. The {@link Grid} instances returned by
+     * {@link #getGrids()} share localization grids only between variables using the exact same list of dimensions.
      * This {@code localizationGrids} cache allows to cover other cases.
-     * For example a netCDF file may have a variable with (<var>longitude</var>, <var>latitude</var>) dimensions
-     * and another variable with (<var>longitude</var>, <var>latitude</var>, <var>depth</var>) dimensions,
-     * with both variables using the same localization grid for the (<var>longitude</var>, <var>latitude</var>) part.
+     *
+     * <div class="note"><b>Example:</b>
+     * a netCDF file may have a variable with (<var>longitude</var>, <var>latitude</var>) dimensions and another
+     * variable with (<var>longitude</var>, <var>latitude</var>, <var>depth</var>) dimensions, with both variables
+     * using the same localization grid for the (<var>longitude</var>, <var>latitude</var>) part.</div>
      *
      * @see GridCacheKey#cached(Decoder)
      */
-    final Map<GridCacheKey,MathTransform> localizationGrids;
+    final Map<GridCacheKey,GridCacheValue> localizationGrids;
 
     /**
      * Where to send the warnings.
@@ -437,7 +438,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
         if (list.isEmpty()) {
             final List<Exception> warnings = new ArrayList<>();     // For internal usage by Grid.
             for (final Grid grid : getGrids()) {
-                addIfNotPresent(list, grid.getCoordinateReferenceSystem(this, warnings));
+                addIfNotPresent(list, grid.getCoordinateReferenceSystem(this, warnings, null, null));
             }
         }
         return list;

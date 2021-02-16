@@ -206,6 +206,9 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *     after construction will not be reflected in this new builder.</li>
      * </ul>
      *
+     * The new builder inherits the {@linkplain LinearTransformBuilder#addLinearizers linearizers}
+     * of {@code localizations}.
+     *
      * @param  localizations  the provider of control points for which to create a localization grid.
      * @throws ArithmeticException if this constructor can not infer a reasonable grid size from the given localizations.
      *
@@ -267,7 +270,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
                 double v = source.doubleValue(i) - min;
                 if (Math.abs(v % inc) > EPS) {
                     do {
-                        final double r = (inc % v);     // Both 'inc' and 'v' are positive, so 'r' will be positive too.
+                        final double r = (inc % v);     // Both `inc` and `v` are positive, so `r` will be positive too.
                         inc = v;
                         v = r;
                     } while (Math.abs(v) > EPS);
@@ -283,7 +286,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
         fromGrid.setElement(dim, dim, inc);
         fromGrid.setElement(dim, SOURCE_DIMENSION, min);
         final double n = span / inc;
-        if (n >= 0.5 && n < source.size() - 0.5) {          // Compare as 'double' in case the value is large.
+        if (n >= 0.5 && n < source.size() - 0.5) {          // Compare as `double` in case the value is large.
             return ((int) Math.round(n)) + 1;
         }
         throw new ArithmeticException(Resources.format(Resources.Keys.CanNotInferGridSizeFromValues_1, range));
@@ -582,33 +585,59 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
-     * Adds transforms to potentially apply on target coordinates before to compute the transform.
+     * Adds transforms to potentially apply on target control points before to compute the transform.
      * This method can be invoked if the departure from a linear transform is too large, resulting
      * in {@link InterpolatedTransform} to fail with "no convergence error" messages.
      * If linearizers have been specified, then the {@link #create(MathTransformFactory)} method
      * will try to apply each transform on target coordinates and check which one results in the
-     * best correlation coefficients. It may be none.
+     * best correlation coefficients. Exactly one of the specified transforms will be selected.
+     * If applying no transform is an acceptable solution, then an
+     * {@linkplain org.apache.sis.referencing.operation.transform.MathTransforms#identity(int)
+     * identity transform} should be included in the given {@code projections} map.
      *
-     * <p>The linearizers are specified as {@link MathTransform}s from current target coordinates
-     * to other spaces where <cite>sources to new targets</cite> transforms may be more linear.
-     * The keys in the map are arbitrary identifiers used in {@link #toString()} for debugging purpose.
-     * The {@code dimensions} argument specifies which target dimensions to project and can be null or omitted
-     * if the projections shall be applied on all target coordinates. It is possible to invoke this method many
-     * times with different {@code dimensions} argument values.</p>
+     * <p>The linearizers are specified as {@link MathTransform}s from current {@linkplain #getControlPoint(int, int)
+     * target coordinates of control points} to other spaces where <cite>sources to new targets</cite> transforms may
+     * be more linear. The keys in the map are arbitrary identifiers.
+     * The {@code projToGrid} argument specifies which control point dimensions to use as {@code projections} source
+     * coordinates and can be null or omitted if the projections shall be applied on all target coordinates.
+     * It is possible to invoke this method many times with different {@code dimensions} argument values.</p>
+     *
+     * <p>The {@code compensate} argument tell whether the inverse of specified transform shall be concatenated
+     * to the final {@linkplain #create interpolated transform}. If {@code true}, the {@code projection} effect
+     * will be cancelled in the final result, i.e. the target coordinates will be approximately the same as if
+     * no projection were applied. In such case, the advantage of applying a projection is to improve numerical
+     * stability with a better linear approximation in used by the coordinate transformation process.</p>
      *
      * @param  projections  projections from current target coordinates to other spaces which may result in more linear transforms.
-     * @param  dimensions   the target dimensions to project, or null or omitted for projecting all target dimensions.
+     * @param  compensate   whether the inverse of selected projection shall be concatenated to the final interpolated transform.
+     * @param  projToGrid   the target dimensions to project, or null or omitted for projecting all target dimensions.
      *                      If non-null and non-empty, then all transforms in the {@code projections} map shall have a
      *                      number of source and target dimensions equals to the length of this array.
      * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      *
      * @see LinearTransformBuilder#addLinearizers(Map, int...)
      *
+     * @since 1.1
+     */
+    public void addLinearizers(final Map<String,MathTransform> projections, final boolean compensate, final int... projToGrid) {
+        ArgumentChecks.ensureNonNull("projections", projections);
+        ensureModifiable();
+        linear.addLinearizers(projections, compensate, projToGrid);
+    }
+
+    /**
+     * Adds transforms to potentially apply on target control points before to compute the transform.
+     *
+     * @param  projections  projections from current target coordinates to other spaces which may result in more linear transforms.
+     * @param  projToGrid   the target dimensions to project, or null or omitted for projecting all target dimensions.
+     *
+     * @deprecated Replaced by {@link #addLinearizers(Map, boolean, int...)} with {@code compensate = true}.
+     *
      * @since 1.0
      */
-    public void addLinearizers(final Map<String,MathTransform> projections, int... dimensions) {
-        ensureModifiable();
-        linear.addLinearizers(projections, dimensions);
+    @Deprecated
+    public void addLinearizers(final Map<String,MathTransform> projections, final int... projToGrid) {
+        addLinearizers(projections, true, projToGrid);
     }
 
     /**
@@ -695,7 +724,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
                     } else {
                         step = InterpolatedTransform.createGeodeticTransformation(nonNull(factory),
                                 new ResidualGrid(sourceToGrid, gridToCoord, width, height, residual,
-                                (gridPrecision > 0) ? gridPrecision : DEFAULT_PRECISION, periods));
+                                (gridPrecision > 0) ? gridPrecision : DEFAULT_PRECISION, periods,
+                                linear.appliedLinearizer()));
                     }
                 } catch (TransformException e) {
                     throw new FactoryException(e);                                          // Should never happen.
@@ -706,16 +736,55 @@ public class LocalizationGridBuilder extends TransformBuilder {
              * If those target coordinates have been modified in order to make that step more
              * linear, apply the inverse transformation after the step.
              */
-            final Optional<MathTransform> linearizer = linear.linearizer();
-            if (linearizer.isPresent()) try {
-                step = factory.createConcatenatedTransform(step, linearizer.get().inverse());
+            final ProjectedTransformTry linearizer = linear.appliedLinearizer();
+            if (linearizer != null && linearizer.reverseAfterLinearization) try {
+                step = factory.createConcatenatedTransform(step, linearizer.getValue().inverse());
             } catch (NoninvertibleTransformException e) {
                 throw new InvalidGeodeticParameterException(Resources.format(
-                        Resources.Keys.NonInvertibleOperation_1, linear.linearizerID()), e);
+                        Resources.Keys.NonInvertibleOperation_1, linearizer.getKey()), e);
             }
             transform = step;                               // Set only after everything succeeded.
         }
         return transform;
+    }
+
+    /**
+     * Returns the linearizer applied on target control points.
+     * This method returns a non-empty value if {@link #addLinearizers(Map, boolean, int...)} has
+     * been invoked with a non-empty map, followed by a {@link #create(MathTransformFactory)} call.
+     * In such case, {@link LinearTransformBuilder} selects a linearizer identified by the returned
+     * <var>key</var> - <var>value</var> entry. The entry key is one of the keys of the maps given
+     * to {@code addLinearizers(…)}. The entry value is the associated {@code MathTransform},
+     * possibly modified as described in the <cite>axis order</cite> section below.
+     *
+     * <p>All control points returned by {@link #getControlPoint(int, int)} are projected by the selected transform.
+     * Consequently if the target coordinates of original control points are desired, then the transform computed by
+     * this builder needs to be concatenated with the {@linkplain MathTransform#inverse() inverse} of the transform
+     * returned by this method. This is done automatically in the {@link #create(MathTransformFactory) create(…)}
+     * method if the {@code compensate} flag given to {@code addLinearizers(…)} method was {@code true}.
+     * Otherwise the compensation, if desired, needs to be done by the caller.</p>
+     *
+     * <h4>Axis order</h4>
+     * The returned transform will contain an operation step performing axis filtering and swapping implied by the
+     * {@code projToGrid} argument that was given to the <code>{@linkplain #addLinearizers(Map, boolean, int...)
+     * addLinearizers}(…, projToGrid)}</code> method. Consequently if the {@code projToGrid} argument was not an
+     * arithmetic progression, then the transform returned by this method will not be one of the instances given
+     * to {@code addLinearizers(…)}.
+     *
+     * @param  ifNotCompensated  whether to return the transform only if not already compensated by {@code create(…)}.
+     *         A value of {@code true} is useful if the caller wants the transform only if it needs to compensate itself.
+     * @return the projection applied on target coordinates before to compute a linear transform.
+     *
+     * @see LinearTransformBuilder#linearizer()
+     *
+     * @since 1.1
+     */
+    public Optional<Map.Entry<String,MathTransform>> linearizer(final boolean ifNotCompensated) {
+        ProjectedTransformTry linearizer = linear.appliedLinearizer();
+        if (ifNotCompensated && linearizer != null && linearizer.reverseAfterLinearization) {
+            linearizer = null;
+        }
+        return Optional.ofNullable(linearizer);
     }
 
     /**
@@ -765,9 +834,11 @@ public class LocalizationGridBuilder extends TransformBuilder {
         /*
          * If a linearizer has been applied, all target coordinates in this builder have been projected using
          * that transform. We will need to apply the inverse transform in order to get back the original values.
+         * The way that we get the transform below should be the same way than in `create(…)`, except that we
+         * apply the inverse transform unconditionally.
          */
-        final Optional<MathTransform> linearizer = linear.linearizer();
-        final MathTransform complete = linearizer.isPresent() ? linearizer.get().inverse() : null;
+        final ProjectedTransformTry linearizer = linear.appliedLinearizer();
+        final MathTransform complete = (linearizer != null) ? linearizer.getValue().inverse() : null;
         final MathTransform inverse = mt.inverse();
         final int width  = linear.gridSize(0);
         final int height = linear.gridSize(1);

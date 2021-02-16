@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.operation.builder;
 
+import java.util.Map;
+import java.util.List;
 import java.util.Queue;
 import java.util.Arrays;
 import java.util.Locale;
@@ -29,7 +31,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
@@ -54,12 +55,15 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * it will resolve the "no convergence" errors.</p>
  * </div>
  *
+ * <p><b>Note:</b> {@link #compareTo(ProjectedTransformTry)} is inconsistent with {@link #equals(Object)}.
+ * The fact that {@link ProjectedTransformTry} instances are comparable should not be visible in public API.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
+final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, Map.Entry<String,MathTransform> {
     /**
      * Number of points in the temporary buffer used for transforming data.
      * The buffer length will be this capacity multiplied by the number of dimensions.
@@ -69,25 +73,37 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
     private static final int BUFFER_CAPACITY = 512;
 
     /**
-     * A name by witch this projection attempt is identified, or {@code null} for the identity transform.
+     * A name by witch this projection attempt is identified.
+     *
+     * @see #getKey()
      */
-    private String name;
+    private final String name;
 
     /**
      * A conversion from a non-linear grid (typically with longitude and latitude values) to
      * something that may be more linear (typically, but not necessarily, a map projection).
      *
-     * @see #projection()
+     * @see #getValue()
      */
-    private final MathTransform projection;
+    final MathTransform projection;
 
     /**
      * Maps {@link #projection} dimensions to {@link LinearTransformBuilder} target dimensions.
      * For example if this array is {@code {2,1}}, then dimensions 0 and 1 of {@link #projection}
-     * (both source and target dimensions) will map dimensions 2 and 1 of {@link LinearTransformBuilder#targets}, respectively.
+     * (both source and target dimensions) will map dimensions 2 and 1 of {@link LinearTransformBuilder#targets}.
      * The length of this array shall be equal to the number of {@link #projection} source dimensions.
      */
     private final int[] projToGrid;
+
+    /**
+     * Whether the inverse of {@link #projection} shall be concatenated to the
+     * final {@linkplain LocalizationGridBuilder#create interpolated transform}.
+     * If {@code true}, the {@code projection} effect will be cancelled in the final result,
+     * i.e. the target coordinates will be approximately the same as if no projection were applied.
+     * In such case, the advantage of applying a projection is to improve numerical stability with
+     * a better linear approximation in the first step of the coordinate transformation process.
+     */
+    final boolean reverseAfterLinearization;
 
     /**
      * A global correlation factor, stored for information purpose only.
@@ -96,43 +112,43 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
 
     /**
      * If an error occurred during coordinate operations, the error. Otherwise {@code null}.
+     *
+     * @see #getError(List)
      */
     private TransformException error;
 
     /**
      * Creates a new instance initialized to a copy of the given instance but without result.
+     * This is used by copy constructors.
+     *
+     * @see LocalizationGridBuilder#LocalizationGridBuilder(LinearTransformBuilder)
      */
     ProjectedTransformTry(final ProjectedTransformTry other) {
         name       = other.name;
         projection = other.projection;
         projToGrid = other.projToGrid;
-    }
-
-    /**
-     * Creates a new instance with only the given correlation coefficient. This instance can not be used for
-     * computation purpose. Its sole purpose is to hold the given coefficient when no projection is applied.
-     */
-    ProjectedTransformTry(final float corr) {
-        projection  = null;
-        projToGrid  = null;
-        correlation = corr;
+        reverseAfterLinearization = other.reverseAfterLinearization;
     }
 
     /**
      * Prepares a new attempt to project a localization grid.
      * All arguments are stored as-is (arrays are not cloned).
      *
-     * @param name               a name by witch this projection attempt is identified, or {@code null}.
+     * @param name               a name by witch this projection attempt is identified.
      * @param projection         conversion from non-linear grid to something that may be more linear.
      * @param projToGrid         maps {@code projection} dimensions to {@link LinearTransformBuilder} target dimensions.
      * @param expectedDimension  number of {@link LinearTransformBuilder} target dimensions.
+     * @throws MismatchedDimensionException if the projection does not have the expected number of dimensions.
      */
-    ProjectedTransformTry(final String name, final MathTransform projection, final int[] projToGrid, int expectedDimension) {
+    ProjectedTransformTry(final String name, final MathTransform projection, final int[] projToGrid, int expectedDimension,
+                          final boolean reverseAfterLinearization)
+    {
         ArgumentChecks.ensureNonNull("name", name);
         ArgumentChecks.ensureNonNull("projection", projection);
         this.name       = name;
         this.projection = projection;
         this.projToGrid = projToGrid;
+        this.reverseAfterLinearization = reverseAfterLinearization;
         int side = 0;                           // 0 = problem with source dimensions, 1 = problem with target dimensions.
         int actual = projection.getSourceDimensions();
         if (actual <= expectedDimension) {
@@ -150,19 +166,31 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
     }
 
     /**
-     * Returns the name of this object, or {@code null} if this is the identity transform created by
-     * {@link #ProjectedTransformTry(float)}. Should never be {@code null} for name returned to user.
+     * Returns the name by witch this projection attempt is identified.
      */
-    final String name() {
+    @Override
+    public String getKey() {
         return name;
     }
 
     /**
      * Returns the projection, taking in account axis swapping if {@link #projToGrid} is not an arithmetic progression.
+     *
+     * @todo We needs a pass-through transform if the number of grid dimensions
+     *       is greater than the number of projection dimensions.
      */
-    final MathTransform projection() {
+    @Override
+    public MathTransform getValue() {
         MathTransform mt = MathTransforms.linear(Matrices.createDimensionSelect(projToGrid.length, projToGrid));
         return MathTransforms.concatenate(mt, projection);
+    }
+
+    /**
+     * Do not allow modification of this entry.
+     */
+    @Override
+    public MathTransform setValue(MathTransform value) {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -178,6 +206,10 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
      *   <li>{@code results[d][i]} is a coordinate of the point at index <var>i</var>.</li>
      * </ol>
      *
+     * The returned target shall be given to {@link #replaceTransformed(double[][], double[][])} before
+     * final storage in {@link LinearTransformBuilder}.
+     *
+     * <h4>Pool of arrays</h4>
      * The {@code pool} queue is initially empty. Arrays created by this method and later discarded will be added to
      * that queue, for recycling if this method is invoked again for another {@code ProjectedTransformTry} instance.
      *
@@ -233,7 +265,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
                         dataOffset = start;
                         int dst = d;
                         do {
-                            if (Double.isNaN(data[dataOffset] = buffer[dst])) {
+                            if (!Double.isFinite(data[dataOffset] = buffer[dst])) {
                                 recycle(results, pool);         // Make arrays available for other transforms.
                                 return null;
                             }
@@ -260,15 +292,43 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
     }
 
     /**
-     * Replaces old correlation values by new values in a copy of the given array.
+     * Returns {@code true} if {@code projToGrid[i] == i} for all <var>i</var>.
+     */
+    private boolean useSameDimensions() {
+        return ArraysExt.isRange(0, projToGrid);
+    }
+
+    /**
+     * Replaces old target arrays by new values in the dimensions where a projection has been applied.
+     * The {@code targets} array is copied if necessary, then values are replaced in the copied array.
+     * May return {@code newValues} directly if suitable.
+     *
+     * @param  targets    the original targets values. This array will not be modified.
+     * @param  newValues  targets computed by {@link #transform transform(…)} for the dimensions specified at construction time.
+     * @return a copy of the given {@code targets} array with new values overwriting the old values.
+     */
+    final double[][] replaceTransformed(double[][] targets, final double[][] newValues) {
+        if (newValues.length == targets.length && useSameDimensions()) {
+            return newValues;
+        }
+        targets = targets.clone();
+        for (int j=0; j<projToGrid.length; j++) {
+            targets[projToGrid[j]] = newValues[j];
+        }
+        return targets;
+    }
+
+    /**
+     * Replaces old correlation values by new values in the dimensions where a projection has been applied.
+     * The {@code correlations} array is copied if necessary, then values are replaced in the copied array.
      * May return {@code newValues} directly if suitable.
      *
      * @param  correlations  the original correlation values. This array will not be modified.
      * @param  newValues     correlations computed by {@link LinearTransformBuilder} for the dimensions specified at construction time.
      * @return a copy of the given {@code correlation} array with new values overwriting the old values.
      */
-    final double[] replace(double[] correlations, final double[] newValues) {
-        if (newValues.length == correlations.length && ArraysExt.isRange(0, projToGrid)) {
+    final double[] replaceTransformed(double[] correlations, final double[] newValues) {
+        if (newValues.length == correlations.length && useSameDimensions()) {
             return newValues;
         }
         correlations = correlations.clone();
@@ -279,21 +339,22 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
     }
 
     /**
-     * Replaces old transform coefficients by new values in a copy of the given matrix.
+     * Replaces old transform coefficients by new values in the dimensions where a projection has been applied.
+     * The {@code transform} matrix is copied if necessary, then values are replaced in the copied matrix.
      * May return {@code newValues} directly if suitable.
      *
      * @param  transform  the original affine transform. This matrix will not be modified.
      * @param  newValues  coefficients computed by {@link LinearTransformBuilder} for the dimensions specified at construction time.
      * @return a copy of the given {@code transform} matrix with new coefficients overwriting the old values.
      */
-    final MatrixSIS replace(MatrixSIS transform, final MatrixSIS newValues) {
+    final MatrixSIS replaceTransformed(MatrixSIS transform, final MatrixSIS newValues) {
         /*
          * The two matrices shall have the same number of columns because they were computed with
          * LinearTransformBuilder instances having the same sources. However the two matrices may
          * have a different number of rows since the number of target dimensions may differ.
          */
         assert newValues.getNumCol() == transform.getNumCol();
-        if (newValues.getNumRow() == transform.getNumRow() && ArraysExt.isRange(0, projToGrid)) {
+        if (newValues.getNumRow() == transform.getNumRow() && useSameDimensions()) {
             return newValues;
         }
         transform = transform.clone();
@@ -307,12 +368,55 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
     }
 
     /**
+     * Returns the first error in the given list of linearizers. Errors after the first one are added
+     * as suppressed exception. If no error are found, this method returns {@code null}.
+     */
+    static TransformException getError(final List<ProjectedTransformTry> linearizers) {
+        TransformException error = null;
+        for (final ProjectedTransformTry alt : linearizers) {
+            final TransformException e = alt.error;
+            if (e != null) {
+                if (error == null) {
+                    error = e;
+                } else {
+                    error.addSuppressed(e);
+                }
+            }
+        }
+        return error;
+    }
+
+    /**
      * Orders by the inverse of correlation coefficients. Highest coefficients (best correlations)
      * are first, lower coefficients are next, {@link Float#NaN} values are last.
+     *
+     * <p><b>Note:</b> this comparison is inconsistent with {@link #equals(Object)}.
+     * The fact that {@link ProjectedTransformTry} instances are comparable should
+     * not be visible in public API.</p>
      */
     @Override
     public int compareTo(final ProjectedTransformTry other) {
         return Float.compare(-correlation, -other.correlation);
+    }
+
+    /**
+     * Implements the {@link Map.Entry#equals(Object)} contract.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof Map.Entry<?,?>) {
+            final Map.Entry<?,?> other = (Map.Entry<?,?>) obj;
+            return name.equals(other.getKey()) && projection.equals(other.getValue());
+        }
+        return false;
+    }
+
+    /**
+     * Implements the {@link Map.Entry#hashCode()} contract.
+     */
+    @Override
+    public int hashCode() {
+        return name.hashCode() ^ projection.hashCode();
     }
 
     /**
@@ -329,9 +433,6 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
      * @return format used for writing coefficients, or {@code null}.
      */
     final NumberFormat summarize(final TableAppender table, NumberFormat nf, final Locale locale) {
-        if (name == null) {
-            name = Vocabulary.getResources(locale).getString(Vocabulary.Keys.Identity);
-        }
         table.append(name).nextColumn();
         String message = "";
         if (error != null) {

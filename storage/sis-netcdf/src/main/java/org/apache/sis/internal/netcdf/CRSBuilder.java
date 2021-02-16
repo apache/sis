@@ -41,6 +41,7 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -169,11 +170,21 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
     /**
      * Infers a new CRS for a {@link Grid}.
      *
-     * @param  decoder  the decoder of the netCDF from which the CRS are constructed.
-     * @param  grid     the grid for which the CRS are constructed.
+     * <h4>CRS replacements</h4>
+     * The {@code linearizationTargets} argument allows to replace some CRSs inferred by this method by hard-coded CRSs.
+     * This is non-empty only when reading a netCDF file for a specific profile, i.e. a file decoded with a subclass of
+     * {@link Convention}. The CRS to be replaced is inferred from the axis directions.
+     *
+     * @param  decoder               the decoder of the netCDF from which the CRS are constructed.
+     * @param  grid                  the grid for which the CRS are constructed.
+     * @param  linearizationTargets  CRS to use instead of CRS inferred by this method, or null or empty if none.
+     * @param  reorderGridToCRS      an affine transform doing a final step in a "grid to CRS" transform for ordering axes.
+     *         Not used by this method, but may be modified for taking in account axis order changes caused by replacements
+     *         defined in {@code linearizationTargets}. Ignored (can be null) if {@code linearizationTargets} is null.
      * @return coordinate reference system from the given axes, or {@code null}.
      */
-    public static CoordinateReferenceSystem assemble(final Decoder decoder, final Grid grid)
+    public static CoordinateReferenceSystem assemble(final Decoder decoder, final Grid grid,
+            final List<CoordinateReferenceSystem> linearizationTargets, final Matrix reorderGridToCRS)
             throws DataStoreException, FactoryException, IOException
     {
         final List<CRSBuilder<?,?>> builders = new ArrayList<>(4);
@@ -183,6 +194,14 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
         final SingleCRS[] components = new SingleCRS[builders.size()];
         for (int i=0; i < components.length; i++) {
             components[i] = builders.get(i).build(decoder, true);
+        }
+        /*
+         * If there is hard-coded CRS implied by `Convention.linearizers()`, use it now.
+         * We do not verify the datum; we assume that the linearizer that built the CRS
+         * was consistent with `Convention.defaultHorizontalCRS(false)`.
+         */
+        if ((linearizationTargets != null) && !linearizationTargets.isEmpty()) {
+            Linearizer.replaceInCompoundCRS(components, linearizationTargets, reorderGridToCRS);
         }
         switch (components.length) {
             case 0: return null;

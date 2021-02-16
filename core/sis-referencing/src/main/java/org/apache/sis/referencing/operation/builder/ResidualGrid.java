@@ -165,10 +165,12 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * @param residuals     the residual data, as translations to apply on the result of affine transform.
      * @param precision     desired precision of inverse transformations in unit of grid cells.
      * @param periods       if grid coordinates in some dimensions are cyclic, their periods in units of target CRS.
+     * @param linearizer    the linearizer that have been applied, or {@code null} if none.
      */
     ResidualGrid(final LinearTransform sourceToGrid, final LinearTransform gridToTarget,
             final int nx, final int ny, final float[] residuals, final double precision,
-            final double[] periods) throws TransformException
+            final double[] periods, final ProjectedTransformTry linearizer)
+            throws TransformException
     {
         super(Units.UNITY, sourceToGrid, new int[] {nx, ny}, true, Units.UNITY);
         this.gridToTarget   = gridToTarget;
@@ -176,7 +178,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
         this.accuracy       = precision;
         this.scanlineStride = nx;
         double[] periodVector = null;
-        if (periods != null && gridToTarget.isAffine()) {
+        if (periods != null && linearizer == null && gridToTarget.isAffine()) {
             /*
              * We require the transform to be affine because it makes the Jacobian independent of
              * coordinate values. It allows us to replace a period in target CRS units by periods

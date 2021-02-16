@@ -79,6 +79,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotCreateGridGeometry_3 = 12;
 
         /**
+         * Can not inject component “{0}” in the reference system.
+         */
+        public static final short CanNotInjectComponent_1 = 26;
+
+        /**
          * Can not relate dimension “{2}” of variable “{1}” to a coordinate system dimension in netCDF
          * file “{0}”.
          */

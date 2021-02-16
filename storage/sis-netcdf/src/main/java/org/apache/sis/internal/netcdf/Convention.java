@@ -356,10 +356,18 @@ public class Convention {
      * one resulting in best {@linkplain org.apache.sis.math.Plane#fit linear regression correlation coefficients}
      * will be selected.
      *
+     * <p>If the returned set is non-empty, exactly one of the linearizers will be applied. If not applying any
+     * linearizer is an acceptable solution, then an identity linearizer should be explicitly returned.</p>
+     *
+     * <p>The returned set shall not contain two linearizers of the same {@linkplain Linearizer#type type}
+     * because the types (not the full linearizers) are used in keys for caching localization grids.</p>
+     *
      * <p>Default implementation returns an empty set.</p>
      *
      * @param  decoder  the netCDF file for which to get linearizer candidates.
      * @return enumeration of two-dimensional non-linear transforms to try on the localization grid.
+     *
+     * @see #defaultHorizontalCRS(boolean)
      */
     public Set<Linearizer> linearizers(final Decoder decoder) {
         return Collections.emptySet();
