@@ -39,7 +39,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>21</version>
+    <version>23</version>
   </parent>
 
 
@@ -446,13 +446,13 @@
       <dependency>
         <groupId>com.esri.geometry</groupId>
         <artifactId>esri-geometry-api</artifactId>
-        <version>2.2.3</version>
+        <version>2.2.4</version>
         <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>org.locationtech.jts</groupId>
         <artifactId>jts-core</artifactId>
-        <version>1.17.0</version>
+        <version>1.18.0</version>
         <optional>true</optional>
       </dependency>
       <dependency>
@@ -464,7 +464,7 @@
       <dependency>
         <groupId>net.sf.geographiclib</groupId>
         <artifactId>GeographicLib-Java</artifactId>
-        <version>1.50</version>
+        <version>1.51</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -488,7 +488,7 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.19</version>
+        <version>1.20</version>
       </dependency>
 
       <!-- Databases -->
@@ -501,13 +501,13 @@
       <dependency>
         <groupId>org.hsqldb</groupId>
         <artifactId>hsqldb</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.1</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
-        <version>42.2.8</version>
+        <version>42.2.18</version>
         <scope>test</scope>
       </dependency>
 
@@ -546,13 +546,13 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>5.5.2</version>
+      <version>5.8.0-M1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
-      <version>5.5.2</version>
+      <version>5.8.0-M1</version>
       <scope>test</scope>
     </dependency>
     <dependency>   <!-- To be removed after https://issues.apache.org/jira/browse/SIS-469 is done. -->
@@ -569,7 +569,7 @@
          The last properties in this list depend on the Apache SIS branch.
        =================================================================== -->
   <properties>
-    <netcdf.version>4.6.14</netcdf.version>
+    <netcdf.version>4.6.15</netcdf.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
     <website.locale>en</website.locale>
@@ -581,7 +581,7 @@
     <sis.non-free.version>1.0</sis.non-free.version>                <!-- Used only if "non-free" profile is activated. -->
     <javafx.version>14.0.1</javafx.version>                         <!-- Used only if "javafx" profile is activated. -->
     <geoapi.version>4.0-SNAPSHOT</geoapi.version>
-    <jaxb.version>2.3.2</jaxb.version>
+    <jaxb.version>2.3.3</jaxb.version>
   </properties>
 
   <profiles>
