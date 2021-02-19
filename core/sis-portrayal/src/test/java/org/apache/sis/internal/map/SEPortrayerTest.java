@@ -61,6 +61,7 @@ import org.opengis.feature.FeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.FilterFactory2;
+import org.opengis.filter.PropertyIsEqualTo;
 import org.opengis.filter.identity.Identifier;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
@@ -571,8 +572,8 @@ public class SEPortrayerTest extends TestCase {
             final Feature feature = presentation.getCandidate();
             final FeatureType type = feature.getType();
             assertEquals(2, type.getProperties(true).size());
-            type.getProperty(AttributeConvention.IDENTIFIER);
-            type.getProperty(AttributeConvention.GEOMETRY);
+            assertNotNull(type.getProperty(AttributeConvention.IDENTIFIER));
+            assertNotNull(type.getProperty(AttributeConvention.GEOMETRY));
         }
 
         {
@@ -587,14 +588,60 @@ public class SEPortrayerTest extends TestCase {
             final Feature feature = presentation.getCandidate();
             final FeatureType type = feature.getType();
             assertEquals(6, type.getProperties(true).size());
-            type.getProperty(AttributeConvention.IDENTIFIER);
-            type.getProperty(AttributeConvention.GEOMETRY);
-            type.getProperty(AttributeConvention.ENVELOPE_PROPERTY.toString());
-            type.getProperty("id");
-            type.getProperty("geom");
-            type.getProperty("description");
+            assertNotNull(type.getProperty(AttributeConvention.IDENTIFIER));
+            assertNotNull(type.getProperty(AttributeConvention.GEOMETRY));
+            assertNotNull(type.getProperty(AttributeConvention.ENVELOPE_PROPERTY.toString()));
+            assertNotNull(type.getProperty("id"));
+            assertNotNull(type.getProperty("geom"));
+            assertNotNull(type.getProperty("description"));
         }
+    }
 
+    /**
+     * Test all properties used in the style are returned
+     * in the presentation features.
+     */
+    @Test
+    public void testStylePropertiesReturned() {
+
+        final PropertyIsEqualTo filter = filterFactory.equals(filterFactory.property("id"), filterFactory.literal("2"));
+
+        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        symbolizer.perpendicularOffset = filterFactory.property("description");
+
+        final MockRule rule = new MockRule();
+        rule.symbolizers().add(symbolizer);
+        rule.setFilter(filter);
+
+        final MockStyle style = new MockStyle();
+        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        style.featureTypeStyles().add(fts);
+        fts.rules().add(rule);
+
+        final MapLayer fishLayer = new MapLayer();
+        fishLayer.setData(fishes);
+        fishLayer.setStyle(style);
+        final MapLayers layers = new MapLayers();
+        layers.getComponents().add(fishLayer);
+
+
+        final GridGeometry grid = new GridGeometry(new GridExtent(360, 180), CRS.getDomainOfValidity(CommonCRS.WGS84.normalizedGeographic()), GridOrientation.REFLECTION_Y);
+
+        // test without preserve properties
+        // we expect identifier, geometry, id(used by rule filter), description (used in symbolizer)
+        final SEPortrayer portrayer = new SEPortrayer();
+        portrayer.setPreserveProperties(false);
+        final Stream<Presentation> stream = portrayer.present(grid, layers);
+        final List<Presentation> presentations = stream.collect(Collectors.toList());
+        assertEquals(1, presentations.size());
+        final SEPresentation presentation = (SEPresentation) presentations.get(0);
+        final Feature feature = presentation.getCandidate();
+        final FeatureType type = feature.getType();
+        assertEquals(4, type.getProperties(true).size());
+        assertNotNull(type.getProperty(AttributeConvention.IDENTIFIER));
+        assertNotNull(type.getProperty(AttributeConvention.GEOMETRY));
+        assertNotNull(type.getProperty("id"));
+        assertNotNull(type.getProperty("description"));
     }
 
     private static class Match {

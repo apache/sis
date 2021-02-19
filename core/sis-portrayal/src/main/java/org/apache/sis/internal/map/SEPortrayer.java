@@ -653,7 +653,10 @@ public final class SEPortrayer {
      */
     private static Set<String> propertiesNames(final Collection<? extends Rule> rules) {
         final PropertyNameCollector collector = new PropertyNameCollector();
-        rules.forEach(collector::visit);
+        for (Rule r : rules) {
+            collector.visit(r);
+            collector.visit(r.getFilter());
+        }
         return collector.getPropertyNames()
                 .stream()
                 .map(PropertyName::getPropertyName).collect(Collectors.toSet());

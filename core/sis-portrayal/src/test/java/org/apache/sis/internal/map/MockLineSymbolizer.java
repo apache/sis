@@ -30,13 +30,13 @@ import org.opengis.style.StyleVisitor;
  */
 public final class MockLineSymbolizer implements LineSymbolizer {
 
-    private String name;
-    private Description description;
+    String name;
+    Description description;
 
-    private Stroke stroke;
-    private Expression perpendicularOffset;
-    private Unit<Length> unitOfMeasure;
-    private Expression geometry;
+    Stroke stroke;
+    Expression perpendicularOffset;
+    Unit<Length> unitOfMeasure;
+    Expression geometry;
 
     @Override
     public String getName() {
