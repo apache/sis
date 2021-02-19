@@ -112,7 +112,24 @@ public class SEPortrayerTest extends TestCase {
         fish2.setPropertyValue("geom", point2);
         fish2.setPropertyValue("description", "A small blue fish");
 
-        fishes = new MemoryFeatureSet(null, fishType, Arrays.asList(fish1, fish2));
+        //a special fish with a sub-type
+        final FeatureTypeBuilder sharkbuilder = new FeatureTypeBuilder();
+        sharkbuilder.setName("shark");
+        sharkbuilder.setSuperTypes(fishType);
+        sharkbuilder.addAttribute(String.class).setName("specie");
+        sharkbuilder.addAttribute(Double.class).setName("length");
+        final FeatureType sharkType = sharkbuilder.build();
+
+        final Point point3 = gf.createPoint(new Coordinate(30, 40));
+        point3.setUserData(crs);
+        final Feature shark1 = sharkType.newInstance();
+        shark1.setPropertyValue("id", "100");
+        shark1.setPropertyValue("geom", point3);
+        shark1.setPropertyValue("description", "dangerous fish");
+        shark1.setPropertyValue("specie", "White Shark");
+        shark1.setPropertyValue("length", 12.0);
+
+        fishes = new MemoryFeatureSet(null, sharkType, Arrays.asList(fish1, fish2, shark1));
 
 
         final FeatureTypeBuilder boatbuilder = new FeatureTypeBuilder();
@@ -161,6 +178,9 @@ public class SEPortrayerTest extends TestCase {
                             se.getLayer(),
                             se.getResource(),
                             se.getSymbolizer()));
+                } else if (t instanceof ExceptionPresentation) {
+                    final ExceptionPresentation ep = (ExceptionPresentation) t;
+                    ids.add(new Match(ep.getException()));
                 }
             }
         });
@@ -194,9 +214,10 @@ public class SEPortrayerTest extends TestCase {
         layers.getComponents().add(boatLayer);
 
         final Set<Match> presentations = present(layers);
-        assertEquals(4, presentations.size());
+        assertEquals(5, presentations.size());
         assertTrue(presentations.contains(new Match("1", fishLayer, fishes, symbolizer)));
         assertTrue(presentations.contains(new Match("2", fishLayer, fishes, symbolizer)));
+        assertTrue(presentations.contains(new Match("100", fishLayer, fishes, symbolizer)));
         assertTrue(presentations.contains(new Match("10", boatLayer, boats, symbolizer)));
         assertTrue(presentations.contains(new Match("20", boatLayer, boats, symbolizer)));
     }
@@ -337,9 +358,10 @@ public class SEPortrayerTest extends TestCase {
         layers.getComponents().add(boatLayer);
 
         final Set<Match> presentations = present(layers);
-        assertEquals(2, presentations.size());
+        assertEquals(3, presentations.size());
         assertTrue(presentations.contains(new Match("1", fishLayer, fishes, symbolizer)));
         assertTrue(presentations.contains(new Match("2", fishLayer, fishes, symbolizer)));
+        assertTrue(presentations.contains(new Match("100", fishLayer, fishes, symbolizer)));
     }
 
     /**
@@ -422,11 +444,47 @@ public class SEPortrayerTest extends TestCase {
         layers.getComponents().add(boatLayer);
 
         final Set<Match> presentations = present(layers);
-        assertEquals(4, presentations.size());
+        assertEquals(5, presentations.size());
         assertTrue(presentations.contains(new Match("1", fishLayer, fishes, symbolizerMatch)));
         assertTrue(presentations.contains(new Match("2", fishLayer, fishes, symbolizerMatch)));
+        assertTrue(presentations.contains(new Match("100", fishLayer, fishes, symbolizerMatch)));
         assertTrue(presentations.contains(new Match("10", boatLayer, boats, symbolizerMatch)));
         assertTrue(presentations.contains(new Match("20", boatLayer, boats, symbolizerMatch)));
+    }
+
+    /**
+     * Portray using defined rule filter.
+     * The rule uses a property only available on the shark sub type.
+     * Test expect only features with specy equals "White Shark" to match.
+     */
+    @Test
+    public void testRuleFilterOnSubType() {
+
+        final PropertyIsEqualTo filter = filterFactory.equals(filterFactory.property("specie"), filterFactory.literal("White Shark"));
+
+        final MockStyle style = new MockStyle();
+        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        final MockRule rule = new MockRule();
+        rule.setFilter(filter);
+        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        style.featureTypeStyles().add(fts);
+        fts.rules().add(rule);
+        rule.symbolizers().add(symbolizer);
+
+
+        final MapLayer fishLayer = new MapLayer();
+        fishLayer.setData(fishes);
+        fishLayer.setStyle(style);
+        final MapLayer boatLayer = new MapLayer();
+        boatLayer.setData(boats);
+        boatLayer.setStyle(style);
+        final MapLayers layers = new MapLayers();
+        layers.getComponents().add(fishLayer);
+        layers.getComponents().add(boatLayer);
+
+        final Set<Match> presentations = present(layers);
+        assertEquals(1, presentations.size());
+        assertTrue(presentations.contains(new Match("100", fishLayer, fishes, symbolizer)));
     }
 
     /**
@@ -468,9 +526,10 @@ public class SEPortrayerTest extends TestCase {
         layers.getComponents().add(boatLayer);
 
         final Set<Match> presentations = present(layers);
-        assertEquals(4, presentations.size());
+        assertEquals(5, presentations.size());
         assertTrue(presentations.contains(new Match("1", fishLayer, fishes, symbolizerElse)));
         assertTrue(presentations.contains(new Match("2", fishLayer, fishes, symbolizerElse)));
+        assertTrue(presentations.contains(new Match("100", fishLayer, fishes, symbolizerElse)));
         assertTrue(presentations.contains(new Match("10", boatLayer, boats, symbolizerBase)));
         assertTrue(presentations.contains(new Match("20", boatLayer, boats, symbolizerElse)));
     }
@@ -523,9 +582,10 @@ public class SEPortrayerTest extends TestCase {
         layers.getComponents().add(aggLayer);
 
         final Set<Match> presentations = present(layers);
-        assertEquals(4, presentations.size());
+        assertEquals(5, presentations.size());
         assertTrue(presentations.contains(new Match("1", aggLayer, fishes, symbolizerBase)));
         assertTrue(presentations.contains(new Match("2", aggLayer, fishes, symbolizerBase)));
+        assertTrue(presentations.contains(new Match("100", aggLayer, fishes, symbolizerBase)));
         assertTrue(presentations.contains(new Match("10", aggLayer, boats, symbolizerBase)));
         assertTrue(presentations.contains(new Match("20", aggLayer, boats, symbolizerBase)));
     }
@@ -649,12 +709,22 @@ public class SEPortrayerTest extends TestCase {
         private final MapLayer layer;
         private final Resource resource;
         private final Symbolizer symbolizer;
+        private final Exception exception;
 
         public Match(String identifier, MapLayer layer, Resource resource, Symbolizer symbolizer) {
             this.identifier = identifier;
             this.layer = layer;
             this.resource = resource;
             this.symbolizer = symbolizer;
+            this.exception = null;
+        }
+
+        public Match(Exception e) {
+            this.identifier = null;
+            this.layer = null;
+            this.resource = null;
+            this.symbolizer = null;
+            this.exception = e;
         }
 
         @Override
@@ -664,6 +734,7 @@ public class SEPortrayerTest extends TestCase {
             hash = 29 * hash + Objects.hashCode(this.layer);
             hash = 29 * hash + Objects.hashCode(this.resource);
             hash = 29 * hash + Objects.hashCode(this.symbolizer);
+            hash = 29 * hash + Objects.hashCode(this.exception);
             return hash;
         }
 
@@ -689,6 +760,9 @@ public class SEPortrayerTest extends TestCase {
                 return false;
             }
             if (!Objects.equals(this.symbolizer, other.symbolizer)) {
+                return false;
+            }
+            if (!Objects.equals(this.exception, other.exception)) {
                 return false;
             }
             return true;

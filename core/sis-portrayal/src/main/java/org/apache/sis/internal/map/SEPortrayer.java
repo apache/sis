@@ -406,6 +406,19 @@ public final class SEPortrayer {
         final SimpleQuery query = new SimpleQuery();
         final FeatureType schema = fs.getType();
 
+        //check if some used properties are not part of the type
+        //this means the FeatureSet may contain sub types.
+        //we can not optimize the query
+        if (requiredProperties != null) {
+            for (String pn : requiredProperties) {
+                try {
+                    schema.getProperty(pn);
+                } catch (PropertyNotFoundException e) {
+                    return query;
+                }
+            }
+        }
+
         //search all geometry expression used in the symbols
         boolean allDefined = true;
         final Set<Expression> geomProperties = new HashSet<>();
