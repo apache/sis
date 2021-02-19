@@ -94,6 +94,7 @@ public class SEPortrayerTest extends TestCase {
         fishbuilder.setName("fish");
         fishbuilder.addAttribute(String.class).setName("id").addRole(AttributeRole.IDENTIFIER_COMPONENT);
         fishbuilder.addAttribute(Point.class).setCRS(crs).setName("geom").addRole(AttributeRole.DEFAULT_GEOMETRY);
+        fishbuilder.addAttribute(String.class).setName("description");
         final FeatureType fishType = fishbuilder.build();
 
         final Point point1 = gf.createPoint(new Coordinate(0, 0));
@@ -101,12 +102,14 @@ public class SEPortrayerTest extends TestCase {
         final Feature fish1 = fishType.newInstance();
         fish1.setPropertyValue("id", "1");
         fish1.setPropertyValue("geom", point1);
+        fish1.setPropertyValue("description", "A red fish");
 
         final Point point2 = gf.createPoint(new Coordinate(10, 20));
         point2.setUserData(crs);
         final Feature fish2 = fishType.newInstance();
         fish2.setPropertyValue("id", "2");
         fish2.setPropertyValue("geom", point2);
+        fish2.setPropertyValue("description", "A small blue fish");
 
         fishes = new MemoryFeatureSet(null, fishType, Arrays.asList(fish1, fish2));
 
@@ -115,6 +118,7 @@ public class SEPortrayerTest extends TestCase {
         boatbuilder.setName("boat");
         boatbuilder.addAttribute(String.class).setName("id").addRole(AttributeRole.IDENTIFIER_COMPONENT);
         boatbuilder.addAttribute(Polygon.class).setCRS(crs).setName("geom").addRole(AttributeRole.DEFAULT_GEOMETRY);
+        boatbuilder.addAttribute(String.class).setName("description");
         final FeatureType boatType = boatbuilder.build();
 
         final Polygon poly1 = gf.createPolygon(gf.createLinearRing(new Coordinate[]{new Coordinate(0, 0),new Coordinate(0, 1),new Coordinate(1, 1),new Coordinate(0, 0)}));
@@ -122,12 +126,14 @@ public class SEPortrayerTest extends TestCase {
         final Feature boat1 = boatType.newInstance();
         boat1.setPropertyValue("id", "10");
         boat1.setPropertyValue("geom", poly1);
+        boat1.setPropertyValue("description", "A fishing boat");
 
         final Polygon poly2 = gf.createPolygon(gf.createLinearRing(new Coordinate[]{new Coordinate(0, 0),new Coordinate(0, 1),new Coordinate(1, 1),new Coordinate(0, 0)}));
         poly2.setUserData(crs);
         final Feature boat2 = boatType.newInstance();
         boat2.setPropertyValue("id", "20");
         boat2.setPropertyValue("geom", poly2);
+        boat2.setPropertyValue("description", "A submarine");
 
         boats = new MemoryFeatureSet(null, boatType, Arrays.asList(boat1, boat2));
     }
@@ -521,6 +527,74 @@ public class SEPortrayerTest extends TestCase {
         assertTrue(presentations.contains(new Match("2", aggLayer, fishes, symbolizerBase)));
         assertTrue(presentations.contains(new Match("10", aggLayer, boats, symbolizerBase)));
         assertTrue(presentations.contains(new Match("20", aggLayer, boats, symbolizerBase)));
+    }
+
+    /**
+     * Portray preserving all feature attributes test.
+     */
+    @Test
+    public void testPreserveProperties() {
+
+        final Set<Identifier> ids = new HashSet<>();
+        ids.add(filterFactory.featureId("2"));
+        final Filter filter = filterFactory.id(ids);
+
+        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+
+        final MockRule rule = new MockRule();
+        rule.symbolizers().add(symbolizer);
+        rule.setFilter(filter);
+
+        final MockStyle style = new MockStyle();
+        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        style.featureTypeStyles().add(fts);
+        fts.rules().add(rule);
+
+        final MapLayer fishLayer = new MapLayer();
+        fishLayer.setData(fishes);
+        fishLayer.setStyle(style);
+        final MapLayers layers = new MapLayers();
+        layers.getComponents().add(fishLayer);
+
+
+        final GridGeometry grid = new GridGeometry(new GridExtent(360, 180), CRS.getDomainOfValidity(CommonCRS.WGS84.normalizedGeographic()), GridOrientation.REFLECTION_Y);
+
+        {
+            // test without preserve properties
+            // we expect only identifier and geometry to be available.
+            final SEPortrayer portrayer = new SEPortrayer();
+            portrayer.setPreserveProperties(false);
+            final Stream<Presentation> stream = portrayer.present(grid, layers);
+            final List<Presentation> presentations = stream.collect(Collectors.toList());
+            assertEquals(1, presentations.size());
+            final SEPresentation presentation = (SEPresentation) presentations.get(0);
+            final Feature feature = presentation.getCandidate();
+            final FeatureType type = feature.getType();
+            assertEquals(2, type.getProperties(true).size());
+            type.getProperty(AttributeConvention.IDENTIFIER);
+            type.getProperty(AttributeConvention.GEOMETRY);
+        }
+
+        {
+            // test with preserve properties
+            // we expect only identifier and geometry to be available.
+            final SEPortrayer portrayer = new SEPortrayer();
+            portrayer.setPreserveProperties(true);
+            final Stream<Presentation> stream = portrayer.present(grid, layers);
+            final List<Presentation> presentations = stream.collect(Collectors.toList());
+            assertEquals(1, presentations.size());
+            final SEPresentation presentation = (SEPresentation) presentations.get(0);
+            final Feature feature = presentation.getCandidate();
+            final FeatureType type = feature.getType();
+            assertEquals(6, type.getProperties(true).size());
+            type.getProperty(AttributeConvention.IDENTIFIER);
+            type.getProperty(AttributeConvention.GEOMETRY);
+            type.getProperty(AttributeConvention.ENVELOPE_PROPERTY.toString());
+            type.getProperty("id");
+            type.getProperty("geom");
+            type.getProperty("description");
+        }
+
     }
 
     private static class Match {

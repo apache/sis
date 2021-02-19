@@ -85,7 +85,7 @@ import org.opengis.util.GenericName;
  * Generation a Stream of Presentation for a map.
  *
  * <p>
- * NOTE: this class is a first draft subject to modifications.
+ * NOTE: this class is experimental and subject to modifications.
  * </p>
  *
  * <p>
@@ -142,6 +142,28 @@ public final class SEPortrayer {
             filterFactory = new DefaultFilterFactory();
         }
         this.filterFactory = (FilterFactory2) filterFactory;
+    }
+
+    /**
+     * Hint to avoid decimating feature properties because they may be used
+     * later for other purposes.
+     * Default value is false.
+     *
+     * @return true if all feature properties are preserved in Presentation instances.
+     */
+    public boolean isPreserveProperties() {
+        return preserveProperties;
+    }
+
+    /**
+     * Hint to avoid decimating feature properties because they may be used
+     * later for other purposes.
+     * Default value is false.
+     *
+     * @param preserveProperties set to true to preserve all feature properties in Presentation instances.
+     */
+    public void setPreserveProperties(boolean preserveProperties) {
+        this.preserveProperties = preserveProperties;
     }
 
     /**
