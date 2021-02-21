@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -648,7 +649,16 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setLocales(final Collection<? extends Locale> newValues) {
-        getLocales().addAll(newValues);
+        final Collection<Locale> legacy = getLocales();
+        if (legacy != null) {
+            legacy.addAll(newValues);
+        } else if (!newValues.isEmpty()) {
+            final Map<Locale,Charset> locales = new LinkedHashMap<>();
+            for (final Locale locale : newValues) {
+                locales.put(locale, null);
+            }
+            setLocalesAndCharsets(locales);
+        }
     }
 
     /**
@@ -798,11 +808,15 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         checkWritePermission(parentMetadata);
         // See "Note about deprecated methods implementation"
         DefaultCitation parent = DefaultCitation.castOrCopy(parentMetadata);
-        if (parent == null) {
-            parent = new DefaultCitation();
+        if (newValue != null) {
+            if (parent == null) {
+                parent = new DefaultCitation();
+            }
+            parent.setTitle(new SimpleInternationalString(newValue));
+            setParentMetadata(parent);
+        } else if (parent != null) {
+            parent.setTitle(null);
         }
-        parent.setTitle(new SimpleInternationalString(newValue));
-        setParentMetadata(parent);
     }
 
     /**
@@ -1310,20 +1324,23 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setDataSetUri(final String newValue) throws URISyntaxException {
-        final URI uri = new URI(newValue);
+        final URI uri = (newValue != null) ? new URI(newValue) : null;
         Collection<Identification> info = identificationInfo;   // See "Note about deprecated methods implementation"
         checkWritePermission(MetadataUtilities.valueIfDefined(info));
         AbstractIdentification firstId = AbstractIdentification.castOrCopy(CollectionsExt.first(info));
         if (firstId == null) {
+            if (uri == null) return;
             firstId = new DefaultDataIdentification();
         }
         DefaultCitation citation = DefaultCitation.castOrCopy(firstId.getCitation());
         if (citation == null) {
+            if (uri == null) return;
             citation = new DefaultCitation();
         }
         Collection<OnlineResource> onlineResources = citation.getOnlineResources();
         DefaultOnlineResource firstOnline = DefaultOnlineResource.castOrCopy(CollectionsExt.first(onlineResources));
         if (firstOnline == null) {
+            if (uri == null) return;
             firstOnline = new DefaultOnlineResource();
         }
         firstOnline.setLinkage(uri);
