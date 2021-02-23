@@ -19,18 +19,20 @@ package org.apache.sis.internal.netcdf.ucar;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
-import java.util.EnumSet;
 import java.util.Formatter;
 import java.util.Collection;
+import java.util.Collections;
 import java.io.IOException;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
 import ucar.nc2.NetcdfFile;
+import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.dataset.CoordinateSystem;
 import ucar.nc2.util.CancelTask;
 import ucar.nc2.units.DateUnit;
+import ucar.units.UnitException;
 import ucar.nc2.time.Calendar;
 import ucar.nc2.time.CalendarDate;
 import ucar.nc2.time.CalendarDateFormatter;
@@ -139,7 +141,13 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             throws IOException
     {
         super(geomlib, listeners);
-        file = NetcdfDatasets.openDataset(filename, true, this);
+        final DatasetUrl url = DatasetUrl.findDatasetUrl(filename);
+        /*
+         * It is important to specify only the `CoordSystems` enhancement. In particular the `ConvertUnsigned`
+         * enhancement shall NOT be enabled because it causes the use of integer types twice bigger than needed
+         * (e.g. `int` instead of `short`).
+         */
+        file = NetcdfDatasets.openDataset(url, Collections.singleton(NetcdfDataset.Enhance.CoordSystems), -1, this, null);
         groups = new Group[1];
         initialize();
     }
@@ -353,7 +361,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
         final DateUnit unit;
         try {
             unit = new DateUnit(symbol);
-        } catch (Exception e) {                 // Declared by the DateUnit constructor.
+        } catch (UnitException e) {
             listeners.warning(e);
             return dates;
         }
@@ -468,17 +476,6 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             List<CoordinateSystem> systems = null;
             if (file instanceof NetcdfDataset) {
                 final NetcdfDataset ds = (NetcdfDataset) file;
-                final EnumSet<NetcdfDataset.Enhance> mode = EnumSet.copyOf(ds.getEnhanceMode());
-                if (mode.add(NetcdfDataset.Enhance.CoordSystems)) {
-                    /*
-                     * Should not happen with NetcdfDataset opened by the constructor expecting a filename,
-                     * because that constructor already enhanced the dataset. It may happen however if the
-                     * NetcdfDataset was given explicitly by the user. We try to increase the chances to
-                     * get information we need, but it is not guaranteed to work; it may be too late if we
-                     * already started to use the NetcdfDataset before this point.
-                     */
-                    ds.enhance(mode);
-                }
                 systems = ds.getCoordinateSystems();
                 /*
                  * If the UCAR library does not see any coordinate system in the file, verify if there is
