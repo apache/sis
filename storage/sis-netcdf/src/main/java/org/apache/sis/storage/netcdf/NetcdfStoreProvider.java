@@ -97,6 +97,12 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     private static final String UCAR_CLASSNAME = "ucar.nc2.NetcdfFile";
 
     /**
+     * The name of the {@link ucar.nc2.NetcdfFiles} class, which is {@value}.
+     * This class provides static methods for opening netCDF files.
+     */
+    private static final String FACTORY_CLASSNAME = "ucar.nc2.NetcdfFiles";
+
+    /**
      * The {@link ucar.nc2.NetcdfFile} class, or {@code null} if not found. An attempt to load this class
      * will be performed when first needed since the UCAR library is optional. If not found, then this field
      * will be assigned the {@link Void#TYPE} sentinel value, meaning "No UCAR library on the classpath".
@@ -104,20 +110,20 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     private static Class<?> netcdfFileClass;
 
     /**
-     * If the {@link #netcdfFileClass} has been found, then the {@link ucar.nc2.NetcdfFile#canOpen(String)}
-     * static method.
+     * If the {@value #FACTORY_CLASSNAME} class has been found,
+     * then the {@link ucar.nc2.NetcdfFiles#canOpen(String)} static method.
      */
     private static volatile Method canOpenFromPath;
 
     /**
-     * If the {@link #netcdfFileClass} has been found, then the {@link DecoderWrapper} constructor receiving
-     * in argument the name of the netCDF file as a {@link String} object. Otherwise {@code null}.
+     * If the {@value #FACTORY_CLASSNAME} class has been found, then the {@link DecoderWrapper} constructor
+     * receiving in argument the name of the netCDF file as a {@link String} object. Otherwise {@code null}.
      */
     private static volatile Constructor<? extends Decoder> createFromPath;
 
     /**
-     * If the {@link #netcdfFileClass} has been found, then the {@link DecoderWrapper} constructor receiving
-     * in argument a UCAR {@code NetcdfFile} object. Otherwise {@code null}.
+     * If the {@value #FACTORY_CLASSNAME} class has been found, then the {@link DecoderWrapper} constructor
+     * receiving in argument a UCAR {@code NetcdfFile} object. Otherwise {@code null}.
      */
     private static volatile Constructor<? extends Decoder> createFromUCAR;
 
@@ -218,7 +224,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                          * in which case UCAR tries to open it as a file even if it is not a file. For example
                          * we get this exception for "jar:file:/file.jar!/entry.nc".
                          */
-                        Logging.recoverableException(getLogger(), netcdfFileClass, "canOpen", cause);
+                        Logging.recoverableException(getLogger(), NetcdfStoreProvider.class, "probeContent", cause);
                         return ProbeResult.UNSUPPORTED_STORAGE;
                     }
                     throw new DataStoreException(e);                        // The cause may be IOException.
@@ -365,8 +371,10 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                  * The sychronization is mostly a safety against concurrent execution of 'reset()'.
                  */
                 try {
-                    netcdfFileClass = Class.forName(UCAR_CLASSNAME);
-                    canOpenFromPath = netcdfFileClass.getMethod("canOpen", String.class);
+                    final Class<?> netcdfFactoryClass;
+                    netcdfFileClass    = Class.forName(UCAR_CLASSNAME);
+                    netcdfFactoryClass = Class.forName(FACTORY_CLASSNAME);
+                    canOpenFromPath    = netcdfFactoryClass.getMethod("canOpen", String.class);
                     if (canOpenFromPath.getReturnType() == Boolean.TYPE) {
                         /*
                          * At this point we found the class and method from UCAR API. Now get the Apache SIS wrapper

@@ -26,7 +26,7 @@ http://github.com/Esri/geometry-api-java/
 
 The `sis-netcdf` module can optionally use the UCAR netCDF library
 developed by Unidata under MIT-style license.
-http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/
+https://www.unidata.ucar.edu/software/netcdf-java/
 
 The test suite uses software developed by the JUnit community
 under Eclipse public license version 2.

@@ -61,9 +61,7 @@ public enum AxisType {
      * Mapping from values of the {@code "_CoordinateAxisType"} attribute or axis name to the abbreviation.
      * Keys are lower cases and values are controlled vocabulary documented in {@link Axis#abbreviation}.
      *
-     * <div class="note">"GeoX" and "GeoY" stands for projected coordinates, not geocentric coordinates
-     * (<a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/CoordinateAttributes.html#AxisTypes">source</a>).
-     * </div>
+     * <div class="note">"GeoX" and "GeoY" stands for projected coordinates, not geocentric coordinates.</div>
      *
      * @see abbreviation(String)
      */

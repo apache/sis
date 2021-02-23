@@ -22,13 +22,12 @@ import java.util.List;
 import java.util.EnumSet;
 import java.util.Formatter;
 import java.util.Collection;
-import java.util.Collections;
 import java.io.IOException;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
-import ucar.nc2.VariableIF;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.dataset.CoordinateSystem;
 import ucar.nc2.util.CancelTask;
 import ucar.nc2.units.DateUnit;
@@ -38,7 +37,7 @@ import ucar.nc2.time.CalendarDateFormatter;
 import ucar.nc2.ft.FeatureDataset;
 import ucar.nc2.ft.FeatureDatasetPoint;
 import ucar.nc2.ft.FeatureDatasetFactoryManager;
-import ucar.nc2.ft.FeatureCollection;
+import ucar.nc2.ft.DsgFeatureCollection;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
@@ -105,6 +104,13 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     private transient Grid[] geometries;
 
     /**
+     * Sets to {@code true} for declaring that the operation completed, either successfully or with an error.
+     *
+     * @see #isDone()
+     */
+    private boolean done;
+
+    /**
      * Creates a new decoder for the given netCDF file. While this constructor accepts arbitrary
      * {@link NetcdfFile} instance, the {@link NetcdfDataset} subclass is necessary in order to
      * get coordinate system information.
@@ -133,9 +139,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             throws IOException
     {
         super(geomlib, listeners);
-        final NetcdfDataset ds = NetcdfDataset.openDataset(filename, false, this);
-        ds.enhance(Collections.singleton(NetcdfDataset.Enhance.CoordSystems));
-        file = ds;
+        file = NetcdfDatasets.openDataset(filename, true, this);
         groups = new Group[1];
         initialize();
     }
@@ -244,7 +248,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @return the attribute, or {@code null} if none.
      */
     private Attribute findAttribute(final Group group, final String name) {
-        Attribute value = (group != null) ? group.findAttributeIgnoreCase(name)
+        Attribute value = (group != null) ? group.attributes().findAttributeIgnoreCase(name)
                                           : file.findGlobalAttributeIgnoreCase(name);
         if (value == null) {
             final String mappedName = convention().mapAttributeName(name);
@@ -253,7 +257,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
              * since this is only an optimization for a common case.
              */
             if (mappedName != name) {
-                value = (group != null) ? group.findAttributeIgnoreCase(mappedName)
+                value = (group != null) ? group.attributes().findAttributeIgnoreCase(mappedName)
                                         : file.findGlobalAttributeIgnoreCase(mappedName);
             }
         }
@@ -295,7 +299,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                 if (attribute != null) {
                     final Number value = attribute.getNumericValue();
                     if (value != null) {
-                        return Utils.fixSign(value, attribute.isUnsigned());
+                        return Utils.fixSign(value, attribute.getDataType().isUnsigned());
                     }
                     String asString = Utils.nonEmpty(attribute.getStringValue());
                     if (asString != null) {
@@ -392,7 +396,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @SuppressWarnings({"ReturnOfCollectionOrArrayField", "null"})
     public Variable[] getVariables() {
         if (variables == null) {
-            final List<? extends VariableIF> all = file.getVariables();
+            final List<? extends ucar.nc2.Variable> all = file.getVariables();
             variables = new VariableWrapper[(all != null) ? all.size() : 0];
             for (int i=0; i<variables.length; i++) {
                 variables[i] = new VariableWrapper(this, all.get(i));
@@ -405,7 +409,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * Returns the Apache SIS wrapper for the given UCAR variable. The given variable shall be non-null
      * and should be one of the variables wrapped by the instances returned by {@link #getVariables()}.
      */
-    final VariableWrapper getWrapperFor(final VariableIF variable) {
+    final VariableWrapper getWrapperFor(final ucar.nc2.Variable variable) {
         for (VariableWrapper c : (VariableWrapper[]) getVariables()) {
             if (c.isWrapperFor(variable)) {
                 return c;
@@ -431,7 +435,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                     new Formatter(new LogAdapter(listeners), listeners.getLocale()));
         }
         if (features instanceof FeatureDatasetPoint) {
-            final List<FeatureCollection> fc = ((FeatureDatasetPoint) features).getPointFeatureCollectionList();
+            final List<DsgFeatureCollection> fc = ((FeatureDatasetPoint) features).getPointFeatureCollectionList();
             if (fc != null && !fc.isEmpty()) {
                 final FeaturesWrapper[] wrappers = new FeaturesWrapper[fc.size()];
                 try {
@@ -516,7 +520,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     protected Variable findVariable(final String name) {
-        final VariableIF v = file.findVariable(name);
+        final ucar.nc2.Variable v = file.findVariable(name);
         return (v != null) ? getWrapperFor(v) : null;
     }
 
@@ -528,7 +532,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     protected Node findNode(final String name) {
-        final VariableIF v = file.findVariable(name);
+        final ucar.nc2.Variable v = file.findVariable(name);
         if (v != null) {
             return getWrapperFor(v);
         }
@@ -563,9 +567,9 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
         for (final ucar.nc2.Variable variable : group.getVariables()) {
             final TreeTable.Node node = branch.newChild();
             node.setValue(TableColumn.NAME, variable.getShortName());
-            addAttributesTo(node, variable.getAttributes());
+            addAttributesTo(node, variable.attributes());
         }
-        addAttributesTo(branch, group.getAttributes());
+        addAttributesTo(branch, group.attributes());
     }
 
     /**
@@ -576,7 +580,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @param  branch      where to add new nodes for the given attributes.
      * @param  attributes  the attributes to add to the specified branch.
      */
-    private static void addAttributesTo(final TreeTable.Node branch, final List<Attribute> attributes) {
+    private static void addAttributesTo(final TreeTable.Node branch, final Iterable<Attribute> attributes) {
         if (attributes != null) {
             for (final Attribute attribute : attributes) {
                 final TreeTable.Node node = branch.newChild();
@@ -632,6 +636,26 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @Override
     public void setError(final String message) {
         listeners.warning(message);
+    }
+
+    /**
+     * Invoked by UCAR netCDF library when the operation completed, either successfully or with an error.
+     *
+     * @param  done  the completion status.
+     */
+    @Override
+    public void setDone(final boolean done) {
+        this.done = done;
+    }
+
+    /**
+     * Returns {@code true} if the operation completed, either successfully or with an error.
+     *
+     * @return the completion status.
+     */
+    @Override
+    public boolean isDone() {
+        return done;
     }
 
     /**

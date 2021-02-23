@@ -83,7 +83,6 @@ import ucar.nc2.constants.CF;
  * @version 1.1
  *
  * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
- * @see <a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/StandardCoordinateTransforms.html">UCAR projections</a>
  *
  * @since 1.0
  * @module

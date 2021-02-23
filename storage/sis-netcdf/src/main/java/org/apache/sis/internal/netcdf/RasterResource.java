@@ -468,7 +468,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
             final MathTransform1D mt = band.getTransferFunction().getTransform();
             if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
                 /*
-                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
+                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissingUnsigned):
                  * if the type of the range is equal to the type of the scale, and the type of the
                  * data is not wider, then assume that the minimum and maximum are real values.
                  * This is identified in Apache SIS by the range given as a MeasurementRange.

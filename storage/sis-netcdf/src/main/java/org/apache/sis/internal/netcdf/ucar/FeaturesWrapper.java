@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.storage.event.StoreListeners;
-import ucar.nc2.ft.FeatureCollection;
+import ucar.nc2.ft.DsgFeatureCollection;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -32,7 +32,7 @@ import org.opengis.feature.FeatureType;
  * Created by {@link DecoderWrapper#getDiscreteSampling(Object)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  *
@@ -43,7 +43,7 @@ final class FeaturesWrapper extends DiscreteSampling {
     /**
      * The feature dataset provided by the UCAR library.
      */
-    private final FeatureCollection features;
+    private final DsgFeatureCollection features;
 
     /**
      * Creates a new discrete sampling parser.
@@ -53,7 +53,7 @@ final class FeaturesWrapper extends DiscreteSampling {
      * @param  lock       the lock to use in {@code synchronized(lock)} statements.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    FeaturesWrapper(final FeatureCollection features, final GeometryLibrary factory, final StoreListeners listeners,
+    FeaturesWrapper(final DsgFeatureCollection features, final GeometryLibrary factory, final StoreListeners listeners,
                     final Object lock)
     {
         super(factory, listeners, lock);

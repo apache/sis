@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.Map;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.io.File;
 import java.io.IOException;
@@ -27,14 +28,14 @@ import ucar.ma2.Section;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
-import ucar.nc2.VariableIF;
-import ucar.nc2.dataset.Enhancements;
+import ucar.nc2.Variable;
+import ucar.nc2.dataset.VariableDS;
 import ucar.nc2.dataset.VariableEnhanced;
 import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dataset.CoordinateAxis2D;
 import ucar.nc2.dataset.CoordinateSystem;
-import ucar.nc2.dataset.EnhanceScaleMissing;
+import ucar.nc2.dataset.EnhanceScaleMissingUnsigned;
 import ucar.nc2.units.SimpleUnit;
 import ucar.nc2.units.DateUnit;
 import ucar.nc2.constants._Coordinate;
@@ -45,8 +46,6 @@ import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.GridAdjustment;
-import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.storage.DataStoreException;
@@ -57,7 +56,7 @@ import ucar.nc2.constants.AxisType;
 
 
 /**
- * A {@link Variable} backed by the UCAR netCDF library.
+ * A {@link org.apache.sis.internal.netcdf.Variable} backed by the UCAR netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -65,11 +64,11 @@ import ucar.nc2.constants.AxisType;
  * @since   0.3
  * @module
  */
-final class VariableWrapper extends Variable {
+final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
     /**
      * The netCDF variable. This is typically an instance of {@link VariableEnhanced}.
      */
-    private final VariableIF variable;
+    private final Variable variable;
 
     /**
      * The variable without enhancements. May be the same instance than {@link #variable}
@@ -78,12 +77,12 @@ final class VariableWrapper extends Variable {
      * attributes are hidden by {@link VariableEnhanced}. In order to allow metadata reader
      * to find them, we query attributes in the original variable instead.
      */
-    private final VariableIF raw;
+    private final Variable raw;
 
     /**
      * Creates a new variable wrapping the given netCDF interface.
      */
-    VariableWrapper(final Decoder decoder, VariableIF v) {
+    VariableWrapper(final Decoder decoder, Variable v) {
         super(decoder);
         variable = v;
         if (v instanceof VariableEnhanced) {
@@ -98,8 +97,8 @@ final class VariableWrapper extends Variable {
          * Only if UCAR did not recognized the enumeration, fallback on Apache SIS implementation.
          */
         Map<Integer,String> enumeration = null;
-        if (variable.getDataType().isEnum() && (variable instanceof ucar.nc2.Variable)) {
-            enumeration = ((ucar.nc2.Variable) variable).getEnumTypedef().getMap();
+        if (variable.getDataType().isEnum()) {
+            enumeration = variable.getEnumTypedef().getMap();
         }
         setEnumeration(enumeration);        // Use SIS fallback if `enumeration` is null.
     }
@@ -109,11 +108,9 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public String getFilename() {
-        if (variable instanceof ucar.nc2.Variable) {
-            final String name = Utils.nonEmpty(((ucar.nc2.Variable) variable).getDatasetLocation());
-            if (name != null) {
-                return name.substring(Math.max(name.lastIndexOf('/'), name.lastIndexOf(File.separatorChar)) + 1);
-            }
+        final String name = Utils.nonEmpty(variable.getDatasetLocation());
+        if (name != null) {
+            return name.substring(Math.max(name.lastIndexOf('/'), name.lastIndexOf(File.separatorChar)) + 1);
         }
         return super.getFilename();
     }
@@ -203,19 +200,20 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public DataType getDataType() {
-        final DataType type;
         switch (variable.getDataType()) {
             case STRING: return DataType.STRING;
             case CHAR:   return DataType.CHAR;
-            case BYTE:   type = DataType.BYTE;   break;
-            case SHORT:  type = DataType.SHORT;  break;
-            case INT:    type = DataType.INT;    break;
-            case LONG:   type = DataType.INT64;  break;
+            case BYTE:   return DataType.BYTE;
+            case UBYTE:  return DataType.UBYTE;
+            case SHORT:  return DataType.SHORT;
+            case USHORT: return DataType.USHORT;
+            case INT:    return DataType.INT;
+            case UINT:   return DataType.UINT;
+            case LONG:   return DataType.INT64;
             case FLOAT:  return DataType.FLOAT;
             case DOUBLE: return DataType.DOUBLE;
             default:     return DataType.UNKNOWN;
         }
-        return type.unsigned(variable.isUnsigned());
     }
 
     /**
@@ -231,7 +229,8 @@ final class VariableWrapper extends Variable {
      */
     @Override
     protected boolean isCoordinateSystemAxis() {
-        return variable.isCoordinateVariable();
+        // `isCoordinateVariable()` is not sufficient in the case of "runtime" axis.
+        return variable.isCoordinateVariable() || (variable instanceof CoordinateAxis);
     }
 
     /**
@@ -272,9 +271,9 @@ final class VariableWrapper extends Variable {
          * systems identified by UCAR for this variable while super.getGrid(…) inspects all dimensions found in
          * the file. Note that those coordinate systems may have been set by the user.
          */
-        if (variable instanceof Enhancements) {
+        if (variable instanceof VariableDS) {
             final Grid[] grids = decoder.getGrids();    // Must be first for forcing some UCAR CS constructions.
-            final List<CoordinateSystem> systems = ((Enhancements) variable).getCoordinateSystems();
+            final List<CoordinateSystem> systems = ((VariableDS) variable).getCoordinateSystems();
             if (!systems.isEmpty()) {
                 GridWrapper grid = null;
                 final String[] axisNames = decoder.convention().namesOfAxisVariables(this);
@@ -329,7 +328,7 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public Collection<String> getAttributeNames() {
-        return toNames(variable.getAttributes());
+        return toNames(variable.attributes());
     }
 
     /**
@@ -338,7 +337,7 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public Class<?> getAttributeType(final String attributeName) {
-        return getAttributeType(raw.findAttributeIgnoreCase(attributeName));
+        return getAttributeType(raw.attributes().findAttributeIgnoreCase(attributeName));
     }
 
     /**
@@ -351,8 +350,11 @@ final class VariableWrapper extends Variable {
             }
             switch (attribute.getDataType()) {
                 case BYTE:   return Byte.class;
+                case UBYTE:
                 case SHORT:  return Short.class;
+                case USHORT:
                 case INT:    return Integer.class;
+                case UINT:
                 case LONG:   return Long.class;
                 case FLOAT:  return Float.class;
                 case DOUBLE: return Double.class;
@@ -372,7 +374,7 @@ final class VariableWrapper extends Variable {
      */
     @Override
     protected Object getAttributeValue(final String attributeName) {
-        return getAttributeValue(raw.findAttributeIgnoreCase(attributeName));
+        return getAttributeValue(raw.attributes().findAttributeIgnoreCase(attributeName));
     }
 
     /**
@@ -388,7 +390,7 @@ final class VariableWrapper extends Variable {
                     if (value instanceof String) {
                         return Utils.nonEmpty((String) value);
                     } else if (value instanceof Number) {
-                        return Utils.fixSign((Number) value, attribute.isUnsigned());
+                        return Utils.fixSign((Number) value, attribute.getDataType().isUnsigned());
                     }
                     break;
                 }
@@ -405,7 +407,9 @@ final class VariableWrapper extends Variable {
                         }
                     } else {
                         final Array array = attribute.getValues();
-                        return createDecimalVector(array.get1DJavaArray(array.getElementType()), attribute.isUnsigned());
+                        return createDecimalVector(array.get1DJavaArray(
+                                ucar.ma2.DataType.getType(array)),
+                                attribute.getDataType().isUnsigned());
                     }
                 }
             }
@@ -414,14 +418,14 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the names of all attributes in the given list.
+     * Returns the names of all attributes in the given container.
      */
-    static List<String> toNames(final List<Attribute> attributes) {
-        final String[] names = new String[attributes.size()];
-        for (int i=0; i<names.length; i++) {
-            names[i] = attributes.get(i).getShortName();
+    static List<String> toNames(final Iterable<Attribute> attributes) {
+        final List<String> names = new ArrayList<>();
+        for (final Attribute at : attributes) {
+            names.add(at.getShortName());
         }
-        return UnmodifiableArrayList.wrap(names);
+        return names;
     }
 
     /**
@@ -432,9 +436,9 @@ final class VariableWrapper extends Variable {
      */
     @Override
     protected NumberRange<?> getRangeFallback() {
-        if (variable instanceof EnhanceScaleMissing) {
-            final EnhanceScaleMissing ev = (EnhanceScaleMissing) variable;
-            if (ev.hasInvalidData()) {
+        if (variable instanceof EnhanceScaleMissingUnsigned) {
+            final EnhanceScaleMissingUnsigned ev = (EnhanceScaleMissingUnsigned) variable;
+            if (ev.hasValidData()) {
                 // Returns a MeasurementRange instance for signaling the caller that this is converted values.
                 return MeasurementRange.create(ev.getValidMin(), true, ev.getValidMax(), true, getUnit());
             }
@@ -477,7 +481,7 @@ final class VariableWrapper extends Variable {
     @Override
     public Vector read(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
         final Object array = readArray(area, subsampling);
-        return Vector.create(array, variable.isUnsigned());
+        return Vector.create(array, variable.getDataType().isUnsigned());
     }
 
     /**
@@ -491,10 +495,11 @@ final class VariableWrapper extends Variable {
     @Override
     public List<?> readAnyType(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
         final Object array = readArray(area, subsampling);
-        if (variable.getDataType() == ucar.ma2.DataType.CHAR && variable.getRank() >= STRING_DIMENSION) {
+        final ucar.ma2.DataType type = variable.getDataType();
+        if (type == ucar.ma2.DataType.CHAR && variable.getRank() >= STRING_DIMENSION) {
             return createStringList(array, area);
         }
-        return Vector.create(array, variable.isUnsigned());
+        return Vector.create(array, type.isUnsigned());
     }
 
     /**
@@ -538,7 +543,7 @@ final class VariableWrapper extends Variable {
      * values by {@code NaN} values.
      */
     private Object get1DJavaArray(final Array array) {
-        final Object data = array.get1DJavaArray(array.getElementType());
+        final Object data = array.get1DJavaArray(ucar.ma2.DataType.getType(array));
         replaceNaN(data);
         return data;
     }
@@ -622,7 +627,7 @@ final class VariableWrapper extends Variable {
     /**
      * Returns {@code true} if this Apache SIS variable is a wrapper for the given UCAR variable.
      */
-    final boolean isWrapperFor(final VariableIF v) {
+    final boolean isWrapperFor(final Variable v) {
         return (variable == v) || (raw == v);
     }
 }

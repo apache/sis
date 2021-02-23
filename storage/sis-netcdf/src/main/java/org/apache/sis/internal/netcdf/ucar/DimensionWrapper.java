@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
+import java.util.Collection;
 import java.util.stream.Collectors;
 import ucar.nc2.Dimension;
 
@@ -36,7 +37,7 @@ final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
     /**
      * Wraps all given dimensions.
      */
-    static List<org.apache.sis.internal.netcdf.Dimension> wrap(final List<Dimension> dimensions) {
+    static List<org.apache.sis.internal.netcdf.Dimension> wrap(final Collection<Dimension> dimensions) {
         return dimensions.stream().map(DimensionWrapper::new).collect(Collectors.toList());
     }
 

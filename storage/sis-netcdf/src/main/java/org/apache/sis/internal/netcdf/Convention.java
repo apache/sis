@@ -588,7 +588,7 @@ public class Convention {
      * </ol>
      *
      * Whether the returned range is a range of packed values or a range of real values is ambiguous.
-     * An heuristic rule is documented in UCAR {@link ucar.nc2.dataset.EnhanceScaleMissing} interface.
+     * An heuristic rule is documented in {@link ucar.nc2.dataset.EnhanceScaleMissingUnsigned} interface.
      * If both types of range are available, then this method should return the range of packed value.
      * Otherwise if this method returns the range of real values, then that range shall be an instance
      * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
@@ -633,7 +633,7 @@ public class Convention {
              */
             if (minimum != null && maximum != null) {
                 /*
-                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
+                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissingUnsigned):
                  * if the type of the range is equal to the type of the scale, and the type of the
                  * data is not wider, then assume that the minimum and maximum are real values.
                  */

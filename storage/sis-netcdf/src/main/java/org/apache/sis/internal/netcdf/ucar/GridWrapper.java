@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.io.IOException;
 import ucar.nc2.Dimension;
-import ucar.nc2.VariableIF;
 import ucar.nc2.constants.AxisType;
 import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis2D;
@@ -83,17 +82,41 @@ final class GridWrapper extends Grid {
      */
     GridWrapper(final CoordinateSystem cs) {
         netcdfCS  = cs;
-        domain    = cs.getDomain();
         reordered = new HashMap<>(4);               // Will typically contain 0 or 1 entry.
+        domain    = new ArrayList<>(cs.getDomain());
+        /*
+         * We need dimensions in netCDF order as declared in variables. But the netCDF UCAR library sometime provides
+         * axes in a different order, I'm not sure why. Maybe it uses the order in which dimensions are declared in
+         * the global header (not the order declared on variables). We apply a standard order below. It is okay
+         * if that order is not appropriate for a particular variable because the order will be reajusted by
+         * `forDimensions(…)` method. We use the order which is most likely to be the order used by variables.
+         */
+        final Map<Dimension,AxisType> types = new HashMap<>();
+        for (final CoordinateAxis axis : cs.getCoordinateAxes()) {
+            final AxisType type = axis.getAxisType();
+            for (final Dimension dim : axis.getDimensions()) {
+                if (types.putIfAbsent(dim, type) == null) break;
+            }
+        }
+        domain.sort((d1, d2) -> {
+            final AxisType t1 = types.get(d1);
+            final AxisType t2 = types.get(d2);
+            if (t1 == t2)   return 0;
+            if (t1 == null) return +1;
+            if (t2 == null) return -1;
+            return t1.axisOrder() - t2.axisOrder();
+        });
     }
 
     /**
-     * Creates a new grid geometry with the same coordinate system than the given parent.
+     * Creates a new grid geometry with the same coordinate system than the given parent
+     * but dimensions in a different order. This is used for building coordinate systems
+     * with axis order matching the order of dimensions in variables.
      */
     private GridWrapper(final GridWrapper parent, final List<Dimension> dimensions) {
         netcdfCS  = parent.netcdfCS;
-        domain    = dimensions;
         reordered = parent.reordered;
+        domain    = dimensions;
         assert netcdfCS.getDomain().containsAll(dimensions);
     }
 
@@ -109,8 +132,8 @@ final class GridWrapper extends Grid {
     }
 
     /**
-     * Implementation of {@link #forDimensions(org.apache.sis.internal.netcdf.Dimension[])} after the Apache SIS objects
-     * have been unwrapped into UCAR objects.
+     * Implementation of {@link #forDimensions(org.apache.sis.internal.netcdf.Dimension[])}
+     * after the Apache SIS objects have been unwrapped into UCAR objects.
      *
      * @param  dimensions  the desired dimensions, in order. May contain more dimensions than this grid.
      * @return localization grid with the exact same set of dimensions than this grid (no more and no less),
@@ -142,7 +165,7 @@ final class GridWrapper extends Grid {
      * @param  systems   the coordinate systems of the given variable.
      * @return grid for the given variable, or {@code null} if none.
      */
-    final GridWrapper forVariable(final VariableIF variable, final List<CoordinateSystem> systems, final String[] axisNames) {
+    final GridWrapper forVariable(final ucar.nc2.Variable variable, final List<CoordinateSystem> systems, final String[] axisNames) {
         if (systems.contains(netcdfCS) && containsAllNamedAxes(axisNames)) {
             return forDimensions(variable.getDimensions());
         }
@@ -228,11 +251,12 @@ next:       for (final String name : axisNames) {
     protected Axis[] createAxes(final Decoder decoder) throws IOException, DataStoreException {
         final List<CoordinateAxis> range = netcdfCS.getCoordinateAxes();
         /*
-         * In this method, 'sourceDim' and 'targetDim' are relative to "grid to CRS" conversion.
-         * So 'sourceDim' is the grid (domain) dimension and 'targetDim' is the CRS (range) dimension.
+         * In this method, `sourceDim` and `targetDim` are relative to "grid to CRS" conversion.
+         * So `sourceDim` is the grid (domain) dimension and `targetDim` is the CRS (range) dimension.
          */
         int targetDim = range.size();
         final Axis[] axes = new Axis[targetDim];
+        final int lastDim = targetDim - 1;
         while (--targetDim >= 0) {
             final CoordinateAxis axis = range.get(targetDim);
             final Variable wrapper = ((DecoderWrapper) decoder).getWrapperFor(axis);
@@ -280,29 +304,9 @@ next:       for (final String name : axisNames) {
                  * package, we can proceed as if the dimension does not exist (`i` not incremented).
                  */
             }
-            axes[targetDim] = new Axis(abbreviation, axis.getPositive(),
+            axes[lastDim - targetDim] = new Axis(abbreviation, axis.getPositive(),
                     ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), wrapper);
         }
-        /*
-         * We want axes in "natural" order. But the netCDF UCAR library sometime provides axes already
-         * in that order and sometime in reverse order (netCDF order). I'm not aware of a reliable way
-         * to determine whether axis order provided by UCAR library needs to be reverted since I don't
-         * know what determines that order (the file format? the presence of "coordinates" attribute?).
-         * For now we compare axis order with dimension order, and if the axis contains all dimensions
-         * in the same order we presume that this is the "netCDF" order (as opposed to a "coordinates"
-         * attribute value order).
-         */
-        int i = range.size();
-        int j = domain.size();
-        while (--i >= 0) {
-            final List<Dimension> dimensions = range.get(i).getDimensions();
-            switch (dimensions.size()) {
-                case 0: continue;           // Ignore scalars as they can appear anywhere.
-                case 1: if (--j >= 0 && dimensions.get(0).equals(domain.get(j))) continue;
-            }
-            return axes;
-        }
-        ArraysExt.reverse(axes);
         return axes;
     }
 }

@@ -45,10 +45,7 @@ import org.apache.sis.util.CharSequences;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- *
- * @see <a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/tutorial/CoordSysBuilder.html">UCAR tutorial</a>
- *
- * @since 1.0
+ * @since   1.0
  * @module
  */
 final class CSBuilderFallback extends CoordSysBuilder {
