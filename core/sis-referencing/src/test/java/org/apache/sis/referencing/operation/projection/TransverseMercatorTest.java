@@ -43,12 +43,51 @@ import org.opengis.test.CalculationType;
  * Tests the {@link TransverseMercator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
 public final strictfp class TransverseMercatorTest extends MapProjectionTestCase {
+    /**
+     * Distance from central meridian, in degrees, at which errors are considered too important.
+     * This threshold is determined by comparisons of computed values against values provided by
+     * <cite>Karney (2009) Test data for the transverse Mercator projection</cite> data file.
+     * On the WGS84 ellipsoid we observed close to equator:
+     *
+     * <ul>
+     *   <li>For ∆λ below 60°, errors below 1 centimetre.</li>
+     *   <li>For ∆λ between 60° and 66°, errors up to 0.1 metre.</li>
+     *   <li>For ∆λ between 66° and 70°, errors up to 1 metre.</li>
+     *   <li>For ∆λ between 70° and 72°, errors up to 2 metres.</li>
+     *   <li>For ∆λ between 72° and 74°, errors up to 10 metres.</li>
+     *   <li>For ∆λ between 74° and 76°, errors up to 30 metres.</li>
+     *   <li>For ∆λ between 76° and 78°, errors up to 1 kilometre.</li>
+     *   <li>For ∆λ greater than 85°, errors grow exponentially.</li>
+     * </ul>
+     *
+     * On the WGS84 ellipsoid at latitudes greater than 20°, we found errors less than 1 meter
+     * for all ∆λ &lt; (1 − ℯ)⋅90° (82.63627282416406551 in WGS84 case). For larger ∆λ values
+     * Karney (2009) uses an “extended” domain of transverse Mercator projection, but Apache SIS
+     * does not support such extension. Consequently ∆λ values between (1 − ℯ)⋅90° and 90° should
+     * be considered invalid but are not rejected by Apache SIS. Note that even for those invalid
+     * values, the inverse projection continue to gives back the original values.
+     */
+    private static final double DOMAIN_OF_VALIDITY = 82.63627282416406551;      // (1 − ℯ)⋅90°
+
+    /**
+     * The domain of validity at equator. We keep using the limit at all latitudes up to
+     * {@value #LATITUDE_OF_REDUCED_DOMAIN} degrees, even if actually the limit could be
+     * progressively relaxed until it reaches {@value #DOMAIN_OF_VALIDITY} degrees.
+     */
+    private static final double DOMAIN_OF_VALIDITY_AT_EQUATOR = 70;
+
+    /**
+     * The maximal latitude (exclusive) where to use {@link #DOMAIN_OF_VALIDITY_AT_EQUATOR}
+     * instead of {@link #DOMAIN_OF_VALIDITY}.
+     */
+    private static final double LATITUDE_OF_REDUCED_DOMAIN = 20;
+
     /**
      * Creates a new instance of {@link TransverseMercator}.
      *
@@ -192,6 +231,8 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
      * @throws IOException if an error occurred while reading the test file.
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while transforming coordinates.
+     *
+     * @see OptionalTestData#TRANSVERSE_MERCATOR
      */
     @Test
     public void compareAgainstDataset() throws IOException, FactoryException, TransformException {
@@ -219,18 +260,14 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
                 // Relax tolerance for longitudes very far from central meridian.
                 final double longitude = abs(source[0]);
                 final double latitude  = abs(source[1]);
-                final double limit     = (latitude < TransverseMercator.LATITUDE_OF_REDUCED_DOMAIN
-                                                   ? TransverseMercator.DOMAIN_OF_VALIDITY_AT_EQUATOR
-                                                   : TransverseMercator.DOMAIN_OF_VALIDITY);
+                final double limit     = (latitude < LATITUDE_OF_REDUCED_DOMAIN
+                                                   ? DOMAIN_OF_VALIDITY_AT_EQUATOR
+                                                   : DOMAIN_OF_VALIDITY);
                 if (longitude < limit) {
                     if (latitude >= 89.9)     tolerance = 0.1;
                     else if (longitude <= 60) tolerance = Formulas.LINEAR_TOLERANCE;
                     else if (longitude <= 66) tolerance = 0.1;
-                    else if (longitude <= 70) tolerance = 1;
-                    else if (longitude <= 72) tolerance = 2;
-                    else if (longitude <= 74) tolerance = 10;
-                    else if (longitude <= 76) tolerance = 30;
-                    else                      tolerance = 1000;
+                    else                      tolerance = 0.7;
                     transform.transform(source, 0, source, 0, 1);
                     assertCoordinateEquals(line, target, source, reader.getLineNumber(), CalculationType.DIRECT_TRANSFORM);
                 }

@@ -57,6 +57,13 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  * and the latitude of origin is the equator. A scale factor of 0.9996 and false easting of 500000 metres is used for
  * all zones and a false northing of 10000000 metres is used for zones in the southern hemisphere.
  *
+ * <h2>Domain of validity</h2>
+ * The difference between longitude values λ and the central meridian λ₀ should be less than 60°.
+ * Differences larger than 90° of longitude cause a {@link ProjectionException} to be thrown.
+ * Differences between 60° and 90° are not rejected by Apache SIS but should be avoided.
+ * See the {@linkplain #transform(double[], int, double[], int, boolean) projection method}
+ * for more information.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.1
@@ -72,41 +79,6 @@ public class TransverseMercator extends NormalizedProjection {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -627685138188387835L;
-
-    /**
-     * Distance from central meridian, in degrees, at which errors are considered too important.
-     * This threshold is determined by comparisons of computed values against values provided by
-     * <cite>Karney (2009) Test data for the transverse Mercator projection</cite> data file.
-     * On the WGS84 ellipsoid we observed at equator:
-     *
-     * <ul>
-     *   <li>For ∆λ below 60°, errors below 1 centimetre.</li>
-     *   <li>For ∆λ between 60° and 66°, errors up to 0.1 metre.</li>
-     *   <li>For ∆λ between 66° and 70°, errors up to 1 metre.</li>
-     *   <li>For ∆λ between 70° and 72°, errors up to 2 metres.</li>
-     *   <li>For ∆λ between 72° and 74°, errors up to 10 metres.</li>
-     *   <li>For ∆λ between 74° and 76°, errors up to 30 metres.</li>
-     *   <li>For ∆λ between 76° and 78°, errors up to 1 kilometre.</li>
-     *   <li>For ∆λ greater than 85°, results are chaotic.</li>
-     * </ul>
-     *
-     * For latitudes greater than 20°, errors are less than 0.5 meters for all ∆λ &lt; 83°.
-     * Errors become suddenly much higher at ∆λ &gt; 82.6° no matter the latitude.
-     */
-    static final double DOMAIN_OF_VALIDITY = 82.5;
-
-    /**
-     * The domain of validity at equator. We keep using the limit at all latitudes up to
-     * {@value #LATITUDE_OF_REDUCED_DOMAIN} degrees, even if actually the limit could be
-     * progressively relaxed until it reaches {@value #DOMAIN_OF_VALIDITY} degrees.
-     */
-    static final double DOMAIN_OF_VALIDITY_AT_EQUATOR = 70;
-
-    /**
-     * The maximal latitude (exclusive) where to use {@link #DOMAIN_OF_VALIDITY_AT_EQUATOR}
-     * instead of {@link #DOMAIN_OF_VALIDITY}.
-     */
-    static final double LATITUDE_OF_REDUCED_DOMAIN = 20;
 
     /**
      * {@code false} for using the original formulas as published by EPSG, or {@code true} for using formulas
@@ -382,6 +354,31 @@ public class TransverseMercator extends NormalizedProjection {
      * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
      *
+     * <h4>Accuracy and domain of validity</h4>
+     * Projection errors depend on the difference ∆λ between longitude λ and the central meridian λ₀.
+     * All Universal Transverse Mercator (UTM) projections aim for ∆λ ≤ 3°, but this implementation
+     * can nevertheless handle larger values. Results have been compared with values provided by
+     * <a href="http://doi.org/10.5281/zenodo.32470">Karney, C.F.F. (2009).
+     * Test data for the transverse Mercator projection [Data set]. Zenodo.</a>
+     * On the WGS84 ellipsoid we observed the following errors compared to Karney's data:
+     *
+     * <ul>
+     *   <li>Errors less than 1 centimetre for ∆λ &lt; 60° at all latitudes.</li>
+     *   <li>At latitudes far enough from equator (|φ| ≥ 20°), the domain can be extended up to ∆λ &lt;
+     *       (1 − ℯ)⋅90° (≈ 82.63627282416406551° on WGS84) with errors less than 70 centimetres.</li>
+     * </ul>
+     *
+     * <h5>Case of 82.6…° &lt; ∆λ ≤ 90°</h5>
+     * Karney (2009) uses an “extended” domain of transverse Mercator projection for ∆λ ≥ (1 − ℯ)⋅90°,
+     * but Apache SIS does not support such extension. Consequently ∆λ values between (1 − ℯ)⋅90° and 90°
+     * should be considered invalid but are not rejected by Apache SIS. Note that those invalid values are
+     * consistent with the {@linkplain #inverseTransform(double[], int, double[], int) inverse projection}
+     * (i.e. applying a projection followed by an inverse projection gives approximately the original values).
+     *
+     * <h5>Case of ∆λ &gt; 90°</h5>
+     * Longitude values at a distance greater than 90° from the central meridian are rejected.
+     * A {@link ProjectionException} is thrown in that case.
+     *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
      * @throws ProjectionException if the coordinate can not be converted.
@@ -393,7 +390,7 @@ public class TransverseMercator extends NormalizedProjection {
     {
         final double λ = srcPts[srcOff];
         final double φ = srcPts[srcOff+1];
-        if (abs(λ) >= DOMAIN_OF_VALIDITY_AT_EQUATOR * (PI/180)) {
+        if (abs(λ) > 90 * (PI/180)) {
             /*
              * The Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
              * In Mercator projection, y values tend toward infinity for latitudes close to ±90°.
@@ -407,15 +404,11 @@ public class TransverseMercator extends NormalizedProjection {
              * Since a distance of 90° from central meridian is far outside the Transverse Mercator
              * domain of validity anyway, we do not let the user go further.
              *
-             * In the particular case of ellipsoidal formulas, we put a limit of 70° instead of 90°
-             * because experience shows that results close to equator become chaotic after 85° when
-             * using WGS84 ellipsoid. We do not need to reduce the limit for the spherical formulas,
-             * because the mathematic are simpler and the function still smooth until 90°.
+             * Historical note: in a previous version, we used a limit of 70° instead of 90° because
+             * esults became chaotic after 85°. That limit has been removed in later version because
+             * this method now behaves like a monotonic function.
              */
-            final double limit = (abs(φ) < LATITUDE_OF_REDUCED_DOMAIN * (PI/180))
-                                    ? (PI/180) * DOMAIN_OF_VALIDITY_AT_EQUATOR
-                                    : (PI/180) * DOMAIN_OF_VALIDITY;
-            if (Math.abs(IEEEremainder(λ, 2*PI)) >= limit) {
+            if (Math.abs(IEEEremainder(λ, 2*PI)) > 90 * (PI/180)) {         // More costly check.
                 throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
             }
         }
@@ -705,22 +698,8 @@ public class TransverseMercator extends NormalizedProjection {
             final double cosλ = cos(λ);
             /*
              * The Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
-             * In Mercator projection, y values tend toward infinity for latitudes close to ±90° while
-             * in Transverse Mercator, x values tend toward infinity for longitudes close to ±90° from
-             * central meridian (and at equator). After we pass the 90° limit, the Transverse Mercator
-             * results at (90° + Δ) are the same as for (90° - Δ).
-             *
-             * Problem is that 90° is an ordinary longitude value, not even close to the limit of longitude
-             * values range (±180°).  So having f(π/2+Δ, φ) = f(π/2-Δ, φ) results in wrong behavior in some
-             * algorithms like the one used by Envelopes.transform(CoordinateOperation, Envelope).  Since a
-             * distance of 90° from central meridian is outside projection domain of validity anyway, we do
-             * not let the user go further.
-             *
-             * Note that in the case of ellipsoidal formulas (implemented by parent class), we put the
-             * limit to a lower value (DOMAIN_OF_VALIDITY) because experience shows that results close
-             * to equator become chaotic after 85° when using WGS84 ellipsoid. We do not need to reduce
-             * the limit for the spherical formulas, because the mathematic are simpler and the function
-             * still smooth until 90°.
+             * See comment in the `super.transform(…)` implementation for more information about why we
+             * need to reject ∆λ > 90°.
              */
             if (cosλ < 0) {                     // Implies Math.abs(IEEEremainder(λ, 2*PI)) > PI/2
                 throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
