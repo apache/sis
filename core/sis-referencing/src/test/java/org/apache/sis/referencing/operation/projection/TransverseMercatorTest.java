@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.Arrays;
 import java.util.Random;
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -33,7 +32,7 @@ import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
-import static java.lang.StrictMath.min;
+import static java.lang.StrictMath.abs;
 import static java.lang.StrictMath.toRadians;
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.internal.referencing.provider.TransverseMercator.LATITUDE_OF_ORIGIN;
@@ -183,6 +182,12 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
     /**
      * Compares with <cite>Karney (2009) Test data for the transverse Mercator projection</cite>.
      * This is an optional test executed only if the {@code $SIS_DATA/Tests/TMcoords.dat} file is found.
+     * The errors observed as of February 2021 are illustrated below. In this image of size 91×91 pixels,
+     * pixels coordinates are longitude and latitude coordinates with (0,0) in the upper-left corner.
+     * Black pixels are errors less than 0.5 meters. Yellow pixels are errors between 0.5 and 1.5 meters.
+     * Red pixels are errors of 254.5 meters or more.
+     *
+     * <img src="doc-files/TransverseMercatorErrors.png" alt="Errors of Transverse Mercator projection">
      *
      * @throws IOException if an error occurred while reading the test file.
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -205,17 +210,20 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
             final double[] target = new double[2];
             String line;
             while ((line = reader.readLine()) != null) {
-                Arrays.fill(source, Double.NaN);
                 final CharSequence[] split = CharSequences.split(line, ' ');
-                for (int i=min(split.length, 4); --i >= 0;) {
+                for (int i=4; --i >= 0;) {
                     final double value = Double.parseDouble(split[i].toString());
                     if (i <= 1) source[i ^ 1] = value;                              // Swap axis order.
                     else        target[i - 2] = value;
                 }
                 // Relax tolerance for longitudes very far from central meridian.
-                final double longitude = StrictMath.abs(source[0]);
-                if (longitude < TransverseMercator.DOMAIN_OF_VALIDITY) {
-                    if (StrictMath.abs(source[1]) >= 89.9) tolerance = 0.1;
+                final double longitude = abs(source[0]);
+                final double latitude  = abs(source[1]);
+                final double limit     = (latitude < TransverseMercator.LATITUDE_OF_REDUCED_DOMAIN
+                                                   ? TransverseMercator.DOMAIN_OF_VALIDITY_AT_EQUATOR
+                                                   : TransverseMercator.DOMAIN_OF_VALIDITY);
+                if (longitude < limit) {
+                    if (latitude >= 89.9)     tolerance = 0.1;
                     else if (longitude <= 60) tolerance = Formulas.LINEAR_TOLERANCE;
                     else if (longitude <= 66) tolerance = 0.1;
                     else if (longitude <= 70) tolerance = 1;

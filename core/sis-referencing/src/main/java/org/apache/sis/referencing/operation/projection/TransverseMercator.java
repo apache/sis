@@ -59,7 +59,7 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see Mercator
  * @see ObliqueMercator
@@ -77,7 +77,7 @@ public class TransverseMercator extends NormalizedProjection {
      * Distance from central meridian, in degrees, at which errors are considered too important.
      * This threshold is determined by comparisons of computed values against values provided by
      * <cite>Karney (2009) Test data for the transverse Mercator projection</cite> data file.
-     * On the WGS84 ellipsoid we observed:
+     * On the WGS84 ellipsoid we observed at equator:
      *
      * <ul>
      *   <li>For ∆λ below 60°, errors below 1 centimetre.</li>
@@ -89,8 +89,24 @@ public class TransverseMercator extends NormalizedProjection {
      *   <li>For ∆λ between 76° and 78°, errors up to 1 kilometre.</li>
      *   <li>For ∆λ greater than 85°, results are chaotic.</li>
      * </ul>
+     *
+     * For latitudes greater than 20°, errors are less than 0.5 meters for all ∆λ &lt; 83°.
+     * Errors become suddenly much higher at ∆λ &gt; 82.6° no matter the latitude.
      */
-    static final double DOMAIN_OF_VALIDITY = 70;
+    static final double DOMAIN_OF_VALIDITY = 82.5;
+
+    /**
+     * The domain of validity at equator. We keep using the limit at all latitudes up to
+     * {@value #LATITUDE_OF_REDUCED_DOMAIN} degrees, even if actually the limit could be
+     * progressively relaxed until it reaches {@value #DOMAIN_OF_VALIDITY} degrees.
+     */
+    static final double DOMAIN_OF_VALIDITY_AT_EQUATOR = 70;
+
+    /**
+     * The maximal latitude (exclusive) where to use {@link #DOMAIN_OF_VALIDITY_AT_EQUATOR}
+     * instead of {@link #DOMAIN_OF_VALIDITY}.
+     */
+    static final double LATITUDE_OF_REDUCED_DOMAIN = 20;
 
     /**
      * {@code false} for using the original formulas as published by EPSG, or {@code true} for using formulas
@@ -376,7 +392,8 @@ public class TransverseMercator extends NormalizedProjection {
                             final boolean derivate) throws ProjectionException
     {
         final double λ = srcPts[srcOff];
-        if (abs(λ) >= DOMAIN_OF_VALIDITY * (PI/180)) {
+        final double φ = srcPts[srcOff+1];
+        if (abs(λ) >= DOMAIN_OF_VALIDITY_AT_EQUATOR * (PI/180)) {
             /*
              * The Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
              * In Mercator projection, y values tend toward infinity for latitudes close to ±90°.
@@ -395,11 +412,13 @@ public class TransverseMercator extends NormalizedProjection {
              * using WGS84 ellipsoid. We do not need to reduce the limit for the spherical formulas,
              * because the mathematic are simpler and the function still smooth until 90°.
              */
-            if (Math.abs(IEEEremainder(λ, 2*PI)) >= DOMAIN_OF_VALIDITY * (PI/180)) {    // More costly check.
+            final double limit = (abs(φ) < LATITUDE_OF_REDUCED_DOMAIN * (PI/180))
+                                    ? (PI/180) * DOMAIN_OF_VALIDITY_AT_EQUATOR
+                                    : (PI/180) * DOMAIN_OF_VALIDITY;
+            if (Math.abs(IEEEremainder(λ, 2*PI)) >= limit) {
                 throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
             }
         }
-        final double φ     = srcPts[srcOff+1];
         final double sinλ  = sin(λ);
         final double ℯsinφ = sin(φ) * eccentricity;
         final double Q     = asinh(tan(φ)) - atanh(ℯsinφ) * eccentricity;
@@ -681,6 +700,9 @@ public class TransverseMercator extends NormalizedProjection {
                                 final boolean derivate) throws ProjectionException
         {
             final double λ = srcPts[srcOff];
+            final double φ = srcPts[srcOff + 1];
+            final double sinλ = sin(λ);
+            final double cosλ = cos(λ);
             /*
              * The Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
              * In Mercator projection, y values tend toward infinity for latitudes close to ±90° while
@@ -700,12 +722,9 @@ public class TransverseMercator extends NormalizedProjection {
              * the limit for the spherical formulas, because the mathematic are simpler and the function
              * still smooth until 90°.
              */
-            if (abs(λ) > PI/2) {
+            if (cosλ < 0) {                     // Implies Math.abs(IEEEremainder(λ, 2*PI)) > PI/2
                 throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
             }
-            final double φ    = srcPts[srcOff+1];
-            final double sinλ = sin(λ);
-            final double cosλ = cos(λ);
             final double sinφ = sin(φ);
             final double cosφ = cos(φ);
             final double tanφ = sinφ / cosφ;
