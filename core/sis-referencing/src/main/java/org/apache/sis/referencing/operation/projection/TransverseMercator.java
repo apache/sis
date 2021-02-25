@@ -375,9 +375,17 @@ public class TransverseMercator extends NormalizedProjection {
      * consistent with the {@linkplain #inverseTransform(double[], int, double[], int) inverse projection}
      * (i.e. applying a projection followed by an inverse projection gives approximately the original values).
      *
+     * <div class="note"><b>Rational:</b>
+     * those coordinates are accepted despite the low accuracy of projection results because they are sometime
+     * needed for expressing bounding boxes. A bounding box may have corners located in invalid projection area
+     * even if all features inside the box have valid coordinates. For "contains" and "intersects" tests between
+     * envelopes, we do not need accurate coordinates; a monotonic behavior of x = f(λ) can be sufficient.</div>
+     *
      * <h5>Case of ∆λ &gt; 90°</h5>
      * Longitude values at a distance greater than 90° from the central meridian are rejected.
-     * A {@link ProjectionException} is thrown in that case.
+     * A {@link ProjectionException} is thrown in that case. This limit exists because the
+     * Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
+     * Consequently <var>x</var> values tend toward infinity for ∆λ close to ±90°
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
@@ -404,9 +412,13 @@ public class TransverseMercator extends NormalizedProjection {
              * Since a distance of 90° from central meridian is far outside the Transverse Mercator
              * domain of validity anyway, we do not let the user go further.
              *
-             * Historical note: in a previous version, we used a limit of 70° instead of 90° because
-             * esults became chaotic after 85°. That limit has been removed in later version because
-             * this method now behaves like a monotonic function.
+             * Historical note: in a previous version, we used a limit of 70° instead of 90° because results
+             * became chaotic after 85°. That limit has been removed in later version because this method now
+             * behaves like a monotonic function x = f(λ) for fixed φ values. We need to project coordinates
+             * even in the area where accuracy is bad because projecting those coordinates may happen during
+             * envelope projections. An envelope may have corners located in invalid projection area even if
+             * all features inside the envelope have valid coordinates. For "contains" and "intersects" tests
+             * between envelopes, we do not need accurate coordinates; a monotonic behavior can be sufficient.
              */
             if (Math.abs(IEEEremainder(λ, 2*PI)) > 90 * (PI/180)) {         // More costly check.
                 throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
@@ -699,7 +711,7 @@ public class TransverseMercator extends NormalizedProjection {
             /*
              * The Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
              * See comment in the `super.transform(…)` implementation for more information about why we
-             * need to reject ∆λ > 90°.
+             * need to reject ∆λ > 90°. The accuracy comment about high values of ∆λ do not apply here.
              */
             if (cosλ < 0) {                     // Implies Math.abs(IEEEremainder(λ, 2*PI)) > PI/2
                 throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
