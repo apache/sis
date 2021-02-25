@@ -1078,7 +1078,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     }
 
     /**
-     * Ensures that <var>lower</var> ≦ <var>upper</var> for every dimensions.
+     * Ensures that <var>lower</var> ≤ <var>upper</var> for every dimensions.
      * If a {@linkplain #getUpper(int) upper coordinate value} is less than a
      * {@linkplain #getLower(int) lower coordinate value}, then there is a choice:
      *

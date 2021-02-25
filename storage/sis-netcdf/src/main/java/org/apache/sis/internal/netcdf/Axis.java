@@ -113,7 +113,7 @@ public final class Axis extends NamedElement {
      * metadata property.
      *
      * <p>A given {@link Grid} should not have two {@code Axis} instances with equal {@code gridDimensionIndices}.
-     * When {@code gridDimensionIndices.length} ≧ 2 we may have two {@code Axis} instances with the same indices
+     * When {@code gridDimensionIndices.length} ≥ 2 we may have two {@code Axis} instances with the same indices
      * in their {@code gridDimensionIndices} arrays, but those indices should be in different order.</p>
      *
      * <p>The array length should be equal to {@link Variable#getNumDimensions()}. However this {@code Axis} class

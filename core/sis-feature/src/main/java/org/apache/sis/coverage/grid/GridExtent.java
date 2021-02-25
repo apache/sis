@@ -770,7 +770,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     /**
      * Returns indices of all dimensions where this grid extent has a size greater than 1.
      * This method can be used for getting the grid extent of a <var>s</var>-dimensional slice
-     * in a <var>n</var>-dimensional cube where <var>s</var> ≦ <var>n</var>.
+     * in a <var>n</var>-dimensional cube where <var>s</var> ≤ <var>n</var>.
      *
      * <div class="note"><b>Example:</b>
      * suppose that we want to get a two-dimensional slice <var>(y,z)</var> in a four-dimensional data cube <var>(x,y,z,t)</var>.

@@ -161,7 +161,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
                  * The factor is:
                  *                      factor = Bⁿ
                  *
-                 * where n is the greatest integer such as factor ≦ toMaximalSignificand.
+                 * where n is the greatest integer such as factor ≤ toMaximalSignificand.
                  */
                 final double logMaxFactor = Math.log(toMaximalSignificand);
                 for (int i=1; i<MathFunctions.PRIMES_LENGTH_16_BITS; i++) {

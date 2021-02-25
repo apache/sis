@@ -171,7 +171,7 @@ public final class Numerics extends Static {
      * signed value -1 has the same bits pattern than the maximal possible value in unsigned integer representation).</p>
      *
      * @param  bit  the bit to set.
-     * @return a mask with the given bit set, or 0 if the given argument is negative or ≧ {@value Long#SIZE}.
+     * @return a mask with the given bit set, or 0 if the given argument is negative or ≥ {@value Long#SIZE}.
      */
     public static long bitmask(final int bit) {
         return (bit >= 0 && bit < Long.SIZE) ? (1L << bit) : 0;

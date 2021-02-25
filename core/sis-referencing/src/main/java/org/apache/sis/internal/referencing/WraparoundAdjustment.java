@@ -319,11 +319,11 @@ public final class WraparoundAdjustment {
                              * We need to add an integer amount of `period` to both sides in order to move the range
                              * inside the valid area. We need  ⎣lowerToValidStart⎦  for reaching the point where:
                              *
-                             *     (validStart - period) < (new lower) ≦ validStart
+                             *     (validStart - period) < (new lower) ≤ validStart
                              *
                              * But we may add more because there will be no intersection without following condition:
                              *
-                             *     (new upper) ≧ validStart
+                             *     (new upper) ≥ validStart
                              *
                              * That second condition is met by  ⎡upperToValidStart⎤. However adding more may cause the
                              * range to move the AOI completely on the right side of the domain of validity. We prevent

@@ -127,7 +127,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
 
     /**
      * The netCDF variables for each sample dimensions. The length of this array shall be equal to {@code ranges.length},
-     * except if bands are stored as one variable dimension ({@link #bandDimension} ≧ 0) in which case the length shall
+     * except if bands are stored as one variable dimension ({@link #bandDimension} ≥ 0) in which case the length shall
      * be exactly 1. Accesses to this array need to take in account that the length may be only 1. Example:
      *
      * {@preformat java
@@ -173,7 +173,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * @param  name      the name for the resource.
      * @param  grid      the grid geometry (size, CRS…) of the {@linkplain #data} cube.
      * @param  bands     the variables providing actual data. Shall contain at least one variable.
-     * @param  numBands  the number of bands. Shall be {@code bands.size()} except if {@code bandsDimension} ≧ 0.
+     * @param  numBands  the number of bands. Shall be {@code bands.size()} except if {@code bandsDimension} ≥ 0.
      * @param  bandDim   if one of {@link #data} dimension provides values for different bands, that dimension index. Otherwise -1.
      * @param  lock      the lock to use in {@code synchronized(lock)} statements.
      */
@@ -416,7 +416,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
 
     /**
      * Returns the variable at the given index. This method can be invoked when the caller has not verified
-     * if we are in the special case where all bands are in the same variable ({@link #bandDimension} ≧ 0).
+     * if we are in the special case where all bands are in the same variable ({@link #bandDimension} ≥ 0).
      */
     private Variable getVariable(final int i) {
         return data[bandDimension >= 0 ? 0 : i];

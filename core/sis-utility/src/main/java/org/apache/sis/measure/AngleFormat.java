@@ -816,12 +816,12 @@ public class AngleFormat extends Format implements Localized {
      * <table class="sis">
      *   <caption>Selected fields for given precision</caption>
      *   <tr><th>Precision</th> <th>Fields</th></tr>
-     *   <tr><td>≧ 1°</td>      <td>D°</td></tr>
-     *   <tr><td>≧ ⅒°</td>      <td>D.d°</td></tr>
-     *   <tr><td>≧ 1′</td>      <td>D°MM′</td></tr>
-     *   <tr><td>≧ ⅒′</td>      <td>D°MM.m′</td></tr>
-     *   <tr><td>≧ 1″</td>      <td>D°MM′SS″</td></tr>
-     *   <tr><td>≧ ⅒″</td>      <td>D°MM′SS.s″</td></tr>
+     *   <tr><td>≥ 1°</td>      <td>D°</td></tr>
+     *   <tr><td>≥ ⅒°</td>      <td>D.d°</td></tr>
+     *   <tr><td>≥ 1′</td>      <td>D°MM′</td></tr>
+     *   <tr><td>≥ ⅒′</td>      <td>D°MM.m′</td></tr>
+     *   <tr><td>≥ 1″</td>      <td>D°MM′SS″</td></tr>
+     *   <tr><td>≥ ⅒″</td>      <td>D°MM′SS.s″</td></tr>
      *   <tr><td>other</td>     <td>D°MM′SS.ss…″</td></tr>
      * </table>
      *

@@ -199,7 +199,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, 
      * Only arrays at indices given by {@link #projToGrid} will be read; the other arrays will be ignored.
      * The coordinate operation result will be stored in arrays of size {@code [numDimensions][numPoints]}
      * where {@code numDimensions} is the length of the {@link #projToGrid} array. Indices are as below,
-     * with 0 ≦ <var>d</var> ≦ {@code numDimensions}:
+     * with 0 ≤ <var>d</var> ≤ {@code numDimensions}:
      *
      * <ol>
      *   <li>{@code results[d]}    contains the coordinates in dimension <var>d</var>.</li>
@@ -214,7 +214,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, 
      * that queue, for recycling if this method is invoked again for another {@code ProjectedTransformTry} instance.
      *
      * @param  coordinates  the {@link LinearTransformBuilder#targets} arrays of coordinates to transform.
-     * @param  numPoints    number of points to transform: {@code numPoints} ≦ {@code coordinates[i].length}.
+     * @param  numPoints    number of points to transform: {@code numPoints} ≤ {@code coordinates[i].length}.
      * @param  pool         pre-allocated arrays of length {@code numPoints} that can be recycled.
      * @return results of coordinate operations (see method javadoc), or {@code null} if an error occurred.
      */

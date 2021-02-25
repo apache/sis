@@ -218,7 +218,7 @@ public final class ArgumentChecks extends Static {
      * arrays of spatiotemporal dimension indices, where dimensions can not be repeated.
      *
      * <p>Note that a successful call to {@code ensureNonEmpty(name, values, 0, max, true)} implies
-     * 1 ≦ {@code values.length} ≦ {@code max}.</p>
+     * 1 ≤ {@code values.length} ≤ {@code max}.</p>
      *
      * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
      * @param  values    integer values to validate.
@@ -240,7 +240,7 @@ public final class ArgumentChecks extends Static {
         if (values.length == 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
         }
-        long found = 0;                             // Cheap way to check for duplication when (max - min) ≦ 64.
+        long found = 0;                             // Cheap way to check for duplication when (max - min) ≤ 64.
         BitSet more = null;                         // Used only if above cheap way is not sufficient.
         for (int i=0; i<values.length; i++) {
             final int index = values[i];

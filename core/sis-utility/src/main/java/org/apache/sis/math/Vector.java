@@ -734,7 +734,7 @@ search:     for (;;) {
      * the [0 … {@link #size()} - 1] range:
      *
      * <blockquote><code>{@linkplain Math#abs(double) abs}({@linkplain #doubleValue(int) doubleValue}(<var>i</var>)
-     * - (doubleValue(0) + increment*<var>i</var>)) ≦ tolerance</code></blockquote>
+     * - (doubleValue(0) + increment*<var>i</var>)) ≤ tolerance</code></blockquote>
      *
      * The tolerance threshold can be zero if exact matches are desired.
      * The return value (if non-null) is always a signed value,

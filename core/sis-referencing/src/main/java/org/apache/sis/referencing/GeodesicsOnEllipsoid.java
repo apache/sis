@@ -568,10 +568,10 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         /*
          * The algorithm in this method requires the following canonical configuration:
          *
-         *   Negative latitude of starting point:         φ₁ ≦ 0
-         *   Ending point latitude smaller in magnitude:  φ₁ ≦ φ₂ ≦ -φ₁
-         *   Positive longitude difference:               0 ≦ ∆λ ≦ π
-         *   (Consequence of above):                      0 ≦ α₀ ≦ π/2
+         *   Negative latitude of starting point:         φ₁ ≤ 0
+         *   Ending point latitude smaller in magnitude:  φ₁ ≤ φ₂ ≤ -φ₁
+         *   Positive longitude difference:               0 ≤ ∆λ ≤ π
+         *   (Consequence of above):                      0 ≤ α₀ ≤ π/2
          *
          * If the given points do not met above conditions, then we need to swap start and end points or to
          * swap coordinate signs. We apply those changes on local variables only, not on the class fields.
@@ -606,7 +606,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
          *   3) Equatorial case: φ₁ = φ₂ = 0 but restricted to ∆λ ≤ (1-f)⋅π.
          *   4) Meridional case: ∆λ = 0 or ∆λ = π (handled by general case in this method).
          */
-        if (φ1 > -LATITUDE_THRESHOLD) {                         // Sufficient test because φ₁ ≦ 0 and |φ₂| ≦ φ₁
+        if (φ1 > -LATITUDE_THRESHOLD) {                         // Sufficient test because φ₁ ≤ 0 and |φ₂| ≤ φ₁
             /*
              * Points on equator but not nearly anti-podal. The geodesic is an arc on equator and the azimuths
              * are α₁ = α₂ = ±90°. We need this special case because when φ = 0, the general case get sinβ = 0
@@ -646,7 +646,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             final double β2 = atan2(sinβ2, cosβ2);
             final double Δ1  = (1 - axisRatio) * PI * cosβ1;                // Differ from Karney by a⋅cosβ₁ factor.
             final double y  = (β2 + β1) / (Δ1*cosβ1);
-            final double x  = (PI - Δλ) / Δ1;                               // Opposite sign of Karney. We have x ≧ 0.
+            final double x  = (PI - Δλ) / Δ1;                               // Opposite sign of Karney. We have x ≥ 0.
             final double x2 = x*x;
             final double y2 = y*y;
             if (STORE_LOCAL_VARIABLES) {                        // For comparing values with Karney table 4.
@@ -654,7 +654,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                 store("y",  y);
             }
             if (y2 < 1E-12) {                                   // Empirical threshold. See μ(…) for more information.
-                α1 = (x2 > 1) ? PI/2 : atan(x / sqrt(1 - x2));  // (Karney 57) with opposite sign of x. Result in α₁ ≧ 0.
+                α1 = (x2 > 1) ? PI/2 : atan(x / sqrt(1 - x2));  // (Karney 57) with opposite sign of x. Result in α₁ ≥ 0.
             } else {
                 final double μ = μ(x2, y2);
                 α1 = atan2(x*μ, (y*(1+μ)));                     // (Karney 56) with opposite sign of x.
@@ -762,7 +762,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
              * Special case for α₁ = π/2 and β₂ = ±β₁ (Karney's equation 47). We replace the β₂ = ±β₁
              * condition by |β₂| - |β₁| ≈ 0. Assuming tan(θ) ≈ θ for small angles we take the tangent
              * of above difference and use tan(β₂ - β₁) = (tanβ₂ - tanβ₁)/(1 + tanβ₂⋅tanβ₁) identity.
-             * Note that tanβ₁ ≦ 0 and |tanβ₂| ≦ |tanβ₁| in this method.
+             * Note that tanβ₁ ≤ 0 and |tanβ₂| ≤ |tanβ₁| in this method.
              */
             final double dΔλ_dα1;
             if (abs(mcosα1) < LATITUDE_THRESHOLD && (-tanβ1 - abs(tanβ2)) < (1 + abs(tanβ1*tanβ2)) * LATITUDE_THRESHOLD) {

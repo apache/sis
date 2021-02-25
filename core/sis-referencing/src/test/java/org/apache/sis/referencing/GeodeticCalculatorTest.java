@@ -365,7 +365,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
             assertEquals("Geodesic distance", expected.s12,  geodesic,               Formulas.LINEAR_TOLERANCE);
             assertEquals("Starting azimuth",  expected.azi1, c.getStartingAzimuth(), Formulas.ANGULAR_TOLERANCE);
             assertEquals("Ending azimuth",    expected.azi2, c.getEndingAzimuth(),   Formulas.ANGULAR_TOLERANCE);
-            assertTrue  ("Rhumb ≧ geodesic",  rhumbLine >= geodesic);
+            assertTrue  ("Rhumb ≥ geodesic",  rhumbLine >= geodesic);
             if (VERBOSE) {
                 // Checks the geodesic path on only 10% of test data, because this computation is expensive.
                 if ((i % 10) == 0) {

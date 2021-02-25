@@ -571,10 +571,10 @@ public class GridDerivation {
              * The subsampling will be rounded in such a way that the difference in grid size is less than
              * one half of cell. Demonstration:
              *
-             *    e = Math.getExponent(span)     →    2^e ≦ span
+             *    e = Math.getExponent(span)     →    2^e ≤ span
              *    a = e+1                        →    2^a > span     →    1/2^a < 1/span
              *   Δs = (s - round(s)) / 2^a
-             *   (s - round(s)) ≦ 0.5            →    Δs  ≦  0.5/2^a  <  0.5/span
+             *   (s - round(s)) ≤ 0.5            →    Δs  ≤  0.5/2^a  <  0.5/span
              *   Δs < 0.5/span                   →    Δs⋅span < 0.5 cell.
              */
             if (resolution != null && resolution.length != 0) {
@@ -897,7 +897,7 @@ public class GridDerivation {
          *   • h₁ the high coordinate before subsampling
          *   • h₂ the high coordinates after subsampling
          *   • c  a conversion factor from grid indices to "real world" coordinates
-         *   • s  a subsampling ≧ 1
+         *   • s  a subsampling ≥ 1
          *
          * Then the envelope upper bounds x is:
          *
@@ -908,9 +908,9 @@ public class GridDerivation {
          *
          *   • x = (h₂ + f) × c⋅s      where        h₂ = floor(h₁/s)      and       f = ((h₁ mod s) + 1)/s
          *
-         * Because s ≧ 1, then f ≦ 1. But the f value actually used by GridExtent.toCRS(…) is hard-coded to 1
+         * Because s ≥ 1, then f ≤ 1. But the f value actually used by GridExtent.toCRS(…) is hard-coded to 1
          * since it assumes that all cells are whole, i.e. it does not take in account that the last cell may
-         * actually be fraction of a cell. Since 1 ≧ f, the computed envelope may be larger. This explains the
+         * actually be fraction of a cell. Since 1 ≥ f, the computed envelope may be larger. This explains the
          * need for envelope clipping performed by GridGeometry constructor.
          */
         final GridExtent extent = (scaledExtent != null) ? scaledExtent : baseExtent;

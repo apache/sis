@@ -779,7 +779,7 @@ public abstract class Variable extends Node {
 
     /**
      * Returns the number of sample values between two bands.
-     * This method is meaningful only if {@link #bandDimension} ≧ 0.
+     * This method is meaningful only if {@link #bandDimension} ≥ 0.
      */
     final long getBandStride() throws IOException, DataStoreException {
         long length = 1;
