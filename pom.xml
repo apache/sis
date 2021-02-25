@@ -519,7 +519,7 @@
       <dependency>
         <groupId>edu.ucar</groupId>
         <artifactId>cdm-core</artifactId>
-        <version>${netcdf.version}</version>
+        <version>5.4.1</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -567,7 +567,6 @@
          The last properties in this list depend on the Apache SIS branch.
        =================================================================== -->
   <properties>
-    <netcdf.version>5.4.1</netcdf.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
     <website.locale>en</website.locale>
