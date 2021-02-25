@@ -61,7 +61,7 @@
       <id>desruisseaux</id>
       <email>desruisseaux@apache.org</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>committer</role>
@@ -72,7 +72,7 @@
       <id>jsorel</id>
       <email>johann.sorel@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>committer</role>
@@ -83,7 +83,7 @@
       <id>rmarechal</id>
       <email>rmarechal@apache.org</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>committer</role>
@@ -101,7 +101,7 @@
       <name>Alexis manin</name>
       <email>alexis.manin@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
