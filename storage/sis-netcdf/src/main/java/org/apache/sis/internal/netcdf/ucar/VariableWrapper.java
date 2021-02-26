@@ -272,12 +272,11 @@ final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
          * the file. Note that those coordinate systems may have been set by the user.
          */
         if (variable instanceof VariableDS) {
-            final Grid[] grids = decoder.getGrids();    // Must be first for forcing some UCAR CS constructions.
             final List<CoordinateSystem> systems = ((VariableDS) variable).getCoordinateSystems();
             if (!systems.isEmpty()) {
                 GridWrapper grid = null;
                 final String[] axisNames = decoder.convention().namesOfAxisVariables(this);
-                for (final Grid candidate : grids) {
+                for (final Grid candidate : decoder.getGrids()) {
                     final GridWrapper ordered = ((GridWrapper) candidate).forVariable(variable, systems, axisNames);
                     if (ordered != null && (grid == null || ordered.getSourceDimensions() > grid.getSourceDimensions())) {
                         grid = ordered;

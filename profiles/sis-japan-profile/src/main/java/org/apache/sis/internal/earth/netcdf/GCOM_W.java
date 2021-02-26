@@ -32,6 +32,7 @@ import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.netcdf.Linearizer;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -79,9 +80,14 @@ import org.apache.sis.referencing.operation.transform.TransferFunction;
  */
 public final class GCOM_W extends Convention {
     /**
+     * Name of the attribute to read for checking the sentinel value.
+     */
+    static final String SENTINEL_ATTRIBUTE = "PlatformShortName";
+
+    /**
      * Sentinel value to search in the {@code "PlatformShortName"} attribute for determining if GCOM-W conventions apply.
      */
-    private static final Pattern SENTINEL_VALUE = Pattern.compile(".*\\bGCOM-W1\\b.*");
+    static final Pattern SENTINEL_VALUE = Pattern.compile(".*\\bGCOM-W1\\b.*");
 
     /**
      * Mapping from ACDD or CF-Convention attribute names to names of attributes used by GCOM-W.
@@ -106,10 +112,7 @@ public final class GCOM_W extends Convention {
     /**
      * Names of variables to use as axes (first word only).
      */
-    private static final String[] AXES = {
-        "Latitude",
-        "Longitude"
-    };
+    static final String LATITUDE = "Latitude", LONGITUDE = "Longitude";
 
     /**
      * "No data" value to use when not specified in the file.
@@ -135,7 +138,7 @@ public final class GCOM_W extends Convention {
      */
     @Override
     protected boolean isApplicableTo(final Decoder decoder) {
-        final String s = decoder.stringValue("PlatformShortName");
+        final String s = decoder.stringValue(SENTINEL_ATTRIBUTE);
         return (s != null) && SENTINEL_VALUE.matcher(s).matches();
     }
 
@@ -153,6 +156,14 @@ public final class GCOM_W extends Convention {
     }
 
     /**
+     * Returns {@code true} if a variable of the given name is a coordinate axis.
+     */
+    static boolean isCoordinateAxis(final String name) {
+        return CharSequences.startsWith(name, LATITUDE,  true)
+            || CharSequences.startsWith(name, LONGITUDE, true);
+    }
+
+    /**
      * Returns whether the given variable is used as a coordinate system axis, a coverage or something else.
      *
      * @param  variable  the variable for which to get the role, or {@code null}.
@@ -160,14 +171,10 @@ public final class GCOM_W extends Convention {
      */
     @Override
     public VariableRole roleOf(final Variable variable) {
-        VariableRole role = super.roleOf(variable);
+        final VariableRole role = super.roleOf(variable);
         if (role == VariableRole.COVERAGE) {
-            final String name = variable.getName();
-            for (final String c : AXES) {
-                if (name.regionMatches(true, 0, c, 0, c.length())) {
-                    role = VariableRole.AXIS;
-                    break;
-                }
+            if (isCoordinateAxis(variable.getName())) {
+                return VariableRole.AXIS;
             }
         }
         return role;
