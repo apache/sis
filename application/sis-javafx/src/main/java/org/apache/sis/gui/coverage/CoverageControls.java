@@ -47,6 +47,7 @@ import org.apache.sis.image.Interpolation;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.gui.control.ValueColorMapper;
 
 
 /**
@@ -67,6 +68,11 @@ final class CoverageControls extends Controls {
      * The control showing categories and their colors for the current coverage.
      */
     private final TableView<Category> categoryTable;
+
+    /**
+     * The renderer of isolines.
+     */
+    private final IsolineRenderer isolines;
 
     /**
      * The controls for changing {@link #view}.
@@ -130,7 +136,7 @@ final class CoverageControls extends Controls {
         final VBox colorsPane;
         {   // Block for making variables locale to this scope.
             final CoverageStyling styling = new CoverageStyling(view);
-            categoryTable = CategoryColorsCell.createTable(styling, vocabulary);
+            categoryTable = styling.createCategoryTable(vocabulary);
             final GridPane gp = Styles.createControlGrid(0,
                 label(vocabulary, Vocabulary.Keys.Stretching, Stretching.createButton((p,o,n) -> view.setStyling(n))));
 
@@ -138,16 +144,28 @@ final class CoverageControls extends Controls {
                     labelOfGroup(vocabulary, Vocabulary.Keys.Categories, categoryTable, true), categoryTable, gp);
         }
         /*
+         * "Isolines" section with the following controls:
+         *    - Colors for each isoline levels
+         */
+        final VBox isolinesPane;
+        {   // Block for making variables locale to this scope.
+            final ValueColorMapper mapper = new ValueColorMapper(resources, vocabulary);
+            isolines = new IsolineRenderer(view);
+            isolines.setIsolineTables(java.util.Collections.singletonList(mapper.getSteps()));
+            isolinesPane = new VBox(mapper.getView());              // TODO: add band selector
+        }
+        /*
          * Put all sections together and have the first one expanded by default.
          * The "Properties" section will be built by `PropertyPaneCreator` only if requested.
          */
         final TitledPane p1 = new TitledPane(vocabulary.getString(Vocabulary.Keys.SpatialRepresentation), displayPane);
         final TitledPane p2 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Colors), colorsPane);
-        final TitledPane p3 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null);
-        controls = new Accordion(p1, p2, p3);
+        final TitledPane p3 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Isolines), isolinesPane);
+        final TitledPane p4 = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null);
+        controls = new Accordion(p1, p2, p3, p4);
         controls.setExpandedPane(p1);
         view.coverageProperty.bind(coverage);
-        p3.expandedProperty().addListener(new PropertyPaneCreator(view, p3));
+        p4.expandedProperty().addListener(new PropertyPaneCreator(view, p4));
     }
 
     /**

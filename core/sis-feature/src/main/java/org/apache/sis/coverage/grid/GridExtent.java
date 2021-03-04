@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.awt.Rectangle;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -38,8 +39,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
@@ -76,7 +77,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * <div class="note"><b>Note:</b>
  * The inclusiveness of {@linkplain #getHigh() high} coordinates come from ISO 19123.
  * We follow this specification for all getters methods, but developers should keep in mind
- * that this is the opposite of Java2D usage where {@link java.awt.Rectangle} maximal values are exclusive.</div>
+ * that this is the opposite of Java2D usage where {@link Rectangle} maximal values are exclusive.</div>
  *
  * <p>{@code GridExtent} instances are immutable and thread-safe.
  * The same instance can be shared by different {@link GridGeometry} instances.</p>
@@ -231,6 +232,19 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Creates a new grid extent for an image or matrix of the given bounds.
+     * The axis types are {@link DimensionNameType#COLUMN} and {@link DimensionNameType#ROW ROW} in that order.
+     *
+     * @param  bounds  the bounds to copy in the new grid extent.
+     *
+     * @since 1.1
+     */
+    public GridExtent(final Rectangle bounds) {
+        this(bounds.width, bounds.height);
+        translate2D(bounds.x, bounds.y);
+    }
+
+    /**
      * Creates a new grid extent for an image or matrix of the given size.
      * The {@linkplain #getLow() low} grid coordinates are zeros and the axis types are
      * {@link DimensionNameType#COLUMN} and {@link DimensionNameType#ROW ROW} in that order.
@@ -249,9 +263,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Creates a new grid extent for an image of the given size and location. This constructor
-     * is for {@link GridCoverage2D} internal usage: it does not check for overflow (arguments
-     * are assumed small enough, which is the case when they are converted from {@code int}s),
-     * and argument meanings differ from conventions in public constructors.
+     * is for internal usage: argument meanings differ from conventions in public constructors.
      *
      * @param  xmin    column index of the first cell.
      * @param  ymin    row index of the first cell.
@@ -260,6 +272,14 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     GridExtent(final int xmin, final int ymin, final int width, final int height) {
         this(width, height);
+        translate2D(xmin, ymin);
+    }
+
+    /**
+     * Completes a {@link GridExtent} construction with a final translation.
+     * Shall be invoked for two-dimensional extents only.
+     */
+    private void translate2D(final long xmin, final long ymin) {
         for (int i=coordinates.length; --i >= 0;) {
             coordinates[i] += ((i & 1) == 0) ? xmin : ymin;
         }
@@ -750,7 +770,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     /**
      * Returns indices of all dimensions where this grid extent has a size greater than 1.
      * This method can be used for getting the grid extent of a <var>s</var>-dimensional slice
-     * in a <var>n</var>-dimensional cube where <var>s</var> ≦ <var>n</var>.
+     * in a <var>n</var>-dimensional cube where <var>s</var> ≤ <var>n</var>.
      *
      * <div class="note"><b>Example:</b>
      * suppose that we want to get a two-dimensional slice <var>(y,z)</var> in a four-dimensional data cube <var>(x,y,z,t)</var>.
@@ -804,8 +824,10 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 if (count < s) {
                     selected[count++] = i;
                 } else {
+                    long size = high - low;
+                    if (size != -1) size++;     // When interpreted as unsigned long, -1 is the maximal value.
                     throw new SubspaceNotSpecifiedException(Resources.format(Resources.Keys.NoNDimensionalSlice_3,
-                                    s, getAxisIdentification(i,i), Numerics.toUnsignedDouble(high - low)));
+                                s, getAxisIdentification(i,i), Numerics.toUnsignedDouble(size)));
                 }
             }
         }
@@ -1355,11 +1377,11 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * axis direction except for those specified in the {@code flips} bitmask. The transform maps cell corners.
      *
      * @param  env               the target envelope. Despite this method name, the envelope CRS is ignored.
-     * @param  flips             bitmask of target axes to flip (0 if none).
+     * @param  flippedAxes       bitmask of target axes to flip (0 if none).
      * @param  sourceDimensions  source dimension for each target dimension, or {@code null} if dimensions are the same.
      * @return an affine transform from this grid extent to the given envelope, expressed as a matrix.
      */
-    final MatrixSIS cornerToCRS(final Envelope env, final long flips, final int[] sourceDimensions) {
+    final MatrixSIS cornerToCRS(final Envelope env, final long flippedAxes, final int[] sourceDimensions) {
         final int          srcDim = getDimension();
         final int          tgtDim = env.getDimension();
         final MatrixSIS    affine = Matrices.create(tgtDim + 1, srcDim + 1, ExtendedPrecisionMatrix.ZERO);
@@ -1368,7 +1390,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         for (int j=0; j<tgtDim; j++) {
             final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
             if (i < srcDim) {
-                final boolean flip = (flips & Numerics.bitmask(j)) != 0;
+                final boolean flip = (flippedAxes & Numerics.bitmask(j)) != 0;
                 offset.set(coordinates[i]);
                 scale.set(coordinates[i + srcDim]);
                 scale.subtract(offset);

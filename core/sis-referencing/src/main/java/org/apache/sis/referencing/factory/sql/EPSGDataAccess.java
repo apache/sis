@@ -125,7 +125,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
 
 /**
  * <cite>Data Access Object</cite> (DAO) creating geodetic objects from a JDBC connection to an EPSG database.
- * The EPSG database is freely available at <a href="http://www.epsg.org">http://www.epsg.org</a>.
+ * The EPSG database is freely available at <a href="https://epsg.org/">https://epsg.org/</a>.
  * Current version of this class requires EPSG database version 6.6 or above.
  *
  * <h2>Object identifier (code or name)</h2>
@@ -410,7 +410,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *   ├─ Title ……………………………………………………… EPSG Geodetic Parameter Dataset
      *   ├─ Identifier ………………………………………… EPSG
      *   ├─ Online resource (1 of 2)
-     *   │  ├─ Linkage ………………………………………… http://epsg-registry.org/
+     *   │  ├─ Linkage ………………………………………… https://epsg.org/
      *   │  └─ Function ……………………………………… Browse
      *   └─ Online resource (2 of 2)
      *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
@@ -463,8 +463,8 @@ addURIs:    for (int i=0; ; i++) {
                 OnLineFunction function;
                 InternationalString description = null;
                 switch (i) {
-                    case 0: url = "http://epsg-registry.org/"; function = OnLineFunction.SEARCH; break;
-                    case 1: url = "http://www.epsg.org/"; function = OnLineFunction.DOWNLOAD; break;
+                    case 0: url = "https://epsg.org/"; function = OnLineFunction.SEARCH; break;
+                    case 1: url = "https://epsg.org/"; function = OnLineFunction.DOWNLOAD; break;
                     case 2: {
                         url = SQLUtilities.getSimplifiedURL(metadata);
                         function = OnLineFunction.valueOf(CONNECTION);

@@ -21,6 +21,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -217,7 +218,7 @@ public final class ArgumentChecks extends Static {
      * arrays of spatiotemporal dimension indices, where dimensions can not be repeated.
      *
      * <p>Note that a successful call to {@code ensureNonEmpty(name, values, 0, max, true)} implies
-     * 1 ≦ {@code values.length} ≦ {@code max}.</p>
+     * 1 ≤ {@code values.length} ≤ {@code max}.</p>
      *
      * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
      * @param  values    integer values to validate.
@@ -239,7 +240,7 @@ public final class ArgumentChecks extends Static {
         if (values.length == 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
         }
-        long found = 0;                             // Cheap way to check for duplication when (max - min) ≦ 64.
+        long found = 0;                             // Cheap way to check for duplication when (max - min) ≤ 64.
         BitSet more = null;                         // Used only if above cheap way is not sufficient.
         for (int i=0; i<values.length; i++) {
             final int index = values[i];
@@ -831,6 +832,38 @@ public final class ArgumentChecks extends Static {
                 throw new MismatchedDimensionException(Errors.format(
                         Errors.Keys.MismatchedDimension_3, name, expected, dimension));
             }
+        }
+    }
+
+    /**
+     * Ensures that the given transform, if non-null, has the expected number of source and target dimensions.
+     * This method does nothing if the given transform is null.
+     *
+     * @param  name            the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expectedSource  the expected number of source dimensions.
+     * @param  expectedTarget  the expected number of target dimensions.
+     * @param  transform       the transform to check for its dimension, or {@code null}.
+     * @throws MismatchedDimensionException if the given transform is non-null and does
+     *         not have the expected number of dimensions.
+     *
+     * @since 1.1
+     */
+    public static void ensureDimensionsMatch(final String name, int expectedSource, final int expectedTarget,
+                                             final MathTransform transform) throws MismatchedDimensionException
+    {
+        if (transform != null) {
+            int side = 0;
+            int dimension = transform.getSourceDimensions();
+            if (dimension == expectedSource) {
+                dimension = transform.getTargetDimensions();
+                if (dimension == expectedTarget) {
+                    return;
+                }
+                expectedSource = expectedTarget;
+                side = 1;
+            }
+            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedTransformDimension_4,
+                                                                 name, side, expectedSource, dimension));
         }
     }
 }

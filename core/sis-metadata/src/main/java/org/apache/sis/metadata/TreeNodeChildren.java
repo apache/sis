@@ -271,7 +271,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
              * We don't cache all elements in order to avoid yet more complex code, and this cover
              * the majority of cases where the collection has only one element anyway.
              *
-             * Note: subIndex is ≧ 0 only if node is an instance of CollectionElement.
+             * Note: subIndex is ≥ 0 only if node is an instance of CollectionElement.
              * A ClassCastException below would be a logical error in this class.
              */
             if (node == null || ((TreeNode.CollectionElement) node).indexInList != subIndex) {

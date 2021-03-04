@@ -55,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -136,18 +136,20 @@ final class RepeatedVector extends Vector implements Serializable {
     }
 
     /** Forwards to the base vector. */
-    @Override public final boolean isInteger()        {return base.isInteger();}
-    @Override public final boolean isUnsigned()       {return base.isUnsigned();}
-    @Override public final int     size()             {return size;}
-    @Override public final boolean isNaN      (int i) {return base.isNaN      (toBase(i));}
-    @Override public final double  doubleValue(int i) {return base.doubleValue(toBase(i));}
-    @Override public final float   floatValue (int i) {return base.floatValue (toBase(i));}
-    @Override public final long    longValue  (int i) {return base.longValue  (toBase(i));}
-    @Override public final int     intValue   (int i) {return base.intValue   (toBase(i));}
-    @Override public final short   shortValue (int i) {return base.shortValue (toBase(i));}
-    @Override public final byte    byteValue  (int i) {return base.byteValue  (toBase(i));}
-    @Override public final String  stringValue(int i) {return base.stringValue(toBase(i));}
-    @Override public final Number  get        (int i) {return base.get        (toBase(i));}
+    @Override public final boolean isEmptyOrNaN()      {return base.isEmptyOrNaN();}
+    @Override public final boolean isSinglePrecision() {return base.isSinglePrecision();}
+    @Override public final boolean isInteger()         {return base.isInteger();}
+    @Override public final boolean isUnsigned()        {return base.isUnsigned();}
+    @Override public final int     size()              {return size;}
+    @Override public final boolean isNaN      (int i)  {return base.isNaN      (toBase(i));}
+    @Override public final double  doubleValue(int i)  {return base.doubleValue(toBase(i));}
+    @Override public final float   floatValue (int i)  {return base.floatValue (toBase(i));}
+    @Override public final long    longValue  (int i)  {return base.longValue  (toBase(i));}
+    @Override public final int     intValue   (int i)  {return base.intValue   (toBase(i));}
+    @Override public final short   shortValue (int i)  {return base.shortValue (toBase(i));}
+    @Override public final byte    byteValue  (int i)  {return base.byteValue  (toBase(i));}
+    @Override public final String  stringValue(int i)  {return base.stringValue(toBase(i));}
+    @Override public final Number  get        (int i)  {return base.get        (toBase(i));}
 
     /**
      * The range of values in this vector is the range of values in the {@linkplain #base} vector

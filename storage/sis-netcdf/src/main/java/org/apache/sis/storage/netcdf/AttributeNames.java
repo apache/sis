@@ -137,7 +137,6 @@ import org.opengis.metadata.extent.GeographicDescription;
  * <ul>
  *   <li><a href="http://wiki.esipfed.org/index.php/Category:Attribute_Conventions_Dataset_Discovery">NetCDF
  *       Attribute Convention for Dataset Discovery</a> wiki</li>
- *   <li><a href="https://github.com/Unidata/threddsIso/blob/master/src/main/resources/xsl/nciso/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)

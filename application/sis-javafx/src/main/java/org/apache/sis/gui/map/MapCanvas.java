@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
@@ -32,7 +33,6 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.GestureEvent;
 import javafx.scene.Cursor;
 import javafx.event.EventType;
-import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -72,6 +72,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.DelayedExecutor;
+import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
@@ -80,6 +82,8 @@ import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.referencing.IdentifiedObjects;
+
+import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISECOND;
 
 
 /**
@@ -145,8 +149,19 @@ public abstract class MapCanvas extends PlanarCanvas {
      * This delay allows to collect more events before to run a potentially costly {@link #repaint()}.
      * It does not apply to the immediate feedback that the user gets from JavaFX affine transforms
      * (an image with lower quality used until the higher quality image become ready).
+     *
+     * @see #requestRepaint()
+     * @see Delayed
      */
-    private static final long REPAINT_DELAY = 500;
+    private static final long REPAINT_DELAY = 100;
+
+    /**
+     * Number of nanoseconds to wait before to set mouse cursor shape to {@link Cursor#WAIT} during rendering.
+     * If the rendering complete in a shorter time, the mouse cursor will be unchanged.
+     *
+     * @see #renderingStartTime
+     */
+    private static final long WAIT_CURSOR_DELAY = (1000 - REPAINT_DELAY) * NANOS_PER_MILLISECOND;
 
     /**
      * The pane showing the map and any other JavaFX nodes to scale and translate together with the map.
@@ -198,6 +213,12 @@ public abstract class MapCanvas extends PlanarCanvas {
     private int renderedContentStamp;
 
     /**
+     * Value of {@link System#nanoTime()} when the last rendering started. This is used together with
+     * {@link #WAIT_CURSOR_DELAY} for deciding if mouse cursor should be {@link Cursor#WAIT}.
+     */
+    private long renderingStartTime;
+
+    /**
      * Non-null if a rendering task is in progress. Used for avoiding to send too many {@link #repaint()}
      * requests; we will wait for current repaint event to finish before to send another painting request.
      */
@@ -228,15 +249,8 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * The {@link #transform} values at the time the {@link #repaint()} method has been invoked.
      * This is a change applied on {@link #objectiveToDisplay} but not yet visible in the map.
-     * After the map has been updated, this transform is reset to identity.
      */
     private final Affine changeInProgress;
-
-    /**
-     * The value to assign to {@link #transform} after the {@link #floatingPane} has been updated
-     * with transformed content.
-     */
-    private final Affine transformOnNewImage;
 
     /**
      * Cursor position at the time pan event started.
@@ -252,6 +266,11 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #onDrag(MouseEvent)
      */
     private boolean isDragging;
+
+    /**
+     * Whether a {@link CursorChange} is already scheduled, in which case there is no need to schedule more.
+     */
+    private boolean isMouseChangeScheduled;
 
     /**
      * Whether a rendering is in progress. This property is set to {@code true} when {@code MapCanvas}
@@ -282,9 +301,8 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     public MapCanvas(final Locale locale) {
         super(locale);
-        transform           = new Affine();
-        changeInProgress    = new Affine();
-        transformOnNewImage = new Affine();
+        transform        = new Affine();
+        changeInProgress = new Affine();
         final Pane view = new Pane() {
             @Override protected void layoutChildren() {
                 super.layoutChildren();
@@ -301,29 +319,29 @@ public abstract class MapCanvas extends PlanarCanvas {
         view.setOnMouseDragged(this::onDrag);
         view.setOnMouseReleased(this::onDrag);
         view.setFocusTraversable(true);
-        view.addEventFilter(KeyEvent.KEY_PRESSED, this::onKeyTyped);
+        view.addEventHandler(KeyEvent.KEY_PRESSED, this::onKeyTyped);
         /*
          * Do not set a preferred size, otherwise `repaint()` is invoked twice: once with the preferred size
          * and once with the actual size of the parent window. Actually the `repaint()` method appears to be
          * invoked twice anyway, but without preferred size the width appears to be 0, in which case nothing
          * is repainted.
          */
-        view.layoutBoundsProperty().addListener(this::onSizeChanged);
+        view.layoutBoundsProperty().addListener((p) -> onSizeChanged());
         view.setCursor(Cursor.CROSSHAIR);
         floatingPane = view;
         fixedPane = new StackPane(view);
         GUIUtilities.setClipToBounds(fixedPane);
         isRendering = new ReadOnlyBooleanWrapper(this, "isRendering");
-        error = new ReadOnlyObjectWrapper<>(this, "exception");
+        error = new ReadOnlyObjectWrapper<>(this, "error");
     }
 
     /**
      * Invoked when the size of the {@linkplain #floatingPane} has changed.
      * This method requests a new repaint after a short wait, in order to collect more resize events.
      */
-    private void onSizeChanged(final Observable property) {
+    private void onSizeChanged() {
         sizeChanged = true;
-        repaintLater();
+        requestRepaint();
     }
 
     /**
@@ -350,12 +368,22 @@ public abstract class MapCanvas extends PlanarCanvas {
             }
         } else if (isDragging) {
             if (type != MouseEvent.MOUSE_DRAGGED) {
-                floatingPane.setCursor(renderingInProgress != null ? Cursor.WAIT : Cursor.CROSSHAIR);
+                if (floatingPane.getCursor() == Cursor.CLOSED_HAND) {
+                    floatingPane.setCursor(Cursor.CROSSHAIR);
+                }
                 isDragging = false;
             }
             applyTranslation(x - xPanStart, y - yPanStart, type == MouseEvent.MOUSE_RELEASED);
             event.consume();
         }
+    }
+
+    /**
+     * Restores the cursor to its normal state after rendering completion.
+     * The purpose of this method is to hide the {@link Cursor#WAIT} shape.
+     */
+    private void restoreCursorAfterPaint() {
+        floatingPane.setCursor(isDragging ? Cursor.CLOSED_HAND : Cursor.CROSSHAIR);
     }
 
     /**
@@ -371,10 +399,9 @@ public abstract class MapCanvas extends PlanarCanvas {
     private void applyTranslation(final double tx, final double ty, final boolean isFinal) {
         if (tx != 0 || ty != 0) {
             transform.appendTranslation(tx, ty);
-            final Point2D p = changeInProgress.deltaTransform(tx, ty);
-            transformOnNewImage.appendTranslation(p.getX(), p.getY());
             if (!isFinal) {
-                repaintLater();
+                requestRepaint();
+                return;
             }
         }
         if (isFinal && !transform.isIdentity()) {
@@ -436,16 +463,13 @@ public abstract class MapCanvas extends PlanarCanvas {
                     unexpectedException("onKeyTyped", e);
                 }
             }
-            final Point2D p = changeInProgress.transform(x, y);
             if (zoom != 1) {
                 transform.appendScale(zoom, zoom, x, y);
-                transformOnNewImage.appendScale(zoom, zoom, p.getX(), p.getY());
             }
             if (angle != 0) {
                 transform.appendRotation(angle, x, y);
-                transformOnNewImage.appendRotation(angle, p.getX(), p.getY());
             }
-            repaintLater();
+            requestRepaint();
         }
         if (event != null) {
             event.consume();
@@ -460,8 +484,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         double tx = 0, ty = 0, zoom = 1, angle = 0;
         if (event.isAltDown()) {
             switch (event.getCode()) {
-                case RIGHT: case KP_RIGHT: angle = +15; break;
-                case LEFT:  case KP_LEFT:  angle = -15; break;
+                case RIGHT: case KP_RIGHT: angle = +7.5; break;
+                case LEFT:  case KP_LEFT:  angle = -7.5; break;
                 default:                   return;
             }
         } else {
@@ -522,7 +546,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * the geographic location where the click occurred. This information is used for changing the projection
      * while preserving approximately the location, scale and rotation of pixels around the mouse cursor.
      */
-    @SuppressWarnings("serial")                                         // Not intended to be serialized.
+    @SuppressWarnings({"serial","CloneableImplementsClone"})            // Not intended to be serialized.
     final class MenuHandler extends DirectPosition2D
             implements EventHandler<MouseEvent>, ChangeListener<ReferenceSystem>, PropertyChangeListener
     {
@@ -615,7 +639,7 @@ public abstract class MapCanvas extends PlanarCanvas {
             } catch (Exception e) {
                 errorOccurred(e);
                 final Resources i18n = Resources.forLocale(getLocale());
-                ExceptionReporter.show(null, i18n.getString(Resources.Keys.CanNotUseRefSys_1, projection), e);
+                ExceptionReporter.show(fixedPane, null, i18n.getString(Resources.Keys.CanNotUseRefSys_1, projection), e);
             }
         }
 
@@ -671,7 +695,7 @@ public abstract class MapCanvas extends PlanarCanvas {
             errorOccurred(e);
             final Locale locale = getLocale();
             final Resources i18n = Resources.forLocale(locale);
-            ExceptionReporter.show(null, i18n.getString(Resources.Keys.CanNotUseRefSys_1,
+            ExceptionReporter.show(fixedPane, null, i18n.getString(Resources.Keys.CanNotUseRefSys_1,
                                    IdentifiedObjects.getDisplayName(crs, locale)), e);
         }
     }
@@ -702,7 +726,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * <var>y</var> axis is oriented toward down. It may also swap axis order.
      *
      * <p>The rules implemented in this method are empirical and may be augmented in any future version.
-     * This method may become {@code protected} if a future version if we want to allow user to override
+     * This method may become {@code protected} in a future version if we want to allow user to override
      * with her own rules.</p>
      *
      * @param  srcAxes  axis directions in objective CRS.
@@ -745,9 +769,6 @@ public abstract class MapCanvas extends PlanarCanvas {
      *     at step 2 can be transferred to {@link MapCanvas#floatingPane} in that method.</li>
      * </ol>
      *
-     * This class should not access any {@link MapCanvas} property from a method invoked in background thread
-     * ({@link #render()}). It may access {@link MapCanvas} properties from the {@link #commit(MapCanvas)} method.
-     *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
      * @since   1.1
@@ -773,7 +794,7 @@ public abstract class MapCanvas extends PlanarCanvas {
          * <p>This method is invoked after {@link #createRenderer()}
          * and before {@link #createWorker(Renderer)}.</p>
          */
-        final boolean initialize(final Pane view) {
+        private boolean initialize(final Pane view) {
             width  = Numerics.clamp(Math.round(view.getWidth()));
             height = Numerics.clamp(Math.round(view.getHeight()));
             return width > 0 && height > 0;
@@ -820,6 +841,7 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Returns {@code true} if content changed since the last {@link #repaint()} execution.
+     * This is used for checking if a new call to {@link #repaint()} is necessary.
      */
     final boolean contentsChanged() {
         return contentChangeCount != renderedContentStamp;
@@ -828,42 +850,26 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Requests the map to be rendered again, possibly with new data. Invoking this
      * method does not necessarily causes the repaint process to start immediately.
-     * The request will be queued and executed at an arbitrary time.
+     * The request will be queued and executed at an arbitrary (short) time later.
      */
-    protected void requestRepaint() {
+    public final void requestRepaint() {
         contentChangeCount++;
-        floatingPane.requestLayout();
-    }
-
-    /**
-     * Invokes {@link #repaint()} after a short delay. This method is used when the
-     * repaint event is caused by some gesture like pan, zoom or resizing the window.
-     */
-    private void repaintLater() {
-        contentChangeCount++;
-        if (renderingInProgress == null) {
-            executeRendering(new Delayed());
+        if (renderingInProgress == null && !isRendering.get()) {
+            final Delayed delay = new Delayed();
+            BackgroundThreads.execute(delay);
+            renderingInProgress = delay;    // Set last after we know that the task has been scheduled.
         }
-    }
-
-    /**
-     * Executes a rendering task in a background thread. This method applies configurations
-     * specific to the rendering process before and after delegating to the overrideable method.
-     */
-    private void executeRendering(final Task<?> worker) {
-        assert renderingInProgress == null;
-        floatingPane.setCursor(Cursor.WAIT);
-        execute(worker);
-        renderingInProgress = worker;       // Set last after we know that the task has been scheduled.
     }
 
     /**
      * Invoked when the map content needs to be rendered again.
      * It may be because the map has new content, or because the viewed region moved or has been zoomed.
+     * This method starts the rendering process immediately, unless a rendering is already in progress.
      *
      * @see #requestRepaint()
      */
     final void repaint() {
+        assert Platform.isFxApplicationThread();
         /*
          * If a rendering is already in progress, do not send a new request now.
          * Wait for current rendering to finish; a new one will be automatically
@@ -878,7 +884,8 @@ public abstract class MapCanvas extends PlanarCanvas {
                 return;
             }
         }
-        renderedContentStamp = contentChangeCount;
+        isRendering.set(true);                      // Avoid that `requestRepaint(…)` trig new paints.
+        renderingStartTime = System.nanoTime();
         /*
          * If a new canvas size is known, inform the parent `PlanarCanvas` about that.
          * It may cause a recomputation of the "objective to display" transform.
@@ -897,8 +904,12 @@ public abstract class MapCanvas extends PlanarCanvas {
              * This code is executed only once for a new map.
              */
             if (invalidObjectiveToDisplay) {
-                invalidObjectiveToDisplay = false;
                 final Envelope2D target = getDisplayBounds();
+                if (target == null) {
+                    // Bounds are still unknown. Another repaint event will happen when they will become known.
+                    return;
+                }
+                invalidObjectiveToDisplay = false;
                 final GridExtent extent = new GridExtent(null,
                         new long[] {Math.round(target.getMinX()), Math.round(target.getMinY())},
                         new long[] {Math.round(target.getMaxX()), Math.round(target.getMaxY())}, false);
@@ -923,7 +934,12 @@ public abstract class MapCanvas extends PlanarCanvas {
                     crsToDisplay = MathTransforms.linear(m);
                     if (objectiveCRS == null) {
                         objectiveCRS = extent.toEnvelope(crsToDisplay.inverse()).getCoordinateReferenceSystem();
-                        // CRS computed above should not be null.
+                        /*
+                         * Above code tried to provide a non-null CRS on a "best effort" basis. The objective CRS
+                         * may still be null, there is no obvious answer against that. It is not the display CRS
+                         * if the "display to objective" transform is not identity. A grid CRS is not appropriate
+                         * neither, otherwise `extent.toEnvelope(…)` would have found it.
+                         */
                     }
                 } else {
                     objectiveCRS = getDisplayCRS();
@@ -933,7 +949,8 @@ public abstract class MapCanvas extends PlanarCanvas {
                 transform.setToIdentity();
             }
         } catch (TransformException | RenderException ex) {
-            floatingPane.setCursor(Cursor.CROSSHAIR);
+            restoreCursorAfterPaint();
+            isRendering.set(false);
             errorOccurred(ex);
             return;
         }
@@ -941,10 +958,10 @@ public abstract class MapCanvas extends PlanarCanvas {
          * If a temporary zoom, rotation or translation has been applied using JavaFX transform API,
          * replace that temporary transform by a "permanent" adjustment of the `objectiveToDisplay`
          * transform. It allows SIS to get new data for the new visible area and resolution.
+         * Do not reset `transform` to identity now; we need to continue accumulating gestures
+         * that may happen while the rendering is done in a background thread.
          */
         changeInProgress.setToTransform(transform);
-        transformOnNewImage.setToIdentity();
-        isRendering.set(true);
         if (!transform.isIdentity()) {
             transformDisplayCoordinates(new AffineTransform(
                     transform.getMxx(), transform.getMyx(),
@@ -952,15 +969,26 @@ public abstract class MapCanvas extends PlanarCanvas {
                     transform.getTx(),  transform.getTy()));
         }
         /*
-         * Invoke `createRenderer()` only after we finished above configuration, because that method
+         * Invoke `createWorker(…)` only after we finished above configuration, because that method
          * may take a snapshot of current canvas state in preparation for use in background threads.
+         * Take the value of `contentChangeCount` only now because above code may have indirect calls
+         * to `requestRepaint()`.
          */
+        renderedContentStamp = contentChangeCount;
         final Renderer context = createRenderer();
         if (context != null && context.initialize(floatingPane)) {
-            executeRendering(createWorker(context));
+            final Task<?> worker = createWorker(context);
+            assert renderingInProgress == null;
+            BackgroundThreads.execute(worker);
+            renderingInProgress = worker;       // Set after we know that the task has been scheduled.
+            if (!isMouseChangeScheduled) {
+                DelayedExecutor.schedule(new CursorChange());
+                isMouseChangeScheduled = true;
+            }
         } else {
             error.set(null);
             isRendering.set(false);
+            restoreCursorAfterPaint();
         }
     }
 
@@ -996,18 +1024,30 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Invoked after the background thread created by {@link #repaint()} finished to update map content.
      * The {@link #changeInProgress} is the JavaFX transform at the time the repaint event was trigged and
      * which is now integrated in the map. That transform will be removed from {@link #floatingPane} transforms.
-     * It may be identity if no zoom, rotation or pan gesture has been applied since last rendering.
+     * The {@link #transform} result is identity if no zoom, rotation or pan gesture has been applied since last
+     * rendering.
      */
     final void renderingCompleted(final Task<?> task) {
+        assert Platform.isFxApplicationThread();
+        // Keep cursor unchanged if contents changed, because caller will invoke `repaint()` again.
+        if (!contentsChanged() || task.getState() != Task.State.SUCCEEDED) {
+            restoreCursorAfterPaint();
+        }
         renderingInProgress = null;
-        floatingPane.setCursor(Cursor.CROSSHAIR);
         final Point2D p = changeInProgress.transform(xPanStart, yPanStart);
         xPanStart = p.getX();
         yPanStart = p.getY();
-        changeInProgress.setToIdentity();
-        transform.setToTransform(transformOnNewImage);
-        error.set(task.getException());
+        try {
+            changeInProgress.invert();
+            transform.prepend(changeInProgress);
+        } catch (NonInvertibleTransformException e) {
+            unexpectedException("repaint", e);
+        }
         isRendering.set(false);
+        final Throwable ex = task.getException();
+        if (ex != null) {
+            errorOccurred(ex);
+        }
     }
 
     /**
@@ -1022,7 +1062,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * as an idle thread, and it is unlikely that other parts of this JavaFX application need that thread in same
      * time (if it happens, other threads will be created).</div>
      *
-     * @see #repaintLater()
+     * @see #requestRepaint()
      */
     private final class Delayed extends Task<Void> {
         @Override protected Void call() {
@@ -1041,6 +1081,8 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Invoked after {@link #REPAINT_DELAY} has been elapsed for performing the real repaint request.
+     *
+     * @see #requestRepaint()
      */
     private void paintAfterDelay() {
         renderingInProgress = null;
@@ -1048,26 +1090,50 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Starts a background task for any process loading or rendering the map.
-     * This {@code MapCanvas} class invokes this method for rendering the map,
-     * but subclasses can also invoke this method for other purposes.
-     *
-     * <p>Tasks need to be careful to not access any {@code MapCanvas} property in their {@link Task#call()} method.
-     * If a canvas property is needed by the task, its value should be copied before the background thread is started.
-     * However {@link Task#succeeded()} and similar methods can safety read and write those properties.</p>
-     *
-     * <h4>Overriding</h4>
-     * Subclasses can override this method for configuring the task before execution.
-     * For example the following methods may be invoked before to call {@code super.execute(task)}:
-     * <ul>
-     *   <li><code>{@linkplain Task#runningProperty()}.addListener(…)</code></li>
-     *   <li><code>{@linkplain Task#setOnFailed Task.setOnFailed}(…)</code></li>
-     * </ul>
-     *
-     * @param  task  the task to execute in a background thread for loading or rendering the map.
+     * The action to execute if rendering appear to be slow. If the rendering did not completed
+     * after about one second, the mouse cursor shaped will be set to the wait cursor. We do not
+     * do this change immediately because the mouse cursor changes become disturbing if applied
+     * continuously for a series of fast renderings.
      */
-    protected void execute(final Task<?> task) {
-        BackgroundThreads.execute(task);
+    private final class CursorChange extends DelayedRunnable {
+        /**
+         * Value of {@link #renderingStartTime} when this delayed task has been created.
+         */
+        private final long startTime;
+
+        /**
+         * Creates a new action to execute if rendering takes longer than
+         * {@link #WAIT_CURSOR_DELAY} nanoseconds.
+         */
+        CursorChange() {
+            super(renderingStartTime + WAIT_CURSOR_DELAY);
+            startTime = renderingStartTime;
+        }
+
+        /**
+         * Invoked in a daemon thread after the delay elapsed.
+         * The mouse cursor change must be done in JavaFX thread.
+         */
+        @Override public void run() {
+            Platform.runLater(() -> setWaitCursor(startTime));
+        }
+    }
+
+    /**
+     * Invoked in JavaFX thread {@link #WAIT_CURSOR_DELAY} nanoseconds after a rendering started.
+     * If the same rendering is still under progress, the mouse cursor is set to {@link Cursor#WAIT}.
+     * If a different rendering is in progress, do not set the cursor because the GUI is fast enough
+     * but schedule a new {@link CursorChange} in case the next rendering is slow.
+     */
+    private void setWaitCursor(final long startTime) {
+        isMouseChangeScheduled = false;
+        if (renderingInProgress != null) {
+            if (startTime == renderingStartTime) {
+                floatingPane.setCursor(Cursor.WAIT);
+            }
+            DelayedExecutor.schedule(new CursorChange());
+            isMouseChangeScheduled = true;
+        }
     }
 
     /**
@@ -1099,7 +1165,12 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @param  ex  the exception that occurred (can not be null).
      */
     protected void errorOccurred(final Throwable ex) {
-        error.set(Objects.requireNonNull(ex));
+        final Throwable current = error.get();
+        if (current != null) {
+            current.addSuppressed(ex);
+        } else {
+            error.set(Objects.requireNonNull(ex));
+        }
     }
 
     /**
@@ -1115,6 +1186,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #reset()
      */
     protected void clear() {
+        assert Platform.isFxApplicationThread();
         transform.setToIdentity();
         changeInProgress.setToIdentity();
         invalidObjectiveToDisplay = true;

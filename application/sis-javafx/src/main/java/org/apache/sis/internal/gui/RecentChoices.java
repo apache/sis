@@ -56,6 +56,11 @@ public final class RecentChoices {
     private static final String OPEN = "Open";
 
     /**
+     * The node where to store recently opened files.
+     */
+    private static final String FILES = "RecentFiles";
+
+    /**
      * The node where to store authority (usually EPSG) codes of most recently used coordinate reference systems.
      */
     private static final String CRS = "ReferenceSystems";
@@ -98,6 +103,25 @@ public final class RecentChoices {
     public static void setOpenDirectory(final List<File> files) {
         final File parent = getCommonParent(files);
         NODE.put(OPEN, parent != null ? parent.getAbsolutePath() : null);
+    }
+
+    /**
+     * Returns recently opened files.
+     *
+     * @return recently opened files.
+     */
+    public static CharSequence[] getFiles() {
+        return CharSequences.splitOnEOL(NODE.get(FILES, null));
+    }
+
+    /**
+     * Sets the list of recently opened files.
+     * The files shall be specified in a EOL-separated string.
+     *
+     * @param files recently opened files.
+     */
+    public static void setFiles(final String files) {
+        NODE.put(FILES, files);
     }
 
     /**

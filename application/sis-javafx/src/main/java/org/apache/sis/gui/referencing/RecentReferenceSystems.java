@@ -556,7 +556,7 @@ public class RecentReferenceSystems {
 
                 /** Should never happen. */
                 @Override protected void failed() {
-                    ExceptionReporter.show(this);
+                    ExceptionReporter.show(null, this);
                 }
 
                 /** Sets the {@link ChoiceBox} content to the list computed in background thread. */

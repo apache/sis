@@ -16,10 +16,12 @@
  */
 package org.apache.sis.internal.map;
 
-import org.opengis.feature.Feature;
-import org.apache.sis.storage.DataStore;
+import java.util.Objects;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.portrayal.MapLayer;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.Resource;
+import org.opengis.feature.Feature;
 
 
 /**
@@ -51,13 +53,15 @@ import org.apache.sis.portrayal.MapLayer;
 public abstract class Presentation {
 
     private MapLayer layer;
-    private Object candidate;
+    private Resource resource;
+    private Feature candidate;
 
     public Presentation() {
     }
 
-    public Presentation(MapLayer layer, Object candidate) {
+    public Presentation(MapLayer layer, Resource resource, Feature candidate) {
         this.layer = layer;
+        this.resource = resource;
         this.candidate = candidate;
     }
 
@@ -79,13 +83,21 @@ public abstract class Presentation {
         this.layer = layer;
     }
 
+    public Resource getResource() {
+        return resource;
+    }
+
+    public void setResource(Resource resource) {
+        this.resource = resource;
+    }
+
     /**
      * Returns the original candidate having this presentation.
      * This is often a Coverage or a Feature.
      *
      * @return can be null if the presentation is not associated to any identifiable object.
      */
-    public Object getCandidate() {
+    public Feature getCandidate() {
         return candidate;
     }
 
@@ -97,4 +109,38 @@ public abstract class Presentation {
     public void setCandidate(Feature feature) {
         this.candidate = feature;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + Objects.hashCode(this.layer);
+        hash = 89 * hash + Objects.hashCode(this.resource);
+        hash = 89 * hash + Objects.hashCode(this.candidate);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Presentation other = (Presentation) obj;
+        if (!Objects.equals(this.layer, other.layer)) {
+            return false;
+        }
+        if (!Objects.equals(this.resource, other.resource)) {
+            return false;
+        }
+        if (!Objects.equals(this.candidate, other.candidate)) {
+            return false;
+        }
+        return true;
+    }
+
 }

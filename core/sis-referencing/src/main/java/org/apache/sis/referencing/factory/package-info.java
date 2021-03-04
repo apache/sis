@@ -24,7 +24,7 @@
  *     creates geodetic objects from codes defined by an authority.
  *     An <cite>authority</cite> is an organization that maintains definitions of authority codes.
  *     An <cite>authority code</cite> is a compact string defined by an authority to reference a particular spatial reference object.
- *     A frequently used set of authority codes is the <a href="http://www.epsg.org">EPSG geodetic dataset</a>,
+ *     A frequently used set of authority codes is the <a href="https://epsg.org/">EPSG geodetic dataset</a>,
  *     a database of coordinate systems and other spatial referencing objects where each object has a code number ID.</li>
  *
  *   <li>{@link org.apache.sis.referencing.factory.GeodeticObjectFactory}

@@ -983,18 +983,25 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             final boolean applyOtherFirst)
     {
         final List<MathTransform> steps = MathTransforms.getSteps(other);
-        if (steps.size() == 2) try {
+        if (steps.size() == 2) {
             final int oi = applyOtherFirst ? 0 : 1;
-            if (projection.equals(steps.get(oi).inverse(), ComparisonMode.IGNORE_METADATA)) {
-                final Matrix m = MathTransforms.getMatrix(steps.get(oi ^ 1));
-                if (Matrices.isAffine(m) && m.getNumRow() == DIMENSION+1 && m.getNumCol() == DIMENSION+1) {
-                    return m;
+            final MathTransform inverse = steps.get(oi);
+            if (inverse instanceof Inverse || inverse instanceof NormalizedProjection) try {
+                /*
+                 * In principle the equality check below should be sufficient. But above `instanceof` checks
+                 * are added for avoiding potentially costly calls to `inverse()` in other implementations.
+                 */
+                if (projection.equals(inverse.inverse(), ComparisonMode.IGNORE_METADATA)) {
+                    final Matrix m = MathTransforms.getMatrix(steps.get(oi ^ 1));
+                    if (Matrices.isAffine(m) && m.getNumRow() == DIMENSION+1 && m.getNumCol() == DIMENSION+1) {
+                        return m;
+                    }
                 }
+            } catch (NoninvertibleTransformException e) {
+                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                        (projection instanceof NormalizedProjection) ? NormalizedProjection.class : projection.getClass(),
+                        "tryConcatenate", e);
             }
-        } catch (NoninvertibleTransformException e) {
-            Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
-                    (projection instanceof NormalizedProjection) ? NormalizedProjection.class : projection.getClass(),
-                    "tryConcatenate", e);
         }
         return null;
     }

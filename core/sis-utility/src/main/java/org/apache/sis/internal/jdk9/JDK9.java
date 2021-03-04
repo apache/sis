@@ -27,9 +27,12 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.List;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
@@ -48,6 +51,17 @@ public final class JDK9 {
      * Do not allow instantiation of this class.
      */
     private JDK9() {
+    }
+
+    /**
+     * Placeholder for {@link Optional#ifPresentOrElse(Consumer, Runnable)}.
+     */
+    public static <T> void ifPresentOrElse(Optional<T> optional, Consumer<? super T> action, Runnable emptyAction) {
+        if (optional.isPresent()) {
+            action.accept(optional.get());
+        } else {
+            emptyAction.run();
+        }
     }
 
     /**
@@ -78,8 +92,12 @@ public final class JDK9 {
         switch (elements.length) {
             case 0:  return Collections.emptySet();
             case 1:  return Collections.singleton(elements[0]);
-            default: return Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(elements)));
         }
+        final Set<E> c = new LinkedHashSet<>(Arrays.asList(elements));
+        if (c.size() != elements.length) {
+            throw new IllegalArgumentException("Duplicated elements.");
+        }
+        return Collections.unmodifiableSet(c);
     }
 
     /**
@@ -88,13 +106,26 @@ public final class JDK9 {
     public static <K,V> Map<K,V> mapOf(final Object... entries) {
         final Map map = new HashMap();
         for (int i=0; i<entries.length;) {
-            map.put(entries[i++], entries[i++]);
+            if (map.put(entries[i++], entries[i++]) != null) {
+                throw new IllegalArgumentException("Duplicated elements.");
+            }
         }
         return map;
     }
 
     /**
-     * Placeholder for {@code Map.of(...)} (actually a JDK10 method).
+     * Placeholder for {@code Set.copyOf(...)} (actually a JDK10 method).
+     */
+    public static <V> Set<V> copyOf(final Set<V> set) {
+        switch (set.size()) {
+            case 0:  return Collections.emptySet();
+            case 1:  return Collections.singleton(set.iterator().next());
+            default: return new HashSet<>(set);
+        }
+    }
+
+    /**
+     * Placeholder for {@code Map.copyOf(...)} (actually a JDK10 method).
      */
     public static <K,V> Map<K,V> copyOf(final Map<K,V> map) {
         return map.size() < 2 ? CollectionsExt.compact(map) : new HashMap<>(map);
@@ -158,5 +189,131 @@ public final class JDK9 {
      */
     public static long multiplyFull​(int x, int y) {
         return ((long) x) * ((long) y);
+    }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
+    public static boolean equals(final char[] a, int ai, final int aUp,
+                                 final char[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (a[ai++] != b[bi++]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
+    public static boolean equals(final byte[] a, int ai, final int aUp,
+                                 final byte[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (a[ai++] != b[bi++]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
+    public static boolean equals(final short[] a, int ai, final int aUp,
+                                 final short[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (a[ai++] != b[bi++]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
+    public static boolean equals(final int[] a, int ai, final int aUp,
+                                 final int[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (a[ai++] != b[bi++]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
+    public static boolean equals(final long[] a, int ai, final int aUp,
+                                 final long[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (a[ai++] != b[bi++]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
+    public static boolean equals(final float[] a, int ai, final int aUp,
+                                 final float[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (Float.floatToIntBits(a[ai++]) != Float.floatToIntBits(b[bi++])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Place holder for {@link java.util.Arrays} method added in JDK9.
+     * This placeholder does not perform range check (JDK9 method does).
+     */
+    public static boolean equals(final double[] a, int ai, final int aUp,
+                                 final double[] b, int bi, final int bUp)
+    {
+        if (aUp - ai != bUp - bi) {
+            return false;
+        }
+        while (ai < aUp) {
+            if (Double.doubleToLongBits(a[ai++]) != Double.doubleToLongBits(b[bi++])) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -541,7 +541,7 @@ public abstract class PlanarImage implements RenderedImage {
         if (sm != null) {
             final ColorModel cm = getColorModel();
             if (cm != null) {
-                if (!cm.isCompatibleSampleModel(sm)) return "SampleModel";
+                if (!cm.isCompatibleSampleModel(sm)) return "colorModel";
             }
             /*
              * The SampleModel size represents the physical layout of pixels in the data buffer,

@@ -20,9 +20,9 @@
  * as wrappers around the UCAR netCDF library.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
- * @see <a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/javadoc/index.html">UCAR javadoc</a>
+ * @see <a href="https://docs.unidata.ucar.edu/netcdf-java/current/javadoc/index.html">UCAR javadoc</a>
  *
  * @since 0.3
  * @module

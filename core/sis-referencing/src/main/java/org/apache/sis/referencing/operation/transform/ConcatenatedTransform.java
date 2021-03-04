@@ -92,6 +92,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * The inverse transform. This field will be computed only when needed.
      * But it is serialized in order to avoid rounding errors if the inverse
      * transform is serialized instead of the original one.
+     *
+     * @see #inverse()
      */
     private MathTransform inverse;
 
@@ -134,7 +136,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      *
      * @see MathTransforms#concatenate(MathTransform, MathTransform)
      */
-    public static MathTransform create(MathTransform tr1, MathTransform tr2, final MathTransformFactory factory)
+    public static MathTransform create(final MathTransform tr1, final MathTransform tr2, final MathTransformFactory factory)
             throws FactoryException, MismatchedDimensionException
     {
         final int dim1 = tr1.getTargetDimensions();
@@ -143,7 +145,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             throw new MismatchedDimensionException(Resources.format(Resources.Keys.CanNotConcatenateTransforms_2, getName(tr1),
                     getName(tr2)) + ' ' + Errors.format(Errors.Keys.MismatchedDimension_2, dim1, dim2));
         }
-        MathTransform mt = createOptimized(tr1, tr2, factory);
+        final MathTransform mt = tryOptimized(tr1, tr2, factory);
         if (mt != null) {
             return mt;
         }
@@ -173,9 +175,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             } else {
                 return new ConcatenatedTransform2D(tr1, tr2);
             }
-        } else if (dimSource == tr1.getTargetDimensions()   // dim1 = tr1.getTargetDimensions() and
-                && dimTarget == tr2.getSourceDimensions())  // dim2 = tr2.getSourceDimensions() may not be true anymore.
-        {
+        } else if (dimSource == dim1 && dimTarget == dim2) {
             return new ConcatenatedTransformDirect(tr1, tr2);
         } else {
             return new ConcatenatedTransform(tr1, tr2);
@@ -189,7 +189,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      *
      * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
      */
-    private static MathTransform createOptimized(final MathTransform tr1, final MathTransform tr2,
+    private static MathTransform tryOptimized(final MathTransform tr1, final MathTransform tr2,
             final MathTransformFactory factory) throws FactoryException
     {
         /*
@@ -201,7 +201,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
          * Give a chance to AbstractMathTransform to return an optimized object. For example LogarithmicTransform
          * concatenated with ExponentialTransform can produce a new formula, PassThrouthTransform may concatenate
          * its sub-transform, etc. We try both ways (concatenation and pre-concatenation) and see which way gives
-         * the shortest concatenation chain. It is not that much expensive given that must implementations return
+         * the shortest concatenation chain. It is not that much expensive given that most implementations return
          * null directly.
          */
         int stepCount = 0;
@@ -245,17 +245,16 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         final MathTransform concatenated = multiply(tr1, tr2, factory);
         if (concatenated instanceof AbstractLinearTransform) {
             /*
-             * Following code computes the inverse of `concatenated` transform. In principle this is
-             * not necessary because `MathTransform.inverse()` would do that computation itself when
-             * first needed. However if the matrices are not square (e.g. if a transform is dropping
-             * a dimension) some information may be lost. By computing inverse transform immediately
-             * as the concatenation of the inverse of individual transforms, we use information that
-             * would otherwise be lost (e.g. the inverse of the transform dropping a dimension may be
-             * a transform setting that dimension to a constant value, often zero). Consequently the
-             * inverse transform here may have real values for coefficients that `MathTransform.inverse()`
-             * would have set to NaN, or may succeed while `MathTransform.inverse()` would have throw
-             * an exception. Even with square matrices, computing the inverse transform now may avoid
-             * some rounding errors.
+             * Following code computes the inverse of `concatenated` transform.  In principle this is not necessary
+             * because `AbstractLinearTransform.inverse()` can inverse the matrix when first needed. However if the
+             * matrices are not square (e.g. if a transform is dropping a dimension), some information may be lost.
+             * By computing inverse transform now as the product of matrices provided by the two inverse transforms
+             * (as opposed to inverting the product of forward transform matrices), we use information that would
+             * otherwise be lost (e.g. the inverse of the transform dropping a dimension may be a transform setting
+             * that dimension to a constant value, often zero). Consequently the inverse transform here may have real
+             * values for coefficients that `AbstractLinearTransform.inverse()` would have set to NaN, or may succeed
+             * where `AbstractLinearTransform.inverse()` would have throw an exception. Even with square matrices,
+             * computing the inverse transform now may avoid some rounding errors.
              */
             final AbstractLinearTransform impl = (AbstractLinearTransform) concatenated;
             if (impl.inverse == null) try {
@@ -862,13 +861,25 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         assert isValid();
         if (inverse == null) try {
             inverse = create(transform2.inverse(), transform1.inverse(), null);
-            if (inverse instanceof ConcatenatedTransform) {
-                ((ConcatenatedTransform) inverse).inverse = this;
-            }
+            setInverse(inverse, this);
         } catch (FactoryException e) {
             throw new NoninvertibleTransformException(Resources.format(Resources.Keys.NonInvertibleTransform), e);
         }
         return inverse;
+    }
+
+    /**
+     * If the given transform is an instance of {@code ConcatenatedTransform}, sets its inverse to the given value.
+     * Otherwise does nothing.
+     *
+     * @param  tr       the transform on which to set the inverse.
+     * @param  inverse  the inverse to assign to the given transform.
+     */
+    static void setInverse(final MathTransform tr, final MathTransform inverse) {
+        if (tr instanceof ConcatenatedTransform) {
+            assert ((ConcatenatedTransform) tr).inverse == null;
+            ((ConcatenatedTransform) tr).inverse = inverse;
+        }
     }
 
     /**
@@ -892,19 +903,19 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             throws FactoryException
     {
         if (applyOtherFirst) {
-            final MathTransform candidate = createOptimized(other, transform1, factory);
+            final MathTransform candidate = tryOptimized(other, transform1, factory);
             if (candidate != null) {
                 return create(candidate, transform2, factory);
             }
         } else {
-            final MathTransform candidate = createOptimized(transform2, other, factory);
+            final MathTransform candidate = tryOptimized(transform2, other, factory);
             if (candidate != null) {
                 return create(transform1, candidate, factory);
             }
         }
         /*
-         * Do not invoke super.tryConcatenate(applyOtherFirst, other, factory); the test of whether `this`
-         * is the inverse of `other` has been done indirectly by the calls to `createOptimized(…)`.
+         * Do not invoke `super.tryConcatenate(applyOtherFirst, other, factory)`; the test of whether
+         * `this` is the inverse of `other` has been done indirectly by the calls to `tryOptimized(…)`.
          */
         return null;
     }

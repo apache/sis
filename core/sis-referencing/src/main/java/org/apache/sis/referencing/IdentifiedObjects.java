@@ -687,7 +687,7 @@ public final class IdentifiedObjects extends Static {
      * an abbreviation of the identifier {@linkplain NamedIdentifier#getAuthority() authority}).
      * The recognized namespaces are listed in the following table
      * (note that the list of authorities than can be used in the {@code "urn:ogc:def"} namespace
-     * is specified by the <a href="http://www.opengeospatial.org/ogcna">OGC Naming Authority</a>).
+     * is specified by the <a href="https://www.ogc.org/ogcna">OGC Naming Authority</a>).
      * If this method can not determine a namespace for the given identifier, it returns {@code null}.</p>
      *
      * <table class="sis">

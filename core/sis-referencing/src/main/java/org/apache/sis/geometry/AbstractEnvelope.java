@@ -291,6 +291,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
      * @return a view over the lower corner, typically (but not necessarily) containing minimal coordinate values.
+     *
+     * @see #getLower(int)
+     * @see #getMinimum(int)
      */
     @Override
     public DirectPosition getLowerCorner() {
@@ -316,6 +319,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
      * @return a view over the upper corner, typically (but not necessarily) containing maximal coordinate values.
+     *
+     * @see #getUpper(int)
+     * @see #getMaximum(int)
      */
     @Override
     public DirectPosition getUpperCorner() {
@@ -330,6 +336,8 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * so changes in this envelope will be immediately reflected in the returned direct position.
      *
      * @return the median coordinates.
+     *
+     * @see #getMedian(int)
      */
     public DirectPosition getMedian() {
         // We do not cache the object because it is very cheap to create and we
@@ -346,6 +354,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @return the starting coordinate value at the given dimension.
      * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
+     *
+     * @see #getLowerCorner()
+     * @see #getMinimum(int)
      */
     public abstract double getLower(int dimension) throws IndexOutOfBoundsException;
 
@@ -358,6 +369,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @return the starting coordinate value at the given dimension.
      * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
+     *
+     * @see #getUpperCorner()
+     * @see #getMaximum(int)
      */
     public abstract double getUpper(int dimension) throws IndexOutOfBoundsException;
 
@@ -427,6 +441,8 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @return the median coordinate at the given dimension, or {@link Double#NaN}.
      * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
+     *
+     * @see #getMedian()
      */
     @Override
     public double getMedian(final int dimension) throws IndexOutOfBoundsException {

@@ -78,7 +78,7 @@ import org.opengis.feature.Operation;
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see DefaultFeatureType#newInstance()
  *
@@ -90,6 +90,13 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -5637918246427380190L;
+
+    /**
+     * Sentinel value for missing property.
+     *
+     * @see #getValueOrFallback(String, Object)
+     */
+    static final Object MISSING = new Object();
 
     /**
      * Information about the feature (name, characteristics, <i>etc.</i>).
@@ -326,7 +333,8 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * }
      *
      * @param  name  the property name.
-     * @return the value for the given property, or {@code null} if none.
+     * @return value of the specified property, or the
+     *         {@linkplain DefaultAttributeType#getDefaultValue() default value} (which may be {@code null}} if none.
      * @throws PropertyNotFoundException if the given argument is not an attribute or association name of this feature.
      *
      * @see AbstractAttribute#getValue()
@@ -353,6 +361,33 @@ public abstract class AbstractFeature implements Feature, Serializable {
      */
     @Override
     public abstract void setPropertyValue(final String name, final Object value) throws IllegalArgumentException;
+
+    /**
+     * Returns the value for the property of the given name if that property exists, or a fallback value otherwise.
+     * This method is equivalent to the following code, but potentially more efficient when the property does not exist:
+     *
+     * {@preformat java
+     *     try {
+     *         return getPropertyValue(name);
+     *     } catch (PropertyNotFoundException ignore) {
+     *         return missingPropertyFallback
+     *     }
+     * }
+     *
+     * Note that if a property of the given name exists but has no value, then this method returns the
+     * {@linkplain DefaultAttributeType#getDefaultValue() default value} (which may be {@code null}).
+     * <cite>Property without value</cite> is not equivalent to <cite>non-existent property</cite>.
+     *
+     * @param  name  the property name.
+     * @param  missingPropertyFallback  the (potentially {@code null}) value to return
+     *         if no attribute or association of the given name exists.
+     * @return value or default value of the specified property, or {@code missingPropertyFallback}
+     *         if no attribute or association of that name exists. This value may be {@code null}.
+     *
+     * @since 1.1
+     */
+    @Override
+    public abstract Object getValueOrFallback(final String name, Object missingPropertyFallback);
 
     /**
      * Executes the parameterless operation of the given name and returns the value of its result.

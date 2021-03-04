@@ -53,7 +53,7 @@
       <email>mattmann@apache.org</email>
       <url>http://sunset.usc.edu/~mattmann/</url>
       <organization>NASA Jet Propulsion Laboratory</organization>
-      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <organizationUrl>https://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
       <roles>
         <role>committer</role>

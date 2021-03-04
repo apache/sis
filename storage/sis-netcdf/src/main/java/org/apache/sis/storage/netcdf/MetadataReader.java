@@ -702,9 +702,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
              * the 'sourceDimensions' and 'sourceSizes' arrays are for the grid dimension which is most closely
              * oriented toward the axis direction.
              */
-            if (axis.getDimension() >= 1) {
-                setAxisSize(i, axis.getSize());
-            }
+            final int d = i;    // Because lambda expressions want final variable.
+            axis.getMainSize().ifPresent((s) -> setAxisSize(d, s));
             final AttributeNames.Dimension attributeNames;
             switch (axis.abbreviation) {
                 case 'λ': case 'θ':           attributeNames = AttributeNames.LONGITUDE; break;

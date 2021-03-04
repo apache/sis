@@ -56,7 +56,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * Tests {@link GeodeticObjectParser}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -101,7 +101,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
             newParser(Convention.DEFAULT);
         }
         final ParsePosition position = new ParsePosition(0);
-        final Object obj = parser.parseObject(text, position);
+        final Object obj = parser.createFromWKT(text, position);
         assertEquals("errorIndex", -1, position.getErrorIndex());
         assertEquals("index", text.length(), position.getIndex());
         assertInstanceOf("GeodeticObjectParser.parseObject", type, obj);

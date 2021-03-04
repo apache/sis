@@ -31,7 +31,7 @@ import org.apache.sis.measure.NumberRange;
  * This is mostly the case if coefficients are finite and {@link #scale} is non-zero, as asserted at construction time.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see Vector#transform(double, double)
  *
@@ -82,6 +82,14 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
     }
 
     /**
+     * Double-precision values are not guaranteed to be convertible to single-precision floating point type.
+     */
+    @Override
+    public boolean isSinglePrecision() {
+        return false;
+    }
+
+    /**
      * Returns {@code true} if this vector contains only integer values. This implementation delegates
      * to the {@linkplain #base} vector if coefficients are integers, or scans all values otherwise.
      */
@@ -99,6 +107,16 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
     @Override
     public int size() {
         return base.size();
+    }
+
+    /**
+     * Returns {@code true} if this vector is empty or contains only {@code NaN} values.
+     * The implementation delegates to the {@linkplain #base} vector since linear relationship
+     * does not change whether values are NaN.
+     */
+    @Override
+    public boolean isEmptyOrNaN() {
+        return base.isEmptyOrNaN();
     }
 
     /**

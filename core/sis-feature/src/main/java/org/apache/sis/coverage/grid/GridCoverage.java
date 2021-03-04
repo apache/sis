@@ -374,7 +374,7 @@ public abstract class GridCoverage {
      */
     @Override
     public String toString() {
-        return toTree(Locale.getDefault(), GridGeometry.defaultFlags()).toString();
+        return toTree(Locale.getDefault(), gridGeometry.defaultFlags()).toString();
     }
 
     /**

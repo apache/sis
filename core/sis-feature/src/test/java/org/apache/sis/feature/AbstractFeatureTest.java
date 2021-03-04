@@ -38,7 +38,7 @@ import org.opengis.feature.PropertyType;
  * <p>This class inherits all tests defined in {@link FeatureTestCase}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -99,6 +99,14 @@ public final strictfp class AbstractFeatureTest extends FeatureTestCase {
         @Override
         public Object getPropertyValue(final String name) {
             return values.get(name);
+        }
+
+        /**
+         * Synonymous of {@link #getPropertyValue(String)} for this test.
+         */
+        @Override
+        public Object getValueOrFallback(final String name, final Object missingPropertyFallback) {
+            return getPropertyValue(name);
         }
 
         /**

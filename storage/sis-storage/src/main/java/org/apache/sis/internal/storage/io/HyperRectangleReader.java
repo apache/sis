@@ -128,7 +128,7 @@ public final class HyperRectangleReader {
         final long[] strides = new long[region.getDimension() - contiguousDataDimension];
         final int[]   cursor = new int[strides.length];
         final int sampleSize = sampleSize();
-        long  streamPosition = Math.addExact(origin, Math.multiplyExact(region.startAt, sampleSize));
+        long  streamPosition = Math.addExact(origin, region.offset(sampleSize));
         int    arrayPosition = 0;
         for (int i=0; i<strides.length; i++) {
             strides[i] = region.stride(i + contiguousDataDimension, contiguousDataLength, sampleSize);
@@ -146,7 +146,7 @@ loop:       do {
                      * After we have read as much contiguous data as we can (may be a row, or a plane, or
                      * a cube, etc. depending if we have to skip values or not between rows/planes/cubes),
                      * search the highest dimension which is going to change (i.e. are we going to start a
-                     * new row, or a new plane, or a new cube?). This determine how many bytes we have to
+                     * new row, or a new plane, or a new cube?). This determines how many bytes we have to
                      * skip.
                      */
                     if (++cursor[i] < region.targetSize[contiguousDataDimension + i]) {

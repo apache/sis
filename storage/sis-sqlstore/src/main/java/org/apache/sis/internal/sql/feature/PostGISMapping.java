@@ -33,6 +33,7 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Modules;
 
 import static org.apache.sis.internal.sql.feature.OGC06104r4.Reader;
 import static org.apache.sis.internal.sql.feature.OGC06104r4.getGeometricClass;
@@ -46,8 +47,8 @@ import static org.apache.sis.internal.sql.feature.OGC06104r4.getGeometricClass;
  * </ul>
  *
  * @author Alexis Manin (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public final class PostGISMapping implements DialectMapping {
@@ -129,7 +130,7 @@ public final class PostGISMapping implements DialectMapping {
             try {
                 checkPostGISVersion(c);
             } catch (SQLException e) {
-                final Logger logger = Logging.getLogger("org.apache.sis.internal.sql");
+                final Logger logger = Logging.getLogger(Modules.SQL);
                 logger.warning("No compatible PostGIS version found. Binding deactivated. See debug logs for more information");
                 logger.log(Level.FINE, "Cannot determine PostGIS version", e);
                 return Optional.empty();

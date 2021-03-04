@@ -265,6 +265,31 @@ public abstract class Geometries<G> {
     public abstract GeometryWrapper<G> parseWKB(ByteBuffer data) throws Exception;
 
     /**
+     * Returns whether this library can produce geometry backed by the {@code float} primitive type
+     * instead than the {@code double} primitive type. If single-precision mode is supported, using
+     * that mode may reduce memory usage.
+     *
+     * @return whether the library support single-precision values.
+     */
+    public boolean supportSinglePrecision() {
+        return false;
+    }
+
+    /**
+     * Single-precision variant of {@link #createPoint(double, double)}.
+     * Default implementation delegates to the double-precision variant.
+     *
+     * @param  x  the first coordinate value.
+     * @param  y  the second coordinate value.
+     * @return the point for the given coordinate values.
+     *
+     * @see #supportSinglePrecision()
+     */
+    public Object createPoint(float x, float y) {
+        return createPoint((double) x, (double) y);
+    }
+
+    /**
      * Creates a two-dimensional point from the given coordinate. If the CRS is geographic, then the
      * (x,y) values should be (longitude, latitude) for compliance with usage in ESRI and JTS libraries.
      * The returned object will be an instance of {@link #pointClass}.

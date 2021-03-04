@@ -41,15 +41,25 @@ public abstract class DiscreteSampling extends AbstractFeatureSet {
     protected final Geometries<?> factory;
 
     /**
+     * The object to use for synchronization. For now we use a {@code synchronized} statement,
+     * but it may be changed to {@link java.util.concurrent.locks.Lock} in a future version.
+     *
+     * @see RasterResource#lock
+     */
+    final Object lock;
+
+    /**
      * Creates a new discrete sampling parser.
      *
      * @param  library    the library for geometric objects, or {@code null} for the default.
      * @param  listeners  the set of registered warning listeners for the data store.
+     * @param  lock       the lock to use in {@code synchronized(lock)} statements.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    protected DiscreteSampling(final GeometryLibrary library, final StoreListeners listeners) {
+    protected DiscreteSampling(final GeometryLibrary library, final StoreListeners listeners, final Object lock) {
         super(listeners);
         factory = Geometries.implementation(library);
+        this.lock = lock;
     }
 
     /**

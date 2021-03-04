@@ -23,7 +23,6 @@ import java.util.logging.LogRecord;
 import java.time.Instant;
 import java.time.DateTimeException;
 import java.io.IOException;
-import org.apache.sis.internal.feature.MovingFeature;
 
 // Branch-dependent imports
 import org.opengis.feature.Attribute;
@@ -58,12 +57,12 @@ final class MovingFeatureIterator extends FeatureIterator implements Consumer<Lo
     /**
      * Where to store the property values and the trajectory of the feature in process of being parsed.
      */
-    private MovingFeature builder;
+    private MovingFeatureBuilder builder;
 
     /**
      * All builders by feature name (not only the one being parsed).
      */
-    private final Map<String,MovingFeature> builders;
+    private final Map<String,MovingFeatureBuilder> builders;
 
     /**
      * Creates a new iterator.
@@ -82,7 +81,7 @@ final class MovingFeatureIterator extends FeatureIterator implements Consumer<Lo
         int n = 0;
         final int np = values.length - TRAJECTORY_COLUMN;
         final Feature[] features = new Feature[builders.size()];
-        for (final Map.Entry<String,MovingFeature> entry : builders.entrySet()) {
+        for (final Map.Entry<String,MovingFeatureBuilder> entry : builders.entrySet()) {
             features[n++] = createMovingFeature(entry.getKey(), entry.getValue(), np);
         }
         return features;
@@ -96,7 +95,7 @@ final class MovingFeatureIterator extends FeatureIterator implements Consumer<Lo
      * @param  np           number of properties, ignoring the ones before the trajectory column.
      */
     @SuppressWarnings("unchecked")
-    private Feature createMovingFeature(final String featureName, final MovingFeature mf, final int np) {
+    private Feature createMovingFeature(final String featureName, final MovingFeatureBuilder mf, final int np) {
         final Feature feature = store.featureType.newInstance();
         feature.setPropertyValue(propertyNames[0], featureName);
         mf.storeTimeRange(propertyNames[1], propertyNames[2], feature);
@@ -141,7 +140,7 @@ final class MovingFeatureIterator extends FeatureIterator implements Consumer<Lo
             if (!mfIdRef.equals(identifier)) {
                 publish    = identifier;
                 identifier = mfIdRef;
-                builder    = builders.computeIfAbsent(mfIdRef, (k) -> new MovingFeature(np));
+                builder    = builders.computeIfAbsent(mfIdRef, (k) -> new MovingFeatureBuilder(builder, np));
             }
             builder.addTimeRange(startTime, endTime);
             for (int i=0; i<np; i++) {

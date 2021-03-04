@@ -112,9 +112,9 @@ public final strictfp class FormulasTest extends TestCase {
 
     /**
      * Tests {@link Formulas#radiusOfConformalSphere(Ellipsoid, double)}.
-     * This test computes the Radius of Conformal Sphere using the values given
-     * by the <a href="http://www.iogp.org/pubs/373-07-2.pdf">EPSG guide</a> for
-     * the <cite>Amersfoort / RD New</cite> projection (a Stereographic one).
+     * This test computes the Radius of Conformal Sphere using the values given by the
+     * IOGP Report 373-07-02 – <cite>Coordinate conversions and transformation including formulas</cite>
+     * for the <cite>Amersfoort / RD New</cite> projection (a Stereographic one).
      */
     @Test
     public void testRadiusOfConformalSphere() {

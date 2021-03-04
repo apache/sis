@@ -285,15 +285,18 @@ public final class GCOM_C extends Convention {
     }
 
     /**
-     * Returns an enumeration of two-dimensional non-linear transforms that may be tried in attempts to make
-     * localization grid more linear.
+     * Returns the two-dimensional non-linear transforms to apply for making the localization grid more linear.
+     * This method returns a singleton without specifying the identity transform as an acceptable alternative.
+     * It means that the specified projection (UTM) is considered mandatory for this format.
      *
      * @param  decoder  the netCDF file for which to determine linearizers that may possibly apply.
-     * @return enumeration of two-dimensional non-linear transforms to try.
+     * @return enumeration of two-dimensional non-linear transforms to apply.
+     *
+     * @see #defaultHorizontalCRS(boolean)
      */
     @Override
     public Set<Linearizer> linearizers(final Decoder decoder) {
-        return Collections.singleton(Linearizer.GROUND_TRACK);
+        return Collections.singleton(new Linearizer(CommonCRS.WGS84, Linearizer.Type.UTM));
     }
 
     /**
@@ -416,7 +419,7 @@ public final class GCOM_C extends Convention {
      * Returns the default prime meridian, ellipsoid, datum or CRS to use if no information is found in the netCDF file.
      * GCOM documentation said that the datum is WGS 84.
      *
-     * @param  spherical  ignored, since we assume a sphere in all cases.
+     * @param  spherical  ignored, since we assume an ellipsoid in all cases.
      * @return information about geodetic objects to use if no explicit information is found in the file.
      */
     @Override

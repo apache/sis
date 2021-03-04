@@ -86,7 +86,7 @@ public final strictfp class EnvelopeOperationTest extends TestCase {
      * if the corresponding {@code declareCRS} flag is true. The first geometry will be the default one.
      *
      * @param defaultCRS1        default CRS of first property (may be {@code null}).
-     * @param defaultCRS1        default CRS of second property (may be {@code null}).
+     * @param defaultCRS2        default CRS of second property (may be {@code null}).
      * @param asCharacteristic1  whether to declare CRS 1 as a characteristic of first property.
      * @param asCharacteristic2  whether to declare CRS 2 as a characteristic of second property.
      */

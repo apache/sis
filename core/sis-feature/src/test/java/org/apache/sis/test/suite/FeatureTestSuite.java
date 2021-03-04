@@ -65,6 +65,7 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.filter.sqlmm.SQLMMTest.class,
     org.apache.sis.internal.feature.AttributeConventionTest.class,
     org.apache.sis.internal.feature.j2d.ShapePropertiesTest.class,
+    org.apache.sis.internal.feature.j2d.FlatShapeTest.class,
     org.apache.sis.internal.feature.j2d.FactoryTest.class,
     org.apache.sis.internal.feature.esri.FactoryTest.class,
     org.apache.sis.internal.feature.jts.FactoryTest.class,
@@ -79,11 +80,13 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.coverage.j2d.ImageLayoutTest.class,
     org.apache.sis.internal.coverage.j2d.ScaledColorSpaceTest.class,
     org.apache.sis.internal.coverage.j2d.ColorizerTest.class,
+    org.apache.sis.internal.processing.image.IsolinesTest.class,
     org.apache.sis.image.DataTypeTest.class,
     org.apache.sis.image.PlanarImageTest.class,
     org.apache.sis.image.ComputedImageTest.class,
-    org.apache.sis.image.DefaultIteratorTest.class,
+    org.apache.sis.image.PixelIteratorTest.class,
     org.apache.sis.image.LinearIteratorTest.class,
+    org.apache.sis.image.BandedIteratorTest.class,
     org.apache.sis.image.StatisticsCalculatorTest.class,
     org.apache.sis.image.BandSelectImageTest.class,
     org.apache.sis.image.InterpolationTest.class,
@@ -91,11 +94,13 @@ import org.junit.runners.Suite;
     org.apache.sis.image.ResampledImageTest.class,
     org.apache.sis.image.BandedSampleConverterTest.class,
     org.apache.sis.image.ImageCombinerTest.class,
+    org.apache.sis.image.ImageProcessorTest.class,
     org.apache.sis.coverage.CategoryTest.class,
     org.apache.sis.coverage.CategoryListTest.class,
     org.apache.sis.coverage.SampleDimensionTest.class,
     org.apache.sis.coverage.SampleRangeFormatTest.class,
     org.apache.sis.coverage.grid.PixelTranslationTest.class,
+    org.apache.sis.coverage.grid.GridOrientationTest.class,
     org.apache.sis.coverage.grid.GridExtentTest.class,
     org.apache.sis.coverage.grid.GridGeometryTest.class,
     org.apache.sis.coverage.grid.GridDerivationTest.class,
@@ -107,7 +112,7 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.ConvertedGridCoverageTest.class,
     org.apache.sis.coverage.grid.ResampledGridCoverageTest.class,
 
-    // Index
+    // Index and processing
     org.apache.sis.index.tree.PointTreeNodeTest.class,
     org.apache.sis.index.tree.PointTreeTest.class
 })

@@ -23,6 +23,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.apache.sis.image.TiledImageMock;
+import org.apache.sis.internal.gui.BackgroundThreads;
 
 
 /**
@@ -59,15 +60,25 @@ public final strictfp class GridViewApp extends Application {
      */
     @Override
     public void start(final Stage window) {
-        final GridView  view  = new GridView();
-        final BorderPane pane = new BorderPane();
-        pane.setCenter(view);
+        final GridView   view = new GridView();
+        final BorderPane pane = new BorderPane(view);
         window.setTitle("GridView Test");
         window.setScene(new Scene(pane));
         window.setWidth (400);
         window.setHeight(500);
         window.show();
         view.setImage(createImage());
+    }
+
+    /**
+     * Stops background threads for allowing JVM to exit.
+     *
+     * @throws Exception if an error occurred while stopping the threads.
+     */
+    @Override
+    public void stop() throws Exception {
+        BackgroundThreads.stop();
+        super.stop();
     }
 
     /**
@@ -84,10 +95,11 @@ public final strictfp class GridViewApp extends Application {
                 TILE_WIDTH,
                 TILE_HEIGHT,
                 3,                              // minTileX
-                -5);                            // minTileY
+                -5,                             // minTileY
+                false);
         image.validate();
         image.initializeAllTiles(0);
-        image.failRandomly(new Random());
+        image.failRandomly(new Random(), true);
         return image;
     }
 }

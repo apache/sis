@@ -36,6 +36,7 @@ import org.apache.sis.internal.shapefile.jdbc.sql.SQLIllegalParameterException;
 import org.apache.sis.internal.shapefile.jdbc.sql.SQLInvalidStatementException;
 import org.apache.sis.internal.shapefile.jdbc.sql.SQLUnsupportedParsingFeatureException;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.util.logging.Logging;
 import org.opengis.feature.Feature;
@@ -53,7 +54,7 @@ import org.opengis.feature.Feature;
  */
 public class InputFeatureStream extends InputStream {
     /** Logger. */
-    private static Logger LOGGER = Logging.getLogger(InputFeatureStream.class);
+    private static final Logger LOGGER = Logging.getLogger(Modules.SHAPEFILE);
 
     /** Resource bundle. */
     private ResourceBundle rsc = ResourceBundle.getBundle(InputFeatureStream.class.getName());

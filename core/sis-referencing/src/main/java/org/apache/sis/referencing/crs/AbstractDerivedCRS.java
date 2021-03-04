@@ -37,7 +37,6 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.internal.jaxb.referencing.CC_Conversion;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
-import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Semaphores;
@@ -106,23 +105,10 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
         super(properties, derivedCS);
         ArgumentChecks.ensureNonNull("baseCRS", baseCRS);
         ArgumentChecks.ensureNonNull("conversion", conversion);
-        final MathTransform baseToDerived = conversion.getMathTransform();
-        if (baseToDerived != null) {
-check:      for (int i=0; ; i++) {
-                final CoordinateSystem cs;
-                final int actual;
-                switch (i) {
-                    case 0:  actual = baseToDerived.getSourceDimensions(); cs = baseCRS.getCoordinateSystem(); break;
-                    case 1:  actual = baseToDerived.getTargetDimensions(); cs = derivedCS; break;
-                    default: break check;
-                }
-                final int expected = cs.getDimension();
-                if (actual != expected) {
-                    throw new MismatchedDimensionException(Resources.format(
-                            Resources.Keys.MismatchedTransformDimension_3, i, expected, actual));
-                }
-            }
-        }
+        ArgumentChecks.ensureDimensionsMatch("baseToDerived",
+                baseCRS.getCoordinateSystem().getDimension(),
+                derivedCS.getDimension(),
+                conversion.getMathTransform());
         conversionFromBase = createConversionFromBase(properties, baseCRS, conversion);
     }
 

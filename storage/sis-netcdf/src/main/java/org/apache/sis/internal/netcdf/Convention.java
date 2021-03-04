@@ -221,6 +221,9 @@ public class Convention {
      *       to confuse them with images.</li>
      * </ul>
      *
+     * <p>The default implementation returns {@link VariableRole#FEATURE} if the given variable may be values
+     * for one feature property of a feature set. This detection is based on the number of dimensions.</p>
+     *
      * @param  variable  the variable for which to get the role.
      * @return role of the given variable.
      */
@@ -228,16 +231,26 @@ public class Convention {
         if (variable.isCoordinateSystemAxis()) {
             return VariableRole.AXIS;
         }
-        int numVectors = 0;                                     // Number of dimension having more than 1 value.
-        for (final Dimension dimension : variable.getGridDimensions()) {
-            if (dimension.length() >= Grid.MIN_SPAN) {
-                numVectors++;
+        final int n = variable.getNumDimensions();
+        if (n == 1) {
+            if (variable.getAxisType() == null && variable.getAttributeValue(CF.AXIS) == null) {
+                return VariableRole.FEATURE;
             }
-        }
-        if (numVectors >= Grid.MIN_DIMENSION) {
+        } else if (n != 0) {
             final DataType dataType = variable.getDataType();
-            if (dataType.rasterDataType != null) {
-                return VariableRole.COVERAGE;
+            int numVectors = 0;                 // Number of dimension having more than 1 value.
+            for (final Dimension dimension : variable.getGridDimensions()) {
+                if (dimension.length() >= Grid.MIN_SPAN) {
+                    numVectors++;
+                }
+            }
+            if (numVectors >= Grid.MIN_DIMENSION) {
+                if (dataType.rasterDataType != null) {
+                    return VariableRole.COVERAGE;
+                }
+            }
+            if (n == Variable.STRING_DIMENSION && dataType == DataType.CHAR) {
+                return VariableRole.FEATURE;
             }
         }
         return VariableRole.OTHER;
@@ -343,10 +356,18 @@ public class Convention {
      * one resulting in best {@linkplain org.apache.sis.math.Plane#fit linear regression correlation coefficients}
      * will be selected.
      *
+     * <p>If the returned set is non-empty, exactly one of the linearizers will be applied. If not applying any
+     * linearizer is an acceptable solution, then an identity linearizer should be explicitly returned.</p>
+     *
+     * <p>The returned set shall not contain two linearizers of the same {@linkplain Linearizer#type type}
+     * because the types (not the full linearizers) are used in keys for caching localization grids.</p>
+     *
      * <p>Default implementation returns an empty set.</p>
      *
      * @param  decoder  the netCDF file for which to get linearizer candidates.
      * @return enumeration of two-dimensional non-linear transforms to try on the localization grid.
+     *
+     * @see #defaultHorizontalCRS(boolean)
      */
     public Set<Linearizer> linearizers(final Decoder decoder) {
         return Collections.emptySet();
@@ -379,6 +400,11 @@ public class Convention {
      * version if this constant become defined in {@link ucar.nc2.constants}.
      */
     protected static final String LONGITUDE_OF_PRIME_MERIDIAN = "longitude_of_prime_meridian";
+
+    /**
+     * Suffix of all attribute names used for CRS component names.
+     */
+    static final String NAME_SUFFIX = "_name";
 
     /**
      * The {@value} attribute name from CF-convention, defined here because not yet provided in {@link CF}.
@@ -479,7 +505,7 @@ public class Convention {
                     continue;
                 }
                 default: {
-                    if (ln.endsWith("_name")) {
+                    if (ln.endsWith(NAME_SUFFIX)) {
                         value = node.getAttributeAsString(name);
                         if (value == null) continue;
                     }
@@ -562,7 +588,7 @@ public class Convention {
      * </ol>
      *
      * Whether the returned range is a range of packed values or a range of real values is ambiguous.
-     * An heuristic rule is documented in UCAR {@link ucar.nc2.dataset.EnhanceScaleMissing} interface.
+     * An heuristic rule is documented in {@link ucar.nc2.dataset.EnhanceScaleMissingUnsigned} interface.
      * If both types of range are available, then this method should return the range of packed value.
      * Otherwise if this method returns the range of real values, then that range shall be an instance
      * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
@@ -607,7 +633,7 @@ public class Convention {
              */
             if (minimum != null && maximum != null) {
                 /*
-                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
+                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissingUnsigned):
                  * if the type of the range is equal to the type of the scale, and the type of the
                  * data is not wider, then assume that the minimum and maximum are real values.
                  */

@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Filter;
 import java.util.stream.Collector;
 import java.awt.Image;
 import java.awt.Shape;
@@ -30,10 +29,8 @@ import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Cache;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.util.Strings;
@@ -170,7 +167,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * The errors that occurred while computing the result, or {@code null} if none or not yet determined.
      * This field is never set if {@link #failOnException} is {@code true}.
      */
-    private volatile LogRecord errors;
+    private volatile ErrorHandler.Report errors;
 
     /**
      * Whether parallel execution is authorized for the {@linkplain #source} image.
@@ -287,9 +284,10 @@ abstract class AnnotatedImage extends ImageAdapter {
      */
     @Override
     public String[] getPropertyNames() {
-        final String[] names = new String[(errors != null) ? 2 : 1];
+        final boolean hasErrors = (errors != null);
+        final String[] names = new String[hasErrors ? 2 : 1];
         names[0] = getComputedPropertyName();
-        if (errors != null) {
+        if (hasErrors) {
             names[1] = names[0] + WARNINGS_SUFFIX;
         }
         return ArraysExt.concatenate(source.getPropertyNames(), names);
@@ -329,40 +327,37 @@ abstract class AnnotatedImage extends ImageAdapter {
              */
             final Object key = getCacheKey(property);
             value = cache.peek(key);
-            if (value == null) try {
+            if (value == null) {
                 boolean success = false;
                 final Cache.Handler<Object> handler = cache.lock(key);
                 try {
                     value = handler.peek();
-                    if (value == null) {
+                    if (value == null) try {
                         value = computeProperty();
                         if (value == null) value = NULL;
                         success = (errors == null);
+                    } catch (Exception e) {
+                        if (failOnException) {
+                            throw (ImagingOpException) new ImagingOpException(
+                                    Errors.format(Errors.Keys.CanNotCompute_1, property)).initCause(e);
+                        }
+                        /*
+                         * Stores the exception in a log record. We use a log record in order to initialize
+                         * the timestamp and thread ID to the values they had at the time the error occurred.
+                         * We do not synchronize because all worker threads should have finished now.
+                         */
+                        ErrorHandler.Report report = errors;
+                        if (report == null) {
+                            errors = report = new ErrorHandler.Report();
+                        }
+                        report.add(null, e, () -> Errors.getResources((Locale) null)
+                                .getLogRecord(Level.WARNING, Errors.Keys.CanNotCompute_1, property));
                     }
                 } finally {
                     handler.putAndUnlock(success ? value : null);       // Cache only if no error occurred.
                 }
                 if (value == NULL) value = null;
                 else value = cloneProperty(property, value);
-            } catch (Exception e) {
-                /*
-                 * Stores the given exception in a log record. We use a log record in order to initialize
-                 * the timestamp and thread ID to the values they had at the time the first error occurred.
-                 */
-                if (failOnException) {
-                    throw (ImagingOpException) new ImagingOpException(
-                            Errors.format(Errors.Keys.CanNotCompute_1, property)).initCause(e);
-                }
-                synchronized (this) {
-                    LogRecord record = errors;
-                    if (record != null) {
-                        record.getThrown().addSuppressed(e);
-                    } else {
-                        record = Errors.getResources((Locale) null).getLogRecord(Level.WARNING, Errors.Keys.CanNotCompute_1, property);
-                        record.setThrown(e);
-                        setError(record);
-                    }
-                }
             }
         } else if (isErrorProperty(property, name)) {
             value = errors;
@@ -373,47 +368,30 @@ abstract class AnnotatedImage extends ImageAdapter {
     }
 
     /**
-     * Invoked by {@link TileOpExecutor} if an error occurred during calculation on a tiles.
-     * Can also be invoked by {@link #getProperty(String)} directly if the error occurred
-     * outside {@link TileOpExecutor}. This method shall be invoked at most once.
-     *
-     * @param  record  a description of the error that occurred.
-     */
-    private void setError(final LogRecord record) {
-        /*
-         * Complete record with source identification as if the error occurred from
-         * above `getProperty(String)` method (this is always the case, indirectly).
-         */
-        record.setSourceClassName(AnnotatedImage.class.getCanonicalName());
-        record.setSourceMethodName("getProperty");
-        record.setLoggerName(Modules.RASTER);
-        synchronized (this) {
-            if (errors == null) {
-                errors = record;
-            } else {
-                throw new IllegalStateException();      // If it happens, this is a bug in thie AnnotatedImage class.
-            }
-        }
-    }
-
-    /**
-     * If an error occurred, logs the message. The log record is cleared by this method call
+     * If an error occurred, logs the message with the specified class and method as the source.
+     * The {@code classe} and {@code method} arguments overwrite the {@link LogRecord#getSourceClassName()}
+     * and {@link LogRecord#getSourceMethodName()} values. The log record is cleared by this method call
      * and will no longer be reported, unless the property is recomputed.
+     *
+     * <h4>Context of use</h4>
+     * This method should be invoked only on images that are going to be disposed after the caller extracted
+     * the computed property value. This method should not be invoked on image accessible by the user,
+     * because clearing the error may be surprising.
      *
      * @param  classe   the class to report as the source of the logging message.
      * @param  method   the method to report as the source of the logging message.
-     * @param  handler  where to send the log message, or {@code null} for the standard logger.
+     * @param  handler  where to send the log message.
      */
-    final void logAndClearError(final Class<?> classe, final String method, final Filter handler) {
-        final LogRecord record;
-        synchronized (this) {
-            record = errors;
-            errors = null;
-        }
-        if (record != null) {
-            if (handler == null || handler.isLoggable(record)) {
-                Logging.log(classe, method, record);
+    final void logAndClearError(final Class<?> classe, final String method, final ErrorHandler handler) {
+        final ErrorHandler.Report report = errors;
+        if (report != null) {
+            synchronized (report) {
+                final LogRecord record = report.getDescription();
+                record.setSourceClassName(classe.getCanonicalName());
+                record.setSourceMethodName(method);
+                errors = null;
             }
+            handler.handle(report);
         }
     }
 
@@ -440,7 +418,10 @@ abstract class AnnotatedImage extends ImageAdapter {
             if (executor.isMultiTiled()) {
                 final Collector<? super Raster,?,?> collector = collector();
                 if (collector != null) {
-                    return executor.executeOnReadable(source, collector(), failOnException ? null : this::setError);
+                    if (!failOnException) {
+                        executor.setErrorHandler((e) -> errors = e, AnnotatedImage.class, "getProperty");
+                    }
+                    return executor.executeOnReadable(source, collector());
                 }
             }
         }

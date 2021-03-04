@@ -206,16 +206,16 @@ public enum About {
         root.setValue(NAME, resources.getString(Vocabulary.Keys.LocalConfiguration));
         table.setRoot(root);
         /*
-         * Begin with the "Versions" section. The 'newSection' variable will be updated in the
-         * switch statement when new section will begin, and reset to 'null' after the 'section'
+         * Begin with the "Versions" section. The `newSection` variable will be updated in the
+         * switch statement when new section will begin, and reset to `null` after the `section`
          * variable has been updated accordingly.
          */
         TreeTable.Node section = null;
         About newSection = VERSIONS;
 fill:   for (int i=0; ; i++) {
-            short    nameKey  = 0;          // The Vocabulary.Key for 'name', used only if name is null.
-            String   name     = null;       // The value to put in the 'Name' column of the table.
-            Object   value    = null;       // The value to put in the 'Value' column of the table.
+            short    nameKey  = 0;          // The Vocabulary.Key for `name`, used only if name is null.
+            String   name     = null;       // The value to put in the "Name" column of the table.
+            Object   value    = null;       // The value to put in the "Value" column of the table.
             String[] children = null;       // Optional children to write below the node.
             switch (i) {
                 case 0: {
@@ -234,27 +234,34 @@ fill:   for (int i=0; ; i++) {
                 }
                 case 2: {
                     if (sections.contains(VERSIONS)) {
+                        name  = "JavaFX";
+                        value = getProperty("javafx.version");
+                    }
+                    break;
+                }
+                case 3: {
+                    if (sections.contains(VERSIONS)) {
                         nameKey = Vocabulary.Keys.OperatingSystem;
                         value = concatenate(concatenate(getProperty("os.name"),
                                 getProperty("os.version"), false), getProperty("os.arch"), true);
                     }
                     break;
                 }
-                case 3: {
+                case 4: {
                     if (sections.contains(VERSIONS)) {
                         nameKey = Vocabulary.Keys.Container;
                         value = Shutdown.getContainer();        // Sometime contains version information.
                     }
                     break;
                 }
-                case 4: {
+                case 5: {
                     if (sections.contains(VERSIONS)) {
                         nameKey = Vocabulary.Keys.GeodeticDataset;
                         value = MetadataServices.getInstance().getInformation(Constants.EPSG, locale);
                     }
                     break;
                 }
-                case 5: {
+                case 6: {
                     newSection = LOCALIZATION;
                     if (sections.contains(LOCALIZATION)) {
                         final Locale current = Locale.getDefault();
@@ -269,7 +276,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 6: {
+                case 7: {
                     if (sections.contains(LOCALIZATION)) {
                         final TimeZone current = TimeZone.getDefault();
                         if (current != null) {
@@ -290,7 +297,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 7: {
+                case 8: {
                     if (sections.contains(LOCALIZATION)) {
                         nameKey = Vocabulary.Keys.CurrentDateTime;
                         final DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, formatLocale);
@@ -301,7 +308,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 8: {
+                case 9: {
                     if (sections.contains(LOCALIZATION)) {
                         final Charset current = Charset.defaultCharset();
                         if (current != null) {
@@ -321,7 +328,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 9: {
+                case 10: {
                     newSection = PLUGINS;
                     if (sections.contains(PLUGINS)) try {
                         children = (String[]) Class.forName("org.apache.sis.internal.storage.Capability")
@@ -336,7 +343,7 @@ fill:   for (int i=0; ; i++) {
                     nameKey = Vocabulary.Keys.DataFormats;
                     break;
                 }
-                case 10: {
+                case 11: {
                     newSection = LOGGING;
                     if (sections.contains(LOGGING)) {
                         nameKey = Vocabulary.Keys.Implementation;
@@ -345,7 +352,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 11: {
+                case 12: {
                     if (sections.contains(LOGGING)) {
                         nameKey = Vocabulary.Keys.Level;
                         final Level level = Logging.getLogger("").getLevel();   // Root logger level.
@@ -367,7 +374,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 12: {
+                case 13: {
                     newSection = PATHS;
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.UserHome;
@@ -375,14 +382,14 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 13: {
+                case 14: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.CurrentDirectory;
                         value = getProperty("user.dir");
                     }
                     break;
                 }
-                case 14: {
+                case 15: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.DataDirectory;
                         try {
@@ -403,28 +410,28 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 15: {
+                case 16: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.DataBase;
                         value = MetadataServices.getInstance().getInformation("DataSource", locale);
                     }
                     break;
                 }
-                case 16: {
+                case 17: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.TemporaryFiles;
                         value = getProperty("java.io.tmpdir");
                     }
                     break;
                 }
-                case 17: {
+                case 18: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.JavaHome;
                         value = javaHome = getProperty("java.home");
                     }
                     break;
                 }
-                case 18: {
+                case 19: {
                     newSection = LIBRARIES;
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.JavaExtensions;
@@ -432,7 +439,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 19: {
+                case 20: {
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.Classpath;
                         value = classpath(getProperty("java.class.path"), false);
@@ -443,7 +450,7 @@ fill:   for (int i=0; ; i++) {
             }
             /*
              * At this point, we have the information about one node to create.
-             * If the 'newSection' variable is non-null, then this new node shall
+             * If the `newSection` variable is non-null, then this new node shall
              * appear in a new section.
              */
             if (value == null) {

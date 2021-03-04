@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.application.Platform;
+import javafx.scene.Node;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -189,10 +190,11 @@ public final class ResourceLoader extends Task<Resource> {
      * has been removed from the cache, the close action is performed in a background thread.
      *
      * @param  toClose  the data store to remove from the cache and to close.
+     * @param  owner    the node invoking this method, used if a dialog must be shown.
      * @return {@code true} if the value has been removed from the cache, or {@code false}
      *         if it has not been found. Note that the data store is closed in all cases.
      */
-    public static boolean removeAndClose(final DataStore toClose) {
+    public static boolean removeAndClose(final DataStore toClose, final Node owner) {
         /*
          * A simpler code would be as below, but can not be used at this time because our
          * Cache.entrySet() implementation does not support the Iterator.remove() operation.
@@ -210,7 +212,7 @@ public final class ResourceLoader extends Task<Resource> {
                 toClose.close();
             } catch (final Throwable e) {
                 Platform.runLater(() -> {
-                    ExceptionReporter.canNotCloseFile(toClose.getDisplayName(), e);
+                    ExceptionReporter.canNotCloseFile(owner, toClose.getDisplayName(), e);
                 });
             }
         });

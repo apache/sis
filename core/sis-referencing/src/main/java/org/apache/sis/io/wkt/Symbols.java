@@ -73,7 +73,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * Users can create their own {@code Symbols} instance for parsing or formatting a WKT with different symbols.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see WKTFormat#getSymbols()
  * @see WKTFormat#setSymbols(Symbols)
@@ -239,7 +239,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * Throws an exception if this set of symbols is immutable.
      */
-    final void checkWritePermission() throws UnsupportedOperationException {
+    private void checkWritePermission() throws UnsupportedOperationException {
         if (isImmutable) {
             throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "Symbols"));
         }
@@ -280,6 +280,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Such WKT can be used for human reading, but not for data export.
      *
      * @param  locale  the new symbols locale.
+     * @throws UnsupportedOperationException if this {@code Symbols} instance is immutable.
      */
     public void setLocale(final Locale locale) {
         checkWritePermission();
@@ -361,6 +362,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      *
      * @param  preferred     the preferred pair of opening and closing quotes, used at formatting time.
      * @param  alternatives  alternative pairs of opening and closing quotes accepted at parsing time.
+     * @throws UnsupportedOperationException if this {@code Symbols} instance is immutable.
      */
     public void setPairedBrackets(final String preferred, final String... alternatives) {
         checkWritePermission();
@@ -439,6 +441,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      *
      * @param  preferred     the preferred pair of opening and closing quotes, used at formatting time.
      * @param  alternatives  alternative pairs of opening and closing quotes accepted at parsing time.
+     * @throws UnsupportedOperationException if this {@code Symbols} instance is immutable.
      */
     public void setPairedQuotes(final String preferred, final String... alternatives) {
         checkWritePermission();
@@ -508,6 +511,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      *
      * @param  openSequence   the character for opening a sequence of values, as a Unicode code point.
      * @param  closeSequence  the character for closing a sequence of values, as a Unicode code point.
+     * @throws UnsupportedOperationException if this {@code Symbols} instance is immutable.
      */
     public void setSequenceBrackets(final int openSequence, final int closeSequence) {
         checkWritePermission();
@@ -533,6 +537,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * but leading and trailing spaces will be ignored at parsing time.
      *
      * @param  separator  the new string to use as a separator in a list of values.
+     * @throws UnsupportedOperationException if this {@code Symbols} instance is immutable.
      */
     public void setSeparator(final String separator) {
         checkWritePermission();
@@ -609,6 +614,10 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * The purpose of this method is to guess some characteristics about the encoded object without
      * the cost of a full WKT parsing.
      *
+     * <div class="note"><b>Example:</b>
+     * {@code containsElement(wkt, "AXIS")} returns {@code true} if the given WKT contains at least
+     * one instance of the {@code AXIS[…]} element, ignoring case.</div>
+     *
      * @param  wkt      the WKT to inspect.
      * @param  element  the element to search for.
      * @return {@code true} if the given WKT contains at least one instance of the given element.
@@ -631,12 +640,16 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * The check for axis elements is of particular interest because the axis order is a frequent cause
      * of confusion when processing geographic data. Some applications just ignore any declared axis order
      * in favor of their own hard-coded (<var>longitude</var>, <var>latitude</var>) axis order.
-     * Consequently, the presence of {@code AXIS[…]} elements in a WKT is an indication that the encoded
-     * object may not be understood as intended by some external software products.
+     * Consequently, the presence of {@code AXIS[…]} elements in a WKT 1 string is an indication
+     * that the encoded object may not be understood as intended by some external software products.
      *
      * @param  wkt  the WKT to inspect.
      * @return {@code true} if the given WKT contains at least one instance of the {@code AXIS[…]} element.
+     *
+     * @deprecated The {@code AXIS} element is no longer optional in WKT 2.
+     *             Consequently testing for its presence should not be needed anymore.
      */
+    @Deprecated
     public boolean containsAxis(final CharSequence wkt) {
         ensureNonNull("wkt", wkt);
         return containsElement(wkt, "AXIS", 0);
@@ -713,8 +726,9 @@ public class Symbols implements Localized, Cloneable, Serializable {
 
     /**
      * Returns a clone of this {@code Symbols}.
+     * The returned instance is modifiable (i.e. setter methods will not throw {@link UnsupportedOperationException}).
      *
-     * @return a clone of this {@code Symbols}.
+     * @return a modifiable clone of this {@code Symbols}.
      */
     @Override
     public Symbols clone() {

@@ -17,8 +17,10 @@
 package org.apache.sis.gui.dataset;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.nio.file.FileSystemNotFoundException;
 import java.util.AbstractList;
 import java.util.Locale;
 import java.util.List;
@@ -29,6 +31,9 @@ import java.util.Optional;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.collections.ObservableList;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -101,6 +106,14 @@ public class ResourceTree extends TreeView<Resource> {
     final Locale locale;
 
     /**
+     * Function to be called after a resource has been loaded from a file or URL.
+     * The default value is {@code null}.
+     *
+     * @see #loadResource(Object)
+     */
+    public final ObjectProperty<EventHandler<LoadEvent>> onResourceLoaded;
+
+    /**
      * Creates a new tree of resources with initially no resource to show.
      * For showing a resource, invoke {@link #setResource(Resource)} after construction.
      */
@@ -109,6 +122,7 @@ public class ResourceTree extends TreeView<Resource> {
         setCellFactory((v) -> new Cell());
         setOnDragOver(ResourceTree::onDragOver);
         setOnDragDropped(this::onDragDropped);
+        onResourceLoaded = new SimpleObjectProperty<>(this, "onResourceLoaded");
     }
 
     /**
@@ -187,6 +201,8 @@ public class ResourceTree extends TreeView<Resource> {
      *
      * @param  source  the source of the resource to load. This is usually
      *                 a {@link java.io.File} or {@link java.nio.file.Path}.
+     *
+     * @see #onResourceLoaded
      */
     public void loadResource(final Object source) {
         if (source != null) {
@@ -198,10 +214,32 @@ public class ResourceTree extends TreeView<Resource> {
                 if (existing != null) {
                     addResource(existing);
                 } else {
-                    loader.setOnSucceeded((event) -> addResource((Resource) event.getSource().getValue()));
-                    loader.setOnFailed(ExceptionReporter::show);
+                    loader.setOnSucceeded((event) -> {
+                        addResource((Resource) event.getSource().getValue());
+                        notifyLoaded(source);
+                    });
+                    loader.setOnFailed((event) -> ExceptionReporter.show(this, event));
                     BackgroundThreads.execute(loader);
                 }
+            }
+        }
+    }
+
+    /**
+     * Notifies {@link #onResourceLoaded} handler that a resource at the given path has been loaded.
+     */
+    private void notifyLoaded(final Object source) {
+        final EventHandler<LoadEvent> handler = onResourceLoaded.getValue();
+        if (handler != null) {
+            final Path path;
+            try {
+                path = IOUtilities.toPathOrNull(source);
+            } catch (IllegalArgumentException | FileSystemNotFoundException e) {
+                Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), ResourceTree.class, "loadResource", e);
+                return;
+            }
+            if (path != null) {
+                handler.handle(new LoadEvent(this, path));
             }
         }
     }
@@ -236,7 +274,7 @@ public class ResourceTree extends TreeView<Resource> {
                 final int start = url.lastIndexOf('/', url.length() - 2) + 1;
                 int stop = url.indexOf('?', start);
                 if (stop <= 0) stop = url.length();
-                ExceptionReporter.canNotReadFile(url.substring(start, stop), e);
+                ExceptionReporter.canNotReadFile(this, url.substring(start, stop), e);
             }
         }
         event.setDropCompleted(success);
@@ -268,7 +306,7 @@ public class ResourceTree extends TreeView<Resource> {
     public void removeAndClose(final Resource resource) {
         if (findOrRemove(resource, true)) {
             if (resource instanceof DataStore) {
-                ResourceLoader.removeAndClose((DataStore) resource);
+                ResourceLoader.removeAndClose((DataStore) resource, this);
             }
         }
     }
@@ -480,8 +518,9 @@ public class ResourceTree extends TreeView<Resource> {
                         more = new Button(Styles.ERROR_DETAILS_ICON);
                         more.setOnAction((e) -> {
                             final Resources localized = tree.localized();
-                            ExceptionReporter.show(localized.getString(Resources.Keys.ErrorDetails),
-                                                   localized.getString(Resources.Keys.CanNotReadResource), failure);
+                            ExceptionReporter.show(tree,
+                                    localized.getString(Resources.Keys.ErrorDetails),
+                                    localized.getString(Resources.Keys.CanNotReadResource), failure);
                         });
                     }
                 } else {

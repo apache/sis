@@ -445,7 +445,7 @@ final class StringJoinOperation extends AbstractOperation {
                         if (element.charAt(i) == ESCAPE) {
                             i++;
                         } else {
-                            assert element.regionMatches(i, delimiter, 0, delimiter.length()) : element;
+                            assert element.startsWith(delimiter, i) : element;
                             i += delimiter.length();
                         }
                     }

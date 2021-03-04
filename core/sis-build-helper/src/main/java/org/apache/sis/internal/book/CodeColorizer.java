@@ -306,15 +306,15 @@ public final class CodeColorizer {
                             if (c == '"') {
                                 stopCondition = "\"";
                                 syntacticElement = document.createElement("i");
-                            } else if (isJava && text.regionMatches(lower, "/*", 0, 2)) {
+                            } else if (isJava && text.startsWith("/*", lower)) {
                                 stopCondition = "*/";
                                 syntacticElement = document.createElement("code");
                                 syntacticElement.setAttribute("class", "comment");
-                            } else if (isJava && text.regionMatches(lower, "//", 0, 2)) {
+                            } else if (isJava && text.startsWith("//", lower)) {
                                 stopCondition = "\n";
                                 syntacticElement = document.createElement("code");
                                 syntacticElement.setAttribute("class", "comment");
-                            } else if (isXML && text.regionMatches(lower, "<!--", 0, 4)) {
+                            } else if (isXML && text.startsWith("<!--", lower)) {
                                 stopCondition = "-->";
                                 syntacticElement = document.createElement("code");
                                 syntacticElement.setAttribute("class", "comment");

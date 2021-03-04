@@ -153,7 +153,7 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
     /**
      * Tests concatenation of transforms built from non-square matrices. The transforms are invertible
      * when taken separately, but the transform resulting from concatenation can not be inverted unless
-     * {@link ConcatenatedTransform#createOptimized(MathTransform, MathTransform, MathTransformFactory)}
+     * {@link ConcatenatedTransform#tryOptimized(MathTransform, MathTransform, MathTransformFactory)}
      * prepares in advance the inverse transform using the inverse of original transforms.
      *
      * @throws NoninvertibleTransformException if a transform can not be inverted.

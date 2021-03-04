@@ -226,8 +226,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      */
     @Override
     public Statistics parse(CharSequence text, ParsePosition pos) throws ParseException {
-        throw new ParseException(Errors.getResources(getLocale())
-                .getString(Errors.Keys.UnsupportedOperation_1, "parse"), pos.getIndex());
+        throw new ParseException(Errors.format(Errors.Keys.UnsupportedOperation_1, "parse"), pos.getIndex());
     }
 
     /**

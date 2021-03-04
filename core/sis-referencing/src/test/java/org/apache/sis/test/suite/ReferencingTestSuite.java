@@ -38,6 +38,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
     org.apache.sis.internal.referencing.ReferencingUtilitiesTest.class,
     org.apache.sis.internal.referencing.WraparoundAdjustmentTest.class,
+    org.apache.sis.internal.referencing.ExtentSelectorTest.class,
     org.apache.sis.internal.referencing.WKTKeywordsTest.class,
     org.apache.sis.internal.referencing.WKTUtilitiesTest.class,
     org.apache.sis.internal.jaxb.referencing.CodeTest.class,
@@ -148,7 +149,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
     org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
-    org.apache.sis.internal.referencing.WraparoundTransformTest.class,
+    org.apache.sis.referencing.operation.transform.WraparoundTransformTest.class,
 
     // Registration of map projections and other math transforms.
     org.apache.sis.internal.referencing.provider.AffineTest.class,
@@ -222,6 +223,7 @@ import org.junit.BeforeClass;
     org.apache.sis.io.wkt.GeodeticObjectParserTest.class,
     org.apache.sis.io.wkt.WKTFormatTest.class,
     org.apache.sis.io.wkt.WKTParserTest.class,
+    org.apache.sis.io.wkt.WKTDictionaryTest.class,
     org.apache.sis.io.wkt.ComparisonWithEPSG.class,
 
     // Geodetic object creations from authority codes.

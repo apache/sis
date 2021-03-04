@@ -18,6 +18,7 @@ package org.apache.sis.measure;
 
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.math.MathFunctions;
 
 
 /**
@@ -176,7 +177,7 @@ public final class Longitude extends Angle {
      * @since 1.1
      */
     public static boolean isWraparound(final double west, final double east) {
-        return (west > east) || (Double.doubleToRawLongBits(west) == 0 &&
-                                 Double.doubleToRawLongBits(east) == Long.MIN_VALUE);
+        return (west > east) || (MathFunctions.isPositiveZero(west) &&
+                                 MathFunctions.isNegativeZero(east));
     }
 }

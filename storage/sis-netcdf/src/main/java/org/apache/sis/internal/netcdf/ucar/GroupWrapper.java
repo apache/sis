@@ -26,7 +26,7 @@ import org.apache.sis.internal.netcdf.Decoder;
  * Wrapper for a netCDF group.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -57,7 +57,7 @@ final class GroupWrapper extends Node {
      */
     @Override
     public Collection<String> getAttributeNames() {
-        return VariableWrapper.toNames(group.getAttributes());
+        return VariableWrapper.toNames(group.attributes());
     }
 
     /**
@@ -65,7 +65,7 @@ final class GroupWrapper extends Node {
      */
     @Override
     public Class<?> getAttributeType(final String attributeName) {
-        return VariableWrapper.getAttributeType(group.findAttributeIgnoreCase(attributeName));
+        return VariableWrapper.getAttributeType(group.attributes().findAttributeIgnoreCase(attributeName));
     }
 
     /**
@@ -75,6 +75,6 @@ final class GroupWrapper extends Node {
      */
     @Override
     protected Object getAttributeValue(final String attributeName) {
-        return VariableWrapper.getAttributeValue(group.findAttributeIgnoreCase(attributeName));
+        return VariableWrapper.getAttributeValue(group.attributes().findAttributeIgnoreCase(attributeName));
     }
 }

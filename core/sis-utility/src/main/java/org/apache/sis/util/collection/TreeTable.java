@@ -38,7 +38,7 @@ import java.util.List;
  *     │   ├─Role…………………………………………………… resource provider
  *     │   └─Contact Info
  *     │       └─Online Resource
- *     │           ├─Linkage……………………… http://www.opengeospatial.org/
+ *     │           ├─Linkage……………………… https://www.ogc.org/
  *     │           └─Function…………………… information
  *     └─Identifiers
  *         └─Code…………………………………………………… OGC

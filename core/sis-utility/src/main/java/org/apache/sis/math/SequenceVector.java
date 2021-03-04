@@ -30,7 +30,7 @@ import org.apache.sis.internal.util.Numerics;
  * Values may be {@code long} or {@code double} types.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -87,6 +87,14 @@ abstract class SequenceVector extends Vector implements Serializable {
     @Override
     public final int size() {
         return length;
+    }
+
+    /**
+     * Returns {@code true} if this vector is empty or contains only {@code NaN} values.
+     */
+    @Override
+    public final boolean isEmptyOrNaN() {
+        return (length == 0) || isNaN(0);
     }
 
     /**

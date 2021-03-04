@@ -16,10 +16,13 @@
  */
 package org.apache.sis.portrayal;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Objects;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import org.apache.sis.storage.DataStoreException;
+import org.opengis.geometry.Envelope;
 import org.opengis.util.InternationalString;
 
 
@@ -245,7 +248,7 @@ public abstract class MapItem extends Observable {
      * If the given value is different than the previous value, then a change event
      * is sent to all listeners registered for the {@value #VISIBLE_PROPERTY} property.
      *
-     * <p>If this item is a {@code MapGroup}, then hiding this group should hide all components in this group,
+     * <p>If this item is a {@code MapLayers}, then hiding this group should hide all components in this group,
      * but without changing the individual {@value #VISIBLE_PROPERTY} property of those components.
      * Consequently making the group visible again restore each component to the visibility state
      * it has before the group was hidden (assuming those states have not been changed in other ways).</p>
@@ -258,6 +261,19 @@ public abstract class MapItem extends Observable {
             visible = newValue;
             firePropertyChange(VISIBLE_PROPERTY, oldValue, newValue);
         }
+    }
+
+    /**
+     * Returns the envelope of this {@code MapItem}.
+     * If this instance is a {@code MapLayers} the envelope is the concatenation of all it's components,
+     * in case of multiple CRS for each MapLayer, the resulting envelope CRS is unpredictable.
+     * If this instance is a {@code MapLayer} the envelope is the resource data envelope.
+     *
+     * @return the spatiotemporal extent. May be absent if none or too costly to compute.
+     * @throws DataStoreException if an error occurred while reading or computing the envelope.
+     */
+    public Optional<Envelope> getEnvelope() throws DataStoreException {
+        return Optional.empty();
     }
 
     /**

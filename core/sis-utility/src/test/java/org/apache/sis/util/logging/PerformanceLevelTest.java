@@ -21,6 +21,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static java.util.logging.Level.FINE;
 import static org.apache.sis.util.logging.PerformanceLevel.*;
 
 
@@ -28,7 +29,7 @@ import static org.apache.sis.util.logging.PerformanceLevel.*;
  * Tests the {@link PerformanceLevel} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -38,10 +39,9 @@ public final strictfp class PerformanceLevelTest extends TestCase {
      */
     @Test
     public void testGetMinDuration() {
-        assertEquals(0,   PERFORMANCE.getMinDuration(TimeUnit.NANOSECONDS));
-        assertEquals(100, SLOW       .getMinDuration(TimeUnit.MILLISECONDS));
-        assertEquals(1,   SLOWER     .getMinDuration(TimeUnit.SECONDS));
-        assertEquals(5,   SLOWEST    .getMinDuration(TimeUnit.SECONDS));
+        assertEquals(0,  PERFORMANCE.getMinDuration(TimeUnit.NANOSECONDS));
+        assertEquals(1,  SLOW  .getMinDuration(TimeUnit.SECONDS));
+        assertEquals(10, SLOWER.getMinDuration(TimeUnit.SECONDS));
     }
 
     /**
@@ -49,28 +49,26 @@ public final strictfp class PerformanceLevelTest extends TestCase {
      */
     @Test
     public void testSetMinDuration() {
+        final long t1 = SLOW  .getMinDuration(TimeUnit.SECONDS);
+        final long t2 = SLOWER.getMinDuration(TimeUnit.SECONDS);
         try {
-            SLOW.setMinDuration(2, TimeUnit.SECONDS);
-            assertEquals(0, PERFORMANCE.getMinDuration(TimeUnit.SECONDS));
-            assertEquals(2, SLOW       .getMinDuration(TimeUnit.SECONDS));
-            assertEquals(2, SLOWER     .getMinDuration(TimeUnit.SECONDS));
-            assertEquals(5, SLOWEST    .getMinDuration(TimeUnit.SECONDS));
+            SLOW.setMinDuration(80, TimeUnit.SECONDS);
+            assertEquals( 0, PERFORMANCE.getMinDuration(TimeUnit.SECONDS));
+            assertEquals(80, SLOW  .getMinDuration(TimeUnit.SECONDS));
+            assertEquals(80, SLOWER.getMinDuration(TimeUnit.SECONDS));
 
-            SLOWEST.setMinDuration(1, TimeUnit.SECONDS);
+            SLOWER.setMinDuration(4, TimeUnit.SECONDS);
             assertEquals(0, PERFORMANCE.getMinDuration(TimeUnit.SECONDS));
-            assertEquals(1, SLOW       .getMinDuration(TimeUnit.SECONDS));
-            assertEquals(1, SLOWER     .getMinDuration(TimeUnit.SECONDS));
-            assertEquals(1, SLOWEST    .getMinDuration(TimeUnit.SECONDS));
+            assertEquals(4, SLOW  .getMinDuration(TimeUnit.SECONDS));
+            assertEquals(4, SLOWER.getMinDuration(TimeUnit.SECONDS));
 
             PERFORMANCE.setMinDuration(6, TimeUnit.SECONDS);
             assertEquals(0, PERFORMANCE.getMinDuration(TimeUnit.SECONDS));
-            assertEquals(6, SLOW       .getMinDuration(TimeUnit.SECONDS));
-            assertEquals(6, SLOWER     .getMinDuration(TimeUnit.SECONDS));
-            assertEquals(6, SLOWEST    .getMinDuration(TimeUnit.SECONDS));
+            assertEquals(6, SLOW  .getMinDuration(TimeUnit.SECONDS));
+            assertEquals(6, SLOWER.getMinDuration(TimeUnit.SECONDS));
         } finally {
-            SLOW   .setMinDuration(100, TimeUnit.MILLISECONDS);
-            SLOWER .setMinDuration(1,   TimeUnit.SECONDS);
-            SLOWEST.setMinDuration(5,   TimeUnit.SECONDS);
+            SLOWER .setMinDuration(t1, TimeUnit.SECONDS);
+            SLOWER .setMinDuration(t2, TimeUnit.SECONDS);
         }
     }
 
@@ -79,9 +77,9 @@ public final strictfp class PerformanceLevelTest extends TestCase {
      */
     @Test
     public void testForDuration() {
-        assertSame(SLOW,        forDuration(500, TimeUnit.MILLISECONDS));
-        assertSame(SLOWER,      forDuration(2,   TimeUnit.SECONDS));
-        assertSame(SLOWEST,     forDuration(6,   TimeUnit.SECONDS));
-        assertSame(PERFORMANCE, forDuration(50,  TimeUnit.MILLISECONDS));
+        assertSame(SLOW,    forDuration( 2, TimeUnit.SECONDS));
+        assertSame(SLOWER,  forDuration(10, TimeUnit.SECONDS));
+        assertSame(SLOWER , forDuration(20, TimeUnit.SECONDS));
+        assertSame(FINE,    forDuration(50, TimeUnit.MILLISECONDS));
     }
 }

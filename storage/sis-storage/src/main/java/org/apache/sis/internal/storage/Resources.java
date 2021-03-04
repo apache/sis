@@ -247,6 +247,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InvalidSampleDimensionIndex_2 = 52;
 
         /**
+         * Loaded grid coverage between {1} – {2} and {3} – {4} from file “{0}” in {5} seconds.
+         */
+        public static final short LoadedGridCoverage_6 = 59;
+
+        /**
          * Resource “{0}” does not have an identifier.
          */
         public static final short MissingResourceIdentifier_1 = 42;
@@ -335,6 +340,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not open {0} data store without “{1}” parameter.
          */
         public static final short UndefinedParameter_2 = 27;
+
+        /**
+         * The “{0}” feature at {1} has a {3} coordinate values, while we expected a multiple of {2}.
+         */
+        public static final short UnexpectedNumberOfCoordinates_4 = 58;
 
         /**
          * Format of “{0}” is not recognized.

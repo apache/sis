@@ -154,7 +154,8 @@ public final strictfp class ReshapedImageTest extends TestCase {
         width     = numXTiles * TILE_WIDTH;
         height    = numYTiles * TILE_HEIGHT;
         final TiledImageMock data = new TiledImageMock(DataBuffer.TYPE_USHORT, 1, dataMinX, dataMinY,
-                                        width, height, TILE_WIDTH, TILE_HEIGHT, minTileX, minTileY);
+                                        width, height, TILE_WIDTH, TILE_HEIGHT, minTileX, minTileY,
+                                        random.nextBoolean());  // Banded or interleaved sample model
         data.validate();
         data.initializeAllTiles(0);
         /*

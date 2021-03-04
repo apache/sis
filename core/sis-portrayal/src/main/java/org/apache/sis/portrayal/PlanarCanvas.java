@@ -112,7 +112,7 @@ public abstract class PlanarCanvas extends Canvas {
      * The returned envelope is a copy; display changes happening after this method invocation will not be
      * reflected in the returned envelope.</p>
      *
-     * @return size and location of the display device.
+     * @return size and location of the display device in pixel coordinates.
      *
      * @see #setDisplayBounds(Envelope)
      */

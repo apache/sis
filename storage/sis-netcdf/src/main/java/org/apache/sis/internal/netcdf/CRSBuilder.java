@@ -19,6 +19,7 @@ package org.apache.sis.internal.netcdf;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.StringJoiner;
 import java.util.function.Supplier;
@@ -26,6 +27,7 @@ import java.util.logging.Level;
 import java.io.IOException;
 import java.time.Instant;
 import javax.measure.Unit;
+import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
@@ -34,10 +36,12 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -52,6 +56,7 @@ import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
 
@@ -67,7 +72,7 @@ import org.apache.sis.math.Vector;
  * <ol>
  *   <li>Invoke {@link #dispatch(List, Axis)} for all axes in a grid.
  *       Builders for CRS components will added in the given list.</li>
- *   <li>Invoke {@link #build(Decoder)} on each builder prepared in above step.</li>
+ *   <li>Invoke {@link #build(Decoder, boolean)} on each builder prepared in above step.</li>
  *   <li>Assemble the CRS components created in above step in a {@code CompoundCRS}.</li>
  * </ol>
  *
@@ -163,6 +168,85 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
     }
 
     /**
+     * Infers a new CRS for a {@link Grid}.
+     *
+     * <h4>CRS replacements</h4>
+     * The {@code linearizationTargets} argument allows to replace some CRSs inferred by this method by hard-coded CRSs.
+     * This is non-empty only when reading a netCDF file for a specific profile, i.e. a file decoded with a subclass of
+     * {@link Convention}. The CRS to be replaced is inferred from the axis directions.
+     *
+     * @param  decoder               the decoder of the netCDF from which the CRS are constructed.
+     * @param  grid                  the grid for which the CRS are constructed.
+     * @param  linearizationTargets  CRS to use instead of CRS inferred by this method, or null or empty if none.
+     * @param  reorderGridToCRS      an affine transform doing a final step in a "grid to CRS" transform for ordering axes.
+     *         Not used by this method, but may be modified for taking in account axis order changes caused by replacements
+     *         defined in {@code linearizationTargets}. Ignored (can be null) if {@code linearizationTargets} is null.
+     * @return coordinate reference system from the given axes, or {@code null}.
+     */
+    public static CoordinateReferenceSystem assemble(final Decoder decoder, final Grid grid,
+            final List<CoordinateReferenceSystem> linearizationTargets, final Matrix reorderGridToCRS)
+            throws DataStoreException, FactoryException, IOException
+    {
+        final List<CRSBuilder<?,?>> builders = new ArrayList<>(4);
+        for (final Axis axis : grid.getAxes(decoder)) {
+            dispatch(builders, axis);
+        }
+        final SingleCRS[] components = new SingleCRS[builders.size()];
+        for (int i=0; i < components.length; i++) {
+            components[i] = builders.get(i).build(decoder, true);
+        }
+        /*
+         * If there is hard-coded CRS implied by `Convention.linearizers()`, use it now.
+         * We do not verify the datum; we assume that the linearizer that built the CRS
+         * was consistent with `Convention.defaultHorizontalCRS(false)`.
+         */
+        if ((linearizationTargets != null) && !linearizationTargets.isEmpty()) {
+            Linearizer.replaceInCompoundCRS(components, linearizationTargets, reorderGridToCRS);
+        }
+        switch (components.length) {
+            case 0: return null;
+            case 1: return components[0];
+        }
+        return new EllipsoidalHeightCombiner(decoder).createCompoundCRS(properties(grid.getName()), components);
+    }
+
+    /**
+     * Infers a new horizontal and vertical CRS for a {@link FeatureSet}.
+     * The CRS returned by this method does not include a temporal component.
+     * Instead the temporal component, if found, is stored in the {@code time} array.
+     * Note that the temporal component is not necessarily a {@link org.opengis.referencing.crs.TemporalCRS} instance;
+     * it can also be an {@link org.opengis.referencing.crs.EngineeringCRS} instance if the datum epoch is unknown.
+     *
+     * @param  decoder  the decoder of the netCDF from which the CRS are constructed.
+     * @param  axes     the axes to use for creating a CRS.
+     * @param  time     an array of length 1 where to store the temporal CRS.
+     * @return coordinate reference system from the given axes, or {@code null}.
+     */
+    static CoordinateReferenceSystem assemble(final Decoder decoder, final Iterable<Variable> axes, final SingleCRS[] time)
+            throws DataStoreException, FactoryException, IOException
+    {
+        final List<CRSBuilder<?,?>> builders = new ArrayList<>(4);
+        for (final Variable axis : axes) {
+            dispatch(builders, new Axis(axis));
+        }
+        final SingleCRS[] components = new SingleCRS[builders.size()];
+        int n = 0;
+        for (final CRSBuilder<?, ?> cb : builders) {
+            final SingleCRS c = cb.build(decoder, false);
+            if (cb instanceof Temporal) {
+                time[0] = c;
+            } else {
+                components[n++] = c;
+            }
+        }
+        switch (n) {
+            case 0: return null;
+            case 1: return components[0];
+        }
+        return new EllipsoidalHeightCombiner(decoder).createCompoundCRS(ArraysExt.resize(components, n));
+    }
+
+    /**
      * Dispatches the given axis to a {@code CRSBuilder} appropriate for the axis type. The axis type is determined
      * from {@link Axis#abbreviation}, taken as a controlled vocabulary. If no suitable {@code CRSBuilder} is found
      * in the given list, then a new one will be created and added to the list.
@@ -172,7 +256,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
      * @throws DataStoreContentException if the given axis can not be added in a builder.
      */
     @SuppressWarnings("fallthrough")
-    public static void dispatch(final List<CRSBuilder<?,?>> components, final Axis axis) throws DataStoreContentException {
+    private static void dispatch(final List<CRSBuilder<?,?>> components, final Axis axis) throws DataStoreContentException {
         final Class<? extends CRSBuilder<?,?>> addTo;
         final Supplier<CRSBuilder<?,?>> constructor;
         int alternative = -1;
@@ -191,7 +275,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
             default:                       addTo = Engineering.class; constructor = Engineering::new; break;
         }
         /*
-         * If a builder of 'addTo' class already exists, add the axis in the existing builder.
+         * If a builder of `addTo` class already exists, add the axis in the existing builder.
          * We should have at most one builder of each class. But if we nevertheless have more,
          * add to the most recently used builder. If there is no builder, create a new one.
          */
@@ -267,8 +351,11 @@ previous:   for (int i=components.size(); --i >= 0;) {
      * This method can be invoked after all axes have been dispatched.
      *
      * @param  decoder  the decoder of the netCDF from which the CRS are constructed.
+     * @param  grid     {@code true} if building a CRS for a grid, or {@code false} for features.
      */
-    public final SingleCRS build(final Decoder decoder) throws FactoryException, DataStoreException, IOException {
+    private SingleCRS build(final Decoder decoder, final boolean grid)
+            throws FactoryException, DataStoreException, IOException
+    {
         if (dimension < minDim || dimension > maxDim) {
             final Variable axis = getFirstAxis().coordinates;
             throw new DataStoreContentException(axis.resources().getString(Resources.Keys.UnexpectedAxisCount_4,
@@ -279,7 +366,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * set the datum, CS and CRS field values to those candidate. Those values do not need to be exact; they
          * will be overwritten later if they do not match the netCDF file content.
          */
-        datum = datumType.cast(decoder.datumCache[datumIndex]);         // Should be before 'setPredefinedComponents' call.
+        datum = datumType.cast(decoder.datumCache[datumIndex]);         // Should be before `setPredefinedComponents` call.
         setPredefinedComponents(decoder);
         /*
          * If `setPredefinedComponents(decoder)` offers a datum, we will used it as-is. Otherwise create the datum now.
@@ -287,7 +374,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * EPSG::6019 — "Not specified (based on GRS 1980 ellipsoid)". If not, we build a similar name.
          */
         if (datum == null) {
-            // Not localized because stored as a String, possibly exported in WKT or GML, and 'datumBase' is in English.
+            // Not localized because stored as a String, possibly exported in WKT or GML, and `datumBase` is in English.
             createDatum(decoder.getDatumFactory(), properties("Unknown datum presumably based upon ".concat(datumBase)));
         }
         decoder.datumCache[datumIndex] = datum;
@@ -307,7 +394,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
             }
         }
         /*
-         * If 'setPredefinedComponents(decoder)' did not proposed a coordinate system, or if it proposed a CS
+         * If `setPredefinedComponents(decoder)` did not proposed a coordinate system, or if it proposed a CS
          * but its axes do not match the axes in the netCDF file, then create a new coordinate system here.
          */
         if (referenceSystem == null) {
@@ -320,7 +407,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
                 for (int i=0; i<iso.length; i++) {
                     final Axis axis = axes[i];
                     joiner.add(axis.getName());
-                    iso[i] = axis.toISO(csFactory, i);
+                    iso[i] = axis.toISO(csFactory, i, grid);
                 }
                 createCS(csFactory, properties(joiner.toString()), iso);
                 properties = properties(coordinateSystem.getName());
@@ -330,22 +417,25 @@ previous:   for (int i=components.size(); --i >= 0;) {
             createCRS(decoder.getCRSFactory(), properties);
         }
         /*
-         * Creates the coordinate reference system using current value of 'datum' and 'coordinateSystem' fields.
+         * Creates the coordinate reference system using current value of `datum` and `coordinateSystem` fields.
          * The coordinate system initially have a [-180 … +180]° longitude range. If the actual coordinate values
          * are outside that range, switch the longitude range to [0 … 360]°.
          */
-        final CoordinateSystem cs = referenceSystem.getCoordinateSystem();
-        for (int i=cs.getDimension(); --i >= 0;) {
-            final CoordinateSystemAxis axis = cs.getAxis(i);
-            if (RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
-                final Vector coordinates = axes[i].read();                          // Typically a cached vector.
-                final int length = coordinates.size();
-                if (length != 0) {
-                    final double first = coordinates.doubleValue(0);
-                    final double last  = coordinates.doubleValue(length - 1);
-                    if (Math.min(first, last) >= 0 && Math.max(first, last) > axis.getMaximumValue()) {
-                        referenceSystem = (SingleCRS) AbstractCRS.castOrCopy(referenceSystem).forConvention(AxesConvention.POSITIVE_RANGE);
-                        break;
+        if (grid) {
+            final CoordinateSystem cs = referenceSystem.getCoordinateSystem();
+            for (int i=cs.getDimension(); --i >= 0;) {
+                final CoordinateSystemAxis axis = cs.getAxis(i);
+                if (RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
+                    final Vector coordinates = axes[i].read();                          // Typically a cached vector.
+                    final int length = coordinates.size();
+                    if (length != 0) {
+                        final double first = coordinates.doubleValue(0);
+                        final double last  = coordinates.doubleValue(length - 1);
+                        if (Math.min(first, last) >= 0 && Math.max(first, last) > axis.getMaximumValue()) {
+                            referenceSystem = (SingleCRS) AbstractCRS.castOrCopy(referenceSystem)
+                                                .forConvention(AxesConvention.POSITIVE_RANGE);
+                            break;
+                        }
                     }
                 }
             }
@@ -473,7 +563,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /**
-         * Initializes this builder before {@link #build(Decoder)} execution.
+         * Initializes this builder before {@link #build(Decoder, boolean)} execution.
          */
         @Override void setPredefinedComponents(final Decoder decoder) throws FactoryException {
             defaultCRS = decoder.convention().defaultHorizontalCRS(false);
@@ -546,7 +636,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
         /**
          * Creates the three-dimensional {@link SphericalCS} from given axes. This method is invoked only
-         * if {@link #setPredefinedComponents(Decoder)} failed to assign a CS or if {@link #build(Decoder)}
+         * if {@link #setPredefinedComponents(Decoder)} failed to assign a CS or if {@link #build(Decoder, boolean)}
          * found that the {@link #coordinateSystem} does not have compatible axes.
          */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
@@ -611,8 +701,8 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
         /**
          * Creates the two- or three-dimensional {@link EllipsoidalCS} from given axes. This method is invoked only if
-         * {@link #setPredefinedComponents(Decoder)} failed to assign a coordinate system or if {@link #build(Decoder)}
-         * found that the {@link #coordinateSystem} does not have compatible axes.
+         * {@link #setPredefinedComponents(Decoder)} failed to assign a coordinate system or if {@link #build(Decoder,
+         * boolean)} found that the {@link #coordinateSystem} does not have compatible axes.
          */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
             if (axes.length > 2) {
@@ -685,8 +775,8 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
         /**
          * Creates the two- or three-dimensional {@link CartesianCS} from given axes. This method is invoked only if
-         * {@link #setPredefinedComponents(Decoder)} failed to assign a coordinate system or if {@link #build(Decoder)}
-         * found that the {@link #coordinateSystem} does not have compatible axes.
+         * {@link #setPredefinedComponents(Decoder)} failed to assign a coordinate system or if {@link #build(Decoder,
+         * boolean)} found that the {@link #coordinateSystem} does not have compatible axes.
          */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
             if (axes.length > 2) {
@@ -756,7 +846,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         /**
          * Creates the one-dimensional {@link VerticalCS} from given axes. This method is invoked
          * only if {@link #setPredefinedComponents(Decoder)} failed to assign a coordinate system
-         * or if {@link #build(Decoder)} found that the axis or direction are not compatible.
+         * or if {@link #build(Decoder, boolean)} found that the axis or direction are not compatible.
          */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
             coordinateSystem = factory.createVerticalCS(properties, axes[0]);
@@ -806,24 +896,28 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
         /**
          * Creates a {@link TemporalDatum} for <cite>"Unknown datum based on …"</cite>.
+         * This method may left the datum to {@code null} if the epoch is unknown.
+         * In such case, {@link #createCRS createCRS(…)} will create an engineering CRS instead.
          */
         @Override void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
             final Axis axis = getFirstAxis();
             axis.getUnit();                                     // Force epoch parsing if not already done.
-            Instant epoch = axis.coordinates.epoch;
-            final CommonCRS.Temporal c = CommonCRS.Temporal.forEpoch(epoch);
-            if (c != null) {
-                datum = c.datum();
-            } else {
-                properties = properties("Time since " + epoch);
-                datum = factory.createTemporalDatum(properties, TemporalUtilities.toDate(epoch));
+            final Instant epoch = axis.coordinates.epoch;
+            if (epoch != null) {
+                final CommonCRS.Temporal c = CommonCRS.Temporal.forEpoch(epoch);
+                if (c != null) {
+                    datum = c.datum();
+                } else {
+                    properties = properties("Time since " + epoch);
+                    datum = factory.createTemporalDatum(properties, TemporalUtilities.toDate(epoch));
+                }
             }
         }
 
         /**
          * Creates the one-dimensional {@link TimeCS} from given axes. This method is invoked only
          * if {@link #setPredefinedComponents(Decoder)} failed to assign a coordinate system or if
-         * {@link #build(Decoder)} found that the axis or direction are not compatible.
+         * {@link #build(Decoder, boolean)} found that the axis or direction are not compatible.
          */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
             coordinateSystem = factory.createTimeCS(properties, axes[0]);
@@ -831,10 +925,17 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
         /**
          * Creates the coordinate reference system from datum and coordinate system computed in previous steps.
+         * It should be a temporal CRS. But if the temporal datum can not be created because epoch was unknown,
+         * this method fallbacks on an engineering CRS.
          */
         @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
             properties = properties(getFirstAxis().coordinates.getUnitsString());
-            referenceSystem =  factory.createTemporalCRS(properties, datum, coordinateSystem);
+            if (datum != null) {
+                referenceSystem =  factory.createTemporalCRS(properties, datum, coordinateSystem);
+            } else {
+                referenceSystem =  factory.createEngineeringCRS(properties,
+                        CommonCRS.Engineering.TIME.datum(), coordinateSystem);
+            }
         }
     }
 

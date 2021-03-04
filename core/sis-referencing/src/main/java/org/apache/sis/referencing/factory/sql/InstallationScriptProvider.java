@@ -182,7 +182,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * In the EPSG dataset case, the iterator should return {@code BufferedReader} instances for the following files
      * (replace {@code <version>} by the EPSG version number and {@code <product>} by the target database) in same order.
      * The first and last files are provided by Apache SIS.
-     * All other files can be downloaded from <a href="http://www.epsg.org/">http://www.epsg.org/</a>.
+     * All other files can be downloaded from <a href="https://epsg.org/">https://epsg.org/</a>.
      *
      * <ol>
      *   <li>Content of {@link #PREPARE}, an optional data definition script that define the enumerations expected by {@link EPSGDataAccess}.</li>

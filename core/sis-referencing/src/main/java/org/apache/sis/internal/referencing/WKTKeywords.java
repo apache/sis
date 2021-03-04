@@ -16,7 +16,10 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Map;
+import java.util.HashMap;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -30,12 +33,12 @@ import org.apache.sis.util.Static;
  * without affecting GML for instance.</p>
  *
  * <div class="note"><b>Note:</b>
- * this class should not contain any method or non-final constant, in order to avoid class loading.
- * This class is intended to be used only at compile-time and could be omitted from the JAR file.</div>
+ * all constants in this class are static and final. The Java compiler should replace those constants
+ * by their literal values at compile time, which avoid the loading of this class at run-time.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
@@ -220,4 +223,79 @@ public final class WKTKeywords extends Static {
      */
     public static final String
             Point       = "Point";
+
+    /**
+     * Mapping between types of object and WKT keywords. Each GeoAPI interfaces is associated to one
+     * or many WKT keywords: new keywords defined by version 2 (sometime with synonymous) and legacy
+     * keywords defined by WKT 1.
+     *
+     * @see #forType(Class)
+     */
+    private static final Map<Class<?>,String[]> TYPES = new HashMap<>(30);
+    static {
+        /*
+         * `SingleCRS` subtypes. The `GeodeticCRS` is a common parent of
+         * `GeographicCRS` and `GeocentricCRS`, repeated for both of them.
+         */
+        addType(org.opengis.referencing.crs.GeocentricCRS.class,  GeodeticCRS, GeodCRS, GeocCS);
+        addType(org.opengis.referencing.crs.GeographicCRS.class,  GeodeticCRS, GeodCRS, GeogCS);
+        String[][] subtypes;
+        subtypes = new String[][] {
+            addType(org.opengis.referencing.crs.GeodeticCRS.class,    GeodeticCRS,    GeodCRS, GeocCS, GeogCS),
+            addType(org.opengis.referencing.crs.ProjectedCRS.class,   ProjectedCRS,   ProjCRS, ProjCS),
+            addType(org.opengis.referencing.crs.VerticalCRS.class,    VerticalCRS,    VertCRS, Vert_CS),
+            addType(org.opengis.referencing.crs.EngineeringCRS.class, EngineeringCRS, EngCRS,  Local_CS),
+            addType(org.opengis.referencing.crs.DerivedCRS.class,     /* TODO: check ISO. */   Fitted_CS),
+            addType(org.opengis.referencing.crs.TemporalCRS.class,    TimeCRS)
+        };
+        /*
+         * `CoordinateReferenceSystem` subtypes: all `SingleCRS` + the `CompoundCRS`.
+         */
+        subtypes = new String[][] {
+            addType(org.opengis.referencing.crs.SingleCRS.class, ArraysExt.concatenate(subtypes)),
+            addType(org.opengis.referencing.crs.CompoundCRS.class, CompoundCRS, Compd_CS),
+        };
+        addType(org.opengis.referencing.crs.CoordinateReferenceSystem.class, ArraysExt.concatenate(subtypes));
+        /*
+         * `Datum` subtypes.
+         */
+        subtypes = new String[][] {
+            addType(org.opengis.referencing.datum.GeodeticDatum.class,    GeodeticDatum,    Datum),
+            addType(org.opengis.referencing.datum.TemporalDatum.class,    TimeDatum,        TDatum),
+            addType(org.opengis.referencing.datum.VerticalDatum.class,    VerticalDatum,    VDatum, Vert_Datum),
+            addType(org.opengis.referencing.datum.EngineeringDatum.class, EngineeringDatum, EDatum, Local_Datum)
+        };
+        addType(org.opengis.referencing.datum.Datum.class, ArraysExt.concatenate(subtypes));
+        /*
+         * Other types having no common parent (ignoring `IdentifiedObject`).
+         */
+        addType(org.opengis.referencing.datum.Ellipsoid.class,              Ellipsoid, Spheroid);
+        addType(org.opengis.referencing.datum.PrimeMeridian.class,          PrimeMeridian, PrimeM);
+        addType(org.opengis.referencing.cs.CoordinateSystemAxis.class,      Axis);
+        addType(org.apache.sis.referencing.datum.BursaWolfParameters.class, ToWGS84);
+        addType(org.opengis.referencing.operation.MathTransform.class,      Param_MT, Concat_MT, Inverse_MT, PassThrough_MT);
+        addType(org.opengis.geometry.DirectPosition.class,                  Point);
+    }
+
+    /**
+     * Adds WKT keywords for the specified type.
+     */
+    private static String[] addType(final Class<?> type, final String... keywords) {
+        if (TYPES.put(type, keywords) != null) {
+            throw new AssertionError(type);
+        }
+        return keywords;
+    }
+
+    /**
+     * Returns the WKT keywords for an object of the specified type.
+     * This method returns a direct reference to internal array;
+     * <strong>do not modify</strong>.
+     *
+     * @param  type  the GeoAPI interface of the element.
+     * @return the WKT keywords, or {@code null} if none or unknown.
+     */
+    public static String[] forType(final Class<?> type) {
+        return TYPES.get(type);
+    }
 }

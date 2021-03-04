@@ -289,7 +289,7 @@ public class GridCoverage2D extends GridCoverage {
      */
     static GridGeometry addExtentIfAbsent(GridGeometry domain, final Rectangle bounds) {
         if (domain == null) {
-            GridExtent extent = new GridExtent(bounds.x, bounds.y, bounds.width, bounds.height);
+            GridExtent extent = new GridExtent(bounds);
             domain = new GridGeometry(extent, PixelInCell.CELL_CENTER, null, null);
         } else if (!domain.isDefined(GridGeometry.EXTENT)) {
             final int dimension = domain.getDimension();

@@ -327,9 +327,8 @@ public final class Warnings implements Localized, Serializable {
     }
 
     /**
-     * Returns a string representation of the warning messages in the default locale.
+     * Returns a string representation of the warning messages in the formatter locale.
      * The locale used by this method is given by {@link #getLocale()}.
-     * This is usually the locale given to the {@link WKTFormat} constructor.
      *
      * @return a string representation of the warning messages.
      */

@@ -177,7 +177,7 @@ public class GO_CharacterString {
             if (text != null && !value.equals(text)) {
                 /*
                  * The given value overwrite a previous one. Determine which value will be discarded
-                 * using the 'type' value as a criterion, then emit a warning.
+                 * using the `type` value as a criterion, then emit a warning.
                  */
                 byte discarded = type;
                 boolean noset = false;

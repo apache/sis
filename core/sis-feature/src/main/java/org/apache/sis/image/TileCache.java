@@ -30,6 +30,13 @@ import org.apache.sis.internal.feature.Resources;
  * Tiles are kept by strong references until a memory usage limit is reached, in which case
  * the references of oldest tiles become soft references.
  *
+ * <h2>Design note</h2>
+ * The use of a common cache for all images makes easier to set an application-wide limit
+ * (for example 25% of available memory). The use of soft reference does not cause as much
+ * memory retention as it may seem because those references are hold only as long as the
+ * image exist. When an image is garbage collected, the corresponding soft references are
+ * {@linkplain Key#dispose() cleaned}.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
@@ -43,15 +50,13 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
     static final TileCache GLOBAL = new TileCache();
 
     /**
-     * Creates a new tile cache.
+     * Creates a new tile cache. We put an arbitrary limit of 25% of available memory.
+     * If more tiles are created, some strong references will become soft references.
+     * Because strong references may be kept by the JVM, the amount of memory actually
+     * used may be greater than this limit. However those references are cleaned when the
+     * image owning those tiles is {@linkplain ComputedTiles#dispose() garbage collected}.
      */
     private TileCache() {
-        /*
-         * We put an arbitrary limit of 25% of available memory. If more tiles are created,
-         * some strong references will become soft references. Since strong references may
-         * be kept by the JVM, the amount of memory actually used may be greater than this
-         * limit.
-         */
         super(100, Runtime.getRuntime().maxMemory() / 4, true);
     }
 
@@ -119,8 +124,9 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
         }
 
         /**
-         * Removes the raster associated to this key. This method is invoked
-         * for all tiles in an image being disposed.
+         * Removes the raster associated to this key. This method is invoked for all tiles in an image being disposed.
+         * The disposal may happen either by an explicit call to {@link ComputedImage#dispose()}, or because the image
+         * has been {@linkplain ComputedTiles#dispose() garbage collected}.
          */
         final void dispose() {
             GLOBAL.remove(this);

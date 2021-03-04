@@ -20,13 +20,19 @@ import java.util.Map;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Future;
 import java.util.function.Function;
+import java.util.logging.LogRecord;
+import java.io.IOException;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
+import java.awt.Stroke;
+import java.awt.BasicStroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Rectangle2D;
 import java.lang.ref.Reference;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Region;
@@ -37,6 +43,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.geometry.Insets;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
@@ -49,22 +56,27 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.ImageRenderer;
-import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
-import org.apache.sis.gui.map.RenderingMode;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.portrayal.RenderException;
+import org.apache.sis.internal.coverage.j2d.TileErrorHandler;
+import org.apache.sis.internal.processing.image.Isolines;
+import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.LogHandler;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.Debug;
@@ -91,12 +103,14 @@ public class CoverageCanvas extends MapCanvasAWT {
     private static final int OVERFLOW_SAFETY_MARGIN = 10_000_000;
 
     /**
-     * Whether to print debug information to {@link System#out}. We use {@code stdout} instead than logging
+     * Whether to print debug information. If {@code true}, we use {@link System#out} instead than logging
      * because the log messages are intercepted and rerouted to the "logging" tab in the explorer widget.
      * This field should always be {@code false} except during debugging.
+     *
+     * @see #trace(String, Object...)
      */
     @Debug
-    private static final boolean TRACE = false;
+    static final boolean TRACE = false;
 
     /**
      * The data shown in this canvas. Note that setting this property to a non-null value may not
@@ -159,7 +173,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      *
      * @see #createPropertyExplorer()
      */
-    private ImagePropertyExplorer imageProperty;
+    private ImagePropertyExplorer propertyExplorer;
 
     /**
      * The status bar associated to this {@code MapCanvas}.
@@ -168,12 +182,29 @@ public class CoverageCanvas extends MapCanvasAWT {
     StatusBar statusBar;
 
     /**
+     * If errors occurred during tile computations, details about the error. Otherwise {@code null}.
+     * This field is set once by some background thread if one or more errors occurred during calls
+     * to {@link RenderedImage#getTile(int, int)}. In such case, we store information about the error
+     * and let the rendering process continue with a tile placeholder (by default a cross (X) in a box).
+     * This field is read in JavaFX thread for transferring the error description to {@link #errorProperty()}.
+     */
+    private volatile LogRecord errorReport;
+
+    /**
      * The resource from which the data has been read, or {@code null} if unknown.
      * This is used only for determining a target window for logging records.
      *
      * @see #setOriginator(Reference)
      */
     private Reference<Resource> originator;
+
+    /**
+     * Renderer of isolines, or {@code null} if none. The presence of this field in this class may be temporary.
+     * A future version may replace this field by a more complete styling framework. Note that this class holds
+     * references to {@link javafx.scene.control.TableView} list of items, which are the list of isoline levels
+     * with their colors.
+     */
+    IsolineRenderer isolines;
 
     /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
@@ -189,7 +220,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     CoverageCanvas(final Locale locale) {
         super(locale);
-        data                  = new RenderingData();
+        data                  = new RenderingData((report) -> errorReport = report.getDescription());
         derivedImages         = new EnumMap<>(Stretching.class);
         coverageProperty      = new SimpleObjectProperty<>(this, "coverage");
         sliceExtentProperty   = new SimpleObjectProperty<>(this, "sliceExtent");
@@ -197,7 +228,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         coverageProperty     .addListener((p,o,n) -> onImageSpecified());
         sliceExtentProperty  .addListener((p,o,n) -> onImageSpecified());
         interpolationProperty.addListener((p,o,n) -> onInterpolationSpecified(n));
-        super.setRenderingMode(RenderingMode.DIRECT);
+        imageMargin.set(new Insets(100));
     }
 
     /**
@@ -207,9 +238,9 @@ public class CoverageCanvas extends MapCanvasAWT {
      * is being shown.
      */
     final ImagePropertyExplorer createPropertyExplorer() {
-        imageProperty = new ImagePropertyExplorer(getLocale(), fixedPane.backgroundProperty());
-        imageProperty.setImage(resampledImage, getVisibleImageBounds());
-        return imageProperty;
+        propertyExplorer = new ImagePropertyExplorer(getLocale(), fixedPane.backgroundProperty());
+        propertyExplorer.setImage(resampledImage, getVisibleImageBounds());
+        return propertyExplorer;
     }
 
     /**
@@ -321,6 +352,9 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @param  colors  colors to use for arbitrary categories of sample values, or {@code null} for default.
      */
     final void setCategoryColors(final Function<Category, java.awt.Color[]> colors) {
+        if (TRACE) {
+            trace("setCategoryColors(Function): causes repaint.");
+        }
         data.processor.setCategoryColors(colors);
         resampledImage = null;
         requestRepaint();
@@ -340,7 +374,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      *
      * @param  newValue  the new Coordinate Reference System in which to resample the coverage before displaying.
      * @param  anchor    the point to keep at fixed display coordinates, expressed in any compatible CRS.
-     *                   If {@code null}, defaults to {@linkplain #getPointOfInterest() point of interest}.
+     *                   If {@code null}, defaults to {@linkplain #getPointOfInterest(boolean) point of interest}.
      *                   If non-null, the anchor must be associated to a CRS.
      * @throws RenderException if the objective CRS can not be set to the given value.
      *
@@ -354,6 +388,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         } finally {
             LogHandler.loadingStop(id);
         }
+        clearIsolines();
     }
 
     /**
@@ -372,6 +407,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         } finally {
             LogHandler.loadingStop(id);
         }
+        clearIsolines();
     }
 
     /**
@@ -384,7 +420,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             clear();
         } else {
             final GridExtent sliceExtent = getSliceExtent();
-            execute(new Task<RenderedImage>() {
+            BackgroundThreads.execute(new Task<RenderedImage>() {
                 /**
                  * The coverage geometry reduced to two dimensions and with a translation taking in account
                  * the {@code sliceExtent}. That value will be stored in {@link CoverageCanvas#dataGeometry}.
@@ -417,7 +453,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 @Override protected void failed() {
                     final Throwable ex = getException();
                     errorOccurred(ex);
-                    ExceptionReporter.canNotUseResource(ex);
+                    ExceptionReporter.canNotUseResource(fixedPane, ex);
                 }
 
                 /**
@@ -435,10 +471,14 @@ public class CoverageCanvas extends MapCanvasAWT {
      * without resampling and without color ramp stretching. The call to this method is followed by a
      * a repaint event, which will cause the image to be resampled in a background thread.
      *
-     * <p>All arguments can be {@code null} for clearing the canvas.</p>
+     * <p>All arguments can be {@code null} for clearing the canvas.
+     * This method is invoked in JavaFX thread.</p>
      */
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private void setRawImage(final RenderedImage image, final GridGeometry domain, final List<SampleDimension> ranges) {
+        if (TRACE) {
+            trace("setRawImage(…): the new source of data is:%n\t%s", image);
+        }
+        clearIsolines();
         resampledImage = null;
         derivedImages.clear();
         data.setImage(image, domain, ranges);
@@ -448,7 +488,16 @@ public class CoverageCanvas extends MapCanvasAWT {
         }
         setObjectiveBounds(bounds);
         requestRepaint();                       // Cause `Worker` class to be executed.
-        if (TRACE) System.out.format("setRawImage: %s%n", image);
+    }
+
+    /**
+     * Clears all information that are derived from the raw image projected to objective CRS.
+     * In current version this is only isolines.
+     */
+    private void clearIsolines() {
+        if (isolines != null) {
+            isolines.clear();
+        }
     }
 
     /**
@@ -457,6 +506,9 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see #setInterpolation(Interpolation)
      */
     private void onInterpolationSpecified(final Interpolation newValue) {
+        if (TRACE) {
+            trace("onInterpolationSpecified(%s)", newValue);
+        }
         data.processor.setInterpolation(newValue);
         resampledImage = null;
         requestRepaint();
@@ -505,11 +557,26 @@ public class CoverageCanvas extends MapCanvasAWT {
         private final LinearTransform objectiveToDisplay;
 
         /**
-         * Value of {@link CoverageCanvas#getDisplayBounds()} at the time this worker has been initialized.
-         * This is the size and location of the display device, in pixel units.
-         * This value is usually constant when the widget is not resized.
+         * Value of {@link CoverageCanvas#getDisplayBounds()} at the time this worker has been initialized,
+         * expanded by {@link CoverageCanvas#imageMargin}. This is the size and location of the display device
+         * in pixel units, plus the margin. This value is usually constant when the widget is not resized.
          */
         private final Envelope2D displayBounds;
+
+        /**
+         * Bounds of the currently visible area (plus margin) in units of objective CRS.
+         * The AOI can be used as a hint, for example in order to clip data for faster rendering.
+         * This is needed only if {@link #isolines} is non-null.
+         *
+         * @see CoverageCanvas#getAreaOfInterest()
+         */
+        private Rectangle2D objectiveAOI;
+
+        /**
+         * The coordinates of the point to show typically (but not necessarily) in the center of display area.
+         * The coordinate is expressed in objective CRS.
+         */
+        private final DirectPosition objectivePOI;
 
         /**
          * The {@link #data} image after color ramp stretching, before resampling is applied.
@@ -547,7 +614,12 @@ public class CoverageCanvas extends MapCanvasAWT {
         private final Reference<Resource> originator;
 
         /**
-         * Creates a new renderer.
+         * Snapshot of information required for rendering isolines, or {@code null} if none.
+         */
+        private IsolineRenderer.Snapshot[] isolines;
+
+        /**
+         * Creates a new renderer. Shall be invoked in JavaFX thread.
          */
         Worker(final CoverageCanvas canvas) {
             originator         = canvas.originator;
@@ -555,15 +627,30 @@ public class CoverageCanvas extends MapCanvasAWT {
             objectiveCRS       = canvas.getObjectiveCRS();
             objectiveToDisplay = canvas.getObjectiveToDisplay();
             displayBounds      = canvas.getDisplayBounds();
+            objectivePOI       = canvas.getPointOfInterest(true);
             recoloredImage     = canvas.derivedImages.get(data.selectedDerivative);
             if (data.validateCRS(objectiveCRS)) {
                 resampledImage = canvas.resampledImage;
             }
+            final Insets margin = canvas.imageMargin.get();
+            if (margin != null) {
+                displayBounds.x      -= margin.getLeft();
+                displayBounds.width  += margin.getLeft() + margin.getRight();
+                displayBounds.y      -= margin.getTop();
+                displayBounds.height += margin.getTop() + margin.getBottom();
+            }
+            if (canvas.isolines != null) try {
+                isolines = canvas.isolines.prepare();
+                objectiveAOI = Shapes2D.transform(MathTransforms.bidimensional(objectiveToDisplay.inverse()), displayBounds, null);
+            } catch (TransformException e) {
+                unexpectedException(e);                     // Should never happen.
+            }
         }
 
         /**
-         * Returns the bounds of the image part which is currently shown. This method can be invoked
-         * only after {@link #render()}. It returns {@code null} if the visible bounds are unknown.
+         * Returns the region of source image which is currently shown, in units of source coverage pixels.
+         * This method can be invoked only after {@link #render()}. It returns {@code null} if the visible
+         * bounds are unknown.
          *
          * @see CoverageCanvas#getVisibleImageBounds()
          */
@@ -582,8 +669,8 @@ public class CoverageCanvas extends MapCanvasAWT {
          * to skip some steps for example if the required source image is already resampled.
          */
         @Override
-        @SuppressWarnings({"PointlessBitwiseExpression", "UseOfSystemOutOrSystemErr"})
-        protected void render() throws TransformException {
+        @SuppressWarnings("PointlessBitwiseExpression")
+        protected void render() throws Exception {
             final Long id = LogHandler.loadingStart(originator);
             try {
                 /*
@@ -606,20 +693,33 @@ public class CoverageCanvas extends MapCanvasAWT {
                                            Math.abs(resampledToDisplay.getTranslateY()))
                                   < Integer.MAX_VALUE - OVERFLOW_SAFETY_MARGIN;
                         if (TRACE && !isValid) {
-                            System.out.println("New resample for avoiding overflow caused by translation.");
+                            trace("render(): new resample for avoiding overflow caused by translation.");
                         }
                     }
                 }
                 if (!isValid) {
                     if (recoloredImage == null) {
                         recoloredImage = data.recolor();
-                        if (TRACE) System.out.format("Recolor by application of %s.%n", data.selectedDerivative.name());
+                        if (TRACE) {
+                            trace("render(): recolor by application of %s.", data.selectedDerivative);
+                        }
                     }
-                    resampledImage = data.resampleAndConvert(recoloredImage, objectiveCRS, objectiveToDisplay);
+                    resampledImage = data.resampleAndConvert(recoloredImage, objectiveCRS, objectiveToDisplay, objectivePOI);
                     resampledToDisplay = data.getTransform(objectiveToDisplay);
-                    if (TRACE) System.out.format("Resampled image: %s%n", resampledImage);
+                    if (TRACE) {
+                        trace("render(): resampling result:%n\t%s", resampledImage);
+                    }
                 }
+                /*
+                 * Launch isolines creation if requested. We do this operation before `prefetch(…)`
+                 * because it will be executed in background threads while we process the coverage.
+                 * We can not invoke it sooner because it needs some `resampleAndConvert(…)` results.
+                 */
+                final Future<Isolines[]> newIsolines = data.generate(isolines);
                 prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);
+                if (newIsolines != null) {
+                    IsolineRenderer.complete(isolines, newIsolines);
+                }
             } finally {
                 LogHandler.loadingStop(id);
             }
@@ -627,13 +727,30 @@ public class CoverageCanvas extends MapCanvasAWT {
 
         /**
          * Draws the image after {@link #render()} finished to prepare data.
-         * This method may be invoked in a background thread or in JavaFX thread,
-         * depending on {@link RenderingMode}.
+         * This method is invoked in a background thread.
          */
         @Override
         protected void paint(final Graphics2D gr) {
             gr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-            gr.drawRenderedImage(prefetchedImage, resampledToDisplay);
+            if (prefetchedImage instanceof TileErrorHandler.Executor) {
+                ((TileErrorHandler.Executor) prefetchedImage).execute(
+                        () -> gr.drawRenderedImage(prefetchedImage, resampledToDisplay),
+                        new TileErrorHandler(data.processor.getErrorHandler(), CoverageCanvas.class, "paint"));
+            } else {
+                gr.drawRenderedImage(prefetchedImage, resampledToDisplay);
+            }
+            if (isolines != null) {
+                final AffineTransform at = gr.getTransform();
+                final Stroke st = gr.getStroke();
+                // Arbitrarily use a line tickness of 1/8 of source pixel size for making apparent when zoom is strong.
+                gr.setStroke(new BasicStroke(data.getDataPixelSize(objectivePOI) / 8));
+                gr.transform((AffineTransform) objectiveToDisplay);     // This cast is safe in PlanarCanvas subclass.
+                for (final IsolineRenderer.Snapshot s : isolines) {
+                    s.paint(gr, objectiveAOI);
+                }
+                gr.setTransform(at);
+                gr.setStroke(st);
+            }
         }
 
         /**
@@ -643,6 +760,11 @@ public class CoverageCanvas extends MapCanvasAWT {
         @Override
         protected boolean commit(final MapCanvas canvas) {
             ((CoverageCanvas) canvas).cacheRenderingData(this);
+            if (isolines != null) {
+                for (final IsolineRenderer.Snapshot s : isolines) {
+                    s.commit();
+                }
+            }
             return super.commit(canvas);
         }
     }
@@ -651,20 +773,31 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Invoked after a paint event for caching rendering data.
      * If the resampled image changed, all previously cached images are discarded.
      */
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private void cacheRenderingData(final Worker worker) {
+        if (TRACE && data.hasChanged(worker.data)) {
+            trace("cacheRenderingData(…): new visual coverage:%n%s", worker.data);
+        }
         data = worker.data;
         derivedImages.put(data.selectedDerivative, worker.recoloredImage);
         resampledImage = worker.resampledImage;
+        if (TRACE) {
+            trace("cacheRenderingData(…): objective bounds after rendering at %tT:%n%s", System.currentTimeMillis(), this);
+        }
         /*
-         * Notify the "Image properties" tab that the image changed. The `imageProperty` field is non-null
+         * Notify the "Image properties" tab that the image changed. The `propertyExplorer` field is non-null
          * only if the "Properties" section in `CoverageControls` has been shown at least once.
          */
-        if (imageProperty != null) {
-            imageProperty.setImage(resampledImage, worker.getVisibleImageBounds());
-            if (TRACE) System.out.format("Update image property view with visible area %s.%n",
-                                         imageProperty.getVisibleImageBounds(resampledImage));
+        if (propertyExplorer != null) {
+            propertyExplorer.setImage(resampledImage, worker.getVisibleImageBounds());
+            if (TRACE) {
+                trace("cacheRenderingData(…): Update image property view with visible area %s.",
+                      propertyExplorer.getVisibleImageBounds(resampledImage));
+            }
         }
+        /*
+         * Adjust the accuracy of coordinates shown in the status bar.
+         * The number of fraction digits depend on the zoom factor.
+         */
         if (statusBar != null) {
             final Object value = resampledImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY);
             Quantity<Length> accuracy = null;
@@ -680,19 +813,28 @@ public class CoverageCanvas extends MapCanvasAWT {
             }
             statusBar.setLowestAccuracy(accuracy);
         }
+        /*
+         * If error(s) occurred during calls to `RenderedImage.getTile(tx, ty)`, reports those errors.
+         * The `errorReport` field is reset to `null` in preparation for the next rendering operation.
+         */
+        final LogRecord report = errorReport;
+        if (report != null) {
+            errorReport = null;
+            errorOccurred(report.getThrown());
+        }
     }
 
     /**
-     * Returns the bounds of the image part which is currently shown. This method performs the same work
-     * than {@link Worker#getVisibleImageBounds()} in a less efficient way. It is used when no worker is
-     * available.
+     * Returns the region of source image which is currently shown, in units of source coverage pixels.
+     * This method performs the same work than {@link Worker#getVisibleImageBounds()} in a less efficient way.
+     * It is used when no worker is available.
      *
      * @see Worker#getVisibleImageBounds()
      */
     private Rectangle getVisibleImageBounds() {
         final Envelope2D displayBounds = getDisplayBounds();
-        final AffineTransform resampledToDisplay = data.getTransform(getObjectiveToDisplay());
-        try {
+        if (displayBounds != null) try {
+            final AffineTransform resampledToDisplay = data.getTransform(getObjectiveToDisplay());
             return (Rectangle) AffineTransforms2D.inverseTransform(resampledToDisplay, displayBounds, new Rectangle());
         } catch (NoninvertibleTransformException e) {
             unexpectedException(e);                     // Should never happen.
@@ -701,10 +843,31 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
+     * Returns the bounds of the currently visible area in units of objective CRS.
+     * This AOI changes when the {@linkplain #getDisplayBounds() display bounds} or
+     * the {@linkplain #getObjectiveToDisplay() objective to display transform} changed.
+     * The AOI can be used as a hint, for example in order to clip data for faster rendering.
+     *
+     * @return bounds of currently visible area in objective CRS, or {@code null} if unavailable.
+     *
+     * @see Worker#objectiveAOI
+     */
+    private Rectangle2D getAreaOfInterest() throws TransformException {
+        final Envelope2D displayBounds = getDisplayBounds();
+        if (displayBounds == null) {
+            return null;
+        }
+        return Shapes2D.transform(MathTransforms.bidimensional(getObjectiveToDisplay().inverse()), displayBounds, null);
+    }
+
+    /**
      * Invoked by {@link CoverageControls} when the user selected a new color stretching mode.
      * The sample values are assumed the same; only the image appearance is modified.
      */
     final void setStyling(final Stretching selection) {
+        if (TRACE) {
+            trace("setStyling(%s)", selection);
+        }
         if (data.selectedDerivative != selection) {
             data.selectedDerivative = selection;
             resampledImage = null;
@@ -724,7 +887,76 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     @Override
     protected void clear() {
+        if (TRACE) {
+            trace("clear()");
+        }
         setRawImage(null, null, null);
         super.clear();
+    }
+
+    /**
+     * Prints {@code "CoverageCanvas"} following by the given message if {@link #TRACE} is {@code true}.
+     * This is used for debugging purposes only.
+     *
+     * @param  format     the {@code printf} format string.
+     * @param  arguments  values to format.
+     */
+    @Debug
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    private static void trace(final String format, final Object... arguments) {
+        if (TRACE) {
+            System.out.print("CoverageCanvas.");
+            System.out.printf(format, arguments);
+            System.out.println();
+        }
+    }
+
+    /**
+     * Returns a string representation for debugging purposes.
+     * The string content may change in any future version.
+     */
+    @Override
+    public String toString() {
+        if (!Platform.isFxApplicationThread()) {
+            return super.toString();
+        }
+        final String lineSeparator = System.lineSeparator();
+        final StringBuilder buffer = new StringBuilder(1000);
+        final TableAppender table  = new TableAppender(buffer);
+        table.setMultiLinesCells(true);
+        try {
+            table.nextLine('═');
+            getGridGeometry().getGeographicExtent().ifPresent((bbox) -> {
+                table.append(String.format("Canvas geographic bounding box (λ,ɸ):%n"
+                             + "Max: % 10.5f°  % 10.5f°%n"
+                             + "Min: % 10.5f°  % 10.5f°",
+                             bbox.getEastBoundLongitude(), bbox.getNorthBoundLatitude(),
+                             bbox.getWestBoundLongitude(), bbox.getSouthBoundLatitude()))
+                     .appendHorizontalSeparator();
+            });
+            final Rectangle2D aoi = getAreaOfInterest();
+            final DirectPosition poi = getPointOfInterest(true);
+            if (aoi != null && poi != null) {
+                table.append(String.format("A/P of interest in objective CRS (x,y):%n"
+                             + "Max: %, 16.4f  %, 16.4f%n"
+                             + "POI: %, 16.4f  %, 16.4f%n"
+                             + "Min: %, 16.4f  %, 16.4f%n",
+                             aoi.getMaxX(),      aoi.getMaxY(),
+                             poi.getOrdinate(0), poi.getOrdinate(1),
+                             aoi.getMinX(),      aoi.getMinY()))
+                     .appendHorizontalSeparator();
+            }
+            final Rectangle source = data.objectiveToData(aoi);
+            if (source != null) {
+                table.append("Extent in source coverage:").append(lineSeparator)
+                     .append(String.valueOf(new GridExtent(source))).append(lineSeparator)
+                     .nextLine();
+            }
+            table.nextLine('═');
+            table.flush();
+        } catch (RenderException | TransformException | IOException e) {
+            buffer.append(e).append(lineSeparator);
+        }
+        return buffer.toString();
     }
 }

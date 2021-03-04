@@ -19,15 +19,20 @@ package org.apache.sis.gui.coverage;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Future;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import org.apache.sis.coverage.SampleDimension;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -35,12 +40,19 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.PixelTranslation;
+import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
+import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.internal.coverage.j2d.ColorModelType;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.referencing.WraparoundApplicator;
+import org.apache.sis.internal.processing.image.Isolines;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -142,16 +154,17 @@ final class RenderingData implements Cloneable {
     private CoordinateOperation changeOfCRS;
 
     /**
-     * The conversion from {@link #data} pixel coordinates to {@linkplain CoverageCanvas#getObjectiveCRS()
-     * objective CRS}. This is {@link GridGeometry#getGridToCRS(PixelInCell)} on {@link #dataGeometry}
-     * concatenated with {@link #changeOfCRS}. May be {@code null} if not yet computed.
+     * Conversion from {@link #data} pixel coordinates to {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS}.
+     * This is value of {@link GridGeometry#getGridToCRS(PixelInCell)} invoked on {@link #dataGeometry}, concatenated
+     * with {@link #changeOfCRS} and potentially completed by a wraparound operation.
+     * May be {@code null} if not yet computed.
      */
     private MathTransform cornerToObjective;
 
     /**
-     * The conversion from {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS} to {@link #data}
-     * pixel coordinates. This is the inverse of {@link #changeOfCRS} concatenated with the inverse of
-     * {@link GridGeometry#getGridToCRS(PixelInCell)} on {@link #dataGeometry}.
+     * Conversion from {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS} to {@link #data} pixel coordinates.
+     * This is the inverse of {@link #changeOfCRS} (potentially with a wraparound operation) concatenated with inverse
+     * of {@link GridGeometry#getGridToCRS(PixelInCell)} on {@link #dataGeometry}.
      * May be {@code null} if not yet computed.
      */
     private MathTransform objectiveToCenter;
@@ -189,12 +202,12 @@ final class RenderingData implements Cloneable {
     /**
      * Creates a new instance initialized to no image.
      *
-     * @todo Listen to logging messages. We need to create a logging panel first.
+     * @param  errorHandler  where to report errors during tile computations.
      */
-    RenderingData() {
+    RenderingData(final ErrorHandler errorHandler) {
         selectedDerivative = Stretching.NONE;
         processor = new ImageProcessor();
-        processor.setErrorAction(ImageProcessor.ErrorAction.LOG);
+        processor.setErrorHandler(errorHandler);
         processor.setImageResizingPolicy(ImageProcessor.Resizing.EXPAND);
     }
 
@@ -243,6 +256,16 @@ final class RenderingData implements Cloneable {
     }
 
     /**
+     * Returns the position at the center of source data, or {@code null} if none.
+     */
+    private DirectPosition getSourceMedian() {
+        if (dataGeometry.isDefined(GridGeometry.ENVELOPE)) {
+            return AbstractEnvelope.castOrCopy(dataGeometry.getEnvelope()).getMedian();
+        }
+        return null;
+    }
+
+    /**
      * Stretch the color ramp of source image according the current value of {@link #selectedDerivative}.
      * This method uses the original image as the source of statistics. It saves computation time
      * (no need to recompute the statistics when the projection is changed) and provides more stable
@@ -274,10 +297,13 @@ final class RenderingData implements Cloneable {
      * @param  recoloredImage      the image computed by {@link #recolor()}.
      * @param  objectiveCRS        value of {@link CoverageCanvas#getObjectiveCRS()}.
      * @param  objectiveToDisplay  value of {@link CoverageCanvas#getObjectiveToDisplay()}.
+     * @param  objectivePOI        value of {@link CoverageCanvas#getPointOfInterest(boolean)} in objective CRS.
      * @return image with operation applied and color ramp stretched.
      */
-    final RenderedImage resampleAndConvert(final RenderedImage recoloredImage,
-            final CoordinateReferenceSystem objectiveCRS, final LinearTransform objectiveToDisplay)
+    final RenderedImage resampleAndConvert(final RenderedImage             recoloredImage,
+                                           final CoordinateReferenceSystem objectiveCRS,
+                                           final LinearTransform           objectiveToDisplay,
+                                           final DirectPosition            objectivePOI)
             throws TransformException
     {
         if (changeOfCRS == null && objectiveCRS != null && dataGeometry.isDefined(GridGeometry.CRS)) {
@@ -301,12 +327,31 @@ final class RenderingData implements Cloneable {
                 // Leave `changeOfCRS` to null.
             }
         }
+        /*
+         * Following transforms are computed when first needed after the new data have been specified,
+         * or after the objective CRS changed. If non-null, `objToCenterNoWrap` is the same transform
+         * than `objectiveToCenter` but without wraparound steps. A non-null value means that we need
+         * to check if wraparound step is really needed and replace `objectiveToCenter` if it appears
+         * to be unnecessary.
+         */
+        MathTransform objToCenterNoWrap = null;
         if (cornerToObjective == null || objectiveToCenter == null) {
             cornerToObjective = dataGeometry.getGridToCRS(PixelInCell.CELL_CORNER);
             objectiveToCenter = dataGeometry.getGridToCRS(PixelInCell.CELL_CENTER).inverse();
             if (changeOfCRS != null) {
+                DirectPosition median = getSourceMedian();
                 MathTransform forward = changeOfCRS.getMathTransform();
                 MathTransform inverse = forward.inverse();
+                MathTransform nowrap  = inverse;
+                try {
+                    forward = applyWraparound(forward, median, objectivePOI, changeOfCRS.getTargetCRS());
+                    inverse = applyWraparound(inverse, objectivePOI, median, changeOfCRS.getSourceCRS());
+                } catch (TransformException e) {
+                    recoverableException(e);
+                }
+                if (inverse != nowrap) {
+                    objToCenterNoWrap = MathTransforms.concatenate(nowrap, objectiveToCenter);
+                }
                 cornerToObjective = MathTransforms.concatenate(cornerToObjective, forward);
                 objectiveToCenter = MathTransforms.concatenate(inverse, objectiveToCenter);
             }
@@ -321,11 +366,22 @@ final class RenderingData implements Cloneable {
          */
         final LinearTransform inverse = objectiveToDisplay.inverse();
         displayToObjective = AffineTransforms2D.castOrCopy(inverse);
-        final MathTransform cornerToDisplay = MathTransforms.concatenate(cornerToObjective, objectiveToDisplay);
-        final MathTransform displayToCenter = MathTransforms.concatenate(inverse, objectiveToCenter);
+        MathTransform cornerToDisplay = MathTransforms.concatenate(cornerToObjective, objectiveToDisplay);
+        MathTransform displayToCenter = MathTransforms.concatenate(inverse, objectiveToCenter);
         final Rectangle bounds = (Rectangle) Shapes2D.transform(
                 MathTransforms.bidimensional(cornerToDisplay),
                 ImageUtilities.getBounds(recoloredImage), new Rectangle());
+        /*
+         * Verify if wraparound is really necessary. We do this check because the `displayToCenter` transform
+         * may be used for every pixels, so it is worth to make that transform more efficient if possible.
+         */
+        if (objToCenterNoWrap != null) {
+            final MathTransform nowrap = MathTransforms.concatenate(inverse, objToCenterNoWrap);
+            if (!isWraparoundNeeded(bounds, displayToCenter, nowrap)) {
+                objectiveToCenter = objToCenterNoWrap;
+                displayToCenter = nowrap;
+            }
+        }
         /*
          * Apply a map projection on the image, then convert the floating point results to integer values
          * that we can use with IndexColorModel.
@@ -345,12 +401,72 @@ final class RenderingData implements Cloneable {
     }
 
     /**
+     * Conversion or transformation from {@linkplain CoverageCanvas#getObjectiveCRS() objective CRS} to
+     * {@linkplain #data} CRS. This transform will include {@code WraparoundTransform} steps if needed.
+     */
+    private static MathTransform applyWraparound(final MathTransform transform, final DirectPosition sourceMedian,
+            final DirectPosition targetMedian, final CoordinateReferenceSystem targetCRS) throws TransformException
+    {
+        if (targetMedian == null) {
+            return transform;
+        }
+        return new WraparoundApplicator(sourceMedian, targetMedian, targetCRS.getCoordinateSystem()).forDomainOfUse(transform);
+    }
+
+    /**
+     * Tests whether wraparound step seems necessary. This method transforms all corners and all centers
+     * of the given rectangle using the two specified transform. If the results differ by one pixel or more,
+     * the wraparound step is considered necessary.
+     *
+     * @param  bounds     rectangular coordinates of the display device, in pixels.
+     * @param  reference  transform from display coordinates to {@link #dataGeometry} cell coordinates.
+     * @param  nowrap     same as {@code reference} but with a wraparound step. Used as a reference.
+     * @return {@code true} if at least one coordinate is distant from the reference coordinate by at least one pixel.
+     *
+     * @see org.apache.sis.coverage.grid.CoordinateOperationFinder#isWraparoundNeeded
+     */
+    private static boolean isWraparoundNeeded(final Rectangle bounds,
+            final MathTransform reference, final MathTransform nowrap) throws TransformException
+    {
+        final int      numPts = 9;
+        final int      srcDim = nowrap.getSourceDimensions();       // Should always be 2, but we are paranoiac.
+        final int      tgtDim = nowrap.getTargetDimensions();       // Idem.
+        final double[] source = new double[srcDim * numPts];
+        final double[] target = new double[tgtDim * numPts];
+        for (int pi=0; pi<numPts; pi++) {
+            final double x, y;
+            switch (pi % 3) {
+                case 0:  x = bounds.getMinX();    break;
+                case 1:  x = bounds.getMaxX();    break;
+                default: x = bounds.getCenterX(); break;
+            }
+            switch (pi / 3) {
+                case 0:  y = bounds.getMinY();    break;
+                case 1:  y = bounds.getMaxY();    break;
+                default: y = bounds.getCenterY(); break;
+            }
+            final int i = pi * srcDim;
+            source[i  ] = x;
+            source[i+1] = y;
+        }
+        nowrap   .transform(source, 0, target, 0, numPts);
+        reference.transform(source, 0, source, 0, numPts);
+        for (int i=0; i<target.length; i++) {
+            final double r = source[i];
+            if (!(Math.abs(target[i] - r) < 1) && Double.isFinite(r)) {     // Use `!` for catching NaN.
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Computes immediately, possibly using many threads, the tiles that are going to be displayed.
      * The returned instance should be used only for current rendering event; it should not be cached.
      *
      * @param  resampledImage      the image computed by {@link #resampleAndConvert resampleAndConvert(…)}.
      * @param  resampledToDisplay  the transform computed by {@link #getTransform(LinearTransform)}.
-     * @param  displayBounds       size and location of the display device, in pixel units.
+     * @param  displayBounds       size and location of the display device (plus margin), in pixel units.
      * @return a temporary image with tiles intersecting the display region already computed.
      */
     final RenderedImage prefetch(final RenderedImage resampledImage, final AffineTransform resampledToDisplay,
@@ -386,11 +502,77 @@ final class RenderingData implements Cloneable {
     }
 
     /**
+     * Returns an estimation of the size of data pixels, in objective CRS.
+     *
+     * @param  objectivePOI  point of interest in objective CRS.
+     * @return an estimation of the source pixel size at the given location.
+     */
+    final float getDataPixelSize(final DirectPosition objectivePOI) {
+        if (objectiveToCenter != null) try {
+            final Matrix d = objectiveToCenter.derivative(objectivePOI);
+            double sum = 0;
+            for (int j=d.getNumRow(); --j >= 0;) {
+                for (int i=d.getNumCol(); --i >= 0;) {
+                    final double v = d.getElement(j, i);
+                    sum += v*v;
+                }
+            }
+            final float r = (float) (1 / Math.sqrt(sum));
+            if (r > 0 && r != Float.POSITIVE_INFINITY) {
+                return r;
+            }
+        } catch (TransformException e) {
+            recoverableException(e);
+        }
+        return 0;
+    }
+
+    /**
+     * Converts the given bounds from objective coordinates to pixel coordinates in the source coverage.
+     *
+     * @param  bounds  objective coordinates.
+     * @return data coverage cell coordinates (in pixels), or {@code null} if unknown.
+     * @throws TransformException if the bounds can not be transformed.
+     */
+    final Rectangle objectiveToData(final Rectangle2D bounds) throws TransformException {
+        if (objectiveToCenter == null) return null;
+        return (Rectangle) Shapes2D.transform(MathTransforms.bidimensional(objectiveToCenter), bounds, new Rectangle());
+    }
+
+    /**
+     * Returns whether {@link #dataGeometry} or {@link #objectiveToCenter} changed since a previous rendering.
+     * This is used for information purposes only.
+     */
+    final boolean hasChanged(final RenderingData previous) {
+        /*
+         * Really !=, not Object.equals(Object), because we rely on new instances to be created
+         * (even if equal) as a way to detect that cached values have not been reused.
+         */
+        return (previous.dataGeometry != dataGeometry) || (previous.objectiveToCenter != objectiveToCenter);
+    }
+
+    /**
      * Invoked when an exception occurred while computing a transform but the painting process can continue.
      * This method pretends that the warning come from {@link CoverageCanvas} class since it is the public API.
      */
     private static void recoverableException(final Exception e) {
         Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), CoverageCanvas.class, "render", e);
+    }
+
+    /**
+     * Prepares isolines by computing the the Java2D shapes that were not already computed in a previous rendering.
+     * This method shall be invoked in a background thread after image rendering has been completed (because this
+     * method uses some image computation results).
+     *
+     * @param  isolines  value of {@link IsolineRenderer#prepare()}, or {@code null} if none.
+     * @return result of isolines generation, or {@code null} if there is no isoline to compute.
+     * @throws TransformException if an interpolated point can not be transformed using the given transform.
+     */
+    final Future<Isolines[]> generate(final IsolineRenderer.Snapshot[] isolines) throws TransformException {
+        if (isolines == null) return null;
+        final MathTransform centerToObjective = PixelTranslation.translate(
+                cornerToObjective, PixelInCell.CELL_CORNER, PixelInCell.CELL_CENTER);
+        return IsolineRenderer.generate(isolines, data, centerToObjective);
     }
 
     /**
@@ -403,5 +585,36 @@ final class RenderingData implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         }
+    }
+
+    /**
+     * Returns a string representation for debugging purposes.
+     * The string content may change in any future version.
+     *
+     * @see CoverageCanvas#toString()
+     */
+    @Override
+    public String toString() {
+        final String lineSeparator = System.lineSeparator();
+        final StringBuilder buffer = new StringBuilder(6000);
+        final TableAppender table  = new TableAppender(buffer);
+        table.setMultiLinesCells(true);
+        try {
+            table.nextLine('═');
+            table.append("Geometry of source coverage:").append(lineSeparator)
+                 .append(String.valueOf(dataGeometry))
+                 .appendHorizontalSeparator();
+            table.append("Pixel corners to objective CRS:").append(lineSeparator)
+                 .append(String.valueOf(cornerToObjective))
+                 .appendHorizontalSeparator();
+            table.append("Median in data CRS:").append(lineSeparator)
+                 .append(String.valueOf(getSourceMedian()))
+                 .nextLine();
+            table.nextLine('═');
+            table.flush();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);      // Should never happen since we are writing to `StringBuilder`.
+        }
+        return buffer.toString();
     }
 }

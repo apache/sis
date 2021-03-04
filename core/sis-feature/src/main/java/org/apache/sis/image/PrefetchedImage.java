@@ -16,16 +16,24 @@
  */
 package org.apache.sis.image;
 
+import java.util.Arrays;
 import java.util.Vector;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.awt.image.RasterFormatException;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.coverage.j2d.TileErrorHandler;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -40,7 +48,7 @@ import org.apache.sis.util.resources.Errors;
  * @since 1.1
  * @module
  */
-final class PrefetchedImage extends PlanarImage {
+final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Executor {
     /**
      * The source image from which to prefetch tiles.
      */
@@ -61,17 +69,38 @@ final class PrefetchedImage extends PlanarImage {
     /**
      * The prefetched tiles. This array contains only the tiles in the area of interest (AOI)
      * specified at construction time; it does not necessarily contains all tiles in the image.
+     * Some element may be {@code null} if an error occurred while computing that tile,
+     * in which case a placeholder will be computed by {@link #getTile(int, int)}.
      */
     private final Raster[] tiles;
+
+    /**
+     * If error(s) occurred while computing one or more tiles, data shared by {@link Raster} placeholders.
+     * This is data for a tile showing a cross (X) in a box.
+     *
+     * @see #createPlaceholder(int, int)
+     */
+    private DataBuffer placeholderPixels;
+
+    /**
+     * Non-null if errors should be handled during {@link #getTile(int, int)} execution for tiles outside
+     * the area of interest specified at construction time.
+     *
+     * @see #execute(Runnable, TileErrorHandler)
+     */
+    private ErrorHandler.Report errorReport;
 
     /**
      * Creates a new prefetched image.
      *
      * @param source          the image to compute immediately (may be {@code null}).
      * @param areaOfInterest  pixel coordinates of the region to prefetch, or {@code null} for the whole image.
+     * @param errorHandler    action to execute (throw an exception or log a warning) if an error occurs.
      * @param parallel        whether to execute computation in parallel.
      */
-    PrefetchedImage(final RenderedImage source, Rectangle areaOfInterest, final boolean parallel) {
+    PrefetchedImage(final RenderedImage source, Rectangle areaOfInterest,
+                    final ErrorHandler errorHandler, final boolean parallel)
+    {
         this.source = source;
         if (areaOfInterest != null) {
             areaOfInterest = new Rectangle(areaOfInterest);
@@ -92,10 +121,23 @@ final class PrefetchedImage extends PlanarImage {
         numXTiles = ti.width;
         numYTiles = ti.height;
         tiles     = new Raster[Math.multiplyExact(numYTiles, numXTiles)];
+        worker.setErrorHandler(errorHandler, ImageProcessor.class, "prefetch");
         if (parallel) {
             worker.parallelReadFrom(source);
         } else {
             worker.readFrom(source);
+        }
+        /*
+         * If an error occurred during a tile computation, the array element corresponding
+         * to that tile still null. Replace them by a placeholder. Note that it may happen
+         * only if the error handler is not `ErrorHandler.THROW`.
+         */
+        for (int i=0; i<tiles.length; i++) {
+            if (tiles[i] == null) {
+                final int tileX = (i % numXTiles) + minTileX;
+                final int tileY = (i / numXTiles) + minTileY;
+                tiles[i] = createPlaceholder(tileX, tileY);
+            }
         }
     }
 
@@ -190,6 +232,130 @@ final class PrefetchedImage extends PlanarImage {
                 return tiles[tx + ty * numXTiles];
             }
         }
-        return source.getTile(tileX, tileY);
+        /*
+         * If the requested tile is not one of the tiles that we computed in advance,
+         * fetch directly from the source (may imply computation in current thread).
+         * If an error occurs and this method is invoked inside `execute(…)` block,
+         * apply a similar error handling than the one applied in constructor.
+         */
+        try {
+            return source.getTile(tileX, tileY);
+        } catch (RuntimeException e) {
+            final ErrorHandler.Report report = errorReport;
+            if (report == null) {
+                throw e;
+            }
+            report.add(new Point(tileX, tileY), e, null);
+            assert Thread.holdsLock(this);
+            return createPlaceholder(tileX, tileY);
+        }
+    }
+
+    /**
+     * Executes the given action in a mode where errors occurring in {@link RenderedImage#getTile(int, int)}
+     * are reported to the given handler instead of stopping the operation. The given action is typically
+     * some operation invoking, directly or indirectly, {@link #getTile(int, int)} with tile indices that
+     * may be outside the area of interest specified at construction time. Exceptions that occurred inside
+     * the area of interest were caught by the constructor and this method makes no difference for them.
+     * But exceptions occurring outside that area are interest are redirected to the {@link #source} image,
+     * which may fail. This method provides a way to catch also those errors.
+     *
+     * @param  action        the action to execute (for example drawing the image).
+     * @param  errorHandler  the handler to notify if errors occur.
+     */
+    @Override
+    public synchronized void execute(final Runnable action, final TileErrorHandler errorHandler) {
+        ArgumentChecks.ensureNonNull("action", action);
+        ArgumentChecks.ensureNonNull("errorHandler", errorHandler);
+        errorReport = new ErrorHandler.Report();
+        try {
+            action.run();
+        } finally {
+            final ErrorHandler.Report report = errorReport;
+            errorReport = null;
+            errorHandler.publish(report);
+        }
+    }
+
+    /**
+     * Creates a tile to use as a placeholder when a tile can not be computed.
+     *
+     * @param  tileX  column index of the tile for which to create a placeholder.
+     * @param  tileY  row index of the tile for which to create a placeholder.
+     * @return placeholder for the tile at given indices.
+     */
+    private Raster createPlaceholder(final int tileX, final int tileY) {
+        final SampleModel model = getSampleModel();
+        final Point location = new Point(ImageUtilities.tileToPixelX(source, tileX),
+                                         ImageUtilities.tileToPixelY(source, tileY));
+        if (placeholderPixels != null) {
+            // Reuse same `DataBuffer` with only a different location.
+            return Raster.createRaster(model, placeholderPixels, location);
+        }
+        final double[] samples = new double[model.getNumBands()];
+        if (ImageUtilities.isIntegerType(model)) {
+            final boolean isUnsigned = ImageUtilities.isUnsignedType(model);
+            for (int i=0; i<samples.length; i++) {
+                int size = model.getSampleSize(i);
+                if (!isUnsigned) size--;
+                samples[i] = Numerics.bitmask(size) - 1;
+            }
+        } else {
+            final ColorSpace cs;
+            final ColorModel cm = getColorModel();
+            if (cm != null && (cs = cm.getColorSpace()) != null) {
+                for (int i = Math.min(cs.getNumComponents(), samples.length); --i >=0;) {
+                    samples[i] = cs.getMaxValue(i);
+                }
+            } else {
+                Arrays.fill(samples, 1);
+            }
+        }
+        /*
+         * Draw borders around the tile as dotted lines. The left border will have (usually) white pixels
+         * at even coordinates relative to upper-left corner, while right border will have same pixels at
+         * odd coordinates. The same pattern applies to top and bottom borders.
+         */
+        final WritableRaster tile = WritableRaster.createWritableRaster(model, model.createDataBuffer(), location);
+        final int width  = tile.getWidth();
+        final int height = tile.getHeight();
+        final int xmin   = tile.getMinX();
+        final int ymin   = tile.getMinY();
+        final int xmax   = width  + xmin - 1;
+        final int ymax   = height + ymin - 1;
+        int x = xmin;
+        while (x < xmax) {
+            tile.setPixel(x++, ymin, samples);
+            tile.setPixel(x++, ymax, samples);
+        }
+        int y = ymin;
+        while (y < ymax) {
+            tile.setPixel(xmin, y++, samples);
+            tile.setPixel(xmax, y++, samples);
+        }
+        if (x == xmax) tile.setPixel(xmax, ymin, samples);
+        if (y == ymax) tile.setPixel(xmin, ymax, samples);
+        /*
+         * Add a cross (X) inside the tile.
+         */
+        if (width >= height) {
+            final double step = height / (double) width;
+            for (int i=0; i<width; i++) {
+                x = xmin + i;
+                y = (int) (i*step);
+                tile.setPixel(x, ymin + y, samples);
+                tile.setPixel(x, ymax - y, samples);
+            }
+        } else {
+            final double step = width / (double) height;
+            for (int i=0; i<height; i++) {
+                y = ymin + i;
+                x = (int) (i*step);
+                tile.setPixel(xmin + x, y, samples);
+                tile.setPixel(xmax - x, y, samples);
+            }
+        }
+        placeholderPixels = tile.getDataBuffer();
+        return tile;
     }
 }

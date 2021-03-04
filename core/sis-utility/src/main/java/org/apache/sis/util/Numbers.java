@@ -199,11 +199,11 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Returns {@code true} if the given number is NaN.
+     * Returns {@code true} if the given number is null or NaN.
      * Current implementation recognizes {@link Float} and {@link Double} types.
      *
      * @param  value  the number to test (may be {@code null}).
-     * @return {@code true} if the given number if non-null and NaN.
+     * @return {@code true} if the given number is null or NaN.
      *
      * @see Float#isNaN()
      * @see Double#isNaN()
@@ -211,6 +211,7 @@ public final class Numbers extends Static {
      * @since 1.1
      */
     public static boolean isNaN(final Number value) {
+        if (value == null) return true;
         if (value instanceof Double) return ((Double) value).isNaN();
         if (value instanceof Float)  return ((Float)  value).isNaN();
         return false;

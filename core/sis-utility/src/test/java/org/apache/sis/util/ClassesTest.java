@@ -113,7 +113,7 @@ public final strictfp class ClassesTest extends TestCase {
      * The intent is to verify that explicitly declared interfaces are listed
      * before parent interfaces in {@link #testGetAllInterfaces()}.
      */
-    private static abstract class MixedImpl implements GeographicCRS, EllipsoidalCS {
+    private abstract static class MixedImpl implements GeographicCRS, EllipsoidalCS {
     }
 
     /**

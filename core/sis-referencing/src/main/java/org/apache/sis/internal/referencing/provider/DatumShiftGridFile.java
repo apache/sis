@@ -80,9 +80,14 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     private static final long serialVersionUID = -5801692909082130314L;
 
     /**
-     * Cache of grids loaded so far. Those grids will be stored by soft references until the amount of
-     * data exceed 32768 (about 128 kilobytes if the values use the {@code float} type). in which case
-     * the oldest grids will be replaced by weak references.
+     * Cache of grids loaded so far. The keys are typically {@link java.nio.file.Path}s or a tuple of paths.
+     * Values are grids stored by hard references until the amount of data exceed 32768 (about 128 kilobytes
+     * if the values use the {@code float} type), in which case the oldest grids will be replaced by soft references.
+     *
+     * <h2>Memory consumption</h2>
+     * The use of soft references instead than weak references is on the assumption that users typically use
+     * the same few Coordinate Reference Systems for their work. Consequently we presume that users will not
+     * load a lot of grids and are likely to reuse the already loaded grids.
      */
     static final Cache<Object, DatumShiftGridFile<?,?>> CACHE = new Cache<Object, DatumShiftGridFile<?,?>>(4, 32*1024, true) {
         @Override protected int cost(final DatumShiftGridFile<?,?> grid) {

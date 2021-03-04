@@ -17,7 +17,13 @@
 package org.apache.sis.image;
 
 import java.awt.Point;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.BandedSampleModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.ComponentSampleModel;
 import java.awt.image.ImagingOpException;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
@@ -48,6 +54,12 @@ import static org.junit.Assert.*;
  * @module
  */
 public final strictfp class TiledImageMock extends PlanarImage implements WritableRenderedImage {
+    /**
+     * Inverse of the probability that a tile has failure.
+     * This is used only if {@link #failRandomly(Random, boolean)} is invoked.
+     */
+    private static final int FAILURE_PROBABILITY = 10;
+
     /**
      * Location of the upper-left pixel of the image. Should be a non-trivial
      * value for increasing the chances to detect error in index calculation.
@@ -101,18 +113,33 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      * {@link #getTile(int, int)} invocation should fail. Note that two consecutive invocations
      * of {@code getTile(…)} may give different result.
      *
-     * @see #failRandomly(Random)
+     * @see #failRandomly(Random, boolean)
      */
     private Random randomFailures;
+
+    /**
+     * Tiles to keep in error on all invocations of {@link #getTile(int, int)}. This is an alternative
+     * to {@link #randomFailures} for creating artificial errors. Contrarily to {@link #randomFailures},
+     * all calls to {@link #getTile(int, int)} with the same indices have the same behavior.
+     */
+    private boolean[] constantFailures;
 
     /**
      * Sequential number for use in production of error messages, to differentiate them.
      * Since {@link #getTile(int, int)} may be invoked in background threads, this field
      * should be safe to concurrent threads.
      *
-     * @see #failRandomly(Random)
+     * @see #failRandomly(Random, boolean)
      */
     private AtomicInteger errorSequence;
+
+    /**
+     * The color model, created only if requested.
+     * This is needed only for visualizing the image on screen; most tests do not need it.
+     *
+     * @see #getColorModel()
+     */
+    private ColorModel colorModel;
 
     /**
      * Creates a new tiled image. Testers should invoke {@link #validate()} after construction.
@@ -127,12 +154,14 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      * @param tileHeight   number of pixels along Y axis in a single tile of the image.
      * @param minTileX     minimum tile index in the X direction.
      * @param minTileY     minimum tile index in the Y direction.
+     * @param banded       whether to use {@link BandedSampleModel} instead of {@link PixelInterleavedSampleModel}.
      */
     public TiledImageMock(final int dataType,  final int numBands,
                           final int minX,      final int minY,
                           final int width,     final int height,
                           final int tileWidth, final int tileHeight,
-                          final int minTileX,  final int minTileY)
+                          final int minTileX,  final int minTileY,
+                          final boolean banded)
     {
         this.minX        = minX;
         this.minY        = minY;
@@ -145,14 +174,30 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
         this.numXTiles   = Numerics.ceilDiv(width,  tileWidth);
         this.numYTiles   = Numerics.ceilDiv(height, tileHeight);
         this.tiles       = new WritableRaster[numXTiles * numYTiles];
-        this.sampleModel = new PixelInterleavedSampleModel(dataType, tileWidth, tileHeight,
-                                numBands, tileWidth * numBands, ArraysExt.range(0, numBands));
+        this.sampleModel = banded ? new BandedSampleModel(dataType, tileWidth, tileHeight, numBands) :
+                          new PixelInterleavedSampleModel(dataType, tileWidth, tileHeight, numBands,
+                                 StrictMath.multiplyExact(numBands, tileWidth), ArraysExt.range(0, numBands));
     }
 
     /**
-     * No color model since this test images is not for rendering on screen.
+     * Returns a gray scale color model if the data type is byte, or {@code null} otherwise.
+     * More color models may be supported in future versions if there is a need for them.
      */
-    @Override public ColorModel  getColorModel()  {return null;}
+    @Override
+    public synchronized ColorModel getColorModel() {
+        if (colorModel == null && sampleModel instanceof ComponentSampleModel && sampleModel.getNumBands() == 1) {
+            final int dataType = sampleModel.getDataType();
+            if (dataType <= DataBuffer.TYPE_USHORT) {
+                colorModel = new ComponentColorModel(
+                        ColorSpace.getInstance(ColorSpace.CS_GRAY),
+                        new int[] {DataBuffer.getDataTypeSize(dataType)},
+                        false, true, Transparency.OPAQUE, dataType);
+            }
+        }
+        return colorModel;
+    }
+
+    /** Returns a sample model for data type given to the constructor. */
     @Override public SampleModel getSampleModel() {return sampleModel;}
 
     /*
@@ -175,19 +220,33 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      *
      * @see #verify()
      */
-    public void validate() {
+    public synchronized void validate() {
         assertNull(verify());
     }
 
     /**
      * Causes some {@link #getTile(int, int)} and {@link #getWritableTile(int, int)} calls to fail.
-     * Note that two consecutive invocations of {@code getTile(…)} may give different result.
+     * if {@code onEachCall} is {@code true}, then two consecutive invocations of {@code getTile(…)}
+     * may give different result.
      *
-     * @param  random  the random number generator to use for deciding if a tile request should fail.
+     * @param  random      the random number generator to use for deciding if a tile request should fail.
+     * @param  onEachCall  {@code true} if failure may happen on any {@code getTile(…)}, or {@code false}
+     *                     for constant behavior when {@code getTile(…)} is invoked with same tile indices.
      */
-    public void failRandomly(final Random random) {
-        randomFailures = random;
-        errorSequence = new AtomicInteger();
+    public synchronized void failRandomly(final Random random, final boolean onEachCall) {
+        if (onEachCall) {
+            randomFailures = random;
+            constantFailures = null;
+        } else {
+            randomFailures = null;
+            constantFailures = new boolean[tiles.length];
+            for (int i=0; i<constantFailures.length; i++) {
+                constantFailures[i] = (random.nextInt(FAILURE_PROBABILITY) == 0);
+            }
+        }
+        if (errorSequence == null) {
+            errorSequence = new AtomicInteger();
+        }
     }
 
     /**
@@ -200,7 +259,7 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      * @param  b      band index of the sample value to set.
      * @param  value  the new value.
      */
-    public void setSample(final int x, final int y, final int b, final double value) {
+    public synchronized void setSample(final int x, final int y, final int b, final double value) {
         final int ox = x - minX;
         final int oy = y - minY;
         if (ox < 0 || ox >= width || oy < 0 || oy >= height) {
@@ -224,7 +283,7 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      *
      * @param  band  band index where to set values. Other bands will be unmodified.
      */
-    public void initializeAllTiles(final int band) {
+    public synchronized void initializeAllTiles(final int band) {
         int ti = 0;
         for (int ty=0; ty<numYTiles; ty++) {
             for (int tx=0; tx<numXTiles; tx++) {
@@ -251,7 +310,7 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      * @param  generator  the random number generator to use for obtaining values.
      * @param  upper      upper limit (exclusive) of random numbers to generate.
      */
-    public void setRandomValues(final int band, final Random generator, final int upper) {
+    public synchronized void setRandomValues(final int band, final Random generator, final int upper) {
         for (final WritableRaster raster : tiles) {
             final int x = raster.getMinX();
             final int y = raster.getMinY();
@@ -272,7 +331,7 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      * any future Apache SIS version.
      */
     @Override
-    public Raster getTile(final int tileX, final int tileY) {
+    public synchronized Raster getTile(final int tileX, final int tileY) {
         assertFalse("isTileAcquired", isTileAcquired);              // See javadoc.
         return tile(tileX, tileY, false);
     }
@@ -281,7 +340,7 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      * Returns the tile at the given location tile coordinates.
      */
     @Override
-    public WritableRaster getWritableTile(final int tileX, final int tileY) {
+    public synchronized WritableRaster getWritableTile(final int tileX, final int tileY) {
         assertFalse("isTileAcquired", isTileAcquired);
         final WritableRaster raster = tile(tileX, tileY, true);
         isTileAcquired = true;
@@ -300,11 +359,13 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
         {
             throw new IndexOutOfBoundsException();
         }
-        if (randomFailures != null && randomFailures.nextInt(10) == 0) {
+        final int i = tileY * numXTiles + tileX;
+        if ((constantFailures != null && constantFailures[i]) ||
+            (randomFailures != null && randomFailures.nextInt(FAILURE_PROBABILITY) == 0))
+        {
             throw new ImagingOpException("Artificial error #" + errorSequence.incrementAndGet()
                                        + " on tile (" + tileX + ", " + tileY + ").");
         }
-        final int i = tileY * numXTiles + tileX;
         WritableRaster raster = tiles[i];
         if (raster == null) {
             if (!allowCreate) {
@@ -321,7 +382,7 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      * Verifies that the given tile has been acquired.
      */
     @Override
-    public void releaseWritableTile(final int tileX, final int tileY) {
+    public synchronized void releaseWritableTile(final int tileX, final int tileY) {
         assertTrue("isTileAcquired", isTileAcquired);
         assertEquals("tileX", acquiredTileX, tileX);
         assertEquals("tileY", acquiredTileY, tileY);
@@ -333,7 +394,7 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      * {@link #getWritableTile(int, int)} and that tile has not yet been released.
      */
     @Override
-    public boolean isTileWritable(final int tileX, final int tileY) {
+    public synchronized boolean isTileWritable(final int tileX, final int tileY) {
         return isTileAcquired && (tileX == acquiredTileX) && (tileY == acquiredTileY);
     }
 
@@ -341,7 +402,7 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      * Returns {@code false} since we do not keep track of who called {@link #getWritableTile(int,int)}.
      */
     @Override
-    public boolean hasTileWriters() {
+    public synchronized boolean hasTileWriters() {
         return isTileAcquired;
     }
 
@@ -349,7 +410,7 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      * Returns the indices of acquired tile, or {@code null} if none.
      */
     @Override
-    public Point[] getWritableTileIndices() {
+    public synchronized Point[] getWritableTileIndices() {
         return isTileAcquired ? new Point[] {new Point(acquiredTileX, acquiredTileY)} : null;
     }
 
@@ -373,7 +434,7 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      * Current implementation can set raster covering only one tile.
      */
     @Override
-    public void setData(final Raster r) {
+    public synchronized void setData(final Raster r) {
         final int minX = r.getMinX();
         final int minY = r.getMinY();
         final int tx = ImageUtilities.pixelToTileX(this, minX);
@@ -389,7 +450,7 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      *
      * @return this image as a more complete implementation.
      */
-    public WritableTiledImage toWritableTiledImage() {
+    public synchronized WritableTiledImage toWritableTiledImage() {
         return new WritableTiledImage(null, null, width, height, minTileX, minTileY, tiles);
     }
 }

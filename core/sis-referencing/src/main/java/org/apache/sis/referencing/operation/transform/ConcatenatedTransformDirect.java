@@ -40,8 +40,8 @@ class ConcatenatedTransformDirect extends ConcatenatedTransform {
     /**
      * Constructs a concatenated transform.
      */
-    public ConcatenatedTransformDirect(final MathTransform transform1,
-                                       final MathTransform transform2)
+    ConcatenatedTransformDirect(final MathTransform transform1,
+                                final MathTransform transform2)
     {
         super(transform1, transform2);
     }

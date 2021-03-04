@@ -29,6 +29,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.logging.Logging;
 
@@ -41,7 +42,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -138,7 +139,7 @@ class SpatialFunctions {
                 try {
                     return new OGC06104r4.Spi().create(geomDriver, c);
                 } catch (SQLException e) {
-                    final Logger logger = Logging.getLogger("org.apache.sis.internal.sql");
+                    final Logger logger = Logging.getLogger(Modules.SQL);
                     logger.warning("No supported geometric binding. For more information, activate debug logs.");
                     logger.log(Level.FINE, "Error while creating default Geometric binding over SQL", e);
                 }

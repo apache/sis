@@ -69,7 +69,8 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
                 TILE_WIDTH,
                 TILE_HEIGHT,
                 -3,                             // minTileX
-                +2);                            // minTileY
+                +2,                             // minTileY
+                false);
         image.initializeAllTiles(0);
         image.setRandomValues(1, new Random(), 1000);
         image.validate();
@@ -114,7 +115,7 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
         final ImageProcessor operations = new ImageProcessor();
         operations.setExecutionMode(ImageProcessor.Mode.PARALLEL);
         final TiledImageMock image = createImage();
-        image.failRandomly(new Random(-8739538736973900203L));
+        image.failRandomly(new Random(-8739538736973900203L), true);
         try {
             operations.valueOfStatistics(image, null);
             fail("Expected ImagingOpException.");
@@ -133,9 +134,9 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
     public void testWithLoggings() {
         final ImageProcessor operations = new ImageProcessor();
         operations.setExecutionMode(ImageProcessor.Mode.PARALLEL);
-        operations.setErrorAction(ImageProcessor.ErrorAction.LOG);
+        operations.setErrorHandler(ErrorHandler.LOG);
         final TiledImageMock image = createImage();
-        image.failRandomly(new Random(8004277484984714811L));
+        image.failRandomly(new Random(8004277484984714811L), true);
         final Statistics[] stats = operations.valueOfStatistics(image, null);
         for (final Statistics a : stats) {
             assertTrue(a.count() > 0);

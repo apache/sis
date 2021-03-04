@@ -896,7 +896,7 @@ public class RangeFormat extends Format implements Localized {
                     if (c == minusSign || c == '−') {
                         index += Character.charCount(c);
                     }
-                    if (!source.regionMatches(index, infinity, 0, infinity.length())) {
+                    if (!source.startsWith(infinity, index)) {
                         return null;
                     }
                     pos.setIndex(index += infinity.length());
@@ -918,7 +918,7 @@ public class RangeFormat extends Format implements Localized {
                     if (!Character.isWhitespace(c)) break;
                 }
                 final String separator = this.separator;
-                if (source.regionMatches(index, separator, 0, separator.length())) {
+                if (source.startsWith(separator, index)) {
                     index += separator.length();
                     for (;; index += Character.charCount(c)) {
                         if (index >= length) {
@@ -935,7 +935,7 @@ public class RangeFormat extends Format implements Localized {
                     pos.setIndex(index);
                     value = elementFormat.parseObject(source, pos);
                     if (value == null) {
-                        if (!source.regionMatches(index, infinity, 0, infinity.length())) {
+                        if (!source.startsWith(infinity, index)) {
                             return null;
                         }
                         pos.setIndex(index += infinity.length());

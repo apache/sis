@@ -59,6 +59,25 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
     private static final List<PositionableProjection> VALUES = new ArrayList<>(1);
 
     /**
+     * Provides <cite>Orthographic</cite> projection centered on a point of interest.
+     *
+     * @see org.apache.sis.referencing.operation.projection.Orthographic
+     */
+    public static final PositionableProjection ORTHOGRAPHIC =
+            new PositionableProjection("ORTHOGRAPHIC", Resources.Keys.Orthographic)
+    {
+        @Override protected ProjectedCRS createProjectedCRS(final GeographicCRS baseCRS,
+                final double latitude, final double longitude) throws FactoryException
+        {
+            return newBuilder(latitude, longitude)
+                    .setConversionMethod("Orthographic")
+                    .setParameter("Latitude of natural origin",  latitude,  Units.DEGREE)
+                    .setParameter("Longitude of natural origin", longitude, Units.DEGREE)
+                    .createProjectedCRS(baseCRS, null);
+        }
+    };
+
+    /**
      * Provides <cite>Azimuthal Equidistant</cite> projection centered on a point of interest.
      * For projection on the ellipsoid, this is valid only under 800 km of the point of interest.
      *

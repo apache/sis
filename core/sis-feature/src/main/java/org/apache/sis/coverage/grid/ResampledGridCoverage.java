@@ -231,12 +231,12 @@ final class ResampledGridCoverage extends GridCoverage {
          * The following lines may throw IncompleteGridGeometryException, which is desired because if that
          * transform is missing, we can not continue (we have no way to guess it).
          */
-        changeOfCRS.setAnchor(PixelInCell.CELL_CORNER);
+        // Finder is initialized to PixelInCell.CELL_CORNER.
         final MathTransform sourceCornerToCRS = changeOfCRS.gridToCRS();
-        final MathTransform crsToSourceCorner = changeOfCRS.inverse(true);
+        final MathTransform crsToSourceCorner = changeOfCRS.inverse();
         changeOfCRS.setAnchor(PixelInCell.CELL_CENTER);
         final MathTransform sourceCenterToCRS = changeOfCRS.gridToCRS();
-        final MathTransform crsToSourceCenter = changeOfCRS.inverse(false);
+        final MathTransform crsToSourceCenter = changeOfCRS.inverse();
         /*
          * Compute the transform from target grid to target CRS. This transform may be unspecified,
          * in which case we need to compute a default transform trying to preserve resolution at the

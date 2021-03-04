@@ -145,6 +145,22 @@ public final class AttributeConvention extends Static {
     public static final ScopedName CRS_CHARACTERISTIC;
 
     /**
+     * Conventional name for fetching the unit of measurement of a property.
+     * This characteristic is typically an entry in the map returned by a call to the
+     * {@link org.apache.sis.feature.DefaultAttributeType#characteristics()} method
+     * on any attribute of numeric type.
+     *
+     * <p>While it is technically possible to have different units of measurement for the same property
+     * on different feature instances, in most cases the unit is the same for all feature instances.
+     * In such cases, the unit can be specified only once as the
+     * {@linkplain org.apache.sis.feature.DefaultAttributeType#getDefaultValue() default value}.</p>
+     *
+     * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} should be
+     * {@link javax.measure.Unit}.</p>
+     */
+    public static final ScopedName UNIT_CHARACTERISTIC;
+
+    /**
      * Conventional name for fetching the maximal length of string values.
      * The maximal length is stored as the
      * {@linkplain org.apache.sis.feature.DefaultAttributeType#getDefaultValue() default value} of the
@@ -172,6 +188,7 @@ public final class AttributeConvention extends Static {
         GEOMETRY_PROPERTY             = Names.createScopedName(SCOPE, null, "geometry");
         ENVELOPE_PROPERTY             = Names.createScopedName(SCOPE, null, "envelope");
         CRS_CHARACTERISTIC            = Names.createScopedName(SCOPE, null, "crs");
+        UNIT_CHARACTERISTIC           = Names.createScopedName(SCOPE, null, "unit");
         MAXIMAL_LENGTH_CHARACTERISTIC = Names.createScopedName(SCOPE, null, "maximalLength");
         VALID_VALUES_CHARACTERISTIC   = Names.createScopedName(SCOPE, null, "validValues");
     }

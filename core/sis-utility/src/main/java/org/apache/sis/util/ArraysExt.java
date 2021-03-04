@@ -1312,7 +1312,7 @@ public final class ArraysExt extends Static {
      * <ul>
      *   <li>If {@code array} is {@code null}, then return {@code false}.</li>
      *   <li>Otherwise if {@code array} is empty, then return {@code true} for consistency with {@link #range}.</li>
-     *   <li>Otherwise for any index 0 ≦ <var>i</var> {@literal <} {@code array.length}, if {@code array[i]}
+     *   <li>Otherwise for any index 0 ≤ <var>i</var> {@literal <} {@code array.length}, if {@code array[i]}
      *       is equal to {@code start + i} (computed as if no overflow occurs), then return {@code true}.</li>
      *   <li>Otherwise return {@code false}.</li>
      * </ul>

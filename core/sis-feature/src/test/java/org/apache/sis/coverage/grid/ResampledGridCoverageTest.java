@@ -98,7 +98,8 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
                 width, height,                  // Image size
                 width, height,                  // Tile size
                 random.nextInt(32) - 10,        // minTileX
-                random.nextInt(32) - 10);       // minTileY
+                random.nextInt(32) - 10,        // minTileY
+                random.nextBoolean());          // Banded or interleaved sample model
         image.validate();
         image.initializeAllTiles(0);
         final int x = random.nextInt(32) - 10;
@@ -228,11 +229,11 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
         final int tx = random.nextInt(3);
         final int ty = random.nextInt(3);
         final GridExtent sourceExtent = source.gridGeometry.getExtent();
-        final int newWidth   = (int) sourceExtent.getSize(0) - tx;
-        final int newHeight  = (int) sourceExtent.getSize(1) - ty;
+        final int newWidth   = StrictMath.toIntExact(sourceExtent.getSize(0) - tx);
+        final int newHeight  = StrictMath.toIntExact(sourceExtent.getSize(1) - ty);
         GridExtent subExtent = new GridExtent(
-                (int) sourceExtent.getLow(0) + tx,
-                (int) sourceExtent.getLow(1) + ty,
+                StrictMath.toIntExact(sourceExtent.getLow(0) + tx),
+                StrictMath.toIntExact(sourceExtent.getLow(1) + ty),
                 newWidth,
                 newHeight
         );
@@ -440,7 +441,8 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     @Test
     public void testSubGeographicArea() throws TransformException {
         final GridCoverage2D source = createCoverage2D();             // Envelope2D(20, 15, 60, 62)
-        GridGeometry gg = new GridGeometry(null, new Envelope2D(HardCodedCRS.WGS84, 18, 20, 17, 31), null);
+        final GridGeometry gg = new GridGeometry(null,
+                new Envelope2D(HardCodedCRS.WGS84, 18, 20, 17, 31), GridOrientation.HOMOTHETY);
         final GridCoverage target = resample(source, gg);
         final GridExtent sourceExtent = source.getGridGeometry().getExtent();
         final GridExtent targetExtent = target.getGridGeometry().getExtent();

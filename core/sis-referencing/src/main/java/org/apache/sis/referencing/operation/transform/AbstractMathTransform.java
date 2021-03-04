@@ -1005,6 +1005,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * @param  formatter  the formatter to use.
      * @return the WKT element name, which is {@code "Param_MT"} in the default implementation.
+     *
+     * @see DefaultMathTransformFactory#createFromWKT(String)
      */
     @Override
     protected String formatTo(final Formatter formatter) {

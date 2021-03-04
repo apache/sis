@@ -68,7 +68,7 @@ final class CopyAction implements EventHandler<ActionEvent> {
         try {
             path = URIDataStore.location(resource);
         } catch (DataStoreException e) {
-            ExceptionReporter.show(null, null, e);
+            ExceptionReporter.show(cell, null, null, e);
             return;
         }
         /*

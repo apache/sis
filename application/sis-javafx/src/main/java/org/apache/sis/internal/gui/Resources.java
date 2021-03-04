@@ -121,6 +121,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CenteredProjection = 43;
 
         /**
+         * Clear all
+         */
+        public static final short ClearAll = 55;
+
+        /**
          * Close
          */
         public static final short Close = 10;
@@ -159,6 +164,11 @@ public final class Resources extends IndexedResourceBundle {
          * Does not cover the area of interest.
          */
         public static final short DoesNotCoverAOI = 13;
+
+        /**
+         * An error occurred at the following location:
+         */
+        public static final short ErrorAt = 53;
 
         /**
          * Error closing file
@@ -221,6 +231,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InconsistencyIn_2 = 39;
 
         /**
+         * Generate isolines at constant interval
+         * starting from given minimum.
+         */
+        public static final short IsolinesInRange = 57;
+
+        /**
          * Loading…
          */
         public static final short Loading = 24;
@@ -254,6 +270,21 @@ public final class Resources extends IndexedResourceBundle {
          * Open data file
          */
         public static final short OpenDataFile = 29;
+
+        /**
+         * Open recent file
+         */
+        public static final short OpenRecentFile = 54;
+
+        /**
+         * Orthographic
+         */
+        public static final short Orthographic = 52;
+
+        /**
+         * Range of values…
+         */
+        public static final short RangeOfValues = 56;
 
         /**
          * Select a coordinate reference system

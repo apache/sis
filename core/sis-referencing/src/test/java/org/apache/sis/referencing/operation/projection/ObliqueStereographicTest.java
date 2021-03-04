@@ -51,9 +51,10 @@ import static org.junit.Assert.*;
 })
 public final strictfp class ObliqueStereographicTest extends MapProjectionTestCase {
     /**
-     * Parameter values provided by the <a href="http://www.iogp.org/pubs/373-07-2.pdf">EPSG guide</a>
-     * for testing {@link ObliqueStereographic} transform conformity. The test uses the parameters for
-     * the <cite>Amersfoort / RD New</cite> projection:
+     * Parameter values provided by the IOGP Report 373-07-02 –
+     * <cite>Coordinate conversions and transformation including formulas</cite>
+     * for testing {@link ObliqueStereographic} transform conformity.
+     * The test uses the parameters for the <cite>Amersfoort / RD New</cite> projection:
      *
      * <ul>
      *   <li>Semi-major axis length:            <var>a</var>  = 6377397.155 metres</li>
@@ -129,7 +130,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
             p.parameter("inverse_flattening").setValue(ivf);
         }
         /*
-         * Following parameters are reproduced verbatim from EPSG registry and EPSG guide.
+         * Following parameters are reproduced verbatim from EPSG repository and EPSG guide.
          */
         p.parameter("Latitude of natural origin")    .setValue(φ0, Units.RADIAN);
         p.parameter("Longitude of natural origin")   .setValue(λ0, Units.RADIAN);

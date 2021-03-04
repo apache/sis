@@ -22,7 +22,7 @@ package org.apache.sis.internal.netcdf.ucar;
  * Some methods are workarounds for UCAR library methods having a different behavior than what we would expect.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -67,7 +67,7 @@ final class Utils {
             if (number instanceof Byte) {
                 final byte value = (byte) number;
                 if (value < 0) {
-                    number = Byte.toUnsignedInt(value);
+                    number = (short) Byte.toUnsignedInt(value);
                 }
             } else if (number instanceof Short) {
                 final short value = (Short) number;

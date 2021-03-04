@@ -969,19 +969,11 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         @Override public void set(final MathTransform newValue) {
             ArgumentChecks.ensureNonNull("newValue", newValue);
             final MathTransform oldValue = get();
-            int expected = oldValue.getSourceDimensions();
-            int actual   = newValue.getSourceDimensions();
-            if (expected == actual) {
-                expected = oldValue.getTargetDimensions();
-                actual   = newValue.getTargetDimensions();
-                if (expected == actual) {
-                    super.set(newValue);
-                    updateLocalToPositionCRS();
-                    return;
-                }
-            }
-            throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, "newValue", expected, actual));
+            ArgumentChecks.ensureDimensionsMatch("newValue",
+                    oldValue.getSourceDimensions(),
+                    oldValue.getTargetDimensions(), newValue);
+            super.set(newValue);
+            updateLocalToPositionCRS();
         }
     }
 
@@ -1057,7 +1049,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                 values = null;
             }
             position.setText(text);
-            sampleValues.setText(values);
+            if (isSampleValuesVisible) {
+                sampleValues.setText(values);
+            }
             /*
              * Make sure that there is enough space for keeping the coordinates always visible.
              * This is the needed if there is an error message on the left which may be long.
@@ -1284,7 +1278,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             }
             final String alert = text;
             more = new Button(Styles.ERROR_DETAILS_ICON);
-            more.setOnAction((e) -> ExceptionReporter.show(
+            more.setOnAction((e) -> ExceptionReporter.show(getView(),
                     Resources.forLocale(locale).getString(Resources.Keys.ErrorDetails), alert, details));
         }
         message.setVisible(text != null);

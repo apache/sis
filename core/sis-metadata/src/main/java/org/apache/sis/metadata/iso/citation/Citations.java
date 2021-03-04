@@ -83,7 +83,7 @@ public final class Citations extends Static {
     /**
      * The <cite>Geographic Information — Metadata</cite> standards defined by ISO 19115.
      * This list contains two standards published by the
-     * <a href="http://www.iso.org/">International Organization for Standardization</a>:
+     * <a href="https://www.iso.org/">International Organization for Standardization</a>:
      *
      * <ul>
      *   <li>ISO 19115-1 Geographic Information — Metadata Part 1: Fundamentals</li>
@@ -117,7 +117,7 @@ public final class Citations extends Static {
     });
 
     /**
-     * The <a href="http://www.iogp.org">International Association of Oil &amp; Gas producers</a> (IOGP) organization.
+     * The <a href="https://www.iogp.org/">International Association of Oil &amp; Gas producers</a> (IOGP) organization.
      * This organization is responsible for maintainance of {@link #EPSG} database.
      *
      * <p>We do not expose this citation in public API because it is an organization rather than a reference
@@ -137,9 +137,9 @@ public final class Citations extends Static {
 
     /**
      * The authority for identifiers of objects defined by the
-     * <a href="http://www.epsg.org">EPSG Geodetic Parameter Dataset</a>.
+     * <a href="https://epsg.org/">EPSG Geodetic Parameter Dataset</a>.
      * EPSG is not an organization by itself, but is the <em>identifier space</em> managed by the
-     * <a href="http://www.iogp.org">International Association of Oil &amp; Gas producers</a> (IOGP) organization
+     * <a href="https://www.iogp.org/">International Association of Oil &amp; Gas producers</a> (IOGP) organization
      * for {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} identifiers.
      * EPSG is the default namespace of map projection method and parameter names in Apache SIS.
      *
@@ -192,7 +192,7 @@ public final class Citations extends Static {
 
     /**
      * The authority for identifiers of objects defined by the
-     * <a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a> (WMS) specification.
+     * <a href="https://www.ogc.org/standards/wms">Web Map Service</a> (WMS) specification.
      * The WMS 1.3 specifications is also known as ISO 19128
      * <cite>Geographic Information — Web map server interface</cite> standard.
      *
@@ -213,7 +213,7 @@ public final class Citations extends Static {
 
     /**
      * The authority for identifiers found in specifications from the
-     * <a href="http://www.opengeospatial.org">Open Geospatial Consortium</a>.
+     * <a href="https://www.ogc.org/">Open Geospatial Consortium</a>.
      * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "OGC"}.
      * Apache SIS uses this authority mostly for map projection methods and parameters as they were defined in older
      * OGC specifications (in more recent specifications, {@linkplain #EPSG} identifiers tend to be more widely used).
@@ -239,9 +239,9 @@ public final class Citations extends Static {
      * and may change in future SIS version. Some of the specifications used are:
      *
      * <ul>
-     *   <li><a href="http://www.opengeospatial.org/standards/ct">Coordinate Transformation Service</a></li>
-     *   <li><a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a></li>
-     *   <li><a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a></li>
+     *   <li><a href="https://www.ogc.org/">Coordinate Transformation Service</a></li>
+     *   <li><a href="https://www.ogc.org/standards/wms">Web Map Service</a></li>
+     *   <li><a href="https://portal.ogc.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a></li>
      * </ul>
      *
      * We do not commit to a particular OGC specification in order to keep the flexibility to change the
@@ -259,7 +259,7 @@ public final class Citations extends Static {
     public static final IdentifierSpace<String> OGC = new CitationConstant.Authority<>(Constants.OGC);
 
     /**
-     * The authority for identifiers of objects defined by <a href="http://www.esri.com">ESRI</a>.
+     * The authority for identifiers of objects defined by <a href="https://www.esri.com">ESRI</a>.
      * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "ESRI"}.
      * This citation is used as the authority for many map projection method and parameter names
      * other than the {@linkplain #EPSG} ones.
@@ -294,8 +294,7 @@ public final class Citations extends Static {
     public static final IdentifierSpace<String> ESRI = new CitationConstant.Authority<>("ArcGIS", "ESRI");
 
     /**
-     * The authority for identifiers of objects defined by the
-     * <a href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/">NetCDF</a> specification.
+     * The authority for identifiers of objects defined by the netCDF specification.
      * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "NetCDF"}.
      * This citation is used as the authority for some map projection method and parameter names
      * as used in netCDF files.
@@ -327,7 +326,7 @@ public final class Citations extends Static {
 
     /**
      * The authority for identifiers of objects defined by the
-     * the <a href="http://trac.osgeo.org/geotiff/">GeoTIFF</a> specification.
+     * the <a href="https://www.ogc.org/standards/geotiff">GeoTIFF</a> specification.
      * This specification identifies some map projections by their own numerical codes.
      *
      * <h4>Main usage</h4>
@@ -367,8 +366,7 @@ public final class Citations extends Static {
     public static final IdentifierSpace<Integer> MAP_INFO = new CitationConstant.Authority<>("MapInfo");
 
     /**
-     * The <a href="http://www.iho.int/iho_pubs/standard/S-57Ed3.1/31Main.pdf">IHO transfer standard
-     * for digital hydrographic data</a> specification.
+     * The <cite>IHO transfer standard for digital hydrographic data</cite> specification.
      *
      * <h4>Main usage</h4>
      * This value can be returned by:
@@ -411,7 +409,7 @@ public final class Citations extends Static {
     public static final IdentifierSpace<String> ISSN = new NonMarshalledAuthority<>("ISSN", NonMarshalledAuthority.ISSN);
 
     /**
-     * The codespace of objects that are specific to the <a href="http://sis.apache.org">Apache SIS</a> project.
+     * The codespace of objects that are specific to the <a href="https://sis.apache.org/">Apache SIS</a> project.
      *
      * <h4>Main usage</h4>
      * This value can be returned by:

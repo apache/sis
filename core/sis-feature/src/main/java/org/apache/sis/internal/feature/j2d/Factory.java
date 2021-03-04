@@ -26,7 +26,6 @@ import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.math.Vector;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.UnsupportedImplementationException;
 
 
@@ -67,6 +66,22 @@ public final class Factory extends Geometries<Shape> {
         } else {
             return new Wrapper((Shape) geometry);
         }
+    }
+
+    /**
+     * Notifies that this library can create geometry objects backed by single-precision type.
+     */
+    @Override
+    public boolean supportSinglePrecision() {
+        return true;
+    }
+
+    /**
+     * Creates a two-dimensional point from the given coordinate.
+     */
+    @Override
+    public Object createPoint(float x, float y) {
+        return new Point2D.Float(x, y);
     }
 
     /**
@@ -115,7 +130,7 @@ public final class Factory extends Geometries<Shape> {
             if (v != null) {
                 length = Math.addExact(length, v.size());
                 if (isFloat) {
-                    isFloat = Numbers.getEnumConstant(v.getElementType()) <= Numbers.FLOAT;
+                    isFloat = v.isSinglePrecision();
                 }
             }
         }

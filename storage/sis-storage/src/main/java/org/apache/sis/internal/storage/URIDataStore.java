@@ -37,7 +37,6 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.internal.storage.io.IOUtilities;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -274,7 +273,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
                  * Note that it does not mean the same thing than "parameter provided but value is null".
                  * In that later case we want to return the null value as specified in the parameters.
                  */
-                Logging.recoverableException(Logging.getLogger(Modules.STORAGE), URIDataStore.class, "location", e);
+                Logging.recoverableException(StoreUtilities.LOGGER, URIDataStore.class, "location", e);
             }
         }
         /*

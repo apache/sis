@@ -155,7 +155,7 @@ class MathTransformParser extends AbstractParser {
      * @param  factories     the factories to use for creating math transforms and geodetic objects.
      * @param  errorLocale   the locale for error messages (not for parsing), or {@code null} for the system default.
      */
-    MathTransformParser(final Symbols symbols, final Map<String,Element> fragments,
+    MathTransformParser(final Symbols symbols, final Map<String,StoredTree> fragments,
             final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
             final ReferencingFactoryContainer factories, final Locale errorLocale)
     {
@@ -181,7 +181,7 @@ class MathTransformParser extends AbstractParser {
      * @throws ParseException if the element can not be parsed.
      */
     @Override
-    Object parseObject(final Element element) throws ParseException {
+    Object buildFromTree(final Element element) throws ParseException {
         return parseMathTransform(element, true);
     }
 

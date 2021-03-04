@@ -20,6 +20,7 @@ import java.util.Arrays;
 import org.opengis.coverage.grid.GridCoordinates;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -128,16 +129,8 @@ final class GridCoordinatesView implements GridCoordinates {
          */
         if (object instanceof GridCoordinatesView) {
             final GridCoordinatesView that = (GridCoordinatesView) object;
-            final int dimension = getDimension();
-            if (dimension == that.getDimension()) {
-                // TODO: use Arrays.equals(...) with JDK9 instead.
-                for (int i=0; i<dimension; i++) {
-                    if (coordinates[offset + i] != that.coordinates[that.offset + i]) {
-                        return false;
-                    }
-                }
-                return true;
-            }
+            return JDK9.equals(this.coordinates, this.offset, this.offset + this.getDimension(),
+                               that.coordinates, that.offset, that.offset + that.getDimension());
         }
         return false;
     }

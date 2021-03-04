@@ -121,7 +121,7 @@ public final strictfp class CodeTest extends TestCase {
     /**
      * Tests {@link Code#getIdentifier()} with {@code "urn:ogc:def:crs:EPSG:8.2:4326"}.
      * This test simulates the {@code Code} object state that we get after XML unmarshalling
-     * of an object from the EPSG registry.
+     * of an object from the EPSG repository.
      */
     @Test
     @DependsOnMethod("testForIdentifiedObject")

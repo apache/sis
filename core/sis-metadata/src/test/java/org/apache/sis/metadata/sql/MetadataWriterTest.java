@@ -139,7 +139,7 @@ public final strictfp class MetadataWriterTest extends TestCase {
      *     │   │   ├─Name……………………………………… International Association of Oil & Gas Producers
      *     │   │   └─Contact info
      *     │   │       └─Online resource
-     *     │   │           ├─Linkage………… http://www.epsg.org
+     *     │   │           ├─Linkage………… https://epsg.org/
      *     │   │           └─Function……… Information
      *     │   └─Role………………………………………………… Principal investigator
      *     └─Presentation form………………………… Table digital
@@ -168,7 +168,7 @@ public final strictfp class MetadataWriterTest extends TestCase {
         @SuppressWarnings("deprecation")
         final OnlineResource resource = contact.getOnlineResource();
         assertSame(resource, TestUtilities.getSingleton(contact.getOnlineResources()));
-        assertEquals("http://www.epsg.org", resource.getLinkage().toString());
+        assertEquals("https://epsg.org/", resource.getLinkage().toString());
         assertEquals(OnLineFunction.INFORMATION, resource.getFunction());
         /*
          * Ask columns that are known to not exist.

@@ -25,6 +25,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.DirectPosition1D;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.test.DependsOnMethod;
@@ -39,7 +40,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link LinearTransformBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -433,9 +434,11 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         final NonLinearTransform tr = new NonLinearTransform();
         builder.addLinearizers(Collections.singletonMap("x² y³", tr));
         builder.addLinearizers(Collections.singletonMap("x³ y²", tr), 1, 0);
+        builder.addLinearizers(Collections.singletonMap("identity", MathTransforms.identity(2)));
         final Matrix m = builder.create(null).getMatrix();
-        assertEquals("linearizer", "x³ y²", builder.linearizerID());
+        assertEquals("linearizer", "x³ y²", builder.linearizer().get().getKey());
         assertNotSame("linearizer", tr, builder.linearizer().get());    // Not same because axes should have been swapped.
+        assertArrayEquals("correlations", new double[] {1, 1}, builder.correlation(), 1E-15);
         assertMatrixEquals("linear",
                 new Matrix3(2, 0, 3,
                             0, 1, 1,

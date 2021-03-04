@@ -1,0 +1,6 @@
+/*
+ * Styles applying to controls under circumstances defined by `javafx.css.PseudoClass`.
+ */
+.text-input:error {
+  -fx-background-color: lightpink;
+}

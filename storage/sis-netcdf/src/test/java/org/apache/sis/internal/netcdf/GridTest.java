@@ -36,12 +36,19 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * {@link #createDecoder(TestData)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
 @DependsOn(VariableTest.class)
 public strictfp class GridTest extends TestCase {
+    /**
+     * Whether the {@code "runtime"} variable in {@link TestData#NETCDF_4D_PROJECTED} is used as a target dimension
+     * for the {@code gridToCRS} transform. The UCAR library and Apache SIS implementation have different behavior
+     * regarding this dimension.
+     */
+    protected boolean includeRuntimeDimension;
+
     /**
      * Optionally filters out some grid geometries that shall be ignored by the tests.
      * The default implementation returns the given array unmodified. This method is overridden by
@@ -67,9 +74,10 @@ public strictfp class GridTest extends TestCase {
         assertEquals("getSourceDimensions()", 2, geometry.getSourceDimensions());
         assertEquals("getTargetDimensions()", 2, geometry.getTargetDimensions());
 
+        final int n = includeRuntimeDimension ? 5 : 4;
         geometry = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGrids()));
         assertEquals("getSourceDimensions()", 4, geometry.getSourceDimensions());
-        assertEquals("getTargetDimensions()", 4, geometry.getTargetDimensions());
+        assertEquals("getTargetDimensions()", n, geometry.getTargetDimensions());
     }
 
     /**
@@ -89,11 +97,11 @@ public strictfp class GridTest extends TestCase {
         assertEquals('λ', x.abbreviation);
         assertEquals('φ', y.abbreviation);
 
-        assertArrayEquals(new int[] {1}, x.sourceDimensions);
-        assertArrayEquals(new int[] {0}, y.sourceDimensions);
+        assertArrayEquals(new int[] {1}, x.gridDimensionIndices);
+        assertArrayEquals(new int[] {0}, y.gridDimensionIndices);
 
-        assertEquals(73, x.getSize());
-        assertEquals(73, y.getSize());
+        assertEquals(73, x.getMainSize().getAsLong());
+        assertEquals(73, y.getMainSize().getAsLong());
     }
 
     /**
@@ -106,7 +114,7 @@ public strictfp class GridTest extends TestCase {
     @DependsOnMethod("testDimensions")
     public void testAxes4D() throws IOException, DataStoreException {
         final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGrids())).getAxes(decoder());
-        assertEquals(4, axes.length);
+        assertEquals(includeRuntimeDimension ? 5 : 4, axes.length);
         final Axis x = axes[0];
         final Axis y = axes[1];
         final Axis z = axes[2];
@@ -117,15 +125,22 @@ public strictfp class GridTest extends TestCase {
         assertEquals('H', z.abbreviation);
         assertEquals('t', t.abbreviation);
 
-        assertArrayEquals(new int[] {3}, x.sourceDimensions);
-        assertArrayEquals(new int[] {2}, y.sourceDimensions);
-        assertArrayEquals(new int[] {1}, z.sourceDimensions);
-        assertArrayEquals(new int[] {0}, t.sourceDimensions);
+        assertArrayEquals(new int[] {3}, x.gridDimensionIndices);
+        assertArrayEquals(new int[] {2}, y.gridDimensionIndices);
+        assertArrayEquals(new int[] {1}, z.gridDimensionIndices);
+        assertArrayEquals(new int[] {0}, t.gridDimensionIndices);
 
-        assertEquals(38, x.getSize());
-        assertEquals(19, y.getSize());
-        assertEquals( 4, z.getSize());
-        assertEquals( 1, t.getSize());
+        assertEquals(38, x.getMainSize().getAsLong());
+        assertEquals(19, y.getMainSize().getAsLong());
+        assertEquals( 4, z.getMainSize().getAsLong());
+        assertEquals( 1, t.getMainSize().getAsLong());
+
+        if (includeRuntimeDimension) {
+            final Axis r = axes[4];
+            assertEquals('t', r.abbreviation);
+            assertArrayEquals(new int[] {0}, r.gridDimensionIndices);
+            assertEquals(1, r.getMainSize().getAsLong());
+        }
     }
 
     /**

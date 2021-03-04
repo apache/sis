@@ -67,7 +67,7 @@ public final strictfp class BandSelectImageTest extends TestCase {
      * @param  icm          {@code true} for using index color model, or {@code false} for scaled color model.
      */
     private void createImage(final int numBands, final int checkedBand, final boolean icm) {
-        image = new TiledImageMock(DataBuffer.TYPE_BYTE, numBands, 0, 0, WIDTH, HEIGHT, WIDTH, HEIGHT, 0, 0);
+        image = new TiledImageMock(DataBuffer.TYPE_BYTE, numBands, 0, 0, WIDTH, HEIGHT, WIDTH, HEIGHT, 0, 0, false);
         image.initializeAllTiles(checkedBand);
         final Random random = new Random();
         for (int i=0; i<numBands; i++) {

@@ -40,7 +40,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -136,8 +136,20 @@ public class DefaultReleasability extends ISOMetadata implements Releasability {
      *
      * @param  newValues  the new parties.
      */
-    public void getAddressees(final Collection<? extends Responsibility> newValues) {
+    public void setAddressees(final Collection<? extends Responsibility> newValues) {
         addressees = writeCollection(newValues, addressees, Responsibility.class);
+    }
+
+    /**
+     * Sets the parties to which the release statement applies.
+     *
+     * @param  newValues  the new parties.
+     *
+     * @deprecated Renamed {@link #setAddressees(Collection)}.
+     */
+    @Deprecated
+    public void getAddressees(final Collection<? extends Responsibility> newValues) {
+        setAddressees(newValues);
     }
 
     /**
@@ -177,7 +189,19 @@ public class DefaultReleasability extends ISOMetadata implements Releasability {
      *
      * @param  newValues  the new components.
      */
-    public void getDisseminationConstraints(final Collection<? extends Restriction> newValues) {
+    public void setDisseminationConstraints(final Collection<? extends Restriction> newValues) {
         disseminationConstraints = writeCollection(newValues, disseminationConstraints, Restriction.class);
+    }
+
+    /**
+     * Sets the components in determining releasability.
+     *
+     * @param  newValues  the new components.
+     *
+     * @deprecated Renamed {@link #setDisseminationConstraints(Collection)}.
+     */
+    @Deprecated
+    public void getDisseminationConstraints(final Collection<? extends Restriction> newValues) {
+        setDisseminationConstraints(newValues);
     }
 }

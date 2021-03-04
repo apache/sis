@@ -41,7 +41,7 @@ import org.junit.Test;
  * Tested transformations are:
  *
  * <ul>
- *   <li>Simple case based on linear calculations (easier to debug).</li>
+ *   <li>Simple case based on sinusoidal calculations (easier to debug).</li>
  *   <li>From NTF to RGF93 using a NTv2 grid.</li>
  *   <li>From NAD27 to NAD83 using a NADCON grid.</li>
  * </ul>

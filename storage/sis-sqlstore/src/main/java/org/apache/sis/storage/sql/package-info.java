@@ -26,7 +26,7 @@
  * by {@link org.opengis.feature.AttributeType}.
  *
  * <p>The storage of spatial features in SQL databases is described by the
- * <a href="http://www.opengeospatial.org/standards/sfs">OGC Simple feature access - Part 2: SQL option</a>
+ * <a href="https://www.ogc.org/standards/sfs">OGC Simple feature access - Part 2: SQL option</a>
  * international standard, also known as ISO 19125-2. Implementation of geometric types and operations must
  * be provided by the database (sometime through an extension, for example PostGIS on PostgreSQL databases).
  * This Java package uses those provided types and operations.</p>

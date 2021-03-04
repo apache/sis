@@ -59,7 +59,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @since   1.1
  * @module
  */
-@SuppressWarnings("serial")     // Not intended to be serialized.
+@SuppressWarnings({"serial","CloneableImplementsClone"})            // Not intended to be serialized.
 public final class PropertyView extends CompoundFormat<Object> {
     /**
      * The current property value. This is used for detecting changes.
