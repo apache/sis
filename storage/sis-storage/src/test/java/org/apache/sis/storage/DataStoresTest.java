@@ -16,8 +16,11 @@
  */
 package org.apache.sis.storage;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +34,7 @@ import org.apache.sis.internal.storage.xml.StoreTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 
 import static org.apache.sis.test.Assert.*;
 
@@ -91,6 +95,39 @@ public final strictfp class DataStoresTest extends TestCase {
         }
         exec.awaitTermination(10, TimeUnit.SECONDS);        // Wait will be much shorter in practice.
         assertTrue(exec.isTerminated());
+    }
+
+    /**
+     * Ensure that when no datastore is available for a given input, intermediate errors launched by providers (in case
+     * of a bug) are accessible by the caller, and not completely hidden.
+     *
+     * @throws Exception Any error not planned to occur.
+     */
+    @Test
+    public void discovery_must_be_resilient_to_arbitrary_provider_errors() throws Exception {
+        final InputStream mockInput = new ByteArrayInputStream(new byte[0]);
+        final DataStoreRegistry dsr = new DataStoreRegistry(DataStoresTest.class.getClassLoader());
+        try {
+            dsr.probeContentType(mockInput);
+            fail("We should not have found any matching datastore");
+        } catch (RuntimeException e) {
+            Assertions.assertTrue(
+                    e instanceof FailingProvider.SystematicFailure ||
+                            Arrays.stream(e.getSuppressed())
+                                    .anyMatch(err -> err instanceof FailingProvider.SystematicFailure),
+                    "Arbitrary provider errors should not be completely hidden"
+            );
+        }
+
+        try (DataStore dataStore = dsr.open(mockInput)) {
+            fail("We should not have found any matching datastore");
+        } catch (UnsupportedStorageException e) {
+            Assertions.assertTrue(
+                    Arrays.stream(e.getSuppressed())
+                            .anyMatch(err -> err instanceof FailingProvider.SystematicFailure),
+                    "Arbitrary provider errors should not be completely hidden"
+            );
+        }
     }
 
     /**

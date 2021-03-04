@@ -16,11 +16,13 @@
  */
 package org.apache.sis.storage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -166,6 +168,7 @@ final class DataStoreRegistry {
         Boolean matchCondition = (extension != null && !extension.isEmpty()) ? Boolean.TRUE : null;
         final List<ProbeProviderPair> needMoreBytes = new LinkedList<>();
         ProbeProviderPair selected = null;
+        List<RuntimeException> providerErrors = new ArrayList<>(4);
         try {
 search:     do {
                 /*
@@ -186,7 +189,13 @@ search:     do {
                         accept = (md != null && ArraysExt.containsIgnoreCase(md.fileSuffixes(), extension)) == matchCondition;
                     }
                     if (accept) {
-                        final ProbeResult probe = provider.probeContent(connector);
+                        ProbeResult probe;
+                        try {
+                            probe = provider.probeContent(connector);
+                        } catch (RuntimeException e) {
+                            providerErrors.add(e);
+                            probe = ProbeResult.UNSUPPORTED_STORAGE;
+                        }
                         if (probe.isSupported()) {
                             /*
                              * Stop at the first provider claiming to be able to read the storage.
@@ -226,7 +235,12 @@ search:     do {
                 while (!needMoreBytes.isEmpty() && connector.prefetch()) {
                     for (final Iterator<ProbeProviderPair> it = needMoreBytes.iterator(); it.hasNext();) {
                         final ProbeProviderPair p = it.next();
-                        p.probe = p.provider.probeContent(connector);
+                        try {
+                            p.probe = p.provider.probeContent(connector);
+                        } catch (RuntimeException e) {
+                            providerErrors.add(e);
+                            p.probe = ProbeResult.UNSUPPORTED_STORAGE;
+                        }
                         if (p.probe.isSupported()) {
                             selected = p;
                             break search;
@@ -265,7 +279,19 @@ search:     do {
         if (open && selected == null) {
             @SuppressWarnings("null")
             final String name = connector.getStorageName();
-            throw new UnsupportedStorageException(null, Resources.Keys.UnknownFormatFor_1, name);
+            final UnsupportedStorageException mainError = new UnsupportedStorageException(null, Resources.Keys.UnknownFormatFor_1, name);
+            if (!providerErrors.isEmpty()) {
+                for (Exception providerError : providerErrors) {
+                    mainError.addSuppressed(providerError);
+                }
+            }
+            throw mainError;
+        } else if (selected == null && !providerErrors.isEmpty()) {
+            // No valid datastore found, but some errors have been post-poned until now
+            final Iterator<RuntimeException> it = providerErrors.iterator();
+            final RuntimeException promotedError = it.next();
+            while (it.hasNext()) promotedError.addSuppressed(it.next());
+            throw promotedError;
         }
         return selected;
     }
