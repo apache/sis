@@ -95,11 +95,12 @@ public class StrictStorageConnector implements AutoCloseable {
      * To know how many bytes are available, refer to the buffer {@link ByteBuffer#remaining() remaining byte count}.
      * User <em>do not</em> need to rewind buffer after use. It is the storage connector responsability.
      *
-     * @param operator User operation to perform against preovided buffer.
-     * @param <T>
-     * @return
-     * @throws DataStoreException
-     * @throws IOException
+     * @param operator User operation to perform against provided buffer.
+     * @param <T> Type of result produced by user operator.
+     * @return The value computed by input operator.
+     * @throws UnsupportedStorageException If queried storage type cannot be accessed in current context.
+     * @throws IOException If given operator throws IOException on execution.
+     * @throws DataStoreException If an error occurs while fetching queried storage.
      */
     public <T> T useAsBuffer(StorageOperatingFunction<ByteBuffer, T> operator) throws DataStoreException, IOException {
         return doUnderControl(() -> {
@@ -110,6 +111,9 @@ public class StrictStorageConnector implements AutoCloseable {
         });
     }
 
+    /**
+     * Specialization of {@link #useAs(Class, StorageOperatingFunction)} for {@link ImageInputStream ImageIO API}.
+     */
     public <T> T useAsImageInputStream(StorageOperatingFunction<ImageInputStream, T> operator) throws IOException, DataStoreException {
         return doUnderControl(() -> {
             ImageInputStream stream = getOrFail(ImageInputStream.class);
@@ -119,9 +123,13 @@ public class StrictStorageConnector implements AutoCloseable {
             try ( Closeable rewindOnceDone = stream::reset ) {
                 result = operator.apply(stream);
             }
-            if (stream.getStreamPosition() != positionCtrl) {
+            final long rewindPosition = stream.getStreamPosition();
+            if (rewindPosition != positionCtrl) {
                 concurrentFlag = -1; // mark this connector as closed/not valid anymore
-                throw new DataStoreException("Operator has messed with stream marks");
+                throw new StorageControlException(String.format(
+                        "Operator has messed with stream marks. Rewind should have positioned at %d, but ended at %d",
+                        positionCtrl, rewindPosition
+                ), ImageInputStream.class);
             }
             return result;
         });
@@ -129,23 +137,41 @@ public class StrictStorageConnector implements AutoCloseable {
 
     /**
      * Temporarily expose storage through queried interface/class to be used by a user defined operator.
-     * Note that provided storage is checked after use, to ensure it has not been corrupted by input operator.
+     * Notes:
+     * <ul>
+     *     <li>
+     *         This method handles mark before / rewind after usage. User responsability is to not leave additional
+     *         marks unrewinded. Therefore, if you just need to sequentially read input, you don't have to mark/rewind
+     *         the storage.
+     *     </li>
+     *     <li>
+     *         Provided storage is checked after use, to ensure it has not been corrupted by input operator. If control
+     *         fails, a {@link StorageControlException} is raised.
+     *     </li>
+     * </ul>
      *
      * @param storageType Storage access interface to provide to the operator.
      * @param operator The operator that will access storage to compute a result.
      * @param <S> Storage class
      * @param <T> Type of result computed by user operator.
      * @return The value computed by user operator.
-     * @throws IOException If given operator throws IOException on execution.
      * @throws UnsupportedStorageException If queried storage type cannot be accessed in current context.
+     * @throws StorageControlException If connector has detected storage corruption after operator usage.
+     * @throws IOException If given operator throws IOException on execution.
      * @throws DataStoreException If an error occurs while fetching queried storage.
      */
-    public <S, T> T useAs(Class<T> storageType, StorageOperatingFunction<S, T> operator) throws IOException, DataStoreException {
+    public <S, T> T useAs(Class<S> storageType, StorageOperatingFunction<? super S, ? extends T> operator) throws IOException, DataStoreException {
         if (ByteBuffer.class.isAssignableFrom(storageType)) return useAsBuffer((StorageOperatingFunction<ByteBuffer, T>) operator);
         else if (ImageInputStream.class.isAssignableFrom(storageType)) return useAsImageInputStream((StorageOperatingFunction<ImageInputStream, T>) operator);
-        else if (URI.class.isAssignableFrom(storageType)) return ((StorageOperatingFunction<URI, T>) operator).apply(getURI().orElseThrow(() -> new UnsupportedStorageException("Cannot acquire an URI")));
-        else if (Path.class.isAssignableFrom(storageType)) return ((StorageOperatingFunction<Path, T>) operator).apply(getPath().orElseThrow(() -> new UnsupportedStorageException("Cannot acquire a path")));
-        else if (File.class.isAssignableFrom(storageType)) return ((StorageOperatingFunction<File, T>) operator).apply(getPath().map(p -> p.toFile()).orElseThrow(() -> new UnsupportedStorageException("Cannot acquire a file")));
+        else if (URI.class.isAssignableFrom(storageType)) return ((StorageOperatingFunction<URI, T>) operator).apply(
+                getURI().orElseThrow(() -> new UnsupportedStorageException("Cannot acquire an URI"))
+        );
+        else if (Path.class.isAssignableFrom(storageType)) return ((StorageOperatingFunction<Path, T>) operator).apply(
+                getPath().orElseThrow(() -> new UnsupportedStorageException("Cannot acquire a path"))
+        );
+        else if (File.class.isAssignableFrom(storageType)) return ((StorageOperatingFunction<File, T>) operator).apply(
+                getPath().map(p -> p.toFile()).orElseThrow(() -> new UnsupportedStorageException("Cannot acquire a file"))
+        );
         else throw new UnsupportedStorageException("Queried storage type is not supported yet: "+storageType);
     }
 
@@ -234,5 +260,26 @@ public class StrictStorageConnector implements AutoCloseable {
     @FunctionalInterface
     public interface StorageOperatingFunction<I, O> {
         O apply(I storage) throws IOException, DataStoreException;
+    }
+
+    public class StorageControlException extends RuntimeException {
+        public final Class<?> storageType;
+
+        public StorageControlException(Class<?> storageType) {
+            this(null, null, storageType);
+        }
+
+        public StorageControlException(String message, Class<?> storageType) {
+            this(message, null, storageType);
+        }
+
+        public StorageControlException(Throwable cause, Class<?> storageType) {
+            this(null, cause, storageType);
+        }
+
+        public StorageControlException(String message, Throwable cause, Class<?> storageType) {
+            super(message, cause);
+            this.storageType = storageType;
+        }
     }
 }

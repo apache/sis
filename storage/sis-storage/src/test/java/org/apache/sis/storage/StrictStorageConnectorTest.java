@@ -3,12 +3,12 @@ package org.apache.sis.storage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.StrictStorageConnector.StorageControlException;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -94,7 +94,7 @@ public class StrictStorageConnectorTest {
                     return 0;
                 });
                 fail("We should have detected something has gone wrong");
-            } catch (DataStoreException e) {
+            } catch (StorageControlException e) {
                 // Expected behavior: connector has detected that rewind did not work properly.
             }
         }
