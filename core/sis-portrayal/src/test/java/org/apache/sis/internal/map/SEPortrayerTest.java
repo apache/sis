@@ -704,6 +704,42 @@ public class SEPortrayerTest extends TestCase {
         assertNotNull(type.getProperty("description"));
     }
 
+    /**
+     * Test a geometry expression do not affect portraying bbox filtering.
+     */
+    @Test
+    public void testGeometryExpression() {
+
+        final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
+        symbolizer.geometry = filterFactory.function("ST_Centroid", filterFactory.property("geom"));
+
+        final MockRule rule = new MockRule();
+        rule.symbolizers().add(symbolizer);
+
+        final MockStyle style = new MockStyle();
+        final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
+        style.featureTypeStyles().add(fts);
+        fts.rules().add(rule);
+
+        final GeneralEnvelope env = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
+        env.setRange(0, 9, 11);
+        env.setRange(1, 19, 21);
+
+        final MapLayer fishLayer = new MapLayer();
+        fishLayer.setData(fishes);
+        fishLayer.setStyle(style);
+        final MapLayer boatLayer = new MapLayer();
+        boatLayer.setData(boats);
+        boatLayer.setStyle(style);
+        final MapLayers layers = new MapLayers();
+        layers.getComponents().add(fishLayer);
+        layers.getComponents().add(boatLayer);
+
+        final Set<Match> presentations = present(layers, env);
+        assertEquals(1, presentations.size());
+        assertTrue(presentations.contains(new Match("2", fishLayer, fishes, symbolizer)));
+    }
+
     private static class Match {
         private final String identifier;
         private final MapLayer layer;
