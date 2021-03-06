@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.text.ParseException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -42,11 +43,16 @@ import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.cs.DefaultCartesianCS;
+import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
+import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
+import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.io.wkt.WKTFormat;
+import org.apache.sis.measure.Units;
 
 import static org.apache.sis.internal.referencing.Formulas.LINEAR_TOLERANCE;
 import static org.apache.sis.internal.referencing.Formulas.ANGULAR_TOLERANCE;
@@ -887,7 +893,15 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * Convenience method for creating a compound CRS.
      */
     private static CompoundCRS compound(final String name, final CoordinateReferenceSystem... components) {
-        return new DefaultCompoundCRS(Collections.singletonMap(CompoundCRS.NAME_KEY, name), components);
+        return new DefaultCompoundCRS(properties(name), components);
+    }
+
+    /**
+     * Returns property map with a value assigned to the "name" property.
+     * This is a convenience method for construction of geodetic objects.
+     */
+    private static Map<String,String> properties(final String name) {
+        return Collections.singletonMap(CoordinateReferenceSystem.NAME_KEY, name);
     }
 
     /**
@@ -1024,5 +1038,49 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
             0,   0,  0,   1
         }), ((LinearTransform) transform).getMatrix(), STRICT);
         validate();
+    }
+
+    /**
+     * Tests conversion between two engineering CRS.
+     *
+     * @throws FactoryException if the operation can not be created.
+     */
+    @Test
+    public void testEngineeringCRS() throws FactoryException {
+        DefaultEngineeringCRS sourceCRS = createEngineering("Screen display", AxisDirection.DISPLAY_DOWN);
+        DefaultEngineeringCRS targetCRS = createEngineering("Another device", AxisDirection.DISPLAY_DOWN);
+        try {
+            finder.createOperation(sourceCRS, targetCRS);
+            fail("Should not create operation between CRS of different datum.");
+        } catch (OperationNotFoundException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("A test CRS"));
+        }
+        targetCRS = createEngineering("Screen display", AxisDirection.DISPLAY_UP);
+        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
+        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+
+        transform = operation.getMathTransform();
+        assertInstanceOf("transform", LinearTransform.class, transform);
+        assertEquals("sourceDimensions", 2, transform.getSourceDimensions());
+        assertEquals("targetDimensions", 2, transform.getTargetDimensions());
+        Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 3, new double[] {
+            1,  0,  0,
+            0, -1,  0,
+            0,  0,  1
+        }), ((LinearTransform) transform).getMatrix(), STRICT);
+        validate();
+    }
+
+    /**
+     * Constructs an axis the given abbreviation and axis direction.
+     */
+    private static DefaultEngineeringCRS createEngineering(final String datumName, final AxisDirection yDirection) {
+        return new DefaultEngineeringCRS(properties("A test CRS"),
+                new DefaultEngineeringDatum(properties(datumName)),
+                new DefaultCartesianCS(properties("A test CS"),
+                        new DefaultCoordinateSystemAxis(properties("x"), "x", AxisDirection.DISPLAY_RIGHT, Units.METRE),
+                        new DefaultCoordinateSystemAxis(properties("y"), "y", yDirection, Units.METRE)));
     }
 }

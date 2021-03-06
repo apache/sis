@@ -574,9 +574,9 @@ next:       for (final Class<?> candidate : candidates) {
     }
 
     /**
-     * Returns {@code true} if the two specified objects implements exactly the same set
-     * of interfaces. Only interfaces assignable to {@code baseInterface} are compared.
-     * Declaration order doesn't matter.
+     * Returns {@code true} if the two specified objects implements exactly the same set of interfaces.
+     * Only interfaces assignable to {@code baseInterface} are compared.
+     * Declaration order does not matter.
      *
      * <div class="note"><b>Example:</b>
      * in ISO 19111, different interfaces exist for different coordinate system (CS) geometries
@@ -585,14 +585,14 @@ next:       for (final Class<?> candidate : candidates) {
      *
      * {@preformat java
      *     if (implementSameInterfaces(cs1, cs2, CoordinateSystem.class)) {
-     *         // The two Coordinate System are of the same kind.
+     *         // The two Coordinate Systems are of the same kind.
      *     }
      * }
      * </div>
      *
-     * @param object1  the first object to check for interfaces.
-     * @param object2  the second object to check for interfaces.
-     * @param baseInterface  the parent of all interfaces to check.
+     * @param  object1  the first object to check for interfaces.
+     * @param  object2  the second object to check for interfaces.
+     * @param  baseInterface  the parent of all interfaces to check.
      * @return {@code true} if both objects implement the same set of interfaces,
      *         considering only sub-interfaces of {@code baseInterface}.
      */

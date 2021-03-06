@@ -353,6 +353,26 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         }
         ////////////////////////////////////////////////////////////////////////////////
         ////                                                                        ////
+        ////                Any single CRS  ↔  CRS of the same type                 ////
+        ////                                                                        ////
+        ////////////////////////////////////////////////////////////////////////////////
+        if (sourceCRS instanceof SingleCRS && targetCRS instanceof SingleCRS) {
+            final Datum sourceDatum = ((SingleCRS) sourceCRS).getDatum();
+            final Datum targetDatum = ((SingleCRS) targetCRS).getDatum();
+            if (equalsIgnoreMetadata(sourceDatum, targetDatum)) try {
+                /*
+                 * Because the CRS type is determined by the datum type (sometime completed by the CS type),
+                 * having equivalent datum and compatible CS should be a sufficient criterion.
+                 */
+                return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS,
+                                CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
+                                                                   targetCRS.getCoordinateSystem())));
+            } catch (IllegalArgumentException | IncommensurableException e) {
+                throw new FactoryException(notFoundMessage(sourceCRS, targetCRS), e);
+            }
+        }
+        ////////////////////////////////////////////////////////////////////////////////
+        ////                                                                        ////
         ////                        Compound  ↔  various CRS                        ////
         ////                                                                        ////
         ////////////////////////////////////////////////////////////////////////////////
