@@ -289,27 +289,27 @@ public abstract class Grid extends NamedElement {
      * this method because this CRS will be used for adjusting axis order or for completion if grid mapping does not include
      * information for all dimensions.</p>
      *
-     * @param  decoder               the decoder for which CRS are constructed.
-     * @param  warnings              previous warnings, for avoiding to log the same message twice. Can be null.
-     * @param  linearizationTargets  CRS to use instead of CRS inferred by this method, or null or empty if none.
-     * @param  reorderGridToCRS      an affine transform doing a final step in a "grid to CRS" transform for ordering axes.
+     * @param  decoder           the decoder for which CRS are constructed.
+     * @param  warnings          previous warnings, for avoiding to log the same message twice. Can be null.
+     * @param  linearizations    contains CRS to use instead of CRS inferred by this method, or null or empty if none.
+     * @param  reorderGridToCRS  an affine transform doing a final step in a "grid to CRS" transform for ordering axes.
      *         Not used by this method, but may be modified for taking in account axis order changes caused by replacements
-     *         defined in {@code linearizationTargets}. Ignored (can be null) if {@code linearizationTargets} is null.
+     *         defined in {@code linearizations}. Ignored (can be null) if {@code linearizations} is null.
      * @return the CRS for this grid geometry, or {@code null}.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if the CRS can not be constructed.
      */
     final CoordinateReferenceSystem getCoordinateReferenceSystem(final Decoder decoder, final List<Exception> warnings,
-            final List<CoordinateReferenceSystem> linearizationTargets, final Matrix reorderGridToCRS)
+            final List<GridCacheValue> linearizations, final Matrix reorderGridToCRS)
             throws IOException, DataStoreException
     {
-        final boolean isCached = (linearizationTargets == null) || linearizationTargets.isEmpty();
-        if (isCached & isCRSDetermined) {
+        final boolean useCache = (linearizations == null) || linearizations.isEmpty();
+        if (useCache & isCRSDetermined) {
             return crs;
         } else try {
-            if (isCached) isCRSDetermined = true;               // Set now for avoiding new attempts if creation fail.
-            final CoordinateReferenceSystem result = CRSBuilder.assemble(decoder, this, linearizationTargets, reorderGridToCRS);
-            if (isCached) crs = result;
+            if (useCache) isCRSDetermined = true;               // Set now for avoiding new attempts if creation fail.
+            final CoordinateReferenceSystem result = CRSBuilder.assemble(decoder, this, linearizations, reorderGridToCRS);
+            if (useCache) crs = result;
             return result;
         } catch (FactoryException | NullArgumentException ex) {
             if (isNewWarning(ex, warnings)) {
@@ -448,7 +448,7 @@ findFree:       for (int srcDim : axis.gridDimensionIndices) {                  
              * two-dimensional localization grid. Those transforms require two variables, i.e. "two-dimensional"
              * axes come in pairs.
              */
-            final List<CoordinateReferenceSystem> linearizationTargets = new ArrayList<>();
+            final List<GridCacheValue> linearizations = new ArrayList<>();
             for (int i=0; i<nonLinears.size(); i++) {         // Length of 'nonLinears' may change in this loop.
                 if (nonLinears.get(i) == null) {
                     for (int j=i; ++j < nonLinears.size();) {
@@ -476,7 +476,7 @@ findFree:       for (int srcDim : axis.gridDimensionIndices) {                  
                                  * Replace the first transform by the two-dimensional localization grid and
                                  * remove the other transform. Removals need to be done in arrays too.
                                  */
-                                nonLinears.set(i, grid.transform);
+                                nonLinears.set(i, grid.gridToCRS);
                                 nonLinears.remove(j);
                                 final int n = nonLinears.size() - j;
                                 System.arraycopy(deferred,             j+1, deferred,             j, n);
@@ -484,7 +484,9 @@ findFree:       for (int srcDim : axis.gridDimensionIndices) {                  
                                 if (otherDim < srcDim) {
                                     gridDimensionIndices[i] = otherDim;     // Index of the first dimension.
                                 }
-                                grid.getLinearizationTarget(linearizationTargets);
+                                if (grid.linearizationTarget != null) {
+                                    linearizations.add(grid);
+                                }
                                 break;                                      // Continue the 'i' loop.
                             }
                         }
@@ -506,7 +508,7 @@ findFree:       for (int srcDim : axis.gridDimensionIndices) {                  
              * This modification happens only if `Convention.linearizers()` specified transforms to apply on the
              * localization grid for making it more linear. This is a profile-dependent feature.
              */
-            final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(decoder, null, linearizationTargets, affine);
+            final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(decoder, null, linearizations, affine);
             /*
              * Final transform, as the concatenation of the non-linear transforms followed by the affine transform.
              * We concatenate the affine transform last because it may change axis order.

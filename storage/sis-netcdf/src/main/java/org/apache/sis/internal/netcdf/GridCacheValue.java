@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Map;
 import java.util.Set;
-import java.util.List;
+import java.util.Optional;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -29,6 +29,7 @@ import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 /**
  * A value cached in {@link GridCacheKey.Global#CACHE}.
  * This is used for sharing common localization grids between different netCDF files.
+ * {@code GridCacheValue}s are associated to {@link GridCacheKey}s in a hash map.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -39,13 +40,23 @@ final class GridCacheValue {
     /**
      * The transform from grid coordinates to geographic or projected coordinates.
      */
-    final MathTransform transform;
+    final MathTransform gridToCRS;
 
     /**
-     * The target CRS of {@link #transform} if different than the CRS inferred by {@link CRSBuilder}.
+     * The target CRS of {@link #gridToCRS} if different than the CRS inferred by {@link CRSBuilder}.
      * This field is non-null if the target CRS has been changed by application of a linearizer.
      */
-    private CoordinateReferenceSystem targetCRS;
+    final CoordinateReferenceSystem linearizationTarget;
+
+    /**
+     * Whether axes need to be swapped in order to have the same direction before and after linearization.
+     * For example if input coordinates stored in the localization grid have (east, north) directions, then
+     * {@link #linearizationTarget} coordinates shall have (east, north) directions as well.
+     * This flag specifies whether input coordinates must be swapped for making above condition true.
+     *
+     * <p>This flag assumes that {@link #linearizationTarget} has two dimensions.</p>
+     */
+    final boolean axisSwap;
 
     /**
      * Creates a new "grid to CRS" together with target CRS.
@@ -53,25 +64,19 @@ final class GridCacheValue {
     GridCacheValue(final Set<Linearizer> linearizers, final LocalizationGridBuilder grid,
                    final MathTransformFactory factory) throws FactoryException
     {
-        transform = grid.create(factory);
-        grid.linearizer(true).ifPresent((e) -> {
-            final String name = e.getKey();
+        gridToCRS = grid.create(factory);
+        final Optional<Map.Entry<String,MathTransform>> e = grid.linearizer(true);
+        if (e.isPresent()) {
+            final String name = e.get().getKey();
             for (final Linearizer linearizer : linearizers) {
                 if (name.equals(linearizer.name())) {
-                    targetCRS = linearizer.getTargetCRS();
-                    break;
+                    linearizationTarget = linearizer.getTargetCRS();
+                    axisSwap = linearizer.axisSwap();
+                    return;
                 }
             }
-        });
-    }
-
-    /**
-     * Adds the target CRS to the given list if that CRS is different than the CRS inferred by {@link CRSBuilder}.
-     * This is an element of the list to provide to {@link CRSBuilder#assemble(Decoder, Grid, List, Matrix)}.
-     */
-    final void getLinearizationTarget(final List<CoordinateReferenceSystem> list) {
-        if (targetCRS != null) {
-            list.add(targetCRS);
         }
+        linearizationTarget = null;
+        axisSwap = false;
     }
 }

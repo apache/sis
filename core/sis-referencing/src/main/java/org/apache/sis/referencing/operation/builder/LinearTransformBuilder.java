@@ -1545,6 +1545,14 @@ search:         for (int j=domain(); --j >= 0;) {
     }
 
     /**
+     * Returns the transform computed by {@link #create(MathTransformFactory)},
+     * of {@code null} if that method has not yet been invoked.
+     */
+    final LinearTransform transform() {
+        return transform;
+    }
+
+    /**
      * Returns a string representation of this builder for debugging purpose.
      * Current implementation shows the following information:
      *

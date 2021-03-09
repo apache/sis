@@ -34,13 +34,20 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
  * A two-dimensional non-linear transform to try in an attempt to make a localization grid more linear.
  * Non-linear transforms are tested in "trials and errors" and the one resulting in best correlation
  * coefficients is selected.
+ *
+ * <p>Before linearization, source coordinates may be in (latitude, longitude) or (longitude, latitude) order
+ * depending on the order of dimensions in netCDF variable. But after linearization, axes will be in a fixed
+ * order determined by {@link #targetCRS}. In other words, netCDF dimension order shall be ignored if a
+ * linearization is applied.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -84,8 +91,17 @@ public final class Linearizer {
 
     /**
      * The target coordinate reference system after application of the non-linear transform.
+     * May depend on the netCDF file being read (for example for choosing a UTM zone).
      */
     private CoordinateReferenceSystem targetCRS;
+
+    /**
+     * Whether axes need to be swapped in order to have the same direction before and after the transform.
+     * For example if input coordinates have (east, north) directions, then output coordinates shall have
+     * (east, north) directions as well. This flag specifies whether input coordinates must be swapped for
+     * making above condition true.
+     */
+    private boolean axisSwap;
 
     /**
      * Creates a new linearizer working on the specified datum.
@@ -110,6 +126,17 @@ public final class Linearizer {
      */
     final CoordinateReferenceSystem getTargetCRS() {
         return targetCRS;
+    }
+
+    /**
+     * Returns whether axes need to be swapped in order to have the same direction before and after the transform.
+     * For example if input coordinates have (east, north) directions, then output coordinates shall have (east, north)
+     * directions as well. This flag specifies whether input coordinates must be swapped for making above condition true.
+     *
+     * @see GridCacheValue#axisSwap
+     */
+    final boolean axisSwap() {
+        return axisSwap;
     }
 
     /**
@@ -141,25 +168,28 @@ public final class Linearizer {
                 throw new AssertionError(type);
             }
             /*
-             * Create a Universal Transverse Mercator (UTM) projection
-             * for the zone containing a point in the middle of the grid.
+             * Create a Universal Transverse Mercator (UTM) projection for the zone containing a point in
+             * the middle of the grid. We apply `Math.signum(…)` on the latitude for avoiding stereographic
+             * projections near poles and for avoiding Norway and Svalbard special cases.
              */
             case UTM: {
                 final Envelope bounds = grid.getSourceEnvelope(false);
                 final double[] median = grid.getControlPoint(
                         (int) Math.round(bounds.getMedian(0)),
                         (int) Math.round(bounds.getMedian(1)));
-                ProjectedCRS crs = datum.universal(median[ydim], median[xdim]);
+                final ProjectedCRS crs = datum.universal(Math.signum(median[ydim]), median[xdim]);
+                assert ReferencingUtilities.startsWithNorthEast(crs.getBaseCRS().getCoordinateSystem());
                 transform = crs.getConversionFromBase().getMathTransform();
                 targetCRS = crs;
                 break;
             }
         }
         /*
-         * Above transform expects (latitude, longitude) inputs. If grid coordinates
-         * are in (longitude, latitude) order, we need to swap input coordinates.
+         * Above transform expects (latitude, longitude) inputs (verified by assertion).
+         * If grid coordinates are in (longitude, latitude) order, we must swap inputs.
          */
-        if (xdim < ydim) {
+        axisSwap = ydim < xdim;
+        if (!axisSwap) {
             final Matrix3 m = new Matrix3();
             m.m00 = m.m11 = 0;
             m.m01 = m.m10 = 1;
@@ -199,6 +229,11 @@ public final class Linearizer {
                 final MathTransform transform = linearizer.gridToTargetCRS(grid, xdim, ydim);
                 projections.put(linearizer.name(), transform);
             }
+            /*
+             * Axis order before linearization was taken in account by above `gridToTargetCRS(…, xdim, ydim)`.
+             * Consequently arguments below shall specify only the dimensions to select without reordering axes.
+             * Note that after linearization, axes will be in a fixed order determined by the CRS.
+             */
             grid.addLinearizers(projections, false, Math.min(xdim, ydim), Math.max(xdim, ydim));
         }
     }
@@ -207,22 +242,27 @@ public final class Linearizer {
      * Given CRS components inferred by {@link CRSBuilder}, replaces CRS components in the dimensions
      * where linearization has been applied. The CRS components to replace are inferred from axis directions.
      *
+     * <p>This static method is defined here for keeping in a single class all codes related to linearization.</p>
+     *
      * @param  components        the components of the compound CRS that {@link CRSBuilder} inferred.
      * @param  replacements      the {@link #targetCRS} of linearizations.
      * @param  reorderGridToCRS  an affine transform doing a final step in a "grid to CRS" transform for ordering axes.
      *         Not used by this method, but modified for taking in account axis order changes caused by replacements.
      */
-    static void replaceInCompoundCRS(final SingleCRS[] components,
-            final List<CoordinateReferenceSystem> replacements, final Matrix reorderGridToCRS)
-            throws DataStoreReferencingException
+    static void replaceInCompoundCRS(final SingleCRS[] components, final List<GridCacheValue> replacements,
+                                     final Matrix reorderGridToCRS) throws DataStoreReferencingException
     {
         Matrix original = null;
-search: for (final CoordinateReferenceSystem targetCRS : replacements) {
+search: for (final GridCacheValue cache : replacements) {
+            final CoordinateReferenceSystem targetCRS = cache.linearizationTarget;
             int firstDimension = 0;
             for (int i=0; i < components.length; i++) {
                 final SingleCRS sourceCRS = components[i];
                 final int[] r = AxisDirections.indicesOfColinear(sourceCRS.getCoordinateSystem(), targetCRS.getCoordinateSystem());
                 if (r != null) {
+                    if (cache.axisSwap) {
+                        ArraysExt.swap(r, 0, 1);
+                    }
                     for (int j=0; j<r.length; j++) {
                         if (r[j] != j) {
                             final int oldRow = r[j] + firstDimension;

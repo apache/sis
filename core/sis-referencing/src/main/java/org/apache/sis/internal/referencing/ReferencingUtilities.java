@@ -365,6 +365,20 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
+     * Returns {@code true} if the given coordinate system has at least 2 dimensions and
+     * the 2 first axis have (North, East) directions. This method is used for assertions.
+     *
+     * @param  cs  the coordinate system to verify.
+     * @return whether the coordinate system starts with (North, East) direction.
+     */
+    public static boolean startsWithNorthEast(final CoordinateSystem cs) {
+        final int dimension = cs.getDimension();
+        return (dimension >= 2)
+                && AxisDirection.NORTH.equals(cs.getAxis(0).getDirection())
+                && AxisDirection.EAST .equals(cs.getAxis(1).getDirection());
+    }
+
+    /**
      * Returns the properties of the given object but potentially with a modified name.
      * Current implement truncates the name at the first non-white character which is not
      * a valid Unicode identifier part, with the following exception:

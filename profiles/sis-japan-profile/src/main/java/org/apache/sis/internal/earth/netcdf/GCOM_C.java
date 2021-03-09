@@ -129,10 +129,17 @@ public final class GCOM_C extends Convention {
 
     /**
      * Mapping from ACDD or CF-Convention attribute names to names of attributes used by GCOM-C.
+     * This map does not include attributes for geographic extent because the "Lower_left_latitude",
+     * "Lower_left_longitude", "Lower_right_latitude", <i>etc.</i> attributes are difficult to use.
+     * They are corners in the grid with no clear relationship with "real world" West and East bounds.
+     * We have no way to detect anti-meridian spanning (the {@code left > right} test is useless) and
+     * the minimal latitude may be in the middle of a border. Consequently a bounding box made from
+     * the corner minimal and maximal coordinates is not guaranteed to encompass the whole data,
+     * and may even contain no data at all.
      */
     private static final Map<String,String> ATTRIBUTES;
     static {
-        final Map<String,String> m = new HashMap<>();
+        final Map<String,String> m = new HashMap<>(16);
         m.put(AttributeNames.TITLE,               "Product_name");             // identification­Info / citation / title
         m.put(AttributeNames.PRODUCT_VERSION,     "Product_version");          // identification­Info / citation / edition
         m.put(AttributeNames.IDENTIFIER.TEXT,     "Product_file_name");        // identification­Info / citation / identifier / code

@@ -57,8 +57,8 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
-import org.apache.sis.math.Vector;
 
 
 /**
@@ -171,20 +171,20 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
      * Infers a new CRS for a {@link Grid}.
      *
      * <h4>CRS replacements</h4>
-     * The {@code linearizationTargets} argument allows to replace some CRSs inferred by this method by hard-coded CRSs.
-     * This is non-empty only when reading a netCDF file for a specific profile, i.e. a file decoded with a subclass of
-     * {@link Convention}. The CRS to be replaced is inferred from the axis directions.
+     * The {@code linearizations} argument allows to replace some CRSs inferred by this method by hard-coded CRSs.
+     * This is non-empty only when reading a netCDF file for a specific profile, i.e. a file decoded with a subclass
+     * of {@link Convention}. The CRS to be replaced is inferred from the axis directions.
      *
-     * @param  decoder               the decoder of the netCDF from which the CRS are constructed.
-     * @param  grid                  the grid for which the CRS are constructed.
-     * @param  linearizationTargets  CRS to use instead of CRS inferred by this method, or null or empty if none.
-     * @param  reorderGridToCRS      an affine transform doing a final step in a "grid to CRS" transform for ordering axes.
+     * @param  decoder           the decoder of the netCDF from which the CRS are constructed.
+     * @param  grid              the grid for which the CRS are constructed.
+     * @param  linearizations    contains CRS to use instead of CRS inferred by this method, or null or empty if none.
+     * @param  reorderGridToCRS  an affine transform doing a final step in a "grid to CRS" transform for ordering axes.
      *         Not used by this method, but may be modified for taking in account axis order changes caused by replacements
-     *         defined in {@code linearizationTargets}. Ignored (can be null) if {@code linearizationTargets} is null.
+     *         defined in {@code linearizations}. Ignored (can be null) if {@code linearizations} is null.
      * @return coordinate reference system from the given axes, or {@code null}.
      */
     public static CoordinateReferenceSystem assemble(final Decoder decoder, final Grid grid,
-            final List<CoordinateReferenceSystem> linearizationTargets, final Matrix reorderGridToCRS)
+            final List<GridCacheValue> linearizations, final Matrix reorderGridToCRS)
             throws DataStoreException, FactoryException, IOException
     {
         final List<CRSBuilder<?,?>> builders = new ArrayList<>(4);
@@ -200,8 +200,8 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
          * We do not verify the datum; we assume that the linearizer that built the CRS
          * was consistent with `Convention.defaultHorizontalCRS(false)`.
          */
-        if ((linearizationTargets != null) && !linearizationTargets.isEmpty()) {
-            Linearizer.replaceInCompoundCRS(components, linearizationTargets, reorderGridToCRS);
+        if ((linearizations != null) && !linearizations.isEmpty()) {
+            Linearizer.replaceInCompoundCRS(components, linearizations, reorderGridToCRS);
         }
         switch (components.length) {
             case 0: return null;
@@ -426,12 +426,10 @@ previous:   for (int i=components.size(); --i >= 0;) {
             for (int i=cs.getDimension(); --i >= 0;) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
                 if (RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
-                    final Vector coordinates = axes[i].read();                          // Typically a cached vector.
-                    final int length = coordinates.size();
-                    if (length != 0) {
-                        final double first = coordinates.doubleValue(0);
-                        final double last  = coordinates.doubleValue(length - 1);
-                        if (Math.min(first, last) >= 0 && Math.max(first, last) > axis.getMaximumValue()) {
+                    final NumberRange<?> range = axes[i].read().range();                // Vector is cached.
+                    if (range != null) {
+                        // Note: minimum/maximum are not necessarily first and last values in the vector.
+                        if (range.getMinDouble() >= 0 && range.getMaxDouble() > axis.getMaximumValue()) {
                             referenceSystem = (SingleCRS) AbstractCRS.castOrCopy(referenceSystem)
                                                 .forConvention(AxesConvention.POSITIVE_RANGE);
                             break;

@@ -37,6 +37,7 @@ import org.apache.sis.math.Vector;
  * </ul>
  *
  * The base class if for local cache. The inner class is for the global cache.
+ * {@code GridCacheKey}s are associated to {@link GridCacheValue}s in a hash map.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -67,7 +68,9 @@ class GridCacheKey {
     }
 
     /**
-     * Creates a global key from the given local key.
+     * Creates a global key from the given local key. This constructor is for {@link Global} construction only,
+     * because the information stored by this constructor are not sufficient for testing if two grids are equal.
+     * The {@link Global} subclass will add a MD5 checksum.
      */
     private GridCacheKey(final GridCacheKey keyLocal) {
         width  = keyLocal.width;
