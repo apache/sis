@@ -204,7 +204,7 @@ abstract class AbstractParser implements Parser {
     /**
      * Returns the name of the method invoked from {@link #getPublicFacade()}.
      * This information is used for logging purposes only.
-     * Another possible value is {@codd "parse"}.
+     * Another possible value is {@code "parse"}.
      */
     String getFacadeMethod() {
         return "createFromWKT";

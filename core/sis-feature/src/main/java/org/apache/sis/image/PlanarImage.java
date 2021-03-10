@@ -524,8 +524,8 @@ public abstract class PlanarImage implements RenderedImage {
      *   <li>{@code "width"}       — image width is not an integer multiple of tile width.</li>
      *   <li>{@code "numYTiles"}   — number of tiles on the Y axis is inconsistent with image height.</li>
      *   <li>{@code "height"}      — image height is not an integer multiple of tile height.</li>
-     *   <li>{@code "tileX"}       — {@ode minTileX} and/or {@code tileGridXOffset} is inconsistent.</li>
-     *   <li>{@code "tileY"}       — {@ode minTileY} and/or {@code tileGridYOffset} is inconsistent.</li>
+     *   <li>{@code "tileX"}       — {@code minTileX} and/or {@code tileGridXOffset} is inconsistent.</li>
+     *   <li>{@code "tileY"}       — {@code minTileY} and/or {@code tileGridYOffset} is inconsistent.</li>
      * </ul>
      *
      * Subclasses may perform additional checks. For example some subclasses also check specifically

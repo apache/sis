@@ -56,7 +56,7 @@ import org.apache.sis.util.logging.Logging;
  * Callers need to create {@code WraparoundTransform} instances explicitly if discontinuities are acceptable.
  *
  * <h2>Subclassing</h2>
- * In order to control the discontinuity problem, it may be necessary to subclass {@codd WraparoundTransform}
+ * In order to control the discontinuity problem, it may be necessary to subclass {@code WraparoundTransform}
  * and override the {@link #shift(double)} method. For example a subclass may control the wraparounds in a way
  * to prevent the {@linkplain org.apache.sis.geometry.AbstractEnvelope#getLowerCorner() lower corner} of an envelope
  * to become greater than the {@linkplain org.apache.sis.geometry.AbstractEnvelope#getUpperCorner() upper corner}.
