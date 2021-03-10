@@ -659,7 +659,8 @@ public class GridGeometry implements LenientComparable, Serializable {
         } else {
             this.envelope = target;
             if (extent != null) {
-                if (orientation != null && orientation.canReorderGridAxis) {
+                // A non-null `sourceDimensions` implies non-null `orientation`.
+                if (sourceDimensions != null && orientation.canReorderGridAxis) {
                     if (!ArraysExt.isRange(0, sourceDimensions)) {
                         extent = extent.reorder(sourceDimensions);
                     }
