@@ -18,10 +18,11 @@ package org.apache.sis.storage.netcdf;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.Optional;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.file.NoSuchFileException;
+import java.nio.charset.Charset;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -290,34 +291,38 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * @throws IOException if an error occurred while opening the netCDF file.
      * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
-    static Decoder decoder(final StoreListeners listeners, final StorageConnector connector)
+    static Decoder decoder(final StoreListeners listeners, final StorageConnector connector) throws IOException, DataStoreException {
+        return decoder(listeners, new StrictStorageConnector(connector));
+    }
+
+    static Decoder decoder(final StoreListeners listeners, final StrictStorageConnector connector)
             throws IOException, DataStoreException
     {
         final GeometryLibrary geomlib = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
         Decoder decoder;
-        Object keepOpen;
-        final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
-        if (input != null) try {
-            decoder = new ChannelDecoder(input, connector.getOption(OptionKey.ENCODING), geomlib, listeners);
-            keepOpen = input;
+        Class<?> viewType;
+        try {
+            final Charset charset = connector.getOption(OptionKey.ENCODING);
+            decoder = connector.useAs(ChannelDataInput.class, input -> new ChannelDecoder(input, charset, geomlib, listeners));
+            viewType = ChannelDataInput.class;
+        } catch (UnsupportedStorageException e) {
+            final Object storage = connector.unsafe().getStorage();
+            decoder = createByReflection(storage, true, geomlib, listeners);
+            viewType = storage.getClass();
         } catch (DataStoreException | ArithmeticException e) {
-            final String path = connector.getStorageAs(String.class);
-            if (path != null) try {
-                decoder = createByReflection(path, false, geomlib, listeners);
-                keepOpen = path;
-            } catch (IOException | DataStoreException s) {
+            Optional<String> path = connector.getPathAsString();
+            if (!path.isPresent()) throw e;
+            try {
+                decoder = createByReflection(path.get(), false, geomlib, listeners);
+                viewType = String.class;
+            } catch (Exception s) {
                 e.addSuppressed(s);
                 throw e;
-            } else {
-                throw e;
             }
-        } else {
-            keepOpen = connector.getStorage();
-            decoder = createByReflection(keepOpen, true, geomlib, listeners);
         }
 
         if (decoder != null) {
-            connector.closeAllExcept(keepOpen);
+            connector.commit(viewType);
             decoder.applyOtherConventions();
         }
         return decoder;
