@@ -3,6 +3,7 @@ package org.apache.sis.storage;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
@@ -72,7 +73,7 @@ public class StrictStorageConnector implements AutoCloseable {
 
     private final StorageConnector storage;
 
-    private Object committedStorage;
+    private WeakReference<Object> committedStorage;
     private volatile int concurrentFlag;
 
     public StrictStorageConnector(StorageConnector storage) {
@@ -86,7 +87,7 @@ public class StrictStorageConnector implements AutoCloseable {
             doUnderControl(() -> {
                 concurrentFlag = -1;
                 storage.closeAllExcept(view);
-                committedStorage = view;
+                committedStorage = (view == null ? null : new WeakReference<>(view));
                 return null;
             });
         } catch (IOException e) {
@@ -259,7 +260,7 @@ public class StrictStorageConnector implements AutoCloseable {
 
     @Override
     public void close() throws IOException, DataStoreException {
-        storage.closeAllExcept(committedStorage);
+        closeAllExcept(committedStorage == null ? null : committedStorage.get());
     }
 
     public <T> T getOption(OptionKey<T> key) {
