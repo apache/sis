@@ -149,35 +149,35 @@ public class DefaultRecordSchema implements RecordSchema {
     }
 
     /**
-     * Creates a new record type of the given name, which will contain the given members.
-     * Members are declared in iteration order.
+     * Creates a new record type of the given name, which will contain the given fields.
+     * Fields are declared in iteration order.
      *
      * @param  typeName  the record type name.
-     * @param  members   the name of each record member, together with the expected value types.
-     * @return a record type of the given name and members.
-     * @throws IllegalArgumentException if a record already exists for the given name but with different members.
+     * @param  fields    the name of each record field, together with the expected value types.
+     * @return a record type of the given name and fields.
+     * @throws IllegalArgumentException if a record already exists for the given name but with different fields.
      */
-    public RecordType createRecordType(final CharSequence typeName, final Map<CharSequence,Class<?>> members)
+    public RecordType createRecordType(final CharSequence typeName, final Map<CharSequence,Class<?>> fields)
             throws IllegalArgumentException
     {
         ArgumentChecks.ensureNonNull("typeName", typeName);
-        ArgumentChecks.ensureNonNull("members",  members);
+        ArgumentChecks.ensureNonNull("fields",   fields);
         final TypeName name = nameFactory.createTypeName(namespace, typeName);
-        final Map<CharSequence,Type> memberTypes = ObjectConverters.derivedValues(members, CharSequence.class, toTypes);
+        final Map<CharSequence,Type> fieldTypes = ObjectConverters.derivedValues(fields, CharSequence.class, toTypes);
         RecordType record;
         synchronized (description) {
             record = description.get(typeName);
             if (record == null) {
-                record = new DefaultRecordType(name, this, memberTypes, nameFactory);
+                record = new DefaultRecordType(name, this, fieldTypes, nameFactory);
                 description.put(name, record);
                 return record;
             }
         }
         /*
-         * If a record type already exists for the given name, verify that it contains the same members.
+         * If a record type already exists for the given name, verify that it contains the same fields.
          */
-        final Iterator<Map.Entry<CharSequence,Class<?>>> it1 = members.entrySet().iterator();
-        final Iterator<Map.Entry<MemberName,Type>> it2 = record.getMemberTypes().entrySet().iterator();
+        final Iterator<Map.Entry<CharSequence,Class<?>>> it1 = fields.entrySet().iterator();
+        final Iterator<Map.Entry<MemberName,Type>> it2 = record.getFieldTypes().entrySet().iterator();
         boolean hasNext;
         while ((hasNext = it1.hasNext()) == it2.hasNext()) {
             if (!hasNext) {
