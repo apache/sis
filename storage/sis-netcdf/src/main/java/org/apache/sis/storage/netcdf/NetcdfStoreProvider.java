@@ -26,6 +26,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
+import org.apache.sis.storage.StrictStorageConnector;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Resources;
@@ -179,21 +181,33 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      */
     @Override
     public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
+        return probeContentStrict(new StrictStorageConnector(connector));
+    }
+
+    private ProbeResult probeContentStrict(final StrictStorageConnector connector) throws DataStoreException {
         int     version     = 0;
         boolean hasVersion  = false;
         boolean isSupported = false;
-        final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
-        if (buffer != null) {
-            if (buffer.remaining() < Integer.BYTES) {
-                return ProbeResult.INSUFFICIENT_BYTES;
-            }
-            final int header = buffer.getInt(buffer.position());
-            if ((header & 0xFFFFFF00) == ChannelDecoder.MAGIC_NUMBER) {
+        try {
+            Integer header = connector.useAsBuffer(buffer -> {
+                if (buffer.remaining() < Integer.BYTES) {
+                    return null;
+                }
+                return buffer.getInt(buffer.position());
+            });
+
+            if (header == null)  return ProbeResult.INSUFFICIENT_BYTES;
+            else if ((header & 0xFFFFFF00) == ChannelDecoder.MAGIC_NUMBER) {
                 hasVersion  = true;
                 version     = header & 0xFF;
                 isSupported = (version >= 1 && version <= ChannelDecoder.MAX_VERSION);
             }
+        } catch (UnsupportedStorageException e) {
+            // Can happen on special inputs, in which case we'll fallback on UCAR driver
+        } catch (IOException e) {
+            throw new DataStoreException("Storage usage error", e);
         }
+
         /*
          * If we failed to check using the embedded decoder, tries using the UCAR library.
          * The UCAR library is an optional dependency. If that library is present and the
@@ -204,7 +218,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
          * has special cases for "file:", "http:", "nodods:" and "slurp:" protocols.
          */
         if (!isSupported) {
-            final String path = connector.getStorageAs(String.class);
+            final String path = connector.getPathAsString().orElse(null);
             if (path != null) {
                 ensureInitialized(false);
                 final Method method = canOpenFromPath;
@@ -235,7 +249,8 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                  * We check classnames instead of netcdfFileClass.isInstance(storage)
                  * in order to avoid loading the UCAR library if not needed.
                  */
-                for (Class<?> type = connector.getStorage().getClass(); type != null; type = type.getSuperclass()) {
+                final Class<?> baseStorageType = connector.unsafe().getStorage().getClass();
+                for (Class<?> type = baseStorageType; type != null; type = type.getSuperclass()) {
                     if (UCAR_CLASSNAME.equals(type.getName())) {
                         isSupported = true;
                         break;

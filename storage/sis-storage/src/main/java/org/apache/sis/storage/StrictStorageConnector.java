@@ -252,6 +252,15 @@ public class StrictStorageConnector implements AutoCloseable {
         storage.closeAllExcept(committedStorage);
     }
 
+    /**
+     *
+     * @return A connector that does not provides control over resource usage. It does not automatically rewind
+     * automatically used resources. That means that resource lifecycle becomes <em>entirely</em> caller responsability.
+     */
+    public StorageConnector unsafe() {
+        return storage;
+    }
+
     private interface StorageCallable<V> extends Callable<V> {
         @Override
         V call() throws IOException, DataStoreException;
