@@ -315,8 +315,11 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             keepOpen = connector.getStorage();
             decoder = createByReflection(keepOpen, true, geomlib, listeners);
         }
-        connector.closeAllExcept(keepOpen);
-        decoder.applyOtherConventions();
+
+        if (decoder != null) {
+            connector.closeAllExcept(keepOpen);
+            decoder.applyOtherConventions();
+        }
         return decoder;
     }
 
