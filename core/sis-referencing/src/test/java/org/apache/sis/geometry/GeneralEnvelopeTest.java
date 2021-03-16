@@ -16,20 +16,22 @@
  */
 package org.apache.sis.geometry;
 
+import java.time.Instant;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.apache.sis.measure.Range;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
 import static org.opengis.test.Validators.*;
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
-import static org.apache.sis.referencing.crs.HardCodedCRS.GEOID_ZXY;
 
 
 /**
@@ -651,10 +653,30 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     @Test
     public void testHorizontal() {
         GeneralEnvelope envelope = new GeneralEnvelope(new double[] {4, 5, -8}, new double[] {8, 7, -3});
-        envelope.setCoordinateReferenceSystem(GEOID_ZXY);
+        envelope.setCoordinateReferenceSystem(HardCodedCRS.GEOID_ZXY);
         envelope = envelope.horizontal();
         assertEnvelopeEquals(envelope, 5, -8, 7, -3);
         assertSame(WGS84, envelope.getCoordinateReferenceSystem());
+    }
+
+    /**
+     * Tests {@link GeneralEnvelope#getTimeRange()} and {@link GeneralEnvelope#setTimeRange(Instant, Instant)}.
+     * The temporal coordinates in this test are days elapsed since November 17, 1858 at 00:00 UTC.
+     */
+    @Test
+    public void testTimeRange() {
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_3D_TIME);
+        envelope.setRange(0, -20, 25);
+        envelope.setRange(1, -30, 12);
+        envelope.setRange(2, 58840, 59000.75);
+        final Range<Instant> range = envelope.getTimeRange().get();
+        assertEquals(Instant.parse("2019-12-23T00:00:00Z"), range.getMinValue());
+        assertEquals(Instant.parse("2020-05-31T18:00:00Z"), range.getMaxValue());
+
+        envelope.setTimeRange(Instant.parse("2015-04-10T06:00:00Z"),
+                              Instant.parse("2018-12-29T12:00:00Z"));
+        assertArrayEquals(new double[] {-20, -30, 57122.25}, envelope.getLowerCorner().getCoordinate(), STRICT);
+        assertArrayEquals(new double[] { 25,  12, 58481.50}, envelope.getUpperCorner().getCoordinate(), STRICT);
     }
 
     /**
