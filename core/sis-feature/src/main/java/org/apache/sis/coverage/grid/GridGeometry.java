@@ -944,7 +944,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         Instant[] times = timeRange;
         if (times == null) {
             final TemporalAccessor t = TemporalAccessor.of(getCoordinateReferenceSystem(envelope), 0);
-            times = (t != null) ? t.getTimeRange(envelope) : TemporalAccessor.EMPTY;
+            times = (t != null) ? t.getTimeBounds(envelope) : TemporalAccessor.EMPTY;
             timeRange = times;
         }
         return times;

@@ -482,6 +482,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *         if no temporal dimension has been found in this envelope.
      *
      * @since 1.0
+     *
+     * @see #getTimeRange()
+     * @see Envelopes#toTimeRange(Envelope)
      */
     public boolean setTimeRange(final Instant startTime, final Instant endTime) {
         final TemporalAccessor t = TemporalAccessor.of(crs, 0);

@@ -22,6 +22,8 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Objects;
+import java.util.Optional;
+import java.time.Instant;
 import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
@@ -42,9 +44,11 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.measure.Range;
 import org.apache.sis.math.Vector;
 
 import static java.lang.Double.doubleToLongBits;
+import org.apache.sis.internal.referencing.TemporalAccessor;
 import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
@@ -545,6 +549,23 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
             }
         }
         return value;
+    }
+
+    /**
+     * Returns the time range of the first dimension associated to a temporal CRS.
+     * This convenience method converts floating point values to instants using
+     * {@link org.apache.sis.referencing.crs.DefaultTemporalCRS#toInstant(double)}.
+     *
+     * @return time range in this given envelope.
+     *
+     * @see Envelopes#toTimeRange(Envelope)
+     * @see GeneralEnvelope#setTimeRange(Instant, Instant)
+     *
+     * @since 1.1
+     */
+    public Optional<Range<Instant>> getTimeRange() {
+        final TemporalAccessor t = TemporalAccessor.of(getCoordinateReferenceSystem(), 0);
+        return (t != null) ? Optional.of(t.getTimeRange(this)) : Optional.empty();
     }
 
     /**

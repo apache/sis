@@ -22,7 +22,9 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Set;
+import java.util.Optional;
 import java.util.ConcurrentModificationException;
+import java.time.Instant;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -44,6 +46,7 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.internal.referencing.TemporalAccessor;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -51,6 +54,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
+import org.apache.sis.measure.Range;
 import org.apache.sis.math.MathFunctions;
 
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
@@ -1026,4 +1030,27 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
         true,  false,
         false, false
     };
+
+    /**
+     * Returns the time range of the first dimension associated to a temporal CRS.
+     * This convenience method converts floating point values to instants using
+     * {@link org.apache.sis.referencing.crs.DefaultTemporalCRS#toInstant(double)}.
+     *
+     * @param  envelope  envelope from which to extract time range, or {@code null} if none.
+     * @return time range in the given envelope.
+     *
+     * @see AbstractEnvelope#getTimeRange()
+     * @see GeneralEnvelope#setTimeRange(Instant, Instant)
+     *
+     * @since 1.1
+     */
+    public static Optional<Range<Instant>> toTimeRange(final Envelope envelope) {
+        if (envelope != null) {
+            final TemporalAccessor t = TemporalAccessor.of(envelope.getCoordinateReferenceSystem(), 0);
+            if (t != null) {
+                return Optional.of(t.getTimeRange(envelope));
+            }
+        }
+        return Optional.empty();
+    }
 }
