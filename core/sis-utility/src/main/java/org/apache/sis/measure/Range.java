@@ -721,7 +721,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     }
 
     /**
-     * Formats this range using the provider formatter. This method is invoked when a
+     * Formats this range using the provided formatter. This method is invoked when a
      * {@code Range} object is formatted using the {@code "%s"} conversion specifier of
      * {@link Formatter}. Users don't need to invoke this method explicitly.
      *

@@ -31,6 +31,10 @@ import java.text.AttributedCharacterIterator;
 import java.text.FieldPosition;
 import java.text.ParseException;
 import java.text.ParsePosition;
+import java.time.format.FormatStyle;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.Temporal;
+import java.time.Instant;
 import java.security.AccessController;
 import javax.measure.Unit;
 import org.apache.sis.util.Numbers;
@@ -39,6 +43,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.internal.util.LocalizedParseException;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.FinalFieldSetter;
 import org.apache.sis.internal.util.Numerics;
 
@@ -94,7 +99,7 @@ import org.apache.sis.internal.util.Numerics;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see Range#toString()
  * @see <a href="https://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
@@ -358,8 +363,13 @@ public class RangeFormat extends Format implements Localized {
         } else if (Number.class.isAssignableFrom(elementType)) {
             elementFormat = NumberFormat.getNumberInstance(locale);
             unitFormat    = new UnitFormat(locale);
-        } else if (Date.class.isAssignableFrom(elementType)) {
+        } else if (Date.class.isAssignableFrom(elementType) || elementType == Instant.class) {
             elementFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
+            unitFormat    = null;
+        } else if (Temporal.class.isAssignableFrom(elementType)) {
+            final FormatStyle dateStyle = StandardDateFormat.hasDateFields(elementType) ? FormatStyle.SHORT : null;
+            final FormatStyle timeStyle = StandardDateFormat.hasTimeFields(elementType) ? FormatStyle.SHORT : null;
+            elementFormat = new DateTimeFormatterBuilder().appendLocalized(dateStyle, timeStyle).toFormatter(locale).toFormat();
             unitFormat    = null;
         } else {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, elementType));
@@ -528,7 +538,8 @@ public class RangeFormat extends Format implements Localized {
 
     /**
      * Casts the given object to a {@code Range}, or throws an {@code IllegalArgumentException}
-     * if the given object is not a {@code Range} instance.
+     * if the given object is not a {@code Range} instance. This is used for validating argument
+     * of {@link Object} type in formatting methods.
      */
     private static Range<?> cast(final Object range) throws IllegalArgumentException {
         if (range instanceof Range<?>) {
@@ -610,8 +621,8 @@ public class RangeFormat extends Format implements Localized {
         for (; field <= UNIT_FIELD; field++) {
             final Object value;
             switch (field) {
-                case MIN_VALUE_FIELD: value = minValue; break;
-                case MAX_VALUE_FIELD: value = maxValue; break;
+                case MIN_VALUE_FIELD: value = toFormattable(minValue); break;
+                case MAX_VALUE_FIELD: value = toFormattable(maxValue); break;
                 case UNIT_FIELD:      value = range.unit(); break;
                 default: throw new AssertionError(field);
             }
@@ -1016,7 +1027,8 @@ public class RangeFormat extends Format implements Localized {
     }
 
     /**
-     * Converts the given value to the a {@link #elementType} type.
+     * Converts the given value to an instance of the {@link #elementType} type.
+     * This method is partially the converse of {@link #toFormattable(Object)}.
      */
     @SuppressWarnings("unchecked")
     private Object convert(final Object value) throws UnconvertibleObjectException {
@@ -1026,8 +1038,22 @@ public class RangeFormat extends Format implements Localized {
         if (value instanceof Number && Number.class.isAssignableFrom(elementType)) {
             return Numbers.cast((Number) value, (Class<? extends Number>) elementType);
         }
+        if (value instanceof Date && elementType == Instant.class) {
+            return ((Date) value).toInstant();
+        }
         throw new UnconvertibleObjectException(Errors.format(
                 Errors.Keys.IllegalClass_2, elementType, value.getClass()));
+    }
+
+    /**
+     * Converts the given object to a type that {@code format(…)} method can process.
+     * This method is partially the converse of {@link #convert(Object)}.
+     */
+    private Object toFormattable(final Object value) {
+        if (value instanceof Instant && elementType == Instant.class) {
+            return Date.from((Instant) value);
+        }
+        return value;
     }
 
     /**

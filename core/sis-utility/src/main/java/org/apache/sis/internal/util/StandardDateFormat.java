@@ -27,12 +27,14 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.time.DateTimeException;
 import java.time.Instant;
+import java.time.LocalTime;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalQuery;
@@ -50,9 +52,9 @@ import org.apache.sis.util.CharSequences;
  * the time is optional. For this class, "Standard" is interpreted as "close to ISO 19162 requirements",
  * which is not necessarily identical to other ISO standards.
  *
- * External users should use nothing else than the parsing and formatting methods.
+ * <p>External users should use nothing else than the parsing and formatting methods.
  * The methods for configuring the {@code DateFormat} instances may or may not work
- * depending on the branch.
+ * depending on the branch.</p>
  *
  * <p>The main usage for this class is Well Known Text (WKT) parsing and formatting.
  * ISO 19162 uses ISO 8601:2004 for the dates. Any precision is allowed: the date could have only the year,
@@ -309,6 +311,39 @@ replace:    if (Character.isWhitespace(c)) {
             }
         }
         return new Date(millis);
+    }
+
+    /**
+     * Returns {@code true} if objects of the given class have day, month and hour fields.
+     * This method is defined here for having a single class where to concentrate such heuristic rules.
+     * Note that {@link Instant} does not have date fields.
+     *
+     * @param  date  class of object to test (may be {@code null}).
+     * @return whether the given class is {@link LocalDate} or one of the classes with date + time.
+     *         This list may be expanded in future versions.
+     */
+    public static boolean hasDateFields(final Class<?> date) {
+        return date == LocalDate.class
+            || date == LocalDateTime.class
+            || date == OffsetDateTime.class
+            || date == ZonedDateTime.class;
+    }
+
+    /**
+     * Returns {@code true} if objects of the given class have time fields.
+     * This method is defined here for having a single class where to concentrate such heuristic rules.
+     * Note that {@link Instant} does not have hour fields.
+     *
+     * @param  date  class of object to test (may be {@code null}).
+     * @return whether the given class is {@link LocalTime}, {@link OffsetTime} or one of the classes with date + time.
+     *         This list may be expanded in future versions.
+     */
+    public static boolean hasTimeFields(final Class<?> date) {
+        return date == LocalTime.class
+            || date == OffsetTime.class
+            || date == LocalDateTime.class
+            || date == OffsetDateTime.class
+            || date == ZonedDateTime.class;
     }
 
     /**
