@@ -81,7 +81,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
      */
     @Override
     GeodeticCalculator create(final boolean normalized) {
-        testedEarth = new Calculator(normalized ? HardCodedCRS.WGS84 : HardCodedCRS.WGS84_φλ);
+        testedEarth = new Calculator(normalized ? HardCodedCRS.WGS84 : HardCodedCRS.WGS84_LATITUDE_FIRST);
         return testedEarth;
     }
 

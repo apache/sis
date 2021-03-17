@@ -298,7 +298,7 @@ public final strictfp class GridGeometryTest extends TestCase {
      */
     @Test
     public void testFromGeospatialEnvelope() {
-        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,   4.997,  15.003);
         final MathTransform gridToCRS = MathTransforms.linear(new Matrix3(
@@ -385,7 +385,7 @@ public final strictfp class GridGeometryTest extends TestCase {
      */
     @Test
     public void testFromExtentAndDisplayEnvelope() {
-        final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
+        final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         aoi.setRange(1,  40, 55);
         aoi.setRange(0, -10, 70);
         final GridExtent extent = new GridExtent(null,
@@ -530,7 +530,7 @@ public final strictfp class GridGeometryTest extends TestCase {
                    -0.05,  0,    53.0,
                     0,     0.1,  -8.0,
                     0,     0,     1)),
-                HardCodedCRS.WGS84_φλ);
+                HardCodedCRS.WGS84_LATITUDE_FIRST);
 
         final MathTransform tr = source.createTransformTo(target, PixelInCell.CELL_CENTER);
         assertMatrixEquals("createTransformTo", new Matrix3(

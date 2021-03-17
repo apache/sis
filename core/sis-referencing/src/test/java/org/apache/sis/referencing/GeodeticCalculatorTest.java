@@ -107,7 +107,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
      * @param  normalized  whether to force (longitude, latitude) axis order.
      */
     GeodeticCalculator create(final boolean normalized) {
-        final GeodeticCalculator c = GeodeticCalculator.create(normalized ? HardCodedCRS.SPHERE : HardCodedCRS.SPHERE_φλ);
+        final GeodeticCalculator c = GeodeticCalculator.create(normalized ? HardCodedCRS.SPHERE : HardCodedCRS.SPHERE_LATITUDE_FIRST);
         assertEquals(GeodeticCalculator.class, c.getClass());       // Expect the implementation with spherical formulas.
         return c;
     }

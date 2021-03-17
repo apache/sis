@@ -653,7 +653,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     @Test
     public void testHorizontal() {
         GeneralEnvelope envelope = new GeneralEnvelope(new double[] {4, 5, -8}, new double[] {8, 7, -3});
-        envelope.setCoordinateReferenceSystem(HardCodedCRS.GEOID_ZXY);
+        envelope.setCoordinateReferenceSystem(HardCodedCRS.GEOID_HEIGHT_FIRST);
         envelope = envelope.horizontal();
         assertEnvelopeEquals(envelope, 5, -8, 7, -3);
         assertSame(WGS84, envelope.getCoordinateReferenceSystem());
@@ -665,7 +665,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      */
     @Test
     public void testTimeRange() {
-        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_3D_TIME);
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_WITH_TIME);
         envelope.setRange(0, -20, 25);
         envelope.setRange(1, -30, 12);
         envelope.setRange(2, 58840, 59000.75);

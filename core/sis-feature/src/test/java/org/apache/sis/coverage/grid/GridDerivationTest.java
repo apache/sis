@@ -94,7 +94,7 @@ public final strictfp class GridDerivationTest extends TestCase {
      * Creates a grid geometry with the given extent and scale for testing purpose.
      * An arbitrary translation of (2,3) is added to the "grid to CRS" conversion.
      */
-    private static GridGeometry grid(int xmin, int ymin, int xmax, int ymax, int xScale, int yScale) throws TransformException {
+    private static GridGeometry grid(int xmin, int ymin, int xmax, int ymax, int xScale, int yScale) {
         GridExtent extent = new GridExtent(null, new long[] {xmin, ymin}, new long[] {xmax, ymax}, true);
         Matrix3 gridToCRS = new Matrix3();
         gridToCRS.m00 = xScale;
@@ -106,11 +106,9 @@ public final strictfp class GridDerivationTest extends TestCase {
 
     /**
      * Tests the construction from grid geometries having a linear "grid to CRS" conversion.
-     *
-     * @throws TransformException if an error occurred while computing the grid geometry.
      */
     @Test
-    public void testSubgridFromOtherGrid() throws TransformException {
+    public void testSubgridFromOtherGrid() {
         GridGeometry   source = grid(  10,   -20,  110,  180, 100, -300);     // Envelope x: [1200 … 11300]   y: [-53800 … 6500]
         GridGeometry   target = grid(2000, -1000, 9000, 8000,   2,   -1);     // Envelope x: [4200 … 18202]   y: [ -7501 … 1500]
         GridDerivation change = target.derive().subgrid(source);              // Envelope x: [4200 … 11300]   y: [ -7501 … 1500]
@@ -186,7 +184,7 @@ public final strictfp class GridDerivationTest extends TestCase {
     @Test
     @DependsOnMethod("testSubExtent")
     public void testSubgridFromEnvelope() throws TransformException {
-        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         envelope.setRange(0, -70, +80);
         envelope.setRange(1,   5,  15);
         final MathTransform gridToCRS = MathTransforms.linear(new Matrix3(
@@ -237,13 +235,11 @@ public final strictfp class GridDerivationTest extends TestCase {
      * Tests {@link GridDerivation#subgrid(Envelope, double...)} using an envelope in a CRS different than the
      * grid geometry CRS. This test constructs the same grid geometry than {@link #testSubgridFromEnvelope()}
      * and tests the same request with only axis order flipped.
-     *
-     * @throws TransformException if an error occurred during computation.
      */
     @Test
     @DependsOnMethod("testSubgridFromEnvelope")
-    public void testSubgridFromEnvelopeDifferentCRS() throws TransformException {
-        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
+    public void testSubgridFromEnvelopeDifferentCRS() {
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         envelope.setRange(0, -70, +80);
         envelope.setRange(1,   5,  15);
         final MathTransform gridToCRS = MathTransforms.linear(new Matrix3(
@@ -262,13 +258,13 @@ public final strictfp class GridDerivationTest extends TestCase {
         envelope.setRange(1, -50, +30);
         envelope.setRange(0,   8,  12);
         grid = grid.derive().subgrid(envelope, 2, 1).build();
-        assertSame(HardCodedCRS.WGS84_φλ, grid.getCoordinateReferenceSystem());
+        assertSame(HardCodedCRS.WGS84_LATITUDE_FIRST, grid.getCoordinateReferenceSystem());
         assertExtentEquals(new long[] {94, 40}, new long[] {95, 119}, grid.getExtent());
         /*
          * Before to check envelope, we need to restore the same axis order as specified in the grid geometry.
          * The envelope below is identical to the one used in `testSubgridFromEnvelope()`.
          */
-        envelope.setCoordinateReferenceSystem(HardCodedCRS.WGS84_φλ);
+        envelope.setCoordinateReferenceSystem(HardCodedCRS.WGS84_LATITUDE_FIRST);
         envelope.setRange(0, -50, +30);
         envelope.setRange(1,   8,  12);
         assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
@@ -315,7 +311,7 @@ public final strictfp class GridDerivationTest extends TestCase {
         final GridGeometry base = new GridGeometry(
                 PixelInCell.CELL_CORNER,
                 new AffineTransform2D(-0.02, 0, 0, 0.1, 55, 172),
-                new Envelope2D(HardCodedCRS.WGS84_φλ, 42, 172, 13, 51),
+                new Envelope2D(HardCodedCRS.WGS84_LATITUDE_FIRST, 42, 172, 13, 51),
                 GridRoundingMode.NEAREST);
 
         final GridGeometry expectedResult = base.derive()
@@ -628,7 +624,7 @@ public final strictfp class GridDerivationTest extends TestCase {
          * Test same envelope but with different axis order. The request uses a different CRS,
          * but the result shall stay in the same CRS than the initial grid geometry.
          */
-        request.setCoordinateReferenceSystem(HardCodedCRS.WGS84_φλ);
+        request.setCoordinateReferenceSystem(HardCodedCRS.WGS84_LATITUDE_FIRST);
         request.setRect(25, -5, 90, 100);
         grid2   = new GridGeometry(null, request, GridOrientation.HOMOTHETY);
         subgrid = grid1.derive().subgrid(grid2).build();

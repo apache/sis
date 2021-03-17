@@ -302,7 +302,7 @@ public final strictfp class CoordinateFormatTest extends TestCase {
     public void testSetGroundPrecision() {
         final CoordinateFormat format = new CoordinateFormat(Locale.FRANCE, null);
         final DirectPosition2D pos = new DirectPosition2D(40.123456789, 9.87654321);
-        format.setDefaultCRS(HardCodedCRS.WGS84_φλ);
+        format.setDefaultCRS(HardCodedCRS.WGS84_LATITUDE_FIRST);
         format.setGroundPrecision(Quantities.create(0.01, Units.GRAD));
         assertEquals("40°07,4′N 9°52,6′E", format.format(pos));
         format.setGroundPrecision(Quantities.create(0.01, Units.METRE));
@@ -317,7 +317,7 @@ public final strictfp class CoordinateFormatTest extends TestCase {
     public void testSetPrecisions() {
         final CoordinateFormat format = new CoordinateFormat(Locale.FRANCE, null);
         final DirectPosition2D pos = new DirectPosition2D(40.123456789, 9.87654321);
-        format.setDefaultCRS(HardCodedCRS.WGS84_φλ);
+        format.setDefaultCRS(HardCodedCRS.WGS84_LATITUDE_FIRST);
         format.setPrecisions(0.05, 0.0001);
         assertEquals("40°07′N 9°52′35,6″E", format.format(pos));
         assertArrayEquals("precisions", new double[] {1.0/60, 0.1/3600}, format.getPrecisions(), 1E-15);
@@ -336,7 +336,7 @@ public final strictfp class CoordinateFormatTest extends TestCase {
     public void testSetGroundAccuracy() throws ParseException {
         final CoordinateFormat format = new CoordinateFormat(Locale.FRANCE, null);
         final DirectPosition2D pos = new DirectPosition2D(40.123456789, 9.87654321);
-        format.setDefaultCRS(HardCodedCRS.WGS84_φλ);
+        format.setDefaultCRS(HardCodedCRS.WGS84_LATITUDE_FIRST);
         format.setPrecisions(0.05, 0.0001);
         format.setGroundAccuracy(Quantities.create(3, Units.KILOMETRE));
         assertEquals("40°07′N 9°52′35,6″E ± 3 km", format.format(pos));

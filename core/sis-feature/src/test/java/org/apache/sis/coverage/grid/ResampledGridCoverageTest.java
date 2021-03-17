@@ -295,7 +295,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     @Test
     public void testAxisSwap() throws TransformException {
         final GridCoverage2D source = createCoverage2D();
-        GridGeometry gg = new GridGeometry(null, CELL_CENTER, null, HardCodedCRS.WGS84_φλ);
+        GridGeometry gg = new GridGeometry(null, CELL_CENTER, null, HardCodedCRS.WGS84_LATITUDE_FIRST);
         final GridCoverage target = resample(source, gg);
         /*
          * We expect the same image since `ResampledGridCoverage` should have been

@@ -87,8 +87,8 @@ public final strictfp class WraparoundTransformTest extends TestCase {
     public void testOneAxis() throws TransformException {
         final AbstractCoordinateOperation op = new AbstractCoordinateOperation(
                 Collections.singletonMap(AbstractCoordinateOperation.NAME_KEY, "Wrapper"),
-                HardCodedCRS.WGS84_φλ,
-                HardCodedCRS.WGS84_φλ.forConvention(AxesConvention.POSITIVE_RANGE),
+                HardCodedCRS.WGS84_LATITUDE_FIRST,
+                HardCodedCRS.WGS84_LATITUDE_FIRST.forConvention(AxesConvention.POSITIVE_RANGE),
                 null, MathTransforms.scale(3, 5));
         /*
          * Transform should be  [scale & normalization]  →  [wraparound]  →  [denormalization].
@@ -145,8 +145,8 @@ public final strictfp class WraparoundTransformTest extends TestCase {
     public void testTwoAxes() throws TransformException {
         final AbstractCoordinateOperation op = new AbstractCoordinateOperation(
                 Collections.singletonMap(AbstractCoordinateOperation.NAME_KEY, "Wrapper"),
-                HardCodedCRS.WGS84_3D_TIME.forConvention(AxesConvention.POSITIVE_RANGE),
-                HardCodedCRS.WGS84_3D_TIME_CYCLIC, null, MathTransforms.scale(3, 2, 5));
+                HardCodedCRS.WGS84_WITH_TIME.forConvention(AxesConvention.POSITIVE_RANGE),
+                HardCodedCRS.WGS84_WITH_CYCLIC_TIME, null, MathTransforms.scale(3, 2, 5));
         /*
          * Transform should be  [scale & normalization]  →  [wraparound 1]  →  [wraparound 2]  →  [denormalization].
          * At first an affine transform existed between the two [wraparound] operations, but that affine transform

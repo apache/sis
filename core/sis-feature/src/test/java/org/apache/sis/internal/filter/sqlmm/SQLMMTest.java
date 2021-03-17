@@ -143,7 +143,7 @@ public final strictfp class SQLMMTest extends TestCase {
         /*
          * Test transform function using the full CRS object, then using only EPSG code.
          */
-        testTransform(feature, HardCodedCRS.WGS84_φλ, HardCodedCRS.WGS84_φλ);
+        testTransform(feature, HardCodedCRS.WGS84_LATITUDE_FIRST, HardCodedCRS.WGS84_LATITUDE_FIRST);
         testTransform(feature, "EPSG:4326", CommonCRS.WGS84.geographic());
     }
 
@@ -174,13 +174,13 @@ public final strictfp class SQLMMTest extends TestCase {
          * but we declare it in order to verify that the information is propagated to the result.
          */
         final Point geometry = geometryFactory.createPoint(new Coordinate(10, 20));
-        geometry.setUserData(HardCodedCRS.WGS84_φλ);
+        geometry.setUserData(HardCodedCRS.WGS84_LATITUDE_FIRST);
         geometry.setSRID(4326);
         /*
          * Execute the function and check the result.
          */
         final Polygon result = evaluate(Polygon.class, null, factory.function("ST_Buffer", factory.literal(geometry), factory.literal(1)));
-        assertEquals("userData", HardCodedCRS.WGS84_φλ, result.getUserData());
+        assertEquals("userData", HardCodedCRS.WGS84_LATITUDE_FIRST, result.getUserData());
         assertEquals("SRID", 4326, result.getSRID());
         final org.locationtech.jts.geom.Envelope env = result.getEnvelopeInternal();
         assertEquals( 9, env.getMinX(), STRICT);
@@ -204,12 +204,12 @@ public final strictfp class SQLMMTest extends TestCase {
             new Coordinate(30, 20)
         });
         geometry.setSRID(4326);
-        geometry.setUserData(HardCodedCRS.WGS84_φλ);
+        geometry.setUserData(HardCodedCRS.WGS84_LATITUDE_FIRST);
         /*
          * Execute the function and check the result.
          */
         final Point result = evaluate(Point.class, null, factory.function("ST_Centroid", factory.literal(geometry)));
-        assertEquals("userData", HardCodedCRS.WGS84_φλ, result.getUserData());
+        assertEquals("userData", HardCodedCRS.WGS84_LATITUDE_FIRST, result.getUserData());
         assertEquals("SRID", 4326, result.getSRID());
         assertEquals(20, result.getX(), STRICT);
         assertEquals(20, result.getY(), STRICT);
@@ -371,13 +371,13 @@ public final strictfp class SQLMMTest extends TestCase {
          * but we declare it in order to verify that the information is propagated to the result.
          */
         final LineString geometry = geometryFactory.createLineString(new Coordinate[]{new Coordinate(10, 20), new Coordinate(15, 20), new Coordinate(20, 20)});
-        geometry.setUserData(HardCodedCRS.WGS84_φλ);
+        geometry.setUserData(HardCodedCRS.WGS84_LATITUDE_FIRST);
         geometry.setSRID(4326);
         /*
          * Execute the function and check the result.
          */
         final LineString result = evaluate(LineString.class, null, factory.function("ST_Simplify", factory.literal(geometry), factory.literal(10)));
-        assertEquals("userData", HardCodedCRS.WGS84_φλ, result.getUserData());
+        assertEquals("userData", HardCodedCRS.WGS84_LATITUDE_FIRST, result.getUserData());
         assertEquals("SRID", 4326, result.getSRID());
         Coordinate[] coordinates = result.getCoordinates();
         assertEquals(2, coordinates.length);
@@ -398,13 +398,13 @@ public final strictfp class SQLMMTest extends TestCase {
          * but we declare it in order to verify that the information is propagated to the result.
          */
         final LineString geometry = geometryFactory.createLineString(new Coordinate[]{new Coordinate(10, 20), new Coordinate(15, 20), new Coordinate(20, 20)});
-        geometry.setUserData(HardCodedCRS.WGS84_φλ);
+        geometry.setUserData(HardCodedCRS.WGS84_LATITUDE_FIRST);
         geometry.setSRID(4326);
         /*
          * Execute the function and check the result.
          */
         final LineString result = evaluate(LineString.class, null, factory.function("ST_SimplifyPreserveTopology", factory.literal(geometry), factory.literal(10)));
-        assertEquals("userData", HardCodedCRS.WGS84_φλ, result.getUserData());
+        assertEquals("userData", HardCodedCRS.WGS84_LATITUDE_FIRST, result.getUserData());
         assertEquals("SRID", 4326, result.getSRID());
         Coordinate[] coordinates = result.getCoordinates();
         assertEquals(2, coordinates.length);

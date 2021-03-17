@@ -211,7 +211,7 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
      */
     @Test
     public void testToGeometryAxisSwapping() {
-        final GeneralEnvelope e = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
+        final GeneralEnvelope e = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         e.setRange(0,  2,  3);
         e.setRange(1, 89, 19);
         assertToGeometryEquals(e, WraparoundMethod.NONE,         89, 2,   89, 3,  19, 3,   19, 2,   89, 2);

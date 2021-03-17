@@ -237,7 +237,7 @@ public final strictfp class CRSTest extends TestCase {
         assertFalse(CRS.isHorizontalCRS(HardCodedCRS.TIME));
         assertFalse(CRS.isHorizontalCRS(HardCodedCRS.ELLIPSOIDAL_HEIGHT));
         assertTrue (CRS.isHorizontalCRS(HardCodedCRS.WGS84));
-        assertTrue (CRS.isHorizontalCRS(HardCodedCRS.WGS84_φλ));
+        assertTrue (CRS.isHorizontalCRS(HardCodedCRS.WGS84_LATITUDE_FIRST));
         assertFalse(CRS.isHorizontalCRS(HardCodedCRS.WGS84_3D));
         assertFalse(CRS.isHorizontalCRS(HardCodedCRS.GEOID_4D));
         assertFalse(CRS.isHorizontalCRS(HardCodedCRS.GEOCENTRIC));
@@ -253,9 +253,8 @@ public final strictfp class CRSTest extends TestCase {
         assertNull(CRS.getHorizontalComponent(HardCodedCRS.ELLIPSOIDAL_HEIGHT));
         assertNull(CRS.getHorizontalComponent(HardCodedCRS.GEOCENTRIC));
 
-        assertSame(HardCodedCRS.WGS84,    CRS.getHorizontalComponent(HardCodedCRS.WGS84));
-        assertSame(HardCodedCRS.WGS84_φλ, CRS.getHorizontalComponent(HardCodedCRS.WGS84_φλ));
-
+        assertSame(HardCodedCRS.WGS84,                 CRS.getHorizontalComponent(HardCodedCRS.WGS84));
+        assertSame(HardCodedCRS.WGS84_LATITUDE_FIRST,  CRS.getHorizontalComponent(HardCodedCRS.WGS84_LATITUDE_FIRST));
         assertEqualsIgnoreMetadata(HardCodedCRS.WGS84, CRS.getHorizontalComponent(HardCodedCRS.WGS84_3D));
     }
 
@@ -286,7 +285,7 @@ public final strictfp class CRSTest extends TestCase {
     public void testGetTemporalComponent() {
         assertNull(CRS.getTemporalComponent(HardCodedCRS.ELLIPSOIDAL_HEIGHT));
         assertNull(CRS.getTemporalComponent(HardCodedCRS.WGS84));
-        assertNull(CRS.getTemporalComponent(HardCodedCRS.WGS84_φλ));
+        assertNull(CRS.getTemporalComponent(HardCodedCRS.WGS84_LATITUDE_FIRST));
         assertNull(CRS.getTemporalComponent(HardCodedCRS.WGS84_3D));
 
         assertSame(HardCodedCRS.TIME, CRS.getTemporalComponent(HardCodedCRS.TIME));

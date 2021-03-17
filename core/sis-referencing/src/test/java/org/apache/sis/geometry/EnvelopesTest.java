@@ -295,7 +295,7 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
      */
     @Test
     public void testToTimeRange() {
-        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_3D_TIME);
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_WITH_TIME);
         envelope.setToNaN();
         envelope.setRange(2, 58840, 59000.75);
         final Range<Instant> range = Envelopes.toTimeRange(envelope).get();

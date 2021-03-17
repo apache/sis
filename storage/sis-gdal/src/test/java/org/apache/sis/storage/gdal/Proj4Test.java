@@ -41,6 +41,6 @@ public final strictfp class Proj4Test extends TestCase {
     @Test
     public void testGeographicDefinition() throws FactoryException {
         assertEquals("+proj=latlon +a=6378137.0 +b=6356752.314245179 +pm=0.0 +axis=enu", Proj4.definition(HardCodedCRS.WGS84));
-        assertEquals("+proj=latlon +a=6378137.0 +b=6356752.314245179 +pm=0.0 +axis=neu", Proj4.definition(HardCodedCRS.WGS84_φλ));
+        assertEquals("+proj=latlon +a=6378137.0 +b=6356752.314245179 +pm=0.0 +axis=neu", Proj4.definition(HardCodedCRS.WGS84_LATITUDE_FIRST));
     }
 }

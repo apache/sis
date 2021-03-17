@@ -209,7 +209,7 @@ public final strictfp class EnvelopeOperationTest extends TestCase {
     @Test
     public void different_crs_on_geometries() {
         initialize();
-        final Envelope result = compute(HardCodedCRS.WGS84, HardCodedCRS.WGS84_φλ);
+        final Envelope result = compute(HardCodedCRS.WGS84, HardCodedCRS.WGS84_LATITUDE_FIRST);
         final Envelope expected = new Envelope2D(HardCodedCRS.WGS84, 4, 7, 11, 10);
         assertSame(HardCodedCRS.WGS84, result.getCoordinateReferenceSystem());
         assertEnvelopeEquals(expected, result, STRICT);

@@ -51,7 +51,7 @@ public final strictfp class DefinitionVerifierTest extends TestCase {
      */
     @Test
     public void testConformCRS() throws FactoryException {
-        final DefaultGeographicCRS crs = HardCodedCRS.WGS84_φλ;
+        final DefaultGeographicCRS crs = HardCodedCRS.WGS84_LATITUDE_FIRST;
         final DefinitionVerifier ver = DefinitionVerifier.withAuthority(crs, null, false);
         assertNotNull("Should replace by EPSG:4326", ver);
         assertNotSame("Should replace by EPSG:4326", crs, ver.authoritative);

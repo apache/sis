@@ -35,6 +35,9 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * Collection of coordinate reference systems for testing purpose.
  * This class defines geographic, vertical, temporal and engineering CRS, but no projected CRS.
  * For projected CRS, see {@link org.apache.sis.referencing.operation.HardCodedConversions}.
+ * Except specified otherwise, all geographic CRS have (longitude, latitude) axis order.
+ * This is the opposite of traditional axis order, but it matches the order used internally
+ * by Apache SIS.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -50,7 +53,7 @@ public final strictfp class HardCodedCRS {
      *
      * <p>This CRS is equivalent to {@code EPSG:4326}.</p>
      */
-    public static final DefaultGeographicCRS WGS84_φλ = new DefaultGeographicCRS(
+    public static final DefaultGeographicCRS WGS84_LATITUDE_FIRST = new DefaultGeographicCRS(
             properties("WGS 84 (φ,λ)", "4326"), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_φλ);
 
     /**
@@ -92,7 +95,7 @@ public final strictfp class HardCodedCRS {
      *
      * @since 1.1
      */
-    public static final DefaultCompoundCRS WGS84_3D_TIME;
+    public static final DefaultCompoundCRS WGS84_WITH_TIME;
 
     /**
      * A (λ,φ,t) CRS where <var>t</var> is the {@link #DAY_OF_YEAR}.
@@ -100,7 +103,7 @@ public final strictfp class HardCodedCRS {
      *
      * @since 1.1
      */
-    public static final DefaultCompoundCRS WGS84_3D_TIME_CYCLIC;
+    public static final DefaultCompoundCRS WGS84_WITH_CYCLIC_TIME;
 
     /**
      * A four-dimensional geographic coordinate reference system with time as the first axis.
@@ -192,7 +195,7 @@ public final strictfp class HardCodedCRS {
      * values increasing towards the North and longitude values increasing towards the East.
      * The angular units are decimal degrees and the prime meridian is Greenwich.
      */
-    public static final DefaultGeographicCRS SPHERE_φλ = new DefaultGeographicCRS(
+    public static final DefaultGeographicCRS SPHERE_LATITUDE_FIRST = new DefaultGeographicCRS(
             getProperties(HardCodedDatum.SPHERE), HardCodedDatum.SPHERE, HardCodedCS.GEODETIC_φλ);
 
     /**
@@ -283,8 +286,8 @@ public final strictfp class HardCodedCRS {
             getProperties(HardCodedCS.DAY_OF_YEAR), HardCodedDatum.DAY_OF_YEAR, HardCodedCS.DAY_OF_YEAR);
 
     static {
-        WGS84_3D_TIME = new DefaultCompoundCRS(properties("WGS 84 + time", null), WGS84, TIME);
-        WGS84_3D_TIME_CYCLIC = new DefaultCompoundCRS(properties("WGS 84 + day of year", null), WGS84, DAY_OF_YEAR);
+        WGS84_WITH_TIME = new DefaultCompoundCRS(properties("WGS 84 + time", null), WGS84, TIME);
+        WGS84_WITH_CYCLIC_TIME = new DefaultCompoundCRS(properties("WGS 84 + day of year", null), WGS84, DAY_OF_YEAR);
     }
 
     /**
@@ -306,7 +309,7 @@ public final strictfp class HardCodedCRS {
      * This is the same CRS than {@link #GEOID_3D} but with height first.
      * Such axis order is unusual but we use it as a way to verify that SIS is robust to arbitrary axis order.
      */
-    public static final DefaultCompoundCRS GEOID_ZXY = new DefaultCompoundCRS(
+    public static final DefaultCompoundCRS GEOID_HEIGHT_FIRST = new DefaultCompoundCRS(
             properties("height + WGS 84", null), GRAVITY_RELATED_HEIGHT, WGS84);
 
     /**

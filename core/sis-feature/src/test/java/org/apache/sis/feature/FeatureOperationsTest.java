@@ -71,7 +71,7 @@ public final strictfp class FeatureOperationsTest extends TestCase {
      */
     private static DefaultFeatureType school(final int defaultGeometry) throws FactoryException {
         final DefaultAttributeType<?> standardCRS = new DefaultAttributeType<>(
-                name(AttributeConvention.CRS_CHARACTERISTIC), CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84_φλ);
+                name(AttributeConvention.CRS_CHARACTERISTIC), CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84_LATITUDE_FIRST);
 
         final DefaultAttributeType<?> normalizedCRS = new DefaultAttributeType<>(
                 name(AttributeConvention.CRS_CHARACTERISTIC), CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84);
@@ -100,7 +100,7 @@ public final strictfp class FeatureOperationsTest extends TestCase {
      * Tests the constructor. The set of attributes on which the operation depends shall include
      * "classes", "climbing wall" and "gymnasium" but not "name" since the later does not contain
      * a geometry. Furthermore the default CRS shall be {@code HardCodedCRS.WGS84}, not
-     * {@code HardCodedCRS.WGS84_φλ}, because this test uses "gymnasium" as the default geometry.
+     * {@code HardCodedCRS.WGS84_LATITUDE_FIRST}, because this test uses "gymnasium" as the default geometry.
      *
      * @throws FactoryException if an error occurred while searching for the coordinate operations.
      */
@@ -127,7 +127,7 @@ public final strictfp class FeatureOperationsTest extends TestCase {
         classes.lineTo(15, 30);
         classes.lineTo(15, 20);
         feature.setPropertyValue("classes", classes);
-        expected = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
+        expected = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         expected.setRange(0, 10, 15);
         expected.setRange(1, 20, 30);
         assertEnvelopeEquals(expected, (Envelope) feature.getPropertyValue("bounds"));
@@ -135,7 +135,7 @@ public final strictfp class FeatureOperationsTest extends TestCase {
         // Set second geometry
         Point wall = new Point(18, 40);
         feature.setPropertyValue("climbing wall", wall);
-        expected = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
+        expected = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         expected.setRange(0, 10, 18);
         expected.setRange(1, 20, 40);
         assertEnvelopeEquals(expected, (Envelope) feature.getPropertyValue("bounds"));
@@ -147,7 +147,7 @@ public final strictfp class FeatureOperationsTest extends TestCase {
         gymnasium.lineTo(-6, -31);
         gymnasium.lineTo(-5, -31);
         feature.setPropertyValue("gymnasium", gymnasium);
-        expected = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
+        expected = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         expected.setRange(0, -31, 18);
         expected.setRange(1,  -6, 40);
         assertEnvelopeEquals(expected, (Envelope) feature.getPropertyValue("bounds"));
