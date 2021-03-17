@@ -271,6 +271,32 @@ public final strictfp class GridDerivationTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridDerivation#subgrid(Envelope, double...)} using an envelope with more dimensions
+     * than the source grid geometry. The additional dimensions should be ignored.
+     */
+    @Test
+    @DependsOnMethod("testSubgridFromEnvelope")
+    public void testSubgridFromEnvelopeWithMoreDimensions() {
+        GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
+        envelope.setRange(0, -70, +80);
+        envelope.setRange(1,   5,  15);
+        GridGeometry grid = new GridGeometry(new GridExtent(300, 40), envelope, GridOrientation.HOMOTHETY);
+        /*
+         * Above grid has a resolution of 0.5° × 0.25° per pixel. Ask for a resolution of 2° × 1° × 3 meters
+         * per pixels. The resolution in meter should be ignored, together with the envelope vertical range.
+         */
+        envelope = new GeneralEnvelope(HardCodedCRS.WGS84_WITH_TIME);
+        envelope.setRange(0, -40, +30);
+        envelope.setRange(1,   8,  18);
+        envelope.setRange(2,  20,  40);
+        grid = grid.derive().subgrid(envelope, 2, 1, 3).build();
+
+        assertExtentEquals(new long[] {15, 3}, new long[] {49, 9}, grid.getExtent());
+        assertMatrixEquals("gridToCRS", new Matrix3(2, 0, -69, 0, 1, 5.5, 0, 0, 1),
+                MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER)), STRICT);
+    }
+
+    /**
      * Tests {@link GridDerivation#slice(DirectPosition)}.
      */
     @Test

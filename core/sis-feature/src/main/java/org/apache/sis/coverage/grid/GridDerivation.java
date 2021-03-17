@@ -509,6 +509,7 @@ public class GridDerivation {
             if (areaOfInterest != null) {
                 final CoordinateReferenceSystem crs = areaOfInterest.getCoordinateReferenceSystem();
                 if (crs != null) {
+                    areaOfInterest = new DimensionReducer(base, crs).apply(areaOfInterest);
                     CoordinateOperation op = Envelopes.findOperation(base.envelope, areaOfInterest);
                     if (op == null) {
                         /*
@@ -780,7 +781,7 @@ public class GridDerivation {
      * @throws IllegalGridGeometryException if an error occurred while converting the point coordinates to grid coordinates.
      * @throws PointOutsideCoverageException if the given point is outside the grid extent.
      */
-    public GridDerivation slice(final DirectPosition slicePoint) {
+    public GridDerivation slice(DirectPosition slicePoint) {
         ArgumentChecks.ensureNonNull("slicePoint", slicePoint);
         MathTransform gridToCRS = base.requireGridToCRS(true);
         subGridSetter = "slice";
@@ -799,6 +800,7 @@ public class GridDerivation {
             if (sliceCRS == null) {
                 baseToPOI = null;
             } else {
+                slicePoint = new DimensionReducer(base, sliceCRS).apply(slicePoint);
                 final CoordinateReferenceSystem gridCRS = base.getCoordinateReferenceSystem();      // May throw exception.
                 baseToPOI = CRS.findOperation(gridCRS, sliceCRS, null).getMathTransform();
                 gridToCRS = MathTransforms.concatenate(gridToCRS, baseToPOI);
