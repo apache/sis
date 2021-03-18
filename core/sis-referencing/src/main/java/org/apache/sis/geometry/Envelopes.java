@@ -637,7 +637,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
                 }
             }
         }
-        MathTransform mt = operation.getMathTransform();
+        final MathTransform mt = operation.getMathTransform();
         final double[] centerPt = new double[mt.getTargetDimensions()];
         final GeneralEnvelope transformed = transform(mt, envelope, centerPt);
         /*
@@ -701,7 +701,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
         }
         /*
          * Checks for singularity points. For example the south pole is a singularity point in
-         * geographic CRS because is is located at the maximal value allowed by one particular
+         * geographic CRS because it is located at the maximal value allowed by one particular
          * axis, namely latitude. This point is not a singularity in the stereographic projection,
          * because axes extends toward infinity in all directions (mathematically) and because the
          * South pole has nothing special apart being the origin (0,0).
@@ -716,13 +716,14 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
          *             to the source CRS. Note that the longitude is set to the the center of
          *             the envelope longitude range (more on this below).
          *
-         * 2) If the singularity point computed above is inside the source envelope, add that
-         *    point to the target (transformed) envelope.
+         * 2) If the singularity point computed above is inside the source envelope,
+         *    add that point to the target (transformed) envelope.
          *
-         * 3) If step #2 added the point, iterate over all other axes. If an other bounded axis
-         *    is found and that axis is of kind "WRAPAROUND", test for inclusion the same point
-         *    than the point tested at step #1, except for the coordinate of the axis found in
-         *    this step. That coordinate is set to the minimal and maximal values of that axis.
+         * 3) For each singularity point found at step #2, check if there is a wraparound axis
+         *    in a dimension other than the dimension that was set to an axis bounds value.
+         *    If such wraparound axis is found, test for inclusion of the same point than the
+         *    point tested at step #1, except for the coordinate of the wraparound axis which
+         *    is set to the minimal and maximal values (reminder: step #1 used the center value).
          *
          *    Example: If the above steps found that the point (90°S, 30°W) need to be included,
          *             then this step #3 will also test the points (90°S, 180°W) and (90°S, 180°E).
@@ -734,16 +735,18 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
          * may fail to transform the (-180°, 90°) coordinate while the (-180°, 30°) coordinate
          * is a valid point.
          */
-        TransformException warning = null;
-        AbstractEnvelope generalEnvelope = null;
-        DirectPosition sourcePt = null;
-        DirectPosition targetPt = null;
+        MathTransform      inverse   = null;
+        TransformException warning   = null;
+        AbstractEnvelope   sourceBox = null;
+        DirectPosition     sourcePt  = null;
+        DirectPosition     targetPt  = null;
+        DirectPosition     revertPt  = null;
         long includedMinValue = 0;              // A bitmask for each dimension.
         long includedMaxValue = 0;
         long isWrapAroundAxis = 0;
-        long dimensionBitMask = 1;
         final int dimension = targetCS.getDimension();
-poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
+poles:  for (int i=0; i<dimension; i++) {
+            final long dimensionBitMask = 1L << i;
             final CoordinateSystemAxis axis = targetCS.getAxis(i);
             if (axis == null) {                 // Should never be null, but check as a paranoiac safety.
                 continue;
@@ -759,37 +762,52 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
                      */
                     continue;
                 }
-                if (targetPt == null) {
+                if (inverse == null) {
                     try {
-                        mt = mt.inverse();
+                        inverse = mt.inverse();
                     } catch (NoninvertibleTransformException exception) {
                         /*
-                         * If the transform is non invertible, this method can't do anything. This
-                         * is not a fatal error because the envelope has already be transformed by
-                         * the caller. We lost the check for singularity points performed by this
-                         * method, but it make no difference in the common case where the source
-                         * envelope didn't contains any of those points.
+                         * If the transform is non-invertible, this "poles" loop can not do anything.
+                         * This is not a fatal error because the envelope has already be transformed
+                         * by the code before this loop. We lost the check below for singularity points,
+                         * but it makes no difference in the common case where all those points would
+                         * have been outside the source envelope anyway.
                          *
-                         * Note that this exception is normal if target dimension is smaller than
-                         * source dimension, since the math transform can not reconstituate the
-                         * lost dimensions. So we don't log any warning in this case.
+                         * Note that this exception is normal if the number of target dimension is smaller
+                         * than the number of source dimension, because the math transform can not guess
+                         * coordinates in the lost dimensions. So we do not log any warning in this case.
                          */
                         if (dimension >= mt.getSourceDimensions()) {
                             warning = exception;
                         }
                         break poles;
                     }
-                    targetPt = new GeneralDirectPosition(mt.getSourceDimensions());
-                    for (int j=0; j<dimension; j++) {
-                        targetPt.setOrdinate(j, centerPt[j]);
-                    }
-                    // TODO: avoid the hack below if we provide a contains(DirectPosition)
-                    //       method in the GeoAPI org.opengis.geometry.Envelope interface.
-                    generalEnvelope = AbstractEnvelope.castOrCopy(envelope);
+                    targetPt  = new GeneralDirectPosition(centerPt.clone());
+                    sourceBox = AbstractEnvelope.castOrCopy(envelope);
                 }
                 targetPt.setOrdinate(i, extremum);
                 try {
-                    sourcePt = mt.transform(targetPt, sourcePt);
+                    sourcePt = inverse.transform(targetPt, sourcePt);
+                    if (sourceBox.contains(sourcePt)) {
+                        /*
+                         * The point is inside the source envelope and consequently should be added in the
+                         * transformed envelope. However there is a possible confusion: if the axis that we
+                         * tested is a wraparound axis, then (for example) +180° and -180° of longitude may
+                         * be the same point in source CRS, despite being 2 very different points in target
+                         * CRS. We do yet another projection in opposite direction for checking if we really
+                         * have the point that we wanted to test.
+                         */
+                        if (CoordinateOperations.isWrapAround(axis)) {
+                            revertPt = mt.transform(sourcePt, revertPt);
+                            final double delta = Math.abs(revertPt.getOrdinate(i) - extremum);
+                            if (!(delta < 0.25 * (axis.getMaximumValue() - axis.getMinimumValue()))) {
+                                continue;
+                            }
+                        }
+                        transformed.add(targetPt);
+                        if (testMax) includedMaxValue |= dimensionBitMask;
+                        else         includedMinValue |= dimensionBitMask;
+                    }
                 } catch (TransformException exception) {
                     /*
                      * This exception may be normal. For example if may occur when projecting
@@ -801,18 +819,12 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
                     } else {
                         warning.addSuppressed(exception);
                     }
-                    continue;
-                }
-                if (generalEnvelope.contains(sourcePt)) {
-                    transformed.add(targetPt);
-                    if (testMax) includedMaxValue |= dimensionBitMask;
-                    else         includedMinValue |= dimensionBitMask;
                 }
             } while ((testMax = !testMax) == true);
             /*
              * Keep trace of axes of kind WRAPAROUND, except if the two extremum values of that
              * axis have been included in the envelope  (in which case the next step after this
-             * loop doesn't need to be executed for that axis).
+             * loop does not need to be executed for this axis).
              */
             if ((includedMinValue & includedMaxValue & dimensionBitMask) == 0 && CoordinateOperations.isWrapAround(axis)) {
                 isWrapAroundAxis |= dimensionBitMask;
@@ -833,7 +845,7 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
         if (includedBoundsValue != 0) {
             while (isWrapAroundAxis != 0) {
                 final int wrapAroundDimension = Long.numberOfTrailingZeros(isWrapAroundAxis);
-                dimensionBitMask = 1 << wrapAroundDimension;
+                final long dimensionBitMask = 1L << wrapAroundDimension;
                 isWrapAroundAxis &= ~dimensionBitMask;              // Clear now the bit, for the next iteration.
                 final CoordinateSystemAxis wrapAroundAxis = targetCS.getAxis(wrapAroundDimension);
                 final double min = wrapAroundAxis.getMinimumValue();
@@ -861,7 +873,7 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
                          * then skip completely this case and the next one, i.e. skip c={0,1}
                          * or skip c={2,3}.
                          */
-                        double value = max;
+                        final double value;
                         if ((c & 1) == 0) {         // `true` if we are testing "wrapAroundMin".
                             if (((c == 0 ? includedMinValue : includedMaxValue) & bm) == 0) {
                                 c++;                // Skip also the case for "wrapAroundMax".
@@ -869,20 +881,25 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
                             }
                             targetPt.setOrdinate(axisIndex, (c == 0) ? axis.getMinimumValue() : axis.getMaximumValue());
                             value = min;
+                        } else {
+                            value = max;
                         }
                         targetPt.setOrdinate(wrapAroundDimension, value);
                         try {
-                            sourcePt = mt.transform(targetPt, sourcePt);
+                            sourcePt = inverse.transform(targetPt, sourcePt);
+                            if (sourceBox.contains(sourcePt)) {
+                                revertPt = mt.transform(sourcePt, revertPt);
+                                final double delta = Math.abs(revertPt.getOrdinate(wrapAroundDimension) - value);
+                                if (delta < 0.25 * (max - min)) {
+                                    transformed.add(targetPt);
+                                }
+                            }
                         } catch (TransformException exception) {
                             if (warning == null) {
                                 warning = exception;
                             } else {
                                 warning.addSuppressed(exception);
                             }
-                            continue;
-                        }
-                        if (generalEnvelope.contains(sourcePt)) {
-                            transformed.add(targetPt);
                         }
                     }
                     targetPt.setOrdinate(axisIndex, centerPt[axisIndex]);

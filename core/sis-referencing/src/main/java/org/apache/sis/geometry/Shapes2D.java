@@ -402,7 +402,7 @@ public final class Shapes2D extends Static {
         if (envelope == null) {
             return null;
         }
-        MathTransform2D mt = MathTransforms.bidimensional(operation.getMathTransform());
+        final MathTransform2D mt = MathTransforms.bidimensional(operation.getMathTransform());
         final double[] center = new double[2];
         destination = transform(mt, envelope, destination, center);
         /*
@@ -461,9 +461,11 @@ public final class Shapes2D extends Static {
          * The `border` variable in the loop below is used in order to compress 2 dimensions
          * and 2 extremums in a single loop, in this order: (xmin, xmax, ymin, ymax).
          */
-        TransformException warning = null;
-        Point2D sourcePt = null;
-        Point2D targetPt = null;
+        MathTransform2D    inverse  = null;
+        TransformException warning  = null;
+        Point2D            sourcePt = null;
+        Point2D            targetPt = null;
+        Point2D            revertPt = null;
         int includedBoundsValue = 0;                        // A bitmask for each (dimension, extremum) pairs.
         for (int border=0; border<4; border++) {            // 2 dimensions and 2 extremums compacted in a flag.
             final int dimension = border >>> 1;             // The dimension index being examined.
@@ -475,9 +477,9 @@ public final class Shapes2D extends Static {
             if (!Double.isFinite(extremum)) {
                 continue;
             }
-            if (targetPt == null) {
+            if (inverse == null) {
                 try {
-                    mt = mt.inverse();
+                    inverse = mt.inverse();
                 } catch (NoninvertibleTransformException exception) {
                     Envelopes.recoverableException(Shapes2D.class, exception);
                     return destination;
@@ -490,18 +492,24 @@ public final class Shapes2D extends Static {
                 default: throw new AssertionError(border);
             }
             try {
-                sourcePt = mt.transform(targetPt, sourcePt);
+                sourcePt = inverse.transform(targetPt, sourcePt);
+                if (CoordinateOperations.isWrapAround(axis)) {
+                    revertPt = mt.transform(sourcePt, revertPt);
+                    final double delta = Math.abs((dimension == 0 ? revertPt.getX() : revertPt.getY()) - extremum);
+                    if (!(delta < 0.25 * (axis.getMaximumValue() - axis.getMinimumValue()))) {
+                        continue;
+                    }
+                }
+                if (envelope.contains(sourcePt)) {
+                    destination.add(targetPt);
+                    includedBoundsValue |= (1 << border);
+                }
             } catch (TransformException exception) {
                 if (warning == null) {
                     warning = exception;
                 } else {
                     warning.addSuppressed(exception);
                 }
-                continue;
-            }
-            if (envelope.contains(sourcePt)) {
-                destination.add(targetPt);
-                includedBoundsValue |= (1 << border);
             }
         }
         /*
@@ -549,24 +557,24 @@ public final class Shapes2D extends Static {
                 final int dimensionToAdd = (border >>> 1) & 1;
                 final CoordinateSystemAxis toAdd = targetCS.getAxis(dimensionToAdd);
                 final CoordinateSystemAxis added = targetCS.getAxis(dimensionToAdd ^ 1);
-                double x = (border & 1) == 0 ? toAdd.getMinimumValue() : toAdd.getMaximumValue();
-                double y = (border & 4) == 0 ? added.getMinimumValue() : added.getMaximumValue();
-                if (dimensionToAdd != 0) {
-                    final double t=x; x=y; y=t;
+                final double x = (border & 1) == 0 ? toAdd.getMinimumValue() : toAdd.getMaximumValue();
+                final double y = (border & 4) == 0 ? added.getMinimumValue() : added.getMaximumValue();
+                if (dimensionToAdd == 0) {
+                    targetPt.setLocation(x, y);
+                } else {
+                    targetPt.setLocation(y, x);
                 }
-                targetPt.setLocation(x, y);
                 try {
-                    sourcePt = mt.transform(targetPt, sourcePt);
+                    sourcePt = inverse.transform(targetPt, sourcePt);
+                    if (envelope.contains(sourcePt)) {
+                        destination.add(targetPt);
+                    }
                 } catch (TransformException exception) {
                     if (warning == null) {
                         warning = exception;
                     } else {
                         warning.addSuppressed(exception);
                     }
-                    continue;
-                }
-                if (envelope.contains(sourcePt)) {
-                    destination.add(targetPt);
                 }
             }
         }
