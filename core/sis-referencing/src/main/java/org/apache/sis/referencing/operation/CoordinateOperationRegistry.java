@@ -691,7 +691,7 @@ class CoordinateOperationRegistry {
      * @param  operation  the operation to invert, or {@code null}.
      * @return the inverse of {@code operation}, or {@code null} if none.
      * @throws NoninvertibleTransformException if the operation is not invertible.
-     * @throws FactoryException if the operation creation failed for an other reason.
+     * @throws FactoryException if the operation creation failed for another reason.
      */
     private CoordinateOperation inverse(final CoordinateOperation operation)
             throws NoninvertibleTransformException, FactoryException

@@ -106,6 +106,18 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  */
 public final class Envelopes extends Static {
     /**
+     * Fraction of the axis span to accept as close enough to an envelope boundary. This is used for coordinates
+     * that are suppose to be on a boundary, for checking if it is really on the boundary side where it should be.
+     * For example on the longitude axis, bounds are -180° and +180° with wraparound meaning and the span is 360°.
+     * A {@code SPAN_FRACTION_AS_BOUND} value of 0.25 means that we accept a margin of 0.25 × 360° = 90° on each
+     * side: longitudes between -180 and -90 are clipped to the -180° bounds, and longitudes between +180 and +90
+     * and clipped to the +180° bounds. We use a large fraction because we use it in contexts where the longitude
+     * is not supposed to be in the envelope interior. We could use a 0.5 value for clipping to the nearest bound,
+     * but a smaller value is used for safety.
+     */
+    static final double SPAN_FRACTION_AS_BOUND = 0.25;
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Envelopes() {
@@ -800,7 +812,7 @@ poles:  for (int i=0; i<dimension; i++) {
                         if (CoordinateOperations.isWrapAround(axis)) {
                             revertPt = mt.transform(sourcePt, revertPt);
                             final double delta = Math.abs(revertPt.getOrdinate(i) - extremum);
-                            if (!(delta < 0.25 * (axis.getMaximumValue() - axis.getMinimumValue()))) {
+                            if (!(delta < SPAN_FRACTION_AS_BOUND * (axis.getMaximumValue() - axis.getMinimumValue()))) {
                                 continue;
                             }
                         }
@@ -888,11 +900,23 @@ poles:  for (int i=0; i<dimension; i++) {
                         try {
                             sourcePt = inverse.transform(targetPt, sourcePt);
                             if (sourceBox.contains(sourcePt)) {
-                                revertPt = mt.transform(sourcePt, revertPt);
-                                final double delta = Math.abs(revertPt.getOrdinate(wrapAroundDimension) - value);
-                                if (delta < 0.25 * (max - min)) {
-                                    transformed.add(targetPt);
-                                }
+                                /*
+                                 * The `value` limit is typically the 180°E or 180°W longitude value. We could test
+                                 * its validity as below (see similar code in other loop above for explanation):
+                                 *
+                                 *     revertPt = mt.transform(sourcePt, revertPt);
+                                 *     final double delta = Math.abs(revertPt.getOrdinate(wrapAroundDimension) - value);
+                                 *     if (delta < SPAN_FRACTION_AS_BOUND * (max - min)) {
+                                 *         transformed.add(targetPt);
+                                 *     }
+                                 *
+                                 * But we don't because this block is executed when another coordinate is at its bounds,
+                                 * and that other coordinate is usually the latitude at 90°S or 90°N. In such case, all
+                                 * longitude values are the same point on Earth (a pole) and can be anything. Comparing
+                                 * `revertPt` coordinate with `value` is meaningless. In order to keep above check, we
+                                 * would need to determine if `targetPt` is at a pole. But we have fully reliable way.
+                                 */
+                                transformed.add(targetPt);
                             }
                         } catch (TransformException exception) {
                             if (warning == null) {

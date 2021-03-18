@@ -496,7 +496,7 @@ public final class Shapes2D extends Static {
                 if (CoordinateOperations.isWrapAround(axis)) {
                     revertPt = mt.transform(sourcePt, revertPt);
                     final double delta = Math.abs((dimension == 0 ? revertPt.getX() : revertPt.getY()) - extremum);
-                    if (!(delta < 0.25 * (axis.getMaximumValue() - axis.getMinimumValue()))) {
+                    if (!(delta < Envelopes.SPAN_FRACTION_AS_BOUND * (axis.getMaximumValue() - axis.getMinimumValue()))) {
                         continue;
                     }
                 }

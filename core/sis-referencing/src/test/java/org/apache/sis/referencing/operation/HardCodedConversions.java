@@ -23,7 +23,9 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
+import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.LambertConformal1SP;
+import org.apache.sis.internal.referencing.provider.PolarStereographicB;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -45,8 +47,39 @@ public final strictfp class HardCodedConversions {
     public static final DefaultConversion MERCATOR;
     static {
         final OperationMethod method = new Mercator1SP();
-        MERCATOR = new DefaultConversion(Collections.singletonMap(OperationMethod.NAME_KEY, "Mercator"),
-                method, null, method.getParameters().createValue());
+        MERCATOR = create("Mercator", method, method.getParameters().createValue());
+    }
+
+    /**
+     * A defining conversion for a <cite>Universal Transverse Mercator zone 9</cite> projection.
+     * Pseudo Well-Known Text for the {@link org.opengis.referencing.operation.MathTransform}:
+     *
+     * {@preformat wkt
+     *   Param_MT["Transverse Mercator",
+     *       Parameter["Longitude of natural origin", -129, Unit["degree"]],
+     *       Parameter["Scale factor at natural origin", 0.9996],
+     *       Parameter["False easting", 500000, Unit["metre"]]]]
+     * }
+     */
+    public static final DefaultConversion UTM;
+    static {
+        final OperationMethod method = new TransverseMercator();
+        final ParameterValueGroup pg = method.getParameters().createValue();
+        pg.parameter("Longitude of natural origin").setValue(-129);
+        pg.parameter("Scale factor at natural origin").setValue(0.9996);
+        pg.parameter("False easting").setValue(500000);
+        UTM = create("UTM zone 9N", method, pg);
+    }
+
+    /**
+     * A defining conversion for a <cite>Antarctic Polar Stereographic</cite> projection.
+     */
+    public static final DefaultConversion POLAR_STEREOGRAPHIC;
+    static {
+        final OperationMethod method = new PolarStereographicB();
+        final ParameterValueGroup pg = method.getParameters().createValue();
+        pg.parameter("Latitude of standard parallel").setValue(-71);
+        POLAR_STEREOGRAPHIC = create("Antarctic Polar Stereographic", method, pg);
     }
 
     /**
@@ -58,14 +91,34 @@ public final strictfp class HardCodedConversions {
         final OperationMethod method = new LambertConformal1SP();
         final ParameterValueGroup pg = method.getParameters().createValue();
         pg.parameter("Latitude of natural origin").setValue(40);
-        LAMBERT = new DefaultConversion(Collections.singletonMap(OperationMethod.NAME_KEY, "Lambert Conic Conformal"),
-                method, null, pg);
+        LAMBERT = create("Lambert Conic Conformal", method, pg);
+    }
+
+    /**
+     * Creates a defining conversion of the given name with given parameter values.
+     */
+    private static DefaultConversion create(final String name, final OperationMethod method, final ParameterValueGroup pg) {
+        return new DefaultConversion(Collections.singletonMap(OperationMethod.NAME_KEY, name), method, null, pg);
     }
 
     /**
      * Do not allow instantiation of this class.
      */
     private HardCodedConversions() {
+    }
+
+    /**
+     * Creates a two-dimension CRS using the given conversion on the WGS84 datum.
+     * This CRS uses (<var>easting</var>, <var>northing</var>) coordinates in metres.
+     * The base CRS uses (<var>longitude</var>, <var>latitude</var>) axes
+     * and the prime meridian is Greenwich.
+     *
+     * @param  conversion  the defining conversion as one of the constant defined in this class.
+     * @return two-dimensional projection using the given method.
+     */
+    public static DefaultProjectedCRS createCRS(final DefaultConversion conversion) {
+        return new DefaultProjectedCRS(Collections.singletonMap(ProjectedCRS.NAME_KEY, conversion.getName()),
+                HardCodedCRS.WGS84, conversion, HardCodedCS.PROJECTED);
     }
 
     /**
@@ -80,8 +133,7 @@ public final strictfp class HardCodedConversions {
      * @return two-dimensional Mercator projection.
      */
     public static DefaultProjectedCRS mercator() {
-        return new DefaultProjectedCRS(name("Mercator"),
-                HardCodedCRS.WGS84, HardCodedConversions.MERCATOR, HardCodedCS.PROJECTED);
+        return createCRS(MERCATOR);
     }
 
     /**
@@ -94,7 +146,7 @@ public final strictfp class HardCodedConversions {
      */
     public static DefaultProjectedCRS mercator3D() {
         return new DefaultProjectedCRS(name("Mercator (3D)"),
-                HardCodedCRS.WGS84_3D, HardCodedConversions.MERCATOR, HardCodedCS.PROJECTED_3D);
+                HardCodedCRS.WGS84_3D, MERCATOR, HardCodedCS.PROJECTED_3D);
     }
 
     /**
@@ -105,21 +157,8 @@ public final strictfp class HardCodedConversions {
      * @return two- or three-dimensional Mercator projection.
      */
     public static DefaultProjectedCRS mercator(final GeographicCRS baseCRS) {
-        return new DefaultProjectedCRS(name("Mercator (other)"), baseCRS, HardCodedConversions.MERCATOR,
+        return new DefaultProjectedCRS(name("Mercator (other)"), baseCRS, MERCATOR,
                 baseCRS.getCoordinateSystem().getDimension() == 3 ? HardCodedCS.PROJECTED_3D : HardCodedCS.PROJECTED);
-    }
-
-    /**
-     * A two-dimensional Lambert Conic Conformal (1SP) projection using the WGS84 datum.
-     * This CRS uses (<var>easting</var>, <var>northing</var>) coordinates in metres.
-     * The base CRS uses (<var>longitude</var>, <var>latitude</var>) axes
-     * and the prime meridian is Greenwich.
-     *
-     * @return two-dimensional Lambert Conic Conformal (1SP) projection.
-     */
-    public static DefaultProjectedCRS lambert() {
-        return new DefaultProjectedCRS(name("Lambert Conic Conformal"),
-                HardCodedCRS.WGS84, HardCodedConversions.LAMBERT, HardCodedCS.PROJECTED);
     }
 
     /**

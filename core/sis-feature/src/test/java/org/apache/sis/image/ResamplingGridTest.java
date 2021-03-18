@@ -182,13 +182,21 @@ public final strictfp class ResamplingGridTest extends TestCase {
     }
 
     /**
+     * Creates a <cite>Lambert Conic Conformal (1SP)</cite> projection
+     * with a Latitude of natural origin arbitrarily set to 40.
+     */
+    private static MathTransform lambertProjection() {
+        return HardCodedConversions.createCRS(HardCodedConversions.LAMBERT).getConversionFromBase().getMathTransform();
+    }
+
+    /**
      * Tests {@link ResamplingGrid} with a Lambert Conic Conformal projection.
      *
      * @throws TransformException if an error occurred while transforming a coordinate.
      */
     @Test
     public void testLambert() throws TransformException {
-        final MathTransform projection = HardCodedConversions.lambert().getConversionFromBase().getMathTransform();
+        final MathTransform projection = lambertProjection();
         final Rectangle domain = new Rectangle(-20, 30, 40, 20);
         final MathTransform2D tr = compare("Lambert", projection, domain);
         assertInstanceOf("Expected a non-linear transform.", ResamplingGrid.class, tr);
@@ -205,7 +213,7 @@ public final strictfp class ResamplingGridTest extends TestCase {
      */
     @Test
     public void testLambertOnSmallArea() throws TransformException {
-        final MathTransform projection = HardCodedConversions.lambert().getConversionFromBase().getMathTransform();
+        final MathTransform projection = lambertProjection();
         final Rectangle2D domain = new Rectangle2D.Double(-20, 50, 0.025, 0.025);
         final MathTransform2D tr = compare("Lambert (small area)", projection, domain);
         assertInstanceOf("Expected a linear transform.", AffineTransform2D.class, tr);
