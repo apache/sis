@@ -30,7 +30,6 @@ import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
@@ -351,6 +350,20 @@ public class TransverseMercator extends NormalizedProjection {
     }
 
     /**
+     * Implementation of {@link #transform(double[], int, double[], int, boolean)} for points outside domain of validity.
+     * Should be invoked only when the longitude is at more than 90° from central meridian, in which case result does not
+     * exist. This method should <strong>not</strong> be invoked for points at Δλ ≤ 90° that we fail to compute, because
+     * in such cases a {@link ProjectionException} should be thrown instead.
+     */
+    private static Matrix outsideDomainOfValidity(final double[] dstPts, final int dstOff, final boolean derivate) {
+        dstPts[dstOff] = dstPts[dstOff+1] = Double.NaN;
+        if (derivate) {
+            return new Matrix2(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+        }
+        return null;
+    }
+
+    /**
      * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
      *
@@ -419,9 +432,18 @@ public class TransverseMercator extends NormalizedProjection {
              * envelope projections. An envelope may have corners located in invalid projection area even if
              * all features inside the envelope have valid coordinates. For "contains" and "intersects" tests
              * between envelopes, we do not need accurate coordinates; a monotonic behavior can be sufficient.
+             *
+             * Reminder: difference between returning NaN or throwing an exception is as below:
+             *
+             *    - NaN means "value does not exist".
+             *    - ProjectionException means "values exist but can not be computed".
+             *
+             * So it is okay to return NaN for values located at Δλ > 90°, but we should throw an exception
+             * for values at Δλ ≤ 90° if we can not compute them. Previous version of this method was throwing
+             * an exception. Now that we accept all longitudes up to 90°, we return NaN instead.
              */
             if (Math.abs(IEEEremainder(λ, 2*PI)) > 90 * (PI/180)) {         // More costly check.
-                throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
+                return outsideDomainOfValidity(dstPts, dstOff, derivate);
             }
         }
         final double sinλ  = sin(λ);
@@ -714,7 +736,7 @@ public class TransverseMercator extends NormalizedProjection {
              * need to reject ∆λ > 90°. The accuracy comment about high values of ∆λ do not apply here.
              */
             if (cosλ < 0) {                     // Implies Math.abs(IEEEremainder(λ, 2*PI)) > PI/2
-                throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
+                return outsideDomainOfValidity(dstPts, dstOff, derivate);
             }
             final double sinφ = sin(φ);
             final double cosφ = cos(φ);
