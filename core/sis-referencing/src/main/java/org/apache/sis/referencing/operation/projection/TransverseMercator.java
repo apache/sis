@@ -356,7 +356,9 @@ public class TransverseMercator extends NormalizedProjection {
      * in such cases a {@link ProjectionException} should be thrown instead.
      */
     private static Matrix outsideDomainOfValidity(final double[] dstPts, final int dstOff, final boolean derivate) {
-        dstPts[dstOff] = dstPts[dstOff+1] = Double.NaN;
+        if (dstPts != null) {
+            dstPts[dstOff] = dstPts[dstOff+1] = Double.NaN;
+        }
         if (derivate) {
             return new Matrix2(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         }
