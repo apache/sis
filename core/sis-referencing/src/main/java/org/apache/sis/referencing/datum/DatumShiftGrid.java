@@ -213,6 +213,9 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     /**
      * Number of grid cells along each dimension. This is usually an array of length {@value #INTERPOLATED_DIMENSIONS}
      * containing the number of grid cells along the <var>x</var> and <var>y</var> axes.
+     *
+     * @see #getGridSize()
+     * @see #getGridSize(int)
      */
     private final int[] gridSize;
 

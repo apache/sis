@@ -97,6 +97,8 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
 
     /**
      * The grid of datum shifts from source datum to target datum, or {@code null} if none.
+     *
+     * @see InterpolatedTransform#getShiftGrid()
      */
     final DatumShiftGrid<?,?> grid;
 

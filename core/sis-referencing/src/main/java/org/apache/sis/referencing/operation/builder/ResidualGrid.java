@@ -22,14 +22,19 @@ import javax.measure.quantity.Dimensionless;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
+import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -37,6 +42,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -96,9 +102,8 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
             MatrixSIS m = ((ContextualParameters) parameters).getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
             m.setMatrix(denormalization);
         }
-        final int[] size = getGridSize();
-        parameters.parameter(Constants.NUM_ROW).setValue(size[1]);
-        parameters.parameter(Constants.NUM_COL).setValue(size[0]);
+        parameters.parameter(Constants.NUM_ROW).setValue(getGridSize(1));
+        parameters.parameter(Constants.NUM_COL).setValue(getGridSize(0));
         parameters.parameter("grid_x").setValue(new Data(0, denormalization));
         parameters.parameter("grid_y").setValue(new Data(1, denormalization));
     }
@@ -177,7 +182,6 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
         this.offsets        = residuals;
         this.accuracy       = precision;
         this.scanlineStride = nx;
-        double[] periodVector = null;
         if (periods != null && linearizer == null && gridToTarget.isAffine()) {
             /*
              * We require the transform to be affine because it makes the Jacobian independent of
@@ -199,8 +203,9 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
              * period of 12 months, then `replaceOutsideGridCoordinates(…)` will only shift by 360°
              * AND 12 months together, never 360° only or 12 months only.
              */
+        } else {
+            periodVector = null;
         }
-        this.periodVector = periodVector;
     }
 
     /**
@@ -300,7 +305,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * Geocentric interpolations add the translation to coordinates converted to geocentric coordinates.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.0
+     * @version 1.1
      * @since   1.0
      * @module
      */
@@ -325,6 +330,9 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
 
         /** Computes the matrix element in the given row and column. */
         @Override public double  getElement(final int y, final int x) {
+            if ((x | y) < 0 || x >= scanlineStride) {
+                throw new IndexOutOfBoundsException();
+            }
             return c0 * (x + getCellValue(0, x, y)) +                // TODO: use Math.fma with JDK9.
                    c1 * (y + getCellValue(1, x, y)) +
                    c2;
@@ -384,6 +392,57 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
             formatter.setInvalidWKT(Matrix.class, null);
             return "Matrix";
         }
+    }
+
+    /**
+     * If a linear approximation can be extracted from the given transform, returns that approximation.
+     * The approximation applies to source coordinates in the range 0 to {@code size[i]} for each source
+     * dimension <var>i</var>.
+     *
+     * <p>This method does not perform expansive calculation; it searches only for transforms than can
+     * be processed easily. This method is defined in this class because it checks for transformations
+     * backed by {@link ResidualGrid} instances.</p>
+     *
+     * @param  size  upper coordinate values of the source domain for which to get a linear approximation.
+     * @return the linear approximation of given transform, or {@code null} if none readily available.
+     */
+    static LinearTransform approximate(final MathTransform gridToCRS, final int[] size) throws TransformException {
+        if (size.length != SOURCE_DIMENSION) {
+            return null;
+        }
+        MathTransform result = null;
+        for (final MathTransform step : MathTransforms.getSteps(gridToCRS)) {
+            if (step instanceof LinearTransform) {
+                if (result == null) {
+                    result = step;
+                } else {
+                    result = MathTransforms.concatenate(result, step);
+                }
+            } else {
+                /*
+                 * Non-linear transform found. If it is backed by a `ResidualGrid` and the specified domain
+                 * contains the full `ResidualGrid` domain, then we consider that `step` is approximated by
+                 * an identity transform. Otherwise this method can not process `gridToCRS`.
+                 */
+                if (step instanceof InterpolatedTransform) {
+                    final DatumShiftGrid<?,?> grid = ((InterpolatedTransform) step).getShiftGrid();
+                    if (grid instanceof ResidualGrid) {
+                        GeneralEnvelope bounds = new GeneralEnvelope(new double[size.length], ArraysExt.copyAsDoubles(size));
+                        if (result != null) {
+                            bounds = Envelopes.transform(result, bounds);
+                        }
+                        for (int i=0; i<size.length; i++) {
+                            if (bounds.getMinimum(i) > 0 || bounds.getMaximum(i) < grid.getGridSize(i)) {
+                                return null;
+                            }
+                        }
+                        continue;
+                    }
+                }
+                return null;
+            }
+        }
+        return (LinearTransform) result;
     }
 
     /**

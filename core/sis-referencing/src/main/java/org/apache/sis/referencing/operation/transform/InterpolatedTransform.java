@@ -68,7 +68,7 @@ import org.apache.sis.internal.referencing.DirectPositionView;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Simon Reynard (Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 1.0
+ * @version 1.1
  *
  * @see DatumShiftGrid
  * @see org.apache.sis.referencing.operation.builder.LocalizationGridBuilder
@@ -229,6 +229,17 @@ public class InterpolatedTransform extends DatumShiftTransform {
             throw new FactoryException(e.getLocalizedMessage(), e);
         }
         return tr.context.completeTransform(factory, tr);
+    }
+
+    /**
+     * Returns the grid of datum shifts specified at construction time.
+     *
+     * @return the grid of datum shifts from source to target datum.
+     *
+     * @since 1.1
+     */
+    public final DatumShiftGrid<?,?> getShiftGrid() {
+        return grid;
     }
 
     /**

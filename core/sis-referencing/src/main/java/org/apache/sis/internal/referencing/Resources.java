@@ -496,6 +496,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ParameterNotFound_2 = 61;
 
         /**
+         * Points are not on a regular grid.
+         */
+        public static final short PointsAreNotOnRegularGrid = 99;
+
+        /**
          * Recursive call while creating an object of type ‘{0}’ for code “{1}”.
          */
         public static final short RecursiveCreateCallForCode_2 = 62;

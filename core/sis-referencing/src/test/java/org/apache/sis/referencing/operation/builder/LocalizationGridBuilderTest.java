@@ -19,9 +19,13 @@ package org.apache.sis.referencing.operation.builder;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.test.referencing.TransformTestCase;
+import org.apache.sis.referencing.operation.HardCodedConversions;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -32,7 +36,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests {@link LocalizationGridBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -145,5 +149,37 @@ public final strictfp class LocalizationGridBuilderTest extends TransformTestCas
          */
         assertArrayEquals(new double[] {-8.5, -123.7}, builder.getRow(1, 2).doubleValues(), STRICT);
         assertArrayEquals(new double[] {-21.7, -26.2, -123.7}, builder.getColumn(1, 1).doubleValues(), STRICT);
+    }
+
+    /**
+     * Tests {@link LinearTransformBuilder#approximate(MathTransform, int...)} on a transform created by
+     * {@link LocalizationGridBuilder}. We verify that the {@link ResidualGrid#approximate(MathTransform, int[])}
+     * short path is executed.
+     *
+     * @throws TransformException if an error occurred while computing test points.
+     * @throws FactoryException if an error occurred while computing the localization grid.
+     *
+     * @see LinearTransformBuilderTest#testSetPointsFromTransform()
+     */
+    @Test
+    public void testApproximate() throws TransformException, FactoryException {
+        // Same set of points than `LinearTransformBuilderTest.testSetPointsFromTransform()`.
+        final int[] gridSize = {3, 5};
+        final LinearTransformBuilder points = new LinearTransformBuilder(gridSize);
+        points.setControlPoints(HardCodedConversions.mercator().getConversionFromBase().getMathTransform());
+
+        // Non-linear transform producing the same values than the set of points;
+        final LocalizationGridBuilder builder = new LocalizationGridBuilder(points);
+        transform = builder.create(null);
+        assertFalse(transform instanceof LinearTransform);
+
+        // Linear approximation by Least Square Root method.
+        final LinearTransform linear = LinearTransformBuilder.approximate(transform, gridSize);
+        org.opengis.test.Assert.assertMatrixEquals("linear",
+                new Matrix3(111319, 0,   0,
+                            0, 110662, -62,
+                            0, 0, 1), linear.getMatrix(), 0.5);
+
+        assertSame("Should have extracted the existing instance instead of computing a new one.", points.create(null), linear);
     }
 }
