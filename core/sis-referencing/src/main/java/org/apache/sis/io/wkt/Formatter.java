@@ -525,7 +525,7 @@ public class Formatter implements Localized {
             if (colorApplied == 0) {
                 final String color = colors.getAnsiSequence(type);
                 if (color == null) {
-                    // Do not increment 'colorApplied' for giving a chance to children to apply their colors.
+                    // Do not increment `colorApplied` for giving a chance to children to apply their colors.
                     return;
                 }
                 final boolean isStart = (buffer.length() == elementStart);
@@ -1195,7 +1195,7 @@ public class Formatter implements Localized {
     public void append(final long number) {
         appendSeparator();
         /*
-         * The check for 'isComplement' is a hack for ImmutableIdentifier.formatTo(Formatter).
+         * The check for `isComplement` is a hack for ImmutableIdentifier.formatTo(Formatter).
          * We do not have a public API for controlling the integer colors (it may not be desirable).
          */
         setColor(isComplement ? ElementKind.IDENTIFIER : ElementKind.INTEGER);
@@ -1215,12 +1215,12 @@ public class Formatter implements Localized {
         setColor(ElementKind.NUMBER);
         /*
          * Use scientific notation if the number magnitude is too high or too low. The threshold values used here
-         * may be different than the threshold values used in the standard 'StringBuilder.append(double)' method.
+         * may be different than the threshold values used in the standard `StringBuilder.append(double)` method.
          * In particular, we use a higher threshold for large numbers because ellipsoid axis lengths are above the
          * JDK threshold when the axis length is given in feet (about 2.1E+7) while we still want to format them
          * as usual numbers.
          *
-         * Note that we perform this special formatting only if the 'NumberFormat' is not localized
+         * Note that we perform this special formatting only if the `NumberFormat` is not localized
          * (which is the usual case).
          */
         if (symbols.useScientificNotation(Math.abs(number))) {
@@ -1290,7 +1290,7 @@ public class Formatter implements Localized {
             marginBeforeRow = "";
         }
         /*
-         * 'formattedNumberMarks' contains, for each number in each row, positions in the 'buffer' where
+         * `formattedNumberMarks` contains, for each number in each row, positions in the `buffer` where
          * the number starts and position where it ends. Those positions are stored as (start,end) pairs.
          * We compute those marks unconditionally for simplicity, but will ignore them if formatting on
          * a single line.
@@ -1530,9 +1530,9 @@ public class Formatter implements Localized {
                     ((InternationalString) value).toString(locale) : value.toString(), null);
         } else if (value.getClass().isArray()) {
             /*
-             * All above cases delegated to another method which invoke 'appendSeparator()'.
+             * All above cases delegated to another method which invoke `appendSeparator()`.
              * Since the following block is writing itself a new element, we need to invoke
-             * 'appendSeparator()' here. This block invokes (indirectly) this 'appendValue'
+             * `appendSeparator()` here. This block invokes (indirectly) this `appendValue`
              * method recursively for some or all elements in the list.
              */
             appendSeparator();
@@ -1542,7 +1542,7 @@ public class Formatter implements Localized {
             for (int i=0; i<length; i++) {
                 if (i == cut) {
                     /*
-                     * Skip elements in the middle if the list is too long. The 'cut' index has been computed
+                     * Skip elements in the middle if the list is too long. The `cut` index has been computed
                      * in such a way that the number of elements to skip should be greater than 1, otherwise
                      * formatting the single missing element would often have been shorter.
                      */
@@ -1710,7 +1710,7 @@ public class Formatter implements Localized {
              * The unit that we replaced was not the expected one. Probably the user has invoked
              * addContextualUnit(…) again without a matching call to restoreContextualUnit(…).
              * Note that this case should never happen in Convention.WKT1_COMMON_UNITS mode,
-             * since 'previous' should never be non-null in that mode (if the user followed
+             * since `previous` should never be non-null in that mode (if the user followed
              * the documented pattern).
              */
             throw new IllegalStateException();
@@ -1752,7 +1752,7 @@ public class Formatter implements Localized {
         return (warnings != null) || (buffer != null && buffer.length() == 0);
         /*
          * Note: we really use a "and" condition (not an other "or") for the buffer test because
-         *       the buffer is reset to 'null' by WKTFormat after a successfull formatting.
+         *       the buffer is reset to `null` by WKTFormat after a successfull formatting.
          */
     }
 

@@ -432,7 +432,13 @@ public final class WKTUtilities extends Static {
      * Returns the values in the corners and in the center of the given tensor. The values are returned in a
      * <var>n</var>-dimensional array of {@link Number} where <var>n</var> is the length of {@code size}.
      * If some values have been skipped, {@code null} values are inserted in the rows or columns where the
-     * skipping occurs.
+     * skipping occurs. Caller may replace null values by {@code "…"} string at formatting time for example.
+     *
+     * <p>Indices of elements in the returned array are in reverse order than in the {@code size} argument.
+     * For example if {@code size} contains the values for dimensions (x,y,z) in that order, then elements
+     * in the returned array are accessed with {@code cornersAndCenter[z][y][x]} indices in that order.
+     * It is done that way because in the common case where there is only two dimensions,
+     * {@code cornersAndCenter[y]} is a row. This is what WKT formatter expects among others.</p>
      *
      * @param  tensor      function providing values of the tensor. Inputs are indices of the desired value with
      *                     index in each dimension ranging from 0 inclusive to {@code size[dimension]} exclusive.
@@ -444,7 +450,7 @@ public final class WKTUtilities extends Static {
      */
     public static Object[] cornersAndCenter(final Function<int[],Number> tensor, final int[] size, final int cornerSize) {
         /*
-         * The 'source' array will contain indices of values to fetch in the tensor, and the 'target' array will contain
+         * The `source` array will contain indices of values to fetch in the tensor, and the `target` array will contain
          * indices where to store those values in the returned data structure. Other arrays contain threshold indices of
          * points of interest in the target data structure.
          */
@@ -459,11 +465,18 @@ public final class WKTUtilities extends Static {
         }
         final int[] source = new int[shown.length];
         final int[] target = new int[shown.length];
-        final Object[] numbers = (Object[]) Array.newInstance(Number.class, shown);
+        final Object[] numbers;
+        {
+            final int[] reversed = new int[shown.length];
+            for (int i=0; i<reversed.length;) {
+                reversed[i] = shown[shown.length - ++i];
+            }
+            numbers = (Object[]) Array.newInstance(Number.class, reversed);
+        }
         /*
          * The loops below are used for simulating GOTO statements. This is usually a deprecated practice,
          * but in this case we can hardly use normal loops because the number of nested loops is dynamic.
-         * We want something equivalent to the code below where 'n' - the number of nested loops - is not
+         * We want something equivalent to the code below where `n` - the number of nested loops - is not
          * known at compile-time:
          *
          * for (int i0=0; i0<size[0]; i0++) {
@@ -516,10 +529,15 @@ fill:   for (;;) {
         Object walk = numbers;
         Object[] previous = null;
         for (int d=size.length; --d >= 0;) {
+            final int p = empty[d];
             previous = (Object[]) walk;
-            walk = previous[empty[d]];
+            if (p >= previous.length) {
+                return numbers;
+            }
+            walk = previous[p];
             source[d] = size[d] / 2;
         }
+        assert walk == previous[empty[0]];
         if (walk == null) {
             previous[empty[0]] = tensor.apply(source);
         }
