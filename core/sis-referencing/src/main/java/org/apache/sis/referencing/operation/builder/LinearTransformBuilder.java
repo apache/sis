@@ -228,7 +228,7 @@ public class LinearTransformBuilder extends TransformBuilder {
      * @since 0.8
      */
     public LinearTransformBuilder(int... gridSize) {
-        ArgumentChecks.ensureNonNull("gridSize", gridSize);
+        ArgumentChecks.ensureNonEmpty("gridSize", gridSize, 1, Integer.MAX_VALUE, false);
         if (gridSize.length == 0) {
             this.gridSize = null;
             this.gridLength = 0;
@@ -250,36 +250,25 @@ public class LinearTransformBuilder extends TransformBuilder {
 
     /**
      * Returns a linear approximation of the given transform for the specified domain.
-     * The source positions are all integer coordinates in a rectangle from (0, 0, …) inclusive
-     * to {@code gridSize} exclusive. The target positions are the results of transforming all
-     * source coordinates with the given {@code gridToCRS} transform.
-     * This method is equivalent to the following code, but potentially more efficient:
-     *
-     * {@preformat java
-     *     val builder = new LinearTransformBuilder(gridSize);
-     *     builder.setControlPoints(gridToCRS);
-     *     return builder.create(null);
-     * }
+     * The source positions are integer coordinates included in the given envelope.
+     * The target positions are the results of transforming source coordinates with
+     * the given {@code gridToCRS} transform.
      *
      * @param  gridToCRS  the transform from source coordinates (grid indices) to target coordinates.
-     * @param  gridSize   the upper values (exclusive) of source coordinates.
+     * @param  domain  domain of integer source coordinates for which to get a linear approximation.
      * @return a linear approximation of given transform for the specified domain.
      * @throws FactoryException if the transform approximation can not be computed.
      *
      * @see #setControlPoints(MathTransform)
+     * @see org.apache.sis.coverage.grid.GridGeometry#linearize(boolean)
      *
      * @since 1.1
      */
-    public static LinearTransform approximate(final MathTransform gridToCRS, final int... gridSize) throws FactoryException {
+    public static LinearTransform approximate(final MathTransform gridToCRS, final Envelope domain) throws FactoryException {
         ArgumentChecks.ensureNonNull("gridToCRS", gridToCRS);
+        ArgumentChecks.ensureNonNull("domain",    domain);
         try {
-            final LinearTransform mt = ResidualGrid.approximate(gridToCRS, gridSize);
-            if (mt != null) {
-                return mt;
-            }
-            final LinearTransformBuilder builder = new LinearTransformBuilder(gridSize);
-            builder.setControlPoints(gridToCRS);
-            return builder.create(null);
+            return (LinearTransform) Linearizer.approximate(gridToCRS, domain);
         } catch (TransformException e) {
             throw new FactoryException(e);
         }
@@ -579,7 +568,7 @@ search: for (int j=numPoints; --j >= 0;) {
      * @param  gridToCRS  the transform from source coordinates (grid indices) to target coordinates.
      * @throws TransformException if a coordinate value can not be transformed.
      *
-     * @see #approximate(MathTransform, int...)
+     * @see #approximate(MathTransform, Envelope)
      *
      * @since 1.1
      */

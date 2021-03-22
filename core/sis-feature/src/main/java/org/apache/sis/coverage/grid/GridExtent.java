@@ -916,8 +916,9 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     /**
      * Transforms this grid extent to a "real world" envelope using the given transform.
      * The transform shall map <em>cell corner</em> to real world coordinates.
+     * This method does not set the envelope coordinate reference system.
      *
-     * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
+     * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates, or {@code null} if none.
      * @param  gridToCRS    the transform specified by the user. May be the same as {@code cornerToCRS}.
      *                      If different, then this is assumed to map cell centers instead of cell corners.
      * @param  fallback     bounds to use if some values still NaN, or {@code null} if none.
@@ -935,6 +936,9 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             long high = coordinates[i + dimension];
             if (high != Long.MAX_VALUE) high++;             // Make the coordinate exclusive before cast.
             envelope.setRange(i, coordinates[i], high);     // Possible loss of precision in cast to `double` type.
+        }
+        if (cornerToCRS == null) {
+            return envelope;
         }
         envelope = Envelopes.transform(cornerToCRS, envelope);
         if (envelope.isEmpty()) try {

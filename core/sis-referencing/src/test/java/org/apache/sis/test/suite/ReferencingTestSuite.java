@@ -264,6 +264,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.builder.ResidualGridTest.class,
     org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
     org.apache.sis.referencing.operation.builder.LocalizationGridBuilderTest.class,
+    org.apache.sis.referencing.operation.builder.LinearizerTest.class,
 
     // GeoAPI conformance test suite.
     org.apache.sis.referencing.geoapi.AuthorityFactoryTest.class,

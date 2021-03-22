@@ -51,6 +51,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.referencing.operation.builder.LinearTransformBuilder;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.TemporalAccessor;
 import org.apache.sis.internal.referencing.AxisDirections;
@@ -1285,6 +1286,57 @@ public class GridGeometry implements LenientComparable, Serializable {
             return new SliceGeometry(this, null, dimensions, null).reduce(null, -1);
         } catch (FactoryException e) {
             throw new BackingStoreException(e);
+        }
+        return this;
+    }
+
+    /**
+     * Creates a grid geometry with a linear approximation of the <cite>grid to CRS</cite> transform.
+     * The approximation is computed by <cite>Least Mean Squares</cite> method: the affine transform
+     * coefficients are chosen in way making the average value of (<var>position</var> − <var>linear
+     * approximation of position</var>)² as small as possible for all cells in this grid geometry.
+     * If the <cite>grid to CRS</cite> transform of this grid geometry is already linear, then this
+     * method returns {@code this}.
+     *
+     * @param  forceLowerToZero  whether to force lower grid coordinates to (0,0,…).
+     * @return a grid geometry with a linear approximation of the <cite>grid to CRS</cite> transform.
+     * @throws TransformException if some cell coordinates can not be computed.
+     *
+     * @see LinearTransformBuilder#approximate(MathTransform, Envelope)
+     * @see GridExtent#startsAtZero()
+     */
+    public GridGeometry linearize(final boolean forceLowerToZero) throws TransformException {
+        if (nonLinears != 0 && extent != null) try {
+            GeneralEnvelope domain    = extent.toCRS(null, null, null);
+            MathTransform approximate = LinearTransformBuilder.approximate(gridToCRS, domain);
+            MathTransform gridToGrid  = MathTransforms.concatenate(gridToCRS, approximate.inverse());
+            domain = Envelopes.transform(gridToGrid, domain);
+            final int dimension = domain.getDimension();
+            final long[] coordinates = new long[dimension * 2];
+            final double[] shift = new double[dimension];
+            for (int i=0; i<dimension; i++) {
+                long low  = Math.round(domain.getMinimum(i));
+                long high = Math.round(domain.getMaximum(i));
+                high = Math.max(low, Math.decrementExact(high));
+                if (forceLowerToZero) {
+                    high = Math.subtractExact(high, low);
+                    shift[i] = low;
+                } else {
+                    coordinates[i] = low;
+                }
+                coordinates[i + dimension] = high;
+            }
+            approximate = MathTransforms.concatenate(MathTransforms.translation(shift), approximate);
+            if (!approximate.equals(gridToCRS)) {
+                return new GridGeometry(new GridExtent(extent, coordinates), PixelInCell.CELL_CENTER,
+                                        approximate, envelope.getCoordinateReferenceSystem());
+            }
+        } catch (FactoryException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof TransformException) {
+                throw (TransformException) cause;
+            }
+            throw new TransformException(e);
         }
         return this;
     }
