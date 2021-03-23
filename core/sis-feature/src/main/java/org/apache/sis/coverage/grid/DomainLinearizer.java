@@ -61,8 +61,17 @@ public class DomainLinearizer {
 
     /**
      * Scale factor applied on grid coordinates, or 1 if none.
+     *
+     * @see #getScaleFactor()
      */
     private double scale = 1;
+
+    /**
+     * The processor to use for coverage ressampling, created when first needed.
+     *
+     * @see #processor()
+     */
+    private GridCoverageProcessor processor;
 
     /**
      * Creates a new linearizer.
@@ -99,19 +108,29 @@ public class DomainLinearizer {
      *
      * @return scale factor applied on coordinates in all dimensions, or 1 if none.
      */
-    public double getUniformScale() {
+    public double getScaleFactor() {
         return scale;
     }
 
     /**
      * Sets the scale factor to apply on coordinates in all dimensions.
-     * The default value is 1.
+     * Must be a value greater than zero. The default value is 1.
      *
      * @param  factor  scale factor applied on coordinates in all dimensions, or 1 if none.
      */
-    public void setUniformScale(final double factor) {
+    public void setScaleFactor(final double factor) {
         ArgumentChecks.ensureStrictlyPositive("factor", factor);
         scale = factor;
+    }
+
+    /**
+     * Returns the grid coverage processor associated to this linearizer.
+     */
+    private GridCoverageProcessor processor() {
+        if (processor == null) {
+            processor = new GridCoverageProcessor();
+        }
+        return processor;
     }
 
     /**
@@ -130,8 +149,7 @@ public class DomainLinearizer {
         if (gg.equals(linearized)) {
             return coverage;
         }
-        final GridCoverageProcessor processor = new GridCoverageProcessor();
-        return processor.resample(coverage, linearized);
+        return processor().resample(coverage, linearized);
     }
 
     /**
