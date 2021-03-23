@@ -51,7 +51,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
-import org.apache.sis.referencing.operation.builder.LinearTransformBuilder;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.TemporalAccessor;
 import org.apache.sis.internal.referencing.AxisDirections;
@@ -100,15 +99,30 @@ import org.apache.sis.xml.NilReason;
  *   <li>An {@linkplain #isConversionLinear indication of whether conversion for some axes is linear or not}.</li>
  * </ul>
  *
- * The first three properties should be mandatory, but are allowed to be temporarily absent during
- * grid coverage construction. Temporarily absent properties are allowed because they may be inferred
- * from a wider context. For example a grid geometry know nothing about {@link RenderedImage},
- * but {@code GridCoverage2D} does and may use that information for providing a missing grid extent.
+ * The first three properties should be mandatory,
+ * but are allowed to be temporarily absent during grid coverage construction.
+ * Temporarily absent properties are allowed because they may be inferred from a wider context.
+ * For example a {@code GridGeometry} knows nothing about {@link RenderedImage},
+ * but {@code GridCoverage2D} has this information and may use it for providing a missing grid extent.
  * By default, any request for an undefined property will throw an {@link IncompleteGridGeometryException}.
  * In order to check if a property is defined, use {@link #isDefined(int)}.
  *
- * <p>{@code GridGeometry} instances are immutable and thread-safe.
- * The same instance can be shared by different {@link GridCoverage} instances.</p>
+ * <h2>Non-linear referencing</h2>
+ * A key property is the {@linkplain #getGridToCRS(PixelInCell) "grid to CRS"} conversion,
+ * which defines how to map pixel coordinates to "real world" coordinates such as latitudes and longitudes.
+ * This relationship is often linear (an affine transform), but {@linkplain #isConversionLinear not necessarily};
+ * {@code GridGeometry} accepts non-linear conversions as well. Non-linear conversions may occur with images
+ * using {@linkplain org.apache.sis.referencing.operation.builder.LocalizationGridBuilder localization grids},
+ * but non-linear conversions should not be used for expressing map projections (projections should be specified
+ * in the {@linkplain #getCoordinateReferenceSystem() Coordinate Reference System} (CRS) instead).
+ *
+ * <p>Some applications can not handle non-linear "grid to CRS" conversions.
+ * For example encoding an image in a GeoTIFF file is much simpler if the "grid to CRS" conversion is linear.
+ * The {@link DomainLinearizer} class can be used for replacing non-linear conversions by linear approximations.</p>
+ *
+ * <h2>Multi-threading</h2>
+ * {@code GridGeometry} instances are immutable and thread-safe.
+ * The same instance can be shared by different {@link GridCoverage} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
@@ -1286,57 +1300,6 @@ public class GridGeometry implements LenientComparable, Serializable {
             return new SliceGeometry(this, null, dimensions, null).reduce(null, -1);
         } catch (FactoryException e) {
             throw new BackingStoreException(e);
-        }
-        return this;
-    }
-
-    /**
-     * Creates a grid geometry with a linear approximation of the <cite>grid to CRS</cite> transform.
-     * The approximation is computed by <cite>Least Mean Squares</cite> method: the affine transform
-     * coefficients are chosen in way making the average value of (<var>position</var> − <var>linear
-     * approximation of position</var>)² as small as possible for all cells in this grid geometry.
-     * If the <cite>grid to CRS</cite> transform of this grid geometry is already linear, then this
-     * method returns {@code this}.
-     *
-     * @param  forceLowerToZero  whether to force lower grid coordinates to (0,0,…).
-     * @return a grid geometry with a linear approximation of the <cite>grid to CRS</cite> transform.
-     * @throws TransformException if some cell coordinates can not be computed.
-     *
-     * @see LinearTransformBuilder#approximate(MathTransform, Envelope)
-     * @see GridExtent#startsAtZero()
-     */
-    public GridGeometry linearize(final boolean forceLowerToZero) throws TransformException {
-        if (nonLinears != 0 && extent != null) try {
-            GeneralEnvelope domain    = extent.toCRS(null, null, null);
-            MathTransform approximate = LinearTransformBuilder.approximate(gridToCRS, domain);
-            MathTransform gridToGrid  = MathTransforms.concatenate(gridToCRS, approximate.inverse());
-            domain = Envelopes.transform(gridToGrid, domain);
-            final int dimension = domain.getDimension();
-            final long[] coordinates = new long[dimension * 2];
-            final double[] shift = new double[dimension];
-            for (int i=0; i<dimension; i++) {
-                long low  = Math.round(domain.getMinimum(i));
-                long high = Math.round(domain.getMaximum(i));
-                high = Math.max(low, Math.decrementExact(high));
-                if (forceLowerToZero) {
-                    high = Math.subtractExact(high, low);
-                    shift[i] = low;
-                } else {
-                    coordinates[i] = low;
-                }
-                coordinates[i + dimension] = high;
-            }
-            approximate = MathTransforms.concatenate(MathTransforms.translation(shift), approximate);
-            if (!approximate.equals(gridToCRS)) {
-                return new GridGeometry(new GridExtent(extent, coordinates), PixelInCell.CELL_CENTER,
-                                        approximate, envelope.getCoordinateReferenceSystem());
-            }
-        } catch (FactoryException e) {
-            final Throwable cause = e.getCause();
-            if (cause instanceof TransformException) {
-                throw (TransformException) cause;
-            }
-            throw new TransformException(e);
         }
         return this;
     }

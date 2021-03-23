@@ -260,7 +260,7 @@ public class LinearTransformBuilder extends TransformBuilder {
      * @throws FactoryException if the transform approximation can not be computed.
      *
      * @see #setControlPoints(MathTransform)
-     * @see org.apache.sis.coverage.grid.GridGeometry#linearize(boolean)
+     * @see org.apache.sis.coverage.grid.DomainLinearizer
      *
      * @since 1.1
      */
