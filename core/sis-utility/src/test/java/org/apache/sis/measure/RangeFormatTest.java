@@ -309,12 +309,16 @@ public final strictfp class RangeFormatTest extends TestCase {
      */
     @Test
     public void testFormatLocalDate() {
-        format = new RangeFormat(Locale.CANADA_FRENCH, LocalDate.class);
+        format = new RangeFormat(Locale.CANADA, LocalDate.class);
         final Range<LocalDate> range = new Range<>(LocalDate.class,
                 LocalDate.parse("2019-12-23"), true,
                 LocalDate.parse("2020-05-31"), true);
-
-        assertEquals("[2019-12-23 … 2020-05-31]", format.format(range));
+        /*
+         * Expected output is "[2019-12-23 … 2020-05-31]" but be robust
+         * to small variation in output format (years may be on 2 digits).
+         */
+        final String result = format.format(range);
+        assertTrue(result, result.matches("\\[(20)?19-12-23 … (20)?20-05-31\\]"));
     }
 
     /**
@@ -332,10 +336,13 @@ public final strictfp class RangeFormatTest extends TestCase {
 
     /**
      * Tests formatting a range of {@link Instant} objects.
+     *
+     * @see RangeTest#testFormatInstantTo()
      */
     @Test
     public void testFormatInstant() {
         format = new RangeFormat(Locale.FRANCE, Instant.class);
+        ((DateFormat) format.elementFormat).setTimeZone(TimeZone.getTimeZone("Europe/Paris"));
         final Range<Instant> range = new Range<>(Instant.class,
                 Instant.parse("2019-12-23T06:00:00Z"), true,
                 Instant.parse("2020-05-31T18:00:00Z"), true);

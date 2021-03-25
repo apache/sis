@@ -326,14 +326,20 @@ public final strictfp class RangeTest extends TestCase {
 
     /**
      * Tests the {@link Range#formatTo(Formatter, int, int, int)} method with a range of instants.
+     *
+     * @see RangeFormatTest#testFormatInstant()
      */
     @Test
     public void testFormatInstantTo() {
         final Range<Instant> range = new Range<>(Instant.class,
                 Instant.parse("2019-12-23T06:00:00Z"), true,
-                Instant.parse("2020-05-31T18:00:00Z"), true);
-
-        assertEquals("[23/12/2019 07:00 … 31/05/2020 20:00]", String.format(Locale.FRANCE, "%s", range));
+                Instant.parse("2020-05-14T18:00:00Z"), true);
+        /*
+         * The result depends on time zone and we have no API for forcing the time zone to some specific
+         * value in a call to 'Range.formatTo(Formatter, …)`. So we verify only the year and the month.
+         */
+        final String result = String.format(Locale.CANADA, "%s", range);
+        assertTrue(result, result.matches("\\[2019-12-.+ … 2020-05-.+\\]"));
     }
 
     /**

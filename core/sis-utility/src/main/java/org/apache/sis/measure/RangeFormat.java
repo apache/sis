@@ -336,7 +336,7 @@ public class RangeFormat extends Format implements Localized {
      * using the given locale and timezone.
      *
      * @param locale    the locale for parsing and formatting range components.
-     * @param timezone  the timezone for the date to be formatted.
+     * @param timezone  the timezone for the dates to be formatted.
      */
     public RangeFormat(final Locale locale, final TimeZone timezone) {
         this(locale, Date.class);
