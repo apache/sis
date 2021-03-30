@@ -19,45 +19,47 @@ package org.apache.sis.internal.sql.feature;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
-
-import org.opengis.filter.Filter;
-import org.opengis.filter.sort.SortBy;
-
 import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.FeatureSet;
 
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.filter.Filter;
+import org.opengis.filter.SortProperty;
+
+
 /**
  *
- * @author Alexis Manin (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
 
     private ColumnRef[] columns;
-    private SortBy[] sorting;
+    private SortProperty[] sorting;
 
     private CharSequence where;
 
-    private final Supplier<? extends ANSIInterpreter> filterInterpreter;
+    private final ANSIInterpreter filterInterpreter;
 
     protected SQLQueryAdapter() {
-        this(() -> new ANSIInterpreter());
+        this(new ANSIInterpreter());
     }
 
     protected SQLQueryAdapter(final Dialect dbDialect) {
         this(forDialect(dbDialect));
     }
 
-    protected SQLQueryAdapter(Supplier<? extends ANSIInterpreter> filterInterpreter) {
+    protected SQLQueryAdapter(final ANSIInterpreter filterInterpreter) {
         this.filterInterpreter = filterInterpreter;
     }
 
     /**
      * No-op implementation. SQL optimisation is dynamically applied through {@link StreamSQL}.
+     *
      * @param offset The offset to handle.
      * @return Input offset.
      */
@@ -68,6 +70,7 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
 
     /**
      * No-op implementation. SQL optimisation is dynamically applied through {@link StreamSQL}.
+     *
      * @param limit The limit to handle.
      * @return Input limit.
      */
@@ -77,23 +80,23 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
     }
 
     @Override
-    public final Filter filter(Filter filter) {
+    public final Filter<Feature> filter(Filter<Feature> filter) {
         try {
-            final Object result = filter.accept(filterInterpreter.get(), null);
-            if (ANSIInterpreter.isNonEmptyText(result)) {
-                where = (CharSequence) result;
-                return Filter.INCLUDE;
+            final StringBuilder sb = new StringBuilder();
+            filterInterpreter.visit(filter, sb);
+            if (sb.length() != 0) {
+                where = sb.toString();
+                return Filter.include();
             }
         } catch (UnsupportedOperationException e) {
             // TODO: log
             where = null;
         }
-
         return filter;
     }
 
     @Override
-    public boolean sort(SortBy[] comparison) {
+    public boolean sort(SortProperty[] comparison) {
         sorting = Arrays.copyOf(comparison, comparison.length);
         return false;
     }
@@ -115,7 +118,7 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
         return Optional.of(create(where, sorting, columns));
     }
 
-    protected abstract FeatureSet create(final CharSequence where, final SortBy[] sorting, final ColumnRef[] columns);
+    protected abstract FeatureSet create(final CharSequence where, final SortProperty[] sorting, final ColumnRef[] columns);
 
     private boolean isNoOp() {
         return (sorting == null || sorting.length < 1)
@@ -131,7 +134,7 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
         }
 
         @Override
-        protected FeatureSet create(CharSequence where, SortBy[] sorting, ColumnRef[] columns) {
+        protected FeatureSet create(CharSequence where, SortProperty[] sorting, ColumnRef[] columns) {
             // TODO: column information is lost for now. What should be done is factorize/sanitize feature set
             // implementations from this package to better handle SQL filtering.
             return new TableSubset(parent, sorting, where);
@@ -144,12 +147,11 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
      *
      * @param dialect Database dialect that must be produced by the interpreter. If null, {@link Dialect#ANSI} is used
      *                as a fallback.
-     * @return A function able to give a fresh interpreter on demaind.
      */
-    static Supplier<ANSIInterpreter> forDialect(final Dialect dialect) {
+    private static ANSIInterpreter forDialect(final Dialect dialect) {
         switch (dialect) {
-            case POSTGRESQL: return () -> new PostGISInterpreter();
-            default: return () -> new ANSIInterpreter();
+            case POSTGRESQL: return new PostGISInterpreter();
+            default: return new ANSIInterpreter();
         }
     }
 }

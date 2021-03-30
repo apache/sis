@@ -18,16 +18,20 @@ package org.apache.sis.filter;
 
 import java.util.Date;
 import java.io.Serializable;
+import org.opengis.util.ScopedName;
+import org.opengis.metadata.Identifier;
+import org.apache.sis.test.TestUtilities;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.filter.Expression;
+import org.opengis.filter.Literal;
 import org.opengis.temporal.Period;
 import org.opengis.temporal.Duration;
 import org.opengis.temporal.RelativePosition;
 import org.opengis.temporal.TemporalPosition;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.temporal.TemporalGeometricPrimitive;
-import org.opengis.filter.expression.Literal;
-import org.opengis.filter.expression.ExpressionVisitor;
-import org.opengis.metadata.Identifier;
-import org.apache.sis.test.TestUtilities;
 
 
 /**
@@ -40,7 +44,7 @@ import org.apache.sis.test.TestUtilities;
  * @module
  */
 @SuppressWarnings("serial")
-final strictfp class PeriodLiteral implements Period, Literal, Serializable {
+final strictfp class PeriodLiteral implements Period, Literal<Feature,Period>, Serializable {
     /**
      * Period beginning and ending, in milliseconds since Java epoch.
      */
@@ -48,16 +52,8 @@ final strictfp class PeriodLiteral implements Period, Literal, Serializable {
 
     /**
      * Returns the constant value held by this object.
-     * Returns value should be interpreted as a {@link Period}.
      */
-    @Override public Object getValue()                     {return this;}
-    @Override public Object evaluate(Object o)             {return this;}
-    @Override public <T> T  evaluate(Object o, Class<T> c) {return c.cast(this);}
-
-    /** Implements the visitor pattern (not used by Apache SIS). */
-    @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
-    }
+    @Override public Period getValue() {return this;}
 
     /** Returns a bound of this period. */
     @Override public org.opengis.temporal.Instant getBeginning() {return instant(begin);}
@@ -80,9 +76,11 @@ final strictfp class PeriodLiteral implements Period, Literal, Serializable {
 
     /** Not needed for the tests. */
     @Override public Identifier       getName()                              {throw new UnsupportedOperationException();}
+    @Override public ScopedName       getFunctionName()                      {throw new UnsupportedOperationException();}
     @Override public RelativePosition relativePosition(TemporalPrimitive o)  {throw new UnsupportedOperationException();}
     @Override public Duration         distance(TemporalGeometricPrimitive o) {throw new UnsupportedOperationException();}
     @Override public Duration         length()                               {throw new UnsupportedOperationException();}
+    @Override public <N> Expression<Feature,N> toValueType(Class<N> type)    {throw new UnsupportedOperationException();}
 
     /**
      * Hash code value. Used by the tests for checking the results of deserialization.

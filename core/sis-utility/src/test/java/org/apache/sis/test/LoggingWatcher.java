@@ -164,6 +164,7 @@ public final strictfp class LoggingWatcher extends TestWatcher implements Filter
      * Each call of this method advances to the next log message.
      *
      * @param  keywords  the keywords that are expected to exist in the next log message.
+     *         May be an empty array for requesting only the existence of a log with any message.
      */
     public void assertNextLogContains(final String... keywords) {
         if (messages.isEmpty()) {

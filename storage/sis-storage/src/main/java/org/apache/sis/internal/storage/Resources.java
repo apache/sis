@@ -242,6 +242,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InconsistentNameComponents_2 = 10;
 
         /**
+         * Invalid or unsupported “{1}” expression at index {0}.
+         */
+        public static final short InvalidExpression_2 = 60;
+
+        /**
          * Sample dimension index {1} is invalid. Expected an index from 0 to {0} inclusive.
          */
         public static final short InvalidSampleDimensionIndex_2 = 52;

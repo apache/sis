@@ -32,31 +32,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.filter.sort.SortBy;
 import org.opengis.util.GenericName;
-
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ArgumentChecks;
 
-import static org.apache.sis.util.ArgumentChecks.ensureNonEmpty;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.filter.SortProperty;
+
 
 /**
  * Iterator over feature instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -65,7 +63,8 @@ final class Features implements Spliterator<Feature> {
      * An empty array of iterators, used when there is no dependency.
      */
     private static final Features[] EMPTY = new Features[0];
-    public static final Pattern WHERE_REGEX = Pattern.compile("^\\s*WHERE\\s+", Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern WHERE_REGEX = Pattern.compile("^\\s*WHERE\\s+", Pattern.CASE_INSENSITIVE);
 
     /**
      * The type of features to create.
@@ -149,7 +148,7 @@ final class Features implements Spliterator<Feature> {
     /**
      * Estimated number of remaining rows, or {@literal <= 0} if unknown.
      */
-    private long estimatedSize;
+    private final long estimatedSize;
 
     private final FeatureAdapter.ResultSetAdapter adapter;
 
@@ -173,7 +172,7 @@ final class Features implements Spliterator<Feature> {
              boolean distinct, final long offset, final long limit, CharSequence where)
              throws SQLException, InternalDataStoreException
     {
-        ensureNonEmpty("Columns to fetch", columns);
+        ArgumentChecks.ensureNonEmpty("columns", columns);
         String[] attributeColumns = new String[columns.size()];
         attributeNames = new String[attributeColumns.length];
         int i = 0;
@@ -187,7 +186,7 @@ final class Features implements Spliterator<Feature> {
         estimatedSize = following.isEmpty() ? table.countRows(metadata, true) : 0;
         /*
          * Create a SELECT clause with all columns that are ordinary attributes. Order matter, since 'Features'
-         * iterator will map the columns to the attributes listed in the 'attributeNames' array in that order.
+         * iterator will map the columns to the attributes listed in the `attributeNames` array in that order.
          * Moreover, we optionally add a "distinct" clause on user request.
          */
         final SQLBuilder sql = new SQLBuilder(metadata, true).append("SELECT");
@@ -196,8 +195,8 @@ final class Features implements Spliterator<Feature> {
         final Map<String,Integer> columnIndices = new HashMap<>();
         /*
          * Create a SELECT clause with all columns that are ordinary attributes.
-         * Order matter, since 'Features' iterator will map the columns to the
-         * attributes listed in the 'attributeNames' array in that order.
+         * Order matter, since `Features` iterator will map the columns to the
+         * attributes listed in the `attributeNames` array in that order.
          */
         for (String column : attributeColumns) {
             appendColumn(sql, column, columnIndices);
@@ -294,7 +293,7 @@ final class Features implements Spliterator<Feature> {
             statement = connection.prepareStatement(sql.toString());
             /*
              * Following assumes that the foreigner key references the primary key of this table,
-             * in which case 'table.primaryKeyClass' should never be null. This assumption may not
+             * in which case `table.primaryKeyClass` should never be null. This assumption may not
              * hold if the relation has been defined by DatabaseMetaData.getCrossReference(…) instead.
              */
             if (componentOf.useFullKey()) {
@@ -427,7 +426,7 @@ final class Features implements Spliterator<Feature> {
                      * Relation.Direction.IMPORT: this table contains the foreigner keys.
                      *
                      * If the foreigner key uses only one column, we will store the foreigner key value
-                     * in the 'key' variable without creating array. But if the foreigner key uses more
+                     * in the `key` variable without creating array. But if the foreigner key uses more
                      * than one column, then we need to create an array holding all values.
                      */
                     Object key = null;
@@ -443,7 +442,7 @@ final class Features implements Spliterator<Feature> {
                     /*
                      * Relation.Direction.EXPORT: another table references this table.
                      *
-                     * 'key' must stay null because we do not cache those dependencies.
+                     * `key` must stay null because we do not cache those dependencies.
                      * The reason is that this direction can return a lot of instances,
                      * contrarily to Direction.IMPORT which return only one instance.
                      * Furthermore instances fetched from Direction.EXPORT can not be
@@ -512,9 +511,9 @@ final class Features implements Spliterator<Feature> {
      */
     private void close() throws SQLException {
         /*
-         * Only one of 'statement' and 'result' should be non-null. The connection should be closed
-         * by the 'Features' instance having a non-null 'result' because it is the main one created
-         * by 'Table.features(boolean)' method. The other 'Features' instances are dependencies.
+         * Only one of `statement` and `result` should be non-null. The connection should be closed
+         * by the `Features` instance having a non-null `result` because it is the main one created
+         * by `Table.features(boolean)` method. The other `Features` instances are dependencies.
          */
         if (statement != null) {
             statement.close();
@@ -533,34 +532,11 @@ final class Features implements Spliterator<Feature> {
         }
     }
 
-    @FunctionalInterface
-    interface SQLFunction<T, R> {
-        R apply(T t) throws SQLException;
-
-        /**
-         * Returns a composed function that first applies this function to
-         * its input, and then applies the {@code after} function to the result.
-         * If evaluation of either function throws an exception, it is relayed to
-         * the caller of the composed function.
-         *
-         * @param <V> the type of output of the {@code after} function, and of the
-         *           composed function
-         * @param after the function to apply after this function is applied
-         * @return a composed function that first applies this function and then
-         * applies the {@code after} function
-         * @throws NullPointerException if after is null
-         */
-        default <V> SQLFunction<T, V> andThen(Function<? super R, ? extends V> after) {
-            ensureNonNull("After function", after);
-            return t -> after.apply(apply(t));
-        }
-    }
-
     static class Builder implements StreamSQL.QueryBuilder {
 
         final Table parent;
         long limit, offset;
-        SortBy[] sort;
+        SortProperty[] sort;
 
         ColumnRef[] columns;
 
@@ -577,7 +553,7 @@ final class Features implements Spliterator<Feature> {
             return this;
         }
 
-        Builder sortBy(final SortBy...sorting) {
+        Builder sortBy(final SortProperty...sorting) {
             if (sorting == null || sorting.length < 1) this.sort = null;
             else this.sort = Arrays.copyOf(sorting, sorting.length);
             return this;
@@ -620,7 +596,7 @@ final class Features implements Spliterator<Feature> {
         final boolean distinct;
         final ColumnRef[] columns;
 
-        final SortBy[] sort;
+        final SortProperty[] sort;
 
         final CharSequence where;
 
@@ -683,7 +659,7 @@ final class Features implements Spliterator<Feature> {
         }
     }
 
-    static void appendOrderBy(SQLBuilder sql, SortBy[] sort) {
+    static void appendOrderBy(SQLBuilder sql, SortProperty[] sort) {
         if (sort != null && sort.length > 0) {
             sql.append(" ORDER BY ");
             append(sql, sort[0]);
@@ -692,8 +668,8 @@ final class Features implements Spliterator<Feature> {
         }
     }
 
-    private static void append(SQLBuilder target, SortBy toAppend) {
-        target.appendIdentifier(toAppend.getPropertyName().getPropertyName()).append(" ");
+    private static void append(SQLBuilder target, SortProperty toAppend) {
+        target.appendIdentifier(toAppend.getValueReference().getXPath()).append(" ");
         if (toAppend.getSortOrder() != null) target.append(toAppend.getSortOrder().toSQL());
     }
 }

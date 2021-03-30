@@ -23,11 +23,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.sis.util.ArgumentChecks;
 
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 /**
  * Convert data from a specific query into Feature entities. This object can be prepared once for a specific statement,
@@ -39,9 +40,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * This object has an initialization phase, to prepare it for a specific ResultSet, through {@link #prepare(Connection)}
  * method. It allows mappers to fetch specific information from the database when needed.
  *
- * @author Alexis Manin (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 class FeatureAdapter {
@@ -52,12 +53,13 @@ class FeatureAdapter {
 
     /**
      * Creates an adapter producing features of the given type, and populating its attributes with input mappers.
-     * @param type The data type to produce as output. Cannot be null.
-     * @param attributeMappers Attribute mappers to use to decode SQL values. Mandatory (can be empty, though)
+     *
+     * @param type              the data type to produce as output. Can not be null.
+     * @param attributeMappers  attribute mappers to use to decode SQL values. Mandatory but can be empty.
      */
     FeatureAdapter(FeatureType type, List<PropertyMapper> attributeMappers) {
-        ensureNonNull("Target feature type", type);
-        ensureNonNull("Attribute mappers", attributeMappers);
+        ArgumentChecks.ensureNonNull("type", type);
+        ArgumentChecks.ensureNonNull("attributeMappers", attributeMappers);
         this.type = type;
         this.attributeMappers = Collections.unmodifiableList(new ArrayList<>(attributeMappers));
     }

@@ -1192,7 +1192,7 @@ public class GeodeticCalculator {
 
                 positionCRS           = getPositionCRS();
                 baseCRS               = ReferencingUtilities.toNormalizedGeographicCRS(positionCRS, false, false);
-                crsUnit               = ReferencingUtilities.getUnit(positionCRS.getCoordinateSystem());
+                crsUnit               = ReferencingUtilities.getUnit(positionCRS);
                 toLinearUnit          = ellipsoid.getAxisUnit().getConverterTo(Units.isLinear(crsUnit) ? crsUnit.asType(Length.class) : Units.METRE);
                 toProjectionBase      = CRS.findOperation(positionCRS, baseCRS, null).getMathTransform();
                 projectionFactory     = CoordinateOperations.factoryMT().caching(false);

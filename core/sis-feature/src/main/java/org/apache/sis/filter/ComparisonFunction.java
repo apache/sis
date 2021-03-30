@@ -18,6 +18,7 @@ package org.apache.sis.filter;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -39,10 +40,12 @@ import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
+import org.opengis.filter.Filter;
+import org.opengis.filter.Expression;
 import org.opengis.filter.MatchAction;
-import org.opengis.filter.expression.Expression;
+import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.BinaryComparisonOperator;
-import org.opengis.filter.FilterVisitor;
+import org.opengis.filter.BetweenComparisonOperator;
 
 
 /**
@@ -67,10 +70,15 @@ import org.opengis.filter.FilterVisitor;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
+ *
+ * @since 1.1
  * @module
  */
-abstract class ComparisonFunction extends BinaryFunction implements BinaryComparisonOperator {
+abstract class ComparisonFunction<R> extends BinaryFunction<R,Object,Object>
+        implements BinaryComparisonOperator<R>, Optimization.OnFilter<R>
+{
     /**
      * For cross-version compatibility.
      */
@@ -79,13 +87,13 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
     /**
      * Specifies whether comparisons are case sensitive.
      */
-    private final boolean isMatchingCase;
+    protected final boolean isMatchingCase;
 
     /**
      * Specifies how the comparisons shall be evaluated for a collection of values.
      * Values can be ALL, ANY or ONE.
      */
-    private final MatchAction matchAction;
+    protected final MatchAction matchAction;
 
     /**
      * Creates a new comparator.
@@ -95,11 +103,32 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
      * @param  isMatchingCase  specifies whether comparisons are case sensitive.
      * @param  matchAction     specifies how the comparisons shall be evaluated for a collection of values.
      */
-    ComparisonFunction(final Expression expression1, final Expression expression2, final boolean isMatchingCase, final MatchAction matchAction) {
+    ComparisonFunction(final Expression<? super R, ?> expression1,
+                       final Expression<? super R, ?> expression2,
+                       final boolean isMatchingCase, final MatchAction matchAction)
+    {
         super(expression1, expression2);
         this.isMatchingCase = isMatchingCase;
         this.matchAction = matchAction;
         ArgumentChecks.ensureNonNull("matchAction", matchAction);
+    }
+
+    /**
+     * Returns the element on the left side of the comparison expression.
+     * This is the element at index 0 in the {@linkplain #getExpressions() list of expressions}.
+     */
+    @Override
+    public final Expression<? super R, ?> getOperand1() {
+        return expression1;
+    }
+
+    /**
+     * Returns the element on the left side of the comparison expression.
+     * This is the element at index 0 in the {@linkplain #getExpressions() list of expressions}.
+     */
+    @Override
+    public final Expression<? super R, ?> getOperand2() {
+        return expression2;
     }
 
     /**
@@ -132,7 +161,7 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
     @Override
     public final boolean equals(final Object obj) {
         if (super.equals(obj)) {
-            final ComparisonFunction other = (ComparisonFunction) obj;
+            final ComparisonFunction<?> other = (ComparisonFunction<?>) obj;
             return other.isMatchingCase == isMatchingCase && matchAction.equals(other.matchAction);
         }
         return false;
@@ -144,10 +173,10 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
      * or at most one expression can produce a collection.
      */
     @Override
-    public final boolean evaluate(final Object candidate) {
-        final Object left = expression1.evaluate(candidate);
+    public final boolean test(final R candidate) {
+        final Object left = expression1.apply(candidate);
         if (left != null) {
-            final Object right = expression2.evaluate(candidate);
+            final Object right = expression2.apply(candidate);
             if (right != null) {
                 final Iterable<?> collection;
                 final boolean collectionFirst = (left instanceof Iterable<?>);
@@ -511,19 +540,29 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
 
 
     /**
-     * The {@value #NAME} {@literal (<)} filter.
+     * The {@code "PropertyIsLessThan"} {@literal (<)} filter.
      */
-    static final class LessThan extends ComparisonFunction implements org.opengis.filter.PropertyIsLessThan {
+    static final class LessThan<R> extends ComparisonFunction<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 6126039112844823196L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        LessThan(Expression expression1, Expression expression2, boolean isMatchingCase, MatchAction matchAction) {
+        /** Creates a new filter. */
+        LessThan(final Expression<? super R, ?> expression1,
+                 final Expression<? super R, ?> expression2,
+                 boolean isMatchingCase, MatchAction matchAction)
+        {
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
-        /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+            return new LessThan<>(effective[0], effective[1], isMatchingCase, matchAction);
+        }
+
+        /** Identification of the this operation. */
+        @Override public ComparisonOperatorName getOperatorType() {
+            return ComparisonOperatorName.PROPERTY_IS_LESS_THAN;
+        }
         @Override protected char symbol() {return '<';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
@@ -537,28 +576,33 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         @Override protected boolean compare      (ChronoLocalDate        left, ChronoLocalDate        right) {return left.isBefore(right);}
         @Override protected boolean compare      (ChronoLocalDateTime<?> left, ChronoLocalDateTime<?> right) {return left.isBefore(right);}
         @Override protected boolean compare      (ChronoZonedDateTime<?> left, ChronoZonedDateTime<?> right) {return left.isBefore(right);}
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} (≤) filter.
+     * The {@code "PropertyIsLessThanOrEqualTo"} (≤) filter.
      */
-    static final class LessThanOrEqualTo extends ComparisonFunction implements org.opengis.filter.PropertyIsLessThanOrEqualTo {
+    static final class LessThanOrEqualTo<R> extends ComparisonFunction<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 6357459227911760871L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        LessThanOrEqualTo(Expression expression1, Expression expression2, boolean isMatchingCase, MatchAction matchAction) {
+        /** Creates a new filter. */
+        LessThanOrEqualTo(final Expression<? super R, ?> expression1,
+                          final Expression<? super R, ?> expression2,
+                          boolean isMatchingCase, MatchAction matchAction)
+        {
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
-        /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+            return new LessThanOrEqualTo<>(effective[0], effective[1], isMatchingCase, matchAction);
+        }
+
+        /** Identification of the this operation. */
+        @Override public ComparisonOperatorName getOperatorType() {
+            return ComparisonOperatorName.PROPERTY_IS_LESS_THAN_OR_EQUAL_TO;
+        }
         @Override protected char symbol() {return '≤';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
@@ -572,28 +616,33 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         @Override protected boolean compare      (ChronoLocalDate        left, ChronoLocalDate        right) {return !left.isAfter(right);}
         @Override protected boolean compare      (ChronoLocalDateTime<?> left, ChronoLocalDateTime<?> right) {return !left.isAfter(right);}
         @Override protected boolean compare      (ChronoZonedDateTime<?> left, ChronoZonedDateTime<?> right) {return !left.isAfter(right);}
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} {@literal (>)} filter.
+     * The {@code "PropertyIsGreaterThan"} {@literal (>)} filter.
      */
-    static final class GreaterThan extends ComparisonFunction implements org.opengis.filter.PropertyIsGreaterThan {
+    static final class GreaterThan<R> extends ComparisonFunction<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 8605517892232632586L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        GreaterThan(Expression expression1, Expression expression2, boolean isMatchingCase, MatchAction matchAction) {
+        /** Creates a new filter. */
+        GreaterThan(final Expression<? super R, ?> expression1,
+                    final Expression<? super R, ?> expression2,
+                    boolean isMatchingCase, MatchAction matchAction)
+        {
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
-        /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+            return new GreaterThan<>(effective[0], effective[1], isMatchingCase, matchAction);
+        }
+
+        /** Identification of the this operation. */
+        @Override public ComparisonOperatorName getOperatorType() {
+            return ComparisonOperatorName.PROPERTY_IS_GREATER_THAN;
+        }
         @Override protected char symbol() {return '>';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
@@ -607,28 +656,33 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         @Override protected boolean compare      (ChronoLocalDate        left, ChronoLocalDate        right) {return left.isAfter(right);}
         @Override protected boolean compare      (ChronoLocalDateTime<?> left, ChronoLocalDateTime<?> right) {return left.isAfter(right);}
         @Override protected boolean compare      (ChronoZonedDateTime<?> left, ChronoZonedDateTime<?> right) {return left.isAfter(right);}
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} (≥) filter.
+     * The {@code "PropertyIsGreaterThanOrEqualTo"} (≥) filter.
      */
-    static final class GreaterThanOrEqualTo extends ComparisonFunction implements org.opengis.filter.PropertyIsGreaterThanOrEqualTo {
+    static final class GreaterThanOrEqualTo<R> extends ComparisonFunction<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 1514185657159141882L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        GreaterThanOrEqualTo(Expression expression1, Expression expression2, boolean isMatchingCase, MatchAction matchAction) {
+        /** Creates a new filter. */
+        GreaterThanOrEqualTo(final Expression<? super R, ?> expression1,
+                             final Expression<? super R, ?> expression2,
+                             boolean isMatchingCase, MatchAction matchAction)
+        {
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
-        /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+            return new GreaterThanOrEqualTo<>(effective[0], effective[1], isMatchingCase, matchAction);
+        }
+
+        /** Identification of the this operation. */
+        @Override public ComparisonOperatorName getOperatorType() {
+            return ComparisonOperatorName.PROPERTY_IS_GREATER_THAN_OR_EQUAL_TO;
+        }
         @Override protected char symbol() {return '≥';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
@@ -642,28 +696,33 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         @Override protected boolean compare      (ChronoLocalDate        left, ChronoLocalDate        right) {return !left.isBefore(right);}
         @Override protected boolean compare      (ChronoLocalDateTime<?> left, ChronoLocalDateTime<?> right) {return !left.isBefore(right);}
         @Override protected boolean compare      (ChronoZonedDateTime<?> left, ChronoZonedDateTime<?> right) {return !left.isBefore(right);}
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} (=) filter.
+     * The {@code "PropertyIsEqualTo"} (=) filter.
      */
-    static final class EqualTo extends ComparisonFunction implements org.opengis.filter.PropertyIsEqualTo {
+    static final class EqualTo<R> extends ComparisonFunction<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 8502612221498749667L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        EqualTo(Expression expression1, Expression expression2, boolean isMatchingCase, MatchAction matchAction) {
+        /** Creates a new filter. */
+        EqualTo(final Expression<? super R, ?> expression1,
+                final Expression<? super R, ?> expression2,
+                boolean isMatchingCase, MatchAction matchAction)
+        {
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
-        /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+            return new EqualTo<>(effective[0], effective[1], isMatchingCase, matchAction);
+        }
+
+        /** Identification of the this operation. */
+        @Override public ComparisonOperatorName getOperatorType() {
+            return ComparisonOperatorName.PROPERTY_IS_EQUAL_TO;
+        }
         @Override protected char symbol() {return '=';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
@@ -677,28 +736,33 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         @Override protected boolean compare      (ChronoLocalDate        left, ChronoLocalDate        right) {return left.isEqual(right);}
         @Override protected boolean compare      (ChronoLocalDateTime<?> left, ChronoLocalDateTime<?> right) {return left.isEqual(right);}
         @Override protected boolean compare      (ChronoZonedDateTime<?> left, ChronoZonedDateTime<?> right) {return left.isEqual(right);}
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} (≠) filter.
+     * The {@code "PropertyIsNotEqualTo"} (≠) filter.
      */
-    static final class NotEqualTo extends ComparisonFunction implements org.opengis.filter.PropertyIsNotEqualTo {
+    static final class NotEqualTo<R> extends ComparisonFunction<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -3295957142249035362L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        NotEqualTo(Expression expression1, Expression expression2, boolean isMatchingCase, MatchAction matchAction) {
+        /** Creates a new filter. */
+        NotEqualTo(final Expression<? super R, ?> expression1,
+                   final Expression<? super R, ?> expression2,
+                   boolean isMatchingCase, MatchAction matchAction)
+        {
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
-        /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+            return new NotEqualTo<>(effective[0], effective[1], isMatchingCase, matchAction);
+        }
+
+        /** Identification of the this operation. */
+        @Override public ComparisonOperatorName getOperatorType() {
+            return ComparisonOperatorName.PROPERTY_IS_NOT_EQUAL_TO;
+        }
         @Override protected char symbol() {return '≠';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
@@ -712,31 +776,30 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         @Override protected boolean compare      (ChronoLocalDate        left, ChronoLocalDate        right) {return !left.isEqual(right);}
         @Override protected boolean compare      (ChronoLocalDateTime<?> left, ChronoLocalDateTime<?> right) {return !left.isEqual(right);}
         @Override protected boolean compare      (ChronoZonedDateTime<?> left, ChronoZonedDateTime<?> right) {return !left.isEqual(right);}
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
+
     /**
-     * The {@value #NAME} filter. This can be seen as a specialization of
+     * The {@code "PropertyIsBetween"} filter. This can be seen as a specialization of
      * {@link org.apache.sis.filter.LogicalFunction.And} when one expression is
      * {@link LessThanOrEqualTo} and a second expression is {@link GreaterThanOrEqualTo}.
      *
      * @see org.apache.sis.filter.LogicalFunction.And
      */
-    static final class Between extends Node implements org.opengis.filter.PropertyIsBetween {
+    static final class Between<R> extends Node implements BetweenComparisonOperator<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -2434954008425799595L;
 
-        /** The first  operation to apply. */ private final GreaterThanOrEqualTo lower;
-        /** The second operation to apply. */ private final LessThanOrEqualTo upper;
+        /** The first  operation to apply. */ private final GreaterThanOrEqualTo<? super R> lower;
+        /** The second operation to apply. */ private final LessThanOrEqualTo<? super R> upper;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        Between(final Expression expression, final Expression lower, final Expression upper) {
-            this.lower = new GreaterThanOrEqualTo(expression, lower, true, MatchAction.ANY);
-            this.upper = new    LessThanOrEqualTo(expression, upper, true, MatchAction.ANY);
+        /** Creates a new filter. */
+        Between(final Expression<? super R, ?> expression,
+                final Expression<? super R, ?> lower,
+                final Expression<? super R, ?> upper)
+        {
+            this.lower = new GreaterThanOrEqualTo<>(expression, lower, true, MatchAction.ANY);
+            this.upper = new    LessThanOrEqualTo<>(expression, upper, true, MatchAction.ANY);
         }
 
         /**
@@ -744,23 +807,22 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
          * is the same as {@code upper.expression1}, that repetition is omitted.
          */
         @Override protected Collection<?> getChildren() {
+            return getExpressions();
+        }
+
+        /** Returns the expression to be compared by this operator, together with boundaries. */
+        @Override public List<Expression<? super R, ?>> getExpressions() {
             return Arrays.asList(lower.expression1, lower.expression2, upper.expression2);
         }
 
-        /** Identification of this operation. */
-        @Override public String     getName()          {return NAME;}
-        @Override public Expression getExpression()    {return lower.expression1;}
-        @Override public Expression getLowerBoundary() {return lower.expression2;}
-        @Override public Expression getUpperBoundary() {return upper.expression2;}
+        /** Returns the expression to be compared. */
+        @Override public Expression<? super R, ?> getExpression()    {return lower.expression1;}
+        @Override public Expression<? super R, ?> getLowerBoundary() {return lower.expression2;}
+        @Override public Expression<? super R, ?> getUpperBoundary() {return upper.expression2;}
 
-        /** Execute the filter like and AND operation. */
-        @Override public boolean evaluate(final Object object) {
-            return lower.evaluate(object) && upper.evaluate(object);
-        }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
+        /** Executes the filter operation. */
+        @Override public boolean test(final R object) {
+            return lower.test(object) && upper.test(object);
         }
     }
 }

@@ -67,6 +67,43 @@ public final class JTS extends Static {
     }
 
     /**
+     * Returns {@code true} if the two geometries use the same CRS, based on very cheap comparison.
+     * A value of {@code false} does not necessarily means that the CRS are different, but it means
+     * that a more expansive comparison is required. If CRS are specified by SRID codes, then this
+     * method assumes that the two SRID codes are defined by the same authority (e.g. EPSG).
+     *
+     * <p>If both CRS are undefined (null), then they are considered the same.</p>
+     *
+     * @param  first   the first geometry.
+     * @param  second  the second geometry.
+     * @return {@code true} if the two geometries use equivalent CRS, or {@code false} in case of doubt.
+     */
+    static boolean isSameCRS(final Geometry first, final Geometry second) {
+        final int id1 =  first.getSRID();
+        final int id2 = second.getSRID();
+        if ((id1 | id2) != 0) {
+            return id1 == id2;
+        }
+        /*
+         * Identity comparison is often sufficient since all geometries typically share the same CRS.
+         * If they are not the same instance, a more expansive `equalsIgnoreMetadata(…)` method here
+         * would probably duplicate the work done later by the `transform(Geometry, …)` method.
+         */
+        Object c1 = first.getUserData();
+        if (c1 != null && !(c1 instanceof CoordinateReferenceSystem)) {
+            c1 = (c1 instanceof Map<?,?>) ? ((Map<?,?>) c1).get(CRS_KEY) : null;
+        }
+        Object c2 = second.getUserData();
+        if (c1 == c2) {
+            return true;                // Quick check for common case.
+        }
+        if (c2 != null && !(c2 instanceof CoordinateReferenceSystem)) {
+            c2 = (c2 instanceof Map<?,?>) ? ((Map<?,?>) c2).get(CRS_KEY) : null;
+        }
+        return c1 == c2;
+    }
+
+    /**
      * Gets the Coordinate Reference System (CRS) from the given geometry.
      * This method expects the CRS to be stored in one the following ways:
      *
@@ -96,6 +133,9 @@ public final class JTS extends Static {
             }
             /*
              * Fallback on SRID with the assumption that they are EPSG codes.
+             *
+             * TODO: This is not necessarily EPSG code. We need a plugin mechanism for specifying the authority.
+             * It may be for example the "spatial_ref_sys" table of a spatial database.
              */
             final int srid = source.getSRID();
             if (srid > 0) {
@@ -129,6 +169,26 @@ public final class JTS extends Static {
     }
 
     /**
+     * Copies coordinate reference system information from the given source geometry to the target geometry.
+     * Current implementation copies only CRS information, but future implementations could copy some other
+     * values if they may apply to the target geometry as well.
+     */
+    static void copyMetadata(final Geometry source, final Geometry target) {
+        target.setSRID(source.getSRID());
+        Object crs = source.getUserData();
+        if (!(crs instanceof CoordinateReferenceSystem)) {
+            if (!(crs instanceof Map<?,?>)) {
+                return;
+            }
+            crs = ((Map<?,?>) crs).get(CRS_KEY);
+            if (!(crs instanceof CoordinateReferenceSystem)) {
+                return;
+            }
+        }
+        target.setUserData(crs);
+    }
+
+    /**
      * Finds an operation between the given CRS valid in the given area of interest.
      * This method does not verify the CRS of the given geometry.
      *
@@ -156,7 +216,8 @@ public final class JTS extends Static {
 
     /**
      * Transforms the given geometry to the specified Coordinate Reference System (CRS).
-     * If the given CRS or the given geometry is null, the geometry is returned unchanged.
+     * If the given CRS or the given geometry is null or is the same than current CRS,
+     * then the geometry is returned unchanged.
      * If the geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
      *
      * <p><b>This operation may be slow!</b>
@@ -179,7 +240,7 @@ public final class JTS extends Static {
                 throw new TransformException(Errors.format(Errors.Keys.UnspecifiedCRS));
             }
             if (!Utilities.equalsIgnoreMetadata(sourceCRS, targetCRS)) {
-                geometry = transform(geometry, findOperation(sourceCRS, targetCRS, geometry));
+                geometry = transform(geometry, findOperation(sourceCRS, targetCRS, geometry), false);
             }
         }
         return geometry;
@@ -188,25 +249,29 @@ public final class JTS extends Static {
     /**
      * Transforms the given geometry using the given coordinate operation.
      * If the geometry or the operation is null, then the geometry is returned unchanged.
-     * If the source CRS is not equals to the geometry CRS, a new operation is inferred.
+     * If the source CRS is not equals to the geometry CRS and {@code validate} is {@code true},
+     * then a new operation is inferred.
      *
      * @todo Handle antimeridian case.
      *
      * @param  geometry   the geometry to transform, or {@code null}.
      * @param  operation  the coordinate operation to apply, or {@code null}.
+     * @param  validate   whether to validate the operation source CRS.
      * @return the transformed geometry, or the same geometry if it is already in target CRS.
      * @throws FactoryException if transformation to the target CRS can not be found.
      * @throws TransformException if the given geometry can not be transformed.
      */
-    public static Geometry transform(Geometry geometry, CoordinateOperation operation)
+    public static Geometry transform(Geometry geometry, CoordinateOperation operation, final boolean validate)
             throws FactoryException, TransformException
     {
         if (geometry != null && operation != null) {
-            final CoordinateReferenceSystem sourceCRS = operation.getSourceCRS();
-            if (sourceCRS != null) {
-                final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(geometry);
-                if (crs != null && !Utilities.equalsIgnoreMetadata(sourceCRS, crs)) {
-                    operation = findOperation(crs, operation.getTargetCRS(), geometry);
+            if (validate) {
+                final CoordinateReferenceSystem sourceCRS = operation.getSourceCRS();
+                if (sourceCRS != null) {
+                    final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(geometry);
+                    if (crs != null && !Utilities.equalsIgnoreMetadata(sourceCRS, crs)) {
+                        operation = findOperation(crs, operation.getTargetCRS(), geometry);
+                    }
                 }
             }
             geometry = transform(geometry, operation.getMathTransform());
@@ -224,7 +289,7 @@ public final class JTS extends Static {
      * @return the transformed geometry, or the same geometry if it is already in target CRS.
      * @throws TransformException if the given geometry can not be transformed.
      */
-    public static Geometry transform(Geometry geometry, MathTransform transform) throws TransformException {
+    public static Geometry transform(Geometry geometry, final MathTransform transform) throws TransformException {
         if (geometry != null && transform != null && !transform.isIdentity()) {
             final GeometryCoordinateTransform gct = new GeometryCoordinateTransform(transform, geometry.getFactory());
             geometry = gct.transform(geometry);

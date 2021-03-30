@@ -16,29 +16,36 @@
  */
 package org.apache.sis.internal.feature.jts;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKBReader;
-import org.locationtech.jts.io.WKTReader;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.nio.ByteBuffer;
+import java.io.ObjectStreamException;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometryType;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
+
+// Optional dependencies
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKBReader;
+import org.locationtech.jts.io.WKTReader;
 
 
 /**
@@ -53,15 +60,30 @@ import org.apache.sis.util.resources.Errors;
  */
 public final class Factory extends Geometries<Geometry> {
     /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 3457343016410620076L;
+
+    /**
      * The singleton instance of this factory.
      */
     public static final Factory INSTANCE = new Factory();
 
     /**
+     * Invoked at deserialization time for obtaining the unique instance of this {@code Geometries} class.
+     *
+     * @return {@link #INSTANCE}.
+     */
+    @Override
+    protected Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
+    }
+
+    /**
      * The factory to use for creating JTS geometries. Currently set to a factory using
      * double-precision floating point numbers and a spatial-reference ID of 0.
      */
-    private final GeometryFactory factory;
+    private final transient GeometryFactory factory;
 
     /**
      * Creates the singleton instance.
@@ -72,23 +94,35 @@ public final class Factory extends Geometries<Geometry> {
     }
 
     /**
-     * Copies coordinate reference system information from the given source geometry to the target geometry.
-     * Current implementation copies only CRS information, but future implementations could copy some other
-     * values if they may apply to the target geometry as well.
+     * Returns the geometry class of the given instance.
+     *
+     * @param  type  type of geometry for which the class is desired.
+     * @return implementation class for the geometry of the specified type.
      */
-    static void copyMetadata(final Geometry source, final Geometry target) {
-        target.setSRID(source.getSRID());
-        Object crs = source.getUserData();
-        if (!(crs instanceof CoordinateReferenceSystem)) {
-            if (!(crs instanceof Map<?,?>)) {
-                return;
-            }
-            crs = ((Map<?,?>) crs).get(JTS.CRS_KEY);
-            if (!(crs instanceof CoordinateReferenceSystem)) {
-                return;
-            }
+    @Override
+    public Class<?> getGeometryClass(final GeometryType type) {
+        switch (type) {
+            default:               return rootClass;
+            case POINT:            return pointClass;
+            case LINESTRING:       return polylineClass;
+            case POLYGON:          return polygonClass;
+            case MULTI_POINT:      return MultiPoint.class;
+            case MULTI_LINESTRING: return MultiLineString.class;
+            case MULTI_POLYGON:    return MultiPolygon.class;
         }
-        target.setUserData(crs);
+    }
+
+    /**
+     * Returns a wrapper for the given {@code <G>} or {@code GeometryWrapper<G>} geometry.
+     *
+     * @param  geometry  the geometry instance to wrap (can be {@code null}).
+     * @return a wrapper for the given geometry implementation, or {@code null}.
+     * @throws ClassCastException if the given geometry is not an instance of valid type.
+     */
+    @Override
+    public GeometryWrapper<Geometry> castOrWrap(final Object geometry) {
+        return (geometry == null || geometry instanceof Wrapper)
+                ? (Wrapper) geometry : new Wrapper((Geometry) geometry);
     }
 
     /**
@@ -96,21 +130,30 @@ public final class Factory extends Geometries<Geometry> {
      *
      * @param  geometry  the geometry to wrap.
      * @return wrapper for the given geometry.
-     * @throws ClassCastException if the given geometry is not an instance of valid type.
      */
     @Override
-    protected GeometryWrapper<Geometry> createWrapper(final Object geometry) {
-        return new Wrapper((Geometry) geometry);
+    protected GeometryWrapper<Geometry> createWrapper(final Geometry geometry) {
+        return new Wrapper(geometry);
     }
 
     /**
-     * Creates a two-dimensional point from the given coordinate.
+     * Creates a two-dimensional point from the given coordinates.
      *
      * @return the point for the given coordinate values.
      */
     @Override
     public Object createPoint(final double x, final double y) {
         return factory.createPoint(new Coordinate(x, y));
+    }
+
+    /**
+     * Creates a three-dimensional point from the given coordinates.
+     *
+     * @return the point for the given coordinate values.
+     */
+    @Override
+    public Object createPoint(final double x, final double y, final double z) {
+        return factory.createPoint(new Coordinate(x, y, z));
     }
 
     /**
@@ -175,11 +218,11 @@ public final class Factory extends Geometries<Geometry> {
                 polygon = (Polygon) polyline;
             } else if (polyline instanceof LinearRing) {
                 polygon = factory.createPolygon((LinearRing) polyline);
-                copyMetadata((Geometry) polyline, polygon);
+                JTS.copyMetadata((Geometry) polyline, polygon);
             } else if (polyline instanceof LineString) {
                 // Let JTS throws an exception with its own error message if the ring is not valid.
                 polygon = factory.createPolygon(((LineString) polyline).getCoordinateSequence());
-                copyMetadata((Geometry) polyline, polygon);
+                JTS.copyMetadata((Geometry) polyline, polygon);
             } else {
                 throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3,
                         Strings.bracket("geometries", i), Polygon.class, Classes.getClass(polyline)));
@@ -241,6 +284,72 @@ public final class Factory extends Geometries<Geometry> {
     }
 
     /**
+     * Creates a geometry from components.
+     * The expected {@code components} type depend on the target geometry type:
+     * <ul>
+     *   <li>If {@code type} is a multi-geometry, then the components shall be an array of {@link Point},
+     *       {@link Geometry}, {@link LineString} or {@link Polygon} elements, depending on the desired
+     *       target type.</li>
+     *   <li>Otherwise the components shall be an array or collection of {@link Point} or {@link Coordinate}
+     *       instances, or a JTS-specific {@link CoordinateSequence}.</li>
+     * </ul>
+     *
+     * @param  type        type of geometry to create.
+     * @param  components  the components. Valid classes depend on the type of geometry to create.
+     * @return geometry built from the given components.
+     * @throws ClassCastException if the given object is not an array or a collection of supported geometry components.
+     */
+    @Override
+    @SuppressWarnings("fallthrough")
+    public GeometryWrapper<Geometry> createFromComponents(final GeometryType type, final Object components) {
+        final Geometry geometry;
+        switch (type) {
+            // The ClassCastException that may happen here is part of method contract.
+            case GEOMETRY_COLLECTION: geometry = factory.createGeometryCollection((Geometry[]) components); break;
+            case MULTI_LINESTRING:    geometry = factory.createMultiLineString((LineString[]) components); break;
+            case MULTI_POLYGON:       geometry = factory.createMultiPolygon((Polygon[]) components); break;
+            case MULTI_POINT: {
+                if (components instanceof Point[]) {
+                    geometry = factory.createMultiPoint((Point[]) components);
+                    break;
+                }
+                // Else fallthrough
+            }
+            default: {
+                final CoordinateSequence cs;
+                if (components instanceof CoordinateSequence) {
+                    cs = (CoordinateSequence) components;
+                } else {
+                    final Coordinate[] coordinates;
+                    if (components instanceof Coordinate[]) {
+                        coordinates = (Coordinate[]) components;
+                    } else {
+                        // The ClassCastException that may happen here is part of method contract.
+                        final Collection<?> source = (components instanceof Collection<?>)
+                                ? (Collection<?>) components : Arrays.asList((Object[]) components);
+                        coordinates = new Coordinate[source.size()];
+                        int n = 0;
+                        for (final Object obj : source) {
+                            // The ClassCastException that may happen here is part of method contract.
+                            coordinates[n++] = (obj instanceof Point) ? ((Point) obj).getCoordinate() : (Coordinate) obj;
+                        }
+                    }
+                    cs = factory.getCoordinateSequenceFactory().create(coordinates);
+                }
+                switch (type) {
+                    case GEOMETRY:    // Default to multi-points for now.
+                    case MULTI_POINT: geometry = factory.createMultiPoint(cs); break;
+                    case LINESTRING:  geometry = factory.createLineString(cs); break;
+                    case POLYGON:     geometry = factory.createPolygon(cs); break;
+                    case POINT:       geometry = factory.createMultiPoint(cs).getCentroid(); break;
+                    default:          throw new AssertionError(type);
+                }
+            }
+        }
+        return new Wrapper(geometry);
+    }
+
+    /**
      * Parses the given Well Known Text (WKT).
      *
      * @param  wkt  the Well Known Text to parse.
@@ -249,6 +358,7 @@ public final class Factory extends Geometries<Geometry> {
      */
     @Override
     public GeometryWrapper<Geometry> parseWKT(final String wkt) throws ParseException {
+        // WKTReader(GeometryFactory) constructor is cheap.
         return new Wrapper(new WKTReader(factory).read(wkt));
     }
 
@@ -279,6 +389,7 @@ public final class Factory extends Geometries<Geometry> {
             array = new byte[data.remaining()];
             data.get(array);
         }
+        // WKBReader(GeometryFactory) constructor is cheap.
         return new Wrapper(new WKBReader(factory).read(array));
     }
 }

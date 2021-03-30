@@ -77,8 +77,8 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
      * Initializes the {@link #wrapper} from current value of {@link #geometry}.
      */
     private void createWrapper() {
-        wrapper = factory.createWrapper(geometry);
-        assertNotNull("createWrapper", wrapper);
+        wrapper = factory.castOrWrap(geometry);
+        assertNotNull("castOrWrap", wrapper);
     }
 
     /**
@@ -139,9 +139,9 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
                 factory.createPoint( 15,  11),
                 factory.createPoint( 13,  10)).iterator();
 
-        final Object g1 = factory.createWrapper(c1.next()).mergePolylines(c1);
-        final Object g2 = factory.createWrapper(c2.next()).mergePolylines(c2);
-        geometry = factory.createWrapper(g1).mergePolylines(Arrays.asList(factory.createPoint(13, 11), g2).iterator());
+        final Object g1 = factory.castOrWrap(c1.next()).mergePolylines(c1);
+        final Object g2 = factory.castOrWrap(c2.next()).mergePolylines(c2);
+        geometry = factory.castOrWrap(g1).mergePolylines(Arrays.asList(factory.createPoint(13, 11), g2).iterator());
 
         createWrapper();
         final GeneralEnvelope env = wrapper.getEnvelope();

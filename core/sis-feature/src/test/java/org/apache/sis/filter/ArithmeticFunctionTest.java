@@ -18,10 +18,13 @@ package org.apache.sis.filter;
 
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
-import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.expression.Expression;
 
 import static org.apache.sis.test.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.filter.Expression;
+import org.opengis.filter.FilterFactory;
 
 
 /**
@@ -36,15 +39,22 @@ public final strictfp class ArithmeticFunctionTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final FilterFactory2 factory = new DefaultFilterFactory();
+    private final FilterFactory<Feature,Object,?> factory;
+
+    /**
+     * Creates a new test case.
+     */
+    public ArithmeticFunctionTest() {
+        factory = DefaultFilterFactory.forFeatures();
+    }
 
     /**
      * Tests "Add" (construction, evaluation, serialization, equality).
      */
     @Test
     public void testAdd() {
-        Expression op = factory.add(factory.literal(10.0), factory.literal(20.0));
-        assertEquals(30.0, op.evaluate(null));
+        Expression<Feature,?> op = factory.add(factory.literal(10.0), factory.literal(20.0));
+        assertEquals(30.0, op.apply(null));
         assertSerializedEquals(op);
     }
 
@@ -53,8 +63,8 @@ public final strictfp class ArithmeticFunctionTest extends TestCase {
      */
     @Test
     public void testSubtract() {
-        Expression op = factory.subtract(factory.literal(10.0), factory.literal(20.0));
-        assertEquals(-10.0, op.evaluate(null));
+        Expression<Feature,?> op = factory.subtract(factory.literal(10.0), factory.literal(20.0));
+        assertEquals(-10.0, op.apply(null));
         assertSerializedEquals(op);
     }
 
@@ -63,8 +73,8 @@ public final strictfp class ArithmeticFunctionTest extends TestCase {
      */
     @Test
     public void testMultiply() {
-        Expression op = factory.multiply(factory.literal(10.0), factory.literal(20.0));
-        assertEquals(200.0, op.evaluate(null));
+        Expression<Feature,?> op = factory.multiply(factory.literal(10.0), factory.literal(20.0));
+        assertEquals(200.0, op.apply(null));
         assertSerializedEquals(op);
     }
 
@@ -73,8 +83,8 @@ public final strictfp class ArithmeticFunctionTest extends TestCase {
      */
     @Test
     public void testDivide() {
-        Expression op = factory.divide(factory.literal(10.0), factory.literal(20.0));
-        assertEquals(0.5, op.evaluate(null));
+        Expression<Feature,?> op = factory.divide(factory.literal(10.0), factory.literal(20.0));
+        assertEquals(0.5, op.apply(null));
         assertSerializedEquals(op);
     }
 }

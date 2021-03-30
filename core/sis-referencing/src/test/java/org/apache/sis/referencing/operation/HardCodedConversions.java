@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.Collections;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -25,7 +26,10 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.LambertConformal1SP;
+import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -159,6 +163,28 @@ public final strictfp class HardCodedConversions {
     public static DefaultProjectedCRS mercator(final GeographicCRS baseCRS) {
         return new DefaultProjectedCRS(name("Mercator (other)"), baseCRS, MERCATOR,
                 baseCRS.getCoordinateSystem().getDimension() == 3 ? HardCodedCS.PROJECTED_3D : HardCodedCS.PROJECTED);
+    }
+
+    /**
+     * An arbitrary CRS using ESRI authority code.
+     *
+     * @return an arbitrary CRS using ESRI authority code.
+     */
+    public static DefaultProjectedCRS ESRI() {
+        final OperationMethod method = new LambertConformal2SP();
+        final ParameterValueGroup pg = method.getParameters().createValue();
+        pg.parameter("Longitude of false origin")        .setValue( 3);
+        pg.parameter("Latitude of false origin")         .setValue(46.5);
+        pg.parameter("Latitude of 1st standard parallel").setValue(44);
+        pg.parameter("Latitude of 2nd standard parallel").setValue(49);
+        pg.parameter("Easting at false origin") .setValue( 700000);
+        pg.parameter("Northing at false origin").setValue(6600000);
+        final DefaultConversion c = create("Lambert Conic Conformal", method, pg);
+        final ImmutableIdentifier id = new ImmutableIdentifier(Citations.ESRI, "ESRI", "102110");
+        return new DefaultProjectedCRS(
+                JDK9.mapOf(ProjectedCRS.NAME_KEY, "RGF 1993 Lambert",
+                           ProjectedCRS.IDENTIFIERS_KEY, id),
+                HardCodedCRS.GRS80, c, HardCodedCS.PROJECTED);
     }
 
     /**

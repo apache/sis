@@ -16,14 +16,20 @@
  */
 package org.apache.sis.filter;
 
-import org.opengis.filter.FilterFactory;
-import org.opengis.filter.temporal.BinaryTemporalOperator;
-import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.TestCase;
+import java.util.List;
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.filter.Expression;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.TemporalOperator;
+import org.opengis.filter.TemporalOperatorName;
 
 
 /**
@@ -39,13 +45,13 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final FilterFactory factory;
+    private final FilterFactory<Feature,Object,Object> factory;
 
     /**
      * The filter to test. This field shall be assigned by each {@code testFoo()} method by invoking
      * a {@link #factory} method with {@link #expression1} and {@link #expression2} in arguments.
      */
-    private BinaryTemporalOperator filter;
+    private TemporalOperator<Feature> filter;
 
     /**
      * The expression to test. They are the arguments to be given to {@link #factory} method.
@@ -57,7 +63,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
      * Creates a new test case.
      */
     public TemporalFunctionTest() {
-        factory = new DefaultFilterFactory();
+        factory = DefaultFilterFactory.forFeatures();
         expression1 = new PeriodLiteral();
         expression2 = new PeriodLiteral();
         expression1.begin = expression2.begin = TestUtilities.date("2000-01-01 09:00:00").getTime();
@@ -70,19 +76,22 @@ public final strictfp class TemporalFunctionTest extends TestCase {
      *
      * @param  name  expected filter name.
      */
-    private void validate(final String name) {
+    private void validate(final TemporalOperatorName name) {
         assertInstanceOf("Expected SIS implementation.", TemporalFunction.class, filter);
-        assertEquals("name", name, ((TemporalFunction) filter).getName());
-        assertSame("expression1", expression1, filter.getExpression1());
-        assertSame("expression2", expression2, filter.getExpression2());
+        assertEquals("name", name, filter.getOperatorType());
+        final List<Expression<? super Feature, ?>> operands = filter.getExpressions();
+        assertEquals(2, operands.size());
+        assertSame("expression1", expression1, operands.get(0));
+        assertSame("expression2", expression2, operands.get(1));
         assertSerializedEquals(filter);
     }
 
     /**
-     * Evaluates the filter.
+     * Evaluates the filter with a null resource.
+     * This is okay if all filter operands are literal.
      */
     private boolean evaluate() {
-        return filter.evaluate(null);
+        return filter.test(null);
     }
 
     /**
@@ -91,7 +100,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testEquals() {
         filter = factory.tequals(expression1, expression2);
-        validate("TEquals");
+        validate(TemporalOperatorName.EQUALS);
         assertTrue(evaluate());
 
         // Break the "self.end = other.end" condition.
@@ -105,7 +114,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testBefore() {
         filter = factory.before(expression1, expression2);
-        validate("Before");
+        validate(TemporalOperatorName.BEFORE);
         assertFalse(evaluate());
 
         // Move before expression 2.
@@ -124,7 +133,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testAfter() {
         filter = factory.after(expression1, expression2);
-        validate("After");
+        validate(TemporalOperatorName.AFTER);
         assertFalse(evaluate());
 
         // Move after expression 2.
@@ -143,7 +152,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testBegins() {
         filter = factory.begins(expression1, expression2);
-        validate("Begins");
+        validate(TemporalOperatorName.BEGINS);
         assertFalse(evaluate());
 
         // End before ending of expression 2.
@@ -161,7 +170,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testEnds() {
         filter = factory.ends(expression1, expression2);
-        validate("Ends");
+        validate(TemporalOperatorName.ENDS);
         assertFalse(evaluate());
 
         // Begin after beginning of expression 2.
@@ -179,7 +188,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testBegunBy() {
         filter = factory.begunBy(expression1, expression2);
-        validate("BegunBy");
+        validate(TemporalOperatorName.BEGUN_BY);
         assertFalse(evaluate());
 
         // End after ending of expression 2.
@@ -197,7 +206,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testEndedBy() {
         filter = factory.endedBy(expression1, expression2);
-        validate("EndedBy");
+        validate(TemporalOperatorName.ENDED_BY);
         assertFalse(evaluate());
 
         // Begin before beginning of expression 2.
@@ -215,7 +224,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testMeets() {
         filter = factory.meets(expression1, expression2);
-        validate("Meets");
+        validate(TemporalOperatorName.MEETS);
         assertFalse(evaluate());
 
         // Move before expression 2.
@@ -234,7 +243,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testMetBy() {
         filter = factory.metBy(expression1, expression2);
-        validate("MetBy");
+        validate(TemporalOperatorName.MET_BY);
         assertFalse(evaluate());
 
         // Move after expression 2.
@@ -253,7 +262,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testDuring() {
         filter = factory.during(expression1, expression2);
-        validate("During");
+        validate(TemporalOperatorName.DURING);
         assertFalse(evaluate());
 
         // Shrink inside expression 2.
@@ -272,7 +281,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testContains() {
         filter = factory.tcontains(expression1, expression2);
-        validate("TContains");
+        validate(TemporalOperatorName.CONTAINS);
         assertFalse(evaluate());
 
         // Expand to encompass expression 2.
@@ -291,7 +300,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testOverlaps() {
         filter = factory.toverlaps(expression1, expression2);
-        validate("TOverlaps");
+        validate(TemporalOperatorName.OVERLAPS);
         assertFalse(evaluate());
 
         // Translate to overlap left part of expression 2.
@@ -310,7 +319,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testOverlappedBy() {
         filter = factory.overlappedBy(expression1, expression2);
-        validate("OverlappedBy");
+        validate(TemporalOperatorName.OVERLAPPED_BY);
         assertFalse(evaluate());
 
         // Translate to overlap right part of expression 2.
@@ -329,7 +338,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     @Test
     public void testAnyInteracts() {
         filter = factory.anyInteracts(expression1, expression2);
-        validate("AnyInteracts");
+        validate(TemporalOperatorName.ANY_INTERACTS);
         assertTrue(evaluate());
         expression1.begin++;
         assertTrue(evaluate());

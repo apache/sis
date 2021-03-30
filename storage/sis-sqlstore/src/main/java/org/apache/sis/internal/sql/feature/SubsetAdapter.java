@@ -21,11 +21,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import org.opengis.filter.Filter;
-import org.opengis.filter.sort.SortBy;
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.filter.Filter;
+import org.opengis.filter.SortProperty;
 
 
 /**
@@ -84,7 +87,7 @@ final class SubsetAdapter {
     }
 
     protected static final boolean sortRequired(final SimpleQuery in) {
-        final SortBy[] sortBy = in.getSortBy();
+        final SortProperty[] sortBy = in.getSortBy();
         return sortBy != null && sortBy.length > 0 && Arrays.stream(sortBy).anyMatch(Objects::nonNull);
     }
 
@@ -95,7 +98,7 @@ final class SubsetAdapter {
 
     protected static final boolean filteringRequired(SimpleQuery in) {
         final Filter filter = in.getFilter();
-        return filter != Filter.INCLUDE;
+        return filter != Filter.include();
     }
 
     public interface AdapterBuilder {
@@ -140,7 +143,7 @@ final class SubsetAdapter {
          *     to get result matching source filter.</li>
          * </ul>
          */
-        Filter filter(final Filter filter);
+        Filter<Feature> filter(final Filter<Feature> filter);
 
         /**
          * Submit a sort subquery to the driver.
@@ -149,7 +152,7 @@ final class SubsetAdapter {
          * @return True if driver handles the comparison. If false, it means that driver won't perform any sort, and the
          * default implementation (i.e {@link SimpleQuery} must handle it.
          */
-        boolean sort(final SortBy[] comparison);
+        boolean sort(final SortProperty[] comparison);
 
         /**
          * Specify a subset of columns to return to the driver.

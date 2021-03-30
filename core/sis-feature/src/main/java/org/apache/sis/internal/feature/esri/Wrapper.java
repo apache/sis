@@ -17,22 +17,32 @@
 package org.apache.sis.internal.feature.esri;
 
 import java.util.Iterator;
+import java.util.function.Supplier;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Envelope2D;
 import com.esri.core.geometry.MultiPath;
 import com.esri.core.geometry.MultiVertexGeometry;
+import com.esri.core.geometry.Operator;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Point2D;
 import com.esri.core.geometry.WktExportFlags;
 import com.esri.core.geometry.OperatorExportToWkt;
 import com.esri.core.geometry.OperatorCentroid2D;
+import com.esri.core.geometry.OperatorSimpleRelation;
+import com.esri.core.geometry.ProgressTracker;
+import com.esri.core.geometry.SpatialReference;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWithCRS;
+import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.internal.filter.sqlmm.SQLMM;
 import org.apache.sis.util.Debug;
+
+// Branch-dependent imports
+import org.opengis.filter.SpatialOperatorName;
 
 
 /**
@@ -56,6 +66,14 @@ final class Wrapper extends GeometryWithCRS<Geometry> {
      */
     Wrapper(final Geometry geometry) {
         this.geometry = geometry;
+    }
+
+    /**
+     * Returns the given geometry in new wrapper,
+     * or {@code this} if {@code g} is same as current geometry.
+     */
+    private Wrapper rewrap(final Geometry g) {
+        return (g != geometry) ? new Wrapper(g) : this;
     }
 
     /**
@@ -94,16 +112,8 @@ final class Wrapper extends GeometryWithCRS<Geometry> {
      */
     @Override
     public DirectPosition getCentroid() {
-        final Point2D c = getCentroidImpl();
+        final Point2D c = OperatorCentroid2D.local().execute(geometry, null);
         return new DirectPosition2D(getCoordinateReferenceSystem(), c.x, c.y);
-    }
-
-    /**
-     * Returns the centroid of the wrapped geometry as an ESRI object.
-     */
-    @Override
-    public Point2D getCentroidImpl() {
-        return OperatorCentroid2D.local().execute(geometry, null);
     }
 
     /**
@@ -135,7 +145,7 @@ final class Wrapper extends GeometryWithCRS<Geometry> {
      */
     @Debug
     @Override
-    protected double[] getAllCoordinates() {
+    public double[] getAllCoordinates() {
         if (geometry instanceof MultiVertexGeometry) {
             final Point2D[] points = ((MultiVertexGeometry) geometry).getCoordinates2D();
             final double[] coordinates = new double[points.length * Factory.BIDIMENSIONAL];
@@ -185,6 +195,72 @@ add:    for (Geometry next = geometry;;) {
             while ((next = (Geometry) polylines.next()) == null);
         }
         return path;
+    }
+
+    /**
+     * Applies a filter predicate between this geometry and another geometry.
+     * This method assumes that the two geometries are in the same CRS (this is not verified).
+     *
+     * <p><b>Note:</b> {@link SpatialOperatorName#BBOX} is implemented by {@code NOT DISJOINT}.
+     * It is caller's responsibility to ensure that one of the geometries is rectangular,
+     * for example by a call to {@link Geometry#getEnvelope()}.</p>
+     */
+    @Override
+    protected boolean predicateSameCRS(final SpatialOperatorName type, final GeometryWrapper<Geometry> other) {
+        final int ordinal = type.ordinal();
+        if (ordinal >= 0 && ordinal < PREDICATES.length) {
+            final Supplier<OperatorSimpleRelation> op = PREDICATES[ordinal];
+            if (op != null) {
+                return op.get().execute(geometry, ((Wrapper) other).geometry, null, null);
+            }
+        }
+        return super.predicateSameCRS(type, other);
+    }
+
+    /**
+     * All predicates recognized by {@link #predicate(SpatialOperatorName, Geometry)}.
+     * Array indices are {@link SpatialOperatorName#ordinal()} values.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private static final Supplier<OperatorSimpleRelation>[] PREDICATES =
+            new Supplier[SpatialOperatorName.OVERLAPS.ordinal() + 1];
+    static {
+        PREDICATES[SpatialOperatorName.EQUALS    .ordinal()] = com.esri.core.geometry.OperatorEquals    ::local;
+        PREDICATES[SpatialOperatorName.DISJOINT  .ordinal()] = com.esri.core.geometry.OperatorDisjoint  ::local;
+        PREDICATES[SpatialOperatorName.INTERSECTS.ordinal()] = com.esri.core.geometry.OperatorIntersects::local;
+        PREDICATES[SpatialOperatorName.TOUCHES   .ordinal()] = com.esri.core.geometry.OperatorTouches   ::local;
+        PREDICATES[SpatialOperatorName.CROSSES   .ordinal()] = com.esri.core.geometry.OperatorCrosses   ::local;
+        PREDICATES[SpatialOperatorName.WITHIN    .ordinal()] = com.esri.core.geometry.OperatorWithin    ::local;
+        PREDICATES[SpatialOperatorName.CONTAINS  .ordinal()] = com.esri.core.geometry.OperatorContains  ::local;
+        PREDICATES[SpatialOperatorName.OVERLAPS  .ordinal()] = com.esri.core.geometry.OperatorOverlaps  ::local;
+        PREDICATES[SpatialOperatorName.BBOX      .ordinal()] = new BBOX();
+    }
+
+    /** Implements {@code BBOX} operator as {@code NOT DISJOINT}. */
+    private static final class BBOX extends OperatorSimpleRelation implements Supplier<OperatorSimpleRelation> {
+        @Override public OperatorSimpleRelation get() {return this;}
+        @Override public Operator.Type getType() {return Operator.Type.Intersects;}
+        @Override public boolean execute(Geometry g1, Geometry g2, SpatialReference sr, ProgressTracker pt) {
+            return !com.esri.core.geometry.OperatorDisjoint.local().execute(g1, g2, sr, pt);
+        }
+    }
+
+    /**
+     * Applies a SQLMM operation on this geometry.
+     *
+     * @param  operation  the SQLMM operation to apply.
+     * @param  other      the other geometry, or {@code null} if the operation requires only one geometry.
+     * @param  argument   an operation-specific argument, or {@code null} if not applicable.
+     * @return result of the specified operation.
+     */
+    @Override
+    protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper<Geometry> other, final Object argument) {
+        switch (operation) {
+            case ST_Centroid: {
+                return OperatorCentroid2D.local().execute(geometry, null);
+            }
+            default: return super.operationSameCRS(operation, other, argument);
+        }
     }
 
     /**

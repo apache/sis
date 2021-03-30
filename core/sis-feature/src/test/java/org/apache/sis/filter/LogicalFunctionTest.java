@@ -16,16 +16,23 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Map;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Function;
+import java.util.function.BiFunction;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
-import org.opengis.filter.Filter;
-import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.expression.Literal;
 
 import static org.apache.sis.test.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.filter.Filter;
+import org.opengis.filter.Literal;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.LogicalOperator;
 
 
 /**
@@ -40,107 +47,141 @@ public final strictfp class LogicalFunctionTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final FilterFactory2 factory = new DefaultFilterFactory();
+    private final FilterFactory<Feature,Object,?> factory;
+
+    /**
+     * Creates a new test case.
+     */
+    public LogicalFunctionTest() {
+        factory = DefaultFilterFactory.forFeatures();
+    }
 
     /**
      * Tests creation of "And" expression from the factory.
+     * Also tests an evaluation from literal values and serialization.
      */
     @Test
-    public void testAndConstructor() {
-        final Filter filter = factory.isNull(factory.literal("text"));
-        assertNotNull(factory.and(filter, filter));
-        assertNotNull(factory.and(Arrays.asList(filter, filter, filter)));
-        try {
-            factory.and(null, null);
-            fail("Creation of an AND with a null child filter must raise an exception");
-        } catch (NullPointerException ex) {}
-        try {
-            factory.and(filter, null);
-            fail("Creation of an AND with a null child filter must raise an exception");
-        } catch (NullPointerException ex) {}
-        try {
-            factory.and(null, filter);
-            fail("Creation of an AND with a null child filter must raise an exception");
-        } catch (NullPointerException ex) {}
-        try {
-            factory.and(Arrays.asList(filter));
-            fail("Creation of an AND with less then two children filters must raise an exception");
-        } catch (IllegalArgumentException ex) {}
+    public void testAnd() {
+        create(factory::and, factory::and, false);
     }
 
     /**
      * Tests creation of "Or" expression from the factory.
+     * Also tests an evaluation from literal values and serialization.
      */
     @Test
-    public void testOrConstructor() {
-        final Filter filter = factory.isNull(factory.literal("text"));
-        assertNotNull(factory.or(filter, filter));
-        assertNotNull(factory.or(Arrays.asList(filter, filter, filter)));
-        try {
-            factory.or(null, null);
-            fail("Creation of an OR with a null child filter must raise an exception");
-        } catch (NullPointerException ex) {}
-        try {
-            factory.or(filter, null);
-            fail("Creation of an OR with a null child filter must raise an exception");
-        } catch (NullPointerException ex) {}
-        try {
-            factory.or(null, filter);
-            fail("Creation of an OR with a null child filter must raise an exception");
-        } catch (NullPointerException ex) {}
-        try {
-            factory.or(Arrays.asList(filter));
-            fail("Creation of an OR with less then two children filters must raise an exception");
-        } catch (IllegalArgumentException ex) {}
+    public void testOr() {
+        create(factory::or, factory::or, true);
     }
 
     /**
-     * Tests evaluation of "And" expression.
+     * Tests creation of "Not" expression from the factory.
+     * Also tests an evaluation from literal values and serialization.
      */
     @Test
-    public void testAndEvaluate() {
-        final Filter filterTrue  = factory.isNull(factory.property("attNull"));
-        final Filter filterFalse = factory.isNull(factory.property("attNotNull"));
-        final Map<String,String> feature = Collections.singletonMap("attNotNull", "text");
-
-        assertTrue (factory.and(filterTrue,  filterTrue ).evaluate(feature));
-        assertFalse(factory.and(filterFalse, filterTrue ).evaluate(feature));
-        assertFalse(factory.and(filterTrue,  filterFalse).evaluate(feature));
-        assertFalse(factory.and(filterFalse, filterFalse).evaluate(feature));
+    public void testNot() {
+        final Literal<Feature,String>  literal = factory.literal("text");
+        final Filter<Feature>          operand = factory.isNull(literal);
+        final LogicalOperator<Feature> filter  = factory.not(operand);
+        assertArrayEquals(new Filter<?>[] {operand}, filter.getOperands().toArray());
+        assertTrue(filter.test(null));
+        assertSerializedEquals(filter);
     }
 
     /**
-     * Tests evaluation of "Or" expression.
+     * Implementation of {@link #testAnd()} and {@link #testOr()}.
+     *
+     * @param  binary    the function creating a logical operator from two operands.
+     * @param  anyArity  the function creating a logical operator from an arbitrary number of operands.
+     * @param  expected  expected evaluation result.
      */
-    @Test
-    public void testOrEvaluate() {
-        final Filter filterTrue  = factory.isNull(factory.property("attNull"));
-        final Filter filterFalse = factory.isNull(factory.property("attNotNull"));
-        final Map<String,String> feature = Collections.singletonMap("attNotNull", "text");
+    private void create(final BiFunction<Filter<? super Feature>, Filter<? super Feature>, LogicalOperator<Feature>> binary,
+                        final Function<Collection<Filter<? super Feature>>, LogicalOperator<Feature>> anyArity,
+                        final boolean expected)
+    {
+        final Filter<Feature> f1 = factory.isNull(factory.literal("text"));
+        final Filter<Feature> f2 = factory.isNull(factory.literal(null));
+        try {
+            binary.apply(null, null);
+            fail("Creation with a null operand shall raise an exception.");
+        } catch (NullPointerException ex) {
+        }
+        try {
+            binary.apply(f1, null);
+            fail("Creation with a null operand shall raise an exception.");
+        } catch (NullPointerException ex) {
+        }
+        try {
+            binary.apply(null, f2);
+            fail("Creation with a null operand shall raise an exception.");
+        } catch (NullPointerException ex) {
+        }
+        try {
+            anyArity.apply(Collections.singleton(f1));
+            fail("Creation with less then two operands shall raise an exception.");
+        } catch (IllegalArgumentException ex) {
+            assertNotNull(ex.getMessage());
+        }
+        /*
+         * Test construction, evaluation and serialization.
+         */
+        LogicalOperator<Feature> filter = binary.apply(f1, f2);
+        assertArrayEquals(new Filter<?>[] {f1, f2}, filter.getOperands().toArray());
+        assertEquals(expected, filter.test(null));
+        assertSerializedEquals(filter);
 
-        assertTrue (factory.or(filterTrue,  filterTrue ).evaluate(feature));
-        assertTrue (factory.or(filterFalse, filterTrue ).evaluate(feature));
-        assertTrue (factory.or(filterTrue,  filterFalse).evaluate(feature));
-        assertFalse(factory.or(filterFalse, filterFalse).evaluate(feature));
+        filter = anyArity.apply(Arrays.asList(f1, f2, f1));
+        assertArrayEquals(new Filter<?>[] {f1, f2, f1}, filter.getOperands().toArray());
+        assertEquals(expected, filter.test(null));
+        assertSerializedEquals(filter);
     }
 
     /**
-     * Tests serialization of "And" expression.
+     * Tests evaluation using a feature instance.
      */
     @Test
-    public void testAndSerialize() {
-        final Literal literal = factory.literal("text");
-        final Filter  filter  = factory.isNull(literal);
-        assertSerializedEquals(factory.and(filter, filter));
+    public void testEvaluateOnFeature() {
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
+        ftb.addAttribute(String.class).setName("attNull");
+        ftb.addAttribute(String.class).setName("attNotNull");
+        final Feature feature = ftb.setName("Test").build().newInstance();
+        feature.setPropertyValue("attNotNull", "a value");
+
+        final Filter<Feature> filterTrue  = factory.isNull(factory.property("attNull",    String.class));
+        final Filter<Feature> filterFalse = factory.isNull(factory.property("attNotNull", String.class));
+
+        assertTrue (factory.and(filterTrue,  filterTrue ).test(feature));
+        assertFalse(factory.and(filterFalse, filterTrue ).test(feature));
+        assertFalse(factory.and(filterTrue,  filterFalse).test(feature));
+        assertFalse(factory.and(filterFalse, filterFalse).test(feature));
+
+        assertTrue (factory.or (filterTrue,  filterTrue ).test(feature));
+        assertTrue (factory.or (filterFalse, filterTrue ).test(feature));
+        assertTrue (factory.or (filterTrue,  filterFalse).test(feature));
+        assertFalse(factory.or (filterFalse, filterFalse).test(feature));
+
+        assertFalse(factory.not(filterTrue ).test(feature));
+        assertTrue (factory.not(filterFalse).test(feature));
     }
 
     /**
-     * Tests serialization of "Or" expression.
+     * Tests {@link Optimization} applied on logical filters.
      */
     @Test
-    public void testOrSerialize() {
-        final Literal literal = factory.literal("text");
-        final Filter  filter  = factory.isNull(literal);
-        assertSerializedEquals(factory.or(filter, filter));
+    public void testOptimization() {
+        final Filter<Feature> f1 = factory.isNull(factory.literal("text"));
+        final Filter<Feature> f2 = factory.isNull(factory.literal(null));
+        optimize(factory.and(f1, f2), Filter.exclude());
+        optimize(factory.or (f1, f2), Filter.include());
+    }
+
+    /**
+     * Verifies an optimization which is expected to evaluate immediately.
+     */
+    private static void optimize(final Filter<Feature> original, final Filter<Feature> expected) {
+        final Filter<? super Feature> optimized = new Optimization().apply(original);
+        assertNotSame("Expected a new optimized filter.", original, optimized);
+        assertSame("Second optimization should have no effect.", optimized, new Optimization().apply(optimized));
+        assertSame("Expression should have been evaluated now.", expected, optimized);
     }
 }

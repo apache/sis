@@ -21,6 +21,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.nio.ByteBuffer;
+import java.io.ObjectStreamException;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
@@ -41,9 +42,24 @@ import org.apache.sis.util.UnsupportedImplementationException;
  */
 public final class Factory extends Geometries<Shape> {
     /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 2196319174347241786L;
+
+    /**
      * The singleton instance of this factory.
      */
     public static final Factory INSTANCE = new Factory();
+
+    /**
+     * Invoked at deserialization time for obtaining the unique instance of this {@code Geometries} class.
+     *
+     * @return {@link #INSTANCE}.
+     */
+    @Override
+    protected Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
+    }
 
     /**
      * Creates the singleton instance.
@@ -53,19 +69,34 @@ public final class Factory extends Geometries<Shape> {
     }
 
     /**
-     * Creates a wrapper for the given geometry instance.
+     * Returns a wrapper for the given {@code <G>} or {@code GeometryWrapper<G>} geometry.
      *
-     * @param  geometry  the geometry to wrap.
-     * @return wrapper for the given geometry.
+     * @param  geometry  the geometry instance to wrap (can be {@code null}).
+     * @return a wrapper for the given geometry implementation, or {@code null}.
      * @throws ClassCastException if the given geometry is not an instance of valid type.
      */
     @Override
-    protected GeometryWrapper<Shape> createWrapper(final Object geometry) {
-        if (geometry instanceof Point2D) {
+    public GeometryWrapper<Shape> castOrWrap(final Object geometry) {
+        if (geometry == null || geometry instanceof Wrapper) {
+            return (Wrapper) geometry;
+        } else if (geometry instanceof PointWrapper) {
+            return (PointWrapper) geometry;
+        } else if (geometry instanceof Point2D) {
             return new PointWrapper((Point2D) geometry);
         } else {
             return new Wrapper((Shape) geometry);
         }
+    }
+
+    /**
+     * Creates a wrapper for the given geometry instance.
+     *
+     * @param  geometry  the geometry to wrap.
+     * @return wrapper for the given geometry.
+     */
+    @Override
+    protected GeometryWrapper<Shape> createWrapper(final Shape geometry) {
+        return new Wrapper(geometry);
     }
 
     /**
@@ -90,6 +121,14 @@ public final class Factory extends Geometries<Shape> {
     @Override
     public Object createPoint(final double x, final double y) {
         return new Point2D.Double(x, y);
+    }
+
+    /**
+     * Unsupported operation with Java2D.
+     */
+    @Override
+    public Object createPoint(final double x, final double y, final double z) {
+        throw new UnsupportedOperationException();
     }
 
     /**

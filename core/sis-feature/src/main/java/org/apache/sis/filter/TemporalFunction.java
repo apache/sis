@@ -18,13 +18,13 @@ package org.apache.sis.filter;
 
 import java.util.Date;
 import java.time.Instant;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import org.opengis.filter.FilterVisitor;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.temporal.BinaryTemporalOperator;
+
+// Branch-dependent imports
 import org.opengis.temporal.Period;
-import org.apache.sis.math.Fraction;
+import org.opengis.filter.Filter;
+import org.opengis.filter.Expression;
+import org.opengis.filter.TemporalOperator;
+import org.opengis.filter.TemporalOperatorName;
 
 
 /**
@@ -41,10 +41,15 @@ import org.apache.sis.math.Fraction;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @param  <T>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
+ *
+ * @since 1.1
  * @module
  */
-abstract class TemporalFunction extends BinaryFunction implements BinaryTemporalOperator {
+abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
+        implements TemporalOperator<T>, Optimization.OnFilter<T>
+{
     /**
      * For cross-version compatibility.
      */
@@ -56,7 +61,9 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
      * @param  expression1  the first of the two expressions to be used by this function.
      * @param  expression2  the second of the two expressions to be used by this function.
      */
-    TemporalFunction(final Expression expression1, final Expression expression2) {
+    TemporalFunction(final Expression<? super T, ?> expression1,
+                     final Expression<? super T, ?> expression2)
+    {
         super(expression1, expression2);
     }
 
@@ -142,10 +149,10 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
      * Values of {@link #expression1} and {@link #expression2} shall be two single values.
      */
     @Override
-    public final boolean evaluate(final Object candidate) {
-        final Object left = expression1.evaluate(candidate);
+    public final boolean test(final T candidate) {
+        final Object left = expression1.apply(candidate);
         if (left instanceof Period) {
-            final Object right = expression2.evaluate(candidate);
+            final Object right = expression2.apply(candidate);
             if (right instanceof Period) {
                 return evaluate((Period) left, (Period) right);
             }
@@ -156,7 +163,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         } else {
             final Instant t = ComparisonFunction.toInstant(left);
             if (t != null) {
-                final Instant t2 = ComparisonFunction.toInstant(expression2.evaluate(candidate));
+                final Instant t2 = ComparisonFunction.toInstant(expression2.apply(candidate));
                 if (t2 != null) {
                     return evaluate(t, t2);
                 }
@@ -192,36 +199,44 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         return false;
     }
 
-    /**
+    /*
      * No operation on numbers for now. We could revisit this policy in a future version if we
      * allow the temporal function to have a CRS and to operate on temporal coordinate values.
      */
-    @Override protected Number applyAsLong    (long       left, long       right) {return null;}
-    @Override protected Number applyAsDouble  (double     left, double     right) {return null;}
-    @Override protected Number applyAsFraction(Fraction   left, Fraction   right) {return null;}
-    @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {return null;}
-    @Override protected Number applyAsDecimal (BigDecimal left, BigDecimal right) {return null;}
 
 
     /**
-     * The {@value #NAME} (=) filter. Defined by ISO 19108 as:
+     * The {@code "TEquals"} (=) filter. Defined by ISO 19108 as:
      * <ul>
      *   <li>{@literal self = other}</li>
      *   <li>{@literal self.begin = other.begin  AND  self.end = other.end}</li>
      * </ul>
      */
-    static final class Equals extends TemporalFunction implements org.opengis.filter.temporal.TEquals {
+    static final class Equals<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -6060822291802339424L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        Equals(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        Equals(Expression<? super T, ?> expression1,
+               Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new Equals<>(effective[0], effective[1]);
+        }
+
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
-        @Override protected char symbol() {return '=';}
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.EQUALS;
+        }
+
+        /** Symbol of this operation. */
+        @Override protected char symbol() {
+            return '=';
+        }
 
         /** Condition defined by ISO 19108:2002 §5.2.3.5. */
         @Override protected boolean evaluate(final Instant self, final Instant other) {
@@ -239,34 +254,42 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
             return isEqual(self.getBeginning(), other.getBeginning()) &&
                    isEqual(self.getEnding(),    other.getEnding());
         }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} {@literal (<)} filter. Defined by ISO 19108 as:
+     * The {@code "Before"} {@literal (<)} filter. Defined by ISO 19108 as:
      * <ul>
      *   <li>{@literal self     < other}</li>
      *   <li>{@literal self.end < other}</li>
      *   <li>{@literal self.end < other.begin}</li>
      * </ul>
      */
-    static final class Before extends TemporalFunction implements org.opengis.filter.temporal.Before {
+    static final class Before<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -3422629447456003982L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        Before(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        Before(Expression<? super T, ?> expression1,
+               Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new Before<>(effective[0], effective[1]);
+        }
+
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
-        @Override protected char symbol() {return '<';}
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.BEFORE;
+        }
+
+        /** Symbol of this operation. */
+        @Override protected char symbol() {
+            return '<';
+        }
 
         /** Condition defined by ISO 19108:2002 §5.2.3.5. */
         @Override protected boolean evaluate(final Instant self, final Instant other) {
@@ -282,34 +305,42 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         @Override public boolean evaluate(final Period self, final Period other) {
             return isBefore(self.getEnding(), other.getBeginning());
         }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} {@literal (>)} filter. Defined by ISO 19108 as:
+     * The {@code "After"} {@literal (>)} filter. Defined by ISO 19108 as:
      * <ul>
      *   <li>{@literal self       > other}</li>
      *   <li>{@literal self.begin > other}</li>
      *   <li>{@literal self.begin > other.end}</li>
      * </ul>
      */
-    static final class After extends TemporalFunction implements org.opengis.filter.temporal.After {
+    static final class After<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 5410476260417497682L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        After(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        After(Expression<? super T, ?> expression1,
+              Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new After<>(effective[0], effective[1]);
+        }
+
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
-        @Override protected char symbol() {return '>';}
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.AFTER;
+        }
+
+        /** Symbol of this operation. */
+        @Override protected char symbol() {
+            return '>';
+        }
 
         /** Condition defined by ISO 19108:2002 §5.2.3.5. */
         @Override protected boolean evaluate(final Instant self, final Instant other) {
@@ -325,94 +356,106 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         @Override public boolean evaluate(final Period self, final Period other) {
             return isAfter(self.getBeginning(), other.getEnding());
         }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} filter. Defined by ISO 19108 as:
+     * The {@code "Begins"} filter. Defined by ISO 19108 as:
      * <ul>
      *   <li>{@literal self.begin = other.begin  AND  self.end < other.end}</li>
      * </ul>
      */
-    static final class Begins extends TemporalFunction implements org.opengis.filter.temporal.Begins {
+    static final class Begins<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -7880699329127762233L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        Begins(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        Begins(Expression<? super T, ?> expression1,
+               Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new Begins<>(effective[0], effective[1]);
+        }
+
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.BEGINS;
+        }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
             return isEqual (self.getBeginning(), other.getBeginning()) &&
                    isBefore(self.getEnding(),    other.getEnding());
         }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} filter. Defined by ISO 19108 as:
+     * The {@code "Ends"} filter. Defined by ISO 19108 as:
      * <ul>
      *   <li>{@literal self.begin > other.begin  AND  self.end = other.end}</li>
      * </ul>
      */
-    static final class Ends extends TemporalFunction implements org.opengis.filter.temporal.Ends {
+    static final class Ends<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -5508229966320563437L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        Ends(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        Ends(Expression<? super T, ?> expression1,
+             Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new Ends<>(effective[0], effective[1]);
+        }
+
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.ENDS;
+        }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
             return isEqual(self.getEnding(),    other.getEnding()) &&
                    isAfter(self.getBeginning(), other.getBeginning());
         }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} filter. Defined by ISO 19108 as:
+     * The {@code "BegunBy"} filter. Defined by ISO 19108 as:
      * <ul>
      *   <li>{@literal self.begin = other}</li>
      *   <li>{@literal self.begin = other.begin  AND  self.end > other.end}</li>
      * </ul>
      */
-    static final class BegunBy extends TemporalFunction implements org.opengis.filter.temporal.BegunBy {
+    static final class BegunBy<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -7212413827394364384L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        BegunBy(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        BegunBy(Expression<? super T, ?> expression1,
+                Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new BegunBy<>(effective[0], effective[1]);
+        }
+
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.BEGUN_BY;
+        }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Instant other) {
@@ -424,32 +467,36 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
             return isEqual(self.getBeginning(), other.getBeginning()) &&
                    isAfter(self.getEnding(),    other.getEnding());
         }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} filter. Defined by ISO 19108 as:
+     * The {@code "EndedBy"} filter. Defined by ISO 19108 as:
      * <ul>
      *   <li>{@literal self.end = other}</li>
      *   <li>{@literal self.begin < other.begin  AND  self.end = other.end}</li>
      * </ul>
      */
-    static final class EndedBy extends TemporalFunction implements org.opengis.filter.temporal.EndedBy {
+    static final class EndedBy<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 8586566103462153666L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        EndedBy(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        EndedBy(Expression<? super T, ?> expression1,
+                Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new EndedBy<>(effective[0], effective[1]);
+        }
+
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.ENDED_BY;
+        }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Instant other) {
@@ -461,31 +508,35 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
             return isEqual (self.getEnding(),    other.getEnding()) &&
                    isBefore(self.getBeginning(), other.getBeginning());
         }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} filter. Defined by ISO 19108 as:
+     * The {@code "Meets"} filter. Defined by ISO 19108 as:
      * <ul>
      *   <li>{@literal self.end = other.begin}</li>
      * </ul>
      */
-    static final class Meets extends TemporalFunction implements org.opengis.filter.temporal.Meets {
+    static final class Meets<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -3534843269384858443L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        Meets(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        Meets(Expression<? super T, ?> expression1,
+              Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new Meets<>(effective[0], effective[1]);
+        }
+
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.MEETS;
+        }
 
         /** Extension to ISO 19108: handle instant as a tiny period. */
         @Override public boolean evaluate(final Instant self, final Instant other) {
@@ -501,31 +552,35 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         @Override public boolean evaluate(final Period self, final Period other) {
             return isEqual(self.getEnding(), other.getBeginning());
         }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} filter. Defined by ISO 19108 as:
+     * The {@code "MetBy"} filter. Defined by ISO 19108 as:
      * <ul>
      *   <li>{@literal self.begin = other.end}</li>
      * </ul>
      */
-    static final class MetBy extends TemporalFunction implements org.opengis.filter.temporal.MetBy {
+    static final class MetBy<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 5358059498707330482L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        MetBy(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        MetBy(Expression<? super T, ?> expression1,
+              Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new MetBy<>(effective[0], effective[1]);
+        }
+
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.MET_BY;
+        }
 
         /** Extension to ISO 19108: handle instant as a tiny period. */
         @Override public boolean evaluate(final Instant self, final Instant other) {
@@ -541,65 +596,81 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         @Override public boolean evaluate(final Period self, final Period other) {
             return isEqual(self.getBeginning(), other.getEnding());
         }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} filter. Defined by ISO 19108 as:
+     * The {@code "During"} filter. Defined by ISO 19108 as:
      * <ul>
      *   <li>{@literal self.begin > other.begin  AND  self.end < other.end}</li>
      * </ul>
      */
-    static final class During extends TemporalFunction implements org.opengis.filter.temporal.During {
+    static final class During<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -4674319635076886196L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        During(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        During(Expression<? super T, ?> expression1,
+               Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new During<>(effective[0], effective[1]);
+        }
+
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
-        @Override protected char   symbol()  {return '⊊';}      // `self` is a proper (or strict) subset of `other`.
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.DURING;
+        }
+
+        /** Symbol of this operation. */
+        @Override protected char symbol() {
+            return '⊊';         // `self` is a proper (or strict) subset of `other`.
+        }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
             return isAfter (self.getBeginning(), other.getBeginning()) &&
                    isBefore(self.getEnding(),    other.getEnding());
         }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} filter. Defined by ISO 19108 as:
+     * The {@code "TContains"} filter. Defined by ISO 19108 as:
      * <ul>
      *   <li>{@literal self.begin < other AND self.end > other}</li>
      *   <li>{@literal self.begin < other.begin  AND  self.end > other.end}</li>
      * </ul>
      */
-    static final class Contains extends TemporalFunction implements org.opengis.filter.temporal.TContains {
+    static final class Contains<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 9107531246948034411L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        Contains(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        Contains(Expression<? super T, ?> expression1,
+                 Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new Contains<>(effective[0], effective[1]);
+        }
+
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
-        @Override protected char   symbol()  {return '⊋';}      // `self` is a proper (or strict) superset of `other`.
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.CONTAINS;
+        }
+
+        /** Symbol of this operation. */
+        @Override protected char symbol() {
+            return '⊋';         // `self` is a proper (or strict) superset of `other`.
+        }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Instant other) {
@@ -612,31 +683,35 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
             return isBefore(self.getBeginning(), other.getBeginning()) &&
                    isAfter (self.getEnding(),    other.getEnding());
         }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} filter. Defined by ISO 19108 as:
+     * The {@code "TOverlaps"} filter. Defined by ISO 19108 as:
      * <ul>
      *   <li>{@literal self.begin < other.begin  AND  self.end > other.begin  AND  self.end < other.end}</li>
      * </ul>
      */
-    static final class Overlaps extends TemporalFunction implements org.opengis.filter.temporal.TOverlaps {
+    static final class Overlaps<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 1517443045593389773L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        Overlaps(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        Overlaps(Expression<? super T, ?> expression1,
+                 Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new Overlaps<>(effective[0], effective[1]);
+        }
+
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.OVERLAPS;
+        }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
@@ -646,35 +721,34 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
                    isBefore(self.getBeginning(), otherBegin) &&
                    isAfter(other.getEnding(),    selfEnd);
         }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The {@value #NAME} filter. Defined by ISO 19108 as:
+     * The {@code "OverlappedBy"} filter. Defined by ISO 19108 as:
      * <ul>
      *   <li>{@literal self.begin > other.begin  AND  self.begin < other.end  AND  self.end > other.end}</li>
      * </ul>
      */
-    static final class OverlappedBy extends TemporalFunction implements org.opengis.filter.temporal.OverlappedBy {
+    static final class OverlappedBy<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 2228673820507226463L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        OverlappedBy(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        OverlappedBy(Expression<? super T, ?> expression1,
+                     Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
-        /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new OverlappedBy<>(effective[0], effective[1]);
+        }
 
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
+        /** Identification of this operation. */
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.OVERLAPPED_BY;
         }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
@@ -689,20 +763,29 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
 
 
     /**
-     * The {@value #NAME} filter.
+     * The {@code "AnyInteracts"} filter.
      * This is a shortcut for NOT (Before OR Meets OR MetBy OR After).
      */
-    static final class AnyInteracts extends TemporalFunction implements org.opengis.filter.temporal.AnyInteracts {
+    static final class AnyInteracts<T> extends TemporalFunction<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 5972351564286442392L;
 
-        /** Creates a new filter for the {@value #NAME} operation. */
-        AnyInteracts(Expression expression1, Expression expression2) {
+        /** Creates a new filter. */
+        AnyInteracts(Expression<? super T, ?> expression1,
+                     Expression<? super T, ?> expression2)
+        {
             super(expression1, expression2);
         }
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+            return new AnyInteracts<>(effective[0], effective[1]);
+        }
+
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        @Override public TemporalOperatorName getOperatorType() {
+            return TemporalOperatorName.ANY_INTERACTS;
+        }
 
         /** Condition defined by OGC filter specification. */
         @Override public boolean evaluate(final Period self, final Period other) {
@@ -711,11 +794,6 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
                    ((otherEnd   = toInstant(other.getEnding()))    != null) && selfBegin.isBefore(otherEnd) &&
                    ((selfEnd    = toInstant(self .getEnding()))    != null) &&
                    ((otherBegin = toInstant(other.getBeginning())) != null) && selfEnd.isAfter(otherBegin);
-        }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
         }
     }
 }

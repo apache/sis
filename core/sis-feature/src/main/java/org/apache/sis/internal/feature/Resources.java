@@ -130,6 +130,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotUpdateTile_2 = 14;
 
         /**
+         * Can not visit a “{1}” {0,choice,0#filter|1#expression}.
+         */
+        public static final short CanNotVisit_2 = 77;
+
+        /**
          * The two categories “{0}” and “{2}” have overlapping ranges: {1} and {3} respectively.
          */
         public static final short CategoryRangeOverlap_4 = 15;
@@ -245,11 +250,6 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InsufficientBufferCapacity_3 = 36;
 
         /**
-         * Invalid or unsupported “{1}” expression at index {0}.
-         */
-        public static final short InvalidExpression_2 = 37;
-
-        /**
          * Iteration is finished.
          */
         public static final short IterationIsFinished = 38;
@@ -354,7 +354,10 @@ public final class Resources extends IndexedResourceBundle {
          */
         public static final short OutOfIteratorDomain_2 = 57;
 
-        public static final short PointOutsideCoverageDomain_1 = 77;
+        /**
+         * Point ({0}) is outside the coverage domain.
+         */
+        public static final short PointOutsideCoverageDomain_1 = 37;
 
         /**
          * Property “{1}” already exists in feature “{0}”.

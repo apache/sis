@@ -54,6 +54,8 @@ import org.opengis.feature.Feature;
  *
  * @since 0.8
  * @module
+ *
+ * @todo Retrofit {@link org.opengis.filter.QueryExpression}.
  */
 public abstract class Query {
     /*

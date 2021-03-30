@@ -129,6 +129,20 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
+     * Returns the unit used for all axes in the given coordinate reference system.
+     * If not all axes use the same unit, then this method returns {@code null}.
+     *
+     * <p>This method is used either when the CRS is expected to contain exactly one axis,
+     * or for operations that support only one units for all axes.</p>
+     *
+     * @param  crs  the coordinate reference system for which to get the unit, or {@code null}.
+     * @return the unit for all axis in the given coordinate system, or {@code null}.
+     */
+    public static Unit<?> getUnit(final CoordinateReferenceSystem crs) {
+        return (crs != null) ? getUnit(crs.getCoordinateSystem()) : null;
+    }
+
+    /**
      * Returns the number of dimensions of the given CRS, or 0 if {@code null}.
      *
      * @param  crs  the CRS from which to get the number of dimensions, or {@code null}.

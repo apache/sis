@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
+import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.test.TestUtilities;
@@ -35,16 +36,16 @@ import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.filter.Filter;
+import org.opengis.filter.FilterFactory;
 import org.opengis.filter.MatchAction;
-import org.opengis.filter.sort.SortOrder;
-import org.apache.sis.filter.DefaultFilterFactory;
+import org.opengis.filter.SortOrder;
 
 
 /**
  * Tests {@link SimpleQuery} and (indirectly) {@link FeatureSubset}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -141,9 +142,9 @@ public final strictfp class SimpleQueryTest extends TestCase {
      */
     @Test
     public void testSortBy() throws DataStoreException {
-        final DefaultFilterFactory factory = new DefaultFilterFactory();
-        query.setSortBy(factory.sort("value1", SortOrder.ASCENDING),
-                        factory.sort("value2", SortOrder.DESCENDING));
+        final FilterFactory<Feature,?,?> factory = DefaultFilterFactory.forFeatures();
+        query.setSortBy(factory.sort(factory.property("value1", Integer.class), SortOrder.ASCENDING),
+                        factory.sort(factory.property("value2", Integer.class), SortOrder.DESCENDING));
         verifyQueryResult(3, 1, 2, 0, 4);
     }
 
@@ -154,8 +155,9 @@ public final strictfp class SimpleQueryTest extends TestCase {
      */
     @Test
     public void testFilter() throws DataStoreException {
-        final DefaultFilterFactory factory = new DefaultFilterFactory();
-        query.setFilter(factory.equal(factory.property("value1"), factory.literal(2), true, MatchAction.ALL));
+        final FilterFactory<Feature,?,?> factory = DefaultFilterFactory.forFeatures();
+        query.setFilter(factory.equal(factory.property("value1", Integer.class),
+                                      factory.literal(2), true, MatchAction.ALL));
         verifyQueryResult(1, 2);
     }
 
@@ -166,9 +168,9 @@ public final strictfp class SimpleQueryTest extends TestCase {
      */
     @Test
     public void testColumns() throws DataStoreException {
-        final DefaultFilterFactory factory = new DefaultFilterFactory();
-        query.setColumns(new SimpleQuery.Column(factory.property("value1"),   (String) null),
-                         new SimpleQuery.Column(factory.property("value1"),   "renamed1"),
+        final FilterFactory<Feature,?,?> factory = DefaultFilterFactory.forFeatures();
+        query.setColumns(new SimpleQuery.Column(factory.property("value1", Integer.class), (String) null),
+                         new SimpleQuery.Column(factory.property("value1", Integer.class), "renamed1"),
                          new SimpleQuery.Column(factory.literal("a literal"), "computed"));
         query.setLimit(1);
 

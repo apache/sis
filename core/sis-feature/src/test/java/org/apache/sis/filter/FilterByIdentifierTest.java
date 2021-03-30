@@ -16,25 +16,25 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.identity.Identifier;
 
 import static org.apache.sis.test.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.filter.Filter;
+import org.opengis.filter.FilterFactory;
 
 
 /**
  * Tests {@link FilterByIdentifier}.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
@@ -43,50 +43,69 @@ public final strictfp class FilterByIdentifierTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final FilterFactory2 factory = new DefaultFilterFactory();
+    private final FilterFactory<Feature,Object,?> factory;
 
     /**
-     * Test factory.
+     * Creates a new test case.
      */
-    @Test
-    public void testConstructor() {
-        assertNotNull(factory.id(Collections.singleton(factory.featureId("abc"))));
+    public FilterByIdentifierTest() {
+        factory = DefaultFilterFactory.forFeatures();
     }
 
     /**
-     * Tests evaluation.
+     * Tests construction and serialization.
+     */
+    @Test
+    public void testSerialize() {
+        assertSerializedEquals(factory.resourceId("abc"));
+    }
+
+    /**
+     * Tests on features of diffferent types. Test data are:
+     * <ul>
+     *   <li>A feature type with an identifier as a string.</li>
+     *   <li>A feature type with an integer identifier.</li>
+     *   <li>A feature type with no identifier.</li>
+     * </ul>
      */
     @Test
     public void testEvaluate() {
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.setName("type");
         ftb.addAttribute(String.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
-        final FeatureType type = ftb.build();
+        final Feature f1 = ftb.setName("Test 1").build().newInstance();
+        f1.setPropertyValue("att", "123");
 
-        final Feature feature1 = type.newInstance();
-        feature1.setPropertyValue("att", "123");
+        ftb.clear().addAttribute(Integer.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        final Feature f2 = ftb.setName("Test 2").build().newInstance();
+        f2.setPropertyValue("att", 123);
 
-        final Feature feature2 = type.newInstance();
-        feature2.setPropertyValue("att", "abc");
+        final Feature f3 = ftb.clear().setName("Test 3").build().newInstance();
 
-        final Feature feature3 = type.newInstance();
-        feature3.setPropertyValue("att", "abc123");
-
-        final Set<Identifier> ids = new HashSet<>();
-        ids.add(factory.featureId("abc"));
-        ids.add(factory.featureId("123"));
-        final FilterByIdentifier id = new FilterByIdentifier(ids);
-
-        assertTrue (id.evaluate(feature1));
-        assertTrue (id.evaluate(feature2));
-        assertFalse(id.evaluate(feature3));
+        final Filter<Feature> id = factory.resourceId("123");
+        assertTrue (id.test(f1));
+        assertTrue (id.test(f2));
+        assertFalse(id.test(f3));
     }
 
     /**
-     * Tests serialization.
+     * Tests evaluation of two identifiers combined by a OR logical operator.
      */
     @Test
-    public void testSerialize() {
-        assertSerializedEquals(new FilterByIdentifier(Collections.singleton(factory.featureId("abc"))));
+    public void testEvaluateCombined() {
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
+        ftb.addAttribute(String.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        final FeatureType type = ftb.setName("Test").build();
+
+        final Feature f1 = type.newInstance(); f1.setPropertyValue("att", "123");
+        final Feature f2 = type.newInstance(); f2.setPropertyValue("att", "abc");
+        final Feature f3 = type.newInstance(); f3.setPropertyValue("att", "abc123");
+
+        final Filter<Feature> id = factory.or(
+                factory.resourceId("abc"),
+                factory.resourceId("123"));
+
+        assertTrue (id.test(f1));
+        assertTrue (id.test(f2));
+        assertFalse(id.test(f3));
     }
 }

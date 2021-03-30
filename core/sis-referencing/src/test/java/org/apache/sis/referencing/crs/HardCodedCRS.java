@@ -22,6 +22,7 @@ import java.util.Collections;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
+import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
@@ -179,6 +180,21 @@ public final strictfp class HardCodedCRS {
     public static final DefaultGeographicCRS JGD2000 = new DefaultGeographicCRS(
             Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, "JGD2000"),
             HardCodedDatum.JGD2000, HardCodedCS.GEODETIC_3D);
+
+    /**
+     * A two-dimensional geographic coordinate reference system using an unknown datum based on the GRS 1980 ellipsoid.
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>) coordinates with longitude values
+     * increasing towards the East and latitude values increasing towards the North.
+     * The angular units for the prime meridian and the axes are degrees.
+     *
+     * <p>This CRS is almost identical to {@link #WGS84}.
+     * It can be used for testing tiny differences between two datum.</p>
+     *
+     * @since 1.1
+     */
+    public static final DefaultGeographicCRS GRS80 = new DefaultGeographicCRS(
+            Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, "Unknown datum based on GRS 1980 ellipsoid"),
+            GeodeticDatumMock.GRS80, HardCodedCS.GEODETIC_2D);
 
     /**
      * A two-dimensional geographic coordinate reference system using a spherical datum.

@@ -67,6 +67,25 @@ public abstract class GeometryWithCRS<G> extends GeometryWrapper<G> {
     }
 
     /**
+     * Returns {@code true} if the given geometry use the same CRS than this geometry, or conservatively
+     * returns {@code false} in case of doubt. This method should perform only a cheap test; it is used
+     * as a way to filter rapidly if {@link #transform(CoordinateReferenceSystem)} needs to be invoked.
+     *
+     * @param  other  the second geometry.
+     * @return {@code true} if the two geometries use equivalent CRS or if the CRS is undefined on both side,
+     *         or {@code false} in case of doubt.
+     */
+    @Override
+    public final boolean isSameCRS(final GeometryWrapper<G> other) {
+        /*
+         * Identity comparison is often sufficient since all geometries typically share the same CRS.
+         * If they are not the same instance, a more expansive `equalsIgnoreMetadata(…)` method here
+         * would probably duplicate the work done later by the `transform(Geometry, …)` method.
+         */
+        return crs == ((GeometryWithCRS<G>) other).crs;
+    }
+
+    /**
      * Creates an initially empty envelope with the CRS of this geometry.
      * If this geometry has no CRS, then a two-dimensional envelope is created.
      * This is a convenience method for {@link #getEnvelope()} implementations.

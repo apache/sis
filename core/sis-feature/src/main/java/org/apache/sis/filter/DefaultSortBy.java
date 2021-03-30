@@ -17,11 +17,12 @@
 package org.apache.sis.filter;
 
 import java.io.Serializable;
+import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
-import org.opengis.filter.sort.SortBy;
-import org.opengis.filter.sort.SortOrder;
-import org.opengis.filter.expression.PropertyName;
+import org.opengis.filter.SortOrder;
+import org.opengis.filter.SortProperty;
+import org.opengis.filter.ValueReference;
 
 
 /**
@@ -32,7 +33,7 @@ import org.opengis.filter.expression.PropertyName;
  * @since   1.1
  * @module
  */
-final class DefaultSortBy implements SortBy, Serializable {
+final class DefaultSortBy implements SortProperty, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -41,7 +42,7 @@ final class DefaultSortBy implements SortBy, Serializable {
     /**
      * The property on which to apply sorting.
      */
-    private final PropertyName property;
+    private final ValueReference<?,?> property;
 
     /**
      * The desired order: {@code ASCENDING} or {@code DESCENDING}.
@@ -55,16 +56,18 @@ final class DefaultSortBy implements SortBy, Serializable {
      * @param property  property on which to apply sorting.
      * @param order     the desired order: {@code ASCENDING} or {@code DESCENDING}.
      */
-    DefaultSortBy(final PropertyName property, final SortOrder order) {
+    DefaultSortBy(final ValueReference<?,?> property, final SortOrder order) {
         this.property = property;
         this.order    = order;
+        ArgumentChecks.ensureNonNull("property", property);
+        ArgumentChecks.ensureNonNull("order",    order);
     }
 
     /**
      * Returns the property to sort by.
      */
     @Override
-    public PropertyName getPropertyName() {
+    public ValueReference<?,?> getValueReference() {
         return property;
     }
 

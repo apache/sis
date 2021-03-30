@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
-import org.opengis.filter.sort.SortBy;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.GenericName;
@@ -31,6 +30,7 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
+import org.opengis.filter.SortProperty;
 
 /**
  * A {@link Table} feature set on which a query has been applied.
@@ -44,10 +44,10 @@ import org.apache.sis.storage.event.StoreListener;
 public class TableSubset implements FeatureSet {
 
     final Table parent;
-    final SortBy[] sorting;
+    final SortProperty[] sorting;
     final CharSequence where;
 
-    public TableSubset(Table parent, SortBy[] sorting, CharSequence where) {
+    public TableSubset(Table parent, SortProperty[] sorting, CharSequence where) {
         this.parent = parent;
         this.sorting = sorting;
         this.where = where;

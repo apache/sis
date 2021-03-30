@@ -16,506 +16,330 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.Collections;
+import java.util.function.BiConsumer;
+import org.opengis.util.LocalName;
+import org.opengis.util.GenericName;
+import org.opengis.util.NameSpace;
+import org.opengis.util.NameFactory;
+import org.opengis.geometry.Envelope;
+import org.opengis.geometry.Geometry;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.internal.filter.FunctionNames;
+import org.apache.sis.internal.filter.Visitor;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.iso.Names;
-import org.opengis.filter.*;
-import org.opengis.filter.expression.Add;
-import org.opengis.filter.expression.BinaryExpression;
-import org.opengis.filter.expression.Divide;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.expression.ExpressionVisitor;
-import org.opengis.filter.expression.Function;
-import org.opengis.filter.expression.Literal;
-import org.opengis.filter.expression.Multiply;
-import org.opengis.filter.expression.NilExpression;
-import org.opengis.filter.expression.PropertyName;
-import org.opengis.filter.expression.Subtract;
-import org.opengis.filter.spatial.BBOX;
-import org.opengis.filter.spatial.Beyond;
-import org.opengis.filter.spatial.BinarySpatialOperator;
-import org.opengis.filter.spatial.Contains;
-import org.opengis.filter.spatial.Crosses;
-import org.opengis.filter.spatial.DWithin;
-import org.opengis.filter.spatial.Disjoint;
-import org.opengis.filter.spatial.Equals;
-import org.opengis.filter.spatial.Intersects;
-import org.opengis.filter.spatial.Overlaps;
-import org.opengis.filter.spatial.Touches;
-import org.opengis.filter.spatial.Within;
-import org.opengis.filter.temporal.*;
-import org.opengis.geometry.Envelope;
-import org.opengis.geometry.Geometry;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.util.GenericName;
-import org.opengis.util.LocalName;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.filter.Filter;
+import org.opengis.filter.Literal;
+import org.opengis.filter.Expression;
+import org.opengis.filter.ValueReference;
+import org.opengis.filter.LogicalOperator;
+import org.opengis.filter.LogicalOperatorName;
+import org.opengis.filter.ComparisonOperator;
+import org.opengis.filter.ComparisonOperatorName;
+import org.opengis.filter.BinaryComparisonOperator;
+import org.opengis.filter.SpatialOperator;
+import org.opengis.filter.SpatialOperatorName;
+import org.opengis.filter.BetweenComparisonOperator;
+import org.opengis.filter.LikeOperator;
+
 
 /**
- * Port of Geotk FilterToSQL for an ANSI compliant query builder.
+ * Writes SQL statement for a filter or an expression.
+ * This base class is restricted to ANSI compliant SQL.
  *
  * @implNote For now, we over-use parenthesis to ensure consistent operator priority. In the future, we could evolve
  * this component to provide more elegant transcription of filter groups.
  *
  * No case insensitive support of binary comparison is done.
  *
- * TODO: define a set of accepter property names (even better: link to {@link FeatureAdapter}), so any {@link PropertyName}
+ * TODO: define a set of accepter property names (even better: link to {@link FeatureAdapter}), so any {@link ValueReference}
  * filter refering to non pure SQL property (like relations) will cause a failure.
  *
- * @author Alexis Manin (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
+class ANSIInterpreter extends Visitor<Feature,StringBuilder> {
     /**
      * TODO
      */
     private static final GeometryLibrary LIBRARY = null;
 
-    private final java.util.function.Function<Literal, CharSequence> valueFormatter;
+    private final NameFactory nameFactory;
 
-    private final java.util.function.Function<PropertyName, CharSequence> nameFormatter;
+    private final NameSpace scope;
 
     public ANSIInterpreter() {
-        this(ANSIInterpreter::format, ANSIInterpreter::format);
+        nameFactory = DefaultFactories.forBuildin(NameFactory.class);
+        scope = nameFactory.createNameSpace(nameFactory.createLocalName(null, "xpath"),
+                                            Collections.singletonMap("separator", "/"));
+
+        setFilterHandler(LogicalOperatorName.AND, new BinaryLogicJoin(" AND "));
+        setFilterHandler(LogicalOperatorName.OR,  new BinaryLogicJoin(" OR "));
+        setFilterHandler(LogicalOperatorName.NOT, (f,sb) -> {
+            final LogicalOperator<Feature> filter = (LogicalOperator<Feature>) f;
+            evaluateMandatory(sb.append("NOT ("), filter.getOperands().get(0));
+            sb.append(')');
+        });
+        setFilterHandler(ComparisonOperatorName.valueOf(FunctionNames.PROPERTY_IS_BETWEEN), (f,sb) -> {
+            final BetweenComparisonOperator<Feature>  filter = (BetweenComparisonOperator<Feature>) f;
+            evaluateMandatory(sb,                     filter.getExpression());
+            evaluateMandatory(sb.append(" BETWEEN "), filter.getLowerBoundary());
+            evaluateMandatory(sb.append(" AND "),     filter.getUpperBoundary());
+        });
+        setFilterHandler(ComparisonOperatorName.PROPERTY_IS_EQUAL_TO,                 new JoinMatchCase(" = "));
+        setFilterHandler(ComparisonOperatorName.PROPERTY_IS_NOT_EQUAL_TO,             new JoinMatchCase(" <> "));
+        setFilterHandler(ComparisonOperatorName.PROPERTY_IS_GREATER_THAN,             new JoinMatchCase(" > "));
+        setFilterHandler(ComparisonOperatorName.PROPERTY_IS_GREATER_THAN_OR_EQUAL_TO, new JoinMatchCase(" >= "));
+        setFilterHandler(ComparisonOperatorName.PROPERTY_IS_LESS_THAN,                new JoinMatchCase(" < "));
+        setFilterHandler(ComparisonOperatorName.PROPERTY_IS_LESS_THAN_OR_EQUAL_TO,    new JoinMatchCase(" <= "));
+        setFilterHandler(ComparisonOperatorName.valueOf(FunctionNames.PROPERTY_IS_LIKE), (f,sb) -> {
+            final LikeOperator<Feature> filter = (LikeOperator<Feature>) f;
+            ensureMatchCase(filter.isMatchingCase());
+            // TODO: port Geotk
+            throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
+        });
+        setNullAndNilHandlers((f,sb) -> {
+            final ComparisonOperator<Feature> filter = (ComparisonOperator<Feature>) f;
+            evaluateMandatory(sb, filter.getExpressions().get(0));
+            sb.append(" IS NULL");
+        });
+        /*
+         * SPATIAL FILTERS
+         */
+        setFilterHandler(SpatialOperatorName.BBOX, (f,sb) -> {
+            final SpatialOperator<Feature> filter = (SpatialOperator<Feature>) f;
+            // TODO: This is a wrong interpretation, but sqlmm has no equivalent of filter encoding bbox, so we'll
+            // fallback on a standard intersection. However, PostGIS, H2, etc. have their own versions of such filters.
+            for (final Expression<? super Feature, ?> e : filter.getExpressions()) {
+                if (e == null) {
+                    throw new UnsupportedOperationException("Not supported yet: bbox over all geometric properties");
+                }
+            }
+            bbox(sb, filter);
+        });
+        setFilterHandler(SpatialOperatorName.CONTAINS,   new Function(FunctionNames.ST_Contains));
+        setFilterHandler(SpatialOperatorName.CROSSES,    new Function(FunctionNames.ST_Crosses));
+        setFilterHandler(SpatialOperatorName.DISJOINT,   new Function(FunctionNames.ST_Disjoint));
+        setFilterHandler(SpatialOperatorName.EQUALS,     new Function(FunctionNames.ST_Equals));
+        setFilterHandler(SpatialOperatorName.INTERSECTS, new Function(FunctionNames.ST_Intersects));
+        setFilterHandler(SpatialOperatorName.OVERLAPS,   new Function(FunctionNames.ST_Overlaps));
+        setFilterHandler(SpatialOperatorName.TOUCHES,    new Function(FunctionNames.ST_Touches));
+        setFilterHandler(SpatialOperatorName.WITHIN,     new Function(FunctionNames.ST_Within));
+        /*
+         * Expression visitor
+         */
+        setExpressionHandler(FunctionNames.Add,      new Join(" + "));
+        setExpressionHandler(FunctionNames.Subtract, new Join(" - "));
+        setExpressionHandler(FunctionNames.Divide,   new Join(" / "));
+        setExpressionHandler(FunctionNames.Multiply, new Join(" * "));
+        setExpressionHandler(FunctionNames.Literal, (e,sb) -> writeLiteral(sb, (Literal<Feature,?>) e));
+        setExpressionHandler(FunctionNames.ValueReference, (e,sb) -> writeColumnName(sb, (ValueReference<Feature,?>) e));
     }
 
-    public ANSIInterpreter(
-            java.util.function.Function<Literal, CharSequence> valueFormatter,
-            java.util.function.Function<PropertyName, CharSequence> nameFormatter)
-    {
-        ArgumentChecks.ensureNonNull("valueFormatter", valueFormatter);
-        ArgumentChecks.ensureNonNull("nameFormatter", nameFormatter);
-        this.valueFormatter = valueFormatter;
-        this.nameFormatter = nameFormatter;
-    }
-
-    @Override
-    public CharSequence visitNullFilter(Object extraData) {
-        throw new UnsupportedOperationException("Null filter is not supported.");
-    }
-
-    @Override
-    public Object visit(ExcludeFilter filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(IncludeFilter filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public CharSequence visit(And filter, Object extraData) {
-        return join(filter, " AND ", extraData);
-    }
-
-    @Override
-    public Object visit(Id filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(Not filter, Object extraData) {
-        final CharSequence innerFilter = evaluateMandatory(filter.getFilter(), extraData);
-        return "NOT (" + innerFilter + ")";
-    }
-
-    @Override
-    public Object visit(Or filter, Object extraData) {
-        return join(filter, " OR ", extraData);
-    }
-
-    @Override
-    public Object visit(PropertyIsBetween filter, Object extraData) {
-        final CharSequence propertyExp = evaluateMandatory(filter.getExpression(), extraData);
-        final CharSequence lowerExp = evaluateMandatory(filter.getLowerBoundary(), extraData);
-        final CharSequence upperExp = evaluateMandatory(filter.getUpperBoundary(), extraData);
-
-        return new StringBuilder(propertyExp)
-                .append(" BETWEEN ")
-                .append(lowerExp)
-                .append(" AND ")
-                .append(upperExp);
-    }
-
-    @Override
-    public Object visit(PropertyIsEqualTo filter, Object extraData) {
-        return joinMatchCase(filter, " = ", extraData);
-    }
-
-    @Override
-    public Object visit(PropertyIsNotEqualTo filter, Object extraData) {
-        return joinMatchCase(filter, " <> ", extraData);
-    }
-
-    @Override
-    public Object visit(PropertyIsGreaterThan filter, Object extraData) {
-        return joinMatchCase(filter, " > ", extraData);
-    }
-
-    @Override
-    public Object visit(PropertyIsGreaterThanOrEqualTo filter, Object extraData) {
-        return joinMatchCase(filter, " >= ", extraData);
-    }
-
-    @Override
-    public Object visit(PropertyIsLessThan filter, Object extraData) {
-        return joinMatchCase(filter, " < ", extraData);
-    }
-
-    @Override
-    public Object visit(PropertyIsLessThanOrEqualTo filter, Object extraData) {
-        return joinMatchCase(filter, " <= ", extraData);
-    }
-
-    @Override
-    public Object visit(PropertyIsLike filter, Object extraData) {
-        // TODO: PostgreSQL extension : ilike
-        ensureMatchCase(filter::isMatchingCase);
-        // TODO: port Geotk
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(PropertyIsNull filter, Object extraData) {
-        return evaluateMandatory(filter.getExpression(), extraData) + " IS NULL";
-    }
-
-    @Override
-    public Object visit(PropertyIsNil filter, Object extraData) {
-        return evaluateMandatory(filter.getExpression(), extraData) + " IS NULL";
-    }
-
-    /*
-     * SPATIAL FILTERS
+    /**
+     * Returns the SQL fragment to use for {@link SpatialOperatorName#BBOX} type of filter.
      */
-
-    @Override
-    public Object visit(BBOX filter, Object extraData) {
-        // TODO: This is a wrong interpretation, but sqlmm has no equivalent of filter encoding bbox, so we'll
-        // fallback on a standard intersection. However, PostGIS, H2, etc. have their own versions of such filters.
-        if (filter.getExpression1() == null || filter.getExpression2() == null)
-            throw new UnsupportedOperationException("Not supported yet : bbox over all geometric properties");
-        return function("ST_Intersects", filter, extraData);
+    void bbox(final StringBuilder sb, final SpatialOperator<Feature> filter) {
+        function(sb, "ST_Intersects", filter);
     }
 
-    @Override
-    public Object visit(Beyond filter, Object extraData) {
-        // TODO: ISO SQL specifies that unit of distance could be specified. However, PostGIS documentation does not
-        // talk about it. For now, we'll fallback on Java implementation until we're sure how to perform native
-        // operation properly.
-        throw new UnsupportedOperationException("Not yet: unit management ambiguous");
-    }
-
-    @Override
-    public Object visit(Contains filter, Object extraData) {
-        return function("ST_Contains", filter, extraData);
-    }
-
-    @Override
-    public Object visit(Crosses filter, Object extraData) {
-        return function("ST_Crosses", filter, extraData);
-    }
-
-    @Override
-    public Object visit(Disjoint filter, Object extraData) {
-        return function("ST_Disjoint", filter, extraData);
-    }
-
-    @Override
-    public Object visit(DWithin filter, Object extraData) {
-        // TODO: as for beyond filter above, unit determination is a bit complicated.
-        throw new UnsupportedOperationException("Not yet: unit management to handle properly");
-    }
-
-    @Override
-    public Object visit(Equals filter, Object extraData) {
-        return function("ST_Equals", filter, extraData);
-    }
-
-    @Override
-    public Object visit(Intersects filter, Object extraData) {
-        return function("ST_Intersects", filter, extraData);
-    }
-
-    @Override
-    public Object visit(Overlaps filter, Object extraData) {
-        return function("ST_Overlaps", filter, extraData);
-    }
-
-    @Override
-    public Object visit(Touches filter, Object extraData) {
-        return function("ST_Touches", filter, extraData);
-    }
-
-    @Override
-    public Object visit(Within filter, Object extraData) {
-        return function("ST_Within", filter, extraData);
-    }
-
-    /*
-     * TEMPORAL OPERATORS
-     */
-
-    @Override
-    public Object visit(After filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(AnyInteracts filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(Before filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(Begins filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(BegunBy filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(During filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(EndedBy filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(Ends filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(Meets filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(MetBy filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(OverlappedBy filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(TContains filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(TEquals filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    @Override
-    public Object visit(TOverlaps filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
-    }
-
-    /*
-     * Expression visitor
-     */
-
-    @Override
-    public Object visit(NilExpression expression, Object extraData) {
-        return "NULL";
-    }
-
-    @Override
-    public Object visit(Add expression, Object extraData) {
-        return join(expression, " + ", extraData);
-    }
-
-    @Override
-    public Object visit(Divide expression, Object extraData) {
-        return join(expression, " / ", extraData);
-    }
-
-    @Override
-    public Object visit(Function expression, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 01/10/2019
-    }
-
-    @Override
-    public Object visit(Literal expression, Object extraData) {
-        return valueFormatter.apply(expression);
-    }
-
-    @Override
-    public Object visit(Multiply expression, Object extraData) {
-        return join(expression, " * ", extraData);
-    }
-
-
-    @Override
-    public Object visit(PropertyName expression, Object extraData) {
-        return nameFormatter.apply(expression);
-    }
-
-    @Override
-    public Object visit(Subtract expression, Object extraData) {
-        return join(expression, " - ", extraData);
-    }
-
-    /*
-     * UTILITIES
-     */
-
-    protected static CharSequence format(Literal candidate) {
-        Object value = candidate == null ? null : candidate.getValue();
-        if (value == null) return "NULL";
-        else if (value instanceof CharSequence) {
-            final String asStr = value.toString();
-            asStr.replace("'", "''");
-            return "'"+asStr+"'";
+    private static void writeLiteral(final StringBuilder sb, final Literal<Feature,?> literal) {
+        Object value;
+        if (literal == null || (value = literal.getValue()) == null) {
+            sb.append("NULL");
+        } else if (value instanceof CharSequence) {
+            String text = value.toString();
+            text = text.replace("'", "''");
+            sb.append('\'').append(text).append('\'');
         } else if (value instanceof Number || value instanceof Boolean) {
-            return value.toString();
+            sb.append(value);
+        } else {
+            // Geometric special cases
+            if (value instanceof GeographicBoundingBox) {
+                value = new GeneralEnvelope((GeographicBoundingBox) value);
+            }
+            if (value instanceof Envelope) {
+                value = asGeometry((Envelope) value);
+            }
+            if (value instanceof Geometry) {
+                format(sb, (Geometry) value);
+            } else {
+                throw new UnsupportedOperationException("Not supported yet: Literal value of type " + value.getClass());
+            }
         }
-
-        // geometric special cases
-        if (value instanceof GeographicBoundingBox) {
-            value = new GeneralEnvelope((GeographicBoundingBox) value);
-        }
-        if (value instanceof Envelope) {
-            value = asGeometry((Envelope) value);
-        }
-        if (value instanceof Geometry) {
-            return format((Geometry) value);
-        }
-        throw new UnsupportedOperationException("Not supported yet: Literal value of type "+value.getClass());
     }
 
     /**
      * Beware ! This implementation is a naïve one, expecting given property name to match exactly SQL database names.
      * In the future, it would be appreciable to be able to configure a mapper between feature and SQL names.
-     * @param candidate The property name to parse.
-     * @return The SQL representation of the given name.
+     *
+     * @param  candidate  name of property to insert in SQL statement.
      */
-    protected static CharSequence format(PropertyName candidate) {
-        final GenericName pName = Names.parseGenericName(null, ":", candidate.getPropertyName());
-        return pName.getParsedNames().stream()
-                .map(LocalName::toString)
-                .collect(Collectors.joining("\".\"", "\"", "\""));
+    private void writeColumnName(final StringBuilder sb, final ValueReference<Feature,?> candidate) {
+        final GenericName name = nameFactory.parseGenericName(scope, candidate.getXPath());
+        final List<? extends LocalName> components = name.getParsedNames();
+        final int n = components.size();
+        for (int i=0; i<n; i++) {
+            if (i != 0) sb.append('.');
+            sb.append('"').append(components.get(i)).append('"');
+        }
     }
 
-    protected CharSequence join(final BinaryLogicOperator filter, String separator, Object extraData) {
-        final List<Filter> subFilters = filter.getChildren();
-        if (subFilters == null || subFilters.isEmpty()) return "";
-        return subFilters.stream()
-                .map(sub -> sub.accept(this, extraData))
-                .filter(ANSIInterpreter::isNonEmptyText)
-                .map( result -> (CharSequence) result)
-                .collect(Collectors.joining(separator, "(", ")"));
-    }
+    private final class BinaryLogicJoin implements BiConsumer<Filter<Feature>, StringBuilder> {
+        private final String operator;
 
-    protected CharSequence joinMatchCase(BinaryComparisonOperator filter, String operator, Object extraData) {
-        ensureMatchCase(filter);
-        return join(filter, operator, extraData);
-    }
-
-    protected CharSequence join(BinaryComparisonOperator candidate, String operator, Object extraData) {
-        return join(candidate::getExpression1, candidate::getExpression2, operator, extraData);
-    }
-
-    protected CharSequence join(BinaryExpression candidate, String operator, Object extraData) {
-        return join(candidate::getExpression1, candidate::getExpression2, operator, extraData);
-    }
-
-
-    protected CharSequence join(BinarySpatialOperator candidate, String operator, Object extraData) {
-        return join(candidate::getExpression1, candidate::getExpression2, operator, extraData);
-    }
-
-    protected CharSequence join(
-            Supplier<Expression> leftOperand,
-            Supplier<Expression> rightOperand,
-            String operator, Object extraData)
-    {
-        return "("
-                + evaluateMandatory(leftOperand.get(), extraData)
-                + operator
-                + evaluateMandatory(rightOperand.get(), extraData)
-                + ")";
-    }
-
-    protected CharSequence function(Object extraData, final String fnName, Supplier<Expression>... parameters) {
-        return Arrays.stream(parameters)
-                .map(Supplier::get)
-                .map(exp -> evaluateMandatory(exp, extraData))
-                .collect(Collectors.joining(", ", fnName+'(', ")"));
-    }
-
-    private CharSequence function(String fnName, BinarySpatialOperator filter, Object extraData) {
-        return function(extraData, fnName, filter::getExpression1, filter::getExpression2);
-    }
-
-    protected CharSequence evaluateMandatory(final Filter candidate, Object extraData) {
-        final Object exp = candidate == null ? null : candidate.accept(this, extraData);
-        return asNonEmptyText(exp)
-                .orElseThrow(() -> new IllegalArgumentException("Filter evaluate to an empty text: "+candidate));
-    }
-
-    protected CharSequence evaluateMandatory(final Expression candidate, Object extraData) {
-        final Object exp = candidate == null ? null : candidate.accept(this, extraData);
-        return asNonEmptyText(exp)
-                .orElseThrow(() -> new IllegalArgumentException("Expression evaluate to an empty text: "+candidate));
-    }
-
-    protected static Optional<CharSequence> asNonEmptyText(final Object toCheck) {
-        if (toCheck instanceof CharSequence) {
-            final CharSequence asCS = (CharSequence) toCheck;
-            if (asCS.length() > 0) return Optional.of(asCS);
+        BinaryLogicJoin(final String operator) {
+            this.operator = operator;
         }
 
-        return Optional.empty();
+        @Override
+        public void accept(final Filter<Feature> f, final StringBuilder sb) {
+            final LogicalOperator<Feature> filter = (LogicalOperator<Feature>) f;
+            final List<Filter<? super Feature>> subFilters = filter.getOperands();
+            final int n = subFilters.size();
+            if (n != 0) {
+                sb.append('(');
+                for (int i=0; i<n; i++) {
+                    if (i != 0) sb.append(operator);
+                    evaluateMandatory(sb, subFilters.get(i));
+                }
+                sb.append(')');
+            }
+        }
     }
 
-    protected static boolean isNonEmptyText(final Object toCheck) {
-        return asNonEmptyText(toCheck).isPresent();
+    private void join(final StringBuilder sb,
+                      final List<Expression<? super Feature, ?>> expressions,
+                      final int maxCount, final String operator)
+    {
+        sb.append('(');
+        final int n = Math.min(expressions.size(), maxCount);
+        for (int i=0; i<n; i++) {
+            if (i != 0) sb.append(operator);
+            evaluateMandatory(sb, expressions.get(i));
+        }
+        sb.append(')');
     }
 
-    private static void ensureMatchCase(BinaryComparisonOperator filter) {
-        ensureMatchCase(filter::isMatchingCase);
+    private final class JoinMatchCase implements BiConsumer<Filter<Feature>, StringBuilder> {
+        private final String operator;
+
+        JoinMatchCase(final String operator) {
+            this.operator = operator;
+        }
+
+        @Override
+        public void accept(final Filter<Feature> f, final StringBuilder sb) {
+            final BinaryComparisonOperator<Feature> filter = (BinaryComparisonOperator<Feature>) f;
+            ensureMatchCase(filter.isMatchingCase());
+            join(sb, filter.getExpressions(), 2, operator);
+        }
     }
-    private static void ensureMatchCase(BooleanSupplier filter) {
-        if (!filter.getAsBoolean()) {
+
+    protected final void join(final StringBuilder sb, final SpatialOperator<Feature> op, final String operator) {
+        join(sb, op.getExpressions(), 2, operator);
+    }
+
+    private final class Join implements BiConsumer<Expression<Feature,?>, StringBuilder> {
+        private final String operator;
+
+        Join(final String operator) {
+            this.operator = operator;
+        }
+
+        @Override
+        public void accept(final Expression<Feature,?> expression, final StringBuilder sb) {
+            join(sb, expression.getParameters(), 2, operator);
+        }
+    }
+
+    private final class Function implements BiConsumer<Filter<Feature>, StringBuilder> {
+        private final String name;
+
+        Function(final String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void accept(final Filter<Feature> f, final StringBuilder sb) {
+            function(sb, name, (SpatialOperator<Feature>) f);
+        }
+    }
+
+    private void function(final StringBuilder sb, final String name, final SpatialOperator<Feature> filter) {
+        join(sb.append(name), filter.getExpressions(), Integer.MAX_VALUE, ", ");
+    }
+
+    /**
+     * Executes the registered action for the given filter.
+     * Throws an exception if the filter did not wrote anything in the buffer.
+     *
+     * <h4>Note on type safety</h4>
+     * This method signature uses {@code <? super R>} for caller's convenience because this is the type that
+     * we get from {@link LogicalOperator#getOperands()}. But the {@link BiConsumer} uses exactly {@code <R>}
+     * type because doing otherwise causes complications with types that can not be expressed in Java (kinds
+     * of {@code <? super ? super R>}). The cast in this method is okay if we do not invoke any {@code filter}
+     * method with a return value (directly or indirectly as list elements) of exactly {@code <R>} type.
+     * Such methods do not exist in the GeoAPI interfaces, so we are safe if the {@link BiConsumer}
+     * does not invoke implementation-specific methods.
+     *
+     * @param  sb      where to write the result of all actions.
+     * @param  filter  the filter for which to execute an action based on its type.
+     * @throws UnsupportedOperationException if there is no action registered for the given filter.
+     */
+    @SuppressWarnings("unchecked")
+    private void evaluateMandatory(final StringBuilder sb, final Filter<? super Feature> filter) {
+        final int pos = sb.length();
+        visit((Filter<Feature>) filter, sb);
+        if (sb.length() <= pos) {
+            throw new IllegalArgumentException("Filter evaluate to an empty text: " + filter);
+        }
+    }
+
+    /**
+     * Executes the registered action for the given expression.
+     * Throws an exception if the expression did not wrote anything in the buffer.
+     *
+     * <h4>Note on type safety</h4>
+     * This method signature uses {@code <? super R>} for caller's convenience because this is the type that
+     * we get from {@link Expression#getParameters()}. But the {@link BiConsumer} expects exactly {@code <R>}
+     * type because doing otherwise causes complications with types that can not be expressed in Java (kinds
+     * of {@code <? super ? super R>}). The cast in this method is okay if we do not invoke any {@code exp}
+     * method with a return value (directly or indirectly as list elements) of exactly {@code <R>} type.
+     * Such methods do not exist in the GeoAPI interfaces, so we are safe if the {@link BiConsumer}
+     * does not invoke implementation-specific methods.
+     *
+     * @param  sb   where to write the result of all actions.
+     * @param  exp  the expression for which to execute an action based on its type.
+     * @throws UnsupportedOperationException if there is no action registered for the given expression.
+     */
+    @SuppressWarnings("unchecked")
+    private void evaluateMandatory(final StringBuilder sb, final Expression<? super Feature, ?> exp) {
+        final int pos = sb.length();
+        visit((Expression<Feature, ?>) exp, sb);
+        if (sb.length() <= pos) {
+            throw new IllegalArgumentException("Expression evaluate to an empty text: " + exp);
+        }
+    }
+
+    private static void ensureMatchCase(final boolean isMatchingCase) {
+        if (!isMatchingCase) {
             throw new UnsupportedOperationException("case insensitive match is not defined by ANSI SQL");
         }
     }
 
-    protected static CharSequence append(CharSequence toAdd, Object extraData) {
-        if (extraData instanceof StringBuilder) return ((StringBuilder) extraData).append(toAdd);
-        return toAdd;
-    }
-
-    protected static Geometry asGeometry(final Envelope source) {
+    private static Geometry asGeometry(final Envelope source) {
         final double[] lower = source.getLowerCorner().getCoordinate();
         final double[] upper = source.getUpperCorner().getCoordinate();
         for (int i = 0 ; i < lower.length ; i++) {
@@ -530,19 +354,20 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
         return Geometries.implementation(LIBRARY).toGeometry2D(env, WraparoundMethod.SPLIT);
     }
 
-    protected static CharSequence format(final Geometry source) {
+    private static void format(final StringBuilder sb, final Geometry source) {
         final GeometryWrapper<?> wrapper = Geometries.wrap(source).orElseThrow(
                 () -> new IllegalArgumentException("Unsupported geometry implementation."));
         // TODO: find a better approximation of desired "flatness"
         final Envelope env = wrapper.getEnvelope();
-        final double flatness = 0.05 * IntStream.range(0, env.getDimension())
-                .mapToDouble(env::getSpan)
-                .average()
-                .orElseThrow(() -> new IllegalArgumentException("Given geometry envelope dimension is 0"));
-        return "ST_GeomFromText('" + wrapper.formatWKT(flatness) + "')";
+        final int n = Math.min(env.getDimension(), 2);
+        double span = 0;
+        for (int i=0; i<n; i++) {
+            span += env.getSpan(i);
+        }
+        sb.append("ST_GeomFromText('").append(wrapper.formatWKT(0.05 * span/n)).append("')");
     }
 
-    protected static double clampInfinity(final double candidate) {
+    private static double clampInfinity(final double candidate) {
         if (candidate == Double.NEGATIVE_INFINITY) {
             return -Double.MAX_VALUE;
         } else if (candidate == Double.POSITIVE_INFINITY) {

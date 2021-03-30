@@ -16,21 +16,17 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
-import org.apache.sis.util.collection.Containers;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.filter.Node;
+import org.apache.sis.internal.feature.AttributeConvention;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
-import org.opengis.filter.FilterVisitor;
-import org.opengis.filter.Id;
-import org.opengis.filter.identity.Identifier;
+import org.opengis.filter.Expression;
+import org.opengis.filter.ResourceId;
 
 
 /**
@@ -38,68 +34,56 @@ import org.opengis.filter.identity.Identifier;
  * whose identifier is not in the set.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
+ *
+ * @since 1.1
  * @module
  */
-final class FilterByIdentifier extends Node implements Id {
+final class FilterByIdentifier<R extends Feature> extends Node implements ResourceId<R> {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 1404452049863376235L;
 
     /**
-     * The identifiers of features to retain. Filtering will use the keys. This map contains also
-     * the same identifiers as the original {@link Identifier} objects given at construction time,
-     * but those values are not used by this class.
+     * The identifier of features to retain.
      */
-    private final Map<Object,Identifier> identifiers;
+    private final String identifier;
 
     /**
-     * Creates a new filter using the given identifiers.
+     * Creates a new filter using the given identifier.
      */
-    FilterByIdentifier(final Collection<? extends Identifier> ids) {
-        identifiers = new HashMap<>(Containers.hashMapCapacity(ids.size()));
-        for (Identifier id : ids) {
-            identifiers.put(id.getID(), id);
-        }
-    }
-
-    /**
-     * Returns a name identifying this kind of filter.
-     */
-    @Override
-    public String getName() {
-        return "Id";
-    }
-
-    /**
-     * Returns the identifiers specified at construction time. This is used for {@link #toString()},
-     * {@link #hashCode()} and {@link #equals(Object)} implementations. Since all the keys in the
-     * {@link #identifiers} map were derived from the values, comparing those values is sufficient
-     * for determining if two {@code FilterByIdentifier} instances are equal.
-     */
-    @Override
-    protected Collection<?> getChildren() {
-        // Can not return identifiers.values() directly because that collection does not implement equals/hashCode.
-        return getIdentifiers();
+    FilterByIdentifier(final String identifier) {
+        ArgumentChecks.ensureNonEmpty("identifier", identifier);
+        this.identifier = identifier;
     }
 
     /**
      * Returns the identifiers of feature instances to accept.
      */
     @Override
-    public Set<Object> getIDs() {
-        return Collections.unmodifiableSet(identifiers.keySet());
+    public String getIdentifier() {
+        return identifier;
     }
 
     /**
-     * Same identifiers than {@link #getIDs()} but as the instances specified at construction time.
-     * This is not used by this class.
+     * Returns the parameters of this filter.
      */
     @Override
-    public Set<Identifier> getIdentifiers() {
-        return new HashSet<>(identifiers.values());
+    public List<Expression<? super R, ?>> getExpressions() {
+        return Collections.singletonList(new LeafExpression.Literal<>(identifier));
+    }
+
+    /**
+     * Returns the identifiers specified at construction time. This is used for {@link #toString()},
+     * {@link #hashCode()} and {@link #equals(Object)} implementations.
+     */
+    @Override
+    protected Collection<?> getChildren() {
+        return Collections.singleton(identifier);
     }
 
     /**
@@ -107,28 +91,11 @@ final class FilterByIdentifier extends Node implements Id {
      * is one of the identifier specified at {@code FilterByIdentifier} construction time.
      */
     @Override
-    public boolean evaluate(Object object) {
-        if (object instanceof Feature) {
-            Object id = ((Feature) object).getValueOrFallback(AttributeConvention.IDENTIFIER, null);
-            if (identifiers.containsKey(id)) {
-                return true;
-            }
-            if (id != null && !(id instanceof String)) {
-                /*
-                 * Sometime web services specify the identifiers to use for filtering as Strings
-                 * while the types stored in the feature instances is different.
-                 */
-                return identifiers.containsKey(id.toString());
-            }
+    public boolean test(R object) {
+        if (object == null) {
+            return false;
         }
-        return false;
-    }
-
-    /**
-     * Implementation of the visitor pattern.
-     */
-    @Override
-    public Object accept(FilterVisitor visitor, Object extraData) {
-        return visitor.visit(this, extraData);
+        final Object id = object.getValueOrFallback(AttributeConvention.IDENTIFIER, null);
+        return (id != null) && identifier.equals(id.toString());
     }
 }

@@ -24,7 +24,6 @@ import java.util.Objects;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.util.GenericName;
-import org.apache.sis.filter.InvalidExpressionException;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
@@ -40,8 +39,9 @@ import org.apache.sis.util.iso.Names;
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.Filter;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.sort.SortBy;
+import org.opengis.filter.Expression;
+import org.opengis.filter.SortProperty;
+import org.opengis.filter.InvalidFilterValueException;
 
 
 /**
@@ -54,7 +54,7 @@ import org.opengis.filter.sort.SortBy;
  * @since   1.0
  * @module
  *
- * @todo Rename {@code FeatureQuery}.
+ * @todo Rename {@code FeatureQuery}, then replace {@code Filter<?>} by {@code Filter<Feature>}.
  */
 public class SimpleQuery extends Query implements Cloneable {
     /**
@@ -62,6 +62,11 @@ public class SimpleQuery extends Query implements Cloneable {
      * This value can be given to {@link #setLimit(long)} or retrieved from {@link #getLimit()}.
      */
     public static final long UNLIMITED = -1;
+
+    /**
+     * The value of {@link #sortBy} when no sorting is applied.
+     */
+    private static final SortProperty[] UNSORTED = new SortProperty[0];
 
     /**
      * The columns to retrieve, or {@code null} if all columns shall be included in the query.
@@ -77,7 +82,7 @@ public class SimpleQuery extends Query implements Cloneable {
      * @see #getFilter()
      * @see #setFilter(Filter)
      */
-    private Filter filter;
+    private Filter<?> filter;
 
     /**
      * The number of records to skip from the beginning.
@@ -103,7 +108,7 @@ public class SimpleQuery extends Query implements Cloneable {
      * @see #getSortBy()
      * @see #setSortBy(SortBy...)
      */
-    private SortBy[] sortBy;
+    private SortProperty[] sortBy;
 
     /**
      * Hint used by resources to optimize returned features.
@@ -119,8 +124,8 @@ public class SimpleQuery extends Query implements Cloneable {
      * Creates a new query retrieving no column and applying no filter.
      */
     public SimpleQuery() {
-        filter = Filter.INCLUDE;
-        sortBy = SortBy.UNSORTED;
+        filter = Filter.include();
+        sortBy = UNSORTED;
         limit  = UNLIMITED;
     }
 
@@ -167,9 +172,9 @@ public class SimpleQuery extends Query implements Cloneable {
      * Features that do not pass the filter are discarded.
      * Discarded features are not counted for the {@linkplain #setLimit(long) query limit}.
      *
-     * @param  filter  the filter, or {@link Filter#INCLUDE} if none.
+     * @param  filter  the filter, or {@link Filter#include()} if none.
      */
-    public void setFilter(final Filter filter) {
+    public void setFilter(final Filter<?> filter) {
         ArgumentChecks.ensureNonNull("filter", filter);
         this.filter = filter;
     }
@@ -178,9 +183,9 @@ public class SimpleQuery extends Query implements Cloneable {
      * Returns the filter for trimming feature instances.
      * This is the value specified in the last call to {@link #setFilter(Filter)}.
      *
-     * @return the filter, or {@link Filter#INCLUDE} if none.
+     * @return the filter, or {@link Filter#include()} if none.
      */
-    public Filter getFilter() {
+    public Filter<?> getFilter() {
         return filter;
     }
 
@@ -244,9 +249,9 @@ public class SimpleQuery extends Query implements Cloneable {
      * @param  sortBy  expressions to use for sorting the feature instances.
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-    public void setSortBy(SortBy... sortBy) {
+    public void setSortBy(SortProperty... sortBy) {
         if (sortBy == null || sortBy.length == 0) {
-            sortBy = SortBy.UNSORTED;
+            sortBy = UNSORTED;
         } else {
             sortBy = sortBy.clone();
             for (int i=0; i < sortBy.length; i++) {
@@ -262,8 +267,8 @@ public class SimpleQuery extends Query implements Cloneable {
      *
      * @return expressions to use for sorting the feature instances, or an empty array if none.
      */
-    public SortBy[] getSortBy() {
-        return (sortBy.length == 0) ? SortBy.UNSORTED : sortBy.clone();
+    public SortProperty[] getSortBy() {
+        return (sortBy.length == 0) ? UNSORTED : sortBy.clone();
     }
 
     /**
@@ -294,7 +299,7 @@ public class SimpleQuery extends Query implements Cloneable {
         /**
          * The literal, property name or more complex expression to be retrieved by a {@code Query}.
          */
-        public final Expression expression;
+        public final Expression<?,?> expression;
 
         /**
          * The name to assign to the expression result, or {@code null} if unspecified.
@@ -306,7 +311,7 @@ public class SimpleQuery extends Query implements Cloneable {
          *
          * @param expression  the literal, property name or expression to be retrieved by a {@code Query}.
          */
-        public Column(final Expression expression) {
+        public Column(final Expression<?,?> expression) {
             ArgumentChecks.ensureNonNull("expression", expression);
             this.expression = expression;
             this.alias = null;
@@ -318,7 +323,7 @@ public class SimpleQuery extends Query implements Cloneable {
          * @param expression  the literal, property name or expression to be retrieved by a {@code Query}.
          * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
          */
-        public Column(final Expression expression, final GenericName alias) {
+        public Column(final Expression<?,?> expression, final GenericName alias) {
             ArgumentChecks.ensureNonNull("expression", expression);
             this.expression = expression;
             this.alias = alias;
@@ -331,7 +336,7 @@ public class SimpleQuery extends Query implements Cloneable {
          * @param expression  the literal, property name or expression to be retrieved by a {@code Query}.
          * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
          */
-        public Column(final Expression expression, final String alias) {
+        public Column(final Expression<?,?> expression, final String alias) {
             ArgumentChecks.ensureNonNull("expression", expression);
             this.expression = expression;
             this.alias = (alias != null) ? Names.createLocalName(null, null, alias) : null;
@@ -345,7 +350,7 @@ public class SimpleQuery extends Query implements Cloneable {
          * @param  addTo      where to add the type of properties evaluated by expression in this column.
          * @throws IllegalArgumentException if this method can operate only on some feature types
          *         and the given type is not one of them.
-         * @throws InvalidExpressionException if this method can not determine the result type of the expression
+         * @throws InvalidFilterValueException if this method can not determine the result type of the expression
          *         in this column. It may be because that expression is backed by an unsupported implementation.
          *
          * @see SimpleQuery#expectedType(FeatureType)
@@ -353,7 +358,8 @@ public class SimpleQuery extends Query implements Cloneable {
         final void expectedType(final int column, final FeatureType valueType, final FeatureTypeBuilder addTo) {
             final PropertyTypeBuilder resultType = FeatureExpression.expectedType(expression, valueType, addTo);
             if (resultType == null) {
-                throw new InvalidExpressionException(expression, column);
+                throw new InvalidFilterValueException(Resources.format(Resources.Keys.InvalidExpression_2,
+                            expression.getFunctionName().toInternationalString(), column));
             }
             if (alias != null && !alias.equals(resultType.getName())) {
                 resultType.setName(alias);
@@ -430,13 +436,13 @@ public class SimpleQuery extends Query implements Cloneable {
     }
 
     /**
-     * Returns the type or values evaluated by this query when executed on features of the given type.
+     * Returns the type of values evaluated by this query when executed on features of the given type.
      *
      * @param  valueType  the type of features to be evaluated by the expressions in this query.
      * @return type resulting from expressions evaluation (never null).
      * @throws IllegalArgumentException if this method can operate only on some feature types
      *         and the given type is not one of them.
-     * @throws InvalidExpressionException if this method can not determine the result type of an expression
+     * @throws InvalidFilterValueException if this method can not determine the result type of an expression
      *         in this query. It may be because that expression is backed by an unsupported implementation.
      */
     final FeatureType expectedType(final FeatureType valueType) {
@@ -520,10 +526,10 @@ public class SimpleQuery extends Query implements Cloneable {
         } else {
             sb.append('*');
         }
-        if (filter != Filter.INCLUDE) {
+        if (filter != Filter.include()) {
             sb.append(" WHERE ").append(filter);
         }
-        if (sortBy != SortBy.UNSORTED) {
+        if (sortBy != UNSORTED) {
             sb.append(" ORDER BY ");
             for (int i=0; i<sortBy.length; i++) {
                 if (i != 0) sb.append(", ");

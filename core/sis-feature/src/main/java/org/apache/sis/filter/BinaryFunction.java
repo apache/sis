@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
 import java.math.BigInteger;
@@ -27,7 +28,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.filter.Node;
 
 // Branch-dependent imports
-import org.opengis.filter.expression.Expression;
+import org.opengis.filter.Filter;
+import org.opengis.filter.Expression;
 
 
 /**
@@ -39,10 +41,15 @@ import org.opengis.filter.expression.Expression;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @param  <R>   the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
+ * @param  <V1>  the type of value computed by the first expression.
+ * @param  <V2>  the type of value computed by the second expression.
+ *
+ * @since 1.1
  * @module
  */
-abstract class BinaryFunction extends Node {
+abstract class BinaryFunction<R,V1,V2> extends Node {
     /**
      * For cross-version compatibility.
      */
@@ -53,14 +60,14 @@ abstract class BinaryFunction extends Node {
      *
      * @see #getExpression1()
      */
-    protected final Expression expression1;
+    protected final Expression<? super R, ? extends V1> expression1;
 
     /**
      * The second of the two expressions to be used by this function.
      *
      * @see #getExpression2()
      */
-    protected final Expression expression2;
+    protected final Expression<? super R, ? extends V2> expression2;
 
     /**
      * Creates a new binary function.
@@ -68,7 +75,9 @@ abstract class BinaryFunction extends Node {
      * @param  expression1  the first of the two expressions to be used by this function.
      * @param  expression2  the second of the two expressions to be used by this function.
      */
-    protected BinaryFunction(final Expression expression1, final Expression expression2) {
+    protected BinaryFunction(final Expression<? super R, ? extends V1> expression1,
+                             final Expression<? super R, ? extends V2> expression2)
+    {
         ArgumentChecks.ensureNonNull("expression1", expression1);
         ArgumentChecks.ensureNonNull("expression2", expression2);
         this.expression1 = expression1;
@@ -76,34 +85,30 @@ abstract class BinaryFunction extends Node {
     }
 
     /**
-     * Returns the first of the two expressions to be used by this function.
-     * This is the value specified at construction time.
-     *
-     * @see org.opengis.filter.BinaryComparisonOperator#getExpression1()
-     * @see org.opengis.filter.temporal.BinaryTemporalOperator#getExpression1()
+     * Returns the expressions used as parameters by this function.
+     * Defined for {@link Expression#getParameters()} implementations.
      */
-    public final Expression getExpression1() {
-        return expression1;
+    public final List<Expression<? super R, ?>> getParameters() {
+        return getExpressions();
     }
 
     /**
-     * Returns the second of the two expressions to be used by this function.
-     * This is the value specified at construction time.
+     * Returns the two expressions used as parameters by this filter.
+     * Defined for {@link Filter#getExpressions()} implementations.
      *
-     * @see org.opengis.filter.BinaryComparisonOperator#getExpression1()
-     * @see org.opengis.filter.temporal.BinaryTemporalOperator#getExpression2()
+     * @return a list of size 2 containing the two expressions.
      */
-    public final Expression getExpression2() {
-        return expression2;
+    public List<Expression<? super R, ?>> getExpressions() {
+        return Arrays.asList(expression1, expression2);         // TODO: use List.of(…) with JDK9.
     }
 
     /**
      * Returns the two expressions in a list of size 2.
-     * This is used for {@link #toString()} implementation.
+     * This is used for {@link #toString()}, {@link #hashCode()} and {@link #equals(Object)} implementations.
      */
     @Override
     protected final Collection<?> getChildren() {
-        return Arrays.asList(expression1, expression2);
+        return getExpressions();
     }
 
     /**
@@ -116,98 +121,97 @@ abstract class BinaryFunction extends Node {
      * @param  right  the right operand. Can not be null.
      * @return result of this function applied on the two given operands.
      *         May be {@code null} only if an {@code applyAs(…)} implementation returned a null value.
-     * @throws ArithmeticException if the operation overflows the capacity of the type used.
      */
     protected final Number apply(final Number left, final Number right) {
-        switch (Math.max(Numbers.getEnumConstant(left.getClass()),
-                         Numbers.getEnumConstant(right.getClass())))
-        {
-            case Numbers.BIG_DECIMAL: {
-                return applyAsDecimal(Numbers.cast(left,  BigDecimal.class),
-                                      Numbers.cast(right, BigDecimal.class));
+        final int type = Math.max(Numbers.getEnumConstant(left.getClass()),
+                                  Numbers.getEnumConstant(right.getClass()));
+        try {
+            switch (type) {
+                case Numbers.BIG_DECIMAL: {
+                    return applyAsDecimal(Numbers.cast(left,  BigDecimal.class),
+                                          Numbers.cast(right, BigDecimal.class));
+                }
+                case Numbers.BIG_INTEGER: {
+                    return applyAsInteger(Numbers.cast(left,  BigInteger.class),
+                                          Numbers.cast(right, BigInteger.class));
+                }
+                case Numbers.FRACTION: {
+                    return applyAsFraction(Numbers.cast(left,  Fraction.class),
+                                           Numbers.cast(right, Fraction.class));
+                }
+                case Numbers.LONG:
+                case Numbers.INTEGER:
+                case Numbers.SHORT:
+                case Numbers.BYTE: {
+                    return applyAsLong(left.longValue(), right.longValue());
+                }
             }
-            case Numbers.BIG_INTEGER: {
-                return applyAsInteger(Numbers.cast(left,  BigInteger.class),
-                                      Numbers.cast(right, BigInteger.class));
-            }
-            case Numbers.FRACTION: {
-                return applyAsFraction(Numbers.cast(left,  Fraction.class),
-                                       Numbers.cast(right, Fraction.class));
-            }
-            case Numbers.LONG:
-            case Numbers.INTEGER:
-            case Numbers.SHORT:
-            case Numbers.BYTE: {
-                return applyAsLong(left.longValue(), right.longValue());
-            }
+        } catch (IllegalArgumentException | ArithmeticException e) {
+            /*
+             * Integer overflow, or division by zero, or attempt to convert NaN or infinity
+             * to `BigDecimal`, or division does not have a terminating decimal expansion.
+             */
+            warning(e, true);
         }
         return applyAsDouble((left  instanceof Float) ? DecimalFunctions.floatToDouble((Float) left)  : left.doubleValue(),
                              (right instanceof Float) ? DecimalFunctions.floatToDouble((Float) right) : right.doubleValue());
     }
 
     /**
-     * Calculates this function using given operands of {@code long} primitive type. If this function is a
-     * filter, then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
-     * Otherwise the result is usually a {@link Long}, except for division which may produce a floating point number.
+     * Calculates this function using given operands of {@code long} primitive type. If this function is a filter,
+     * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
+     * Otherwise the result is usually a {@link Long}, except for division which may produce other types.
      * This method may return {@code null} if the operation can not apply on numbers.
      *
-     * @throws ArithmeticException if the operation overflows the 64 bits integer capacity.
+     * @throws ArithmeticException if the operation overflows or if there is a division by zero.
      */
-    protected abstract Number applyAsLong(long left, long right);
+    protected Number applyAsLong(long left, long right) {
+        return null;
+    }
 
     /**
-     * Calculates this function using given operands of {@code double} primitive type. If this function is a
-     * filter, then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
+     * Calculates this function using given operands of {@code double} primitive type. If this function is a filter,
+     * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link Double}.
      * This method may return {@code null} if the operation can not apply on numbers.
      */
-    protected abstract Number applyAsDouble(double left, double right);
+    protected Number applyAsDouble(double left, double right) {
+        return null;
+    }
 
     /**
      * Calculates this function using given operands of {@code Fraction} type. If this function is a filter,
      * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link Fraction}.
      * This method may return {@code null} if the operation can not apply on numbers.
+     *
+     * @throws ArithmeticException if the operation overflows or if there is a division by zero.
      */
-    protected abstract Number applyAsFraction(Fraction left, Fraction right);
+    protected Number applyAsFraction(Fraction left, Fraction right) {
+        return null;
+    }
 
     /**
      * Calculates this function using given operands of {@code BigInteger} type. If this function is a filter,
      * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
-     * Otherwise the result is usually a {@link BigInteger}.
+     * Otherwise the result is usually a {@link BigInteger}, except for division which may produce other types.
      * This method may return {@code null} if the operation can not apply on numbers.
+     *
+     * @throws ArithmeticException if there is a division by zero.
      */
-    protected abstract Number applyAsInteger(BigInteger left, BigInteger right);
+    protected Number applyAsInteger(BigInteger left, BigInteger right) {
+        return null;
+    }
 
     /**
      * Calculates this function using given operands of {@code BigDecimal} type. If this function is a filter,
      * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link BigDecimal}.
      * This method may return {@code null} if the operation can not apply on numbers.
+     *
+     * @throws ArithmeticException if a division does not have a terminating decimal expansion.
      */
-    protected abstract Number applyAsDecimal(BigDecimal left, BigDecimal right);
-
-    /**
-     * Returns a hash code value for this function.
-     */
-    @Override
-    public int hashCode() {
-        return (31 * expression1.hashCode() + expression2.hashCode()) ^ getClass().hashCode();
-    }
-
-    /**
-     * Compares this function with the given object for equality.
-     */
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (obj != null && obj.getClass() == getClass()) {
-            final BinaryFunction other = (BinaryFunction) obj;
-            return expression1.equals(other.expression1) &&
-                   expression2.equals(other.expression2);
-        }
-        return false;
+    protected Number applyAsDecimal(BigDecimal left, BigDecimal right) {
+        return null;
     }
 }

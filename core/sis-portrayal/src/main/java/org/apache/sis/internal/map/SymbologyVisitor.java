@@ -16,28 +16,11 @@
  */
 package org.apache.sis.internal.map;
 
-import java.util.Collection;
-import java.util.List;
-import org.opengis.filter.BinaryComparisonOperator;
-import org.opengis.filter.BinaryLogicOperator;
-import org.opengis.filter.ExcludeFilter;
+import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.Filter;
-import org.opengis.filter.Id;
-import org.opengis.filter.IncludeFilter;
-import org.opengis.filter.Not;
-import org.opengis.filter.PropertyIsBetween;
-import org.opengis.filter.PropertyIsLike;
-import org.opengis.filter.PropertyIsNil;
-import org.opengis.filter.PropertyIsNull;
-import org.opengis.filter.expression.BinaryExpression;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.expression.Function;
-import org.opengis.filter.expression.Literal;
-import org.opengis.filter.expression.NilExpression;
-import org.opengis.filter.expression.PropertyName;
-import org.opengis.filter.spatial.BinarySpatialOperator;
-import org.opengis.filter.spatial.DistanceBufferOperator;
-import org.opengis.filter.temporal.BinaryTemporalOperator;
+import org.opengis.filter.Expression;
+import org.opengis.filter.Literal;
+import org.opengis.filter.ValueReference;
 import org.opengis.style.AnchorPoint;
 import org.opengis.style.ChannelSelection;
 import org.opengis.style.ColorMap;
@@ -73,6 +56,9 @@ import org.opengis.style.Style;
 import org.opengis.style.Symbolizer;
 import org.opengis.style.TextSymbolizer;
 
+import static org.apache.sis.internal.util.CollectionsExt.nonNull;
+
+
 /**
  * Loops on all objects contained in a style.
  * Sub classes are expected to override interested methods to fill their objectives.
@@ -82,31 +68,33 @@ import org.opengis.style.TextSymbolizer;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public abstract class SymbologyVisitor {
+    protected SymbologyVisitor() {
+    }
 
-    public void visit(Style candidate) {
-        for (FeatureTypeStyle fts : candidate.featureTypeStyles()) {
-            if (fts != null) visit(fts);
+    protected void visit(final Style candidate) {
+        if (candidate != null) {
+            nonNull(candidate.featureTypeStyles()).forEach(this::visit);
         }
     }
 
-    public void visit(FeatureTypeStyle candidate) {
-        for (Rule rule : candidate.rules()) {
-            if (rule != null) visit(rule);
+    protected void visit(final FeatureTypeStyle candidate) {
+        if (candidate != null) {
+            nonNull(candidate.rules()).forEach(this::visit);
         }
     }
 
-    public void visit(Rule candidate) {
-        for (Symbolizer symbolizer : candidate.symbolizers()) {
-            if (symbolizer != null) visit(symbolizer);
+    protected void visit(final Rule candidate) {
+        if (candidate != null) {
+            nonNull(candidate.symbolizers()).forEach(this::visit);
         }
     }
 
-    public void visit(Symbolizer candidate) {
+    protected void visit(final Symbolizer candidate) {
         if (candidate instanceof PointSymbolizer) {
             visit((PointSymbolizer) candidate);
         } else if (candidate instanceof LineSymbolizer) {
@@ -119,366 +107,288 @@ public abstract class SymbologyVisitor {
             visit((RasterSymbolizer) candidate);
         } else if (candidate instanceof ExtensionSymbolizer) {
             visit((ExtensionSymbolizer) candidate);
-        } else {
+        } else if (candidate != null) {
             throw new IllegalArgumentException("Unexpected symbolizer " + candidate);
         }
     }
 
-    public void visit(PointSymbolizer candidate) {
-        visitNoNull(candidate.getGeometry());
-        final Graphic graphic = candidate.getGraphic();
-        if (graphic != null) visit(graphic);
-    }
-
-    public void visit(LineSymbolizer candidate) {
-        visitNoNull(candidate.getGeometry());
-        visitNoNull(candidate.getPerpendicularOffset());
-        final Stroke stroke = candidate.getStroke();
-        if (stroke != null) visit(stroke);
-    }
-
-    public void visit(PolygonSymbolizer candidate) {
-        visitNoNull(candidate.getGeometry());
-        visitNoNull(candidate.getPerpendicularOffset());
-
-        final Displacement displacement = candidate.getDisplacement();
-        final Fill fill = candidate.getFill();
-        final Stroke stroke = candidate.getStroke();
-        if (displacement != null) visit(displacement);
-        if (fill != null) visit(fill);
-        if (stroke != null) visit(stroke);
-    }
-
-    public void visit(TextSymbolizer candidate) {
-        visitNoNull(candidate.getGeometry());
-        visitNoNull(candidate.getLabel());
-        final Fill fill = candidate.getFill();
-        final Font font = candidate.getFont();
-        final Halo halo = candidate.getHalo();
-        final LabelPlacement labelPlacement = candidate.getLabelPlacement();
-        if (fill != null) visit(fill);
-        if (font != null) visit(font);
-        if (halo != null) visit(halo);
-        if (labelPlacement != null) visit(labelPlacement);
-    }
-
-    public void visit(RasterSymbolizer candidate) {
-        visitNoNull(candidate.getGeometry());
-        visitNoNull(candidate.getOpacity());
-        final ChannelSelection channelSelection = candidate.getChannelSelection();
-        final ColorMap colorMap = candidate.getColorMap();
-        final ContrastEnhancement contrastEnhancement = candidate.getContrastEnhancement();
-        final Symbolizer imageOutline = candidate.getImageOutline();
-        final ShadedRelief shadedRelief = candidate.getShadedRelief();
-        if (channelSelection != null) visit(channelSelection);
-        if (colorMap != null) visit(colorMap);
-        if (contrastEnhancement != null) visit(contrastEnhancement);
-        if (imageOutline != null) visit(imageOutline);
-        if (shadedRelief != null) visit(shadedRelief);
-    }
-
-    public void visit(ExtensionSymbolizer candidate) {
-        visitNoNull(candidate.getGeometry());
-        for (Expression exp : candidate.getParameters().values()) {
-            visitNoNull(exp);
+    protected void visit(final PointSymbolizer candidate) {
+        if (candidate != null) {
+            visit(candidate.getGeometry());
+            visit(candidate.getGraphic());
         }
     }
 
-    public void visit(Graphic candidate) {
-        visitNoNull(candidate.getOpacity());
-        visitNoNull(candidate.getRotation());
-        visitNoNull(candidate.getSize());
-
-        final AnchorPoint anchorPoint = candidate.getAnchorPoint();
-        final Displacement displacement = candidate.getDisplacement();
-        final List<GraphicalSymbol> graphicalSymbols = candidate.graphicalSymbols();
-        if (anchorPoint != null) visit(anchorPoint);
-        if (displacement != null) visit(displacement);
-        if (graphicalSymbols != null) {
-            for (GraphicalSymbol gs : graphicalSymbols) {
-                visit(gs);
-            }
+    protected void visit(final LineSymbolizer candidate) {
+        if (candidate != null) {
+            visit(candidate.getGeometry());
+            visit(candidate.getPerpendicularOffset());
+            visit(candidate.getStroke());
         }
     }
 
-    public void visit(GraphicalSymbol candidate) {
+    protected void visit(final PolygonSymbolizer candidate) {
+        if (candidate != null) {
+            visit(candidate.getGeometry());
+            visit(candidate.getPerpendicularOffset());
+            visit(candidate.getDisplacement());
+            visit(candidate.getFill());
+            visit(candidate.getStroke());
+        }
+    }
+
+    protected void visit(final TextSymbolizer candidate) {
+        if (candidate != null) {
+            visit(candidate.getGeometry());
+            visit(candidate.getLabel());
+            visit(candidate.getFill());
+            visit(candidate.getFont());
+            visit(candidate.getHalo());
+            visit(candidate.getLabelPlacement());
+        }
+    }
+
+    protected void visit(final RasterSymbolizer candidate) {
+        if (candidate != null) {
+            visit(candidate.getGeometry());
+            visit(candidate.getOpacity());
+            visit(candidate.getChannelSelection());
+            visit(candidate.getColorMap());
+            visit(candidate.getContrastEnhancement());
+            visit(candidate.getImageOutline());
+            visit(candidate.getShadedRelief());
+        }
+    }
+
+    protected void visit(final ExtensionSymbolizer candidate) {
+        if (candidate != null) {
+            visit(candidate.getGeometry());
+            candidate.getParameters().values().forEach(this::visit);
+        }
+    }
+
+    protected void visit(final Graphic candidate) {
+        if (candidate != null) {
+            visit(candidate.getOpacity());
+            visit(candidate.getRotation());
+            visit(candidate.getSize());
+            visit(candidate.getAnchorPoint());
+            visit(candidate.getDisplacement());
+            nonNull(candidate.graphicalSymbols()).forEach(this::visit);
+        }
+    }
+
+    protected void visit(final GraphicalSymbol candidate) {
         if (candidate instanceof Mark) {
             visit((Mark) candidate);
         } else if (candidate instanceof ExternalGraphic) {
             visit((ExternalGraphic) candidate);
-        } else {
+        } else if (candidate != null) {
             throw new IllegalArgumentException("Unexpected GraphicalSymbol " + candidate);
         }
     }
 
-    public void visit(Mark candidate) {
-        final ExternalMark externalMark = candidate.getExternalMark();
-        final Fill fill = candidate.getFill();
-        final Stroke stroke = candidate.getStroke();
-        if (externalMark != null) visit(externalMark);
-        if (fill != null) visit(fill);
-        if (stroke != null) visit(stroke);
-        visitNoNull(candidate.getWellKnownName());
-    }
-
-    public void visit(ExternalGraphic candidate) {
-        final Collection<ColorReplacement> colorReplacements = candidate.getColorReplacements();
-        if (colorReplacements != null) {
-            for (ColorReplacement cr : colorReplacements) {
-                visit(cr);
-            }
+    protected void visit(final Mark candidate) {
+        if (candidate != null) {
+            visit(candidate.getExternalMark());
+            visit(candidate.getFill());
+            visit(candidate.getStroke());
+            visit(candidate.getWellKnownName());
         }
     }
 
-    public void visit(ExternalMark candidate) {
+    protected void visit(final ExternalGraphic candidate) {
+        nonNull(candidate.getColorReplacements()).forEach(this::visit);
     }
 
-    public void visit(Stroke candidate) {
-        final GraphicFill graphicFill = candidate.getGraphicFill();
-        final GraphicStroke graphicStroke = candidate.getGraphicStroke();
-        visitNoNull(candidate.getColor());
-        visitNoNull(candidate.getDashOffset());
-        if (graphicFill != null) visit(graphicFill);
-        if (graphicStroke != null) visit(graphicStroke);
-        visitNoNull(candidate.getLineCap());
-        visitNoNull(candidate.getLineJoin());
-        visitNoNull(candidate.getOpacity());
-        visitNoNull(candidate.getWidth());
+    protected void visit(final ExternalMark candidate) {
     }
 
-    public void visit(Description candidate) {
-    }
-
-    public void visit(Displacement candidate) {
-        visitNoNull(candidate.getDisplacementX());
-        visitNoNull(candidate.getDisplacementY());
-    }
-
-    public void visit(Fill candidate) {
-        final GraphicFill graphicFill = candidate.getGraphicFill();
-        if (graphicFill != null) visit(graphicFill);
-        visitNoNull(candidate.getColor());
-        visitNoNull(candidate.getOpacity());
-    }
-
-    public void visit(Font candidate) {
-        for (Expression exp : candidate.getFamily()) {
-            visitNoNull(exp);
+    protected void visit(final Stroke candidate) {
+        if (candidate != null) {
+            visit(candidate.getColor());
+            visit(candidate.getDashOffset());
+            visit(candidate.getGraphicFill());
+            visit(candidate.getGraphicStroke());
+            visit(candidate.getLineCap());
+            visit(candidate.getLineJoin());
+            visit(candidate.getOpacity());
+            visit(candidate.getWidth());
         }
-        visitNoNull(candidate.getSize());
-        visitNoNull(candidate.getStyle());
-        visitNoNull(candidate.getWeight());
     }
 
-    public void visit(GraphicFill candidate) {
+    protected void visit(final Description candidate) {
+    }
+
+    protected void visit(final Displacement candidate) {
+        if (candidate != null) {
+            visit(candidate.getDisplacementX());
+            visit(candidate.getDisplacementY());
+        }
+    }
+
+    protected void visit(final Fill candidate) {
+        if (candidate != null) {
+            visit(candidate.getGraphicFill());
+            visit(candidate.getColor());
+            visit(candidate.getOpacity());
+        }
+    }
+
+    protected void visit(final Font candidate) {
+        if (candidate != null) {
+            candidate.getFamily().forEach(this::visit);
+            visit(candidate.getSize());
+            visit(candidate.getStyle());
+            visit(candidate.getWeight());
+        }
+    }
+
+    protected void visit(final GraphicFill candidate) {
         visit((Graphic) candidate);
     }
 
-    public void visit(GraphicStroke candidate) {
-        visit((Graphic) candidate);
-        visitNoNull(candidate.getGap());
-        visitNoNull(candidate.getInitialGap());
+    protected void visit(final GraphicStroke candidate) {
+        if (candidate != null) {
+            visit((Graphic) candidate);
+            visit(candidate.getGap());
+            visit(candidate.getInitialGap());
+        }
     }
 
-    public void visit(LabelPlacement candidate) {
+    protected void visit(final LabelPlacement candidate) {
         if (candidate instanceof PointPlacement) {
             visit((PointPlacement) candidate);
         } else if (candidate instanceof LinePlacement) {
             visit((LinePlacement) candidate);
-        } else {
+        } else if (candidate != null) {
             throw new IllegalArgumentException("Unexpected Placement " + candidate);
         }
     }
 
-    public void visit(PointPlacement candidate) {
-        final AnchorPoint anchorPoint = candidate.getAnchorPoint();
-        final Displacement displacement = candidate.getDisplacement();
-        if (anchorPoint != null) visit(anchorPoint);
-        if (displacement != null) visit(displacement);
-        visitNoNull(candidate.getRotation());
+    protected void visit(final PointPlacement candidate) {
+        if (candidate != null) {
+            visit(candidate.getAnchorPoint());
+            visit(candidate.getDisplacement());
+            visit(candidate.getRotation());
+        }
     }
 
-    public void visit(AnchorPoint candidate) {
-        visitNoNull(candidate.getAnchorPointX());
-        visitNoNull(candidate.getAnchorPointY());
+    protected void visit(final AnchorPoint candidate) {
+        if (candidate != null) {
+            visit(candidate.getAnchorPointX());
+            visit(candidate.getAnchorPointY());
+        }
     }
 
-    public void visit(LinePlacement candidate) {
-        visitNoNull(candidate.getGap());
-        visitNoNull(candidate.getInitialGap());
-        visitNoNull(candidate.getPerpendicularOffset());
+    protected void visit(final LinePlacement candidate) {
+        if (candidate != null) {
+            visit(candidate.getGap());
+            visit(candidate.getInitialGap());
+            visit(candidate.getPerpendicularOffset());
+        }
     }
 
-    public void visit(GraphicLegend candidate) {
+    protected void visit(final GraphicLegend candidate) {
         visit((Graphic) candidate);
     }
 
-    public void visit(Halo candidate) {
-        final Fill fill = candidate.getFill();
-        if (fill != null) visit(fill);
-        visitNoNull(candidate.getRadius());
+    protected void visit(final Halo candidate) {
+        if (candidate != null) {
+            visit(candidate.getFill());
+            visit(candidate.getRadius());
+        }
     }
 
-    public void visit(ColorMap candidate) {
-        visitNoNull(candidate.getFunction());
+    protected void visit(final ColorMap candidate) {
+        if (candidate != null) {
+            visit(candidate.getFunction());
+        }
     }
 
-    public void visit(ColorReplacement candidate) {
-        visitNoNull(candidate.getRecoding());
+    protected void visit(final ColorReplacement candidate) {
+        if (candidate != null) {
+            visit(candidate.getRecoding());
+        }
     }
 
-    public void visit(ContrastEnhancement candidate) {
-        visitNoNull(candidate.getGammaValue());
+    protected void visit(final ContrastEnhancement candidate) {
+        if (candidate != null) {
+            visit(candidate.getGammaValue());
+        }
     }
 
-    public void visit(ChannelSelection candidate) {
-        final SelectedChannelType grayChannel = candidate.getGrayChannel();
-        final SelectedChannelType[] rgbChannels = candidate.getRGBChannels();
-        if (grayChannel != null) visit(grayChannel);
-        if (rgbChannels != null) {
-            for (SelectedChannelType sct : rgbChannels) {
-                visit(sct);
+    protected void visit(final ChannelSelection candidate) {
+        if (candidate != null) {
+            visit(candidate.getGrayChannel());
+            final SelectedChannelType[] rgbChannels = candidate.getRGBChannels();
+            if (rgbChannels != null) {
+                for (final SelectedChannelType sct : rgbChannels) {
+                    visit(sct);
+                }
             }
         }
     }
 
-    public void visit(SelectedChannelType candidate) {
-        if (candidate.getContrastEnhancement() != null) visit(candidate.getContrastEnhancement());
-    }
-
-    public void visit(ShadedRelief candidate) {
-        visitNoNull(candidate.getReliefFactor());
-    }
-
-    public void visit(Filter candidate) {
-        if (candidate instanceof BinaryLogicOperator) {
-            visit( (BinaryLogicOperator) candidate);
-        } else if (candidate instanceof Not) {
-            visit( (Not) candidate);
-        } else if (candidate instanceof PropertyIsBetween) {
-            visit( (PropertyIsBetween) candidate);
-        } else if (candidate instanceof BinaryComparisonOperator) {
-            visit( (BinaryComparisonOperator) candidate);
-        } else if (candidate instanceof BinarySpatialOperator) {
-            visit( (BinarySpatialOperator) candidate);
-        } else if (candidate instanceof DistanceBufferOperator) {
-            visit( (DistanceBufferOperator) candidate);
-        } else if (candidate instanceof BinaryTemporalOperator) {
-            visit( (BinaryTemporalOperator) candidate);
-        } else if (candidate instanceof PropertyIsLike) {
-            visit( (PropertyIsLike) candidate);
-        } else if (candidate instanceof PropertyIsNull) {
-            visit( (PropertyIsNull) candidate);
-        } else if (candidate instanceof PropertyIsNil) {
-            visit( (PropertyIsNil) candidate);
-        } else if (candidate instanceof ExcludeFilter) {
-            visit((ExcludeFilter) candidate);
-        } else if (candidate instanceof IncludeFilter) {
-            visit((IncludeFilter) candidate);
-        } else if (candidate instanceof Id) {
-            visit((Id) candidate);
+    protected void visit(final SelectedChannelType candidate) {
+        if (candidate != null) {
+            visit(candidate.getContrastEnhancement());
         }
     }
 
-    protected final void visitNoNull(Filter candidate) {
-        if (candidate != null) visit(candidate);
-    }
-
-    public void visit(BinaryLogicOperator candidate) {
-        for (Filter f : candidate.getChildren()) {
-            visitNoNull(f);
+    protected void visit(final ShadedRelief candidate) {
+        if (candidate != null) {
+            visit(candidate.getReliefFactor());
         }
     }
 
-    public void visit(Not candidate) {
-        visitNoNull(candidate.getFilter());
-    }
-
-    public void visit(PropertyIsBetween candidate) {
-        visitNoNull(candidate.getExpression());
-        visitNoNull(candidate.getLowerBoundary());
-        visitNoNull(candidate.getUpperBoundary());
-    }
-
-    public void visit(BinaryComparisonOperator candidate) {
-        visitNoNull(candidate.getExpression1());
-        visitNoNull(candidate.getExpression2());
-    }
-
-    public void visit(BinarySpatialOperator candidate) {
-        visitNoNull(candidate.getExpression1());
-        visitNoNull(candidate.getExpression2());
-    }
-
-    public void visit(DistanceBufferOperator candidate) {
-        visitNoNull(candidate.getExpression1());
-        visitNoNull(candidate.getExpression2());
-    }
-
-    public void visit(BinaryTemporalOperator candidate) {
-        visitNoNull(candidate.getExpression1());
-        visitNoNull(candidate.getExpression2());
-    }
-
-    public void visit(PropertyIsLike candidate) {
-        visitNoNull(candidate.getExpression());
-    }
-
-    public void visit(PropertyIsNull candidate) {
-        visitNoNull(candidate.getExpression());
-    }
-
-    public void visit(PropertyIsNil candidate) {
-        visitNoNull(candidate.getExpression());
-    }
-
-    public void visit(ExcludeFilter candidate) {
-    }
-
-    public void visit(IncludeFilter candidate) {
-    }
-
-    public void visit(Id candidate) {
-    }
-
-    public void visit(Expression candidate) {
-        if (candidate instanceof PropertyName) {
-            visit((PropertyName) candidate);
-        } else if (candidate instanceof Function) {
-            visit((Function) candidate);
-        } else if (candidate instanceof BinaryExpression) {
-            visit((BinaryExpression) candidate);
-        } else if (candidate instanceof NilExpression) {
-            visit((NilExpression) candidate);
-        } else if (candidate instanceof Literal) {
-            visit((Literal) candidate);
-        } else {
-            throw new IllegalArgumentException("Unexpected expression");
+    /**
+     * Find all value references and literal in the given expression and its parameters.
+     * This method invokes itself recursively.
+     *
+     * @param  candidate  the filter to examine, or {@code null} if none.
+     */
+    protected void visit(final Filter<?> candidate) {
+        if (candidate != null) {
+            if (candidate instanceof LogicalOperator<?>) {
+                ((LogicalOperator<?>) candidate).getOperands().forEach(this::visit);
+            } else {
+                candidate.getExpressions().forEach(this::visit);
+            }
         }
     }
 
-    protected final void visitNoNull(Expression candidate) {
-        if (candidate != null) visit(candidate);
-    }
-
-    public void visit(PropertyName candidate) {
-    }
-
-    public void visit(Function candidate) {
-        for (Expression ex : candidate.getParameters()) {
-            visitNoNull(ex);
+    /**
+     * Find all value references and literal in the given expression and its parameters.
+     * This method invokes itself recursively.
+     *
+     * @param  candidate  the expression to examine, or {@code null} if none.
+     */
+    protected void visit(final Expression<?,?> candidate) {
+        if (candidate != null) {
+            if (candidate instanceof ValueReference<?,?>) {
+                visitProperty((ValueReference<?,?>) candidate);
+            } else if (candidate instanceof Literal<?,?>) {
+                visitLiteral((Literal<?,?>) candidate);
+            } else {
+                candidate.getParameters().forEach(this::visit);
+            }
         }
     }
 
-    public void visit(BinaryExpression candidate) {
-        visitNoNull(candidate.getExpression1());
-        visitNoNull(candidate.getExpression2());
+    /**
+     * Invoked by {@link #visit(Expression)} for each value reference.
+     *
+     * @param  expression  a value reference found in a chain of expressions.
+     */
+    protected void visitProperty(ValueReference<?,?> expression) {
     }
 
-    public void visit(NilExpression candidate) {
+    /**
+     * Invoked by {@link #visit(Expression)} for each literal.
+     *
+     * @param  expression  a literal found in a chain of expressions.
+     */
+    protected void visitLiteral(Literal<?,?> expression) {
     }
-
-    public void visit(Literal candidate) {
-    }
-
 }

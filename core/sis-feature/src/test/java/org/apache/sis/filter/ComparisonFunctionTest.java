@@ -16,19 +16,27 @@
  */
 package org.apache.sis.filter;
 
-import org.opengis.filter.FilterFactory;
-import org.opengis.filter.expression.Literal;
-import org.opengis.filter.BinaryComparisonOperator;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
+import org.apache.sis.internal.filter.FunctionNames;
 
 import static org.apache.sis.test.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.filter.Literal;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.ComparisonOperator;
+import org.opengis.filter.ComparisonOperatorName;
+import org.opengis.filter.BinaryComparisonOperator;
+import org.opengis.filter.BetweenComparisonOperator;
 
 
 /**
  * Tests {@link ComparisonFunction} implementations.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
@@ -37,29 +45,29 @@ public final strictfp class ComparisonFunctionTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final FilterFactory factory;
+    private final FilterFactory<Feature,Object,?> factory;
 
     /**
      * Expressions used as constant for the tests.
      */
-    private final Literal c05, c10, c20;
+    private final Literal<Feature,Integer> c05, c10, c20;
 
     /**
-     * Expected name of the filter to be evaluated. The {@link #evaluate(BinaryComparisonOperator)} method
-     * will compare {@link ComparisonFunction#getName()} against this value.
+     * Expected name of the filter to be evaluated. The {@code evaluate(…)} methods
+     * will compare {@link ComparisonFunction#getFunctionName()} against this value.
      */
-    private String expectedName;
+    private ComparisonOperatorName expectedName;
 
     /**
-     * The filter tested by last call to {@link #evaluate(BinaryComparisonOperator)}.
+     * The filter tested by last call to {@code evaluate(…)} methods.
      */
-    private BinaryComparisonOperator filter;
+    private ComparisonOperator<Feature> filter;
 
     /**
      * Creates a new test case.
      */
     public ComparisonFunctionTest() {
-        factory = new DefaultFilterFactory();
+        factory = DefaultFilterFactory.forFeatures();
         c05 = factory.literal(5);
         c10 = factory.literal(10);
         c20 = factory.literal(20);
@@ -69,12 +77,22 @@ public final strictfp class ComparisonFunctionTest extends TestCase {
      * Evaluates the given filter. The {@link #expectedName} field must be set before this method is invoked.
      * This method assumes that the first expression of all filters is {@link #c10}.
      */
-    private boolean evaluate(final BinaryComparisonOperator filter) {
+    private boolean evaluate(final BinaryComparisonOperator<Feature> filter) {
         this.filter = filter;
         assertInstanceOf("Expected SIS implementation.", ComparisonFunction.class, filter);
-        assertEquals("name", expectedName, ((ComparisonFunction) filter).getName());
-        assertSame("expression1", c10, filter.getExpression1());
-        return filter.evaluate(null);
+        assertEquals("operatorType", expectedName, filter.getOperatorType());
+        assertSame("expression[0]", c10, filter.getExpressions().get(0));
+        return filter.test(null);
+    }
+
+    /**
+     * Evaluates the given "Property is between" filter.
+     */
+    private boolean evaluate(final BetweenComparisonOperator<Feature> filter) {
+        this.filter = filter;
+        assertInstanceOf("Expected SIS implementation.", ComparisonFunction.Between.class, filter);
+        assertEquals("operatorType", expectedName, filter.getOperatorType());
+        return filter.test(null);
     }
 
     /**
@@ -82,7 +100,7 @@ public final strictfp class ComparisonFunctionTest extends TestCase {
      */
     @Test
     public void testLess() {
-        expectedName = "LessThan";
+        expectedName = ComparisonOperatorName.PROPERTY_IS_LESS_THAN;
         assertTrue (evaluate(factory.less(c10, c20)));
         assertFalse(evaluate(factory.less(c10, c10)));
         assertFalse(evaluate(factory.less(c10, c05)));
@@ -94,7 +112,7 @@ public final strictfp class ComparisonFunctionTest extends TestCase {
      */
     @Test
     public void testLessOrEqual() {
-        expectedName = "LessThanOrEqualTo";
+        expectedName = ComparisonOperatorName.PROPERTY_IS_LESS_THAN_OR_EQUAL_TO;
         assertTrue (evaluate(factory.lessOrEqual(c10, c20)));
         assertTrue (evaluate(factory.lessOrEqual(c10, c10)));
         assertFalse(evaluate(factory.lessOrEqual(c10, c05)));
@@ -106,7 +124,7 @@ public final strictfp class ComparisonFunctionTest extends TestCase {
      */
     @Test
     public void testGreater() {
-        expectedName = "GreaterThan";
+        expectedName = ComparisonOperatorName.PROPERTY_IS_GREATER_THAN;
         assertFalse(evaluate(factory.greater(c10, c20)));
         assertFalse(evaluate(factory.greater(c10, c10)));
         assertTrue (evaluate(factory.greater(c10, c05)));
@@ -118,7 +136,7 @@ public final strictfp class ComparisonFunctionTest extends TestCase {
      */
     @Test
     public void testGreaterOrEqual() {
-        expectedName = "GreaterThanOrEqualTo";
+        expectedName = ComparisonOperatorName.PROPERTY_IS_GREATER_THAN_OR_EQUAL_TO;
         assertFalse(evaluate(factory.greaterOrEqual(c10, c20)));
         assertTrue (evaluate(factory.greaterOrEqual(c10, c10)));
         assertTrue (evaluate(factory.greaterOrEqual(c10, c05)));
@@ -130,10 +148,10 @@ public final strictfp class ComparisonFunctionTest extends TestCase {
      */
     @Test
     public void testEqual() {
-        expectedName = "EqualTo";
-        assertFalse(evaluate(factory.equals(c10, c20)));
-        assertTrue (evaluate(factory.equals(c10, c10)));
-        assertFalse(evaluate(factory.equals(c10, c05)));
+        expectedName = ComparisonOperatorName.PROPERTY_IS_EQUAL_TO;
+        assertFalse(evaluate(factory.equal(c10, c20)));
+        assertTrue (evaluate(factory.equal(c10, c10)));
+        assertFalse(evaluate(factory.equal(c10, c05)));
         assertSerializedEquals(filter);
     }
 
@@ -142,10 +160,22 @@ public final strictfp class ComparisonFunctionTest extends TestCase {
      */
     @Test
     public void testNotEqual() {
-        expectedName = "NotEqualTo";
+        expectedName = ComparisonOperatorName.PROPERTY_IS_NOT_EQUAL_TO;
         assertTrue (evaluate(factory.notEqual(c10, c20)));
         assertFalse(evaluate(factory.notEqual(c10, c10)));
         assertTrue (evaluate(factory.notEqual(c10, c05)));
+        assertSerializedEquals(filter);
+    }
+
+    /**
+     * Tests "Between" (construction, evaluation, serialization, equality).
+     */
+    @Test
+    public void testBetween() {
+        expectedName = ComparisonOperatorName.valueOf(FunctionNames.PROPERTY_IS_BETWEEN);
+        assertTrue (evaluate(factory.between(c10, c05, c20)));
+        assertFalse(evaluate(factory.between(c20, c05, c10)));
+        assertFalse(evaluate(factory.between(c05, c10, c20)));
         assertSerializedEquals(filter);
     }
 }

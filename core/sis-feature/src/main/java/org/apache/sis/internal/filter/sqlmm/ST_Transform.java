@@ -16,41 +16,25 @@
  */
 package org.apache.sis.internal.filter.sqlmm;
 
-import java.util.Objects;
-import java.io.IOException;
-import java.io.InvalidObjectException;
-import java.io.ObjectInputStream;
-import org.opengis.feature.FeatureType;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.expression.Literal;
+import java.util.List;
+import java.util.Arrays;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
-import org.apache.sis.feature.builder.PropertyTypeBuilder;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.internal.filter.NamedFunction;
-import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
+
+// Branch-dependent imports
+import org.opengis.filter.Expression;
+import org.opengis.filter.Literal;
+import org.opengis.filter.InvalidFilterValueException;
 
 
 /**
- * SQL/MM, ISO/IEC 13249-3:2011, ST_Transform. <br>
- * <p>
- * Return an ST_Geometry value transformed to the specified spatial reference system, considering z and m
- * coordinate values in the calculations and including them in the resultant geometry.
- * </p>
- *
- * <p>
- * An expression which transforms a geometry from one CRS to another CRS.
+ * Return an geometry value transformed to the specified spatial reference system, considering
+ * z and m coordinate values in the calculations and including them in the resultant geometry.
  * This expression expects two arguments:
- * </p>
  *
  * <ol class="verbose">
  *   <li>An expression returning a geometry object. The evaluated value shall be an instance of
@@ -66,154 +50,86 @@ import org.apache.sis.util.resources.Errors;
  *   </li>
  * </ol>
  *
+ * <h2>Limitation</h2>
+ * <ul>
+ *   <li>Current implementation ignores the <var>z</var> and <var>m</var> values.</li>
+ *   <li>If the SRID is an integer, it is interpreted as an EPSG code.
+ *       It should be a primary key in the {@code "spatial_ref_sys"} table instead.</li>
+ * </ul>
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-final class ST_Transform extends NamedFunction implements FeatureExpression {
+final class ST_Transform<R,G> extends FunctionWithSRID<R> {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -5769818355081378907L;
 
     /**
-     * Name of this function as defined by SQL/MM standard.
+     * The expression giving the geometry.
      */
-    static final String NAME = "ST_Transform";
-
-    /**
-     * Identifier of the coordinate reference system in which to transform the geometry.
-     * This identifier is specified by the second expression and is stored in order to
-     * avoid computing {@link #targetCRS} many times when the SRID does not change.
-     */
-    private transient Object srid;
-
-    /**
-     * The coordinate reference system in which to transform the geometry, or {@code null}
-     * if not yet determined. This field is recomputed when the {@link #srid} change.
-     */
-    private transient CoordinateReferenceSystem targetCRS;
-
-    /**
-     * Whether the {@link #targetCRS} is defined by a literal.
-     * If {@code true}, then {@link #targetCRS} shall be effectively final.
-     */
-    private final boolean literalCRS;
+    private final Expression<? super R, GeometryWrapper<G>> geometry;
 
     /**
      * Creates a new function with the given parameters. It is caller's responsibility to ensure
-     * that the given array is non-null, has been cloned and does not contain null elements.
+     * that the given array is non-null and does not contain null elements.
      *
-     * @throws IllegalArgumentException if the number of arguments is not equal to 2.
-     * @throws FactoryException if CRS can not be constructed from the second expression.
+     * @throws InvalidFilterValueException if CRS can not be constructed from the second expression.
      */
-    ST_Transform(final Expression... parameters) throws FactoryException {
-        super(parameters);
-        ArgumentChecks.ensureExpectedCount("parameters", 2, parameters.length);
-        final Expression crs = parameters[1];
-        literalCRS = (crs instanceof Literal);
-        if (literalCRS) {
-            setTargetCRS(((Literal) crs).getValue());
-        }
+    ST_Transform(final Expression<? super R, ?>[] parameters, final Geometries<G> library) {
+        super(SQLMM.ST_Transform, parameters, PRESENT);
+        geometry = toGeometryWrapper(library, parameters[0]);
     }
 
     /**
-     * Returns the name of this function, which is {@value #NAME}.
+     * Creates a new expression of the same type than this expression, but with an optimized geometry.
+     * The optimization may be a geometry computed immediately if all operator parameters are literals.
      */
     @Override
-    public String getName() {
-        return NAME;
+    public Expression<R,Object> recreate(final Expression<? super R, ?>[] effective) {
+        return new ST_Transform<>(effective, getGeometryLibrary());
     }
 
     /**
-     * Invoked on deserialization for restoring the {@link #targetCRS} field.
-     *
-     * @param  in  the input stream from which to deserialize an attribute.
-     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
+     * Returns a handler for the library of geometric objects used by this expression.
      */
-    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        if (literalCRS) try {
-            setTargetCRS(((Literal) parameters.get(1)).getValue());
-        } catch (FactoryException e) {
-            throw (IOException) new InvalidObjectException(e.getLocalizedMessage()).initCause(e);
-        }
+    @Override
+    final Geometries<?> getGeometryLibrary() {
+        return getGeometryLibrary(geometry);
     }
 
     /**
-     * Sets {@link #targetCRS} to a coordinate reference system inferred from the given value.
-     * The CRS argument shall be the result of {@code parameters.get(1).evaluate(object)}.
-     *
-     * @throws FactoryException if no CRS can be created from the given object.
+     * Returns the sub-expressions that will be evaluated to provide the parameters to the function.
      */
-    private void setTargetCRS(final Object crs) throws FactoryException {
-        if (crs instanceof CoordinateReferenceSystem) {
-            targetCRS = (CoordinateReferenceSystem) crs;
-        } else {
-            final String code;
-            if (crs instanceof String) {
-                code = (String) crs;
-            } else if (crs instanceof Integer) {
-                code = Constants.EPSG + ':' + crs;
-            } else {
-                throw new InvalidGeodeticParameterException(crs == null
-                        ? Errors.format(Errors.Keys.UnspecifiedCRS)
-                        : Errors.format(Errors.Keys.IllegalCRSType_1, crs.getClass()));
-            }
-            targetCRS = CRS.forCode(code);
-        }
-        srid = crs;
+    @Override
+    public List<Expression<? super R, ?>> getParameters() {
+        return Arrays.asList(unwrap(geometry), srid);             // TODO: use List.of(…) with JDK9.
     }
 
     /**
      * Evaluates the first expression as a geometry object, transforms that geometry to the CRS given
      * by the second expression and returns the result.
      *
-     * @param  value  the object from which to get a geometry.
+     * @param  input  the object from which to get a geometry.
      * @return the transformed geometry, or {@code null} if the given object is not an instance of
      *         a supported geometry library (JTS, ERSI, Java2D…).
      */
     @Override
-    public Object evaluate(final Object value) {
-        final Object geometry = parameters.get(0).evaluate(value);
-        final GeometryWrapper<?> wrapper = Geometries.wrap(geometry).orElse(null);
-        if (wrapper != null) try {
-            final CoordinateReferenceSystem targetCRS;
-            if (literalCRS) {
-                targetCRS = this.targetCRS;             // No need to synchronize because effectively final.
-            } else {
-                final Object crs = parameters.get(1).evaluate(value);
-                synchronized (this) {
-                    if (!Objects.equals(crs, srid)) {
-                        setTargetCRS(crs);
-                    }
-                    targetCRS = this.targetCRS;         // Must be inside synchronized block.
-                }
-            }
-            final GeometryWrapper<?> result = wrapper.transform(targetCRS);
-            return (geometry == wrapper) ? result : result.implementation();
+    public Object apply(final R input) {
+        final GeometryWrapper<G> value = geometry.apply(input);
+        if (value != null) try {
+            // Note: `transform(…)` does nothing if the CRS is null.
+            return value.transform(getTargetCRS(input)).implementation();
         } catch (BackingStoreException e) {
             final Throwable cause = e.getCause();
-            warning((cause instanceof Exception) ? (Exception) cause : e);
+            warning((cause instanceof Exception) ? (Exception) cause : e, false);
         } catch (UnsupportedOperationException | FactoryException | TransformException e) {
-            warning(e);
+            warning(e, false);
         }
         return null;
-    }
-
-    /**
-     * Provides the type of values produced by this expression when a feature of the given type is evaluated.
-     *
-     * @param  valueType  the type of features on which to apply this expression.
-     * @param  addTo      where to add the type of properties evaluated by this expression.
-     * @return builder of type resulting from expression evaluation (never null).
-     * @throws IllegalArgumentException if the given feature type does not contain the expected properties.
-     */
-    @Override
-    public PropertyTypeBuilder expectedType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
-        return copyGeometryType(valueType, addTo).setCRS(literalCRS ? targetCRS : null);
     }
 }

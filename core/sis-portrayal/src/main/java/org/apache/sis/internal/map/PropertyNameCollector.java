@@ -16,9 +16,10 @@
  */
 package org.apache.sis.internal.map;
 
-import java.util.HashSet;
 import java.util.Set;
-import org.opengis.filter.expression.PropertyName;
+import java.util.HashSet;
+import org.opengis.filter.ValueReference;
+
 
 /**
  * Collects all properties used in style elements.
@@ -28,22 +29,32 @@ import org.opengis.filter.expression.PropertyName;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 final class PropertyNameCollector extends SymbologyVisitor {
+    /**
+     * All value references found.
+     *
+     * @see ValueReference#getXPath()
+     */
+    final Set<String> references;
 
-    private final Set<PropertyName> propertyNames = new HashSet<>();
-
-    public Set<PropertyName> getPropertyNames() {
-        return propertyNames;
+    /**
+     * Creates a new collector.
+     */
+    PropertyNameCollector() {
+        references = new HashSet<>();
     }
 
+    /**
+     * Invoked for each value reference found.
+     */
     @Override
-    public void visit(PropertyName candidate) {
-        propertyNames.add(candidate);
+    protected void visitProperty(final ValueReference<?,?> expression) {
+        if (expression != null) {
+            references.add(expression.getXPath());
+        }
     }
-
-
 }

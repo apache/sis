@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.filter.InvalidExpressionException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
@@ -31,8 +30,8 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.Filter;
-import org.opengis.filter.sort.SortBy;
-import org.opengis.filter.expression.Expression;
+import org.opengis.filter.Expression;
+import org.opengis.filter.SortProperty;
 
 
 /**
@@ -82,7 +81,7 @@ final class FeatureSubset extends AbstractFeatureSet {
             final FeatureType type = source.getType();
             try {
                 resultType = query.expectedType(type);
-            } catch (IllegalArgumentException | InvalidExpressionException e) {
+            } catch (IllegalArgumentException e) {
                 throw new DataStoreContentException(Resources.forLocale(getLocale())
                         .getString(Resources.Keys.CanNotDeriveTypeFromFeature_1, type.getName()), e);
             }
@@ -100,13 +99,13 @@ final class FeatureSubset extends AbstractFeatureSet {
          * Apply filter.
          */
         final Filter filter = query.getFilter();
-        if (!Filter.INCLUDE.equals(filter)) {
-            stream = stream.filter(filter::evaluate);
+        if (!Filter.include().equals(filter)) {
+            stream = stream.filter(filter::test);
         }
         /*
          * Apply sorting.
          */
-        final SortBy[] sortBy = query.getSortBy();
+        final SortProperty[] sortBy = query.getSortBy();
         if (sortBy.length > 0) {
             stream = stream.sorted(new SortByComparator(sortBy));
         }
@@ -138,7 +137,7 @@ final class FeatureSubset extends AbstractFeatureSet {
             stream = stream.map(t -> {
                 final Feature f = type.newInstance();
                 for (int i=0; i < expressions.length; i++) {
-                    f.setPropertyValue(names[i], expressions[i].evaluate(t));
+                    f.setPropertyValue(names[i], expressions[i].apply(t));
                 }
                 return f;
             });

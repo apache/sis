@@ -21,8 +21,9 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
 import org.opengis.feature.Feature;
 
+
 /**
- * Produced by the portrayal engines when an exception occures.
+ * Produced by the portrayal engines when an exception occurred.
  * Exception presentations are placed in the Stream of presentation leaving
  * the user the choice to log, ignore or stop rendering as needed.
  *
@@ -31,8 +32,8 @@ import org.opengis.feature.Feature;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public class ExceptionPresentation extends Presentation {
@@ -62,5 +63,4 @@ public class ExceptionPresentation extends Presentation {
     public Exception getException() {
         return exception;
     }
-
 }

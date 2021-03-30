@@ -16,788 +16,976 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Collection;
 import java.util.ServiceLoader;
-import java.util.Set;
-import org.opengis.filter.*;
-import org.opengis.filter.capability.*;
-import org.opengis.filter.expression.Add;
-import org.opengis.filter.expression.Divide;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.expression.Function;
-import org.opengis.filter.expression.Literal;
-import org.opengis.filter.expression.Multiply;
-import org.opengis.filter.expression.PropertyName;
-import org.opengis.filter.expression.Subtract;
-import org.opengis.filter.identity.FeatureId;
-import org.opengis.filter.identity.GmlObjectId;
-import org.opengis.filter.identity.Identifier;
-import org.opengis.filter.sort.SortBy;
-import org.opengis.filter.sort.SortOrder;
-import org.opengis.filter.spatial.BBOX;
-import org.opengis.filter.spatial.Beyond;
-import org.opengis.filter.spatial.Contains;
-import org.opengis.filter.spatial.Crosses;
-import org.opengis.filter.spatial.DWithin;
-import org.opengis.filter.spatial.Disjoint;
-import org.opengis.filter.spatial.Equals;
-import org.opengis.filter.spatial.Intersects;
-import org.opengis.filter.spatial.Overlaps;
-import org.opengis.filter.spatial.Touches;
-import org.opengis.filter.spatial.Within;
-import org.opengis.filter.temporal.*;
+import java.time.Instant;
+import javax.measure.Quantity;
+import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.FactoryException;
-import org.opengis.util.GenericName;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.SystemListener;
-import org.apache.sis.internal.feature.FunctionRegister;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.internal.filter.sqlmm.SQLMM;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.internal.filter.sqlmm.Registry;
+import org.apache.sis.internal.filter.FunctionRegister;
+import org.apache.sis.geometry.WraparoundMethod;
+import org.apache.sis.util.iso.AbstractFactory;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
+
+// Branch-dependent imports
+import org.opengis.filter.*;
+import org.opengis.feature.Feature;
+import org.opengis.filter.capability.FilterCapabilities;
 
 
 /**
- * Default implementation of GeoAPI filter factory for creation of {@link Filter} and {@link Expression} instances.
- *
- * <div class="warning"><b>Warning:</b> most methods in this class are still unimplemented.
- * This is a very early draft subject to changes.
- * <b>TODO: the API of this class needs severe revision! DO NOT RELEASE.</b>
- * See <a href="https://github.com/opengeospatial/geoapi/issues/32">GeoAPI issue #32</a>.</div>
+ * A factory of default {@link Filter} and {@link Expression} implementations.
+ * This base class operates on resources of arbitrary type {@code <R>}.
+ * Concrete subclass operates on resources of specific type such as {@link org.opengis.feature.Feature}.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) to use as inputs.
+ * @param  <G>  base class of geometry objects. The implementation-neutral type is GeoAPI {@link Geometry},
+ *              but this factory allows the use of other implementations such as JTS
+ *              {@link org.locationtech.jts.geom.Geometry} or ESRI {@link com.esri.core.geometry.Geometry}.
+ * @param  <T>  base class of temporal objects.
+ *
+ * @since 1.1
  * @module
  */
-public class DefaultFilterFactory implements FilterFactory2 {
+public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implements FilterFactory<R,G,T> {
+    /**
+     * The geometry library used by this factory.
+     */
+    private final Geometries<G> library;
+
+    /**
+     * The strategy to use for representing a region crossing the anti-meridian.
+     */
+    private final WraparoundMethod wraparound;
+
     /**
      * All functions identified by a name like {@code "cos"}, {@code "hypot"}, <i>etc</i>.
-     * The actual function creations is delegated to an external factory such as {@link SQLMM}.
+     * The actual function creations is delegated to an external factory such as SQLMM registry.
      * The factories are fetched by {@link #function(String, Expression...)} when first needed.
-     * This factory is cleared if classpath changes, for allowing dynamic reloading.
      *
      * @see #function(String, Expression...)
      */
-    private static final Map<String,FunctionRegister> FUNCTION_REGISTERS = new HashMap<>();
-    static {
-        SystemListener.add(new SystemListener(Modules.FEATURE) {
-            @Override protected void classpathChanged() {
-                synchronized (FUNCTION_REGISTERS) {
-                    FUNCTION_REGISTERS.clear();
-                }
+    private final Map<String,FunctionRegister> availableFunctions;
+
+    /**
+     * Creates a new factory for geometries of temporal objects of the given types.
+     * The {@code spatial} argument can be one of the following classes:
+     *
+     * <table class="sis">
+     *   <caption>Authorized spatial class argument values</caption>
+     *   <tr><th>Library</th> <th>Spatial class</th></tr>
+     *   <tr><td>ESRI</td>    <td>{@code com.esri.core.geometry.Geometry}</td></tr>
+     *   <tr><td>JTS</td>     <td>{@code org.locationtech.jts.geom.Geometry}</td></tr>
+     *   <tr><td>Java2D</td>  <td>{@code java.awt.Shape}</td></tr>
+     *   <tr><td>Default</td> <td>{@code java.lang.Object}</td></tr>
+     * </table>
+     *
+     * <table class="sis">
+     *   <caption>Authorized temporal class argument values</caption>
+     *   <tr><th>Library</th> <th>Temporal class</th></tr>
+     *   <tr><td>Default</td> <td>{@code java.lang.Object}</td></tr>
+     * </table>
+     *
+     * @param  spatial     type of spatial objects,  or {@code Object.class} for default.
+     * @param  temporal    type of temporal objects, or {@code Object.class} for default.
+     * @param  wraparound  the strategy to use for representing a region crossing the anti-meridian.
+     */
+    @SuppressWarnings("unchecked")
+    protected DefaultFilterFactory(final Class<G> spatial, final Class<T> temporal, final WraparoundMethod wraparound) {
+        ArgumentChecks.ensureNonNull("spatial",    spatial);
+        ArgumentChecks.ensureNonNull("temporal",   temporal);
+        ArgumentChecks.ensureNonNull("wraparound", wraparound);
+        if (spatial == Object.class) {
+            library = (Geometries<G>) Geometries.implementation((GeometryLibrary) null);
+        } else {
+            library = (Geometries<G>) Geometries.implementation(spatial);
+            if (library == null || library.rootClass != spatial) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "spatial", spatial));
             }
-        });
-    }
-
-    /**
-     * According to OGC Filter encoding v2.0, comparison operators should default to case sensitive comparison.
-     * We use this constant to model it, so it will be easier to change default value if the standard evolves.
-     * Documentation reference: OGC 09-026r1 and ISO 19143:2010(E), section 7.7.3.2.
-     */
-    private static final boolean DEFAULT_MATCH_CASE = true;
-
-    /**
-     * Creates a new factory.
-     */
-    public DefaultFilterFactory() {
-    }
-
-    // SPATIAL FILTERS /////////////////////////////////////////////////////////
-
-    /**
-     * Creates an operator that evaluates to {@code true} when the bounding box of the feature's geometry overlaps
-     * the given bounding box.
-     *
-     * @param  propertyName  name of geometry property (for a {@link PropertyName} to access a feature's Geometry)
-     * @param  minx          minimum "x" value (for a literal envelope).
-     * @param  miny          minimum "y" value (for a literal envelope).
-     * @param  maxx          maximum "x" value (for a literal envelope).
-     * @param  maxy          maximum "y" value (for a literal envelope).
-     * @param  srs           identifier of the Coordinate Reference System to use for a literal envelope.
-     * @return operator that evaluates to {@code true} when the bounding box of the feature's geometry overlaps
-     *         the bounding box provided in arguments to this method.
-     *
-     * @see #bbox(Expression, Envelope)
-     */
-    @Override
-    public BBOX bbox(final String propertyName, final double minx,
-            final double miny, final double maxx, final double maxy, final String srs)
-    {
-        return bbox(property(propertyName), minx, miny, maxx, maxy, srs);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public BBOX bbox(final Expression e,
-                     final double minx, final double miny,
-                     final double maxx, final double maxy, final String srs)
-    {
-        final CoordinateReferenceSystem crs = decodeCRS(srs);
-        return bbox(e, new ImmutableEnvelope(new double[] {minx, miny},
-                                             new double[] {maxx, maxy}, crs));
-    }
-
-    /**
-     * Tries to decode a full {@link CoordinateReferenceSystem} from given text.
-     * First, we try to interpret it as a code, and if it fails, we try to read it as a WKT.
-     *
-     * @param  srs  the text describing the reference system. If null or blank, a null value is returned.
-     * @return possible null value if input text is empty or blank.
-     * @throws BackingStoreException if an error occurs while decoding the text.
-     */
-    private static CoordinateReferenceSystem decodeCRS(String srs) {
-        if (srs == null || (srs = srs.trim()).isEmpty()) {
-            return null;
         }
-        try {
-            return CRS.forCode(srs);
-        } catch (NoSuchAuthorityCodeException e) {
-            try {
-                return CRS.fromWKT(srs);
-            } catch (FactoryException bis) {
-                e.addSuppressed(bis);
-            }
-            throw new BackingStoreException(e);
-        } catch (FactoryException e) {
-            throw new BackingStoreException(e);
+        if (temporal != Object.class) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "temporal", temporal));
+        }
+        this.wraparound = wraparound;
+        availableFunctions = new HashMap<>();
+    }
+
+    /**
+     * Returns a factory operating on {@link Feature} instances.
+     * The {@linkplain GeometryLibrary geometry library} will be the system default.
+     *
+     * @return factory operating on {@link Feature} instances.
+     *
+     * @todo The type of temporal object is not yet determined.
+     */
+    public static synchronized FilterFactory<Feature, Object, Object> forFeatures() {
+        return Features.DEFAULT;
+    }
+
+    /**
+     * Describes the abilities of this factory. The description includes restrictions on
+     * the available spatial operations, scalar operations, lists of supported functions,
+     * and description of which geometry literals are understood.
+     *
+     * @return description of the abilities of this factory.
+     */
+    @Override
+    public FilterCapabilities getCapabilities() {
+        return Capabilities.INSTANCE;
+    }
+
+    /**
+     * A filter factory operating on {@link Feature} instances.
+     *
+     * @param  <G>  base class of geometry objects. The implementation-neutral type is GeoAPI {@link Geometry},
+     *              but this factory allows the use of other implementations such as JTS
+     *              {@link org.locationtech.jts.geom.Geometry} or ESRI {@link com.esri.core.geometry.Geometry}.
+     * @param  <T>  base class of temporal objects.
+     */
+    public static class Features<G,T> extends DefaultFilterFactory<Feature, G, T> {
+        /**
+         * The instance using system default.
+         *
+         * @see #forFeatures()
+         */
+        static final FilterFactory<Feature,Object,Object> DEFAULT =
+                new Features<>(Object.class, Object.class, WraparoundMethod.SPLIT);;
+
+        /**
+         * Creates a new factory operating on {@link Feature} instances.
+         * See the {@linkplain DefaultFilterFactory#DefaultFilterFactory(Class, Class, WraparoundMethod)}
+         * super-class constructor} for a list of valid class arguments.
+         *
+         * @param  spatial     type of spatial objects,  or {@code Object.class} for default.
+         * @param  temporal    type of temporal objects, or {@code Object.class} for default.
+         * @param  wraparound  the strategy to use for representing a region crossing the anti-meridian.
+         *
+         * @see DefaultFilterFactory#forFeatures()
+         */
+        public Features(final Class<G> spatial, final Class<T> temporal, final WraparoundMethod wraparound) {
+            super(spatial, temporal, wraparound);
+        }
+
+        /**
+         * Creates a new predicate to identify an identifiable resource within a filter expression.
+         * If {@code startTime} and {@code endTime} are non-null, the filter will select all versions
+         * of a resource between the specified dates.
+         *
+         * @param  identifier  identifier of the resource that shall be selected by the predicate.
+         * @param  version     version of the resource shall be selected, or {@code null} for any version.
+         * @param  startTime   start time of the resource to select, or {@code null} if none.
+         * @param  endTime     end time of the resource to select, or {@code null} if none.
+         * @return the predicate.
+         *
+         * @todo Current implementation ignores the version, start time and end time.
+         *       This limitation may be resolved in a future version.
+         */
+        @Override
+        public ResourceId<Feature> resourceId(final String identifier, final Version version,
+                                              final Instant startTime, final Instant endTime)
+        {
+            return new FilterByIdentifier<>(identifier);
+        }
+
+        /**
+         * Creates an expression whose value is computed by retrieving the value indicated by a path in a resource.
+         * If all characters in the path are {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier parts},
+         * then the XPath expression is simply a property name.
+         *
+         * <p>The desired type of property values can be specified. For example if the property values should be numbers,
+         * then {@code type} can be <code>{@linkplain Number}.class</code>. If property values can be of any type with no
+         * conversion desired, then {@code type} should be {@code Object.class}.</p>
+         *
+         * @param  <V>    the type of the values to be fetched (compile-time value of {@code type}).
+         * @param  xpath  the path to the property whose value will be returned by the {@code apply(R)} method.
+         * @param  type   the type of the values to be fetched (run-time value of {@code <V>}).
+         * @return an expression evaluating the referenced property value.
+         */
+        @Override
+        public <V> ValueReference<Feature,V> property(final String xpath, final Class<V> type) {
+            return PropertyValue.create(xpath, type);
         }
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public BBOX bbox(final Expression e, final Envelope bounds) {
-        return new DefaultBBOX(e, literal(bounds));
-    }
-
-    /**
-     * Creates an operator that checks if all of a feature's geometry is more distant than the given distance
-     * from the given geometry.
+     * Creates a constant, literal value that can be used in expressions.
+     * The given value should be data objects such as strings, numbers, dates or geometries.
      *
-     * @param  propertyName  name of geometry property (for a {@link PropertyName} to access a feature's Geometry).
-     * @param  geometry      the geometry from which to evaluate the distance.
-     * @param  distance      minimal distance for evaluating the expression as {@code true}.
-     * @param  units         units of the given {@code distance}.
-     * @return operator that evaluates to {@code true} when all of a feature's geometry is more distant than
-     *         the given distance from the given geometry.
+     * @param  <V>    the type of the value of the literal.
+     * @param  value  the literal value. May be {@code null}.
+     * @return a literal for the given value.
      */
     @Override
-    public Beyond beyond(final String propertyName, final Geometry geometry,
-            final double distance, final String units)
-    {
-        final PropertyName name = property(propertyName);
-        final Literal geom = literal(geometry);
-        return beyond(name, geom, distance, units);
+    public <V> Literal<R,V> literal(final V value) {
+        return new LeafExpression.Literal<>(value);
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Beyond beyond(final Expression left, final Expression right,
-            final double distance, final String units)
-    {
-        return new SpatialFunction.Beyond(left, right, distance, units);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Contains contains(final String propertyName, final Geometry geometry) {
-        final PropertyName name = property(propertyName);
-        final Literal geom = literal(geometry);
-        return contains(name, geom);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Contains contains(final Expression left, final Expression right) {
-        return new SpatialFunction.Contains(left, right);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Crosses crosses(final String propertyName, final Geometry geometry) {
-        final PropertyName name = property(propertyName);
-        final Literal geom = literal(geometry);
-        return crosses(name, geom);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Crosses crosses(final Expression left, final Expression right) {
-        return new SpatialFunction.Crosses(left, right);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Disjoint disjoint(final String propertyName, final Geometry geometry) {
-        final PropertyName name = property(propertyName);
-        final Literal geom = literal(geometry);
-        return disjoint(name, geom);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Disjoint disjoint(final Expression left, final Expression right) {
-        return new SpatialFunction.Disjoint(left, right);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DWithin dwithin(final String propertyName, final Geometry geometry,
-            final double distance, final String units)
-    {
-        final PropertyName name = property(propertyName);
-        final Literal geom = literal(geometry);
-        return dwithin(name, geom, distance, units);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DWithin dwithin(final Expression left, final Expression right,
-            final double distance, final String units)
-    {
-        return new SpatialFunction.DWithin(left, right, distance, units);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Equals equals(final String propertyName, final Geometry geometry) {
-        final PropertyName name = property(propertyName);
-        final Literal geom = literal(geometry);
-        return equal(name, geom);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Equals equal(final Expression left, final Expression right) {
-        return new SpatialFunction.Equals(left, right);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Intersects intersects(final String propertyName, final Geometry geometry) {
-        final PropertyName name = property(propertyName);
-        final Literal geom = literal(geometry);
-        return intersects(name, geom);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Intersects intersects(final Expression left, final Expression right) {
-        return new SpatialFunction.Intersects(left, right);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Overlaps overlaps(final String propertyName, final Geometry geometry) {
-        final PropertyName name = property(propertyName);
-        final Literal geom = literal(geometry);
-        return overlaps(name, geom);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Overlaps overlaps(final Expression left, final Expression right) {
-        return new SpatialFunction.Overlaps(left, right);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Touches touches(final String propertyName, final Geometry geometry) {
-        final PropertyName name = property(propertyName);
-        final Literal geom = literal(geometry);
-        return touches(name, geom);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Touches touches(final Expression left, final Expression right) {
-        return new SpatialFunction.Touches(left, right);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Within within(final String propertyName, final Geometry geometry) {
-        final PropertyName name = property(propertyName);
-        final Literal geom = literal(geometry);
-        return within(name, geom);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Within within(final Expression left, final Expression right) {
-        return new SpatialFunction.Within(left, right);
-    }
-
-    // IDENTIFIERS /////////////////////////////////////////////////////////////
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public FeatureId featureId(final String id) {
-        return new DefaultObjectId(id);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public GmlObjectId gmlObjectId(final String id) {
-        return new DefaultObjectId(id);
-    }
-
-    // FILTERS /////////////////////////////////////////////////////////////////
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public And and(final Filter filter1, final Filter filter2) {
-        return and(Arrays.asList(filter1, filter2));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public And and(final List<Filter> filters) {
-        return new LogicalFunction.And(filters);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Or or(final Filter filter1, final Filter filter2) {
-        return or(Arrays.asList(filter1, filter2));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Or or(final List<Filter> filters) {
-        return new LogicalFunction.Or(filters);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Not not(final Filter filter) {
-        return new UnaryFunction.Not(filter);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Id id(final Set<? extends Identifier> ids) {
-        return new FilterByIdentifier(ids);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public PropertyName property(final GenericName name) {
-        return property(name.toString());
-    }
-
-    /**
-     * Creates a new expression retrieving values from a property of the given name.
+     * Filter operator that compares that two sub-expressions are equal to each other.
      *
-     * @param  name  name of the property (usually a feature attribute).
+     * @param  expression1     the first of the two expressions to be used by this comparator.
+     * @param  expression2     the second of the two expressions to be used by this comparator.
+     * @param  isMatchingCase  specifies whether comparisons are case sensitive.
+     * @param  matchAction     specifies how the comparisons shall be evaluated for a collection of values.
+     * @return a filter evaluating {@code expression1} = {@code expression2}.
+     *
+     * @see ComparisonOperatorName#PROPERTY_IS_EQUAL_TO
+     * @todo Revisit if we can be more specific on the second parameterized type in expressions.
      */
     @Override
-    public PropertyName property(final String name) {
-        return new LeafExpression.Property(name);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public PropertyIsBetween between(final Expression expression, final Expression lower, final Expression upper) {
-        return new ComparisonFunction.Between(expression, lower, upper);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public PropertyIsEqualTo equals(final Expression expression1, final Expression expression2) {
-        return equal(expression1, expression2, DEFAULT_MATCH_CASE, MatchAction.ANY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public PropertyIsEqualTo equal(final Expression expression1, final Expression expression2,
-                                   final boolean isMatchingCase, final MatchAction matchAction)
+    public BinaryComparisonOperator<R> equal(final Expression<? super R, ?> expression1,
+                                             final Expression<? super R, ?> expression2,
+                                             boolean isMatchingCase, MatchAction matchAction)
     {
-        return new ComparisonFunction.EqualTo(expression1, expression2, isMatchingCase, matchAction);
+        return new ComparisonFunction.EqualTo<>(expression1, expression2, isMatchingCase, matchAction);
     }
 
     /**
-     * {@inheritDoc}
+     * Filter operator that compares that its two sub-expressions are not equal to each other.
+     *
+     * @param  expression1     the first of the two expressions to be used by this comparator.
+     * @param  expression2     the second of the two expressions to be used by this comparator.
+     * @param  isMatchingCase  specifies whether comparisons are case sensitive.
+     * @param  matchAction     specifies how the comparisons shall be evaluated for a collection of values.
+     * @return a filter evaluating {@code expression1} ≠ {@code expression2}.
+     *
+     * @see ComparisonOperatorName#PROPERTY_IS_NOT_EQUAL_TO
+     * @todo Revisit if we can be more specific on the second parameterized type in expressions.
      */
     @Override
-    public PropertyIsNotEqualTo notEqual(final Expression expression1, final Expression expression2) {
-        return notEqual(expression1, expression2, DEFAULT_MATCH_CASE, MatchAction.ANY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public PropertyIsNotEqualTo notEqual(final Expression expression1, final Expression expression2,
-                                         final boolean isMatchingCase, final MatchAction matchAction)
+    public BinaryComparisonOperator<R> notEqual(final Expression<? super R, ?> expression1,
+                                                final Expression<? super R, ?> expression2,
+                                                boolean isMatchingCase, MatchAction matchAction)
     {
-        return new ComparisonFunction.NotEqualTo(expression1, expression2, isMatchingCase, matchAction);
+        return new ComparisonFunction.NotEqualTo<>(expression1, expression2, isMatchingCase, matchAction);
     }
 
     /**
-     * {@inheritDoc}
+     * Filter operator that checks that its first sub-expression is less than its second sub-expression.
+     *
+     * @param  expression1     the first of the two expressions to be used by this comparator.
+     * @param  expression2     the second of the two expressions to be used by this comparator.
+     * @param  isMatchingCase  specifies whether comparisons are case sensitive.
+     * @param  matchAction     specifies how the comparisons shall be evaluated for a collection of values.
+     * @return a filter evaluating {@code expression1} &lt; {@code expression2}.
+     *
+     * @see ComparisonOperatorName#PROPERTY_IS_LESS_THAN
+     * @todo Revisit if we can be more specific on the second parameterized type in expressions.
      */
     @Override
-    public PropertyIsGreaterThan greater(final Expression expression1, final Expression expression2) {
-        return greater(expression1, expression2, DEFAULT_MATCH_CASE, MatchAction.ANY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public PropertyIsGreaterThan greater(final Expression expression1, final Expression expression2,
-                                         final boolean isMatchingCase, final MatchAction matchAction)
+    public BinaryComparisonOperator<R> less(final Expression<? super R, ?> expression1,
+                                            final Expression<? super R, ?> expression2,
+                                            boolean isMatchingCase, MatchAction matchAction)
     {
-        return new ComparisonFunction.GreaterThan(expression1, expression2, isMatchingCase, matchAction);
+        return new ComparisonFunction.LessThan<>(expression1, expression2, isMatchingCase, matchAction);
     }
 
     /**
-     * {@inheritDoc}
+     * Filter operator that checks that its first sub-expression is greater than its second sub-expression.
+     *
+     * @param  expression1     the first of the two expressions to be used by this comparator.
+     * @param  expression2     the second of the two expressions to be used by this comparator.
+     * @param  isMatchingCase  specifies whether comparisons are case sensitive.
+     * @param  matchAction     specifies how the comparisons shall be evaluated for a collection of values.
+     * @return a filter evaluating {@code expression1} &gt; {@code expression2}.
+     *
+     * @see ComparisonOperatorName#PROPERTY_IS_GREATER_THAN
+     * @todo Revisit if we can be more specific on the second parameterized type in expressions.
      */
     @Override
-    public PropertyIsGreaterThanOrEqualTo greaterOrEqual(final Expression expression1, final Expression expression2) {
-        return greaterOrEqual(expression1, expression2, DEFAULT_MATCH_CASE, MatchAction.ANY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public PropertyIsGreaterThanOrEqualTo greaterOrEqual(final Expression expression1, final Expression expression2,
-                                                         final boolean isMatchingCase, final MatchAction matchAction)
+    public BinaryComparisonOperator<R> greater(final Expression<? super R, ?> expression1,
+                                               final Expression<? super R, ?> expression2,
+                                               boolean isMatchingCase, MatchAction matchAction)
     {
-        return new ComparisonFunction.GreaterThanOrEqualTo(expression1, expression2, isMatchingCase, matchAction);
+        return new ComparisonFunction.GreaterThan<>(expression1, expression2, isMatchingCase, matchAction);
     }
 
     /**
-     * {@inheritDoc}
+     * Filter operator that checks that its first sub-expression is less than or equal to its second sub-expression.
+     *
+     * @param  expression1     the first of the two expressions to be used by this comparator.
+     * @param  expression2     the second of the two expressions to be used by this comparator.
+     * @param  isMatchingCase  specifies whether comparisons are case sensitive.
+     * @param  matchAction     specifies how the comparisons shall be evaluated for a collection of values.
+     * @return a filter evaluating {@code expression1} ≤ {@code expression2}.
+     *
+     * @see ComparisonOperatorName#PROPERTY_IS_LESS_THAN_OR_EQUAL_TO
+     * @todo Revisit if we can be more specific on the second parameterized type in expressions.
      */
     @Override
-    public PropertyIsLessThan less(final Expression expression1, final Expression expression2) {
-        return less(expression1, expression2, DEFAULT_MATCH_CASE, MatchAction.ANY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public PropertyIsLessThan less(final Expression expression1, final Expression expression2,
-                                   final boolean isMatchingCase, MatchAction matchAction)
+    public BinaryComparisonOperator<R> lessOrEqual(final Expression<? super R, ?> expression1,
+                                                   final Expression<? super R, ?> expression2,
+                                                   boolean isMatchingCase, MatchAction matchAction)
     {
-        return new ComparisonFunction.LessThan(expression1, expression2, isMatchingCase, matchAction);
+        return new ComparisonFunction.LessThanOrEqualTo<>(expression1, expression2, isMatchingCase, matchAction);
     }
 
     /**
-     * {@inheritDoc}
+     * Filter operator that checks that its first sub-expression is greater than its second sub-expression.
+     *
+     * @param  expression1     the first of the two expressions to be used by this comparator.
+     * @param  expression2     the second of the two expressions to be used by this comparator.
+     * @param  isMatchingCase  specifies whether comparisons are case sensitive.
+     * @param  matchAction     specifies how the comparisons shall be evaluated for a collection of values.
+     * @return a filter evaluating {@code expression1} ≥ {@code expression2}.
+     *
+     * @see ComparisonOperatorName#PROPERTY_IS_GREATER_THAN_OR_EQUAL_TO
+     * @todo Revisit if we can be more specific on the second parameterized type in expressions.
      */
     @Override
-    public PropertyIsLessThanOrEqualTo lessOrEqual(final Expression expression1, final Expression expression2) {
-        return lessOrEqual(expression1, expression2, DEFAULT_MATCH_CASE, MatchAction.ANY);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public PropertyIsLessThanOrEqualTo lessOrEqual(final Expression expression1, final Expression expression2,
-                                                   final boolean isMatchingCase, final MatchAction matchAction)
+    public BinaryComparisonOperator<R> greaterOrEqual(final Expression<? super R, ?> expression1,
+                                                      final Expression<? super R, ?> expression2,
+                                                      boolean isMatchingCase, MatchAction matchAction)
     {
-        return new ComparisonFunction.LessThanOrEqualTo(expression1, expression2, isMatchingCase, matchAction);
+        return new ComparisonFunction.GreaterThanOrEqualTo<>(expression1, expression2, isMatchingCase, matchAction);
     }
 
     /**
-     * {@inheritDoc}
+     * Filter operation for a range check.
+     * The lower and upper boundary values are inclusive.
+     *
+     * @param  expression     the expression to be compared by this comparator.
+     * @param  lowerBoundary  the lower bound (inclusive) as an expression.
+     * @param  upperBoundary  the upper bound (inclusive) as an expression.
+     * @return a filter evaluating ({@code expression} ≥ {@code lowerBoundary})
+     *                       &amp; ({@code expression} ≤ {@code upperBoundary}).
      */
     @Override
-    public PropertyIsLike like(final Expression expression, final String pattern) {
-        return like(expression, pattern, "*", "?", "\\");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public PropertyIsLike like(final Expression expression, final String pattern,
-            final String wildcard, final String singleChar, final String escape)
+    public BetweenComparisonOperator<R> between(final Expression<? super R, ?> expression,
+                                                final Expression<? super R, ?> lowerBoundary,
+                                                final Expression<? super R, ?> upperBoundary)
     {
-        return like(expression, pattern, wildcard, singleChar, escape, DEFAULT_MATCH_CASE);
+        return new ComparisonFunction.Between<>(expression, lowerBoundary, upperBoundary);
     }
 
     /**
-     * {@inheritDoc}
+     * Character string comparison operator with pattern matching and specified wildcards.
+     *
+     * @param  expression      source of values to compare against the pattern.
+     * @param  pattern         pattern to match against expression values.
+     * @param  wildcard        pattern character for matching any sequence of characters.
+     * @param  singleChar      pattern character for matching exactly one character.
+     * @param  escape          pattern character for indicating that the next character should be matched literally.
+     * @param  isMatchingCase  specifies how a filter expression processor should perform string comparisons.
+     * @return a character string comparison operator with pattern matching.
      */
     @Override
-    public PropertyIsLike like(final Expression expression, final String pattern,
-            final String wildcard, final String singleChar,
-            final String escape, final boolean isMatchingCase)
+    public LikeOperator<R> like(final Expression<? super R, ?> expression, final String pattern,
+            final char wildcard, final char singleChar, final char escape, final boolean isMatchingCase)
     {
-        return new DefaultLike(expression, pattern, wildcard, singleChar, escape, isMatchingCase);
+        return new DefaultLike<>(expression, pattern, wildcard, singleChar, escape, isMatchingCase);
     }
 
     /**
-     * {@inheritDoc}
+     * An operator that tests if an expression's value is {@code null}.
+     * This corresponds to checking whether the property exists in the real-world.
+     *
+     * @param  expression  source of values to compare against {@code null}.
+     * @return a filter that checks if an expression's value is {@code null}.
      */
     @Override
-    public PropertyIsNull isNull(final Expression expression) {
-        return new UnaryFunction.IsNull(expression);
+    public NullOperator<R> isNull(final Expression<? super R, ?> expression) {
+        return new UnaryFunction.IsNull<>(expression);
     }
 
     /**
-     * {@inheritDoc}
+     * An operator that tests if an expression's value is nil.
+     * The difference with {@link NullOperator} is that a value should exist
+     * but can not be provided for the reason given by {@code nilReason}.
+     * Possible reasons are:
+     *
+     * <ul>
+     *   <li><b>inapplicable</b> — there is no value.</li>
+     *   <li><b>template</b>     — the value will be available later.</li>
+     *   <li><b>missing</b>      — the correct value is not readily available to the sender of this data.
+     *                             Furthermore, a correct value may not exist.</li>
+     *   <li><b>unknown</b>      — the correct value is not known to, and not computable by, the sender of this data.
+     *                             However, a correct value probably exists..</li>
+     *   <li><b>withheld</b>     — the value is not divulged.</li>
+     *   <li>Other strings at implementation choice.</li>
+     * </ul>
+     *
+     * @param  expression  source of values to compare against nil values.
+     * @param  nilReason   the reason why the value is nil, or {@code null} for accepting any reason.
+     * @return a filter that checks if an expression's value is nil for the specified reason.
+     *
+     * @see org.apache.sis.xml.NilObject
+     * @see org.apache.sis.xml.NilReason
      */
     @Override
-    public PropertyIsNil isNil(Expression expression) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    // TEMPORAL FILTER /////////////////////////////////////////////////////////
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public After after(Expression expression1, Expression expression2) {
-        return new TemporalFunction.After(expression1, expression2);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public AnyInteracts anyInteracts(Expression expression1, Expression expression2) {
-        return new TemporalFunction.AnyInteracts(expression1, expression2);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Before before(Expression expression1, Expression expression2) {
-        return new TemporalFunction.Before(expression1, expression2);
+    public NilOperator<R> isNil(final Expression<? super R, ?> expression, final String nilReason) {
+        return new UnaryFunction.IsNil<>(expression, nilReason);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates a {@code AND} filter between two or more filters.
+     *
+     * @param  operands  a collection of at least 2 operands.
+     * @return a filter evaluating {@code operand1 AND operand2 AND operand3}…
+     * @throws IllegalArgumentException if the given collection contains less than 2 elements.
+     *
+     * @see LogicalOperatorName#AND
      */
     @Override
-    public Begins begins(Expression expression1, Expression expression2) {
-        return new TemporalFunction.Begins(expression1, expression2);
+    public LogicalOperator<R> and(final Collection<? extends Filter<? super R>> operands) {
+        return new LogicalFunction.And<>(operands);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates a {@code OR} filter between two or more filters.
+     *
+     * @param  operands  a collection of at least 2 operands.
+     * @return a filter evaluating {@code operand1 OR operand2 OR operand3}…
+     * @throws IllegalArgumentException if the given collection contains less than 2 elements.
+     *
+     * @see LogicalOperatorName#OR
      */
     @Override
-    public BegunBy begunBy(Expression expression1, Expression expression2) {
-        return new TemporalFunction.BegunBy(expression1, expression2);
+    public LogicalOperator<R> or(final Collection<? extends Filter<? super R>> operands) {
+        return new LogicalFunction.Or<>(operands);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates a {@code NOT} filter for the given filter.
+     *
+     * @param  operand  the operand of the NOT operation.
+     * @return a filter evaluating {@code NOT operand}.
+     *
+     * @see LogicalOperatorName#NOT
      */
     @Override
-    public During during(Expression expression1, Expression expression2) {
-        return new TemporalFunction.During(expression1, expression2);
+    public LogicalOperator<R> not(final Filter<? super R> operand) {
+        return new LogicalFunction.Not<>(operand);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates an operator that checks if the bounding box of the feature's geometry interacts
+     * with the bounding box provided in the filter properties.
+     *
+     * @param  geometry  expression fetching the geometry to check for interaction with bounds.
+     * @param  bounds    the bounds to check geometry against.
+     * @return a filter checking for any interactions between the bounding boxes.
+     *
+     * @see SpatialOperatorName#BBOX
+     *
+     * @todo Maybe the expression parameterized type should extend {@link Geometry}.
      */
     @Override
-    public Ends ends(Expression expression1, Expression expression2) {
-        return new TemporalFunction.Ends(expression1, expression2);
+    public BinarySpatialOperator<R> bbox(final Expression<? super R, ? extends G> geometry, final Envelope bounds) {
+        return new SpatialFunction<>(library, geometry, bounds, wraparound);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates an operator that checks if the geometry of the two operands are equal.
+     *
+     * @param  geometry1  expression fetching the first geometry of the binary operator.
+     * @param  geometry2  expression fetching the second geometry of the binary operator.
+     * @return a filter for the "Equals" operation between the two geometries.
+     *
+     * @see SpatialOperatorName#EQUALS
+     *
+     * @todo Rename {@code equal}.
      */
     @Override
-    public EndedBy endedBy(Expression expression1, Expression expression2) {
-        return new TemporalFunction.EndedBy(expression1, expression2);
+    public BinarySpatialOperator<R> equals(final Expression<? super R, ? extends G> geometry1,
+                                           final Expression<? super R, ? extends G> geometry2)
+    {
+        return new SpatialFunction<>(SpatialOperatorName.EQUALS, library, geometry1, geometry2);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates an operator that checks if the first operand is disjoint from the second.
+     *
+     * @param  geometry1  expression fetching the first geometry of the binary operator.
+     * @param  geometry2  expression fetching the second geometry of the binary operator.
+     * @return a filter for the "Disjoint" operation between the two geometries.
+     *
+     * @see SpatialOperatorName#DISJOINT
      */
     @Override
-    public Meets meets(Expression expression1, Expression expression2) {
-        return new TemporalFunction.Meets(expression1, expression2);
+    public BinarySpatialOperator<R> disjoint(final Expression<? super R, ? extends G> geometry1,
+                                             final Expression<? super R, ? extends G> geometry2)
+    {
+        return new SpatialFunction<>(SpatialOperatorName.DISJOINT, library, geometry1, geometry2);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates an operator that checks if the two geometric operands intersect.
+     *
+     * @param  geometry1  expression fetching the first geometry of the binary operator.
+     * @param  geometry2  expression fetching the second geometry of the binary operator.
+     * @return a filter for the "Intersects" operation between the two geometries.
+     *
+     * @see SpatialOperatorName#INTERSECTS
      */
     @Override
-    public MetBy metBy(Expression expression1, Expression expression2) {
-        return new TemporalFunction.MetBy(expression1, expression2);
+    public BinarySpatialOperator<R> intersects(final Expression<? super R, ? extends G> geometry1,
+                                               final Expression<? super R, ? extends G> geometry2)
+    {
+        return new SpatialFunction<>(SpatialOperatorName.INTERSECTS, library, geometry1, geometry2);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates an operator that checks if the two geometric operands touch each other, but do not overlap.
+     *
+     * @param  geometry1  expression fetching the first geometry of the binary operator.
+     * @param  geometry2  expression fetching the second geometry of the binary operator.
+     * @return a filter for the "Touches" operation between the two geometries.
+     *
+     * @see SpatialOperatorName#TOUCHES
      */
     @Override
-    public OverlappedBy overlappedBy(Expression expression1, Expression expression2) {
-        return new TemporalFunction.OverlappedBy(expression1, expression2);
+    public BinarySpatialOperator<R> touches(final Expression<? super R, ? extends G> geometry1,
+                                            final Expression<? super R, ? extends G> geometry2)
+    {
+        return new SpatialFunction<>(SpatialOperatorName.TOUCHES, library, geometry1, geometry2);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates an operator that checks if the first geometric operand crosses the second.
+     *
+     * @param  geometry1  expression fetching the first geometry of the binary operator.
+     * @param  geometry2  expression fetching the second geometry of the binary operator.
+     * @return a filter for the "Crosses" operation between the two geometries.
+     *
+     * @see SpatialOperatorName#CROSSES
      */
     @Override
-    public TContains tcontains(Expression expression1, Expression expression2) {
-        return new TemporalFunction.Contains(expression1, expression2);
+    public BinarySpatialOperator<R> crosses(final Expression<? super R, ? extends G> geometry1,
+                                            final Expression<? super R, ? extends G> geometry2)
+    {
+        return new SpatialFunction<>(SpatialOperatorName.CROSSES, library, geometry1, geometry2);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates an operator that checks if the first geometric operand is completely
+     * contained by the constant geometric operand.
+     *
+     * @param  geometry1  expression fetching the first geometry of the binary operator.
+     * @param  geometry2  expression fetching the second geometry of the binary operator.
+     * @return a filter for the "Within" operation between the two geometries.
+     *
+     * @see SpatialOperatorName#WITHIN
      */
     @Override
-    public TEquals tequals(Expression expression1, Expression expression2) {
-        return new TemporalFunction.Equals(expression1, expression2);
+    public BinarySpatialOperator<R> within(final Expression<? super R, ? extends G> geometry1,
+                                           final Expression<? super R, ? extends G> geometry2)
+    {
+        return new SpatialFunction<>(SpatialOperatorName.WITHIN, library, geometry1, geometry2);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates an operator that checks if the first geometric operand contains the second.
+     *
+     * @param  geometry1  expression fetching the first geometry of the binary operator.
+     * @param  geometry2  expression fetching the second geometry of the binary operator.
+     * @return a filter for the "Contains" operation between the two geometries.
+     *
+     * @see SpatialOperatorName#CONTAINS
      */
     @Override
-    public TOverlaps toverlaps(Expression expression1, Expression expression2) {
-        return new TemporalFunction.Overlaps(expression1, expression2);
-    }
-
-    // EXPRESSIONS /////////////////////////////////////////////////////////////
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Add add(final Expression expression1, final Expression expression2) {
-        return new ArithmeticFunction.Add(expression1, expression2);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Divide divide(final Expression expression1, final Expression expression2) {
-        return new ArithmeticFunction.Divide(expression1, expression2);
+    public BinarySpatialOperator<R> contains(final Expression<? super R, ? extends G> geometry1,
+                                             final Expression<? super R, ? extends G> geometry2)
+    {
+        return new SpatialFunction<>(SpatialOperatorName.CONTAINS, library, geometry1, geometry2);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates an operator that checks if the interior of the first geometric operand
+     * somewhere overlaps the interior of the second geometric operand.
+     *
+     * @param  geometry1  expression fetching the first geometry of the binary operator.
+     * @param  geometry2  expression fetching the second geometry of the binary operator.
+     * @return a filter for the "Overlaps" operation between the two geometries.
+     *
+     * @see SpatialOperatorName#OVERLAPS
      */
     @Override
-    public Multiply multiply(final Expression expression1, final Expression expression2) {
-        return new ArithmeticFunction.Multiply(expression1, expression2);
+    public BinarySpatialOperator<R>  overlaps(final Expression<? super R, ? extends G> geometry1,
+                                              final Expression<? super R, ? extends G> geometry2)
+    {
+        return new SpatialFunction<>(SpatialOperatorName.OVERLAPS, library, geometry1, geometry2);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates an operator that checks if all of a feature's geometry is more distant
+     * than the given distance from the given geometry.
+     *
+     * @param  geometry1  expression fetching the first geometry of the binary operator.
+     * @param  geometry2  expression fetching the second geometry of the binary operator.
+     * @param  distance   minimal distance for evaluating the expression as {@code true}.
+     * @return operator that evaluates to {@code true} when all of a feature's geometry
+     *         is more distant than the given distance from the second geometry.
+     *
+     * @see DistanceOperatorName#BEYOND
      */
     @Override
-    public Subtract subtract(final Expression expression1, final Expression expression2) {
-        return new ArithmeticFunction.Subtract(expression1, expression2);
+    public DistanceOperator<R> beyond(final Expression<? super R, ? extends G> geometry1,
+                                      final Expression<? super R, ? extends G> geometry2,
+                                      final Quantity<Length> distance)
+    {
+        return new DistanceFilter<>(DistanceOperatorName.BEYOND, library, geometry1, geometry2, distance);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates an operator that checks if any part of the first geometry lies within
+     * the given distance of the second geometry.
+     *
+     * @param  geometry1  expression fetching the first geometry of the binary operator.
+     * @param  geometry2  expression fetching the second geometry of the binary operator.
+     * @param  distance   maximal distance for evaluating the expression as {@code true}.
+     * @return operator that evaluates to {@code true} when any part of the feature's geometry
+     *         lies within the given distance of the second geometry.
+     *
+     * @see DistanceOperatorName#WITHIN
      */
     @Override
-    public Function function(final String name, final Expression... parameters) {
+    public DistanceOperator<R> within(final Expression<? super R, ? extends G> geometry1,
+                                      final Expression<? super R, ? extends G> geometry2,
+                                      final Quantity<Length> distance)
+    {
+        return new DistanceFilter<>(DistanceOperatorName.WITHIN, library, geometry1, geometry2, distance);
+    }
+
+    /**
+     * Creates an operator that checks if first temporal operand is after the second.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "After" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#AFTER
+     */
+    @Override
+    public TemporalOperator<R> after(final Expression<? super R, ? extends T> time1,
+                                     final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.After<>(time1, time2);
+    }
+
+    /**
+     * Creates an operator that checks if first temporal operand is before the second.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "Before" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#BEFORE
+     */
+    @Override
+    public TemporalOperator<R> before(final Expression<? super R, ? extends T> time1,
+                                      final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.Before<>(time1, time2);
+    }
+
+    /**
+     * Creates an operator that checks if first temporal operand begins at the second.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "Begins" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#BEGINS
+     */
+    @Override
+    public TemporalOperator<R> begins(final Expression<? super R, ? extends T> time1,
+                                      final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.Begins<>(time1, time2);
+    }
+
+    /**
+     * Creates an operator that checks if first temporal operand begun by the second.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "BegunBy" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#BEGUN_BY
+     */
+    @Override
+    public TemporalOperator<R> begunBy(final Expression<? super R, ? extends T> time1,
+                                       final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.BegunBy<>(time1, time2);
+    }
+
+    /**
+     * Creates an operator that checks if first temporal operand is contained by the second.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "TContains" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#CONTAINS
+     */
+    @Override
+    public TemporalOperator<R> tcontains(final Expression<? super R, ? extends T> time1,
+                                         final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.Contains<>(time1, time2);
+    }
+
+    /**
+     * Creates an operator that checks if first temporal operand is during the second.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "During" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#DURING
+     */
+    @Override
+    public TemporalOperator<R> during(final Expression<? super R, ? extends T> time1,
+                                      final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.During<>(time1, time2);
+    }
+
+    /**
+     * Creates an operator that checks if first temporal operand is equals to the second.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "TEquals" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#EQUALS
+     */
+    @Override
+    public TemporalOperator<R> tequals(final Expression<? super R, ? extends T> time1,
+                                       final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.Equals<>(time1, time2);
+    }
+
+    /**
+     * Creates an operator that checks if first temporal operand overlaps the second.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "TOverlaps" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#OVERLAPS
+     */
+    @Override
+    public TemporalOperator<R> toverlaps(final Expression<? super R, ? extends T> time1,
+                                         final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.Overlaps<>(time1, time2);
+    }
+
+    /**
+     * Creates an operator that checks if first temporal operand meets the second.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "Meets" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#MEETS
+     */
+    @Override
+    public TemporalOperator<R> meets(final Expression<? super R, ? extends T> time1,
+                                     final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.Meets<>(time1, time2);
+    }
+
+    /**
+     * Creates an operator that checks if first temporal operand ends at the second.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "Ends" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#ENDS
+     */
+    @Override
+    public TemporalOperator<R> ends(final Expression<? super R, ? extends T> time1,
+                                    final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.Ends<>(time1, time2);
+    }
+
+    /**
+     * Creates an operator that checks if first temporal operand is overlapped by the second.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "OverlappedBy" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#OVERLAPPED_BY
+     */
+    @Override
+    public TemporalOperator<R> overlappedBy(final Expression<? super R, ? extends T> time1,
+                                            final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.OverlappedBy<>(time1, time2);
+    }
+
+    /**
+     * Creates an operator that checks if first temporal operand is met by the second.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "MetBy" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#MET_BY
+     */
+    @Override
+    public TemporalOperator<R> metBy(final Expression<? super R, ? extends T> time1,
+                                     final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.MetBy<>(time1, time2);
+    }
+
+    /**
+     * Creates an operator that checks if first temporal operand is ended by the second.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "EndedBy" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#ENDED_BY
+     */
+    @Override
+    public TemporalOperator<R> endedBy(final Expression<? super R, ? extends T> time1,
+                                       final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.EndedBy<>(time1, time2);
+    }
+
+    /**
+     * Creates a shortcut operator semantically equivalent to NOT (Before OR Meets OR MetBy OR After).
+     * This is applicable to periods only.
+     *
+     * @param  time1  expression fetching the first temporal value.
+     * @param  time2  expression fetching the second temporal value.
+     * @return a filter for the "AnyInteracts" operator between the two temporal values.
+     *
+     * @see TemporalOperatorName#ANY_INTERACTS
+     */
+    @Override
+    public TemporalOperator<R> anyInteracts(final Expression<? super R, ? extends T> time1,
+                                            final Expression<? super R, ? extends T> time2)
+    {
+        return new TemporalFunction.AnyInteracts<>(time1, time2);
+    }
+
+    /**
+     * Creates a function computing the numeric addition of the first and second operand.
+     *
+     * @param  operand1  expression fetching the first number.
+     * @param  operand2  expression fetching the second number.
+     * @return an expression for the "Add" function between the two numerical values.
+     *
+     * @todo Should we really restrict the type to {@link Number}?
+     */
+    @Override
+    public Expression<R,Number> add(final Expression<? super R, ? extends Number> operand1,
+                                    final Expression<? super R, ? extends Number> operand2)
+    {
+        return new ArithmeticFunction.Add<>(operand1, operand2);
+    }
+
+    /**
+     * Creates a function computing the numeric difference between the first and second operand.
+     *
+     * @param  operand1  expression fetching the first number.
+     * @param  operand2  expression fetching the second number.
+     * @return an expression for the "Subtract" function between the two numerical values.
+     *
+     * @todo Should we really restrict the type to {@link Number}?
+     */
+    @Override
+    public Expression<R,Number> subtract(final Expression<? super R, ? extends Number> operand1,
+                                         final Expression<? super R, ? extends Number> operand2)
+    {
+        return new ArithmeticFunction.Subtract<>(operand1, operand2);
+    }
+
+    /**
+     * Creates a function computing the numeric product of their first and second operand.
+     *
+     * @param  operand1  expression fetching the first number.
+     * @param  operand2  expression fetching the second number.
+     * @return an expression for the "Multiply" function between the two numerical values.
+     *
+     * @todo Should we really restrict the type to {@link Number}?
+     */
+    @Override
+    public Expression<R,Number> multiply(final Expression<? super R, ? extends Number> operand1,
+                                         final Expression<? super R, ? extends Number> operand2)
+    {
+        return new ArithmeticFunction.Multiply<>(operand1, operand2);
+    }
+
+    /**
+     * Creates a function computing the numeric quotient resulting from dividing the first operand by the second.
+     *
+     * @param  operand1  expression fetching the first number.
+     * @param  operand2  expression fetching the second number.
+     * @return an expression for the "Divide" function between the two numerical values.
+     *
+     * @todo Should we really restrict the type to {@link Number}?
+     */
+    @Override
+    public Expression<R,Number> divide(final Expression<? super R, ? extends Number> operand1,
+                                       final Expression<? super R, ? extends Number> operand2)
+    {
+        return new ArithmeticFunction.Divide<>(operand1, operand2);
+    }
+
+    /**
+     * Creates an implementation-specific function.
+     * The names of available functions is given by {@link #getCapabilities()}.
+     *
+     * @param  name        name of the function to call.
+     * @param  parameters  expressions providing values for the function arguments.
+     * @return an expression which will call the specified function.
+     * @throws IllegalArgumentException if the given name is not recognized,
+     *         or if the arguments are illegal for the specified function.
+     */
+    @Override
+    public Expression<R,?> function(final String name, Expression<? super R, ?>[] parameters) {
+        ArgumentChecks.ensureNonNull("name", name);
+        ArgumentChecks.ensureNonNull("parameters", parameters);
+        parameters = parameters.clone();
+        for (int i=0; i<parameters.length; i++) {
+            ArgumentChecks.ensureNonNullElement("parameters", i, parameters[i]);
+        }
         final FunctionRegister register;
-        synchronized (FUNCTION_REGISTERS) {
-            if (FUNCTION_REGISTERS.isEmpty()) {
+        synchronized (availableFunctions) {
+            if (availableFunctions.isEmpty()) {
                 /*
                  * Load functions when first needed or if classpath changed since last invocation.
                  * The SQLMM factory is hard-coded because it is considered as a basic service to
                  * be provided by all DefaultFilterFactory implementations, and for avoiding the
-                 * need to make SQLMM class public.
+                 * need to make SQLMM registry class public.
                  */
-                final SQLMM r = new SQLMM();
+                final Registry r = new Registry(library);
                 for (final String fn : r.getNames()) {
-                    FUNCTION_REGISTERS.put(fn, r);
+                    availableFunctions.put(fn, r);
                 }
                 for (final FunctionRegister er : ServiceLoader.load(FunctionRegister.class)) {
                     for (final String fn : er.getNames()) {
-                        FUNCTION_REGISTERS.putIfAbsent(fn, er);
+                        availableFunctions.putIfAbsent(fn, er);
                     }
                 }
             }
-            register = FUNCTION_REGISTERS.get(name);
+            register = availableFunctions.get(name);
         }
         if (register == null) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownFunction_1, name));
@@ -806,189 +994,14 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc}
+     * Indicates an property by which contents should be sorted, along with intended order.
+     *
+     * @param  property  the property to sort by.
+     * @param  order     the sorting order, ascending or descending.
+     * @return definition of sort order of a property.
      */
     @Override
-    public Literal literal(final Object value) {
-        return new LeafExpression.Literal(value);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Literal literal(final byte value) {
-        return new LeafExpression.Literal(value);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Literal literal(final short value) {
-        return new LeafExpression.Literal(value);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Literal literal(final int value) {
-        return new LeafExpression.Literal(value);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Literal literal(final long value) {
-        return new LeafExpression.Literal(value);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Literal literal(final float value) {
-        return new LeafExpression.Literal(value);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Literal literal(final double value) {
-        return new LeafExpression.Literal(value);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Literal literal(final char value) {
-        return new LeafExpression.Literal(value);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Literal literal(final boolean value) {
-        return new LeafExpression.Literal(value);
-    }
-
-    // SORT BY /////////////////////////////////////////////////////////////////
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SortBy sort(final String propertyName, final SortOrder order) {
-        return new DefaultSortBy(property(propertyName), order);
-    }
-
-    // CAPABILITIES ////////////////////////////////////////////////////////////
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Operator operator(final String name) {
-        return new Capabilities.Operator(name);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SpatialOperator spatialOperator(final String name, final GeometryOperand[] geometryOperands) {
-        return new Capabilities.SpatialOperator(name, geometryOperands);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public FunctionName functionName(final String name, final int nargs) {
-        return new Capabilities.FunctionName(name, null, nargs);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Functions functions(final FunctionName[] functionNames) {
-        return new Capabilities.Functions(functionNames);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SpatialOperators spatialOperators(final SpatialOperator[] spatialOperators) {
-        return new Capabilities.SpatialOperators(spatialOperators);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ComparisonOperators comparisonOperators(final Operator[] comparisonOperators) {
-        return new Capabilities.ComparisonOperators(comparisonOperators);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ArithmeticOperators arithmeticOperators(final boolean simple, final Functions functions) {
-        return new Capabilities.ArithmeticOperators(simple, functions);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ScalarCapabilities scalarCapabilities(final ComparisonOperators comparison,
-            final ArithmeticOperators arithmetic, final boolean logical)
-    {
-        return new Capabilities.ScalarCapabilities(logical, comparison, arithmetic);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SpatialCapabilities spatialCapabilities(
-            final GeometryOperand[] geometryOperands, final SpatialOperators spatial)
-    {
-        return new Capabilities.SpatialCapabilities(geometryOperands, spatial);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public IdCapabilities idCapabilities(final boolean eid, final boolean fid) {
-        return new Capabilities.IdCapabilities(eid, fid);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public FilterCapabilities capabilities(final String version,
-            final ScalarCapabilities scalar, final SpatialCapabilities spatial,
-            final TemporalCapabilities temporal, final IdCapabilities id)
-    {
-        return new Capabilities.FilterCapabilities(version, id, spatial, scalar, temporal);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public TemporalCapabilities temporalCapabilities(TemporalOperand[] temporalOperands, TemporalOperators temporal) {
-        return new Capabilities.TemporalCapabilities(temporalOperands, temporal);
+    public SortProperty sort(final ValueReference<? super R, ?> property, final SortOrder order) {
+        return new DefaultSortBy(property, order);
     }
 }

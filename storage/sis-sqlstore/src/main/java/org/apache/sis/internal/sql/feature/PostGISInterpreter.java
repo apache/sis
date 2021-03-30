@@ -16,29 +16,37 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import org.opengis.filter.spatial.BBOX;
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.filter.SpatialOperator;
+import org.opengis.filter.SpatialOperatorName;
+
 
 /**
+ * Use PostGIS-specific syntax in SQL statements where appropriate.
  *
- * @author Alexis Manin (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-public class PostGISInterpreter extends ANSIInterpreter {
+final class PostGISInterpreter extends ANSIInterpreter {
+    /**
+     * Creates a new instance.
+     */
+    PostGISInterpreter() {
+    }
 
     /**
-     * Filter encoding specifies bbox as a filter between envelopes. Default ANSI interpreter performs a standard
-     * intersection between geometries, which is not compliant. PostGIS has its own bbox operator:
-     * <a href="https://postgis.net/docs/geometry_overlaps.html">Geometry overlapping</a>.
-     * @param filter BBox filter specifying properties to compare.
-     * @param extraData A context to handle some corner cases. Not used. Can be null.
-     * @return A text (sql query) representation of input filter.
+     * Appends the SQL fragment to use for {@link SpatialOperatorName#BBOX} type of filter.
+     * The filter encoding specification defines BBOX as a filter between envelopes.
+     * The default ANSI interpreter performs a standard intersection between geometries,
+     * which is not compliant. PostGIS has its own BBOX operator.
+     *
+     * @see <a href="https://postgis.net/docs/geometry_overlaps.html">Geometry overlapping</a>
      */
     @Override
-    public CharSequence visit(BBOX filter, Object extraData) {
-        if (filter.getExpression1() == null || filter.getExpression2() == null)
-            throw new UnsupportedOperationException("Not supported yet : bbox over all geometric properties");
-        return join(filter, "&&", extraData);
+    void bbox(final StringBuilder sb, final SpatialOperator<Feature> filter) {
+        join(sb, filter, "&&");
     }
 }

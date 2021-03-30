@@ -18,7 +18,8 @@ package org.apache.sis.internal.map;
 
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import org.opengis.filter.expression.Expression;
+import org.opengis.feature.Feature;
+import org.opengis.filter.Expression;
 import org.opengis.style.Description;
 import org.opengis.style.LineSymbolizer;
 import org.opengis.style.Stroke;
@@ -34,9 +35,9 @@ public final class MockLineSymbolizer implements LineSymbolizer {
     Description description;
 
     Stroke stroke;
-    Expression perpendicularOffset;
+    Expression<Feature,?> perpendicularOffset;
     Unit<Length> unitOfMeasure;
-    Expression geometry;
+    Expression<Feature,?> geometry;
 
     @Override
     public String getName() {
@@ -84,7 +85,7 @@ public final class MockLineSymbolizer implements LineSymbolizer {
     }
 
     @Override
-    public Expression getGeometry() {
+    public Expression<Feature,?> getGeometry() {
         return geometry;
     }
 

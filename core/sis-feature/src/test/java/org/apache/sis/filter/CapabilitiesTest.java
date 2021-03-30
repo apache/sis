@@ -16,36 +16,56 @@
  */
 package org.apache.sis.filter;
 
-import org.opengis.filter.FilterFactory;
+import java.util.Set;
+import org.opengis.util.LocalName;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.filter.ComparisonOperatorName;
+import org.opengis.filter.capability.IdCapabilities;
+import org.opengis.filter.capability.ScalarCapabilities;
 
 
 /**
  * Tests {@link Capabilities} implementations.
  *
- * @version 2.0
- * @since   2.0
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public final strictfp class CapabilitiesTest extends TestCase {
     /**
-     * The factory to use for creating the objects to test.
-     */
-    private final FilterFactory factory;
-
-    /**
      * Creates a new test case.
      */
     public CapabilitiesTest() {
-        factory = new DefaultFilterFactory();
     }
 
+    /**
+     * Tests {@link Capabilities#getResourceIdentifiers()}.
+     */
     @Test
-    public void test(){
-
+    public void testResourceIdentifiers() {
+        assertTrue(Capabilities.INSTANCE.getConformance().implementsResourceld());
+        final IdCapabilities idc = Capabilities.INSTANCE.getIdCapabilities().get();
+        final LocalName id = TestUtilities.getSingleton(idc.getResourceIdentifiers());
+        assertEquals("identifier", id.toString());
     }
 
+    /**
+     * Tests {@link Capabilities#getComparisonOperators()}.
+     */
+    @Test
+    public void testComparisonOperators() {
+        final ScalarCapabilities c = Capabilities.INSTANCE.getScalarCapabilities().get();
+        final Set<ComparisonOperatorName> op = c.getComparisonOperators();
+        assertTrue(op.contains(ComparisonOperatorName.PROPERTY_IS_EQUAL_TO));
+        assertTrue(op.contains(ComparisonOperatorName.PROPERTY_IS_LESS_THAN));
+        assertTrue(op.contains(ComparisonOperatorName.PROPERTY_IS_GREATER_THAN));
+    }
 }

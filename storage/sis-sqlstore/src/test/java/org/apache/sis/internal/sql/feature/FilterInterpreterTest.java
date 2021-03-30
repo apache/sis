@@ -1,24 +1,27 @@
 package org.apache.sis.internal.sql.feature;
 
-import org.opengis.filter.Filter;
-import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.spatial.BBOX;
-
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.test.Assert;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.util.iso.Names;
-
 import org.junit.Test;
 
+import static org.apache.sis.test.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.filter.Filter;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.SpatialOperator;
+
+
 public class FilterInterpreterTest extends TestCase {
-    private static final FilterFactory2 FF = new DefaultFilterFactory();
+    private static final FilterFactory<Feature,Object,Object> FF = DefaultFilterFactory.forFeatures();
 
     @Test
     public void testGeometricFilter() {
-        final BBOX filter = FF.bbox(FF.property("Toto"), new GeneralEnvelope(new DefaultGeographicBoundingBox(-12.3, 2.1, 43.3, 51.7)));
+        final SpatialOperator<Feature> filter = FF.bbox(FF.property("Toto"),
+                new GeneralEnvelope(new DefaultGeographicBoundingBox(-12.3, 2.1, 43.3, 51.7)));
         assertConversion(filter,
                 "ST_Intersects(" +
                             "\"Toto\", " +
@@ -31,20 +34,19 @@ public class FilterInterpreterTest extends TestCase {
 
     @Test
     public void testSimpleFilter() {
-        Filter filter = FF.and(
-                FF.greater(FF.property(Names.createGenericName(null, ":", "mySchema", "myTable")), FF.property("otter")),
+        Filter<Feature> filter = FF.and(
+                FF.greater(FF.property("mySchema/myTable"), FF.property("otter")),
                 FF.or(
                         FF.isNull(FF.property("whatever")),
-                        FF.equals(FF.literal(3.14), FF.property("π"))
+                        FF.equal(FF.literal(3.14), FF.property("π"))
                 )
         );
-
         assertConversion(filter, "((\"mySchema\".\"myTable\" > \"otter\") AND (\"whatever\" IS NULL OR (3.14 = \"π\")))");
     }
 
-    public void assertConversion(final Filter source, final String expected) {
-        final Object result = source.accept(new ANSIInterpreter(), null);
-        Assert.assertTrue("Result filter should be a text", result instanceof CharSequence);
-        Assert.assertEquals("Filter as SQL condition: ", expected, result.toString());
+    private static void assertConversion(final Filter<Feature> source, final String expected) {
+        final StringBuilder sb = new StringBuilder();
+        new ANSIInterpreter().visit(source, sb);
+        assertEquals(expected, sb.toString());
     }
 }

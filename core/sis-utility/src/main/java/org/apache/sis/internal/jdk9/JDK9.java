@@ -33,6 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
@@ -315,5 +316,12 @@ public final class JDK9 {
             }
         }
         return true;
+    }
+
+    /**
+     * Place holder for {@link Stream#toList()} method added in JDK16.
+     */
+    public static <T> List<T> toList(final Stream<T> s) {
+        return (List<T>) UnmodifiableArrayList.wrap(s.toArray());
     }
 }

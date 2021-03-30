@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.opengis.filter.Id;
+import org.opengis.filter.ResourceId;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.style.Description;
 import org.opengis.style.FeatureTypeStyle;
@@ -42,7 +42,6 @@ public final class MockFeatureTypeStyle implements FeatureTypeStyle {
     private final List<Rule> rules = new ArrayList<>();
     private OnlineResource onlineResource;
 
-
     @Override
     public String getName() {
         return name;
@@ -60,7 +59,6 @@ public final class MockFeatureTypeStyle implements FeatureTypeStyle {
     public void setDescription(Description description) {
         this.description = description;
     }
-
 
     @Override
     public Set<GenericName> featureTypeNames() {
@@ -87,21 +85,20 @@ public final class MockFeatureTypeStyle implements FeatureTypeStyle {
     }
 
     /**
-     * Will likely be removed from geoapi.
+     * May be removed from GeoAPI.
      */
-    @Deprecated
     @Override
-    public Id getFeatureInstanceIDs() {
-        throw new UnsupportedOperationException("Not supported.");
+    @Deprecated
+    public ResourceId getFeatureInstanceIDs() {
+        throw new UnsupportedOperationException();
     }
 
     /**
-     * Will likely be removed from geoapi.
+     * May be removed from GeoAPI.
      */
-    @Deprecated
     @Override
-    public Object accept(StyleVisitor sv, Object o) {
-        throw new UnsupportedOperationException("Not supported.");
+    @Deprecated
+    public Object accept(StyleVisitor visitor, Object extraData) {
+        throw new UnsupportedOperationException();
     }
-
 }

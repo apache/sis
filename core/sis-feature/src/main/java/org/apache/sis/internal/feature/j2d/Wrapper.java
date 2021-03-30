@@ -28,6 +28,8 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWithCRS;
+import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.internal.filter.sqlmm.SQLMM;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
@@ -97,16 +99,6 @@ final class Wrapper extends GeometryWithCRS<Shape> {
     }
 
     /**
-     * Returns the centroid of the wrapped geometry as a Java2D object.
-     */
-    @Override
-    public Object getCentroidImpl() {
-        final RectangularShape frame = (geometry instanceof RectangularShape)
-                        ? (RectangularShape) geometry : geometry.getBounds2D();
-        return new Point2D.Double(frame.getCenterX(), frame.getCenterY());
-    }
-
-    /**
      * Returns {@code null} since {@link Shape} are never points in Java2D API.
      */
     @Override
@@ -120,7 +112,7 @@ final class Wrapper extends GeometryWithCRS<Shape> {
      */
     @Debug
     @Override
-    protected double[] getAllCoordinates() {
+    public double[] getAllCoordinates() {
         final List<double[]> coordinates = new ShapeProperties(geometry).coordinatesAsDoubles();
         switch (coordinates.size()) {
             case 0:  return ArraysExt.EMPTY_DOUBLE;
@@ -190,6 +182,26 @@ add:    for (;;) {
             }
         }
         return ShapeUtilities.toPrimitive(path);
+    }
+
+    /**
+     * Applies a SQLMM operation on this geometry.
+     *
+     * @param  operation  the SQLMM operation to apply.
+     * @param  other      the other geometry, or {@code null} if the operation requires only one geometry.
+     * @param  argument   an operation-specific argument, or {@code null} if not applicable.
+     * @return result of the specified operation.
+     */
+    @Override
+    protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper<Shape> other, final Object argument) {
+        switch (operation) {
+            case ST_Centroid: {
+                final RectangularShape frame = (geometry instanceof RectangularShape)
+                                ? (RectangularShape) geometry : geometry.getBounds2D();
+                return new Point2D.Double(frame.getCenterX(), frame.getCenterY());
+            }
+            default: return super.operationSameCRS(operation, other, argument);
+        }
     }
 
     /**

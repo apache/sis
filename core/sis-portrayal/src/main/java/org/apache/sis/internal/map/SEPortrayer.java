@@ -25,12 +25,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.opengis.util.GenericName;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.feature.Features;
 import org.apache.sis.filter.DefaultFilterFactory;
@@ -38,7 +44,6 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.query.SimpleQuery;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.portrayal.MapItem;
 import org.apache.sis.portrayal.MapLayer;
 import org.apache.sis.portrayal.MapLayers;
@@ -51,13 +56,8 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.MultiLineString;
-import org.locationtech.jts.geom.MultiPoint;
-import org.locationtech.jts.geom.MultiPolygon;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
+
+// Branch-dependent imports
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
@@ -66,20 +66,21 @@ import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.feature.PropertyType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
-import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.expression.PropertyName;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
+import org.opengis.filter.Expression;
 import org.opengis.style.FeatureTypeStyle;
 import org.opengis.style.Rule;
 import org.opengis.style.SemanticType;
 import org.opengis.style.Symbolizer;
-import org.opengis.util.GenericName;
+
+// Optional-dependencies (TODO: make library-independent)
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+
 
 /**
  * Generation a Stream of Presentation for a map.
@@ -103,11 +104,11 @@ import org.opengis.util.GenericName;
  * @module
  */
 public final class SEPortrayer {
-
     /**
      * Rule scale tolerance.
      */
     private static final double SE_EPSILON = 1e-6;
+
     /**
      * Used in SLD/SE to calculate scale for degree CRSs.
      */
@@ -119,9 +120,9 @@ public final class SEPortrayer {
      * A test to know if a given property is an SIS convention or not. Return true if
      * the property is NOT marked as an SIS convention, false otherwise.
      */
-    public static final Predicate<IdentifiedType> IS_NOT_CONVENTION = p -> !AttributeConvention.contains(p.getName());
+    private static final Predicate<IdentifiedType> IS_NOT_CONVENTION = p -> !AttributeConvention.contains(p.getName());
 
-    private final FilterFactory2 filterFactory;
+    private final FilterFactory<Feature,Object,Object> filterFactory;
 
     /**
      * Hint to avoid decimating feature properties because they may be used
@@ -129,19 +130,11 @@ public final class SEPortrayer {
      */
     private boolean preserveProperties;
 
-    private BiFunction<GridGeometry, Symbolizer, Double> marginSolver = new BiFunction<GridGeometry, Symbolizer, Double>() {
-        @Override
-        public Double apply(GridGeometry t, Symbolizer u) {
-            return 30.0;
-        }
-    };
+    private BiFunction<GridGeometry, Symbolizer, Double> marginSolver;
 
     public SEPortrayer() {
-        FilterFactory filterFactory = DefaultFactories.forClass(FilterFactory.class);
-        if (!(filterFactory instanceof FilterFactory2)) {
-            filterFactory = new DefaultFilterFactory();
-        }
-        this.filterFactory = (FilterFactory2) filterFactory;
+        filterFactory = DefaultFilterFactory.forFeatures();
+        marginSolver  = (GridGeometry t, Symbolizer u) -> 30.0;
     }
 
     /**
@@ -180,9 +173,7 @@ public final class SEPortrayer {
      * Generate presentations for the given map item.
      */
     public Stream<Presentation> present(GridGeometry canvas, final MapItem mapitem) {
-
         Stream<Presentation> stream = Stream.empty();
-
         if (mapitem.isVisible()) {
             if (mapitem instanceof MapLayer) {
                 final MapLayer layer = (MapLayer) mapitem;
@@ -194,29 +185,22 @@ public final class SEPortrayer {
                 }
             }
         }
-
         return stream;
     }
 
     private Stream<Presentation> present(GridGeometry canvas, MapLayer layer, Resource resource) {
-
         final Resource refResource = resource;
         Stream<Presentation> stream = Stream.empty();
-
-        FeatureType type;
+        final FeatureType type;
         if (resource instanceof FeatureSet) {
-
-            //apply user query if defined
+            // Apply user query if defined.
             final Query basequery = layer.getQuery();
-            if (basequery != null) {
-                try {
-                    resource = ((FeatureSet) resource).subset(basequery);
-                } catch (DataStoreException ex) {
-                    stream = Stream.concat(stream, Stream.of(new ExceptionPresentation(ex)));
-                    return stream;
-                }
+            if (basequery != null) try {
+                resource = ((FeatureSet) resource).subset(basequery);
+            } catch (DataStoreException ex) {
+                stream = Stream.concat(stream, Stream.of(new ExceptionPresentation(ex)));
+                return stream;
             }
-
             try {
                 type = ((FeatureSet) resource).getType();
             } catch (DataStoreException ex) {
@@ -227,8 +211,8 @@ public final class SEPortrayer {
             type = null;
         } else if (resource instanceof Aggregate) {
             try {
-                //combine each component resource in the stream
-                for (Resource r : ((Aggregate) resource).components()) {
+                // Combine each component resource in the stream.
+                for (final Resource r : ((Aggregate) resource).components()) {
                     stream = Stream.concat(stream, present(canvas, layer, r));
                 }
             } catch (DataStoreException ex) {
@@ -236,12 +220,10 @@ public final class SEPortrayer {
             }
             return stream;
         } else {
-            //unknown type
+            // Unknown type.
             return Stream.empty();
         }
-
-
-        final MathTransform gridToCRS = canvas.getGridToCRS(PixelInCell.CELL_CENTER);
+        final MathTransform   gridToCRS = canvas.getGridToCRS(PixelInCell.CELL_CENTER);
         final AffineTransform dispToObj;
         final AffineTransform objToDisp;
         try {
@@ -251,22 +233,19 @@ public final class SEPortrayer {
             stream = Stream.concat(stream, Stream.of(new ExceptionPresentation(ex)));
             return stream;
         }
-
         final double seScale = getSEScale(canvas, objToDisp);
-
         for (FeatureTypeStyle fts : layer.getStyle().featureTypeStyles()) {
             final List<Rule> rules = getValidRules(fts, seScale, type);
             if (rules.isEmpty()) continue;
 
-            //prepare the renderers
+            // Prepare the renderers.
             final int elseRuleIndex = sortByElseRule(rules);
-
             {   //special case for resource symbolizers
                 //resource symbolizers must be alone in a FTS
                 ResourceSymbolizer resourceSymbolizer = null;
                 int count = 0;
-                for (Rule r : rules) {
-                    for (Symbolizer s : r.symbolizers()) {
+                for (final Rule r : rules) {
+                    for (final Symbolizer s : r.symbolizers()) {
                         count++;
                         if (s instanceof ResourceSymbolizer) {
                             resourceSymbolizer = (ResourceSymbolizer) s;
@@ -276,7 +255,6 @@ public final class SEPortrayer {
                 if (resourceSymbolizer != null) {
                     if (count > 1) {
                         Exception ex = new IllegalArgumentException("A resource symbolizer must be alone in a FeatureTypeStyle element." );
-                        ex.fillInStackTrace();
                         final ExceptionPresentation presentation = new ExceptionPresentation(ex);
                         presentation.setLayer(layer);
                         presentation.setResource(resource);
@@ -288,21 +266,18 @@ public final class SEPortrayer {
                     continue;
                 }
             }
-
-            //extract the used names
+            // Extract the used names.
             Set<String> names;
             if (preserveProperties) {
                 names = null;
             } else {
                 names = propertiesNames(rules);
                 if (names.contains("*")) {
-                    //we need all properties
+                    // We need all properties.
                     names = null;
                 }
             }
-
             if (resource instanceof GridCoverageResource) {
-
                 boolean painted = false;
                 for (int i = 0; i < elseRuleIndex; i++) {
                     final Stream<Presentation> subStream = present(rules.get(i), layer, resource, refResource, null);
@@ -311,8 +286,7 @@ public final class SEPortrayer {
                         stream = Stream.concat(stream, subStream);
                     }
                 }
-
-                //the data hasn't been painted, paint it with the 'else' rules
+                // The data hasn't been painted, paint it with the 'else' rules.
                 if (!painted) {
                     for (int i = elseRuleIndex, n = rules.size(); i < n; i++) {
                         final Stream<Presentation> subStream = present(rules.get(i), layer, resource, refResource, null);
@@ -321,11 +295,9 @@ public final class SEPortrayer {
                         }
                     }
                 }
-
             } else if (resource instanceof FeatureSet) {
                 final FeatureSet fs = (FeatureSet) resource;
-
-                //calculate max symbol size, to expand search envelope.
+                // Calculate max symbol size, to expand search envelope.
                 double symbolsMargin = 0.0;
                 for (Rule rule : rules) {
                     for (Symbolizer symbolizer : rule.symbolizers()) {
@@ -333,45 +305,38 @@ public final class SEPortrayer {
                     }
                 }
                 if (Double.isNaN(symbolsMargin) || Double.isInfinite(symbolsMargin)) {
-                    //symbol margin can not be pre calculated, expect a max of 300pixels
+                    // Symbol margin can not be pre calculated, expect a max of 300pixels.
                     symbolsMargin = 300f;
                 }
                 if (symbolsMargin > 0) {
                     symbolsMargin *= AffineTransforms2D.getScale(dispToObj);
                 }
-
                 try {
-                    //optimize query
+                    // Optimize query.
                     final Query query = prepareQuery(canvas, fs, names, rules, symbolsMargin);
-
                     final Stream<Presentation> s = fs.subset(query)
                             .features(false)
-                            .flatMap(new Function<Feature, Stream<Presentation>>() {
-                        @Override
-                        public Stream<Presentation> apply(Feature feature) {
-
-                            Stream<Presentation> stream = Stream.empty();
-                            boolean painted = false;
-                            for (int i = 0; i < elseRuleIndex; i++) {
+                            .flatMap((Feature feature) ->
+                    {
+                        Stream<Presentation> stream1 = Stream.empty();
+                        boolean painted = false;
+                        for (int i = 0; i < elseRuleIndex; i++) {
+                            final Stream<Presentation> subStream = present(rules.get(i), layer, fs, refResource, feature);
+                            if (subStream != null) {
+                                painted = true;
+                                stream1 = Stream.concat(stream1, subStream);
+                            }
+                        }
+                        // The feature hasn't been painted, paint it with the 'else' rules.
+                        if (!painted) {
+                            for (int i = elseRuleIndex, n = rules.size(); i < n; i++) {
                                 final Stream<Presentation> subStream = present(rules.get(i), layer, fs, refResource, feature);
                                 if (subStream != null) {
-                                    painted = true;
-                                    stream = Stream.concat(stream, subStream);
+                                    stream1 = Stream.concat(stream1, subStream);
                                 }
                             }
-
-                            //the feature hasn't been painted, paint it with the 'else' rules
-                            if (!painted) {
-                                for (int i = elseRuleIndex, n = rules.size(); i < n; i++) {
-                                    final Stream<Presentation> subStream = present(rules.get(i), layer, fs, refResource, feature);
-                                    if (subStream != null) {
-                                        stream = Stream.concat(stream, subStream);
-                                    }
-                                }
-                            }
-
-                            return stream;
                         }
+                        return stream1;
                     });
                     stream = Stream.concat(stream, s);
                 } catch (DataStoreException | TransformException ex) {
@@ -379,14 +344,15 @@ public final class SEPortrayer {
                 }
             }
         }
-
         return stream;
     }
 
-    private static Stream<Presentation> present(Rule rule, MapLayer layer, Resource resource, Resource refResource, Feature feature) {
-        final Filter ruleFilter = rule.getFilter();
+    private static Stream<Presentation> present(Rule rule, MapLayer layer,
+            Resource resource, Resource refResource, Feature feature)
+    {
+        final Filter ruleFilter = rule.getFilter();             // TODO: type.
         //test if the rule is valid for this resource/feature
-        if (ruleFilter == null || ruleFilter.evaluate(feature == null ? resource : feature)) {
+        if (ruleFilter == null || ruleFilter.test(feature == null ? resource : feature)) {
             Stream<Presentation> stream = Stream.empty();
             for (final Symbolizer symbolizer : rule.symbolizers()) {
                 final SEPresentation presentation = new SEPresentation(layer, refResource, feature, symbolizer);
@@ -401,14 +367,16 @@ public final class SEPortrayer {
      * Creates an optimal query to send to the Featureset, knowing which properties are knowned and
      * the appropriate bounding box to filter.
      */
-    private SimpleQuery prepareQuery(GridGeometry canvas, FeatureSet fs, Set<String> requiredProperties, List<Rule> rules, double symbolsMargin) throws DataStoreException, TransformException {
-
+    private SimpleQuery prepareQuery(GridGeometry canvas, FeatureSet fs, Set<String> requiredProperties,
+            List<Rule> rules, double symbolsMargin) throws DataStoreException, TransformException
+    {
         final SimpleQuery query = new SimpleQuery();
         final FeatureType schema = fs.getType();
-
-        //check if some used properties are not part of the type
-        //this means the FeatureSet may contain sub types.
-        //we can not optimize the query
+        /*
+         * Check if some used properties are not part of the type.
+         * This means the FeatureSet may contain sub types.
+         * We can not optimize the query.
+         */
         if (requiredProperties != null) {
             for (String pn : requiredProperties) {
                 try {
@@ -418,14 +386,13 @@ public final class SEPortrayer {
                 }
             }
         }
-
-        //search all geometry expression used in the symbols
+        // Search all geometry expression used in the symbols.
         boolean allDefined = true;
-        final Set<Expression> geomProperties = new HashSet<>();
+        final Set<Expression<Feature,?>> geomProperties = new HashSet<>();
         if (rules != null) {
-            for (Rule r : rules) {
-                for (Symbolizer s : r.symbolizers()) {
-                    final Expression expGeom = s.getGeometry();
+            for (final Rule r : rules) {
+                for (final Symbolizer s : r.symbolizers()) {
+                    final Expression<Feature,?> expGeom = s.getGeometry();
                     if (expGeom != null) {
                         geomProperties.add(expGeom );
                     } else {
@@ -437,56 +404,53 @@ public final class SEPortrayer {
             allDefined = false;
         }
         if (!allDefined) {
-            //add the default geometry property
+            // Add the default geometry property.
             try {
                 PropertyType geomDesc = getDefaultGeometry(schema);
                 geomProperties.add(filterFactory.property(geomDesc.getName().toString()));
             } catch (PropertyNotFoundException | IllegalStateException ex) {
-                //do nothing
-            };
+                // Do nothing.
+            }
         }
-
         if (geomProperties.isEmpty()) {
-            //no geometry selected for rendering
-            query.setFilter(Filter.EXCLUDE);
+            // No geometry selected for rendering.
+            query.setFilter(Filter.exclude());
             return query;
         }
-
         final Envelope bbox = optimizeBBox(canvas, symbolsMargin);
-
-        Filter filter;
-        //make a bbox filter
+        Filter<?> filter;
+        // Make a bbox filter.
         if (geomProperties.size() == 1) {
-            final Expression geomExp = geomProperties.iterator().next();
+            final Expression<Feature,?> geomExp = geomProperties.iterator().next();
             filter = filterFactory.bbox(geomExp, bbox);
         } else {
-            //make an OR filter with all geometries
-            final List<Filter> geomFilters = new ArrayList<>();
-            for (Expression geomExp : geomProperties) {
-                geomFilters.add(filterFactory.bbox(geomExp,bbox));
+            // Make an OR filter with all geometries.
+            final List<Filter<?>> geomFilters = new ArrayList<>();
+            for (final Expression<Feature,?> geomExp : geomProperties) {
+                geomFilters.add(filterFactory.bbox(geomExp, bbox));
             }
-            filter = filterFactory.or(geomFilters);
+            filter = filterFactory.or((List) geomFilters);      // TODO
         }
-
-        //combine the filter with rule filters----------------------------------
+        /*
+         * Combine the filter with rule filters.
+         */
         ruleOpti:
         if (rules != null) {
-            final List<Filter> rulefilters = new ArrayList<>();
-            for (Rule rule : rules) {
+            final List<Filter<Feature>> rulefilters = new ArrayList<>();
+            for (final Rule rule : rules) {
                 if (rule.isElseFilter()) {
-                    //we can't append styling filters, an else rule match all features
+                    // We can not append styling filters, an else rule match all features.
                     break ruleOpti;
                 } else {
-                    final Filter rf = rule.getFilter();
-                    if (rf == null || rf == Filter.INCLUDE) {
-                        //we can't append styling filters, this rule matchs all features.
+                    final Filter<Feature> rf = rule.getFilter();
+                    if (rf == null || rf == Filter.<Feature>include()) {
+                        // We can not append styling filters, this rule matchs all features.
                         break ruleOpti;
                     }
                     rulefilters.add(rf);
                 }
             }
-
-            final Filter combined;
+            final Filter<Feature> combined;
             if (rulefilters.size() == 1) {
 //                //TODO need a stylefactory in SIS
 //                //special case, only one rule and we passed the filter to the query
@@ -496,59 +460,53 @@ public final class SEPortrayer {
 //                        original.getMinScaleDenominator(),
 //                        original.getMaxScaleDenominator(),
 //                        new ArrayList(original.symbolizers()),
-//                        Filter.INCLUDE);
+//                        Filter.include());
 //                rules.set(0, rule);
                 combined = rulefilters.get(0);
             } else {
-                combined = filterFactory.or(rulefilters);
+                combined = filterFactory.or((List) rulefilters);        // TODO
             }
-
-            if (filter != Filter.INCLUDE) {
-                filter = filterFactory.and(filter,combined);
+            if (filter != Filter.include()) {
+                filter = filterFactory.and((Filter) filter, combined);  // TODO
             } else {
                 filter = combined;
             }
         }
         query.setFilter(filter);
-
-        //reduce requiered attributes
+        /*
+         * Reduce requiered attributes.
+         */
         if (requiredProperties == null) {
-            //all properties are required
+            // All properties are required.
         } else {
             final Set<String> copy = new HashSet<>();
-            //add used properties
-            for (String str : requiredProperties) {
+            // Add used properties.
+            for (final String str : requiredProperties) {
                 copy.add(stripXpath(str));
             }
-
-            //add properties used as geometry
-            for (Expression exp : geomProperties) {
+            // Add properties used as geometry.
+            for (Expression<?,?> exp : geomProperties) {
                 final PropertyNameCollector collector = new PropertyNameCollector();
                 collector.visit(exp);
-                collector.getPropertyNames().stream()
-                        .map(PropertyName::getPropertyName)
+                collector.references.stream()
                         .map(SEPortrayer::stripXpath)
                         .forEach(copy::add);
             }
-
             try {
-                //always include the identifier if it exist
+                // Always include the identifier if it exist.
                 schema.getProperty(AttributeConvention.IDENTIFIER);
                 copy.add(AttributeConvention.IDENTIFIER);
             } catch (PropertyNotFoundException ex) {
-                //no id, ignore it
+                // No id, ignore it.
             }
-
             final List<SimpleQuery.Column> columns = new ArrayList<>();
             for (String propName : copy) {
                 columns.add(new SimpleQuery.Column(filterFactory.property(propName), propName));
             }
             query.setColumns(columns.toArray(new SimpleQuery.Column[columns.size()]));
         }
-
         //TODO optimize filter
         //TODO add linear resolution
-
         return query;
     }
 
@@ -559,11 +517,10 @@ public final class SEPortrayer {
      * This is a fake average scale unproper for correct rendering.
      * It is used only to filter SE rules.
      */
-    private static double getSEScale(GridGeometry canvas, AffineTransform objToDisp) {
+    private static double getSEScale(final GridGeometry canvas, final AffineTransform objToDisp) {
         final Envelope envelope = canvas.getEnvelope();
         final CoordinateReferenceSystem objCRS = envelope.getCoordinateReferenceSystem();
         final long width = canvas.getExtent().getSize(0);
-
         if (AffineTransforms2D.getRotation(objToDisp) != 0.0) {
             final double scale = AffineTransforms2D.getScale(objToDisp);
             if (objCRS instanceof GeographicCRS) {
@@ -584,10 +541,9 @@ public final class SEPortrayer {
      * List the valid rules for current scale and type.
      */
     private static List<Rule> getValidRules(final FeatureTypeStyle fts, final double scale, final FeatureType type) {
-
         final Set<GenericName> names = fts.featureTypeNames();
         if (!names.isEmpty()) {
-            //TODO : should we check parent types ?
+            // TODO: should we check parent types?
             boolean found = false;
             for (GenericName name : names) {
                 if (name.equals(type.getName())) {
@@ -599,12 +555,11 @@ public final class SEPortrayer {
                 return Collections.emptyList();
             }
         }
-
-        //check semantic, only if we have a feature type
+        // Check semantic, only if we have a feature type.
         if (type != null) {
             final Collection<SemanticType> semantics = fts.semanticTypeIdentifiers();
             if (!semantics.isEmpty()) {
-                Class ctype;
+                Class<?> ctype;
                 try {
                     ctype = Features.toAttribute(getDefaultGeometry(type))
                             .map(AttributeType::getValueClass)
@@ -612,14 +567,13 @@ public final class SEPortrayer {
                 } catch (PropertyNotFoundException e) {
                       ctype = null;
                 }
-
                 boolean valid = false;
                 for (SemanticType semantic : semantics) {
                     if (semantic == SemanticType.ANY) {
                         valid = true;
                         break;
                     } else if (semantic == SemanticType.LINE) {
-                        if (ctype == LineString.class || ctype == MultiLineString.class || ctype == Geometry.class ) {
+                        if (ctype == LineString.class || ctype == MultiLineString.class || ctype == Geometry.class) {
                             valid = true;
                             break;
                         }
@@ -634,12 +588,11 @@ public final class SEPortrayer {
                             break;
                         }
                     } else if (semantic == SemanticType.RASTER) {
-                        // can not test this on feature datas
+                        // Can not test this on feature datas.
                     } else if (semantic == SemanticType.TEXT) {
-                        // can not define a 'text' type with current API.
+                        // Can not define a `text` type with current API.
                     }
                 }
-
                 if (!valid) return Collections.emptyList();
             }
         }
@@ -657,26 +610,24 @@ public final class SEPortrayer {
                 validRules.add(rule);
             }
         }
-
         return validRules;
     }
 
     /**
-     * List all properties used in given rules.
+     * Lists all properties used in given rules.
      */
     private static Set<String> propertiesNames(final Collection<? extends Rule> rules) {
         final PropertyNameCollector collector = new PropertyNameCollector();
-        for (Rule r : rules) {
+        for (final Rule r : rules) {
             collector.visit(r);
             collector.visit(r.getFilter());
         }
-        return collector.getPropertyNames()
-                .stream()
-                .map(PropertyName::getPropertyName).collect(Collectors.toSet());
+        return collector.references;
     }
 
     /**
-     * Sort the rules, isolate the else rules, they must be handle differently
+     * Sorts the rules, isolate the else rules, they must be handle differently
+     *
      * @return index of starting else rules.
      */
     private static int sortByElseRule(final List<Rule> sortedRules){
@@ -685,7 +636,7 @@ public final class SEPortrayer {
             final Rule r = sortedRules.get(i);
             if (r.isElseFilter()) {
                 elseRuleIndex--;
-                //move the rule at the end
+                // Move the rule at the end
                 sortedRules.remove(i);
                 sortedRules.add(r);
             }
@@ -701,13 +652,11 @@ public final class SEPortrayer {
      * If it's the case, we return it. Otherwise (no or multiple geometries), we
      * throw an exception.
      *
-     * @param type The data type to search into.
-     * @return The main geometric property we've found.
-     * @throws PropertyNotFoundException If no geometric property is available
-     * in the given type.
-     * @throws IllegalStateException If no convention is set (see
-     * {@link AttributeConvention#GEOMETRY_PROPERTY}), and we've found more than
-     * one geometry.
+     * @param  type  the data type to search into.
+     * @return the main geometric property we've found.
+     * @throws PropertyNotFoundException if no geometric property is available in the given type.
+     * @throws IllegalStateException if no convention is set (see {@link AttributeConvention#GEOMETRY_PROPERTY}),
+     *         and we have found more than one geometry.
      */
     private static PropertyType getDefaultGeometry(final FeatureType type) throws PropertyNotFoundException, IllegalStateException {
         PropertyType geometry;
@@ -725,15 +674,14 @@ public final class SEPortrayer {
     }
 
     /**
-     * Search for a geometric attribute outside SIS conventions. More accurately,
+     * Searches for a geometric attribute outside SIS conventions. More accurately,
      * we expect the given type to have a single geometry attribute. If many are
      * found, an exception is thrown.
      *
-     * @param type The data type to search into.
-     * @return The only geometric property we've found.
-     * @throws PropertyNotFoundException If no geometric property is available in
-     * the given type.
-     * @throws IllegalStateException If we've found more than one geometry.
+     * @param  type  the data type to search into.
+     * @return the only geometric property we've found.
+     * @throws PropertyNotFoundException if no geometric property is available in the given type.
+     * @throws IllegalStateException if we have found more than one geometry.
      */
     private static PropertyType searchForGeometry(final FeatureType type) throws PropertyNotFoundException, IllegalStateException {
         final List<? extends PropertyType> geometries = type.getProperties(true).stream()
@@ -751,30 +699,34 @@ public final class SEPortrayer {
     }
 
     /**
-     * Remove any xpath elements, keep only the root property name.
+     * Removes any xpath elements, keep only the root property name.
      */
     private static String stripXpath(String attName) {
         int index = attName.indexOf('/');
         if (index == 0) {
-            attName = attName.substring(1); //remove first slash
+            attName = attName.substring(1);             // Remove first slash
             final Pattern pattern = Pattern.compile("(\\{[^\\{\\}]*\\})|(\\[[^\\[\\]]*\\])|/{1}");
             final Matcher matcher = pattern.matcher(attName);
-
             final StringBuilder sb = new StringBuilder();
             int position = 0;
-            while (matcher.find()) {
+matches:    while (matcher.find()) {
                 final String match = matcher.group();
                 sb.append(attName.substring(position, matcher.start()));
                 position = matcher.end();
-
-                if (match.charAt(0) == '/') {
-                    //we don't query precisely sub elements
-                    position = attName.length();
-                    break;
-                } else if (match.charAt(0) == '{') {
-                    sb.append(match);
-                } else if (match.charAt(0) == '[') {
-                    //strip indexes or xpath searches
+                switch (match.charAt(0)) {
+                    case '/': {
+                        // We do not query precisely sub elements.
+                        position = attName.length();
+                        break matches;
+                    }
+                    case '{': {
+                        sb.append(match);
+                        break;
+                    }
+                    case '[': {
+                        // Strip indexes or xpath searches.
+                        break;
+                    }
                 }
             }
             sb.append(attName.substring(position));
@@ -784,7 +736,7 @@ public final class SEPortrayer {
     }
 
     /**
-     * Extract envelope and expand it's horizontal component by given margin.
+     * Extracts envelope and expand it's horizontal component by given margin.
      */
     private static Envelope optimizeBBox(GridGeometry canvas, double symbolsMargin) throws TransformException {
         Envelope env = canvas.getEnvelope();

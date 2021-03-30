@@ -36,7 +36,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
 import org.apache.sis.internal.storage.query.SimpleQuery;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.portrayal.MapItem;
 import org.apache.sis.portrayal.MapLayer;
 import org.apache.sis.portrayal.MapLayers;
@@ -58,11 +57,10 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
-import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.PropertyIsEqualTo;
-import org.opengis.filter.identity.Identifier;
+import org.opengis.filter.MatchAction;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -76,17 +74,12 @@ import org.opengis.util.GenericName;
  */
 public class SEPortrayerTest extends TestCase {
 
-    private final FilterFactory2 filterFactory;
+    private final FilterFactory<Feature,Object,Object> filterFactory;
     private final FeatureSet fishes;
     private final FeatureSet boats;
 
     public SEPortrayerTest() {
-
-        FilterFactory filterFactory = DefaultFactories.forClass(FilterFactory.class);
-        if (!(filterFactory instanceof FilterFactory2)) {
-            filterFactory = new DefaultFilterFactory();
-        }
-        this.filterFactory = (FilterFactory2) filterFactory;
+        filterFactory = DefaultFilterFactory.forFeatures();
 
         final GeometryFactory gf = new GeometryFactory();
         final CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
@@ -131,7 +124,6 @@ public class SEPortrayerTest extends TestCase {
 
         fishes = new MemoryFeatureSet(null, sharkType, Arrays.asList(fish1, fish2, shark1));
 
-
         final FeatureTypeBuilder boatbuilder = new FeatureTypeBuilder();
         boatbuilder.setName("boat");
         boatbuilder.addAttribute(String.class).setName("id").addRole(AttributeRole.IDENTIFIER_COMPONENT);
@@ -167,13 +159,12 @@ public class SEPortrayerTest extends TestCase {
         final List<Presentation> presentations = stream.collect(Collectors.toList());
 
         final Set<Match> ids = new HashSet<>();
-
         presentations.stream().forEach(new Consumer<Presentation>() {
             @Override
             public void accept(Presentation t) {
                 if (t instanceof SEPresentation) {
                     SEPresentation se = (SEPresentation) t;
-                    Feature Feature = (Feature) se.getCandidate();
+                    Feature Feature = se.getCandidate();
                     ids.add(new Match(String.valueOf(Feature.getPropertyValue(AttributeConvention.IDENTIFIER)),
                             se.getLayer(),
                             se.getResource(),
@@ -184,7 +175,6 @@ public class SEPortrayerTest extends TestCase {
                 }
             }
         });
-
         return ids;
     }
 
@@ -193,7 +183,6 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testSanity() {
-
         final MockStyle style = new MockStyle();
         final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
         final MockRule rule = new MockRule();
@@ -201,7 +190,6 @@ public class SEPortrayerTest extends TestCase {
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
-
 
         final MapLayer fishLayer = new MapLayer();
         fishLayer.setData(fishes);
@@ -228,7 +216,6 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testCanvasBboxfilter() {
-
         final GeneralEnvelope env = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
         env.setRange(0, 9, 11);
         env.setRange(1, 19, 21);
@@ -240,7 +227,6 @@ public class SEPortrayerTest extends TestCase {
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
-
 
         final MapLayer fishLayer = new MapLayer();
         fishLayer.setData(fishes);
@@ -263,7 +249,6 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testUserQuery() {
-
         final MockStyle style = new MockStyle();
         final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
         final MockRule rule = new MockRule();
@@ -272,10 +257,9 @@ public class SEPortrayerTest extends TestCase {
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
 
-        final Set<Identifier> ids = new HashSet<>();
-        ids.add(filterFactory.featureId("1"));
-        ids.add(filterFactory.featureId("20"));
-        final Filter filter = filterFactory.id(ids);
+        final Filter<Feature> filter = filterFactory.or(
+                filterFactory.resourceId("1"),
+                filterFactory.resourceId("20"));
         final SimpleQuery query = new SimpleQuery();
         query.setFilter(filter);
 
@@ -303,7 +287,6 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testFeatureTypeStyleTypeNames() {
-
         final MockStyle style = new MockStyle();
         final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
         fts.featureTypeNames().add(Names.createLocalName(null, null, "boat"));
@@ -312,7 +295,6 @@ public class SEPortrayerTest extends TestCase {
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
-
 
         final MapLayer fishLayer = new MapLayer();
         fishLayer.setData(fishes);
@@ -336,7 +318,6 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testFeatureTypeStyleSemanticType() {
-
         final MockStyle style = new MockStyle();
         final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
         fts.semanticTypeIdentifiers().add(SemanticType.POINT);
@@ -345,7 +326,6 @@ public class SEPortrayerTest extends TestCase {
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
-
 
         final MapLayer fishLayer = new MapLayer();
         fishLayer.setData(fishes);
@@ -370,10 +350,7 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testRuleFilter() {
-
-        final Set<Identifier> ids = new HashSet<>();
-        ids.add(filterFactory.featureId("2"));
-        final Filter filter = filterFactory.id(ids);
+        final Filter<Feature> filter = filterFactory.resourceId("2");
 
         final MockStyle style = new MockStyle();
         final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
@@ -383,7 +360,6 @@ public class SEPortrayerTest extends TestCase {
         style.featureTypeStyles().add(fts);
         fts.rules().add(rule);
         rule.symbolizers().add(symbolizer);
-
 
         final MapLayer fishLayer = new MapLayer();
         fishLayer.setData(fishes);
@@ -406,7 +382,6 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testRuleScale() {
-
         final MockLineSymbolizer symbolizerAbove = new MockLineSymbolizer();
         final MockLineSymbolizer symbolizerUnder = new MockLineSymbolizer();
         final MockLineSymbolizer symbolizerMatch = new MockLineSymbolizer();
@@ -431,7 +406,6 @@ public class SEPortrayerTest extends TestCase {
         fts.rules().add(ruleAbove);
         fts.rules().add(ruleUnder);
         fts.rules().add(ruleMatch);
-
 
         final MapLayer fishLayer = new MapLayer();
         fishLayer.setData(fishes);
@@ -459,8 +433,10 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testRuleFilterOnSubType() {
-
-        final PropertyIsEqualTo filter = filterFactory.equals(filterFactory.property("specie"), filterFactory.literal("White Shark"));
+        final BinaryComparisonOperator<Feature> filter = filterFactory.equal(
+                filterFactory.property("specie", String.class),
+                filterFactory.literal("White Shark"),
+                true, MatchAction.ANY);
 
         final MockStyle style = new MockStyle();
         final MockFeatureTypeStyle fts = new MockFeatureTypeStyle();
@@ -494,10 +470,7 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testRuleElseCondition() {
-
-        final Set<Identifier> ids = new HashSet<>();
-        ids.add(filterFactory.featureId("10"));
-        final Filter filter = filterFactory.id(ids);
+        final Filter<Feature> filter = filterFactory.resourceId("10");
 
         final MockLineSymbolizer symbolizerBase = new MockLineSymbolizer();
         final MockLineSymbolizer symbolizerElse = new MockLineSymbolizer();
@@ -540,7 +513,6 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testAggregateResource() {
-
         final MockLineSymbolizer symbolizerBase = new MockLineSymbolizer();
 
         final MockRule ruleBase = new MockRule();
@@ -595,11 +567,7 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testPreserveProperties() {
-
-        final Set<Identifier> ids = new HashSet<>();
-        ids.add(filterFactory.featureId("2"));
-        final Filter filter = filterFactory.id(ids);
-
+        final Filter<Feature> filter = filterFactory.resourceId("2");
         final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
 
         final MockRule rule = new MockRule();
@@ -617,9 +585,7 @@ public class SEPortrayerTest extends TestCase {
         final MapLayers layers = new MapLayers();
         layers.getComponents().add(fishLayer);
 
-
         final GridGeometry grid = new GridGeometry(new GridExtent(360, 180), CRS.getDomainOfValidity(CommonCRS.WGS84.normalizedGeographic()), GridOrientation.REFLECTION_Y);
-
         {
             // test without preserve properties
             // we expect only identifier and geometry to be available.
@@ -635,7 +601,6 @@ public class SEPortrayerTest extends TestCase {
             assertNotNull(type.getProperty(AttributeConvention.IDENTIFIER));
             assertNotNull(type.getProperty(AttributeConvention.GEOMETRY));
         }
-
         {
             // test with preserve properties
             // we expect only identifier and geometry to be available.
@@ -663,11 +628,13 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testStylePropertiesReturned() {
-
-        final PropertyIsEqualTo filter = filterFactory.equals(filterFactory.property("id"), filterFactory.literal("2"));
+        final BinaryComparisonOperator<Feature> filter = filterFactory.equal(
+                filterFactory.property("id", String.class),
+                filterFactory.literal("2"),
+                true, MatchAction.ANY);
 
         final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
-        symbolizer.perpendicularOffset = filterFactory.property("description");
+        symbolizer.perpendicularOffset = filterFactory.property("description", String.class);
 
         final MockRule rule = new MockRule();
         rule.symbolizers().add(symbolizer);
@@ -683,7 +650,6 @@ public class SEPortrayerTest extends TestCase {
         fishLayer.setStyle(style);
         final MapLayers layers = new MapLayers();
         layers.getComponents().add(fishLayer);
-
 
         final GridGeometry grid = new GridGeometry(new GridExtent(360, 180), CRS.getDomainOfValidity(CommonCRS.WGS84.normalizedGeographic()), GridOrientation.REFLECTION_Y);
 
@@ -709,7 +675,6 @@ public class SEPortrayerTest extends TestCase {
      */
     @Test
     public void testGeometryExpression() {
-
         final MockLineSymbolizer symbolizer = new MockLineSymbolizer();
         symbolizer.geometry = filterFactory.function("ST_Centroid", filterFactory.property("geom"));
 
@@ -803,6 +768,5 @@ public class SEPortrayerTest extends TestCase {
             }
             return true;
         }
-
     }
 }

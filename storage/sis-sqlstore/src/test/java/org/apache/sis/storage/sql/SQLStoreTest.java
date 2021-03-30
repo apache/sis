@@ -32,12 +32,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureAssociationRole;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
-import org.opengis.filter.sort.SortOrder;
 import org.opengis.util.GenericName;
 
 import org.apache.sis.filter.DefaultFilterFactory;
@@ -54,25 +48,24 @@ import org.apache.sis.test.sql.TestDatabase;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.assertEquals;
-import static org.apache.sis.test.Assert.assertInstanceOf;
-import static org.apache.sis.test.Assert.assertNotEquals;
-import static org.apache.sis.test.Assert.assertNotNull;
-import static org.apache.sis.test.Assert.assertSame;
-import static org.apache.sis.test.Assert.assertTrue;
-import static org.apache.sis.test.Assert.fail;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
+import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.SortOrder;
 
 
 /**
  * Tests {@link SQLStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public final strictfp class SQLStoreTest extends TestCase {
@@ -88,7 +81,7 @@ public final strictfp class SQLStoreTest extends TestCase {
             531902     // Québec,   2016.
     };
 
-    private static final DefaultFilterFactory FF = new DefaultFilterFactory();
+    private static final FilterFactory<Feature,Object,Object> FF = DefaultFilterFactory.forFeatures();
 
     /**
      * Number of time that the each country has been seen while iterating over the cities.
@@ -193,8 +186,8 @@ public final strictfp class SQLStoreTest extends TestCase {
         final SimpleQuery query = new SimpleQuery();
         query.setColumns(new SimpleQuery.Column(FF.property("english_name")));
         query.setSortBy(
-                FF.sort("country", SortOrder.DESCENDING),
-                FF.sort("english_name", SortOrder.ASCENDING)
+                FF.sort(FF.property("country"), SortOrder.DESCENDING),
+                FF.sort(FF.property("english_name"), SortOrder.ASCENDING)
         );
         final FeatureSet subset = parks.subset(query);
         String[] expectedPNames = {"english_name"};
@@ -215,8 +208,8 @@ public final strictfp class SQLStoreTest extends TestCase {
 
     private void verifySimpleWhere(SQLStore dataset) throws Exception {
         final SimpleQuery q = new SimpleQuery();
-        q.setSortBy(FF.sort("native_name", SortOrder.ASCENDING));
-        q.setFilter(FF.equals(FF.property("country"), FF.literal("CAN")));
+        q.setSortBy(FF.sort(FF.property("native_name"), SortOrder.ASCENDING));
+        q.setFilter(FF.equal(FF.property("country"), FF.literal("CAN")));
         final FeatureSet cities = (FeatureSet) dataset.findResource("Cities");
         final Object[] names;
         try (Stream<Feature> features = cities.subset(q).features(false)) {
@@ -245,8 +238,8 @@ public final strictfp class SQLStoreTest extends TestCase {
         }
 
         final SimpleQuery sq = new SimpleQuery();
-        sq.setSortBy(FF.sort("native_name", SortOrder.DESCENDING));
-        sq.setFilter(FF.equals(FF.property("country"), FF.literal("FRA")));
+        sq.setSortBy(FF.sort(FF.property("native_name"), SortOrder.DESCENDING));
+        sq.setFilter(FF.equal(FF.property("country"), FF.literal("FRA")));
         sq.setColumns(new SimpleQuery.Column(FF.property("native_name")));
         final FeatureSet frenchParks = qfs.subset(sq);
         checkQueryType(Collections.singletonMap("native_name", String.class), frenchParks.getType());
@@ -311,7 +304,7 @@ public final strictfp class SQLStoreTest extends TestCase {
         result.put("population", population);
         return result;
     }
-    
+
     /**
      * Differs from {@link #verifyFeatureType(FeatureType, String[], Object[])} because
      * @param expectedAttrs

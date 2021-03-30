@@ -46,6 +46,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
@@ -723,7 +724,7 @@ format:                     for (final AttributeType<?> ct : ((AttributeType<?>)
         } else if (value instanceof IdentifiedObject) {
             text = IdentifiedObjects.getIdentifierOrName((IdentifiedObject) value);
         } else {
-            text = Geometries.toString(value).orElseGet(value::toString);
+            text = Geometries.wrap(value).map(GeometryWrapper::toString).orElseGet(value::toString);
         }
         final int remaining = MAXIMAL_VALUE_LENGTH - length;
         if (remaining >= text.length()) {

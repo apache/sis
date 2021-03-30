@@ -17,6 +17,7 @@
 package org.apache.sis.internal.feature.esri;
 
 import java.nio.ByteBuffer;
+import java.io.ObjectStreamException;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.MultiPath;
 import com.esri.core.geometry.OperatorImportFromWkb;
@@ -44,9 +45,24 @@ import org.apache.sis.math.Vector;
  */
 public final class Factory extends Geometries<Geometry> {
     /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 7832006589071845318L;
+
+    /**
      * The singleton instance of this factory.
      */
     public static final Factory INSTANCE = new Factory();
+
+    /**
+     * Invoked at deserialization time for obtaining the unique instance of this {@code Geometries} class.
+     *
+     * @return {@link #INSTANCE}.
+     */
+    @Override
+    protected Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
+    }
 
     /**
      * Creates the singleton instance.
@@ -56,24 +72,44 @@ public final class Factory extends Geometries<Geometry> {
     }
 
     /**
+     * Returns a wrapper for the given {@code <G>} or {@code GeometryWrapper<G>} geometry.
+     *
+     * @param  geometry  the geometry instance to wrap (can be {@code null}).
+     * @return a wrapper for the given geometry implementation, or {@code null}.
+     * @throws ClassCastException if the given geometry is not an instance of valid type.
+     */
+    @Override
+    public GeometryWrapper<Geometry> castOrWrap(final Object geometry) {
+        return (geometry == null || geometry instanceof Wrapper)
+                ? (Wrapper) geometry : new Wrapper((Geometry) geometry);
+    }
+
+    /**
      * Creates a wrapper for the given geometry instance.
      *
      * @param  geometry  the geometry to wrap.
      * @return wrapper for the given geometry.
-     * @throws ClassCastException if the given geometry is not an instance of valid type.
      */
     @Override
-    protected GeometryWrapper<Geometry> createWrapper(final Object geometry) {
-        return new Wrapper((Geometry) geometry);
+    protected GeometryWrapper<Geometry> createWrapper(final Geometry geometry) {
+        return new Wrapper(geometry);
     }
 
     /**
-     * Creates a two-dimensional point from the given coordinate.
+     * Creates a two-dimensional point from the given coordinates.
      */
     @Override
     public Object createPoint(final double x, final double y) {
         // Need to explicitly set z to NaN because default value is 0.
         return new Point(x, y, Double.NaN);
+    }
+
+    /**
+     * Creates a three-dimensional point from the given coordinates.
+     */
+    @Override
+    public Object createPoint(final double x, final double y, final double z) {
+        return new Point(x, y, z);
     }
 
     /**

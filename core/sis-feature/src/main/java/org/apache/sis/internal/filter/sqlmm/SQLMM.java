@@ -16,263 +16,854 @@
  */
 package org.apache.sis.internal.filter.sqlmm;
 
-import java.util.Arrays;
-import java.util.Collection;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.expression.Function;
-import org.opengis.util.FactoryException;
-import org.apache.sis.internal.feature.FunctionRegister;
-import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.util.ArgumentChecks;
+import java.util.Optional;
+import javax.measure.Quantity;
+import org.opengis.geometry.Envelope;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometryType;
+
+import static org.apache.sis.internal.feature.GeometryType.*;
+
+// Branch-dependent imports
+import org.opengis.filter.SpatialOperatorName;
 
 
 /**
- * A register of functions defined by the SQL/MM standard.
- * This standard is defined by <a href="https://www.iso.org/standard/60343.html">ISO/IEC 13249-3:2016
- * Information technology — Database languages — SQL multimedia and application packages — Part 3: Spatial</a>.
+ * Identification of SQLMM operations. The names or enumeration values are the names
+ * defined by SQLMM standard; they do not obey to the usual Java naming conventions.
+ * Enumeration values order is the approximated declaration order in SQLMM standard.
  *
- * @todo Implement all SQL/MM specification functions.
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
  *
- * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   1.1
+ * @see <a href="https://www.iso.org/standard/60343.html">ISO 13249-3 - SQLMM</a>
+ *
+ * @since 1.1
  * @module
  */
-public final class SQLMM implements FunctionRegister {
-
+public enum SQLMM {
     /**
-     * Creates the default register.
+     * The number of dimensions in the geometry.
      */
-    public SQLMM() {
-    }
+    ST_Dimension(GEOMETRY, Integer.class),
 
     /**
-     * Returns a unique name for this factory.
-     */
-    @Override
-    public String getIdentifier() {
-        return "SQL/MM";
-    }
-
-    /**
-     * Returns the names of all functions known to this register.
-     */
-    @Override
-    public Collection<String> getNames() {
-        return Arrays.asList(
-                ST_Area.NAME,
-                ST_AsBinary.NAME,
-                ST_AsGML.NAME,
-                ST_AsText.NAME,
-                ST_Boundary.NAME,
-                ST_Buffer.NAME,
-                ST_Centroid.NAME,
-                ST_Contains.NAME,
-                ST_ConvexHull.NAME,
-                ST_CoordDim.NAME,
-                ST_Crosses.NAME,
-                ST_Difference.NAME,
-                ST_Dimension.NAME,
-                ST_Disjoint.NAME,
-                ST_Distance.NAME,
-                ST_EndPoint.NAME,
-                ST_Envelope.NAME,
-                ST_Equals.NAME,
-                ST_ExplicitPoint.NAME,
-                ST_ExteriorRing.NAME,
-                ST_GeomCollection.NAME,
-                ST_GeometryN.NAME,
-                ST_GeometryType.NAME,
-                ST_InteriorRingN.NAME,
-                ST_Intersection.NAME,
-                ST_Intersects.NAME,
-                ST_Is3D.NAME,
-                ST_IsClosed.NAME,
-                ST_IsEmpty.NAME,
-                ST_IsRing.NAME,
-                ST_IsSimple.NAME,
-                ST_IsValid.NAME,
-                ST_Length.NAME,
-                ST_LineString.NAME,
-                ST_MultiLineString.NAME,
-                ST_MultiPoint.NAME,
-                ST_MultiPolygon.NAME,
-                ST_NumGeometries.NAME,
-                ST_NumInteriorRings.NAME,
-                ST_NumPoints.NAME,
-                ST_Overlaps.NAME,
-                ST_Perimeter.NAME,
-                ST_Point.NAME,
-                ST_PointN.NAME,
-                ST_PointOnSurface.NAME,
-                ST_Polygon.NAME,
-                ST_Relate.NAME,
-                ST_Simplify.NAME,
-                ST_SimplifyPreserveTopology.NAME,
-                ST_SRID.NAME,
-                ST_StartPoint.NAME,
-                ST_SymDifference.NAME,
-                ST_ToGeomColl.NAME,
-                ST_ToLineString.NAME,
-                ST_ToMultiLine.NAME,
-                ST_ToMultiPoint.NAME,
-                ST_ToMultiPolygon.NAME,
-                ST_ToPoint.NAME,
-                ST_ToPolygon.NAME,
-                ST_Touches.NAME,
-                ST_Transform.NAME,
-                ST_Union.NAME,
-                ST_Within.NAME,
-                ST_X.NAME,
-                ST_XFromBinary.BdMPoly.NAME,
-                ST_XFromBinary.BdPoly.NAME,
-                ST_XFromBinary.GeomColl.NAME,
-                ST_XFromBinary.Geom.NAME,
-                ST_XFromBinary.Line.NAME,
-                ST_XFromBinary.MLine.NAME,
-                ST_XFromBinary.MPoint.NAME,
-                ST_XFromBinary.MPoly.NAME,
-                ST_XFromBinary.Point.NAME,
-                ST_XFromBinary.Poly.NAME,
-                ST_XFromGML.GeomColl.NAME,
-                ST_XFromGML.Geom.NAME,
-                ST_XFromGML.Line.NAME,
-                ST_XFromGML.MLine.NAME,
-                ST_XFromGML.MPoint.NAME,
-                ST_XFromGML.MPoly.NAME,
-                ST_XFromGML.Point.NAME,
-                ST_XFromGML.Poly.NAME,
-                ST_XFromText.BdMPoly.NAME,
-                ST_XFromText.BdPoly.NAME,
-                ST_XFromText.GeomColl.NAME,
-                ST_XFromText.Geom.NAME,
-                ST_XFromText.Line.NAME,
-                ST_XFromText.MLine.NAME,
-                ST_XFromText.MPoint.NAME,
-                ST_XFromText.MPoly.NAME,
-                ST_XFromText.Point.NAME,
-                ST_XFromText.Poly.NAME,
-                ST_Y.NAME,
-                ST_Z.NAME
-        );
-    }
-
-    /**
-     * Create a new function of the given name with given parameters.
+     * The number of dimensions of coordinate tuples.
+     * It depends on whether there is <var>z</var> values.
      *
-     * @param  name        name of the function to create.
-     * @param  parameters  function parameters.
-     * @return function for the given name and parameters.
-     * @throws IllegalArgumentException if function name is unknown or some parameters are illegal.
+     * @see #ST_Is3D
+     * @see #ST_IsMeasured
      */
-    @Override
-    public Function create(final String name, Expression[] parameters) {
-        ArgumentChecks.ensureNonNull("name", name);
-        ArgumentChecks.ensureNonNull("parameters", parameters);
-        parameters = parameters.clone();
-        for (int i=0; i<parameters.length; i++) {
-            ArgumentChecks.ensureNonNullElement("parameters", i, parameters[i]);
-        }
-        try {
-            switch (name) {
-                case ST_Area.NAME:                      return new ST_Area(parameters);
-                case ST_AsBinary.NAME:                  return new ST_AsBinary(parameters);
-                case ST_AsGML.NAME:                     return new ST_AsGML(parameters);
-                case ST_AsText.NAME:                    return new ST_AsText(parameters);
-                case ST_Boundary.NAME:                  return new ST_Boundary(parameters);
-                case ST_Buffer.NAME:                    return new ST_Buffer(parameters);
-                case ST_Centroid.NAME:                  return new ST_Centroid(parameters);
-                case ST_Contains.NAME:                  return new ST_Contains(parameters);
-                case ST_ConvexHull.NAME:                return new ST_ConvexHull(parameters);
-                case ST_CoordDim.NAME:                  return new ST_CoordDim(parameters);
-                case ST_Crosses.NAME:                   return new ST_Crosses(parameters);
-                case ST_Difference.NAME:                return new ST_Difference(parameters);
-                case ST_Dimension.NAME:                 return new ST_Dimension(parameters);
-                case ST_Disjoint.NAME:                  return new ST_Disjoint(parameters);
-                case ST_Distance.NAME:                  return new ST_Distance(parameters);
-                case ST_EndPoint.NAME:                  return new ST_EndPoint(parameters);
-                case ST_Envelope.NAME:                  return new ST_Envelope(parameters);
-                case ST_Equals.NAME:                    return new ST_Equals(parameters);
-                case ST_ExplicitPoint.NAME:             return new ST_ExplicitPoint(parameters);
-                case ST_ExteriorRing.NAME:              return new ST_ExteriorRing(parameters);
-                case ST_GeomCollection.NAME:            return new ST_GeomCollection(parameters);
-                case ST_GeometryN.NAME:                 return new ST_GeometryN(parameters);
-                case ST_GeometryType.NAME:              return new ST_GeometryType(parameters);
-                case ST_InteriorRingN.NAME:             return new ST_InteriorRingN(parameters);
-                case ST_Intersection.NAME:              return new ST_Intersection(parameters);
-                case ST_Intersects.NAME:                return new ST_Intersects(parameters);
-                case ST_Is3D.NAME:                      return new ST_Is3D(parameters);
-                case ST_IsClosed.NAME:                  return new ST_IsClosed(parameters);
-                case ST_IsEmpty.NAME:                   return new ST_IsEmpty(parameters);
-                case ST_IsRing.NAME:                    return new ST_IsRing(parameters);
-                case ST_IsSimple.NAME:                  return new ST_IsSimple(parameters);
-                case ST_IsValid.NAME:                   return new ST_IsValid(parameters);
-                case ST_Length.NAME:                    return new ST_Length(parameters);
-                case ST_LineString.NAME:                return new ST_LineString(parameters);
-                case ST_MultiLineString.NAME:           return new ST_MultiLineString(parameters);
-                case ST_MultiPoint.NAME:                return new ST_MultiPoint(parameters);
-                case ST_MultiPolygon.NAME:              return new ST_MultiPolygon(parameters);
-                case ST_NumGeometries.NAME:             return new ST_NumGeometries(parameters);
-                case ST_NumInteriorRings.NAME:          return new ST_NumInteriorRings(parameters);
-                case ST_NumPoints.NAME:                 return new ST_NumPoints(parameters);
-                case ST_Overlaps.NAME:                  return new ST_Overlaps(parameters);
-                case ST_Perimeter.NAME:                 return new ST_Perimeter(parameters);
-                case ST_Point.NAME:                     return new ST_Point(parameters);
-                case ST_PointN.NAME:                    return new ST_PointN(parameters);
-                case ST_PointOnSurface.NAME:            return new ST_PointOnSurface(parameters);
-                case ST_Polygon.NAME:                   return new ST_Polygon(parameters);
-                case ST_Relate.NAME:                    return new ST_Relate(parameters);
-                case ST_Simplify.NAME:                  return new ST_Simplify(parameters);
-                case ST_SimplifyPreserveTopology.NAME:  return new ST_SimplifyPreserveTopology(parameters);
-                case ST_SRID.NAME:                      return new ST_SRID(parameters);
-                case ST_StartPoint.NAME:                return new ST_StartPoint(parameters);
-                case ST_SymDifference.NAME:             return new ST_SymDifference(parameters);
-                case ST_ToGeomColl.NAME:                return new ST_ToGeomColl(parameters);
-                case ST_ToLineString.NAME:              return new ST_ToLineString(parameters);
-                case ST_ToMultiLine.NAME:               return new ST_ToMultiLine(parameters);
-                case ST_ToMultiPoint.NAME:              return new ST_ToMultiPoint(parameters);
-                case ST_ToMultiPolygon.NAME:            return new ST_ToMultiPolygon(parameters);
-                case ST_ToPoint.NAME:                   return new ST_ToPoint(parameters);
-                case ST_ToPolygon.NAME:                 return new ST_ToPolygon(parameters);
-                case ST_Touches.NAME:                   return new ST_Touches(parameters);
-                case ST_Transform.NAME:                 return new ST_Transform(parameters);
-                case ST_Union.NAME:                     return new ST_Union(parameters);
-                case ST_Within.NAME:                    return new ST_Within(parameters);
-                case ST_X.NAME:                         return new ST_X(parameters);
-                case ST_XFromBinary.BdMPoly.NAME:       return new ST_XFromBinary.BdMPoly(parameters);
-                case ST_XFromBinary.BdPoly.NAME:        return new ST_XFromBinary.BdPoly(parameters);
-                case ST_XFromBinary.GeomColl.NAME:      return new ST_XFromBinary.GeomColl(parameters);
-                case ST_XFromBinary.Geom.NAME:          return new ST_XFromBinary.Geom(parameters);
-                case ST_XFromBinary.Line.NAME:          return new ST_XFromBinary.Line(parameters);
-                case ST_XFromBinary.MLine.NAME:         return new ST_XFromBinary.MLine(parameters);
-                case ST_XFromBinary.MPoint.NAME:        return new ST_XFromBinary.MPoint(parameters);
-                case ST_XFromBinary.MPoly.NAME:         return new ST_XFromBinary.MPoly(parameters);
-                case ST_XFromBinary.Point.NAME:         return new ST_XFromBinary.Point(parameters);
-                case ST_XFromBinary.Poly.NAME:          return new ST_XFromBinary.Poly(parameters);
-                case ST_XFromGML.GeomColl.NAME:         return new ST_XFromGML.GeomColl(parameters);
-                case ST_XFromGML.Geom.NAME:             return new ST_XFromGML.Geom(parameters);
-                case ST_XFromGML.Line.NAME:             return new ST_XFromGML.Line(parameters);
-                case ST_XFromGML.MLine.NAME:            return new ST_XFromGML.MLine(parameters);
-                case ST_XFromGML.MPoint.NAME:           return new ST_XFromGML.MPoint(parameters);
-                case ST_XFromGML.MPoly.NAME:            return new ST_XFromGML.MPoly(parameters);
-                case ST_XFromGML.Point.NAME:            return new ST_XFromGML.Point(parameters);
-                case ST_XFromGML.Poly.NAME:             return new ST_XFromGML.Poly(parameters);
-                case ST_XFromText.BdMPoly.NAME:         return new ST_XFromText.BdMPoly(parameters);
-                case ST_XFromText.BdPoly.NAME:          return new ST_XFromText.BdPoly(parameters);
-                case ST_XFromText.GeomColl.NAME:        return new ST_XFromText.GeomColl(parameters);
-                case ST_XFromText.Geom.NAME:            return new ST_XFromText.Geom(parameters);
-                case ST_XFromText.Line.NAME:            return new ST_XFromText.Line(parameters);
-                case ST_XFromText.MLine.NAME:           return new ST_XFromText.MLine(parameters);
-                case ST_XFromText.MPoint.NAME:          return new ST_XFromText.MPoint(parameters);
-                case ST_XFromText.MPoly.NAME:           return new ST_XFromText.MPoly(parameters);
-                case ST_XFromText.Point.NAME:           return new ST_XFromText.Point(parameters);
-                case ST_XFromText.Poly.NAME:            return new ST_XFromText.Poly(parameters);
-                case ST_Y.NAME:                         return new ST_Y(parameters);
-                case ST_Z.NAME:                         return new ST_Z(parameters);
-                default: throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownFunction_1, name));
-            }
-        } catch (FactoryException e) {
-            throw new IllegalArgumentException(e);
-        }
+    ST_CoordDim(GEOMETRY, Integer.class),
+
+    /**
+     * The SQLMM name of the geometry type.
+     */
+    ST_GeometryType(GEOMETRY, String.class),
+
+    /**
+     * The spatial reference system identifier (SRID) of the geometry.
+     */
+    ST_SRID(GEOMETRY, Integer.class),
+
+    /**
+     * Transform a geometry to the specified spatial reference system.
+     * The operation should take in account the <var>z</var> and <var>m</var> coordinate values.
+     *
+     * <h4>Limitation</h4>
+     * <ul>
+     *   <li>Current implementation ignores the <var>z</var> and <var>m</var> values.</li>
+     *   <li>If the SRID is an integer, it is interpreted as an EPSG code.
+     *       It should be a primary key in the {@code "spatial_ref_sys"} table instead.</li>
+     * </ul>
+     */
+    ST_Transform(2, 2, GEOMETRY, null, GEOMETRY),
+
+    /**
+     * Test if a geometry is empty.
+     */
+    ST_IsEmpty(GEOMETRY, Boolean.class),
+
+    /**
+     * Test if a geometry has no anomalous points such as self intersection.
+     * This test ignores the <var>z</var> coordinate values.
+     */
+    ST_IsSimple(GEOMETRY, Boolean.class),
+
+    /**
+     * Test if a geometry is well formed.
+     */
+    ST_IsValid(GEOMETRY, Boolean.class),
+
+    /**
+     * Test if a geometry has <var>z</var> coordinate values.
+     *
+     * @see #ST_CoordDim
+     */
+    ST_Is3D(GEOMETRY, Boolean.class),
+
+    /**
+     * Test if a geometry has <var>m</var> coordinate values.
+     *
+     * @see #ST_CoordDim
+     */
+    ST_IsMeasured(GEOMETRY, Boolean.class),
+
+    /**
+     * The boundary of a geometry, ignoring <var>z</var> and <var>m</var> coordinate values.
+     */
+    ST_Boundary(GEOMETRY, GEOMETRY),
+
+    /**
+     * The boundary rectangle of a geometry, ignoring <var>z</var> and <var>m</var> coordinate values.
+     */
+    ST_Envelope(GEOMETRY, Envelope.class),
+
+    /**
+     * The convex hull of a geometry, ignoring <var>z</var> and <var>m</var> coordinate values.
+     */
+    ST_ConvexHull(GEOMETRY, GEOMETRY),
+
+    /**
+     * The geometry that represents all points whose distance from any point of a geometry is less than or equal
+     * to a specified distance. This operation ignores <var>z</var> and <var>m</var> coordinate values.
+     * This expression expects two arguments: the geometry and the distance.
+     * This distance shall be expressed in units of the geometry Coordinate Reference System.
+     */
+    ST_Buffer(2, 2, GEOMETRY, null, GEOMETRY),
+
+    /**
+     * Geometry that represents the intersection of two geometries,
+     * ignoring <var>z</var> and <var>m</var> coordinate values.
+     */
+    ST_Intersection(GEOMETRY),
+
+    /**
+     * Geometry that represents the union of two geometries,
+     * ignoring <var>z</var> and <var>m</var> coordinate values.
+     */
+    ST_Union(GEOMETRY),
+
+    /**
+     * Geometry that represents the difference of two geometries,
+     * ignoring <var>z</var> and <var>m</var> coordinate values.
+     */
+    ST_Difference(GEOMETRY),
+
+    /**
+     * Geometry that represents the symmetric difference of two geometries,
+     * ignoring <var>z</var> and <var>m</var> coordinate values.
+     */
+    ST_SymDifference(GEOMETRY),
+
+    /**
+     * Distance between two geometries, ignoring <var>z</var> and <var>m</var> coordinate values.
+     *
+     * @todo Current value type is {@link Number}. Consider using {@link Quantity} instead.
+     */
+    ST_Distance(Number.class),
+
+    /**
+     * Test if a geometry is spatially equal to another geometry value,
+     * ignoring <var>z</var> and <var>m</var> coordinate values.
+     * This operation is similar to Filter Encoding "Equals" operation except in the way the CRS is selected
+     * (the SQLMM standard requires that we use the CRS of the first geometry) and in the return value when
+     * an error occurred (this implementation returns {@code null}).
+     *
+     * @see SpatialOperatorName#EQUALS
+     */
+    ST_Equals(Boolean.class),
+
+    /**
+     * Test if a geometry is spatially related to another geometry value,
+     * ignoring <var>z</var> and <var>m</var> coordinate values.
+     */
+    ST_Relate(2, 3, GEOMETRY, GEOMETRY, Boolean.class),
+
+    /**
+     * Test if a geometry value is spatially disjoint from another geometry value,
+     * ignoring <var>z</var> and <var>m</var> coordinate values.
+     * This operation is similar to Filter Encoding "Disjoint" operation except in the way the CRS is selected
+     * (the SQLMM standard requires that we use the CRS of the first geometry) and in the return value when an
+     * error occurred (this implementation returns {@code null}).
+     *
+     * @see SpatialOperatorName#DISJOINT
+     */
+    ST_Disjoint(Boolean.class),
+
+    /**
+     * Test if a geometry value spatially intersects another geometry value,
+     * ignoring <var>z</var> and <var>m</var> coordinate values.
+     * This operation is similar to Filter Encoding "Intersects" operation except in the way the CRS is selected
+     * (the SQLMM standard requires that we use the CRS of the first geometry) and in the return value when an
+     * error occurred (this implementation returns {@code null}).
+     *
+     * @see SpatialOperatorName#INTERSECTS
+     */
+    ST_Intersects(Boolean.class),
+
+    /**
+     * Test if a geometry value spatially touches another geometry value,
+     * ignoring <var>z</var> and <var>m</var> coordinate values.
+     * This operation is similar to Filter Encoding "Touches" operation except in the way the CRS is selected
+     * (the SQLMM standard requires that we use the CRS of the first geometry) and in the return value when
+     * an error occurred (this implementation returns {@code null}).
+     *
+     * @see SpatialOperatorName#TOUCHES
+     */
+    ST_Touches(Boolean.class),
+
+    /**
+     * Test if a geometry value spatially crosses another geometry value,
+     * ignoring <var>z</var> and <var>m</var> coordinate values.
+     * This operation is similar to Filter Encoding "Crosses" operation except in the way the CRS is selected
+     * (the SQLMM standard requires that we use the CRS of the first geometry) and in the return value when
+     * an error occurred (this implementation returns {@code null}).
+     *
+     * @see SpatialOperatorName#CROSSES
+     */
+    ST_Crosses(Boolean.class),
+
+    /**
+     * Test if a geometry value is spatially within another geometry value,
+     * ignoring <var>z</var> and <var>m</var> coordinate values.
+     * This operation is similar to Filter Encoding "Within" operation except in the way the CRS is selected
+     * (the SQLMM standard requires that we use the CRS of the first geometry) and in the return value when
+     * an error occurred (this implementation returns {@code null}).
+     *
+     * @see SpatialOperatorName#WITHIN
+     */
+    ST_Within(Boolean.class),
+
+    /**
+     * Test if a geometry value spatially contains another geometry value,
+     * ignoring <var>z</var> and <var>m</var> coordinate values.
+     * This operation is similar to Filter Encoding "Contains" operation except in the way the CRS is selected
+     * (the SQLMM standard requires that we use the CRS of the first geometry) and in the return value when an
+     * error occurred (this implementation returns {@code null}).
+     *
+     * @see SpatialOperatorName#CONTAINS
+     */
+    ST_Contains(Boolean.class),
+
+    /**
+     * Test if a geometry value spatially overlaps another geometry value,
+     * ignoring <var>z</var> and <var>m</var> coordinate values.
+     * This operation is similar to Filter Encoding "Overlaps" operation except in the way the CRS is selected
+     * (the SQLMM standard requires that we use the CRS of the first geometry) and in the return value when an
+     * error occurred (this implementation returns {@code null}).
+     *
+     * @see SpatialOperatorName#OVERLAPS
+     */
+    ST_Overlaps(Boolean.class),
+
+    /**
+     * The Well-Known Text (WKT) representation of a geometry.
+     */
+    ST_AsText(GEOMETRY, String.class),
+
+    /**
+     * The Well-Known Binary (WKB) representation of a geometry.
+     */
+    ST_AsBinary(GEOMETRY, byte[].class),
+
+    /**
+     * Constructor for a geometry which is transformed from a Well-Known Text (WKT) representation.
+     *
+     * @see #ST_PointFromText
+     * @see #ST_LineFromText
+     * @see #ST_PolyFromText
+     * @see #ST_GeomCollFromText
+     * @see #ST_MPointFromText
+     * @see #ST_MLineFromText
+     * @see #ST_MPolyFromText
+     */
+    ST_GeomFromText(1, 2, null, null, GEOMETRY),
+
+    /**
+     * Constructor for a geometry which is transformed from a Well-Known Binary (WKB) representation.
+     *
+     * @see #ST_PointFromWKB
+     * @see #ST_LineFromWKB
+     * @see #ST_PolyFromWKB
+     * @see #ST_GeomCollFromWKB
+     * @see #ST_MPointFromWKB
+     * @see #ST_MLineFromWKB
+     * @see #ST_MPolyFromWKB
+     */
+    ST_GeomFromWKB(1, 2, null, null, GEOMETRY),
+
+    /**
+     * Point geometry created from coordinate values.
+     * In current implementation, the parameters can be:
+     * <ul>
+     *   <li>WKT|WKB</li>
+     *   <li>WKT|WKB, CoordinateReferenceSystem</li>
+     *   <li>X, Y</li>
+     *   <li>X, Y, CoordinateReferenceSystem</li>
+     *   <li>X, Y, Z</li>
+     *   <li>X, Y, Z, CoordinateReferenceSystem</li>
+     * </ul>
+     */
+    ST_Point(2, 3, null, null, POINT),
+
+    /**
+     * The <var>x</var> coordinate value of a point.
+     */
+    ST_X(POINT, Number.class),
+
+    /**
+     * The <var>y</var> coordinate value of a point.
+     */
+    ST_Y(POINT, Number.class),
+
+    /**
+     * The <var>z</var> coordinate value of a point.
+     */
+    ST_Z(POINT, Number.class),
+
+    /**
+     * The coordinate values as a {@code DOUBLE PRECISION ARRAY} value.
+     */
+    ST_ExplicitPoint(POINT, double[].class),
+
+    /**
+     * Constructor for a point which is transformed from a Well-Known Text (WKT) representation.
+     *
+     * @see #ST_GeomFromText
+     * @see #ST_LineFromText
+     * @see #ST_PolyFromText
+     * @see #ST_GeomCollFromText
+     * @see #ST_MPointFromText
+     * @see #ST_MLineFromText
+     * @see #ST_MPolyFromText
+     */
+    ST_PointFromText(1, 2, null, null, POINT),
+
+    /**
+     * Constructor for a point which is transformed from a Well-Known Binary (WKB) representation.
+     *
+     * @see #ST_GeomFromWKB
+     * @see #ST_LineFromWKB
+     * @see #ST_PolyFromWKB
+     * @see #ST_GeomCollFromWKB
+     * @see #ST_MPointFromWKB
+     * @see #ST_MLineFromWKB
+     * @see #ST_MPolyFromWKB
+     */
+    ST_PointFromWKB(1, 2, null, null, POINT),
+
+    /**
+     * The length measurement of a curve, ignoring <var>z</var> and <var>m</var> coordinate values in the calculations.
+     *
+     * @todo Current value type is {@link Number}. Consider using {@link Quantity} instead.
+     *
+     * @see #ST_Perimeter
+     */
+    ST_Length(GEOMETRY, Number.class),
+
+    /**
+     * The point value that is the start point of a curve,
+     * including existing <var>z</var> and <var>m</var> coordinates.
+     */
+    ST_StartPoint(LINESTRING, POINT),
+
+    /**
+     * The point value that is the end point of a curve,
+     * including existing <var>z</var> and <var>m</var> coordinates.
+     */
+    ST_EndPoint(LINESTRING, POINT),
+
+    /**
+     * Test if a curve is closed, ignoring <var>z</var> and <var>m</var> coordinates.
+     */
+    ST_IsClosed(LINESTRING, Boolean.class),
+
+    /**
+     * Test if a curve is a ring, ignoring <var>z</var> and <var>m</var> coordinates.
+     */
+    ST_IsRing(LINESTRING, Boolean.class),
+
+    /**
+     * Line-string representation of a curve, including the <var>z</var> values.
+     */
+    ST_ToLineString(GEOMETRY, LINESTRING),
+
+    /**
+     * {@code LineString} constructed from either a Well-Known Text (WKT) representation,
+     * a Well-Known Binary (WKB) representation, or an array of points.
+     *
+     * @see #ST_Polygon
+     * @see #ST_GeomCollection
+     * @see #ST_MultiPoint
+     * @see #ST_MultiLineString
+     * @see #ST_MultiPolygon
+     */
+    ST_LineString(1, 2, null, null, LINESTRING),
+
+    /**
+     * The cardinality of the points of a {@code LineString}.
+     */
+    ST_NumPoints(LINESTRING, Integer.class),
+
+    /**
+     * The specified element in the points of a {@code LineString}.
+     */
+    ST_PointN(2, 2, LINESTRING, null, POINT),
+
+    /**
+     * Constructor for a {@code LineString} which is transformed from a Well-Known Text (WKT) representation.
+     *
+     * @see #ST_GeomFromText
+     * @see #ST_PointFromText
+     * @see #ST_PolyFromText
+     * @see #ST_GeomCollFromText
+     * @see #ST_MPointFromText
+     * @see #ST_MLineFromText
+     * @see #ST_MPolyFromText
+     */
+    ST_LineFromText(1, 2, null, null, LINESTRING),
+
+    /**
+     * Constructor for a {@code LineString} which is transformed from a Well-Known Binary (WKB) representation.
+     *
+     * @see #ST_GeomFromWKB
+     * @see #ST_PointFromWKB
+     * @see #ST_PolyFromWKB
+     * @see #ST_GeomCollFromWKB
+     * @see #ST_MPointFromWKB
+     * @see #ST_MLineFromWKB
+     * @see #ST_MPolyFromWKB
+     */
+    ST_LineFromWKB(1, 2, null, null, LINESTRING),
+
+    /**
+     * The area measurement of a surface, ignoring <var>z</var> and <var>m</var> coordinates.
+     *
+     * <h4>Limitation</h4>
+     * The SQLMM standard allows an optional {@code CHARACTER VARYING} argument for specifying
+     * the desired unit of measurement, which must be linear. This is not yet implemented.
+     *
+     * @todo Current value type is {@link Number}. Consider using {@link Quantity} instead.
+     */
+    ST_Area(POLYGON, Number.class),
+
+    /**
+     * The length measurement of the boundary of a surface,
+     * ignoring <var>z</var> and <var>m</var> coordinates.
+     *
+     * @todo Current value type is {@link Number}. Consider using {@link Quantity} instead.
+     *
+     * @see #ST_Length
+     */
+    ST_Perimeter(POLYGON, Number.class),
+
+    /**
+     * The 2D point value that is the mathematical centroid of the surface,
+     * ignoring <var>z</var> and <var>m</var> coordinates.
+     */
+    ST_Centroid(GEOMETRY, POINT),
+
+    /**
+     * A point guaranteed to spatially intersect the surface,
+     * ignoring <var>z</var> and <var>m</var> coordinates.
+     */
+    ST_PointOnSurface(GEOMETRY, POINT),
+
+    /**
+     * Polygon constructed from either a Well-Known Text (WKT) representation,
+     * a Well-Known Binary (WKB) representation, or an array of points.
+     *
+     * @see #ST_LineString
+     * @see #ST_GeomCollection
+     * @see #ST_MultiPoint
+     * @see #ST_MultiLineString
+     * @see #ST_MultiPolygon
+     */
+    ST_Polygon(1, 2, null, null, POLYGON),
+
+    /**
+     * The exterior ring of a polygon.
+     */
+    ST_ExteriorRing(POLYGON, LINESTRING),
+
+    /**
+     * The cardinality of the interior rings a polygon.
+     */
+    ST_NumInteriorRings(POLYGON, Integer.class),
+
+    /**
+     * The specified element in the interior rings of a polygon.
+     */
+    ST_InteriorRingN(2, 2, POLYGON, null, LINESTRING),
+
+    /**
+     * Constructor for a polygon which is transformed from a Well-Known Text (WKT) representation.
+     *
+     * @see #ST_GeomFromText
+     * @see #ST_PointFromText
+     * @see #ST_LineFromText
+     * @see #ST_GeomCollFromText
+     * @see #ST_MPointFromText
+     * @see #ST_MLineFromText
+     * @see #ST_MPolyFromText
+     */
+    ST_PolyFromText(1, 2, null, null, POLYGON),
+
+    /**
+     * Constructor for a polygon which is transformed from a Well-Known Binary (WKB) representation.
+     *
+     * @see #ST_GeomFromWKB
+     * @see #ST_PointFromWKB
+     * @see #ST_LineFromWKB
+     * @see #ST_GeomCollFromWKB
+     * @see #ST_MPointFromWKB
+     * @see #ST_MLineFromWKB
+     * @see #ST_MPolyFromWKB
+     */
+    ST_PolyFromWKB(1, 2, null, null, POLYGON),
+
+    /**
+     * Constructor for a polygon which is transformed from a Well-Known Text (WKT) representation of polylines.
+     * The first polyline defines the exterior ring and all additional polylines define interior rings.
+     * If the WKT defines directly a polygon, then it is used as-is (this is an Apache SIS extension).
+     *
+     * @see #ST_BdMPolyFromText
+     */
+    ST_BdPolyFromText(1, 2, null, null, POLYGON),
+
+    /**
+     * Constructor for a polygon which is transformed from a Well-Known Binary (WKB) representation of polylines.
+     * The first polyline defines the exterior ring and all additional polylines define interior rings.
+     * If the WKB defines directly a polygon, then it is used as-is (this is an Apache SIS extension).
+     *
+     * @see #ST_BdMPolyFromWKB
+     */
+    ST_BdPolyFromWKB(1, 2, null, null, POLYGON),
+
+    /**
+     * Collection of geometries constructed from either a Well-Known Text (WKT) representation,
+     * a Well-Known Binary (WKB) representation, or an array of geometry components.
+     *
+     * @see #ST_LineString
+     * @see #ST_Polygon
+     * @see #ST_MultiPoint
+     * @see #ST_MultiLineString
+     * @see #ST_MultiPolygon
+     */
+    ST_GeomCollection(1, 2, null, null, GEOMETRY_COLLECTION),
+
+    /**
+     * The cardinality of the geometries of a geometry collection.
+     */
+    ST_NumGeometries(GEOMETRY_COLLECTION, Integer.class),
+
+    /**
+     * The specified element in a geometry collection.
+     */
+    ST_GeometryN(2, 2, GEOMETRY_COLLECTION, null, GEOMETRY),
+
+    /**
+     * Constructor for a geometry collection which is transformed from a Well-Known Text (WKT) representation.
+     *
+     * @see #ST_GeomFromText
+     * @see #ST_PointFromText
+     * @see #ST_LineFromText
+     * @see #ST_PolyFromText
+     * @see #ST_MPointFromText
+     * @see #ST_MLineFromText
+     * @see #ST_MPolyFromText
+     */
+    ST_GeomCollFromText(1, 2, null, null, GEOMETRY_COLLECTION),
+
+    /**
+     * Constructor for a geometry collection which is transformed from a Well-Known Binary (WKB) representation.
+     *
+     * @see #ST_GeomFromWKB
+     * @see #ST_PointFromWKB
+     * @see #ST_LineFromWKB
+     * @see #ST_PolyFromWKB
+     * @see #ST_MPointFromWKB
+     * @see #ST_MLineFromWKB
+     * @see #ST_MPolyFromWKB
+     */
+    ST_GeomCollFromWKB(1, 2, null, null, GEOMETRY_COLLECTION),
+
+    /**
+     * {@code MultiPoint} constructed from either a Well-Known Text (WKT) representation,
+     * a Well-Known Binary (WKB) representation, or an array of points.
+     *
+     * @see #ST_LineString
+     * @see #ST_Polygon
+     * @see #ST_GeomCollection
+     * @see #ST_MultiLineString
+     * @see #ST_MultiPolygon
+     */
+    ST_MultiPoint(1, 2, null, null, MULTI_POINT),
+
+    /**
+     * Constructor for a multi-point which is transformed from a Well-Known Text (WKT) representation.
+     *
+     * @see #ST_GeomFromText
+     * @see #ST_PointFromText
+     * @see #ST_LineFromText
+     * @see #ST_PolyFromText
+     * @see #ST_GeomCollFromText
+     * @see #ST_MLineFromText
+     * @see #ST_MPolyFromText
+     */
+    ST_MPointFromText(1, 2, null, null, MULTI_POINT),
+
+    /**
+     * Constructor for a multi-point which is transformed from a Well-Known Binary (WKB) representation.
+     *
+     * @see #ST_GeomFromWKB
+     * @see #ST_PointFromWKB
+     * @see #ST_LineFromWKB
+     * @see #ST_PolyFromWKB
+     * @see #ST_GeomCollFromWKB
+     * @see #ST_MLineFromWKB
+     * @see #ST_MPolyFromWKB
+     */
+    ST_MPointFromWKB(1, 2, null, null, MULTI_POINT),
+
+    /**
+     * {@code MultiLineString} constructed from either a Well-Known Text (WKT) representation,
+     * a Well-Known Binary (WKB) representation, or an array of points.
+     *
+     * @see #ST_LineString
+     * @see #ST_Polygon
+     * @see #ST_GeomCollection
+     * @see #ST_MultiPoint
+     * @see #ST_MultiPolygon
+     */
+    ST_MultiLineString(1, 2, null, null, MULTI_LINESTRING),
+
+    /**
+     * Constructor for a multi-line string which is transformed from a Well-Known Text (WKT) representation.
+     *
+     * @see #ST_GeomFromText
+     * @see #ST_PointFromText
+     * @see #ST_LineFromText
+     * @see #ST_PolyFromText
+     * @see #ST_GeomCollFromText
+     * @see #ST_MPointFromText
+     * @see #ST_MPolyFromText
+     */
+    ST_MLineFromText(1, 2, null, null, MULTI_LINESTRING),
+
+    /**
+     * Constructor for a multi-line string which is transformed from a Well-Known Binary (WKB) representation.
+     *
+     * @see #ST_GeomFromWKB
+     * @see #ST_PointFromWKB
+     * @see #ST_LineFromWKB
+     * @see #ST_PolyFromWKB
+     * @see #ST_GeomCollFromWKB
+     * @see #ST_MPointFromWKB
+     * @see #ST_MPolyFromWKB
+     */
+    ST_MLineFromWKB(1, 2, null, null, MULTI_LINESTRING),
+
+    /**
+     * {@code MultiPolygon} constructed from either a Well-Known Text (WKT) representation,
+     * a Well-Known Binary (WKB) representation, or an array of points.
+     *
+     * @see #ST_LineString
+     * @see #ST_Polygon
+     * @see #ST_GeomCollection
+     * @see #ST_MultiPoint
+     * @see #ST_MultiLineString
+     */
+    ST_MultiPolygon(1, 2, null, null, MULTI_POLYGON),
+
+    /**
+     * Constructor for a multi-polygon which is transformed from a Well-Known Text (WKT) representation.
+     *
+     * @see #ST_GeomFromText
+     * @see #ST_PointFromText
+     * @see #ST_LineFromText
+     * @see #ST_PolyFromText
+     * @see #ST_GeomCollFromText
+     * @see #ST_MPointFromText
+     * @see #ST_MLineFromText
+     */
+    ST_MPolyFromText(1, 2, null, null, MULTI_POLYGON),
+
+    /**
+     * Constructor for a multi-polygon which is transformed from a Well-Known Binary (WKB) representation.
+     *
+     * @see #ST_GeomFromWKB
+     * @see #ST_PointFromWKB
+     * @see #ST_LineFromWKB
+     * @see #ST_PolyFromWKB
+     * @see #ST_GeomCollFromWKB
+     * @see #ST_MPointFromWKB
+     * @see #ST_MLineFromWKB
+     */
+    ST_MPolyFromWKB(1, 2, null, null, MULTI_POLYGON),
+
+    /**
+     * Constructor for a multi-polygon which is transformed from a Well-Known Text (WKT) representation
+     * of multi line string. There is one polygon for each line-string.
+     *
+     * @see #ST_BdPolyFromText
+     */
+    ST_BdMPolyFromText(1, 2, null, null, MULTI_POLYGON),
+
+    /**
+     * Constructor for a multi-polygon which is transformed from a Well-Known Binary (WKB) representation
+     * of multi line string. There is one polygon for each line-string.
+     */
+    ST_BdMPolyFromWKB(1, 2, null, null, MULTI_POLYGON),
+
+    /**
+     * Cast a geometry to a specific instantiable subtype of geometry.
+     */
+    ST_ToPoint(GEOMETRY, POINT),
+
+    /**
+     * Cast a geometry to a specific instantiable subtype of geometry.
+     */
+    ST_ToPolygon(GEOMETRY, POLYGON),
+
+    /**
+     * Cast a geometry to a specific instantiable subtype of geometry.
+     */
+    ST_ToMultiPoint(GEOMETRY, MULTI_POINT),
+
+    /**
+     * Cast a geometry to a specific instantiable subtype of geometry.
+     */
+    ST_ToMultiLine(GEOMETRY, MULTI_LINESTRING),
+
+    /**
+     * Cast a geometry to a specific instantiable subtype of geometry.
+     */
+    ST_ToMultiPolygon(GEOMETRY, MULTI_POLYGON),
+
+    /**
+     * Cast a geometry to a specific instantiable subtype of geometry.
+     */
+    ST_ToGeomColl(GEOMETRY, GEOMETRY_COLLECTION),
+
+    /**
+     * Computes a geometry simplification.
+     * This function expects a geometry and a distance tolerance.
+     * The distance shall be in units of the geometry Coordinate Reference System
+     *
+     * <p>Note: this function is defined in PostGIS and H2GIS but not in SQL/MM 13249-3 2011.</p>
+     */
+    ST_Simplify(2, 2, GEOMETRY, null, GEOMETRY),
+
+    /**
+     * Computes a geometry simplification preserving topology.
+     * This function expects a geometry and a distance tolerance.
+     * The distance shall be in units of the geometry Coordinate Reference System
+     *
+     * <p>Note: this function is defined in PostGIS and H2GIS but not in SQL/MM 13249-3 2011.</p>
+     */
+    ST_SimplifyPreserveTopology(2, 2, GEOMETRY, null, GEOMETRY);
+
+    /**
+     * The minimum number of parameters that the function expects.
+     */
+    public final byte minParamCount;
+
+    /**
+     * The maximum number of parameters that the function expects.
+     */
+    public final byte maxParamCount;
+
+    /**
+     * The geometry type of the two first parameters,
+     * or {@code null} if the parameter is not a geometry.
+     */
+    final GeometryType geometryType1, geometryType2;
+
+    /**
+     * Type of value returned by the method as a {@link Class} of {@link Geometries#TYPE}.
+     *
+     * @see #getReturnType()
+     */
+    private final Object returnType;
+
+    /**
+     * Creates a new enumeration value for an operation expecting exactly one geometry object
+     * and no other argument.
+     */
+    private SQLMM(final GeometryType geometryType1, final Object returnType) {
+        this.minParamCount = 1;
+        this.maxParamCount = 1;
+        this.geometryType1 = geometryType1;
+        this.geometryType2 = null;
+        this.returnType    = returnType;
+    }
+
+    /**
+     * Creates a new enumeration value for an operation expecting exactly two geometry objects
+     * and no other argument.
+     */
+    private SQLMM(final Object returnType) {
+        this.minParamCount = 2;
+        this.maxParamCount = 2;
+        this.geometryType1 = GEOMETRY;
+        this.geometryType2 = GEOMETRY;
+        this.returnType    = returnType;
+    }
+
+    /**
+     * Creates a new enumeration value.
+     */
+    private SQLMM(final int minParamCount,
+                  final int maxParamCount,
+                  final GeometryType geometryType1,
+                  final GeometryType geometryType2,
+                  final Object       returnType)
+    {
+        this.minParamCount = (byte) minParamCount;
+        this.maxParamCount = (byte) maxParamCount;
+        this.geometryType1 = geometryType1;
+        this.geometryType2 = geometryType2;
+        this.returnType    = returnType;
+    }
+
+    /**
+     * Returns the number of parameters that are geometry objects. Those parameters shall be first.
+     * This value shall be between {@link #minParamCount} and {@link #maxParamCount}.
+     *
+     * @return number of parameters that are geometry objects.
+     */
+    public int geometryCount() {
+        return (geometryType1 == null) ? 0 :
+               (geometryType2 == null) ? 1 : 2;
+    }
+
+    /**
+     * Returns {@code true} if the operation has at least one geometry argument
+     * and the return type is also a geometry.
+     */
+    final boolean isGeometryInOut() {
+        return (geometryType1 != null) && (returnType instanceof GeometryType);
+    }
+
+    /**
+     * Returns the type of geometry returned by the SQLMM function.
+     *
+     * @return the type of geometry returned by the SQLMM function.
+     */
+    public final Optional<GeometryType> getGeometryType() {
+        return (returnType instanceof GeometryType) ? Optional.of((GeometryType) returnType) : Optional.empty();
+    }
+
+    /**
+     * Returns the type of value returned by the SQLMM function.
+     *
+     * @param  library  the handler used for wrapping geometry implementations.
+     * @return type of value returned the SQLMM function.
+     */
+    public final Class<?> getReturnType(final Geometries<?> library) {
+        return (returnType instanceof Class<?>) ? (Class<?>) returnType
+                : library.getGeometryClass((GeometryType) returnType);
     }
 }

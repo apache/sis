@@ -23,9 +23,9 @@ import org.apache.sis.util.collection.Containers;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
-import org.opengis.filter.sort.SortBy;
-import org.opengis.filter.sort.SortOrder;
-import org.opengis.filter.expression.Expression;
+import org.opengis.filter.SortOrder;
+import org.opengis.filter.Expression;
+import org.opengis.filter.SortProperty;
 
 
 /**
@@ -56,12 +56,12 @@ final class SortByComparator implements Comparator<Feature> {
      * Creates a new comparator for the given sort expressions.
      * It is caller responsibility to ensure that the given array is non-empty.
      */
-    SortByComparator(final SortBy[] orders) {
+    SortByComparator(final SortProperty[] orders) {
         properties = new Expression[orders.length];
         descending = new boolean   [orders.length];
         for (int i=0; i<orders.length; i++) {
-            final SortBy order = orders[i];
-            properties[i] = order.getPropertyName();
+            final SortProperty order = orders[i];
+            properties[i] = order.getValueReference();
             descending[i] = SortOrder.DESCENDING.equals(order.getSortOrder());
         }
     }
@@ -78,8 +78,8 @@ final class SortByComparator implements Comparator<Feature> {
             if (f2 == null) return -1;
             for (int i=0; i<properties.length; i++) {
                 final Expression property = properties[i];
-                Object o1 = property.evaluate(f1);
-                Object o2 = property.evaluate(f2);
+                Object o1 = property.apply(f1);
+                Object o2 = property.apply(f2);
                 if (o1 != o2) {
                     if (o1 == null) return +1;
                     if (o2 == null) return -1;

@@ -36,6 +36,7 @@ import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.resources.Errors;
@@ -320,7 +321,8 @@ final class EnvelopeOperation extends AbstractOperation {
                  * we will do two calls to some `Feature.getProperty…` method, which results in two lookups
                  * in hash table. We presume that the gain from the optimistic assumption is worth the cost.
                  */
-                GeneralEnvelope genv = Geometries.getEnvelope(feature.getPropertyValue(attributeNames[i])).orElse(null);
+                GeneralEnvelope genv = Geometries.wrap(feature.getPropertyValue(attributeNames[i]))
+                                                  .map(GeometryWrapper::getEnvelope).orElse(null);
                 if (genv == null) {
                     continue;
                 }

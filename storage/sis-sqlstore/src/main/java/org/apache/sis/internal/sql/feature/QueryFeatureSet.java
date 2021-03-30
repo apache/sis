@@ -31,7 +31,6 @@ import javax.sql.DataSource;
 
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
-import org.opengis.filter.sort.SortBy;
 
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
@@ -42,6 +41,7 @@ import org.apache.sis.storage.Query;
 import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.opengis.filter.SortProperty;
 
 /**
  * Stores SQL query given at built time, and execute it when calling {@link #features(boolean) data stream}. Note that
@@ -223,14 +223,14 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         }
 
         @Override
-        protected FeatureSet create(CharSequence where, SortBy[] sorting, ColumnRef[] columns) {
+        protected FeatureSet create(CharSequence where, SortProperty[] sorting, ColumnRef[] columns) {
             // TODO: use columns.
             final SQLBuilder newQuery = amendQuery(where, sorting);
             return new QueryFeatureSet(newQuery, adapter, null, source);
         }
     }
 
-    private SQLBuilder amendQuery(CharSequence where, SortBy[] sorting) {
+    private SQLBuilder amendQuery(CharSequence where, SortProperty[] sorting) {
         // As we do not know user query complexity, what we'll do is make a query wrapper to ensure we won't break the
         // original query. Note that it will surely be less performant, though.
         final SQLBuilder newBuilder = new SQLBuilder(queryBuilder);

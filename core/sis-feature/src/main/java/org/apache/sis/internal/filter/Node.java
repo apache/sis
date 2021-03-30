@@ -21,7 +21,16 @@ import java.util.IdentityHashMap;
 import java.util.Collection;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.function.Predicate;
+import java.util.logging.Logger;
+import org.opengis.util.CodeList;
+import org.opengis.util.LocalName;
+import org.opengis.util.ScopedName;
 import org.apache.sis.feature.DefaultAttributeType;
+import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -30,8 +39,10 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 
 // Branch-dependent imports
+import org.opengis.filter.Filter;
+import org.opengis.filter.Expression;
+import org.opengis.filter.InvalidFilterValueException;
 import org.opengis.feature.AttributeType;
-import org.opengis.filter.BinaryLogicOperator;
 
 
 /**
@@ -52,6 +63,13 @@ public abstract class Node implements Serializable {
     private static final long serialVersionUID = -749201100175374658L;
 
     /**
+     * Scope of all names defined by SIS convention.
+     *
+     * @see #createName(String)
+     */
+    private static final LocalName SCOPE = Names.createLocalName("Apache", null, "sis");;
+
+    /**
      * Creates a new expression, operator or filter.
      */
     protected Node() {
@@ -65,6 +83,8 @@ public abstract class Node implements Serializable {
      * @param  type  type of values in the attribute.
      * @param  name  name of the attribute to create.
      * @return an attribute of the given type and name.
+     *
+     * @see Expression#getFunctionName()
      */
     protected static <T> AttributeType<T> createType(final Class<T> type, final Object name) {
         return new DefaultAttributeType<>(Collections.singletonMap(DefaultAttributeType.NAME_KEY, name),
@@ -83,19 +103,104 @@ public abstract class Node implements Serializable {
     }
 
     /**
-     * Returns a name or symbol for this node. This is used for information purpose,
-     * for example in order to build a string representation.
+     * Returns the name of the function or filter to be called.
+     * For example, this might be {@code "sis:cos"} or {@code "sis:atan2"}.
+     * The type depend on the implemented interface:
      *
-     * @return the name of this node.
+     * <ul>
+     *   <li>{@link ScopedName} if this node implements {@link Expression}.</li>
+     *   <li>{@link CodeList} if this node implements {@link Filter}.</li>
+     * </ul>
+     *
+     * <div class="note"><b>Note for implementers:</b>
+     * implementations typically return a hard-coded value. If the returned value may vary for the same class,
+     * then implementers should override also the {@link #equals(Object)} and {@link #hashCode()} methods.</div>
+     *
+     * @return the name of this function.
      */
-    public abstract String getName();
+    private Object getDisplayName() {
+        if (this instanceof Expression<?,?>) {
+            return ((Expression<?,?>) this).getFunctionName();
+        } else if (this instanceof Filter<?>) {
+            return ((Filter<?>) this).getOperatorType();
+        } else {
+            return getClass().getSimpleName();
+        }
+    }
+
+    /**
+     * Creates a name in the "SIS" scope.
+     * This is a helper method for {@link #getFunctionName()} implementations.
+     *
+     * @param  tip  the expression name in SIS namespace.
+     * @return an expression name in the SIS namespace.
+     */
+    protected static ScopedName createName(final String tip) {
+        return Names.createScopedName(SCOPE, null, tip);
+    }
+
+    /**
+     * Returns an expression whose results is a geometry wrapper.
+     *
+     * @param  <R>         the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
+     * @param  <G>         the geometry implementation type.
+     * @param  library     the geometry library to use.
+     * @param  expression  the expression providing source values.
+     * @return an expression whose results is a geometry wrapper.
+     * @throws InvalidFilterValueException if the given expression is already a wrapper
+     *         but for another geometry implementation.
+     */
+    @SuppressWarnings("unchecked")
+    protected static <R,G> Expression<R, GeometryWrapper<G>> toGeometryWrapper(
+            final Geometries<G> library, final Expression<R,?> expression)
+    {
+        if (expression instanceof GeometryConverter<?,?>) {
+            if (library.equals(((GeometryConverter<?,?>) expression).library)) {
+                return (GeometryConverter<R,G>) expression;
+            } else {
+                throw new InvalidFilterValueException();        // TODO: provide a message.
+            }
+        }
+        return new GeometryConverter<>(library, expression);
+    }
+
+    /**
+     * If the given exception was wrapped by {@link #toGeometryWrapper(Geometries, Expression)},
+     * returns the original expression. Otherwise returns the given expression.
+     *
+     * @param  <R>         the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
+     * @param  <G>         the geometry implementation type.
+     * @param  expression  the expression to unwrap.
+     * @return the unwrapped expression.
+     */
+    @SuppressWarnings("unchecked")
+    protected static <R,G> Expression<? super R, ?> unwrap(final Expression<R, ? extends GeometryWrapper<G>> expression) {
+        if (expression instanceof GeometryConverter<?,?>) {
+            return ((GeometryConverter<R,?>) expression).expression;
+        } else {
+            return expression;
+        }
+    }
+
+    /**
+     * Returns a handler for the library of geometric objects used by the given expression.
+     * The given expression should be the first parameter (as requested by SQLMM specification),
+     * otherwise the error message will not be accurate.
+     *
+     * @param  <G>          the type of geometry created by the expression.
+     * @param  expression   the expression for which to get the geometry library.
+     * @return the geometry library (never {@code null}).
+     */
+    protected static <G> Geometries<G> getGeometryLibrary(final Expression<?, GeometryWrapper<G>> expression) {
+        if (expression instanceof GeometryConverter<?,?>) {
+            return ((GeometryConverter<?,G>) expression).library;
+        }
+        throw new InvalidFilterValueException(Resources.format(Resources.Keys.NotAGeometryAtFirstExpression));
+    }
 
     /**
      * Returns the children of this node, or an empty collection if none. This is used
      * for information purpose, for example in order to build a string representation.
-     *
-     * <p>The name of this method is the same as {@link BinaryLogicOperator#getChildren()}
-     * in order to have only one method to override.</p>
      *
      * @return the children of this node, or an empty collection if none.
      */
@@ -103,14 +208,14 @@ public abstract class Node implements Serializable {
 
     /**
      * Builds a tree representation of this node, including all children. This method expects an
-     * initially empty node, which will be set to the {@linkplain #getName() name} of this node.
+     * initially empty node, which will be set to the {@linkplain #getFunctionName() name} of this node.
      * Then all children will be appended recursively, with a check against cyclic graph.
      *
      * @param  root     where to create a tree representation of this node.
      * @param  visited  nodes already visited. This method will write in this map.
      */
     private void toTree(final TreeTable.Node root, final Map<Object,Boolean> visited) {
-        root.setValue(TableColumn.VALUE, getName());
+        root.setValue(TableColumn.VALUE, getDisplayName());
         for (final Object child : getChildren()) {
             final TreeTable.Node node = root.newChild();
             final String value;
@@ -166,15 +271,23 @@ public abstract class Node implements Serializable {
 
     /**
      * Reports that an operation failed because of the given exception.
-     * This method assumes that the warning occurred in an {@code evaluate(…)} method.
+     * This method assumes that the warning occurred in a {@code test(…)} or {@code apply(…)} method.
      *
-     * @param  e  the exception that occurred.
+     * @param  e            the exception that occurred.
+     * @param  recoverable  {@code true} if the caller has been able to fallback on a default value,
+     *                      or {@code false} if the caller has to return {@code null}.
      *
      * @todo Consider defining a {@code Context} class providing, among other information, listeners where to report warnings.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-460">SIS-460</a>
      */
-    protected final void warning(final Exception e) {
-        Logging.recoverableException(Logging.getLogger(Loggers.FILTER), getClass(), "evaluate", e);
+    protected final void warning(final Exception e, final boolean recoverable) {
+        final Logger logger = Logging.getLogger(Loggers.FILTER);
+        final String method = (this instanceof Predicate) ? "test" : "apply";
+        if (recoverable) {
+            Logging.recoverableException(logger, getClass(), method, e);
+        } else {
+            Logging.unexpectedException(logger, getClass(), method, e);
+        }
     }
 }

@@ -24,6 +24,8 @@ import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWithCRS;
+import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.internal.filter.sqlmm.SQLMM;
 import org.apache.sis.util.Debug;
 
 
@@ -87,14 +89,6 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
     }
 
     /**
-     * Returns the centroid of the wrapped geometry as a Java2D object.
-     */
-    @Override
-    public Object getCentroidImpl() {
-        return point;
-    }
-
-    /**
      * Returns the point coordinates.
      */
     @Override
@@ -111,7 +105,7 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
      */
     @Debug
     @Override
-    protected double[] getAllCoordinates() {
+    public double[] getAllCoordinates() {
         return getPointCoordinates();
     }
 
@@ -123,6 +117,22 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
     @Override
     protected Shape mergePolylines(final Iterator<?> polylines) {
         return Wrapper.mergePolylines(point, polylines);
+    }
+
+    /**
+     * Applies a SQLMM operation on this geometry.
+     *
+     * @param  operation  the SQLMM operation to apply.
+     * @param  other      the other geometry, or {@code null} if the operation requires only one geometry.
+     * @param  argument   an operation-specific argument, or {@code null} if not applicable.
+     * @return result of the specified operation.
+     */
+    @Override
+    protected Object operationSameCRS(final SQLMM operation, final GeometryWrapper<Shape> other, final Object argument) {
+        switch (operation) {
+            case ST_Centroid: return point.clone();
+            default: return super.operationSameCRS(operation, other, argument);
+        }
     }
 
     /**
