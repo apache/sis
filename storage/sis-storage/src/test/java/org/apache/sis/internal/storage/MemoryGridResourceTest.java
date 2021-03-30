@@ -29,7 +29,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -92,12 +92,14 @@ public final strictfp class MemoryGridResourceTest extends TestCase {
         final GridGeometry request  = createSubGrid();
         final GridCoverage coverage = resource.read(request);
         /*
-         * PENDING_JDK_FIX: replace following lines by new tests
-         * after https://bugs.openjdk.java.net/browse/JDK-8166038 is fixed.
+         * PENDING_JDK_FIX: remove the following lines after we request JDK16 for building.
+         * https://bugs.openjdk.java.net/browse/JDK-8166038
          */
-        if (coverage.render(null) instanceof BufferedImage) {
-            final GridGeometry expected = resource.getGridGeometry();
-            assertEquals(expected, coverage.getGridGeometry());
+        if (resource.getGridGeometry().equals(coverage.getGridGeometry())) {
+            return;
         }
+        // End of PENDING_JDK_FIX. Following line assumes JDK16.
+        assertEqualsIgnoreMetadata(request, coverage.getGridGeometry());
+        assertInstanceOf("render(null)", BufferedImage.class, coverage.render(null));
     }
 }
