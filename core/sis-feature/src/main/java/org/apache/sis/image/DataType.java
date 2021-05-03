@@ -60,7 +60,8 @@ public enum DataType {
     SHORT,
 
     /**
-     * Signed 32-bits data.
+     * Signed 32-bits data. Also used for storing unsigned data; the Java2D API such as
+     * {@link java.awt.image.Raster#getSample(int, int, int)} can not distinguish the two cases.
      */
     INT,
 

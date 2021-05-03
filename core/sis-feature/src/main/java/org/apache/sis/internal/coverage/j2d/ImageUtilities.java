@@ -33,6 +33,7 @@ import java.awt.image.MultiPixelPackedSampleModel;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
@@ -377,6 +378,24 @@ public final class ImageUtilities extends Static {
             }
         }
         return keys;
+    }
+
+    /**
+     * The values to be returned by {@link #toNumberEnum(int)}.
+     */
+    private static final byte[] NUMBER_ENUMS = {
+        Numbers.BYTE, Numbers.SHORT, Numbers.SHORT, Numbers.INTEGER, Numbers.FLOAT, Numbers.DOUBLE
+    };
+
+    /**
+     * Converts a {@link DataBuffer} enumeration value to {@link Numbers} enumeration value.
+     * This method ignores whether the type is signed or unsigned.
+     *
+     * @param  dataType  the {@link DataBuffer} enumeration value.
+     * @return the {@link Numbers} enumeration value.
+     */
+    public static byte toNumberEnum(final int dataType) {
+        return (dataType >= 0 && dataType < NUMBER_ENUMS.length) ? NUMBER_ENUMS[dataType] : Numbers.OTHER;
     }
 
     /**

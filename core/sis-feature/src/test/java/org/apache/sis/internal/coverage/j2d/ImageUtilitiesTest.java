@@ -26,6 +26,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -192,6 +193,20 @@ public final strictfp class ImageUtilitiesTest extends TestCase {
                 Vocabulary.Keys.Green,
                 Vocabulary.Keys.Blue,
                 Vocabulary.Keys.Transparency);
+    }
+
+    /**
+     * Tests {@link ImageUtilities#toNumberEnum(int)}.
+     */
+    @Test
+    public void testToNumberEnum() {
+        assertEquals(Numbers.BYTE,    ImageUtilities.toNumberEnum(DataBuffer.TYPE_BYTE));
+        assertEquals(Numbers.SHORT,   ImageUtilities.toNumberEnum(DataBuffer.TYPE_SHORT));
+        assertEquals(Numbers.SHORT,   ImageUtilities.toNumberEnum(DataBuffer.TYPE_USHORT));
+        assertEquals(Numbers.INTEGER, ImageUtilities.toNumberEnum(DataBuffer.TYPE_INT));
+        assertEquals(Numbers.FLOAT,   ImageUtilities.toNumberEnum(DataBuffer.TYPE_FLOAT));
+        assertEquals(Numbers.DOUBLE,  ImageUtilities.toNumberEnum(DataBuffer.TYPE_DOUBLE));
+        assertEquals(Numbers.OTHER,   ImageUtilities.toNumberEnum(DataBuffer.TYPE_UNDEFINED));
     }
 
     /**
