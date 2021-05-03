@@ -31,7 +31,7 @@ import org.apache.sis.storage.DataStoreContentException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -123,6 +123,26 @@ public final class HyperRectangleReader {
      * @throws ArithmeticException if the region to read is too large or too far from origin.
      */
     public Object read(final Region region) throws IOException {
+        return read(region, false);
+    }
+
+    /**
+     * Reads data in the given region as a buffer. This method performs the same work
+     * than {@link #read(Region)} except that the array is wrapped in a heap buffer.
+     *
+     * @param  region  the sub-area to read and the subsampling to use.
+     * @return the data in a buffer backed by an array on the heap.
+     * @throws IOException if an error occurred while transferring data from the channel.
+     * @throws ArithmeticException if the region to read is too large or too far from origin.
+     */
+    public Buffer readAsBuffer(final Region region) throws IOException {
+        return (Buffer) read(region, true);
+    }
+
+    /**
+     * Implementation of {@link #read(Region)} and {@link #readAsBuffer(Region)}.
+     */
+    private Object read(final Region region, final boolean asBuffer) throws IOException {
         final int contiguousDataDimension = region.contiguousDataDimension();
         final int contiguousDataLength = region.targetLength(contiguousDataDimension);
         final long[] strides = new long[region.getDimension() - contiguousDataDimension];
@@ -158,7 +178,7 @@ loop:       do {
                 }
                 break;
             } while (true);
-            return reader.dataArray();
+            return asBuffer ? reader.dataArrayAsBuffer() : reader.dataArray();
         } finally {
             reader.setDest(null);
         }

@@ -61,7 +61,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * {@link javax.imageio} is needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -614,6 +614,7 @@ public class ChannelDataInput extends ChannelData {
         BytesReader(final byte[] dest)                  {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 0;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return ByteBuffer.wrap(dest);}
         @Override public Buffer view()                  {return buffer;}
         @Override public Buffer createView()            {return buffer;}
         @Override public void   createDataArray(int n)  {dest = new byte[n];}
@@ -635,6 +636,7 @@ public class ChannelDataInput extends ChannelData {
         CharsReader(final char[] dest)                  {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 1;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return CharBuffer.wrap(dest);}
         @Override public Buffer view()                  {return view;}
         @Override public Buffer createView()            {return view = buffer.asCharBuffer();}
         @Override public void   createDataArray(int n)  {dest = new char[n];}
@@ -653,6 +655,7 @@ public class ChannelDataInput extends ChannelData {
         ShortsReader(final short[] dest)                {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 1;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return ShortBuffer.wrap(dest);}
         @Override public Buffer view()                  {return view;}
         @Override public Buffer createView()            {return view = buffer.asShortBuffer();}
         @Override public void   createDataArray(int n)  {dest = new short[n];}
@@ -671,6 +674,7 @@ public class ChannelDataInput extends ChannelData {
         IntsReader(final int[] dest)                    {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 2;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return IntBuffer.wrap(dest);}
         @Override public Buffer view()                  {return view;}
         @Override public Buffer createView()            {return view = buffer.asIntBuffer();}
         @Override public void   createDataArray(int n)  {dest = new int[n];}
@@ -689,6 +693,7 @@ public class ChannelDataInput extends ChannelData {
         LongsReader(final long[] dest)                  {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 3;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return LongBuffer.wrap(dest);}
         @Override public Buffer view()                  {return view;}
         @Override public Buffer createView()            {return view = buffer.asLongBuffer();}
         @Override public void   createDataArray(int n)  {dest = new long[n];}
@@ -707,6 +712,7 @@ public class ChannelDataInput extends ChannelData {
         FloatsReader(final float[] dest)                {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 2;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return FloatBuffer.wrap(dest);}
         @Override public Buffer view()                  {return view;}
         @Override public Buffer createView()            {return view = buffer.asFloatBuffer();}
         @Override public void   createDataArray(int n)  {dest = new float[n];}
@@ -725,6 +731,7 @@ public class ChannelDataInput extends ChannelData {
         DoublesReader(final double[] dest)              {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 3;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return DoubleBuffer.wrap(dest);}
         @Override public Buffer view()                  {return view;}
         @Override public Buffer createView()            {return view = buffer.asDoubleBuffer();}
         @Override public void   createDataArray(int n)  {dest = new double[n];}

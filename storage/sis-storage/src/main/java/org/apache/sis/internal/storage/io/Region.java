@@ -92,10 +92,10 @@ public final class Region {
      *   <li>The total length of data to read does not exceed {@link Integer#MAX_VALUE}.</li>
      * </ul>
      *
-     * @param size          the number of elements along each dimension.
-     * @param regionLower   index of the first value to read or write along each dimension.
-     * @param regionUpper   index after the last value to read or write along each dimension.
-     * @param subsamplings  subsampling along each dimension. Shall be greater than zero.
+     * @param  size          the number of elements along each dimension.
+     * @param  regionLower   index of the first value to read or write along each dimension.
+     * @param  regionUpper   index after the last value to read or write along each dimension.
+     * @param  subsamplings  subsampling along each dimension. Shall be greater than zero.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE},
      *                             or the total hyper-cube size exceeds {@link Long#MAX_VALUE}.
      */
@@ -125,7 +125,7 @@ public final class Region {
     }
 
     /**
-     * Sets an additional offset between values at two consecutive index in the given dimension of the hyper-cube.
+     * Sets an additional offset between values at two consecutive indices in the given dimension of the hyper-cube.
      * The strides are computed automatically at construction time, but this method can be invoked in some rare cases
      * where those values need to be modified (example: for adapting to the layout of netCDF "unlimited" variable).
      *
