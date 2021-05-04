@@ -24,6 +24,7 @@ import java.net.URI;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
@@ -90,6 +91,15 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     private final URI location;
 
     /**
+     * Same value than {@link #location} but as a path, or {@code null} if none.
+     * Stored separately because conversion from path to URI back to path is not
+     * looseness (relative paths become absolutes).
+     *
+     * @todo May become an array later if we want to handle TFW and PRJ file heres.
+     */
+    final Path path;
+
+    /**
      * The data store identifier created from the filename, or {@code null} if none.
      * Defined as a namespace for use as the scope of children resources (the images).
      */
@@ -128,6 +138,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
         location = connector.getStorageAs(URI.class);
+        path = connector.getStorageAs(Path.class);
         connector.closeAllExcept(input);
         try {
             reader = new Reader(this, input);

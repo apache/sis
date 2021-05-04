@@ -50,6 +50,21 @@ import org.apache.sis.internal.jdk9.JDK9;
 
 /**
  * Base class for implementations of {@link GridCoverageResource}.
+ * This class provides default implementations of {@code Resource} methods.
+ * Those default implementations get data from the following abstract methods:
+ *
+ * <ul>
+ *   <li>{@link #getGridGeometry()}</li>
+ *   <li>{@link #getSampleDimensions()}</li>
+ * </ul>
+ *
+ * This class also provides the following helper methods for implementation
+ * of the {@link #read(GridGeometry, int...) read(…)} method in subclasses:
+ *
+ * <ul>
+ *   <li>{@link #validateRangeArgument(int, int[])} for validation of the {@code range} argument.</li>
+ *   <li>{@link #logReadOperation(Object, GridGeometry, long)} for logging a notice about a read operation.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -105,7 +120,8 @@ public abstract class AbstractGridResource extends AbstractResource implements G
      * This method verifies that all indices are between 0 and {@code numSampleDimensions}
      * and that there is no duplicated index.
      *
-     * @param  numSampleDimensions  number of sample dimensions.
+     * @param  numSampleDimensions  number of sample dimensions in the resource.
+     *         Equal to <code>{@linkplain #getSampleDimensions()}.size()</code>.
      * @param  range  the {@code range} argument given by the user. May be null or empty.
      * @return the {@code range} argument encapsulated with a set of convenience tools.
      * @throws IllegalArgumentException if a range index is invalid.

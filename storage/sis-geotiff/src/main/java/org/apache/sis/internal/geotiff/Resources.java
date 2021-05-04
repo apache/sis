@@ -169,9 +169,19 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnexpectedTileCount_3 = 18;
 
         /**
+         * Tile has an unexpected length: {1} bytes while {0} were expected.
+         */
+        public static final short UnexpectedTileLength_2 = 28;
+
+        /**
          * TIFF file “{0}” uses an unknown coordinate reference system.
          */
         public static final short UnknownCRS_1 = 22;
+
+        /**
+         * Compression method “{0}” is unsupported.
+         */
+        public static final short UnsupportedCompressionMethod_1 = 27;
 
         /**
          * Coordinate system kind {0} is unsupported.
@@ -192,6 +202,11 @@ public final class Resources extends IndexedResourceBundle {
          * TIFF file “{0}” uses an unsupported map projection.
          */
         public static final short UnsupportedProjectionMethod_1 = 23;
+
+        /**
+         * Unsupported value “{1}” for TIFF tag “{0}”.
+         */
+        public static final short UnsupportedTagValue_2 = 29;
     }
 
     /**

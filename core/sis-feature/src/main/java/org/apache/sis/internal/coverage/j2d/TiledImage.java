@@ -80,8 +80,7 @@ public class TiledImage extends PlanarImage {
      * @param height      number of pixels along Y axis in the whole rendered image.
      * @param minTileX    minimum tile index in the X direction.
      * @param minTileY    minimum tile index in the Y direction.
-     * @param tiles       the tiles. Must contains at least one element.
-     *                    This array is not cloned.
+     * @param tiles       the tiles. Must contains at least one element. This array is not cloned.
      */
     public TiledImage(final Map<String,Object> properties, final ColorModel colorModel,
                       final int width, final int height, final int minTileX, final int minTileY,
@@ -97,6 +96,40 @@ public class TiledImage extends PlanarImage {
         this.minTileY   = minTileY;
         this.tiles      = tiles;
         this.properties = (properties != null) ? JDK9.copyOf(properties) : Collections.emptyMap();
+    }
+
+    /**
+     * Verifies whether image layout information and tile coordinates are consistent.
+     * This method verifies the size and minimum pixel coordinates of all tiles,
+     * in addition to the verifications documented in the super-class.
+     *
+     * @return {@code null} if image layout information are consistent,
+     *         or the name of inconsistent attribute if a problem is found.
+     */
+    @Override
+    public String verify() {
+        final int minX       = getMinX();
+        final int minY       = getMinY();
+        final int numXTiles  = getNumXTiles();
+        final int tileWidth  = getTileWidth();
+        final int tileHeight = getTileHeight();
+        for (int i=0; i < tiles.length; i++) {
+            final Raster tile = tiles[i];
+            final int tx = i % numXTiles;
+            final int ty = i / numXTiles;
+            if (tile.getWidth()  != tileWidth)              return property(tx, ty, "width");
+            if (tile.getHeight() != tileHeight)             return property(tx, ty, "height");
+            if (tile.getMinX()   != tileWidth  * tx + minX) return property(tx, ty, "x");
+            if (tile.getMinY()   != tileHeight * ty + minY) return property(tx, ty, "y");
+        }
+        return super.verify();
+    }
+
+    /**
+     * Label returned by {@link #verify()} for identifying an error in a specified tile.
+     */
+    private static String property(final int tx, final int ty, final String name) {
+        return "tiles[" + tx + ", " + ty + "]." + name;
     }
 
     /**

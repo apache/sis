@@ -244,7 +244,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      */
     private void warning(final short key, final Object... args) {
         final LogRecord r = reader.resources().getLogRecord(Level.WARNING, key, args);
-        reader.owner.warning(r);
+        reader.store.warning(r);
     }
 
     /**
@@ -463,7 +463,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 try {
                     expected = Integer.parseInt(id.getCode());
                 } catch (NumberFormatException e) {
-                    reader.owner.warning(null, e);                  // Should not happen.
+                    reader.store.warning(null, e);                  // Should not happen.
                     return;
                 }
                 if (code != expected) {
@@ -720,7 +720,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         if (epsg != null) try {
             return getCSAuthorityFactory().createCartesianCS(epsg.toString());
         } catch (NoSuchAuthorityCodeException e) {
-            reader.owner.warning(null, e);
+            reader.store.warning(null, e);
         }
         return (CartesianCS) CoordinateSystems.replaceLinearUnit(cs, unit);
     }
@@ -738,7 +738,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         if (epsg != null) try {
             return getCSAuthorityFactory().createEllipsoidalCS(epsg.toString());
         } catch (NoSuchAuthorityCodeException e) {
-            reader.owner.warning(null, e);
+            reader.store.warning(null, e);
         }
         return (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(cs, unit);
     }

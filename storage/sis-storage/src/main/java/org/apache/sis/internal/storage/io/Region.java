@@ -82,6 +82,12 @@ public final class Region {
     private long[] skipBytes;
 
     /**
+     * Total length of the region.
+     * This is the product of all values in the {@code size} argument given to the constructor.
+     */
+    public final long length;
+
+    /**
      * Creates a new region. It is caller's responsibility to ensure that:
      * <ul>
      *   <li>all arrays have the same length</li>
@@ -122,6 +128,7 @@ public final class Region {
             skips[++i]    = skip;
         }
         startAt = position;
+        length  = stride;
     }
 
     /**
@@ -220,11 +227,11 @@ public final class Region {
      * This method takes in account only the given number of dimensions.
      */
     final int targetLength(final int dimension) {
-        long length = 1;
+        long size = 1;
         for (int i=0; i<dimension; i++) {
-            length *= targetSize[i];
+            size *= targetSize[i];
         }
-        return toIntExact(length);
+        return toIntExact(size);
     }
 
     /**

@@ -551,17 +551,17 @@ public abstract class PlanarImage implements RenderedImage {
             if (sm.getHeight() < tileHeight) return "tileHeight";
         }
         long size = getWidth();
-        long remainder = size - JDK9.multiplyFull(getNumXTiles(), tileWidth);
+        long remainder = JDK9.multiplyFull(getNumXTiles(), tileWidth) - size;
         if (remainder != 0) {
             return (remainder >= 0 && remainder < size) ? "width" : "numXTiles";
         }
         size = getHeight();
-        remainder = size - JDK9.multiplyFull(getNumYTiles(), tileHeight);
+        remainder = JDK9.multiplyFull(getNumYTiles(), tileHeight) - size;
         if (remainder != 0) {
             return (remainder >= 0 && remainder < size) ? "height" : "numYTiles";
         }
-        if (JDK9.multiplyFull(getMinTileX(),  tileWidth)  + getTileGridXOffset() != getMinX()) return "tileX";
-        if (JDK9.multiplyFull(getMinTileY(),  tileHeight) + getTileGridYOffset() != getMinY()) return "tileY";
+        if (JDK9.multiplyFull(getMinTileX(), tileWidth)  + getTileGridXOffset() != getMinX()) return "tileX";
+        if (JDK9.multiplyFull(getMinTileY(), tileHeight) + getTileGridYOffset() != getMinY()) return "tileY";
         return null;
     }
 

@@ -123,26 +123,35 @@ public final class HyperRectangleReader {
      * @throws ArithmeticException if the region to read is too large or too far from origin.
      */
     public Object read(final Region region) throws IOException {
-        return read(region, false);
+        return read(region, 0, false);
     }
 
     /**
      * Reads data in the given region as a buffer. This method performs the same work
      * than {@link #read(Region)} except that the array is wrapped in a heap buffer.
+     * The {@code length} parameter is the minimal length of the array to allocate.
+     * The actual length of data read will be the {@linkplain Buffer#limit() limit}
+     * of the returned buffer.
      *
-     * @param  region  the sub-area to read and the subsampling to use.
+     * @param  region    the sub-area to read and the subsampling to use.
+     * @param  capacity  minimal length of the array to allocate, or 0 for automatic.
      * @return the data in a buffer backed by an array on the heap.
      * @throws IOException if an error occurred while transferring data from the channel.
      * @throws ArithmeticException if the region to read is too large or too far from origin.
      */
-    public Buffer readAsBuffer(final Region region) throws IOException {
-        return (Buffer) read(region, true);
+    public Buffer readAsBuffer(final Region region, final int capacity) throws IOException {
+        return (Buffer) read(region, capacity, true);
     }
 
     /**
      * Implementation of {@link #read(Region)} and {@link #readAsBuffer(Region)}.
+     *
+     * @param  region    the sub-area to read and the subsampling to use.
+     * @param  capacity  minimal length of the array to allocate, or 0 for automatic.
+     * @param  asBuffer  {@code true} for wrapping the array in a {@link Buffer}.
+     * @return the data as an array or wrapped in a buffer, depending on {@code asBuffer} value.
      */
-    private Object read(final Region region, final boolean asBuffer) throws IOException {
+    private Object read(final Region region, final int capacity, final boolean asBuffer) throws IOException {
         final int contiguousDataDimension = region.contiguousDataDimension();
         final int contiguousDataLength = region.targetLength(contiguousDataDimension);
         final long[] strides = new long[region.getDimension() - contiguousDataDimension];
@@ -154,8 +163,9 @@ public final class HyperRectangleReader {
             strides[i] = region.stride(i + contiguousDataDimension, contiguousDataLength, sampleSize);
             assert (strides[i] > 0) : i;
         }
+        final int limit = region.targetLength(region.getDimension());
         try {
-            reader.createDataArray(region.targetLength(region.getDimension()));
+            reader.createDataArray(Math.max(capacity, limit));
             final Buffer view = reader.view();
 loop:       do {
                 reader.seek(streamPosition);
@@ -178,7 +188,7 @@ loop:       do {
                 }
                 break;
             } while (true);
-            return asBuffer ? reader.dataArrayAsBuffer() : reader.dataArray();
+            return asBuffer ? reader.dataArrayAsBuffer().limit(limit) : reader.dataArray();
         } finally {
             reader.setDest(null);
         }

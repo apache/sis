@@ -115,6 +115,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotRemoveResource_2 = 49;
 
         /**
+         * Can not render an image for the “{0}” coverage.
+         */
+        public static final short CanNotRenderImage_1 = 61;
+
+        /**
          * Can not save resources of type ‘{1}’ in a “{0}” store.
          */
         public static final short CanNotStoreResourceType_2 = 41;

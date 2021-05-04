@@ -50,7 +50,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -63,7 +63,7 @@ final class Reader extends GeoTIFF {
     /**
      * Stream position of the first byte of the GeoTIFF file. This is usually zero.
      */
-    private final long origin;
+    final long origin;
 
     /**
      * A multiplication factor for the size of pointers, expressed as a power of 2.
@@ -137,8 +137,8 @@ final class Reader extends GeoTIFF {
      * @throws IOException if an error occurred while reading first bytes from the stream.
      * @throws DataStoreException if the file is not encoded in the TIFF or BigTIFF format.
      */
-    Reader(final GeoTiffStore owner, final ChannelDataInput input) throws IOException, DataStoreException {
-        super(owner);
+    Reader(final GeoTiffStore store, final ChannelDataInput input) throws IOException, DataStoreException {
+        super(store);
         this.input       = input;
         this.origin      = input.getStreamPosition();
         this.metadata    = new MetadataBuilder();
@@ -186,7 +186,7 @@ final class Reader extends GeoTIFF {
             }
         }
         // Do not invoke this.errors() yet because GeoTiffStore construction may not be finished. Owner.error() is okay.
-        throw new DataStoreContentException(owner.errors().getString(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
+        throw new DataStoreContentException(store.errors().getString(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
     }
 
     /**
@@ -215,7 +215,7 @@ final class Reader extends GeoTIFF {
         if (pointer >= 0) {
             return pointer;
         }
-        throw new DataStoreContentException(owner.getLocale(), "TIFF", input.filename, null);
+        throw new DataStoreContentException(store.getLocale(), "TIFF", input.filename, null);
     }
 
     /**
@@ -232,7 +232,7 @@ final class Reader extends GeoTIFF {
         if (entry >= 0) {
             return entry;
         }
-        throw new DataStoreContentException(owner.getLocale(), "TIFF", input.filename, null);
+        throw new DataStoreContentException(store.getLocale(), "TIFF", input.filename, null);
     }
 
     /**
@@ -388,7 +388,7 @@ final class Reader extends GeoTIFF {
             exception = null;
         }
         args[0] = Tags.name(tag);
-        owner.warning(errors().getString(key, args), exception);
+        store.warning(errors().getString(key, args), exception);
     }
 
     /**

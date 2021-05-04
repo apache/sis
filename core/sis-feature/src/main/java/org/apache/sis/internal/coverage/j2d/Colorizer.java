@@ -474,7 +474,7 @@ reuse:  if (source != null) {
         checkInitializationStatus(true);
         ArgumentChecks.ensureStrictlyPositive("numBands", numBands);
         ArgumentChecks.ensureBetween("visibleBand", 0, numBands - 1, visibleBand);
-        return ColorModelFactory.createColorModel(dataType, numBands, visibleBand, entries);
+        return ColorModelFactory.createPiecewise(dataType, numBands, visibleBand, entries);
     }
 
     /**

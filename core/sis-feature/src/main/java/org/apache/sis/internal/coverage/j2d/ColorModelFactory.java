@@ -26,10 +26,12 @@ import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.PackedColorModel;
+import java.awt.image.DirectColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.Debug;
@@ -310,10 +312,10 @@ public final class ColorModelFactory {
      *
      * @see Colorizer
      */
-    public static ColorModel createColorModel(final int dataType, final int numBands, final int visibleBand,
-                                              final Collection<Map.Entry<NumberRange<?>,Color[]>> colors)
+    public static ColorModel createPiecewise(final int dataType, final int numBands, final int visibleBand,
+                                             final Collection<Map.Entry<NumberRange<?>,Color[]>> colors)
     {
-        return createColorModel(dataType, numBands, visibleBand, ColorsForRange.list(colors));
+        return createPiecewise(dataType, numBands, visibleBand, ColorsForRange.list(colors));
     }
 
     /**
@@ -335,8 +337,8 @@ public final class ColorModelFactory {
      * @param  colors       the colors associated to ranges of sample values.
      * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
      */
-    static ColorModel createColorModel(final int dataType, final int numBands, final int visibleBand,
-                                       final ColorsForRange[] colors)
+    static ColorModel createPiecewise(final int dataType, final int numBands, final int visibleBand,
+                                      final ColorsForRange[] colors)
     {
         final ColorModelFactory key = new ColorModelFactory(dataType, numBands, visibleBand, colors);
         synchronized (PIECEWISES) {
@@ -357,7 +359,7 @@ public final class ColorModelFactory {
      * @param  transparent  the transparent pixel, or -1 for auto-detection.
      * @return An index color model for the specified array.
      */
-    public static IndexColorModel createIndexColorModel(final int numBands, final int visibleBand, final int[] ARGB, int transparent) {
+    public static IndexColorModel createIndexColorModel(final int numBands, final int visibleBand, final int[] ARGB, final int transparent) {
         /*
          * No need to scan the ARGB values in search of a transparent pixel;
          * the IndexColorModel constructor does that for us.
@@ -373,6 +375,26 @@ public final class ColorModelFactory {
                                                dataType, numBands, visibleBand);
         }
         return unique(cm);
+    }
+
+    /**
+     * Returns a color model interpolated for the given range of values. This is a convenience method for
+     * {@link #createColorModel(int, int, int, Collection)} when the collection contains only one element.
+     *
+     * @param  dataType     the color model type.
+     * @param  numBands     the number of bands for the color model (usually 1).
+     * @param  visibleBand  the band to be made visible (usually 0). All other bands (if any) will be ignored.
+     * @param  minimum      the minimum value, inclusive.
+     * @param  maximum      the maximum value, inclusive.
+     * @param  colors       the colors to use for the range of sample values.
+     * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
+     */
+    public static ColorModel createColorScale(final int dataType, final int numBands, final int visibleBand,
+                                              final double minimum, final double maximum, final Color... colors)
+    {
+        return createPiecewise(dataType, numBands, visibleBand, new ColorsForRange[] {
+            new ColorsForRange(null, new NumberRange<>(Double.class, minimum, true, maximum, true), colors)
+        });
     }
 
     /**
@@ -453,21 +475,55 @@ public final class ColorModelFactory {
     }
 
     /**
+     * Creates a RGB color model. The {@code packed} argument should be
+     * {@code true}  for color model used with {@link java.awt.image.SinglePixelPackedSampleModel}, and
+     * {@code false} for color model used with {@link java.awt.image.BandedSampleModel}.
+     *
+     * @param  bitsPerSample  number of bits per sample, between 1 and 8 inclusive.
+     * @param  packed         whether sample values are packed in a single element.
+     * @param  hasAlpha       whether the color model should have an alpha channel.
+     * @return the color model.
+     */
+    public static ColorModel createRGB(final int bitsPerSample, final boolean packed, final boolean hasAlpha) {
+        if ((hasAlpha & packed) && bitsPerSample == Byte.SIZE) {
+            return ColorModel.getRGBdefault();
+        }
+        ArgumentChecks.ensureBetween("bitsPerSample", 1, Byte.SIZE, bitsPerSample);
+        final int mask = (1 << bitsPerSample) - 1;
+        final ColorModel cm;
+        if (packed) {
+            cm = new DirectColorModel((hasAlpha ? 4 : 3) * bitsPerSample,
+                    mask << (bitsPerSample * 2),        // Red
+                    mask <<  bitsPerSample,             // Green
+                    mask,                               // Blue
+                    hasAlpha ? mask << (bitsPerSample * 3) : 0);
+        } else {
+            final int[] numBits = new int[hasAlpha ? 4 : 3];
+            Arrays.fill(numBits, bitsPerSample);
+            cm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), numBits, hasAlpha, false,
+                            hasAlpha ? Transparency.TRANSLUCENT : Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+        }
+        return unique(cm);
+    }
+
+    /**
      * Creates a color model with only a subset of the bands of the given color model.
      *
      * @param  cm     the color model, or {@code null}.
      * @param  bands  the bands to select.
      * @return the subset color model, or {@code null} if it can not be created.
      */
-    public static ColorModel createSubsetColorModel(final ColorModel cm, final int[] bands) {
+    public static ColorModel createSubset(final ColorModel cm, final int[] bands) {
+        final ColorModel subset;
         if (cm instanceof MultiBandsIndexColorModel) {
-            return unique(((MultiBandsIndexColorModel) cm).createSubsetColorModel(bands));
+            subset = ((MultiBandsIndexColorModel) cm).createSubsetColorModel(bands);
+        } else if (cm instanceof ScaledColorModel) {
+            subset = ((ScaledColorModel) cm).createSubsetColorModel(bands);
+        } else {
+            // TODO: handle other color models.
+            return Colorizer.NULL_COLOR_MODEL;
         }
-        if (cm instanceof ScaledColorModel) {
-            return unique(((ScaledColorModel) cm).createSubsetColorModel(bands));
-        }
-        // TODO: handle other color models.
-        return Colorizer.NULL_COLOR_MODEL;
+        return unique(subset);
     }
 
     /**

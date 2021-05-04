@@ -182,6 +182,7 @@ final class GridGeometryBuilder {
 
     /**
      * The grid geometry to be created by {@link #build(long, long)}.
+     * It has 2 or 3 dimensions, depending on whether the CRS declares a vertical axis or not.
      */
     public GridGeometry gridGeometry;
 
@@ -295,7 +296,7 @@ final class GridGeometryBuilder {
                 if (e instanceof NoSuchAuthorityCodeException) {
                     key = Resources.Keys.UnknownCRS_1;
                 }
-                reader.owner.warning(reader.resources().getString(key, reader.owner.getDisplayName()), e);
+                reader.store.warning(reader.resources().getString(key, reader.store.getDisplayName()), e);
             } catch (IllegalArgumentException | NoSuchElementException | ClassCastException e) {
                 if (!helper.alreadyReported) {
                     canNotCreate(e);
@@ -304,7 +305,7 @@ final class GridGeometryBuilder {
         }
         /*
          * If the CRS is non-null, then it is either two- or three-dimensional.
-         * The 'affine' matrix may be for a greater number of dimensions, so it
+         * The `affine` matrix may be for a greater number of dimensions, so it
          * may need to be reduced.
          */
         int n = (crs != null) ? crs.getCoordinateSystem().getDimension() : 2;
@@ -392,6 +393,6 @@ final class GridGeometryBuilder {
      * Logs a warning telling that we can not create a grid geometry for the given reason.
      */
     private void canNotCreate(final Exception e) {
-        reader.owner.warning(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, reader.input.filename), e);
+        reader.store.warning(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, reader.input.filename), e);
     }
 }
