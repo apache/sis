@@ -552,7 +552,7 @@ final class ResampledGridCoverage extends GridCoverage {
      * Delegates to the source coverage, which should transform the point itself if needed.
      */
     @Override
-    public Evaluator evaluator() {
+    public Interpolator evaluator() {
         return source.evaluator();
     }
 }

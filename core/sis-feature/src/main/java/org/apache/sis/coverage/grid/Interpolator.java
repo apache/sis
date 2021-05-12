@@ -16,7 +16,6 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.function.Function;
 import java.awt.image.RenderedImage;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
@@ -36,14 +35,15 @@ import org.apache.sis.util.ArgumentChecks;
 
 /**
  * Computes or interpolates values of sample dimensions at given positions.
+ * Values are computed by calls to {@link #apply(DirectPosition)} and are returned as {@code double[]}.
  *
  * <h2>Multi-threading</h2>
- * Evaluators are not thread-safe. An instance of {@code Evaluator} should be created
+ * Evaluators are not thread-safe. An instance of {@code Interpolator} should be created
  * for each thread that need to compute sample values.
  *
  * <h2>Limitations</h2>
- * Current implementation performs nearest-neighbor sampling only.
- * A future version will provide interpolations.
+ * Despite the {@code Interpolator} class name, current implementation performs
+ * nearest-neighbor sampling only. A future version will provide interpolations.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -54,7 +54,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @since 1.1
  * @module
  */
-public class Evaluator implements Function<DirectPosition, double[]> {
+public class Interpolator implements GridCoverage.Evaluator {
     /**
      * The coverage in which to evaluate sample values.
      */
@@ -96,14 +96,14 @@ public class Evaluator implements Function<DirectPosition, double[]> {
 
     /**
      * Creates a new evaluator for the given coverage. This constructor is protected for allowing
-     * {@link GridCoverage} subclasses to provide their own {@code Evaluator} implementations.
+     * {@link GridCoverage} subclasses to provide their own {@code Interpolator} implementations.
      * For using an evaluator, invoke {@link GridCoverage#evaluator()} instead.
      *
      * @param  coverage  the coverage for which to create an evaluator.
      *
      * @see GridCoverage#evaluator()
      */
-    protected Evaluator(final GridCoverage coverage) {
+    protected Interpolator(final GridCoverage coverage) {
         ArgumentChecks.ensureNonNull("coverage", coverage);
         this.coverage = coverage;
     }
@@ -113,6 +113,7 @@ public class Evaluator implements Function<DirectPosition, double[]> {
      *
      * @return the source of sample values for this evaluator.
      */
+    @Override
     public GridCoverage getCoverage() {
         return coverage;
     }
@@ -124,6 +125,7 @@ public class Evaluator implements Function<DirectPosition, double[]> {
      *
      * @return whether {@link #apply(DirectPosition)} return {@code null} for points outside coverage bounds.
      */
+    @Override
     public boolean isNullIfOutside() {
         return nullIfOutside;
     }
@@ -137,6 +139,7 @@ public class Evaluator implements Function<DirectPosition, double[]> {
      * @param  flag  whether {@link #apply(DirectPosition)} should use {@code null} return value instead than
      *               {@link PointOutsideCoverageException} for signaling that a point is outside coverage bounds.
      */
+    @Override
     public void setNullIfOutside(final boolean flag) {
         nullIfOutside = flag;
     }
@@ -144,8 +147,8 @@ public class Evaluator implements Function<DirectPosition, double[]> {
     /**
      * Returns a sequence of double values for a given point in the coverage.
      * The CRS of the given point may be any coordinate reference system;
-     * coordinate transformations will be applied as needed.
-     * If the CRS of the point is undefined, then it is assumed to be the same as the {@linkplain #coverage}.
+     * coordinate conversions will be applied as needed.
+     * If the CRS of the point is undefined, then it is assumed to be the {@linkplain #getCoverage() coverage} CRS.
      * The returned sequence includes a value for each {@linkplain SampleDimension sample dimension}.
      *
      * <p>The default interpolation type used when accessing grid values for points which fall between
@@ -155,12 +158,13 @@ public class Evaluator implements Function<DirectPosition, double[]> {
      * around the point. Subclasses should override with more efficient implementation.</p>
      *
      * @param  point   the coordinate point where to evaluate.
-     * @return the sample values at the specified point. For performance reason, this method may return
-     *         the same array on every method call by overwriting previous values.
+     * @return the sample values at the specified point, or {@code null} if the point is outside the coverage.
+     *         For performance reason, this method may return the same array
+     *         on every method call by overwriting previous values.
      *         Callers should not assume that the array content stay valid for a long time.
      * @throws PointOutsideCoverageException if the evaluation failed because the input point
-     *         has invalid coordinates.
-     * @throws CannotEvaluateException if the values can not be computed at the specified coordinate
+     *         has invalid coordinates and the {@link #isNullIfOutside()} flag is {@code false}.
+     * @throws CannotEvaluateException if the values can not be computed at the specified coordinates
      *         for another reason. This exception may be thrown if the coverage data type can not be
      *         converted to {@code double} by an identity or widening conversion.
      *         Subclasses may relax this constraint if appropriate.

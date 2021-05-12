@@ -43,7 +43,7 @@ import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.gui.coverage.CoverageCanvas;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.Evaluator;
+import org.apache.sis.coverage.grid.Interpolator;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.internal.system.Modules;
@@ -224,7 +224,7 @@ public abstract class ValuesUnderCursor {
         /**
          * The object computing or interpolation sample values in the coverage.
          */
-        private Evaluator evaluator;
+        private Interpolator evaluator;
 
         /**
          * The selection status of each band.
@@ -480,7 +480,7 @@ public abstract class ValuesUnderCursor {
          * @param  point  the cursor location in arbitrary CRS, or {@code null} if outside canvas region.
          * @return string representation of data under given position, or {@code null} if none.
          *
-         * @see Evaluator#apply(DirectPosition)
+         * @see Interpolator#apply(DirectPosition)
          */
         @Override
         public String evaluate(final DirectPosition point) {

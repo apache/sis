@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.coverage.BandedCoverage;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.image.DataType;
@@ -58,7 +59,7 @@ import org.opengis.coverage.CannotEvaluateException;
  * @since   1.0
  * @module
  */
-public abstract class GridCoverage {
+public abstract class GridCoverage extends BandedCoverage {
     /**
      * The processor to use for {@link #convert(RenderedImage, DataType, MathTransform1D[])} operations.
      * Wrapped in a class for lazy instantiation.
@@ -161,6 +162,7 @@ public abstract class GridCoverage {
      *
      * @see org.apache.sis.storage.GridCoverageResource#getSampleDimensions()
      */
+    @Override
     public List<SampleDimension> getSampleDimensions() {
         return UnmodifiableArrayList.wrap(sampleDimensions);
     }
@@ -269,19 +271,20 @@ public abstract class GridCoverage {
     /**
      * Creates a new function for computing or interpolating sample values at given locations.
      * That function accepts {@link DirectPosition} in arbitrary Coordinate Reference System;
-     * conversion to grid indices are applied as needed.
+     * conversions to grid indices are applied as needed.
      *
      * <h4>Multi-threading</h4>
-     * {@code Evaluator}s are not thread-safe. For computing sample values concurrently,
-     * a new {@link Evaluator} instance should be created for each thread by invoking this
+     * {@code Interpolator}s are not thread-safe. For computing sample values concurrently,
+     * a new {@link Interpolator} instance should be created for each thread by invoking this
      * method multiply times.
      *
      * @return a new function for computing or interpolating sample values.
      *
      * @since 1.1
      */
-    public Evaluator evaluator() {
-        return new Evaluator(this);
+    @Override
+    public Interpolator evaluator() {
+        return new Interpolator(this);
     }
 
     /**

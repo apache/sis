@@ -453,20 +453,20 @@ public class GridCoverage2D extends GridCoverage {
      * Creates a new function for computing or interpolating sample values at given locations.
      *
      * <h4>Multi-threading</h4>
-     * {@code Evaluator}s are not thread-safe. For computing sample values concurrently,
-     * a new {@link Evaluator} instance should be created for each thread.
+     * {@code Interpolator}s are not thread-safe. For computing sample values concurrently,
+     * a new {@link Interpolator} instance should be created for each thread.
      *
      * @since 1.1
      */
     @Override
-    public Evaluator evaluator() {
+    public Interpolator evaluator() {
         return new PixelAccessor();
     }
 
     /**
      * Implementation of evaluator returned by {@link #evaluator()}.
      */
-    private final class PixelAccessor extends Evaluator {
+    private final class PixelAccessor extends Interpolator {
         /**
          * Creates a new evaluator for the enclosing coverage.
          */

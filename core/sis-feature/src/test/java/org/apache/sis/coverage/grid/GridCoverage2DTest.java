@@ -192,11 +192,11 @@ public strictfp class GridCoverage2DTest extends TestCase {
     }
 
     /**
-     * Tests {@link Evaluator#apply(DirectPosition)}.
+     * Tests {@link Interpolator#apply(DirectPosition)}.
      */
     @Test
     public void testEvaluator() {
-        final Evaluator evaluator = createTestCoverage().evaluator();
+        final Interpolator evaluator = createTestCoverage().evaluator();
         /*
          * Test evaluation at indeger indices. No interpolation should be applied.
          */
