@@ -23,6 +23,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
+import org.apache.sis.coverage.grid.GridClippingMode;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
@@ -79,30 +80,36 @@ final class CoverageSubset extends AbstractGridResource {
      */
     @Override
     public GridGeometry getGridGeometry() throws DataStoreException {
-        return clip(source.getGridGeometry(),
-                    query.getDomain(),
-                    GridRoundingMode.NEAREST,
-                    query.getSourceDomainExpansion());
+        /*
+         * The grid should be fully contained in the resource specified at construction time,
+         * including margin expansion (if any), because data may not exist outside that area.
+         * This requirement is specified by `GridClippingMode.STRICT`.
+         */
+        return clip(source.getGridGeometry(), GridRoundingMode.NEAREST, GridClippingMode.STRICT);
     }
 
     /**
-     * Clips the given domain to an area of interest. If any argument is null, the other one is returned.
+     * Clips the given domain to the area of interest specified by the query. If any grid geometry is null,
+     * the other one is returned. The {@code domain} argument should be the domain to read as specified to
+     * {@link #read(GridGeometry, int...)}, or the full {@code CoverageSubset} domain if no value were given
+     * to the {@code read(…)} method.
      *
-     * @param  domain          the domain to clip, or {@code null}.
-     * @param  areaOfInterest  the area of interest, or {@code null}.
-     * @param  rounding        whether to clip to nearest box or an enclosing box.
-     * @param  expansion       number of additional cells to read on each border of the source grid coverage.
-     * @return intersection of the given grid geometry.
+     * @param  domain    the domain requested in a read operation, or {@code null}.
+     * @param  rounding  whether to clip to nearest box or an enclosing box.
+     * @param  clipping  whether to clip the resulting extent to the specified {@code domain} extent.
+     * @return intersection of the given grid geometry with the query domain.
      * @throws DataStoreException if the intersection can not be computed.
      */
-    private GridGeometry clip(final GridGeometry domain, final GridGeometry areaOfInterest,
-            final GridRoundingMode rounding, final int expansion) throws DataStoreException
+    private GridGeometry clip(final GridGeometry domain, final GridRoundingMode rounding, final GridClippingMode clipping)
+            throws DataStoreException
     {
+        final GridGeometry areaOfInterest = query.getDomain();
         if (domain == null) return areaOfInterest;
         if (areaOfInterest == null) return domain;
         try {
-            final GridDerivation derivation = domain.derive().rounding(rounding);
-            if (expansion > 0) {
+            final GridDerivation derivation = domain.derive().rounding(rounding).clipping(clipping);
+            final int expansion = query.getSourceDomainExpansion();
+            if (expansion != 0) {
                 final int[] margins = new int[domain.getDimension()];
                 Arrays.fill(margins, expansion);
                 derivation.margin(margins);
@@ -150,6 +157,13 @@ final class CoverageSubset extends AbstractGridResource {
 
     /**
      * Loads a subset of the grid coverage represented by this resource.
+     * The domain to be read by the resource is computed as below:
+     * <ul>
+     *   <li>If the query specifies a {@linkplain CoverageQuery#getDomain() domain},
+     *       the given domain is intersected with the query domain.</li>
+     *   <li>If the query specifies a {@linkplain CoverageQuery#getSourceDomainExpansion() domain expansion},
+     *       the given domain is expanded by the amount specified in the query.</li>
+     * </ul>
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
      * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
@@ -161,7 +175,11 @@ final class CoverageSubset extends AbstractGridResource {
         if (domain == null) {
             domain = source.getGridGeometry();
         }
-        domain = clip(domain, query.getDomain(), GridRoundingMode.ENCLOSING, query.getSourceDomainExpansion());
+        /*
+         * Relax the clipping mode because we would need to clip not inside the
+         * specified `domain` but inside the source domain, which may be larger.
+         */
+        domain = clip(domain, GridRoundingMode.ENCLOSING, GridClippingMode.BORDER_EXPANSION);
         final int[] qr = query.getRange();
         if (range == null) {
             range = qr;

@@ -345,6 +345,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @param  crs        the coordinate reference system, or {@code null}.
      * @param  dimension  number of name type to infer. Shall not be greater than the CRS dimension.
+     * @return axis types, or {@code null} if no axis were recognized.
      */
     static DimensionNameType[] typeFromAxes(final CoordinateReferenceSystem crs, final int dimension) {
         DimensionNameType[] axisTypes = null;
@@ -377,7 +378,9 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @param  envelope            the envelope containing cell indices to store in a {@code GridExtent}.
      * @param  rounding            controls behavior of rounding from floating point values to integers.
+     * @param  clipping            whether to clip this extent to the enclosing extent.
      * @param  margin              if non-null, expands the extent by that amount of cells on each envelope dimension.
+     * @param  chunkSize           if non-null, make the grid extent spanning an integer amount of chunks (tiles).
      * @param  enclosing           if the new grid is a sub-grid of a larger grid, that larger grid. Otherwise {@code null}.
      * @param  modifiedDimensions  if {@code enclosing} is non-null, the grid dimensions to set from the envelope.
      *                             The length of this array shall be equal to the {@code envelope} dimension.
@@ -387,8 +390,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @see #toCRS(MathTransform, MathTransform, Envelope)
      * @see #slice(DirectPosition, int[])
      */
-    GridExtent(final AbstractEnvelope envelope, final GridRoundingMode rounding, final int[] margin,
-               final GridExtent enclosing, final int[] modifiedDimensions)
+    GridExtent(final AbstractEnvelope envelope, final GridRoundingMode rounding, final GridClippingMode clipping,
+               final int[] margin, final int[] chunkSize, final GridExtent enclosing, final int[] modifiedDimensions)
     {
         final int dimension = envelope.getDimension();
         coordinates = (enclosing != null) ? enclosing.coordinates.clone() : allocate(dimension);
@@ -424,7 +427,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             }
             if (!isMinValid) min = Long.MIN_VALUE;
             if (!isMaxValid) max = Long.MAX_VALUE;
-            long lower, upper;
+            long lower, upper;                                                  // Both inclusive (upper as well).
             switch (rounding) {
                 default: {
                     throw new AssertionError(rounding);
@@ -484,9 +487,25 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 }
             }
             /*
+             * If caller requested to clip only the user Area Of Interest (AOI) without constraining the
+             * margin or chunk size, then we need to do clipping now instead than at the end of this loop.
+             */
+            if (enclosing != null && clipping == GridClippingMode.BORDER_EXPANSION) {
+                final int  lo = (modifiedDimensions != null) ? modifiedDimensions[i] : i;
+                final int  hi = lo + getDimension();
+                final long lv = Math.max(lower, coordinates[lo]);
+                final long hv = Math.min(upper, coordinates[hi]);
+                if (lv > hv) {
+                    throw new DisjointExtentException(getAxisIdentification(lo, i),
+                                        coordinates[lo], coordinates[hi], lv, hv);
+                }
+                lower = lv;
+                upper = hv;
+            }
+            /*
              * If the user specified a margin, add it now. The margin dimension indices follow the envelope
              * dimension indices.  Note that the resulting extent will be intersected with enclosing extent
-             * at the next step, which may cancel the margin effect.
+             * at a next step, which may cancel the margin effect.
              *
              * Note about overflow checks: if m>0, then x < x+m unless the result overflows the `long` capacity.
              */
@@ -505,15 +524,24 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 lower = upper;
             }
             /*
+             * If chunk size has been specified, snap the coordinates to a multiple of that size.
+             * The new extent will be clipped with `enclosing` (if non-null) in next step.
+             * Note: formulas used here are the same than in `forChunkSize(…)` method.
+             */
+            if (chunkSize != null && i < chunkSize.length) {
+                final int s = chunkSize[i];
+                lower = Math.subtractExact(lower, Math.floorMod(lower, s));
+                upper = Math.addExact(upper, (s-1) - Math.floorMod(upper, s));
+            }
+            /*
              * At this point the grid range has been computed (lower to upper). Compute intersection,
              * then update the coordinates accordingly. Note that if envelope coordinates were NaN,
              * they will have been replaced by `Long.MIN/MAX_VALUE`, which will usually cause the
              * assignation to be skipt below (so we keep the values inherited from `enclosing`).
              */
-            final int m = getDimension();
-            if (enclosing != null) {
+            if (enclosing != null && clipping == GridClippingMode.STRICT) {
                 final int lo = (modifiedDimensions != null) ? modifiedDimensions[i] : i;
-                final int hi = lo + m;
+                final int hi = lo + getDimension();
                 final long validMin = coordinates[lo];
                 final long validMax = coordinates[hi];
                 if (lower > validMin) coordinates[lo] = lower;
@@ -522,8 +550,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                     throw new DisjointExtentException(getAxisIdentification(lo, i), validMin, validMax, lower, upper);
                 }
             } else {
-                coordinates[i]   = lower;
-                coordinates[i+m] = upper;
+                coordinates[i] = lower;
+                coordinates[i + getDimension()] = upper;
             }
         }
     }
@@ -1092,9 +1120,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * and subtracts the same margins from the {@linkplain #getLow(int) low coordinates}.
      * If a negative margin is supplied, the extent size decreases accordingly.
      *
-     * <p>Invoking this method is equivalent to invoking
-     * <code>{@linkplain #expand(long[], long[]) expand}(margins, margins)</code>.
-     *
      * <h4>Number of arguments</h4>
      * The {@code margins} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
      * If the array is shorter, missing values default to 0 (i.e. sizes in unspecified dimensions are unchanged).
@@ -1103,6 +1128,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @param  margins  amount of cells to add or subtract on both sides for each dimension.
      * @return a grid extent expanded by the given amount, or {@code this} if there is no change.
      * @throws ArithmeticException if expanding this extent by the given margins overflows {@code long} capacity.
+     *
+     * @see GridDerivation#margin(int...)
      */
     public GridExtent expand(final long... margins) {
         ArgumentChecks.ensureNonNull("margins", margins);
@@ -1122,45 +1149,33 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns a grid extent expanded by the given amount of cells along each dimension.
-     * This method adds {@code addToHigh} to the {@linkplain #getHigh(int) high coordinates}
-     * and subtracts {@code subtractFromLow} from the {@linkplain #getLow(int) low coordinates}.
-     * If a negative value is supplied, the extent size decreases accordingly.
+     * Returns a grid extent expanded by the minimal amount of cells needed for covering an integer amount of chunks.
+     * The grid coordinates (0, 0, …) locate the corner of a chunk.
      *
      * <h4>Number of arguments</h4>
-     * The array lengths should be equal to the {@linkplain #getDimension() number of dimensions}.
-     * If an array is shorter, missing values default to 0 (i.e. sizes in unspecified dimensions are unchanged).
-     * If an array is longer, extraneous values are ignored.
+     * The {@code sizes} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing values default to 1. If the array is longer, extraneous values are ignored.
      *
-     * @param  subtractFromLow  amount of cells to subtract from low coordinates in each dimension, or {@code null} if none.
-     * @param  addToHigh        amount of cells to add to high coordinates for each dimension, or {@code null} if none.
-     * @return a grid extent expanded by the given amount, or {@code this} if there is no change.
-     * @throws ArithmeticException if expanding this extent by the given margin overflows {@code long} capacity.
+     * @param  sizes  number of cells in all tiles or chunks.
+     * @return a grid extent expanded for the given chunk size.
      *
-     * @see GridDerivation#margin(int...)
-     *
-     * @since 1.1
+     * @see GridDerivation#chunkSize(int...)
      */
-    public GridExtent expand(final long[] subtractFromLow, final long[] addToHigh) {
+    final GridExtent forChunkSize(final int... sizes) {
+        /*
+         * Current implementation does not validate argument because this method is not public.
+         * If we make this method public in the future, argument validation should be added.
+         */
         final int m = getDimension();
-        int nlo = 0;
-        if (subtractFromLow != null) {
-            nlo = Math.min(m, subtractFromLow.length);
-            if (isZero(subtractFromLow, nlo)) nlo = 0;
-        }
-        int nhi = 0;
-        if (addToHigh != null) {
-            nhi = Math.min(m, addToHigh.length);
-            if (isZero(addToHigh, nhi)) nhi = 0;
-        }
-        final int length = Math.max(nlo, nhi);
-        if (length == 0) {
-            return this;
-        }
+        final int length = Math.min(m, sizes.length);
         final GridExtent resized = new GridExtent(this);
         final long[] c = resized.coordinates;
-        for (int i=0; i<nlo; i++) c[i] = Math.subtractExact(c[i], subtractFromLow[i]);
-        for (int i=0; i<nhi; i++) c[i+m] = Math.addExact(c[i+m], addToHigh[i]);
+        for (int i=0; i<length; i++) {
+            final int s = sizes[i];
+            final int j = i + m;
+            c[i] = Math.subtractExact(c[i], Math.floorMod(c[i], s));
+            c[j] = Math.addExact(c[j], (s-1) - Math.floorMod(c[j], s));
+        }
         return resized;
     }
 
@@ -1285,7 +1300,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @return the subsampled extent, or {@code this} is subsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
      *
-     * @see GridDerivation#subsample(int...)
+     * @see GridDerivation#subgrid(GridExtent, int...)
      */
     public GridExtent subsample(final int... periods) {
         ArgumentChecks.ensureNonNull("periods", periods);
@@ -1459,6 +1474,28 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             return translated;
         }
         return this;
+    }
+
+    /**
+     * Returns the intersection of this grid extent with to the given grid extent.
+     * The given extent shall have the same number of dimensions.
+     *
+     * <p>This method is not public because we do not yet have a policy
+     * about whether we should verify if axis {@link #types} match.</p>
+     *
+     * @param  other  the grid to intersect with.
+     * @return the intersection result. May be one of the existing instances.
+     */
+    final GridExtent intersect(final GridExtent other) {
+        final int n = coordinates.length;
+        final int m = n >>> 1;
+        final long[] clipped = new long[n];
+        int i = 0;
+        while (i < m) {clipped[i] = Math.max(coordinates[i], other.coordinates[i]); i++;}
+        while (i < n) {clipped[i] = Math.min(coordinates[i], other.coordinates[i]); i++;}
+        if (Arrays.equals(clipped,  this.coordinates)) return this;
+        if (Arrays.equals(clipped, other.coordinates)) return other;
+        return new GridExtent(this, clipped);
     }
 
     /**

@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage;
 
 import java.util.List;
+import java.util.Arrays;
 import java.awt.image.RenderedImage;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
@@ -127,20 +128,36 @@ public class MemoryGridResource extends AbstractGridResource {
         /*
          * After `render(…)` execution, the (minX, minY) image coordinates are the differences between
          * the extent that we requested and the one that we got. If that differences is not zero, then
-         * we need to translate the `GridExtent` in order to make it matches what we got.
+         * we need to translate the `GridExtent` in order to make it matches what we got. But before to
+         * apply that translation, we adjust the grid size (because it may add another translation).
          */
         RenderedImage data = coverage.render(intersection);
         if (intersection != null) {
             final int[]  sd      = intersection.getSubspaceDimensions(2);
             final int    dimX    = sd[0];
             final int    dimY    = sd[1];
+            final long   ox      = intersection.getLow(dimX);
+            final long   oy      = intersection.getLow(dimY);
             final long[] changes = new long[Math.max(dimX, dimY) + 1];
-            changes[dimX] = data.getMinX();
-            changes[dimY] = data.getMinY();
+            for (int i = changes.length; --i >= 0;) {
+                changes[i] = intersection.getSize(i);       // We need only the dimensions that may change.
+            }
+            changes[dimX] = data.getWidth();
+            changes[dimY] = data.getHeight();
+            intersection  = intersection.resize(changes);
+            /*
+             * Apply the translation after we resized the grid extent, because the resize operation
+             * may have caused an additional translation. We cancel that translation with terms that
+             * restore the (ox,oy) lower coordinates before to add the data minimum X,Y.
+             */
+            Arrays.fill(changes, 0);
+            changes[dimX] = Math.addExact(ox - intersection.getLow(dimX), data.getMinX());
+            changes[dimY] = Math.addExact(oy - intersection.getLow(dimY), data.getMinX());
             intersection  = intersection.translate(changes);
-            changes[dimX] = Math.subtractExact(data.getWidth(),  intersection.getSize(dimX));
-            changes[dimY] = Math.subtractExact(data.getHeight(), intersection.getSize(dimY));
-            intersection  = intersection.expand(null, changes);
+            /*
+             * If the result is the same intersection than the source coverage,
+             * we may be able to return that coverage directly.
+             */
             if (intersection.equals(source.getExtent())) {
                 if (sameBands) {
                     return coverage;

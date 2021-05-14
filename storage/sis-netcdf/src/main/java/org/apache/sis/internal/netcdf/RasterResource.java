@@ -641,7 +641,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
                     .rounding(GridRoundingMode.ENCLOSING)
                     .subgrid(domain);
             GridExtent areaOfInterest = targetGeometry.getIntersection();           // Pixel indices of data to read.
-            int[]      subsamplings   = targetGeometry.getSubsamplings();           // Slice to read or subsampling to apply.
+            int[]      subsamplings   = targetGeometry.getSubsampling();            // Slice to read or subsampling to apply.
             int        numBuffers     = bands.length;                               // By default, one variable per band.
             domain = targetGeometry.build();                                        // Adjust user-specified domain to data geometry.
             if (bandDimension >= 0) {

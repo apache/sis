@@ -389,7 +389,7 @@ final class ResampledGridCoverage extends GridCoverage {
                 GeneralEnvelope bounds = new GeneralEnvelope(resampled.getEnvelope());
                 bounds.intersect(target.getEnvelope());
                 bounds = Envelopes.transform(targetCornerToCRS.inverse(), bounds);
-                targetExtent = new GridExtent(bounds, GridRoundingMode.NEAREST, null, targetExtent, null);
+                targetExtent = new GridExtent(bounds, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, targetExtent, null);
                 resampled = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetCenterToCRS, targetCRS);
                 isGeometryExplicit = true;
             }
@@ -434,7 +434,7 @@ final class ResampledGridCoverage extends GridCoverage {
             Arrays.fill(vector, 0.5);
             bounds.translate(vector);       // Convert cell centers to cell corners.
         }
-        return new GridExtent(bounds, GridRoundingMode.NEAREST, null, null, null);
+        return new GridExtent(bounds, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
     }
 
     /**
@@ -462,7 +462,7 @@ final class ResampledGridCoverage extends GridCoverage {
                     sourceBounds.setRange(i, min, max);
                 }
             }
-            sourceExtent = new GridExtent(sourceBounds, GridRoundingMode.ENCLOSING, null, null, null);
+            sourceExtent = new GridExtent(sourceBounds, GridRoundingMode.ENCLOSING, GridClippingMode.STRICT, null, null, null, null);
             final int[] resampledDimensions = sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
             final int[] sourceDimensions  =  sourceExtent.getSubspaceDimensions(BIDIMENSIONAL);
             bounds = new Rectangle(Math.toIntExact(sliceExtent.getSize(resampledDimensions[0])),

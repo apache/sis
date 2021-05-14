@@ -117,13 +117,22 @@ public final class CoverageQuery extends Query implements Cloneable {
     /**
      * Set a number of additional cells to read on each border of the source grid coverage.
      * If non-zero, this property expands the {@linkplain #getDomain() domain} to be read
-     * by an amount specified in unit of cells of the image to be read. Those cells do not
-     * necessarily have the same size than the cells of <code>domain.getExtent()</code>.
+     * by the specified margin.
      *
-     * <p>At reading time it may be necessary to add such margin to the coverage extent.
-     * This margin is used when the user knows that an image processing operation will
-     * need to iterate over a little bit more data than the area of interest.
-     * For example the bilinear interpolation uses a 2×2 pixels window.</p>
+     * <h4>Unit of measurement</h4>
+     * The parameter value is a number of cells in the {@code domain} argument specified
+     * in a {@linkplain GridCoverageResource#read(GridGeometry, int...) read operation}.
+     * If no {@code domain} is specified at read time, then this is a number of cells in
+     * the full image to be read from the resource. Cells are counted after subsampling,
+     * e.g. cells are twice bigger if a subsampling of 2 is applied.
+     * Those cells do not necessarily have the same size than the cells
+     * of the {@linkplain #getDomain() domain of this query}.
+     *
+     * <h4>Use case</h4>
+     * At reading time it may be necessary to add a margin to the coverage extent.
+     * This margin is used when the user knows that an image processing operation
+     * will need to iterate over a little bit more data than the area of interest.
+     * For example the bilinear interpolation uses a 2×2 pixels window.
      *
      * @param  margin  read margin, which must be zero or positive.
      */

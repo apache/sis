@@ -518,7 +518,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             GeneralEnvelope env;
             try {
                 env = Envelopes.transform(cornerToCRS.inverse(), envelope);
-                extent = new GridExtent(env, rounding, null, null, null);
+                extent = new GridExtent(env, rounding, GridClippingMode.STRICT, null, null, null, null);
                 env = extent.toCRS(cornerToCRS, gridToCRS, envelope);     // `gridToCRS` specified by the user, not `this.gridToCRS`.
             } catch (TransformException e) {
                 throw new IllegalGridGeometryException(e, "gridToCRS");
@@ -1237,6 +1237,15 @@ public class GridGeometry implements LenientComparable, Serializable {
             && ((bitmask & RESOLUTION)        == 0 || (null != resolution))
             && ((bitmask & GEOGRAPHIC_EXTENT) == 0 || (null != geographicBBox()))
             && ((bitmask & TEMPORAL_EXTENT)   == 0 || (timeRange().length != 0));
+    }
+
+    /**
+     * Returns {@code true} if this grid geometry contains only a grid extent and no other information.
+     * Note: if {@link #gridToCRS} is {@code null}, then {@link #cornerToCRS} and {@link #resolution}
+     * should be null as well.
+     */
+    final boolean isExtentOnly() {
+        return gridToCRS == null && envelope == null && extent != null;
     }
 
     /**

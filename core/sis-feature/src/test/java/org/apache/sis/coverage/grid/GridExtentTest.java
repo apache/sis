@@ -81,14 +81,14 @@ public final strictfp class GridExtentTest extends TestCase {
 
     /**
      * Tests the {@link GridExtent#GridExtent(AbstractEnvelope,
-     * GridRoundingMode, int[], GridExtent, int[])} constructor.
+     * GridRoundingMode, int[], int[], GridExtent, int[])} constructor.
      */
     @Test
     public void testCreateFromEnvelope() {
         final GeneralEnvelope env = new GeneralEnvelope(HardCodedCRS.IMAGE);
         env.setRange(0, -23.01, 30.107);
         env.setRange(1,  12.97, 18.071);
-        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, null, null, null);
+        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
         assertExtentEquals(extent, 0, -23, 29);
         assertExtentEquals(extent, 1,  13, 17);
         assertEquals(DimensionNameType.COLUMN, extent.getAxisType(0).get());
@@ -97,7 +97,7 @@ public final strictfp class GridExtentTest extends TestCase {
 
     /**
      * Tests the {@link GridExtent#GridExtent(AbstractEnvelope, GridRoundingMode, int[],
-     * GridExtent, int[])} constructor when an envelope has a span close to zero.
+     * int[], GridExtent, int[])} constructor when an envelope has a span close to zero.
      */
     @Test
     public void testCreateFromThinEnvelope() {
@@ -105,7 +105,7 @@ public final strictfp class GridExtentTest extends TestCase {
         env.setRange(0,  11.22,  11.23);
         env.setRange(1, -23.02, -23.01);
         env.setRange(2,  34.91,  34.92);
-        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, null, null, null);
+        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
         assertExtentEquals(extent, 0,  11,  11);
         assertExtentEquals(extent, 1, -24, -24);
         assertExtentEquals(extent, 2,  34,  34);
@@ -113,7 +113,7 @@ public final strictfp class GridExtentTest extends TestCase {
 
     /**
      * Tests the rounding performed by the {@link GridExtent#GridExtent(AbstractEnvelope,
-     * GridRoundingMode, int[], GridExtent, int[])} constructor.
+     * GridRoundingMode, int[], int[], GridExtent, int[])} constructor.
      */
     @Test
     public void testRoundings() {
@@ -123,7 +123,7 @@ public final strictfp class GridExtentTest extends TestCase {
         env.setRange(2, 1.49998, 3.50001);      // Round to [1…4), stored as [1…2] (not [1…3]) because the span is close to 2.
         env.setRange(3, 1.49999, 3.50002);      // Round to [1…4), stored as [2…3] because the upper part is closer to integer.
         env.setRange(4, 1.2,     3.8);          // Round to [1…4), stores as [1…3] because the span is not close enough to integer.
-        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, null, null, null);
+        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
         assertExtentEquals(extent, 0, 1, 2);
         assertExtentEquals(extent, 1, 1, 2);
         assertExtentEquals(extent, 2, 1, 2);
@@ -179,17 +179,15 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#expand(long[], long[])}.
+     * Tests {@link GridExtent#forChunkSize(int[])}.
      */
     @Test
-    public void testExpand2() {
+    public void testForChunkSize() {
         GridExtent extent = create3D();
-        assertSame(extent, extent.expand(new long[2], null));
-        assertSame(extent, extent.expand(null, new long[] {0,0,0,5}));      // Extraneous dimension should be ignored.
-        extent = extent.expand(new long[] {30}, new long[] {20, -10});
-        assertExtentEquals(extent, 0,  70, 519);
-        assertExtentEquals(extent, 1, 200, 789);
-        assertExtentEquals(extent, 2,  40,  49);
+        extent = extent.forChunkSize(300, 200, 15);
+        assertExtentEquals(extent, 0,   0, 599);
+        assertExtentEquals(extent, 1, 200, 799);
+        assertExtentEquals(extent, 2,  30,  59);
     }
 
     /**
@@ -202,6 +200,22 @@ public final strictfp class GridExtentTest extends TestCase {
         assertExtentEquals(extent, 0, 50, 249);
         assertExtentEquals(extent, 1, 50, 199);
         assertExtentEquals(extent, 2, 40,  49);
+    }
+
+    /**
+     * Tests {@link GridExtent#intersect(GridExtent)}.
+     */
+    @Test
+    public void testIntersect() {
+        final GridExtent domain = new GridExtent(
+                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME},
+                new long[] {150, 220, 35}, new long[] {400, 820, 47}, false);
+        GridExtent extent = create3D();
+        extent = extent.intersect(domain);
+        assertExtentEquals(extent, 0, 150, 399);
+        assertExtentEquals(extent, 1, 220, 799);
+        assertExtentEquals(extent, 2, 40,  46);
+        assertSame(extent.intersect(domain), extent);
     }
 
     /**

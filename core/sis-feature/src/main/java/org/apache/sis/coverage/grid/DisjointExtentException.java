@@ -83,7 +83,8 @@ public class DisjointExtentException extends IllegalGridGeometryException {
      * @param dim      index of the dimension having an invalid value.
      */
     DisjointExtentException(final GridExtent source, final GridExtent request, final int dim) {
-        this(source.getAxisIdentification(dim, dim), source.getLow(dim), source.getHigh(dim),
+        this(source.getAxisIdentification(dim, dim),
+                source .getLow(dim), source .getHigh(dim),
                 request.getLow(dim), request.getHigh(dim));
     }
 }

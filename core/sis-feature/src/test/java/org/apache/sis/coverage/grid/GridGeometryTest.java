@@ -217,12 +217,14 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests the adjustment done for pixel center in {@link GridGeometry#GridGeometry(GridGeometry, GridExtent, MathTransform)}
-     * constructor. This test depends on {@link GridGeometry#derive()}, which will (indirectly) invoke the constructor to test.
+     * Tests the adjustment done for pixel center in
+     * {@link GridGeometry#GridGeometry(GridGeometry, GridExtent, MathTransform)} constructor.
      * We check envelopes as a more intuitive way to verify consistency than inspecting the math transforms.
+     *
+     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    public void testFromOtherDefinedAtCenter() {
+    public void testFromOtherDefinedAtCenter() throws TransformException {
         GridExtent extent = new GridExtent(126, 197);
         GridGeometry grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, MathTransforms.identity(2), HardCodedCRS.WGS84);
         GeneralEnvelope expected = new GeneralEnvelope(new double[] {-0.5, -0.5}, new double[] {125.5, 196.5});
@@ -232,7 +234,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          * Derive a new grid geometry with 10×10 times more cells. The geographic area should be unchanged.
          */
         extent = extent.resize(1260, 1970);
-        grid = grid.derive().resize(extent, 0.1, 0.1).build();
+        grid = new GridGeometry(grid, extent, MathTransforms.scale(0.1, 0.1));
         assertEnvelopeEquals(expected, grid.getEnvelope(), STRICT);
         verifyGridToCRS(grid);
         /*

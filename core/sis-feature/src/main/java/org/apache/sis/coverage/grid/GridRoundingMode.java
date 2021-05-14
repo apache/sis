@@ -18,7 +18,7 @@ package org.apache.sis.coverage.grid;
 
 
 /**
- * Specifies rounding behavior of computations of {@link GridExtent} from floating-point values.
+ * Specifies rounding behavior during computations of {@link GridExtent} from floating-point values.
  * The rounding mode controls how real numbers are converted into {@code GridExtent}'s
  * {@linkplain GridExtent#getLow(int) low}, {@linkplain GridExtent#getHigh(int) high} and
  * {@linkplain GridExtent#getSize(int) size} integer values.
