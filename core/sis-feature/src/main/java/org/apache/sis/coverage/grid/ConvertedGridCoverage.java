@@ -40,7 +40,7 @@ import org.apache.sis.image.DataType;
  *   <li>In calls to {@link #render(GridExtent)}, sample values are converted when first needed
  *       on a tile-by-tile basis then cached for future reuse. Note however that discarding the
  *       returned image may result in the lost of cached tiles.</li>
- *   <li>In calls to {@link Interpolator#apply(DirectPosition)}, the conversion is applied
+ *   <li>In calls to {@link GridEvaluator#apply(DirectPosition)}, the conversion is applied
  *       on-the-fly each time in order to avoid the potentially costly tile computations.</li>
  * </ul>
  *
@@ -199,24 +199,24 @@ final class ConvertedGridCoverage extends GridCoverage {
      * Creates a new function for computing or interpolating sample values at given locations.
      *
      * <h4>Multi-threading</h4>
-     * {@code Interpolator}s are not thread-safe. For computing sample values concurrently,
-     * a new {@link Interpolator} instance should be created for each thread.
+     * {@code GridEvaluator}s are not thread-safe. For computing sample values concurrently,
+     * a new {@link GridEvaluator} instance should be created for each thread.
      *
      * @since 1.1
      */
     @Override
-    public Interpolator evaluator() {
+    public GridEvaluator evaluator() {
         return new SampleConverter();
     }
 
     /**
      * Implementation of evaluator returned by {@link #evaluator()}.
      */
-    private final class SampleConverter extends Interpolator {
+    private final class SampleConverter extends GridEvaluator {
         /**
          * The evaluator provided by source coverage.
          */
-        private final Interpolator evaluator;
+        private final GridEvaluator evaluator;
 
         /**
          * Creates a new evaluator for the enclosing coverage.

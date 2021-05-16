@@ -38,12 +38,11 @@ import org.apache.sis.util.ArgumentChecks;
  * Values are computed by calls to {@link #apply(DirectPosition)} and are returned as {@code double[]}.
  *
  * <h2>Multi-threading</h2>
- * Evaluators are not thread-safe. An instance of {@code Interpolator} should be created
+ * Evaluators are not thread-safe. An instance of {@code GridEvaluator} should be created
  * for each thread that need to compute sample values.
  *
  * <h2>Limitations</h2>
- * Despite the {@code Interpolator} class name, current implementation performs
- * nearest-neighbor sampling only. A future version will provide interpolations.
+ * Current implementation performs nearest-neighbor sampling only. A future version will provide interpolations.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -54,7 +53,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @since 1.1
  * @module
  */
-public class Interpolator implements GridCoverage.Evaluator {
+public class GridEvaluator implements GridCoverage.Evaluator {
     /**
      * The coverage in which to evaluate sample values.
      */
@@ -96,14 +95,14 @@ public class Interpolator implements GridCoverage.Evaluator {
 
     /**
      * Creates a new evaluator for the given coverage. This constructor is protected for allowing
-     * {@link GridCoverage} subclasses to provide their own {@code Interpolator} implementations.
+     * {@link GridCoverage} subclasses to provide their own {@code GridEvaluator} implementations.
      * For using an evaluator, invoke {@link GridCoverage#evaluator()} instead.
      *
      * @param  coverage  the coverage for which to create an evaluator.
      *
      * @see GridCoverage#evaluator()
      */
-    protected Interpolator(final GridCoverage coverage) {
+    protected GridEvaluator(final GridCoverage coverage) {
         ArgumentChecks.ensureNonNull("coverage", coverage);
         this.coverage = coverage;
     }

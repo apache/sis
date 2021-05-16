@@ -274,8 +274,8 @@ public abstract class GridCoverage extends BandedCoverage {
      * conversions to grid indices are applied as needed.
      *
      * <h4>Multi-threading</h4>
-     * {@code Interpolator}s are not thread-safe. For computing sample values concurrently,
-     * a new {@link Interpolator} instance should be created for each thread by invoking this
+     * {@code GridEvaluator}s are not thread-safe. For computing sample values concurrently,
+     * a new {@link GridEvaluator} instance should be created for each thread by invoking this
      * method multiply times.
      *
      * @return a new function for computing or interpolating sample values.
@@ -283,8 +283,8 @@ public abstract class GridCoverage extends BandedCoverage {
      * @since 1.1
      */
     @Override
-    public Interpolator evaluator() {
-        return new Interpolator(this);
+    public GridEvaluator evaluator() {
+        return new GridEvaluator(this);
     }
 
     /**
