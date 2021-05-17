@@ -547,6 +547,22 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     public abstract Number set(int index, Number value);
 
     /**
+     * Sets a range of elements to the given number. Invoking this method is equivalent
+     * to invoking {@link #set(int, Number)} in a loop, but potentially much more efficient.
+     *
+     * @param  fromIndex  index of the first element (inclusive) to be filled with the specified value.
+     * @param  toIndex    index of the last element (exclusive) to be filled with the specified value.
+     * @param  value      the value to be stored in elements of the vector.
+     *
+     * @since 1.1
+     */
+    public void fill(int fromIndex, final int toIndex, final Number value) {
+        // Subclasses override with more efficient implementations.
+        ArgumentChecks.ensureValidIndexRange(size(), fromIndex, toIndex);
+        while (fromIndex < toIndex) set(fromIndex++, value);
+    }
+
+    /**
      * Returns the index of the first value which is equal (if {@code equality} is true)
      * or different (if {@code equality} is false) to the value at the {@code toSearch} index.
      * Subclasses should override if they can provide a more efficient implementation.

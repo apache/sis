@@ -162,11 +162,17 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
      * if the {@linkplain #base} vector stores values using integer primitive type.
      */
     @Override
-    public Number set(final int index, Number value) {
-        if (value != null) {
-            value = (value.doubleValue() - offset) / scale;
-        }
-        return convert(base.set(index, value));
+    public Number set(final int index, final Number value) {
+        return convert(base.set(index, inverse(value)));
+    }
+
+    /**
+     * Sets a range of elements to the given number. This action is likely to loose precision
+     * if the {@linkplain #base} vector stores values using integer primitive type.
+     */
+    @Override
+    public void fill(final int fromIndex, final int toIndex, final Number value) {
+        base.fill(fromIndex, toIndex, inverse(value));
     }
 
     /**
@@ -211,7 +217,20 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
      */
     private Number convert(Number value) {
         if (value != null) {
-            value = value.doubleValue() * scale + offset;       // TODO: use Math.fml in JDK9.
+            value = value.doubleValue() * scale + offset;       // TODO: use Math.fma in JDK9.
+        }
+        return value;
+    }
+
+    /**
+     * Applies the inverse linear function on the given value.
+     *
+     * @param  value  the number to inverse convert, or {@code null}.
+     * @return the inverse converted number (may be {@code null}).
+     */
+    private Number inverse(Number value) {
+        if (value != null) {
+            value = (value.doubleValue() - offset) / scale;
         }
         return value;
     }

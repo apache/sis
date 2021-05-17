@@ -254,6 +254,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            Arrays.fill(array, fromIndex, toIndex, value.doubleValue());
+            modCount++;
+        }
+
         /** Finds index of a match or mismatch (depending on {@code equality}). */
         @Override int indexOf(final int toSearch, int index, final boolean equality) {
             final long first = Double.doubleToLongBits(array[toSearch]);
@@ -366,6 +372,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             array[index] = value.floatValue();
             modCount++;
             return old;
+        }
+
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            Arrays.fill(array, fromIndex, toIndex, value.floatValue());
+            modCount++;
         }
 
         /** Finds index of a match or mismatch (depending on {@code equality}). */
@@ -529,6 +541,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            verifyType(value, Numbers.LONG);
+            Arrays.fill(array, fromIndex, toIndex, value.longValue());
+            modCount++;
+        }
+
         /** Finds index of a match or mismatch (depending on {@code equality}). */
         @Override final int indexOf(final int toSearch, int index, final boolean equality) {
             final long first = array[toSearch];
@@ -650,6 +669,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             array[index] = value.intValue();
             modCount++;
             return old;
+        }
+
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            verifyType(value, Numbers.INTEGER);
+            Arrays.fill(array, fromIndex, toIndex, value.intValue());
+            modCount++;
         }
 
         /** Finds index of a match or mismatch (depending on {@code equality}). */
@@ -779,6 +805,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            verifyType(value, Numbers.SHORT);
+            Arrays.fill(array, fromIndex, toIndex, value.shortValue());
+            modCount++;
+        }
+
         /** Finds index of a match or mismatch (depending on {@code equality}). */
         @Override final int indexOf(final int toSearch, int index, final boolean equality) {
             final short first = array[toSearch];
@@ -879,6 +912,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             array[index] = value.byteValue();
             modCount++;
             return old;
+        }
+
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            verifyType(value, Numbers.BYTE);
+            Arrays.fill(array, fromIndex, toIndex, value.byteValue());
+            modCount++;
         }
 
         /** Finds index of a match or mismatch (depending on {@code equality}). */
@@ -1205,6 +1245,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             modCount++;
             return old;
         }
+
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            Arrays.fill(array, fromIndex, toIndex, value.toString());
+            modCount++;
+        }
     }
 
     /**
@@ -1252,6 +1298,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             array[index] = value;
             modCount++;
             return old;
+        }
+
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            Arrays.fill(array, fromIndex, toIndex, value);
+            modCount++;
         }
     }
 }

@@ -253,6 +253,19 @@ final class ConcatenatedVector extends Vector implements Serializable {
     }
 
     /**
+     * Sets a range of elements to the given number.
+     */
+    @Override
+    public void fill(final int fromIndex, final int toIndex, final Number value) {
+        if (fromIndex < limit) {
+            first.fill(fromIndex, Math.min(toIndex, limit), value);
+        }
+        if ((toIndex > limit)) {
+            second.fill(Math.max(0, fromIndex - limit), toIndex - limit, value);
+        }
+    }
+
+    /**
      * Returns the increment between all consecutive values if this increment is constant, or {@code null} otherwise.
      */
     @Override

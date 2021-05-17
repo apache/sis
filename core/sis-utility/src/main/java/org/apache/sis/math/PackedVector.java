@@ -204,7 +204,7 @@ final class PackedVector extends ArrayVector<Long> {
     }
 
     /**
-     * Sets the value at the given index at returns the previous value.
+     * Sets the value at the given index and returns the previous value.
      */
     @Override
     public Number set(final int index, final Number value) {

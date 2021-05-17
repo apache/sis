@@ -28,7 +28,7 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link Vector} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -260,6 +260,16 @@ public final strictfp class VectorTest extends TestCase {
         v3 = v1.concatenate(v2);
         assertEquals(expected, v3);
         assertFalse("Expected concatenation of the indices.", v3 instanceof ConcatenatedVector);
+    }
+
+    /**
+     * Tests {@link Vector#fill(int, int, Number)}.
+     */
+    @Test
+    public void testFill() {
+        vector = Vector.create(new int[] {2, 5, 3}, false).concatenate(Vector.create(new int[] {7, 2, 8}, false));
+        vector.fill(2, 5, -1);
+        assertContentEquals(Vector.create(new int[] {2, 5, -1, -1, -1, 8}, false), vector);
     }
 
     /**
