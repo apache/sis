@@ -163,7 +163,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MissingVariableAttribute_3 = 23;
 
         /**
-         * Cannot find any valid axis for dimension {0} in file {1}.
+         * Cannot find any valid axis for dimension “{0}” in file “{1}”.
          */
         public static final short NoSupportedAxisForDimension_2 = 27;
 
