@@ -435,6 +435,15 @@ final class FeatureSet extends DiscreteSampling {
                 }
             }
         }
+
+        if (coordinates.isEmpty() && trajectory.isEmpty()) {
+            decoder.listeners.warning(decoder.resources().getString(
+                    Resources.Keys.NoSupportedAxisForDimension_2,
+                    featureName, decoder.getFilename()
+            ));
+            return;
+        }
+
         /*
          * Choose whether coordinates are taken in static or dynamic properties. Current implementation does not
          * support mixing both modes (e.g. X and Y coordinates as static properties and T as dynamic property).

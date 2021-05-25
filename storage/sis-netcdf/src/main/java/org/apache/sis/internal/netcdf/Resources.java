@@ -163,6 +163,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MissingVariableAttribute_3 = 23;
 
         /**
+         * Cannot find any valid axis for dimension {0} in file {1}.
+         */
+        public static final short NoSupportedAxisForDimension_2 = 27;
+
+        /**
          * Variable “{1}” or netCDF file “{0}” has a different size than its coordinate system, but no
          * resampling interval is specified.
          */
