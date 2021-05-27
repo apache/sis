@@ -16,6 +16,15 @@
  */
 package org.apache.sis.filter;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
+import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.filter.spatial.Beyond;
@@ -36,6 +45,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import static org.apache.sis.test.Assert.assertFalse;
 import static org.apache.sis.test.Assert.assertSerializedEquals;
@@ -140,6 +150,34 @@ public final strictfp class SpatialFunctionTest extends TestCase {
         bbox = FF.bbox(FF.literal(RIGHT_GEOMETRY), -3, -2, 4, 1, null);
         assertFalse(bbox.evaluate(null));
         assertSerializedEquals(bbox);
+    }
+
+    @Test
+    public void bbox_filter_does_not_fail_on_esri_crs() throws Exception {
+        final Coordinate[] coords = new Coordinate[3];
+        coords[0] = new Coordinate(4, 2);
+        coords[1] = new Coordinate(7, 5);
+        coords[2] = new Coordinate(9, 3);
+        final Geometry esriGeom = GF.createLineString(coords);
+        final String crsWkt;
+        try (
+                InputStream is = SpatialFunctionTest.class.getResourceAsStream("/io/wkt/extra_ESRI_CRS.txt");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
+        ) {
+            crsWkt = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+        }
+        final CoordinateReferenceSystem esriCRS = CRS.fromWKT(crsWkt);
+        esriGeom.setUserData(esriCRS);
+        esriGeom.setSRID(Integer.parseInt(esriCRS.getIdentifiers().iterator().next().getCode()));
+
+        Envelope2D envelope = new Envelope2D(esriCRS, 0, 0, 10, 10);
+        BBOX filter = FF.bbox(FF.literal(esriGeom), envelope);
+        assertTrue(filter.evaluate(null));
+
+        // Ensure no error is raised, even if a reprojection is involved
+        envelope = new Envelope2D(HardCodedCRS.WGS84, 0, 0, 10, 10);
+        filter = FF.bbox(FF.literal(esriGeom), envelope);
+        filter.evaluate(null);
     }
 
     @Test
