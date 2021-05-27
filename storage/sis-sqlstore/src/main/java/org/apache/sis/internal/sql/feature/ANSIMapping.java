@@ -29,6 +29,8 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import org.apache.sis.util.Numbers;
 
 /**
  * Default JDBC mapping type, used as a fallback when no other database-specific mapping can handle value binding.
@@ -69,14 +71,14 @@ class ANSIMapping implements DialectMapping {
             case Types.BIT:
             case Types.BOOLEAN:                 return forceCast(Boolean.class);
             case Types.TINYINT:                 if (!isByteUnsigned) return forceCast(Byte.class);  // else fallthrough.
-            case Types.SMALLINT:                return forceCast(Short.class);
-            case Types.INTEGER:                 return forceCast(Integer.class);
-            case Types.BIGINT:                  return forceCast(Long.class);
-            case Types.REAL:                    return forceCast(Float.class);
+            case Types.SMALLINT:                return forceNumberCast(Short.class);
+            case Types.INTEGER:                 return forceNumberCast(Integer.class);
+            case Types.BIGINT:                  return forceNumberCast(Long.class);
+            case Types.REAL:                    return forceNumberCast(Float.class);
             case Types.FLOAT:                   // Despite the name, this is implemented as DOUBLE in major databases.
-            case Types.DOUBLE:                  return forceCast(Double.class);
+            case Types.DOUBLE:                  return forceNumberCast(Double.class);
             case Types.NUMERIC:                 // Similar to DECIMAL except that it uses exactly the specified precision.
-            case Types.DECIMAL:                 return forceCast(BigDecimal.class);
+            case Types.DECIMAL:                 return forceNumberCast(BigDecimal.class);
             case Types.CHAR:
             case Types.VARCHAR:
             case Types.LONGVARCHAR:             return new ColumnAdapter.Simple<>(String.class, ResultSet::getString);
@@ -128,5 +130,18 @@ class ANSIMapping implements DialectMapping {
     private static <T> T forceCast(final Class<T> targetType, ResultSet source, final Integer columnIndex) throws SQLException {
         final Object value = source.getObject(columnIndex);
         return value == null ? null : targetType.cast(value);
+    }
+
+    private static <T extends Number> ColumnAdapter<T> forceNumberCast(final Class<T> targetType) {
+        return new ColumnAdapter.Simple<>(targetType, (r, i) -> forceNumberCast(targetType, r, i));
+    }
+
+    private static <T extends Number> T forceNumberCast(final Class<T> targetType, ResultSet source, final Integer columnIndex) throws SQLException {
+        final Object value = source.getObject(columnIndex);
+        if (value == null) return null;
+        else if (value instanceof Number) return Numbers.cast((Number) value, targetType);
+        else throw new SQLException(String.format(
+                    "A Number was expected for column %d values. However, a %s was received",
+                    columnIndex, value.getClass().getCanonicalName()));
     }
 }
