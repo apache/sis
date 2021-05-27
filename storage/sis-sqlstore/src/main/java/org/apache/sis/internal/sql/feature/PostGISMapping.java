@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.sis.internal.feature.Geometries;
@@ -52,6 +54,14 @@ import static org.apache.sis.internal.sql.feature.OGC06104r4.getGeometricClass;
  * @module
  */
 public final class PostGISMapping implements DialectMapping {
+
+    /**
+     * Pattern that search for a semantic version with optional minor version (or patch).
+     * PostGIS version query returns a complex text starting with its numerical version.
+     * In the future, we could also parse other information in the version text.
+     * Example of a PostGIS version string: {@literal 3.1 USE_GEOS=1 USE_PROJ=1 USE_STATS=1}
+     */
+    static final Pattern POSTGIS_VERSION_PARSER = Pattern.compile("^(\\d+)(\\.\\d+)*(?:\\s+|$)");
 
     final PostGISMapping.Spi spi;
     final GeometryIdentification identifyGeometries;
@@ -144,8 +154,10 @@ public final class PostGISMapping implements DialectMapping {
                     ResultSet result = st.executeQuery("SELECT PostGIS_version();");
             ) {
                 result.next();
-                final String pgisVersion = result.getString(1);
-                if (!pgisVersion.startsWith("2.")) throw new SQLException("Incompatible PostGIS version. Only 2.x is supported for now, but database declares: ");
+                final String rawVersion = result.getString(1);
+                if (!verifyVersion(rawVersion, 2)) {
+                    throw new SQLException("Incompatible PostGIS version. At least version 2 is required, but database declares: "+rawVersion);
+                }
             }
         }
 
@@ -153,6 +165,28 @@ public final class PostGISMapping implements DialectMapping {
         public Dialect getDialect() {
             return Dialect.POSTGRESQL;
         }
+    }
+
+    /**
+     * Ensure that given string starts with a valid semantic version, and that its major number is equal or superior to
+     * given value.
+     *
+     * @param versionString The text starting with a semantic version.
+     * @param minAllowed Lowest acceptable value for major version number.
+     * @return True if both following conditions match:
+     * <ul>
+     *     <li>Input text is considered a valid version string.</li>
+     *     <li>Major version number is same or higher than given minimum.</li>
+     * </ul>
+     * @see #POSTGIS_VERSION_PARSER used version regex
+     */
+    static boolean verifyVersion(String versionString, int minAllowed) {
+        final Matcher versionMatcher = POSTGIS_VERSION_PARSER.matcher(versionString);
+        if (!versionMatcher.find()) return false;
+
+        final String majorVersionStr = versionMatcher.group(1);
+        final int majorVersion = Integer.parseInt(majorVersionStr);
+        return (majorVersion >= minAllowed);
     }
 
     private final class HexEWKBFixedCrs extends Reader {
