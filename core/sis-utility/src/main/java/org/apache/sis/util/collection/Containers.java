@@ -276,7 +276,7 @@ public final class Containers extends Static {
      * This method returns the result of the first {@code o1.compareTo(o2)} call which returned a value different
      * than zero. If all {@code o1.compareTo(o2)} calls returned zero, then this method returns -1 if {@code it1}
      * iteration finished before {@code it2}, +1 if {@code it2} iteration finished before {@code it1}, or 0 if both
-     * iterators finished in same time.
+     * iterators finished at the same time.
      *
      * <p>Iterators may return null elements. Null elements are considered "after" any non-null element.</p>
      *

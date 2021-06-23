@@ -148,7 +148,7 @@ public class ImagePropertyExplorer extends Widget {
 
     /**
      * Whether to notify {@code ImagePropertyExplorer} about {@link #image} changes.
-     * This may become {@code false} after {@link #updateOnChange} (not in same time),
+     * This may become {@code false} after {@link #updateOnChange} (not at the same time),
      * and reset to {@code true} when {@code updateOnChange} become {@code true} again.
      *
      * @see #updateOnChange

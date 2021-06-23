@@ -952,7 +952,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
         /**
          * Overwrite previous value without any check. This method is invoked when the {@link #objectiveCRS}
-         * is changed in same time than the {@link #localToObjectiveCRS} transform, so the number of dimensions
+         * is changed at the same time that the {@link #localToObjectiveCRS} transform, so the number of dimensions
          * may be temporarily mismatched. This method does not invoke {@link #updateLocalToPositionCRS()};
          * that call must be done by the caller when ready.
          */

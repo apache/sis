@@ -190,7 +190,7 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
 
     /**
      * Provides the type of values produced by this expression when a feature of the given type is evaluated.
-     * There is two cases:
+     * There are two cases:
      *
      * <ul class="verbose">
      *   <li>If the operation expects at least one geometric parameter and returns a geometry,

@@ -67,7 +67,7 @@ public class MetadataSummary extends Widget {
     /**
      * Titles panes for different metadata sections (identification info, spatial information, <i>etc</i>).
      * This is similar to {@link javafx.scene.control.Accordion} except that we allow an arbitrary amount
-     * of titled panes to be opened in same time.
+     * of titled panes to be opened at the same time.
      */
     private final ScrollPane content;
 

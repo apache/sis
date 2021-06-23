@@ -563,7 +563,7 @@ abstract class Transferer {
     }
 
     /**
-     * Returns {@code true} if the given raster use a data type than can be casted to the {@code float} type
+     * Returns {@code true} if the given raster use a data type that can be casted to the {@code float} type
      * without precision lost. If the type is unknown, then this method returns {@code false}. Note that this
      * method also returns {@code false} for {@link DataBuffer#TYPE_INT} because conversion of 32 bits integer
      * to the {@code float} type may lost precision digits.

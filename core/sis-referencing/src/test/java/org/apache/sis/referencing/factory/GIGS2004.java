@@ -94,7 +94,7 @@ public final strictfp class GIGS2004 extends org.opengis.test.referencing.gigs.G
     /**
      * Removes the accented characters from the object name, so it can be compared against the expected name.
      *
-     * @param  object  the object from which to get a name than can be verified against the expected name.
+     * @param  object  the object from which to get a name that can be verified against the expected name.
      * @return the name of the given object, eventually modified in order to match the expected name.
      */
     @Override

@@ -58,7 +58,7 @@ final class GridTile {
 
     /**
      * Whether a fetching is under progress. Used for avoiding to create many threads requesting the same
-     * tile in same time: if {@code true} then {@link #load(GridView)} returns {@code null} immediately.
+     * tile at the same time: if {@code true} then {@link #load(GridView)} returns {@code null} immediately.
      */
     private boolean loading;
 

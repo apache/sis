@@ -52,7 +52,7 @@ import org.opengis.filter.BetweenComparisonOperator;
  * Comparison operators between two values. Values are converted to the same type before comparison, using a widening
  * conversion (for example from {@link Integer} to {@link Double}). If values can not be compared because they can not
  * be converted to a common type, or because a value is null or NaN, then the comparison result if {@code false}.
- * A consequence of this rule is that the conditions {@literal A < B} and {@literal A ≥ B} may be false in same time.
+ * A consequence of this rule is that the conditions {@literal A < B} and {@literal A ≥ B} may be false at the same time.
  *
  * <p>If one operand is a collection, all collection elements may be compared to the other value.
  * Null elements in the collection (not to be confused with null operands) are ignored.
@@ -123,8 +123,8 @@ abstract class ComparisonFunction<R> extends BinaryFunction<R,Object,Object>
     }
 
     /**
-     * Returns the element on the left side of the comparison expression.
-     * This is the element at index 0 in the {@linkplain #getExpressions() list of expressions}.
+     * Returns the element on the right side of the comparison expression.
+     * This is the element at index 1 in the {@linkplain #getExpressions() list of expressions}.
      */
     @Override
     public final Expression<? super R, ?> getOperand2() {

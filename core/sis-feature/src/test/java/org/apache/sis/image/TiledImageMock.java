@@ -325,7 +325,7 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
     /**
      * Returns the tile at the given location in tile coordinates.
      * This method verifies that no writable raster have been acquired. Actually this conditions is not part of
-     * {@link WritableRenderedImage} contract, since a readable and writable rasters can be used in same time.
+     * {@link WritableRenderedImage} contract, since a readable and writable rasters can be used at the same time.
      * But we add this condition because they way {@link PixelIterator} are currently implemented, it would be
      * a bug if we ask for a readable tile while we already have a writable one. This condition may change in
      * any future Apache SIS version.

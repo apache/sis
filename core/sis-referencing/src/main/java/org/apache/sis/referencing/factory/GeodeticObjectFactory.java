@@ -233,7 +233,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
 
     /**
      * The <cite>Well Known Text</cite> parser for {@code CoordinateReferenceSystem} instances.
-     * This parser is not thread-safe, so we need to prevent two threads from using the same instance in same time.
+     * This parser is not thread-safe, so we need to prevent two threads from using the same instance at the same time.
      */
     private final AtomicReference<Parser> parser;
 

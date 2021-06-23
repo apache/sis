@@ -117,7 +117,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     }
 
     /**
-     * Creates a metadata object with a property than can be simplified.
+     * Creates a metadata object with a property that can be simplified.
      * Strictly speaking, the metadata is:
      *
      * {@preformat text
@@ -220,7 +220,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     }
 
     /**
-     * Tests a metadata than can be simplified by displaying a child property value directly as the parent value.
+     * Tests a metadata that can be simplified by displaying a child property value directly as the parent value.
      */
     @Test
     @DependsOnMethod("testReadOnlyWithoutCollections")

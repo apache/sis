@@ -426,7 +426,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
         testedEarth.setEndGeographicPoint(29.9, 179.8);
         /*
          * The following method invocation causes calculation of all intermediate values.
-         * Values β₁ and β₂ are keep constant during all iterations.
+         * Values β₁ and β₂ are kept constant during all iterations.
          * Other values are given in Karney table 4.
          */
         final double distance = testedEarth.getGeodesicDistance();

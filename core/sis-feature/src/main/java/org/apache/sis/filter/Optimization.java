@@ -70,7 +70,7 @@ import org.opengis.filter.Expression;
  */
 public class Optimization {
     /**
-     * An arbitrary object meaning that a filter or expression optimization in under progress.
+     * An arbitrary object meaning that a filter or expression optimization is under progress.
      */
     private static final Object COMPUTING = Void.TYPE;
 
@@ -79,7 +79,7 @@ public class Optimization {
      * The map is created when first needed.
      *
      * <div class="note"><b>Note:</b> the same map is used for filters and expressions.
-     * It is not a problem if keys do not implement the two interfaces in same time.
+     * It is not a problem if keys do not implement the two interfaces at the same time.
      * If it happens anyway, it should still be okay because the method signatures are
      * the same in both interfaces (only the return type changes), so the same methods
      * would be invoked no matter if we consider the keys as a filter or an expression.</div>
@@ -134,8 +134,8 @@ public class Optimization {
     }
 
     /**
-     * Filter than can be optimized. Each filter implementation knows which rules can be applied.
-     * For that reason, the optimization algorithms are keep in each implementation class.
+     * Filter that can be optimized. Each filter implementation knows which rules can be applied.
+     * For that reason, the optimization algorithms are kept in each implementation class.
      * This interface allows {@link Optimization} to invoke that code.
      *
      * <p>Implementations need to override only one of the 2 methods defined in this interface.</p>
@@ -236,8 +236,8 @@ public class Optimization {
     }
 
     /**
-     * Expression than can be optimized. Each expression implementation knows which rules can be applied.
-     * For that reason, the optimization algorithms are keep in each implementation class.
+     * Expression that can be optimized. Each expression implementation knows which rules can be applied.
+     * For that reason, the optimization algorithms are kept in each implementation class.
      * This interface allows {@link Optimization} to invoke that code.
      *
      * <p>Implementations need to override only one of the 2 methods defined in this interface.</p>

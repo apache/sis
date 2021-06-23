@@ -561,7 +561,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             isGeographicToGeocentric = (sourceCS instanceof EllipsoidalCS && targetCS instanceof CartesianCS);
             isGeocentricToGeographic = (sourceCS instanceof CartesianCS && targetCS instanceof EllipsoidalCS);
             /*
-             * Above booleans should never be true in same time. If it nevertheless happen (we are paranoiac;
+             * Above booleans should never be true at the same time. If it nevertheless happen (we are paranoiac;
              * maybe a lazy user implemented all interfaces in a single class), do not apply any geographic ↔
              * geocentric conversion. Instead do as if the coordinate system types were the same.
              */

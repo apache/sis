@@ -238,7 +238,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     /**
      * The <cite>Well Known Text</cite> parser for {@code MathTransform} instances.
      * This parser is not thread-safe, so we need to prevent two threads from using
-     * the same instance in same time.
+     * the same instance at the same time.
      */
     private final AtomicReference<Parser> parser;
 
@@ -427,7 +427,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         if (set == null) {
             /*
              * Implementation note: we are better to avoid holding a lock on `methods` and `methodsByType`
-             * in same time because the `methods` iterator could be a user's implementation which callback
+             * at the same time because the `methods` iterator could be a user's implementation which callback
              * this factory.
              */
             synchronized (methods) {

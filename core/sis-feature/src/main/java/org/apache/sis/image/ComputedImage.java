@@ -147,8 +147,8 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * Weak reference to this image, also used as a cleaner when the image is garbage-collected.
      * This reference is retained in {@link TileCache#GLOBAL}. Note that if that cache does not
      * cache any tile for this image, then that {@link ComputedTiles} may be garbage-collected
-     * in same time than this image and its {@link ComputedTiles#dispose()} method may never be
-     * invoked.
+     * at the same time than this image and its {@link ComputedTiles#dispose()} method may never
+     * be invoked.
      */
     private final ComputedTiles reference;
 

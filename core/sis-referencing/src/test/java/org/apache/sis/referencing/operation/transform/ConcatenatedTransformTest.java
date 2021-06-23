@@ -41,7 +41,7 @@ import static org.opengis.test.Assert.*;
 @DependsOn(ProjectiveTransformTest.class)
 public final strictfp class ConcatenatedTransformTest extends MathTransformTestCase {
     /**
-     * Tests the concatenation of two affine transforms than can be represented
+     * Tests the concatenation of two affine transforms that can be represented
      * as a {@link ConcatenatedTransformDirect2D}.
      *
      * @throws TransformException if an error occurred while transforming the test coordinate.

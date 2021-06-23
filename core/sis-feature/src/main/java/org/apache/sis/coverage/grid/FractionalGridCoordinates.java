@@ -136,7 +136,7 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
     public long getCoordinateValue(final int dimension) {
         final double value = coordinates[dimension];
         /*
-         * 2048 is the smallest value than can be added or removed to Long.MIN/MAX_VALUE,
+         * 2048 is the smallest value that can be added or removed to Long.MIN/MAX_VALUE,
          * as given by Math.ulp(Long.MIN_VALUE). We add this tolerance since the contract
          * is to return the `long` value closest to the `double` value and we consider a
          * 1 ULP error as close enough.

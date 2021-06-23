@@ -84,7 +84,7 @@ import org.apache.sis.util.resources.Messages;
  *
  * <h2>Multi-threading</h2>
  * The cache managed by this class is concurrent. However the Data Access Objects (DAO) are assumed non-concurrent.
- * If two or more threads are accessing this factory in same time, then two or more Data Access Object instances
+ * If two or more threads are accessing this factory at the same time, then two or more Data Access Object instances
  * may be created. The maximal amount of instances to create is specified at {@code ConcurrentAuthorityFactory}
  * construction time. If more Data Access Object instances are needed, some of the threads will block until an
  * instance become available.

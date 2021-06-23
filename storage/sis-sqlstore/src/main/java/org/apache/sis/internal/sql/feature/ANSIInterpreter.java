@@ -283,7 +283,7 @@ class ANSIInterpreter extends Visitor<Feature,StringBuilder> {
 
     /**
      * Executes the registered action for the given filter.
-     * Throws an exception if the filter did not wrote anything in the buffer.
+     * Throws an exception if the filter did not write anything in the buffer.
      *
      * <h4>Note on type safety</h4>
      * This method signature uses {@code <? super R>} for caller's convenience because this is the type that
@@ -309,7 +309,7 @@ class ANSIInterpreter extends Visitor<Feature,StringBuilder> {
 
     /**
      * Executes the registered action for the given expression.
-     * Throws an exception if the expression did not wrote anything in the buffer.
+     * Throws an exception if the expression did not write anything in the buffer.
      *
      * <h4>Note on type safety</h4>
      * This method signature uses {@code <? super R>} for caller's convenience because this is the type that

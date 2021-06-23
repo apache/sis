@@ -46,7 +46,7 @@ import org.apache.sis.internal.gui.Styles;
  *   <li>This is created by {@link GridView#createDefaultSkin()}.</li>
  *   <li>The {@link GridView} which own this skin is given by {@link #getSkinnable()}.</li>
  *   <li>This {@code GridViewSkin} contains an arbitrary amount of {@link GridRow} children.
- *       It should be limited to the number of children that are visible in same time,
+ *       It should be limited to the number of children that are visible at the same time,
  *       not the total number of rows in the image.</li>
  * </ul>
  *

@@ -53,7 +53,7 @@ final class Linearizer {
      *
      * <p>If a linear approximation can be extracted from the given transform, this method returns
      * that approximation directly. This method tries to avoid expensive calculation; it searches
-     * for transforms than can be processed easily.</p>
+     * for transforms that can be processed easily.</p>
      *
      * @param  gridToCRS  the transform from source coordinates (grid indices) to target coordinates.
      * @param  domain  domain of integer source coordinates for which to get a linear approximation.

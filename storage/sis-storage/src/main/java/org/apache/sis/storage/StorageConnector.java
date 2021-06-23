@@ -139,7 +139,7 @@ public class StorageConnector implements Serializable {
      * telling that {@code view} can not be reseted, so it should be set to {@code null} instead. This implies
      * that a new view of the same type will be recreated next time it will be requested.
      *
-     * <p>When this flag is set, the {@link #CASCADE_ON_RESET} should usually be set in same time.</p>
+     * <p>When this flag is set, the {@link #CASCADE_ON_RESET} should usually be set at the same time.</p>
      */
     private static final byte CLEAR_ON_RESET = 4;
 
@@ -256,7 +256,7 @@ public class StorageConnector implements Serializable {
      * an {@link InputStream}).
      *
      * Another purpose is to determine which views need to be synchronized if {@link StorageConnector#storage} is
-     * used independently. They are views that may advance {@code storage} position, but not in same time than the
+     * used independently. They are views that may advance {@code storage} position, but not at the same time than the
      * {@link #view} position (typically because the view reads some bytes in advance and stores them in a buffer).
      * Such coupling may occur when the storage is an {@link InputStream}, an {@link java.io.OutputStream} or a
      * {@link java.nio.channels.Channel}. The coupled {@link #view} can be:
