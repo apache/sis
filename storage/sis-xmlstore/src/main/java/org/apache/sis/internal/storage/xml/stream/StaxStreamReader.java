@@ -204,7 +204,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * until the end of the given element exclusive. Nested elements of the same name, if any, will be
      * ignored.
      *
-     * @param  tagName name of the tag to close.
+     * @param  tagName  name of the tag to close.
      * @return a reader over a portion of the stream.
      * @throws XMLStreamException if this XML reader has been closed.
      */
@@ -234,7 +234,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     }
 
     /**
-     * Moves the cursor the the first start element and verifies that it is the expected element.
+     * Moves the cursor to the first start element and verifies that it is the expected element.
      * This method is useful for skipping comments, entity declarations, <i>etc.</i> before the root element.
      *
      * <p>If the reader is already on a start element, then this method does not move forward.
@@ -269,7 +269,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * <p>The current event when this method is invoked must be {@link #START_ELEMENT}.
      * After this method invocation, the current event will be {@link #END_ELEMENT}.</p>
      *
-     * @param  tagName name of the tag to close.
+     * @param  tagName  name of the tag to close.
      * @throws EOFException if end tag could not be found.
      * @throws XMLStreamException if an error occurred while reading the XML stream.
      */

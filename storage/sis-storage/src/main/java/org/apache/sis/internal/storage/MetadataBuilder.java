@@ -151,6 +151,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   0.8
  * @module
@@ -1893,7 +1894,8 @@ parse:      for (int i = 0; i < length;) {
             final GenericName name = type.getName();
             if (name != null) {
                 final DefaultFeatureTypeInfo info = new DefaultFeatureTypeInfo(name);
-                /* Warning: Exclude 0 as valid instance count.
+                /*
+                 * Note: Exclude 0 as valid instance count.
                  * Reason: ISO-19115 consider 0 (empty dataset) as an invalid count. However, in practice, it can happen
                  * to open data sources that contain no record. They're still valid datasets, because as long as their
                  * structure is valid, there's no point in raising an error (at our level, without any other context

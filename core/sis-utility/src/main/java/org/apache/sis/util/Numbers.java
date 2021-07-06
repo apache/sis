@@ -555,7 +555,8 @@ public final class Numbers extends Static {
      * @param  type    the destination type.
      * @return the number casted to the given type, or {@code null} if the given value was null.
      * @throws IllegalArgumentException if the given type is not supported by this {@code Numbers} class,
-     *         or the type is {@link #FRACTION} and the given number can not be converted to that type.
+     *         or the number can not be converted to the specified type (e.g. {@link Double#NaN} can not
+     *         be converted to {@link BigDecimal}).
      */
     @SuppressWarnings("unchecked")
     public static <N extends Number> N cast(final Number number, final Class<N> type) throws IllegalArgumentException {
