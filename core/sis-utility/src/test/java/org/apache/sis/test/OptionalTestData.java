@@ -16,6 +16,7 @@
  */
 package org.apache.sis.test;
 
+import java.util.Optional;
 import java.io.LineNumberReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.apache.sis.internal.system.DataDirectory;
 
-import static org.junit.Assume.assumeNotNull;
+import static org.junit.Assume.assumeTrue;
 
 
 /**
@@ -33,7 +34,7 @@ import static org.junit.Assume.assumeNotNull;
  * order to enable the tests requiring those data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -94,7 +95,13 @@ public enum OptionalTestData {
      *   <li>S₁₂ — the area between the geodesic and the equator (m²)</li>
      * </ol>
      */
-    GEODESIC("GeodTest.dat");
+    GEODESIC("GeodTest.dat"),
+
+    /**
+     * Any GeoTIFF image supported by Apache SIS, without any particular expectation on data.
+     * This is used for self-consistency tests.
+     */
+    GEOTIFF("AnyGeoTIFF.tiff");
 
     /**
      * The filename in {@code $SIS_DATA/Tests} directory.
@@ -109,19 +116,19 @@ public enum OptionalTestData {
     }
 
     /**
-     * Returns the path to the test file if {@code $SIS_DATA} is defined an the file exists, or {@code null} otherwise.
+     * Returns the path to the test file if {@code $SIS_DATA} is defined an the file exists.
      *
-     * @return path to the test file, or {@code null} if none.
+     * @return path to the test file, or an empty optional if none.
      */
-    private Path path() {
+    public Optional<Path> path() {
         Path path = DataDirectory.TESTS.getDirectory();
         if (path != null) {
             path = path.resolve(filename);
             if (Files.isRegularFile(path)) {
-                return path;
+                return Optional.of(path);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -132,10 +139,10 @@ public enum OptionalTestData {
      * @return an input stream for the test file represented by this enumeration.
      * @throws IOException if an error occurred while opening the test file.
      */
-    public InputStream open() throws IOException {
-        final Path path = path();
-        assumeNotNull("File “$SIS_DATA/Tests/" + filename + "” has not been found.", path);
-        return Files.newInputStream(path);
+    private InputStream open() throws IOException {
+        final Optional<Path> path = path();
+        assumeTrue("File “$SIS_DATA/Tests/" + filename + "” has not been found.", path.isPresent());
+        return Files.newInputStream(path.get());
     }
 
     /**
