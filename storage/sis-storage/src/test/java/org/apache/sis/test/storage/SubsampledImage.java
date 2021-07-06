@@ -171,8 +171,9 @@ final class SubsampledImage extends PlanarImage {
                 final int scanlineStride = sm.getScanlineStride() * subY;
                 final int width = divExclusive(sm.getWidth(), subX);
                 if (pixelStride * width > scanlineStride) {
+                    final int minBandOff = Arrays.stream(sm.getBandOffsets()).min().getAsInt();
                     final int maxBandOff = Arrays.stream(sm.getBandOffsets()).max().getAsInt();
-                    if (pixelStride * (width - 1) + maxBandOff < scanlineStride) {
+                    if (pixelStride * (width - 1) + (maxBandOff - minBandOff) < scanlineStride) {
                         return null;
                     }
                 }

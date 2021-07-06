@@ -98,6 +98,12 @@ public enum OptionalTestData {
     GEODESIC("GeodTest.dat"),
 
     /**
+     * Any netCDF file supported by Apache SIS, without any particular expectation on data.
+     * This is used for self-consistency tests.
+     */
+    NETCDF("AnyNetcdf.nc"),
+
+    /**
      * Any GeoTIFF image supported by Apache SIS, without any particular expectation on data.
      * This is used for self-consistency tests.
      */
