@@ -1661,7 +1661,8 @@ public enum CommonCRS {
          *   <tr><td>Julian</td>             <td>{@link #JULIAN}</td></tr>
          *   <tr><td>Modified Julian</td>    <td>{@link #MODIFIED_JULIAN}</td></tr>
          *   <tr><td>Truncated Julian</td>   <td>{@link #TRUNCATED_JULIAN}</td></tr>
-         *   <tr><td>Unix/POSIX or Java</td> <td>{@link #UNIX}</td></tr>
+         *   <tr><td>Unix/POSIX</td>         <td>{@link #UNIX}</td></tr>
+         *   <tr><td>Java {@link Date}</td>  <td>{@link #JAVA}</td></tr>
          * </table></blockquote>
          *
          * @return the CRS associated to this enum.
@@ -1675,7 +1676,13 @@ public enum CommonCRS {
                     object = crs(cached);
                     if (object == null) {
                         final TemporalDatum datum = datum();
-                        object = new DefaultTemporalCRS(IdentifiedObjects.getProperties(datum, exclude()), datum, cs());
+                        final Map<String,?> properties;
+                        if (this == JAVA) {
+                            properties = properties(Vocabulary.formatInternational(key, "Java"));
+                        } else {
+                            properties = IdentifiedObjects.getProperties(datum, exclude());
+                        }
+                        object = new DefaultTemporalCRS(properties, datum, cs());
                         cached = object;
                     }
                 }
@@ -1744,12 +1751,11 @@ public enum CommonCRS {
                     object = datum(cached);
                     if (object == null) {
                         if (this == UNIX) {
-                            object = JAVA.datum(); // Share the same instance for UNIX and JAVA.
+                            object = JAVA.datum();          // Share the same instance for UNIX and JAVA.
                         } else {
                             final Map<String,?> properties;
                             if (key == Vocabulary.Keys.Time_1) {
-                                properties = properties(Vocabulary.formatInternational(
-                                        key, (this == JAVA) ? "Java" : "Unix/POSIX"));
+                                properties = properties(Vocabulary.formatInternational(key, "Unix/POSIX"));
                             } else {
                                 properties = properties(key);
                             }

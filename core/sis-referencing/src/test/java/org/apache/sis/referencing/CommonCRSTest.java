@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.time.Instant;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -277,7 +278,27 @@ public final strictfp class CommonCRSTest extends TestCase {
             assertSame  (name, crs.getDatum(), e.datum());              // Datum after CRS creation.
             assertEquals(name, epoch, format(origin));
             assertEquals(name, days, origin.getTime() / DAY_LENGTH - julianEpoch, 0);
+            switch (e) {
+                case JAVA: {
+                    assertNameContains(datum, "Unix/POSIX");
+                    assertNameContains(crs,   "Java");
+                    break;
+                }
+                case UNIX: {
+                    assertNameContains(datum, "Unix/POSIX");
+                    assertNameContains(crs,   "Unix/POSIX");
+                    break;
+                }
+            }
         }
+    }
+
+    /**
+     * Verifies that the name of given object contains the given word.
+     */
+    private static void assertNameContains(final IdentifiedObject object, final String word) {
+        final String name = object.getName().getCode();
+        assertTrue(name, name.contains(word));
     }
 
     /**
