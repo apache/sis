@@ -16,11 +16,17 @@
  */
 package org.apache.sis.internal.storage;
 
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.opengis.feature.FeatureType;
 import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
+import org.opengis.metadata.content.FeatureCatalogueDescription;
+import org.opengis.metadata.content.FeatureTypeInfo;
+import org.opengis.util.GenericName;
 
 import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.date;
@@ -61,6 +67,54 @@ public final strictfp class MetadataBuilderTest extends TestCase {
         verifyCopyrightParsing("Copyright (C), John Smith, 1992. All rights reserved.");
         verifyCopyrightParsing("(C) 1992, John Smith. All rights reserved.");
         verifyCopyrightParsing("(C) COPYRIGHT 1992 John Smith.");
+    }
+
+    @Test
+    public void negative_feature_count_are_ignored() {
+        verifyFeatureInstanceCount("Feature count should not be written if it is negative", null, -1);
+    }
+
+    @Test
+    public void no_overflow_on_feature_count() {
+        verifyFeatureInstanceCount("Feature count should be limited to maximum 32bit integer value", Integer.MAX_VALUE, 7_000_000_000L);
+    }
+
+    @Test
+    public void verify_feature_count_is_written() {
+        verifyFeatureInstanceCount("Feature count should be written as is", 42, 42);
+    }
+
+    @Test
+    public void feature_count_should_be_ignored_when_it_is_zero() {
+        verifyFeatureInstanceCount("Feature count should not be written if it is 0", null, 0);
+    }
+
+    /**
+     * Create a new simple metadata with a single simple feature type and the given
+     * {@link FeatureTypeInfo#getFeatureInstanceCount() feature instance count}. Then, assert that the value in the
+     * built metadata is compliant with a given control value.
+     *
+     * @param expected The feature instance count value we want to see in the metadata (control value)
+     * @param valueToInsert The value to send to the metadata builder.
+     *
+     * @see MetadataBuilder#addFeatureType(FeatureType, long)
+     */
+    private static void verifyFeatureInstanceCount(final String errorMessage, final Integer expected, final long valueToInsert) {
+        final FeatureType dataType = new FeatureTypeBuilder()
+                .setName("Test type")
+                .build();
+        final MetadataBuilder builder = new MetadataBuilder();
+        final GenericName name = builder.addFeatureType(dataType, valueToInsert);
+        assertNotNull(name);
+
+        final DefaultMetadata metadata = builder.build(true);
+        final FeatureTypeInfo info = metadata.getContentInfo().stream()
+                .filter(it -> it instanceof FeatureCatalogueDescription)
+                .flatMap(it -> ((FeatureCatalogueDescription) it).getFeatureTypeInfo().stream())
+                .reduce((v1, v2) -> { throw new AssertionError("A single feature type info is expected"); })
+                .orElseThrow(() -> new AssertionError("A single feature type info is expected"));
+
+        assertEquals(errorMessage, expected, info.getFeatureInstanceCount());
     }
 
     /**

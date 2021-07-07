@@ -1881,7 +1881,9 @@ parse:      for (int i = 0; i < length;) {
      * Note that the {@link FeatureCatalogBuilder} subclasses can also be used for that chaining.
      *
      * @param  type         the feature type to add, or {@code null} for no-operation.
-     * @param  occurrences  number of instances of the given feature type, or a negative value if unknown.
+     * @param  occurrences  number of instances of the given feature type, or a negative value if unknown. Note that if
+     *                      this value is 0, it will be considered "unknown", because ISO-19115 consider it invalid.
+     *                      However, this is a valid case in practice (it represents an empty dataset at the moment).
      * @return the name of the added feature, or {@code null} if none.
      *
      * @see FeatureCatalogBuilder#define(FeatureType)
@@ -1891,7 +1893,13 @@ parse:      for (int i = 0; i < length;) {
             final GenericName name = type.getName();
             if (name != null) {
                 final DefaultFeatureTypeInfo info = new DefaultFeatureTypeInfo(name);
-                if (occurrences >= 0) {
+                /* Warning: Exclude 0 as valid instance count.
+                 * Reason: ISO-19115 consider 0 (empty dataset) as an invalid count. However, in practice, it can happen
+                 * to open data sources that contain no record. They're still valid datasets, because as long as their
+                 * structure is valid, there's no point in raising an error (at our level, without any other context
+                 * information) here.
+                 */
+                if (occurrences > 0) {
                     info.setFeatureInstanceCount(shared((int) Math.min(occurrences, Integer.MAX_VALUE)));
                 }
                 addIfNotPresent(featureDescription().getFeatureTypeInfo(), info);
