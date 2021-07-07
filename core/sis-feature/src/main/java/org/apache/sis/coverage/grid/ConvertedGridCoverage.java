@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.image.DataType;
 
@@ -172,6 +173,14 @@ final class ConvertedGridCoverage extends GridCoverage {
                 if (union == null) {
                     union = range;
                 } else {
+                    /*
+                     * We do not want unit conversions for this union, because the union is used
+                     * only for determining a data type having the capacity to store the values.
+                     * The physical meaning of those values is not relevant here.
+                     */
+                    if (union instanceof MeasurementRange<?>) {
+                        union = new NumberRange<>(union);
+                    }
                     union = union.unionAny(range);
                 }
             }
