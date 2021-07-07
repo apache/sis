@@ -17,11 +17,13 @@
 package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -34,12 +36,18 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link ConcatenatedTransform} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.5
  * @module
  */
 @DependsOn(ProjectiveTransformTest.class)
 public final strictfp class ConcatenatedTransformTest extends MathTransformTestCase {
+    /**
+     * Tolerance factor for strict equalities.
+     */
+    private static final double STRICT = 0;
+
     /**
      * Tests the concatenation of two affine transforms that can be represented
      * as a {@link ConcatenatedTransformDirect2D}.
@@ -174,7 +182,7 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
         Assert.assertMatrixEquals("Forward", Matrices.create(3, 4, new double[] {
             4, 0, 0, 0,     // scale = 8/2
             0, 2, 0, 0,     // scale = 6/3
-            0, 0, 0, 1}), MathTransforms.getMatrix(c), 0);
+            0, 0, 0, 1}), MathTransforms.getMatrix(c), STRICT);
         /*
          * Following test is the interesting part. By inverting the transform, we ask for a conversion
          * from 2D points to 3D points. Without contextual information we would not know which value to
@@ -186,6 +194,24 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
             0.25, 0,    0,
             0,    0.5,  0,
             0,    0,   10,   // Having value 10 instead of NaN is the main purpose of this test.
-            0,    0,    1}), MathTransforms.getMatrix(c.inverse()), 0);
+            0,    0,    1}), MathTransforms.getMatrix(c.inverse()), STRICT);
+    }
+
+    /**
+     * Tests a concatenation between transforms having (indirectly) infinite coefficients.
+     * This test uses a transform with a coefficient close enough to zero for causing the
+     * inverse matrix to have infinite values. If the coefficient was strictly zero, a
+     * {@link org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException}
+     * would have been thrown. But with non-zero coefficient small enough, the exception
+     * is not thrown and infinite values may confuse {@link ConcatenatedTransform} if not
+     * properly handled.
+     */
+    @Test
+    public void testInfinities() {
+        final MathTransform tr1 = MathTransforms.linear(new Matrix2(4.9E-324, -5387, 0, 1));
+        final MathTransform tr2 = MathTransforms.linear(new Matrix2(-1, 0, 0, 1));
+        final MathTransform c   = MathTransforms.concatenate(tr1, tr2);
+        final Matrix m          = ((LinearTransform) c).getMatrix();
+        Assert.assertMatrixEquals("Concatenate", new Matrix2(-4.9E-324, 5387, 0, 1), m, STRICT);
     }
 }

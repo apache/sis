@@ -40,6 +40,7 @@ import static org.opengis.referencing.cs.AxisDirection.*;
  * Tests the {@link Matrices} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.4
  * @module
@@ -452,6 +453,22 @@ public final strictfp class MatricesTest extends TestCase {
             9, 8, 5,
             4, 3, 0
         }), matrix);
+    }
+
+    /**
+     * Tests {@link Matrices#equals(Matrix, Matrix, double, boolean)}.
+     */
+    @Test
+    public void testEquals() {
+        Matrix2 m1 = new Matrix2(-1.001, 0, 0, 1);
+        Matrix2 m2 = new Matrix2(-1,     0, 0, 1);
+        assertTrue(Matrices.equals(m1, m2, 0.002, true));
+        /*
+         * An infinite value with a relative tolerance threshold causes an infinite threshold,
+         * which is undesirable. Verify that the comparison code handle is robust to infinities.
+         */
+        m1 = new Matrix2(Double.POSITIVE_INFINITY, 0, 0, 1);
+        assertFalse(Matrices.equals(m1, m2, 0.002, true));
     }
 
     /**

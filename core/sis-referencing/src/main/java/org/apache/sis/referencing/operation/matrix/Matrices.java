@@ -1141,7 +1141,10 @@ public final class Matrices extends Static {
                     final double v2 = m2.getElement(j, i);
                     double tolerance = epsilon;
                     if (relative) {
-                        tolerance *= Math.max(Math.abs(v1), Math.abs(v2));
+                        final double f = Math.max(Math.abs(v1), Math.abs(v2));
+                        if (f <= Double.MAX_VALUE) {
+                            tolerance *= f;
+                        }
                     }
                     if (!(Math.abs(v1 - v2) <= tolerance)) {
                         if (Numerics.equals(v1, v2)) {
