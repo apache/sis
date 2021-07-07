@@ -2294,9 +2294,10 @@ parse:      for (int i = 0; i < length;) {
                 }
                 setBandIdentifier(name);
             }
-            band.getSampleRange().ifPresent((range) -> {
-                addMinimumSampleValue(range.getMinDouble(true));
-                addMaximumSampleValue(range.getMaxDouble(true));
+            // Really `getMeasurementRange()`, not `getSampleRange()`.
+            band.getMeasurementRange().ifPresent((range) -> {
+                addMinimumSampleValue(range.getMinDouble());
+                addMaximumSampleValue(range.getMaxDouble());
             });
             band.getTransferFunctionFormula().ifPresent((tr) -> {
                 setTransferFunction(tr.getScale(), tr.getOffset());
@@ -2405,15 +2406,17 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Adds a minimal value for the current sample dimension. If a minimal value was already defined, then
-     * the new value will be set only if it is smaller than the existing one. {@code NaN} values are ignored.
-     * If a coverage contains more than one band, additional bands can be created by calling
-     * {@link #newSampleDimension()} before to call this method.
+     * Adds a minimal value for the current sample dimension. The value should be in the unit of measurement
+     * specified by {@link #setSampleUnits(Unit)}. If a minimal value was already defined, then the new value
+     * will be set only if it is smaller than the existing one. {@code NaN} values are ignored.
      * Storage location is:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/attributeGroup/attribute/minValue}</li>
      * </ul>
+     *
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
      *
      * @param value  the minimal value to add to the existing range of sample values, or {@code NaN} for no-operation.
      */
@@ -2428,15 +2431,17 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Adds a maximal value for the current sample dimension. If a maximal value was already defined, then
-     * the new value will be set only if it is greater than the existing one. {@code NaN} values are ignored.
-     * If a coverage contains more than one band, additional bands can be created by calling
-     * {@link #newSampleDimension()} before to call this method.
+     * Adds a maximal value for the current sample dimension. The value should be in the unit of measurement
+     * specified by {@link #setSampleUnits(Unit)}. If a maximal value was already defined, then the new value
+     * will be set only if it is greater than the existing one. {@code NaN} values are ignored.
      * Storage location is:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/attributeGroup/attribute/maxValue}</li>
      * </ul>
+     *
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
      *
      * @param value  the maximal value to add to the existing range of sample values, or {@code NaN} for no-operation.
      */
@@ -2452,13 +2457,14 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Sets the units of data in the current band.
-     * If a coverage contains more than one band, additional bands can be created by calling
-     * {@link #newSampleDimension()} before to call this method.
      * Storage location is:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/attributeGroup/attribute/unit}</li>
      * </ul>
+     *
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
      *
      * @param  unit  units of measurement of sample values.
      */
@@ -2471,8 +2477,6 @@ parse:      for (int i = 0; i < length;) {
     /**
      * Sets the scale factor and offset which have been applied to the cell value.
      * The transfer function type is declared {@linkplain TransferFunctionType#LINEAR linear}
-     * If a coverage contains more than one band, additional bands can be created by calling
-     * {@link #newSampleDimension()} before to call this method.
      * Storage location is:
      *
      * <ul>
@@ -2480,6 +2484,9 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/contentInfo/attributeGroup/attribute/offset}</li>
      *   <li>{@code metadata/contentInfo/attributeGroup/attribute/transferFunctionType}</li>
      * </ul>
+     *
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
      *
      * @param scale   the scale factor which has been applied to the cell value.
      * @param offset  the physical value corresponding to a cell value of zero.
