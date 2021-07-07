@@ -24,6 +24,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.parameter.Parameterized;
 
@@ -34,6 +35,7 @@ import org.apache.sis.test.DependsOn;
 import org.junit.runner.RunWith;
 import org.junit.After;
 import org.junit.Test;
+import org.opengis.test.Assert;
 import static org.opengis.test.Assert.*;
 
 // Branch-dependent imports
@@ -47,13 +49,18 @@ import org.opengis.test.referencing.AffineTransformTest;
  * this time with NaN values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.5
  * @module
  */
 @RunWith(TestRunner.class)
 @DependsOn({AbstractMathTransformTest.class, ScaleTransformTest.class})
 public strictfp class ProjectiveTransformTest extends AffineTransformTest {
+    /**
+     * Tolerance factor for strict comparisons.
+     */
+    private static final double STRICT = 0;
+
     /**
      * For {@link LinearTransformTest} constructor only.
      */
@@ -80,7 +87,7 @@ public strictfp class ProjectiveTransformTest extends AffineTransformTest {
                      * Opportunistically tests ScaledTransform together with ProjectiveTransform.
                      * We takes ScaledTransform as a reference implementation since it is simpler.
                      */
-                    tr = new TransformResultComparator(tr, pt, 0);
+                    tr = new TransformResultComparator(tr, pt, STRICT);
                 }
                 return tr;
             }
@@ -128,6 +135,23 @@ public strictfp class ProjectiveTransformTest extends AffineTransformTest {
         matrix = ((MatrixSIS) matrix).removeRows(3, 4);
         transform = new ProjectiveTransform(matrix).optimize();
         assertInstanceOf("Diagonal matrix should be handled by a specialized class.", ScaleTransform.class, transform);
+        verifyConsistency(1, 2, 3,   -3, -2, -1);
+    }
+
+    /**
+     * Tests {@link ProjectiveTransform#optimize()} when the matrix defines a constant value.
+     * Older SIS versions wrongly optimized this case as a translation.
+     *
+     * @throws TransformException if a coordinate conversion failed.
+     *
+     * @since 1.1
+     */
+    @Test
+    public void testOptimizeConstant() throws TransformException {
+        matrix = new Matrix2(0, 10, 0, 1);
+        transform = new ProjectiveTransform(matrix).optimize();
+        Assert.assertMatrixEquals("Transform shall use the given matrix unmodified.",
+                matrix, ((LinearTransform) transform).getMatrix(), STRICT);
         verifyConsistency(1, 2, 3,   -3, -2, -1);
     }
 
