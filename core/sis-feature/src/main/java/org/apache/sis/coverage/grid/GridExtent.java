@@ -378,7 +378,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @param  envelope            the envelope containing cell indices to store in a {@code GridExtent}.
      * @param  rounding            controls behavior of rounding from floating point values to integers.
-     * @param  clipping            whether to clip this extent to the enclosing extent.
+     * @param  clipping            how to clip this extent to the enclosing extent. Ignored if {@code enclosing} is null.
      * @param  margin              if non-null, expands the extent by that amount of cells on each envelope dimension.
      * @param  chunkSize           if non-null, make the grid extent spanning an integer amount of chunks (tiles).
      * @param  enclosing           if the new grid is a sub-grid of a larger grid, that larger grid. Otherwise {@code null}.

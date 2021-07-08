@@ -19,6 +19,7 @@ package org.apache.sis.coverage.grid;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import org.opengis.util.FactoryException;
@@ -27,6 +28,7 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
@@ -34,6 +36,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -74,10 +77,24 @@ final class ResampledGridCoverage extends GridCoverage {
     private final MathTransform toSourceCorner, toSourceCenter;
 
     /**
+     * Mapping from dimensions in this {@code ResampledGridCoverage} to dimensions in the {@link #source} coverage.
+     * The mapping is represented by a bitmask. For a target dimension <var>i</var>, {@code toSourceDimensions[i]}
+     * has a bit set to 1 for all source dimensions used in the computation of that target dimension.
+     * This array may be {@code null} if the mapping can not be computed or if it is not needed.
+     */
+    private final long[] toSourceDimensions;
+
+    /**
      * The image processor to use for resampling operations. Its configuration shall not
      * be modified because this processor may be shared by different grid coverages.
      */
     private final ImageProcessor imageProcessor;
+
+    /**
+     * Value of {@link org.apache.sis.image.Interpolation#getSupportSize()}.
+     * This is 1 for nearest-neighbor, 2 for bilinear, 4 for bicubic interpolation.
+     */
+    private final int supportSizeX, supportSizeY;
 
     /**
      * Creates a new grid coverage which will be the resampling of the given source.
@@ -99,6 +116,7 @@ final class ResampledGridCoverage extends GridCoverage {
         this.source         = source;
         this.toSourceCorner = toSourceCorner;
         this.toSourceCenter = toSourceCenter;
+        toSourceDimensions  = findDependentDimensions(toSourceCenter, domain);
         /*
          * Get fill values from background values declared for each band, if any.
          * If no background value is declared, default is 0 for integer data or
@@ -117,6 +135,44 @@ final class ResampledGridCoverage extends GridCoverage {
         processor.setFillValues(fillValues);
         changeOfCRS.setAccuracyOf(processor);
         imageProcessor = GridCoverageProcessor.unique(processor);
+        final Dimension s = imageProcessor.getInterpolation().getSupportSize();
+        supportSizeX = s.width;
+        supportSizeY = s.height;
+    }
+
+    /**
+     * Returns the set of target dimensions that depend on each source dimension.
+     * For a source dimension <var>i</var>, {@code dependentDimensions[i]} is a bitmask with bits set to 1
+     * for each target dimension which require the source dimension <var>i</var> for its calculation.
+     *
+     * @param  mt      the transform for which to determine dimension dependencies.
+     * @param  domain  domain of this {@code}.
+     * @return for each source dimension, a bitmask of target dependent dimensions.
+     *         May be {@code null} if the mapping can not be computed or if it is not needed.
+     */
+    private static long[] findDependentDimensions(final MathTransform mt, final GridGeometry domain) {
+        final int srcDim = mt.getSourceDimensions();
+        if (srcDim <= BIDIMENSIONAL) return null;                           // Dimension mapping not needed.
+        Matrix derivative = MathTransforms.getMatrix(mt);
+        if (derivative == null) try {
+            derivative = mt.derivative(new DirectPositionView.Double(domain.getExtent().getPointOfInterest()));
+        } catch (TransformException e) {
+            GridCoverageProcessor.recoverableException("resample", e);      // Public caller of this method.
+            return null;
+        }
+        final int tgtDim = mt.getTargetDimensions();
+        final long[] usage = new long[srcDim];
+        for (int i=0; i<srcDim; i++) {
+            for (int j=0; j<tgtDim; j++) {
+                if (derivative.getElement(j, i) != 0) {
+                    if (j >= Long.SIZE) {
+                        throw GridGeometry.excessiveDimension(mt);
+                    }
+                    usage[i] |= (1L << j);
+                }
+            }
+        }
+        return usage;
     }
 
     /**
@@ -447,14 +503,24 @@ final class ResampledGridCoverage extends GridCoverage {
         if (sliceExtent == null) {
             sliceExtent = gridGeometry.getExtent();
         }
-        final Rectangle     bounds;         // Bounds (in pixel coordinates) of resampled image.
+        final int width, height;            // Bounds (in pixel coordinates) of resampled image.
         final MathTransform toSource;       // From resampled image pixels to source image pixels.
-        final GridExtent    sourceExtent;
+        GridExtent sourceExtent;
         try {
+            // Compute now for getting exception early if `sliceExtent` is invalid.
+            final int[] resampledDimensions = sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
+            width  = Math.toIntExact(sliceExtent.getSize(resampledDimensions[0]));
+            height = Math.toIntExact(sliceExtent.getSize(resampledDimensions[1]));
+            /*
+             * Convert the given `sliceExtent` (in units of this grid) to units of the source grid.
+             * If a dimension can not be converted (e.g. because a `gridToCRS` transform has a NaN
+             * factor in that dimension), the corresponding source grid coordinates will be copied.
+             */
             final GeneralEnvelope sourceBounds = sliceExtent.toCRS(toSourceCorner, toSourceCenter, null);
+            final int dimension = sourceBounds.getDimension();
             if (sourceBounds.isEmpty()) {
                 final GridExtent se = source.gridGeometry.getExtent();
-                for (int i = sourceBounds.getDimension(); --i >= 0;) {
+                for (int i=0; i<dimension; i++) {
                     double min = sourceBounds.getMinimum(i);
                     double max = sourceBounds.getMaximum(i);
                     if (Double.isNaN(min)) min = se.getLow (i);
@@ -462,11 +528,53 @@ final class ResampledGridCoverage extends GridCoverage {
                     sourceBounds.setRange(i, min, max);
                 }
             }
-            sourceExtent = new GridExtent(sourceBounds, GridRoundingMode.ENCLOSING, GridClippingMode.STRICT, null, null, null, null);
-            final int[] resampledDimensions = sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
-            final int[] sourceDimensions  =  sourceExtent.getSubspaceDimensions(BIDIMENSIONAL);
-            bounds = new Rectangle(Math.toIntExact(sliceExtent.getSize(resampledDimensions[0])),
-                                   Math.toIntExact(sliceExtent.getSize(resampledDimensions[1])));
+            /*
+             * If the given `sliceExtent` has more than 2 dimensions, some dimensions must have a size of 1.
+             * But the converted size may become greater than 1 after conversion to source coordinate space.
+             * The following code forces the corresponding source dimensions to a thin slice in the middle.
+             * This is necessary for avoiding a `SubspaceNotSpecifiedException` when requesting the slice of
+             * source data.
+             */
+            int sourceDimX = 0, sourceDimY = 1;
+            if (toSourceDimensions != null) {
+                long mask = 0;
+                for (final int i : resampledDimensions) {
+                    mask |= toSourceDimensions[i];
+                }
+                sourceDimX = Long.numberOfTrailingZeros(mask);
+                sourceDimY = Long.numberOfTrailingZeros(mask & ~(1L << sourceDimX));
+                if (sourceDimY >= dimension) {
+                    /*
+                     * `mask` selected less than 2 dimensions. Unconditionally add
+                     * 1 or 2 dimensions choosen among the first unused dimensions.
+                     */
+                    if (sourceDimX >= dimension) sourceDimX = 0;
+                    sourceDimY = (sourceDimX != 0) ? 0 : 1;
+                    mask = (1L << sourceDimX) | (1L << sourceDimY);
+                }
+                /*
+                 * Modify the envelope by forcing to a thin slice
+                 * all dimensions not used for interpolations.
+                 */
+                mask = ~mask;
+                int i;
+                while ((i = Long.numberOfTrailingZeros(mask)) < dimension) {
+                    final double median = sourceBounds.getMedian(i);
+                    if (Double.isFinite(median)) {
+                        sourceBounds.setRange(i, median, median);
+                    }
+                    mask &= ~(1L << i);
+                }
+            }
+            /*
+             * Convert floating point values to long integers with a margin only in the dimensions
+             * where interpolations will happen. All other dimensions should have a span of zero,
+             * so the `ENCLOSING` rounding mode should assign a size of exactly 1 in those dimensions.
+             */
+            final int[] margin = new int[dimension];
+            margin[sourceDimX] = supportSizeX;
+            margin[sourceDimY] = supportSizeY;
+            sourceExtent = new GridExtent(sourceBounds, GridRoundingMode.ENCLOSING, null, margin, null, null, null);
             /*
              * The transform inputs must be two-dimensional (outputs may be more flexible). If this is not the case,
              * try to extract a two-dimensional part operating only on the slice dimensions having an extent larger
@@ -475,7 +583,7 @@ final class ResampledGridCoverage extends GridCoverage {
              */
             final TransformSeparator sep = new TransformSeparator(toSourceCenter);
             sep.addSourceDimensions(resampledDimensions);
-            sep.addTargetDimensions(sourceDimensions);
+            sep.addTargetDimensions(sourceDimX, sourceDimY);
             sep.setSourceExpandable(true);
             MathTransform toSourceSlice = sep.separate();
             final int[] requiredSources = sep.getSourceDimensions();
@@ -515,7 +623,7 @@ final class ResampledGridCoverage extends GridCoverage {
                 toSourceSlice = MathTransforms.concatenate(MathTransforms.linear(m), toSourceSlice);
             }
             /*
-             * `this.toSource` is a transform from source cell coordinates to target cell coordinates.
+             * Current `toSource` is a transform from source cell coordinates to target cell coordinates.
              * We need a transform from source pixel coordinates to target pixel coordinates (in images).
              * An offset may exist between cell coordinates and pixel coordinates.
              */
@@ -524,8 +632,8 @@ final class ResampledGridCoverage extends GridCoverage {
                     sliceExtent.getLow(resampledDimensions[1]));
 
             final MathTransform gridToSource = MathTransforms.translation(
-                    Math.negateExact(sourceExtent.getLow(sourceDimensions[0])),
-                    Math.negateExact(sourceExtent.getLow(sourceDimensions[1])));
+                    Math.negateExact(sourceExtent.getLow(sourceDimX)),
+                    Math.negateExact(sourceExtent.getLow(sourceDimY)));
 
             toSource = MathTransforms.concatenate(resampledToGrid, toSourceSlice, gridToSource);
         } catch (FactoryException | TransformException | ArithmeticException e) {
@@ -537,7 +645,7 @@ final class ResampledGridCoverage extends GridCoverage {
          * call this method only here, when remaining operations are unlikely to fail.
          */
         final RenderedImage values = source.render(sourceExtent);
-        return imageProcessor.resample(values, bounds, toSource);
+        return imageProcessor.resample(values, new Rectangle(width, height), toSource);
     }
 
     /**
