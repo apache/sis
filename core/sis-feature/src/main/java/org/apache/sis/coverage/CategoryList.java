@@ -550,7 +550,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
          */
         int index = lastUsed;
         double value = Double.NaN;
-main:   for (int peekOff = srcOff; /* numPts >= 0 */; peekOff += direction) {
+        for (int peekOff = srcOff; /* numPts >= 0 */; peekOff += direction) {
             final double minimum = minimums[index];
             final double limit = (index+1 < minimums.length) ? minimums[index+1] : Double.NaN;
             final long   rawBits = doubleToRawLongBits(minimum);
@@ -629,7 +629,10 @@ main:   for (int peekOff = srcOff; /* numPts >= 0 */; peekOff += direction) {
             if (numPts < 0) break;
             while ((index = binarySearch(minimums, value)) < 0) {
                 dstPts[peekOff + srcToDst] = unmappedValue(value);
-                if (--numPts < 0) break main;
+                if (--numPts < 0) {
+                    // Skip also the assignment to `lastUsed` because `index` is invalid.
+                    return;
+                }
                 value = srcPts[peekOff += direction];
             }
             srcOff = peekOff;
