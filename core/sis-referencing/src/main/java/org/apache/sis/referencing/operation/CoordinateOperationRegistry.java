@@ -159,6 +159,14 @@ class CoordinateOperationRegistry {
      * The object to use for finding authority codes, or {@code null} if none.
      * An instance is fetched at construction time from the {@link #registry} if possible.
      *
+     * <div class="note"><b>Design note:</b>
+     * using a provider defined by the {@link #registry} instead than {@code MultiAuthoritiesFactory} may cause
+     * the finder to perform extensive searches because it does not recognize the authority code of a given CRS.
+     * For example if {@link #registry} is for EPSG and a given CRS is "CRS:84", then {@code codeFinder} would
+     * not recognize the given CRS and would search for a match in the EPSG database. This is desired because
+     * we need to have the two CRSs defined by the same authority (if possible) in order to find a predefined
+     * operation, even if an equivalent definition was provided by another authority.</div>
+     *
      * @see #authorityCodes
      * @see #findCode(CoordinateReferenceSystem)
      */
@@ -249,7 +257,6 @@ class CoordinateOperationRegistry {
                 recoverableException("<init>", e);
             }
             if (codeFinder != null) {
-                codeFinder.setIgnoringAxes(true);
                 authorityCodes = new IdentityHashMap<>(5);          // Rarely more than 4 entries.
             }
         }
@@ -271,7 +278,6 @@ class CoordinateOperationRegistry {
         if (codeFinder != null) {
             codeFinder.setIgnoringAxes(false);
             final IdentifiedObject candidate = codeFinder.findSingleton(object);
-            codeFinder.setIgnoringAxes(true);
             if (Utilities.equalsIgnoreMetadata(object, candidate)) {
                 return type.cast(candidate);
             }
@@ -293,6 +299,7 @@ class CoordinateOperationRegistry {
         if (codes == null) {
             codes = new ArrayList<>();
             if (codeFinder != null) {
+                codeFinder.setIgnoringAxes(true);
                 for (final IdentifiedObject candidate : codeFinder.find(crs)) {
                     final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, registry.getAuthority());
                     if (identifier != null) {

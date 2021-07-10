@@ -58,7 +58,7 @@ import org.apache.sis.util.Utilities;
  * is thread-safe. If concurrent searches are desired, then a new instance should be created for each thread.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see GeodeticAuthorityFactory#newIdentifiedObjectFinder()
  * @see IdentifiedObjects#newFinder(String)
@@ -302,7 +302,7 @@ public class IdentifiedObjectFinder {
             final AuthorityFactoryProxy<?> previous = proxy;
             proxy = AuthorityFactoryProxy.getInstance(object.getClass());
             try {
-                if (!ignoreIdentifiers && !ignoreAxes) {
+                if (!ignoreIdentifiers) {
                     /*
                      * First check if one of the identifiers can be used to find directly an identified object.
                      * Verify that the object that we found is actually equal to given one; we do not blindly

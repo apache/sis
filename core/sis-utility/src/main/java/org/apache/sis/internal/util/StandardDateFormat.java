@@ -242,13 +242,13 @@ replace:    if (Character.isWhitespace(c)) {
      * Number of nanoseconds in one millisecond.
      * Can be casted to {@code float} with exact precision.
      */
-    public static final int NANOS_PER_MILLISECOND = 1000000;
+    public static final int NANOS_PER_MILLISECOND = 1000_000;
 
     /**
      * Number of nanoseconds in one second.
      * Can be casted to {@code float} with exact precision.
      */
-    public static final int NANOS_PER_SECOND = 1000000000;
+    public static final int NANOS_PER_SECOND = 1000_000_000;
 
     /**
      * Converts the given legacy {@code Date} object into a {@code java.time} implementation in given timezone.

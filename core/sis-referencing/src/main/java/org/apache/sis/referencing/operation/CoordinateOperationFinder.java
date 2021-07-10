@@ -973,8 +973,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             if (stepComponents.length == 1) {
                 stepSourceCRS = stepComponents[0];    // Slight optimization of the next block (in the `else` case).
             } else {
-                stepSourceCRS = toAuthorityDefinition(CoordinateReferenceSystem.class,
-                        factorySIS.getCRSFactory().createCompoundCRS(derivedFrom(sourceCRS), stepComponents));
+                CompoundCRS crs = factorySIS.getCRSFactory().createCompoundCRS(derivedFrom(sourceCRS), stepComponents);
+                stepSourceCRS = toAuthorityDefinition(CoordinateReferenceSystem.class, crs);
             }
             operation = createFromAffineTransform(AXIS_CHANGES, sourceCRS, stepSourceCRS, select);
         }
@@ -1091,8 +1091,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     private CoordinateReferenceSystem createCompoundCRS(final CoordinateReferenceSystem template,
             final CoordinateReferenceSystem[] components) throws FactoryException
     {
-        EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(factorySIS.getCRSFactory(), factorySIS.getCSFactory(), factory);
-        return toAuthorityDefinition(CoordinateReferenceSystem.class, c.createCompoundCRS(derivedFrom(template), components));
+        EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(
+                factorySIS.getCRSFactory(), factorySIS.getCSFactory(), factory);
+        CoordinateReferenceSystem crs = c.createCompoundCRS(derivedFrom(template), components);
+        return toAuthorityDefinition(CoordinateReferenceSystem.class, crs);
     }
 
     /**

@@ -1176,14 +1176,22 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     /**
      * Invoked in a background thread after a value has been set in the map.
      * This method computes a cost estimation of the new value. If the total cost is greater
-     * than the cost limit, then oldest strong references are replaced by weak references.
+     * than the cost limit, then oldest strong references are replaced by weak references
+     * until the cost of entries kept by strong references become lower than the threshold.
      */
-    final void adjustReferences(final K key, final V value) {
+    private void adjustReferences(final K key, final V value) {
         int cost = (value != null) ? cost(value) : 0;
         synchronized (costs) {
             final Integer old = costs.put(key, cost);
             if (old != null) {
                 cost -= old;
+                /*
+                 * This block exists for more safety but should never be executed. If execution happens anyway,
+                 * the instance in the `costs` map may still the old one (depending on `HashMap` implementation),
+                 * not the new instance given as `key` argument. It may be a problem if we rely on this instance
+                 * for preventing the cleaning of weak references. It should nevertheless be okay because the
+                 * `costs` map is used for `Cache` entries that are not yet weak references.
+                 */
             }
             if ((totalCost += cost) > costLimit) {
                 final Iterator<Map.Entry<K,Integer>> it = costs.entrySet().iterator();

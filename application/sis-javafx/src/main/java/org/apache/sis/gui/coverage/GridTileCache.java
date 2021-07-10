@@ -36,10 +36,11 @@ final class GridTileCache extends LinkedHashMap<GridTile,GridTile> {
      * Creates a new cache of tiles.
      */
     GridTileCache() {
+        super(16, 0.75f, true);
     }
 
     /**
-     * Clears the latest tile if this map has reached its maximal capacity.
+     * Clears the eldest tile if this map has reached its maximal capacity.
      * In the common case where there is no error, the whole entry will be discarded.
      *
      * @param  entry  the eldest entry.
