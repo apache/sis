@@ -1285,6 +1285,45 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
+     * Returns a grid geometry translated by the given amount of cells compared to this grid.
+     * The returned grid has the same {@linkplain GridExtent#getSize(int) size} than this grid,
+     * i.e. both low and high grid coordinates are displaced by the same amount of cells.
+     * The "grid to CRS" transforms are adjusted accordingly in order to map to the same
+     * "real world" coordinates.
+     *
+     * <h4>Number of arguments</h4>
+     * The {@code translation} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing values default to 0 (i.e. no translation in unspecified dimensions).
+     * If the array is longer, extraneous values are ignored.
+     *
+     * @param  translation  translation to apply on each grid axis in order.
+     * @return a grid geometry whose coordinates (both low and high ones) and
+     *         the "grid to CRS" transforms have been translated by given amounts.
+     *         If the given translation is a no-op (no value or only 0 ones), then this grid is returned as is.
+     * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
+     *
+     * @see GridExtent#translate(long...)
+     *
+     * @since 1.1
+     */
+    public GridGeometry translate(final long... translation) {
+        ArgumentChecks.ensureNonNull("translation", translation);
+        final double[] vector = new double[getDimension()];
+        boolean isZero = true;
+        for (int i=Math.min(vector.length, translation.length); --i >= 0;) {
+            isZero &= (translation[i] == 0);
+            vector[i] = Math.negateExact(translation[i]);
+        }
+        if (isZero) {
+            return this;
+        } else try {
+            return new GridGeometry(this, extent.translate(translation), MathTransforms.translation(vector));
+        } catch (TransformException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    /**
      * Returns a grid geometry that encompass only some dimensions of this grid geometry.
      * The specified dimensions will be copied into a new grid geometry if necessary.
      * The selection is applied on {@linkplain #getExtent() grid extent} dimensions;

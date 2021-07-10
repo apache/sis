@@ -28,6 +28,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.DisjointExtentException;
+import org.apache.sis.internal.coverage.j2d.DeferredProperty;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
@@ -294,8 +295,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
                         Errors.Keys.MismatchedDimension_3, "sliceExtent", dimension, sd));
             }
         }
-        final int[] sd = sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
-        if (sd[1] != 1) {
+        final int[] selectedDimensions = sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
+        if (selectedDimensions[1] != 1) {
             // TODO
             throw new UnsupportedOperationException("Non-horizontal slices not yet implemented.");
         }
@@ -321,7 +322,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                         throw new DisjointExtentException(message);
                     }
                 }
-                final long lower =                Math.max(toSubsampledPixel(               multiplyExact(tileLo, tileSize[i]),  i), min);
+                final long lower = /* inclusive */Math.max(toSubsampledPixel(/* inclusive */multiplyExact(tileLo, tileSize[i]),  i), min);
                 final long upper = incrementExact(Math.min(toSubsampledPixel(decrementExact(multiplyExact(tileUp, tileSize[i])), i), max));
                 imageSize[i] = toIntExact(subtractExact(upper, lower));
                 offsetAOI[i] = toIntExact(subtractExact(lower, aoiMin));
@@ -332,7 +333,12 @@ public abstract class TiledGridCoverage extends GridCoverage {
              * Get all tiles in the specified region. I/O operations, if needed, happen here.
              */
             final WritableRaster[] result = readTiles(new AOI(tileLower, tileUpper, offsetAOI, dimension));
-            image = new TiledImage(null, colors, imageSize[0], imageSize[1], tileLower[0], tileLower[1], result);
+            /*
+             * Wraps in an image all the tiles that we just read, together with the following properties:
+             *    - Two-dimensional conversion from pixel coordinates to "real world" coordinates.
+             */
+            final Map<String,Object> properties = DeferredProperty.forGridGeometry(getGridGeometry(), selectedDimensions);
+            image = new TiledImage(properties, colors, imageSize[0], imageSize[1], tileLower[0], tileLower[1], result);
         } catch (Exception e) {     // Too many exception types for listing them all.
             throw new CannotEvaluateException(Resources.forLocale(getLocale()).getString(
                     Resources.Keys.CanNotRenderImage_1, getDisplayName()), e);

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
@@ -429,6 +430,28 @@ public final strictfp class GridGeometryTest extends TestCase {
         assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
         assertNotSame("extent", extent, grid.getExtent());
         verifyGridToCRS(grid);
+    }
+
+    /**
+     * Tests {@link GridGeometry#translate(long...)}.
+     */
+    @Test
+    public void testTranslate() {
+        GridGeometry grid = new GridGeometry(
+                new GridExtent(17, 10),
+                PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix3(
+                    1,   0,  -7,
+                    0,  -1,  50,
+                    0,   0,   1)),
+                HardCodedCRS.WGS84);
+        /*
+         * The "real world" envelope should be unchanged by grid translation.
+         */
+        final Envelope envelope = grid.getEnvelope();
+        grid = grid.translate(12, 15);
+        assertExtentEquals(new long[] {12, 15}, new long[] {12 + 16, 15 + 9}, grid.getExtent());
+        assertEquals(envelope, grid.getEnvelope());
     }
 
     /**

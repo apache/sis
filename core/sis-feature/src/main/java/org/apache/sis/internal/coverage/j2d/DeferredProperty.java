@@ -16,8 +16,13 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
+import java.util.Map;
+import java.util.Collections;
 import java.util.function.Function;
 import java.awt.image.RenderedImage;
+import org.apache.sis.image.PlanarImage;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridGeometry;
 
 
 /**
@@ -69,5 +74,56 @@ public final class DeferredProperty {
             }
         }
         return value;
+    }
+
+    /**
+     * Creates a deferred property for computing the value of {@link PlanarImage#GRID_GEOMETRY_KEY}.
+     *
+     * @param  grid        the grid geometry of the grid coverage rendered as an image.
+     * @param  dimensions  the dimensions to keep from the coverage grid geometry.
+     * @return a deferred property for computing the grid geometry of an image.
+     */
+    public static Map<String,Object> forGridGeometry(final GridGeometry grid, final int[] dimensions) {
+        return Collections.singletonMap(PlanarImage.GRID_GEOMETRY_KEY,
+                new DeferredProperty(new ImageGeometry(grid, dimensions)));
+    }
+
+    /**
+     * A deferred property for computing the value of {@link PlanarImage#GRID_GEOMETRY_KEY}.
+     */
+    private static final class ImageGeometry implements Function<RenderedImage, GridGeometry> {
+        /** The grid geometry of the grid coverage rendered as an image. */
+        private final GridGeometry grid;
+
+        /** The dimensions to keep from the coverage grid geometry. */
+        private final int dimX, dimY;
+
+        /**
+         * Creates a deferred property for an image grid geometry.
+         *
+         * @param grid        the grid geometry of the grid coverage rendered as an image.
+         * @param dimensions  the dimensions to keep from the coverage grid geometry.
+         */
+        public ImageGeometry(final GridGeometry grid, final int[] dimensions) {
+            this.grid = grid;
+            this.dimX = dimensions[0];
+            this.dimY = dimensions[1];
+        }
+
+        /**
+         * Invoked when the {@link PlanarImage#GRID_GEOMETRY_KEY} value needs to be computed.
+         * The image should have been rendered from a grid coverage having the grid geometry
+         * given at construction time.
+         *
+         * @param  image  the image for which to compute the property.
+         * @return the grid geometry property computed for the given image.
+         */
+        @Override
+        public GridGeometry apply(final RenderedImage image) {
+            final GridExtent extent = grid.getExtent();
+            return grid.reduce(dimX, dimY).translate(
+                    Math.subtractExact(image.getMinX(), extent.getLow(dimX)),
+                    Math.subtractExact(image.getMinY(), extent.getLow(dimY)));
+        }
     }
 }

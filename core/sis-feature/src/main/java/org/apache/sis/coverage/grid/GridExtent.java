@@ -1436,9 +1436,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * Returns an extent translated by the given amount of cells compared to this extent.
      * The returned extent has the same {@linkplain #getSize(int) size} than this extent,
      * i.e. both low and high grid coordinates are displaced by the same amount of cells.
-     * The given translation vector should have a length equal to this extent
-     * {@linkplain #getDimension() dimension}, but shorter arrays are allowed:
-     * missing values are assumed zero (i.e. the extent is not translated in missing dimensions).
      *
      * <div class="note"><b>Example:</b>
      * for an extent (x: [0…10], y: [2…4], z: [0…1]) and a translation {-2, 2},
@@ -1449,12 +1446,13 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * If the array is shorter, missing values default to 0 (i.e. no translation in unspecified dimensions).
      * If the array is longer, extraneous values are ignored.
      *
-     * @param  translation  translation to apply on each axis in order, or {@code null} if none.
-     * @return a grid-extent whose coordinates (both low and high ones) have been translated by given amounts.
+     * @param  translation  translation to apply on each axis in order.
+     * @return a grid extent whose coordinates (both low and high ones) have been translated by given amounts.
      *         If the given translation is a no-op (no value or only 0 ones), then this extent is returned as is.
      * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
      *
      * @see #startsAtZero()
+     * @see GridGeometry#translate(long...)
      *
      * @since 1.1
      */
