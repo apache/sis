@@ -16,6 +16,7 @@
  */
 package org.apache.sis.swing;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
@@ -25,6 +26,7 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 
 
@@ -54,11 +56,19 @@ public class ImagePane extends ZoomPane {
      * only for quick testing purpose.
      *
      * @param  coverage  the coverage to show.
+     * @param  title     window title.
      */
-    public static void show(final GridCoverage coverage) {
+    public static void show(final GridCoverage coverage, final String title) {
         final RenderedImage image = coverage.render(null);
         final GridGeometry gg = (GridGeometry) image.getProperty(PlanarImage.GRID_GEOMETRY_KEY);
-        show(image, (AffineTransform) gg.getGridToCRS(PixelInCell.CELL_CORNER));
+        AffineTransform gridToCRS;
+        try {
+            gridToCRS = (AffineTransform) gg.getGridToCRS(PixelInCell.CELL_CORNER);
+        } catch (IncompleteGridGeometryException e) {
+            gridToCRS = new AffineTransform();
+            System.err.println(e);
+        }
+        show(image, gridToCRS, title);
     }
 
     /**
@@ -66,9 +76,10 @@ public class ImagePane extends ZoomPane {
      *
      * @param  image      the image to show.
      * @param  gridToCRS  the transform from pixel coordinates to "real world" coordinates.
+     * @param  title      window title.
      */
-    public static void show(final RenderedImage image, final AffineTransform gridToCRS) {
-        final JFrame frame = new JFrame("RenderedImage");
+    public static void show(final RenderedImage image, final AffineTransform gridToCRS, final String title) {
+        final JFrame frame = new JFrame(title);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(new ImagePane(image, gridToCRS).createScrollPane());
         frame.pack();
@@ -84,6 +95,7 @@ public class ImagePane extends ZoomPane {
     public ImagePane(final RenderedImage image, final AffineTransform gridToCRS) {
         this.image = image;
         this.gridToCRS = gridToCRS;
+        setBackground(Color.GRAY);
     }
 
     /**
