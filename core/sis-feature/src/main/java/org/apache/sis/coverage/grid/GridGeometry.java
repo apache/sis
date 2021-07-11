@@ -1308,19 +1308,26 @@ public class GridGeometry implements LenientComparable, Serializable {
      */
     public GridGeometry translate(final long... translation) {
         ArgumentChecks.ensureNonNull("translation", translation);
-        final double[] vector = new double[getDimension()];
-        boolean isZero = true;
-        for (int i=Math.min(vector.length, translation.length); --i >= 0;) {
-            isZero &= (translation[i] == 0);
-            vector[i] = Math.negateExact(translation[i]);
+        GridExtent te = extent;
+        if (te != null) {
+            te = te.translate(translation);
+            if (te == extent) return this;
         }
-        if (isZero) {
-            return this;
-        } else try {
-            return new GridGeometry(this, extent.translate(translation), MathTransforms.translation(vector));
-        } catch (TransformException e) {
-            throw new AssertionError(e);
+        MathTransform t1 = gridToCRS;
+        MathTransform t2 = cornerToCRS;
+        if (t1 != null || t2 != null) {
+            boolean isZero = true;
+            final double[] vector = new double[getDimension()];
+            for (int i=Math.min(vector.length, translation.length); --i >= 0;) {
+                isZero &= (translation[i] == 0);
+                vector[i] = Math.negateExact(translation[i]);
+            }
+            if (isZero) return this;
+            final MathTransform t = MathTransforms.translation(vector);
+            t1 = MathTransforms.concatenate(t, t1);
+            t2 = MathTransforms.concatenate(t, t2);
         }
+        return new GridGeometry(te, t1, t2, envelope, resolution, nonLinears);
     }
 
     /**
