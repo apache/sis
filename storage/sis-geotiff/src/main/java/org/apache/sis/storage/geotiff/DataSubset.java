@@ -27,6 +27,7 @@ import java.awt.image.WritableRaster;
 import org.apache.sis.image.DataType;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.internal.storage.io.Region;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.TiledGridCoverage;
@@ -175,7 +176,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      *         (too many exception types to list them all).
      */
     @Override
-    protected final WritableRaster[] readTiles(final AOI iterator) throws IOException, DataStoreContentException {
+    protected final WritableRaster[] readTiles(final AOI iterator) throws IOException, DataStoreException {
         /*
          * Prepare an array for all tiles to be returned. Tiles that are already in memory will be stored
          * in this array directly. Other tiles will be declared in the `missings` array and loaded later.
@@ -241,23 +242,16 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * @param  location     pixel coordinates in the upper-left corner of the tile to return.
      * @return image decoded from the GeoTIFF file.
      * @throws IOException if an I/O error occurred.
-     * @throws DataStoreContentException if the sample model is not supported.
+     * @throws DataStoreException if a logical error occurred.
      * @throws RuntimeException if the Java2D image can not be created for another reason
      *         (too many exception types to list them all).
      */
     WritableRaster readSlice(final long offset, final long byteCount, final long[] lower, final long[] upper,
-                             final int[] subsampling, final Point location) throws IOException, DataStoreContentException
+                             final int[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final int  type   = model.getDataType();
         final long width  = subtractExact(upper[0], lower[0]);
         final long height = subtractExact(upper[1], lower[1]);
-        final long length = multiplyExact(multiplyExact(width, height), DataBuffer.getDataTypeSize(type) / Byte.SIZE);
-        if (length > byteCount) {
-            // We may have less bytes to read if only a subregion is read.
-            throw new DataStoreContentException(source.reader.resources().getString(
-                    Resources.Keys.UnexpectedTileLength_2, length, byteCount));
-        }
-        final HyperRectangleReader hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(type), source.reader.input, offset);
         /*
          * "Banks" (in `java.awt.image.DataBuffer` sense) are synonymous to "bands" for planar image only.
          * Otherwise there is only one bank not matter the amount of bands. Each bank is read separately.
@@ -268,9 +262,30 @@ class DataSubset extends TiledGridCoverage implements Localized {
             numBanks = numInterleaved;
             numInterleaved = 1;
         }
-        final Buffer[] banks    = new Buffer[numBanks];
-        final long[]   size     = new long[] {multiplyFull(numInterleaved, getTileSize(0)), getTileSize(1), numBanks};
-        final int      capacity = multiplyExact(model.getWidth(), model.getHeight());
+        /*
+         * The number of bytes to read should not be greater than `byteCount`. It may be smaller however if only
+         * a subregion is read. Note that the `length` value may be different than `capacity` if the tile to read
+         * is smaller than the "standard" tile size of the image. It happens often when reading the last strip.
+         */
+        final long length = multiplyExact(DataBuffer.getDataTypeSize(type) / Byte.SIZE,
+                            multiplyExact(multiplyExact(width, height), numInterleaved));
+        if (length > byteCount) {
+            throw new DataStoreContentException(source.reader.resources().getString(
+                    Resources.Keys.UnexpectedTileLength_2, length, byteCount));
+        }
+        final int capacity = multiplyExact(multiplyExact(model.getWidth(), model.getHeight()), numInterleaved);
+        final long[] size = new long[] {multiplyFull(numInterleaved, getTileSize(0)), getTileSize(1), numBanks};
+        /*
+         * If we use an interleaved sample model, each "element" from `HyperRectangleReader` perspective is actually
+         * a group of `numInterleaved` values. Note that in such case, we can not handle subsampling on the first axis.
+         */
+        if (numInterleaved != 1 && subsampling[0] != 1) {
+            throw new InternalDataStoreException();
+        }
+        lower[0] *= numInterleaved;
+        upper[0] *= numInterleaved;
+        final HyperRectangleReader hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(type), source.reader.input, offset);
+        final Buffer[] banks = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
             lower[BIDIMENSIONAL] = b;
             upper[BIDIMENSIONAL] = b + 1;

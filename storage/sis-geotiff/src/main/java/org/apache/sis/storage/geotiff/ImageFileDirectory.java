@@ -1021,13 +1021,13 @@ final class ImageFileDirectory extends DataCube {
 
     /**
      * Multiplies the given value by the number of bytes in one pixel,
-     * or return -1 if the result is not an integer.
+     * or return 0 if the result is not an integer.
      *
      * @throws ArithmeticException if the result overflows.
      */
     private long pixelToByteCount(long value) {
         value = Math.multiplyExact(value, samplesPerPixel * (int) bitsPerSample);
-        return (value % Byte.SIZE == 0) ? value / Byte.SIZE : -1;
+        return (value % Byte.SIZE == 0) ? value / Byte.SIZE : 0;
     }
 
     /**
@@ -1047,7 +1047,7 @@ final class ImageFileDirectory extends DataCube {
             do if (++i == n) {
                 // At this point, we verified that all vector values are equal.
                 final long length = pixelToByteCount(knownSize);
-                if (count % length != 0) break;
+                if (length == 0 || (count % length) != 0) break;
                 return Math.toIntExact(count / length);
             } while (tileByteCounts.longValue(i) == n);
         }
@@ -1127,7 +1127,7 @@ final class ImageFileDirectory extends DataCube {
          * All of tile width, height and length information should be provided. But if only one of them is missing,
          * we can compute it provided that the file does not use any compression method. If there is a compression,
          * then we set a bit for preventing the `switch` block to perform a calculation but we let the code performs
-         * the other checks in order to get an exception to be thrown with a good message.
+         * the other checks in order to get an exception thrown with a better message.
          */
         int missing = !isPlanar && compression.equals(Compression.NONE) ? 0 : 0b1000;
         if (tileWidth      < 0)     missing |= 0b0001;
@@ -1150,6 +1150,9 @@ final class ImageFileDirectory extends DataCube {
             }
             case 0b0100: {          // Compute missing tile byte count in uncompressed case.
                 final long tileByteCount = pixelToByteCount(Math.multiplyExact(tileWidth, tileHeight));
+                if (tileByteCount == 0) {
+                    throw missingTag(byteCountsTag);
+                }
                 final long[] tileByteCountArray = new long[tileOffsets.size()];
                 Arrays.fill(tileByteCountArray, tileByteCount);
                 tileByteCounts = Vector.create(tileByteCountArray, true);
@@ -1452,38 +1455,53 @@ final class ImageFileDirectory extends DataCube {
                     unsupportedTagValue(Tags.PhotometricInterpretation, photometricInterpretation);
                     break;
                 }
-                case -1: missing = Tags.PhotometricInterpretation; break;
-                case  0: break;             // WhiteIsZero: 0 is imaged as white.
-                case  1: break;             // BlackIsZero: 0 is imaged as black.
+                case -1: {
+                    missing = Tags.PhotometricInterpretation;
+                    break;
+                }
+                case  0:                   // WhiteIsZero: 0 is imaged as white.
+                case  1: {                 // BlackIsZero: 0 is imaged as black.
+                    final Color[] colors = {Color.BLACK, Color.WHITE};
+                    if (photometricInterpretation == 0) {
+                        ArraysExt.swap(colors, 0, 1);
+                    }
+                    colorModel = ColorModelFactory.createColorScale(dataType, samplesPerPixel, visibleBand,
+                            Math.max(minValues.doubleValue(visibleBand), 0),
+                            Math.min(maxValues.doubleValue(visibleBand), (1 << bitsPerSample) - 1), colors);
+                    break;
+                }
+                case 2: {                   // RGB: (0,0,0) is black and (255,255,255) is white.
+                    final int numBands = sm.getNumBands();
+                    if (numBands < 3 || numBands > 4) {
+                        throw new DataStoreContentException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "numBands", numBands));
+                    }
+                    final boolean hasAlpha = (numBands >= 4);
+                    final boolean packed = sm instanceof SinglePixelPackedSampleModel;
+                    colorModel = ColorModelFactory.createRGB(bitsPerSample, packed, hasAlpha);
+                    break;
+                }
                 case  3: {                  // PaletteColor
                     if (colorMap == null) {
                         missing = Tags.ColorMap;
                         break;
                     }
-                    final int[] ARGB = new int[colorMap.size() / 3];
-                    for (int i=0, j=0; i < ARGB.length; i++) {
-                        ARGB[i] = ((colorMap.intValue(j++) & 0xFF00) << Byte.SIZE)
-                                | ((colorMap.intValue(j++) & 0xFF00))
-                                | ((colorMap.intValue(j++) & 0xFF00) >>> Byte.SIZE);
+                    int gi = colorMap.size() / 3;
+                    int bi = gi * 2;
+                    final int[] ARGB = new int[gi];
+                    for (int i=0; i < ARGB.length; i++) {
+                        ARGB[i] = 0xFF000000
+                                | ((colorMap.intValue(i   ) & 0xFF00) << Byte.SIZE)
+                                | ((colorMap.intValue(gi++) & 0xFF00))
+                                | ((colorMap.intValue(bi++) & 0xFF00) >>> Byte.SIZE);
                     }
-                    return colorModel = ColorModelFactory.createIndexColorModel(samplesPerPixel, visibleBand, ARGB,
-                                                          Double.isFinite(noData) ? (int) Math.round(noData) : -1);
-                }
-                case 2: {                   // RGB: (0,0,0) is black and (255,255,255) is white.
-                    colorModel = ColorModelFactory.createRGB(bitsPerSample, sm instanceof SinglePixelPackedSampleModel, false);
+                    colorModel = ColorModelFactory.createIndexColorModel(samplesPerPixel, visibleBand, ARGB,
+                                                   Double.isFinite(noData) ? (int) Math.round(noData) : -1);
                     break;
                 }
             }
             if (missing != 0) {
                 missingTag(missing, "GrayScale", false, true);
             }
-            final Color[] colors = {Color.BLACK, Color.WHITE};
-            if (photometricInterpretation == 0) {
-                ArraysExt.swap(colors, 0, 1);
-            }
-            colorModel = ColorModelFactory.createColorScale(dataType, samplesPerPixel, visibleBand,
-                    Math.max(minValues.doubleValue(visibleBand), 0),
-                    Math.min(maxValues.doubleValue(visibleBand), (1 << bitsPerSample) - 1), colors);
         }
         return colorModel;
     }
