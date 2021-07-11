@@ -102,6 +102,12 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     protected abstract Number fillValue();
 
     /**
+     * Returns the total number of tiles. This is used for computing the stride between a
+     * band and the next band in {@link #tileOffsets} and {@link #tileByteCounts} vectors.
+     */
+    abstract long getNumTiles();
+
+    /**
      * Gets the stream position and the length in bytes of compressed tile arrays in the GeoTIFF file.
      * Values in the returned vector are {@code long} primitive type.
      *

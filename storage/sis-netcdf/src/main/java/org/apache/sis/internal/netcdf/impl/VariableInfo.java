@@ -222,7 +222,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                     throw new DataStoreContentException(getLocale(), Decoder.FORMAT_NAME, input.filename, null);
                 }
             }
-            reader = new HyperRectangleReader(dataType.number, input, offset);
+            reader = new HyperRectangleReader(dataType.number, input);
+            reader.setOrigin(offset);
         } else {
             reader = null;
         }
@@ -812,7 +813,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     @Override
     public int compareTo(final VariableInfo other) {
-        int c = Long.compare(reader.origin, other.reader.origin);
+        int c = Long.compare(reader.getOrigin(), other.reader.getOrigin());
         if (c == 0) c = name.compareTo(other.name);                 // Should not happen, but we are paranoiac.
         return c;
     }

@@ -43,21 +43,20 @@ public final class HyperRectangleReader {
 
     /**
      * The {@code input} position of the first sample (ignoring sub-area and subsampling).
-     * This is the {@code origin} argument given to the constructor, copied verbatim.
-     * This field is public for callers wanting to order {@code HyperRectangleReader} instances
-     * in increasing file offset order, for more sequential reading (less seek operations).
+     * This is initially the {@code origin} argument given to the constructor, copied verbatim.
+     *
+     * @see #getOrigin()
      */
-    public final long origin;
+    private long origin;
 
     /**
      * Creates a new reader for the given input and source region.
      *
      * @param  dataType  the type of elements to read, as one of the constants defined in {@link Numbers}.
      * @param  input     the channel from which to read the values, together with a buffer for transferring data.
-     * @param  origin    the position in the channel of the first sample value in the hyper-rectangle.
      * @throws DataStoreContentException if the given {@code dataType} is not one of the supported values.
      */
-    public HyperRectangleReader(final byte dataType, final ChannelDataInput input, final long origin)
+    public HyperRectangleReader(final byte dataType, final ChannelDataInput input)
             throws DataStoreContentException
     {
         switch (dataType) {
@@ -70,7 +69,6 @@ public final class HyperRectangleReader {
             case Numbers.DOUBLE:    reader = input.new DoublesReader((double[]) null); break;
             default: throw new DataStoreContentException(Errors.format(Errors.Keys.UnknownType_1, dataType));
         }
-        this.origin = origin;
         final ByteBuffer buffer = input.buffer;
         final int pos = buffer.position();
         final int lim = buffer.limit();
@@ -92,7 +90,6 @@ public final class HyperRectangleReader {
      */
     public HyperRectangleReader(final String filename, final Buffer data) throws IOException {
         reader = new MemoryDataTransfer(filename, data).reader();
-        origin = 0;
     }
 
     /**
@@ -111,6 +108,25 @@ public final class HyperRectangleReader {
      */
     public final int sampleSize() {
         return 1 << reader.dataSizeShift();
+    }
+
+    /**
+     * Returns the {@code input} position of the first sample (ignoring sub-area and subsampling).
+     * This is initially the {@code origin} argument given to the constructor, copied verbatim.
+     *
+     * @return the {@code input} position of the first sample (ignoring sub-area and subsampling).
+     */
+    public long getOrigin() {
+        return origin;
+    }
+
+    /**
+     * Sets the {@code input} position of the first sample (ignoring sub-area and subsampling).
+     *
+     * @param  p  the new {@code input} position of the first sample (ignoring sub-area and subsampling).
+     */
+    public void setOrigin(final long p) {
+        origin = p;
     }
 
     /**

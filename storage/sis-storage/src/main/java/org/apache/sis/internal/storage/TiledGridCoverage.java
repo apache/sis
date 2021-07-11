@@ -455,16 +455,6 @@ public abstract class TiledGridCoverage extends GridCoverage {
         }
 
         /**
-         * Returns the current iterator position as an index in the vector of tiles in the {@link TiledGridResource}.
-         * Tiles are assumed stored in a row-major fashion. This position is incremented by calls to {@link #next()}.
-         *
-         * @return current iterator position in the vector of all tiles in the resource.
-         */
-        public final int getIndexInTileVector() {
-            return indexInTileVector;
-        }
-
-        /**
          * Returns the cached tile for current iterator position.
          *
          * @return cached tile at current iterator position, or {@code null} if none.

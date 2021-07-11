@@ -43,6 +43,7 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -140,6 +141,9 @@ final class ImageFileDirectory extends DataCube {
      * height of tiles having the same width than the image. While the TIFF specification handles
      * "tiles" and "strips" separately, Apache SIS handles strips as a special kind of tiles where
      * only {@code tileHeight} is specified and {@code tileWidth} defaults to {@link #imageWidth}.
+     *
+     * @see #getTileSize()
+     * @see #getNumTiles()
      */
     private int tileWidth = -1, tileHeight = -1;
 
@@ -1171,13 +1175,10 @@ final class ImageFileDirectory extends DataCube {
         }
         /*
          * Report an error if the tile offset and tile byte count vectors do not have the same length.
-         * Then ensure that the number of tiles is equal to the expected number. The formula below is the
-         * one documented in the TIFF specification and reproduced in tileWidth & tileHeight fields javadoc.
+         * Then ensure that the number of tiles is equal to the expected number.
          */
         ensureSameLength(offsetsTag, byteCountsTag, tileOffsets.size(), tileByteCounts.size());
-        long expectedCount = Math.multiplyExact(
-                Math.addExact(imageWidth,  tileWidth  - 1) / tileWidth,
-                Math.addExact(imageHeight, tileHeight - 1) / tileHeight);
+        long expectedCount = getNumTiles();
         if (isPlanar) {
             expectedCount = Math.multiplyExact(expectedCount, samplesPerPixel);
         }
@@ -1396,6 +1397,18 @@ final class ImageFileDirectory extends DataCube {
     @Override
     protected int[] getTileSize() {
         return new int[] {tileWidth, tileHeight};
+    }
+
+    /**
+     * Returns the total number of tiles. The formulas used in this method are derived from the formulas
+     * documented in the TIFF specification and reproduced in {@link #tileWidth} and {@link #tileHeight}
+     * fields javadoc.
+     */
+    @Override
+    final long getNumTiles() {
+        return Math.multiplyExact(
+                Numerics.ceilDiv(imageWidth,  tileWidth),
+                Numerics.ceilDiv(imageHeight, tileHeight));
     }
 
     /**

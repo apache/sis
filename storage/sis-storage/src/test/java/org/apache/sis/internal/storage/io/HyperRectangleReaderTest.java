@@ -135,7 +135,8 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
             final ByteArrayChannel channel = new ByteArrayChannel(array, true);
             final ByteBuffer       buffer  = ByteBuffer.allocate(random.nextInt(20) + 20).order(ByteOrder.nativeOrder());
             final ChannelDataInput input   = new ChannelDataInput("HyperRectangle in channel", channel, buffer, false);
-            reader = new HyperRectangleReader(Numbers.SHORT, input, origin);
+            reader = new HyperRectangleReader(Numbers.SHORT, input);
+            reader.setOrigin(origin);
         } else {
             view.clear();
             reader = new HyperRectangleReader("HyperRectangle in buffer", view);
