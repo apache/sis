@@ -343,7 +343,6 @@ public abstract class TiledGridCoverage extends GridCoverage {
             throw new CannotEvaluateException(Resources.forLocale(getLocale()).getString(
                     Resources.Keys.CanNotRenderImage_1, getDisplayName()), e);
         }
-        assert validate(image);
         return image;
     }
 
@@ -658,17 +657,4 @@ public abstract class TiledGridCoverage extends GridCoverage {
      *         (too many exception types to list them all).
      */
     protected abstract WritableRaster[] readTiles(AOI iterator) throws IOException, DataStoreException;
-
-    /**
-     * Verifies if the given image is consistent. This method tolerates smaller width or height compared to
-     * what we would expect from an integer amount of tiles, because this may get smaller height from images
-     * encoded as strips.
-     */
-    private static boolean validate(final TiledImage image) {
-        final String error = image.verify();
-        if (error == null || error.equals("width") || error.equals("height")) {
-            return true;
-        }
-        throw new AssertionError(error);
-    }
 }
