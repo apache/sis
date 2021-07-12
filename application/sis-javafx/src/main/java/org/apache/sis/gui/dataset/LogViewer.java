@@ -144,7 +144,7 @@ public class LogViewer extends Widget {
     public final ObjectProperty<Resource> source;
 
     /**
-     * Whether to show system logs instead then the logs related to a specific resource.
+     * Whether to show system logs instead of the logs related to a specific resource.
      * If this property is set to {@code true}, then {@link #source} is automatically set to {@code null}.
      * Conversely if {@link #source} is set to a non-null value, then this property is set to {@code false}.
      */

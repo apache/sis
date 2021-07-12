@@ -18,6 +18,8 @@ package org.apache.sis.gui.dataset;
 
 import java.util.Objects;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ListChangeListener;
@@ -33,18 +35,22 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TreeItem;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.DataSet;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.gui.metadata.MetadataSummary;
 import org.apache.sis.gui.metadata.MetadataTree;
 import org.apache.sis.gui.metadata.StandardMetadataTree;
 import org.apache.sis.gui.coverage.ImageRequest;
 import org.apache.sis.gui.coverage.CoverageExplorer;
-import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
+import org.apache.sis.internal.gui.LogHandler;
 
 
 /**
@@ -107,7 +113,7 @@ public class ResourceExplorer extends WindowManager {
      *
      * @see #isDataTabSet
      * @see #isDataTabSelected()
-     * @see #updateDataTab(Resource)
+     * @see #updateDataTab(Resource, boolean)
      */
     private final Tab viewTab, tableTab;
 
@@ -116,7 +122,7 @@ public class ResourceExplorer extends WindowManager {
      * The new values are set only if a data tab is visible, and otherwise are delayed until one
      * of data tab become visible.
      *
-     * @see #updateDataTab(Resource)
+     * @see #updateDataTab(Resource, boolean)
      */
     private boolean isDataTabSet;
 
@@ -230,7 +236,7 @@ public class ResourceExplorer extends WindowManager {
         @Override protected void succeeded() {
             builder  = null;
             coverage = getValue();
-            updateDataTab(resource);
+            updateDataTab(resource, true);
         }
 
         /** Invoked if the tabs can not be built. */
@@ -266,7 +272,7 @@ public class ResourceExplorer extends WindowManager {
     }
 
     /**
-     * Returns the a function to be called after a resource has been loaded from a file or URL.
+     * Returns the function to be called after a resource has been loaded from a file or URL.
      * This is an accessor for the {@link ResourceTree#onResourceLoaded} property value.
      *
      * @return current function to be called after a resource has been loaded, or {@code null} if none.
@@ -335,7 +341,7 @@ public class ResourceExplorer extends WindowManager {
         selectedResource.set(resource);
         metadata.setMetadata(resource);
         isDataTabSet = isDataTabSelected();
-        updateDataTab(isDataTabSet ? resource : null);
+        updateDataTab(isDataTabSet ? resource : null, true);
         if (!isDataTabSet) {
             setNewWindowDisabled(!(resource instanceof GridCoverageResource || resource instanceof FeatureSet));
         }
@@ -359,11 +365,13 @@ public class ResourceExplorer extends WindowManager {
      * the caller instead than this method.</p>
      *
      * @param  resource  the resource to set, or {@code null} if none.
+     * @param  fallback  whether to allow the search for a default component to show
+     *                   if the given resource is an aggregate.
      */
-    private void updateDataTab(final Resource resource) {
+    private void updateDataTab(final Resource resource, boolean fallback) {
         /*
          * If tabs are being built in a background thread, wait for construction to finish.
-         * The builder will callback this `updateDataTab(resource)` method when ready.
+         * The builder will callback this `updateDataTab(resource, true)` method when ready.
          */
         if (builder != null) {
             builder.resource = resource;
@@ -384,12 +392,14 @@ public class ResourceExplorer extends WindowManager {
             image = coverage.getDataView(CoverageExplorer.View.IMAGE);
             table = coverage.getDataView(CoverageExplorer.View.TABLE);
             type  = viewTab.isSelected() ? CoverageExplorer.View.IMAGE : CoverageExplorer.View.TABLE;
+            fallback = false;
         } else if (resource instanceof FeatureSet) {
             data = (FeatureSet) resource;
             if (features == null) {
                 features = new FeatureTable();
             }
             table = features;
+            fallback = false;
         }
         /*
          * At least one of `grid` or `data` will be null. Invoking the following
@@ -402,6 +412,9 @@ public class ResourceExplorer extends WindowManager {
         if (isDataTabSet) {
             setNewWindowDisabled(image == null && table == null);
             updateControls(type);
+        }
+        if (fallback) {
+            defaultIfNotViewable(resource);
         }
     }
 
@@ -418,9 +431,9 @@ public class ResourceExplorer extends WindowManager {
         if (selected) {
             if (!isDataTabSet) {
                 isDataTabSet = true;                    // Must be set before to invoke `updateDataTab(…)`.
-                updateDataTab(getSelectedResource());
+                updateDataTab(getSelectedResource(), true);
             }
-            if (coverage != null) {                     // May still be null if selected resource is not a coverage.
+            if (coverage != null) {                     // May still be null if the selected resource is not a coverage.
                 type = visual ? CoverageExplorer.View.IMAGE : CoverageExplorer.View.TABLE;
             }
         }
@@ -479,7 +492,7 @@ public class ResourceExplorer extends WindowManager {
              */
             if (features == null || !isDataTabSet) {
                 isDataTabSet = true;                    // Must be set before to invoke `updateDataTab(…)`.
-                updateDataTab(resource);                // For forcing creation of FeatureTable.
+                updateDataTab(resource, true);          // For forcing creation of FeatureTable.
             }
             table = features;
         } else {
@@ -504,5 +517,54 @@ public class ResourceExplorer extends WindowManager {
      */
     public final ReadOnlyProperty<Resource> selectedResourceProperty() {
         return selectedResource.getReadOnlyProperty();
+    }
+
+    /**
+     * If the given resource is not one of the resource that {@link #updateDataTab(Resource, boolean)}
+     * can handle, searches in a background thread for a default resource to show. The purpose of this
+     * method is to make navigation easier by allowing users to click on the root node of a resource,
+     * without requerying them to expand the tree node before to select a resource.
+     *
+     * @param  resource  the selected resource.
+     */
+    private void defaultIfNotViewable(final Resource resource) {
+        if (resource instanceof Aggregate && !(resource instanceof DataSet)) {
+            BackgroundThreads.execute(new Task<Resource>() {
+                /** Invoked in background thread for fetching the first resource. */
+                @Override protected Resource call() throws DataStoreException {
+                    final Long id = LogHandler.loadingStart(resource);
+                    try {
+                        for (final Resource component : ((Aggregate) resource).components()) {
+                            if (component instanceof DataSet) {
+                                return component;
+                            }
+                        }
+                    } finally {
+                        LogHandler.loadingStop(id);
+                    }
+                    return null;
+                }
+
+                /** Invoked in JavaFX thread for showing the resource. */
+                @Override protected void succeeded() {
+                    if (getSelectedResource() == resource) {
+                        updateDataTab(getValue(), false);
+                    }
+                }
+
+                /** Invoked in JavaFX thread if children can not be loaded. */
+                @Override protected void failed() {
+                    final ObservableList<LogRecord> records = LogHandler.getRecords(resource);
+                    if (records != null) {
+                        final Throwable e = getException();
+                        final LogRecord record = new LogRecord(Level.WARNING, e.getLocalizedMessage());
+                        record.setSourceClassName(ResourceExplorer.class.getName());
+                        record.setSourceMethodName("defaultIfNotViewable");
+                        record.setThrown(e);
+                        records.add(record);
+                    }
+                }
+            });
+        }
     }
 }

@@ -986,7 +986,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                 isMouseChangeScheduled = true;
             }
         } else {
-            error.set(null);
+            clearError();
             isRendering.set(false);
             restoreCursorAfterPaint();
         }
@@ -1158,6 +1158,13 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
+     * Clears the error message in status bar.
+     */
+    protected final void clearError() {
+        error.set(null);
+    }
+
+    /**
      * Sets the error property to the given value. This method is provided for subclasses that perform
      * processing outside the {@link Renderer}. It does not need to be invoked if the error occurred
      * during the rendering process.
@@ -1191,7 +1198,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         changeInProgress.setToIdentity();
         invalidObjectiveToDisplay = true;
         objectiveBounds = null;
-        error.set(null);
+        clearError();
         isRendering.set(false);
         requestRepaint();
     }

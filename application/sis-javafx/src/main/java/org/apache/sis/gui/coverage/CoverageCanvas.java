@@ -478,6 +478,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         if (TRACE) {
             trace("setRawImage(…): the new source of data is:%n\t%s", image);
         }
+        clearError();
         clearIsolines();
         resampledImage = null;
         derivedImages.clear();
