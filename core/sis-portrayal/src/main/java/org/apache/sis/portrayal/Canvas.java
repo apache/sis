@@ -966,7 +966,7 @@ public class Canvas extends Observable implements Localized {
              * the Point of Interest and/or the objective CRS changed since last call.
              */
             if (augmentedObjectiveCRS == null) {
-                if (pointOfInterest != null) {
+                if (pointOfInterest != null && objectiveCRS != null) {
                     final CoordinateReferenceSystem crs = pointOfInterest.getCoordinateReferenceSystem();
                     final ArrayList<CoordinateReferenceSystem> components = new ArrayList<>(4);
                     components.add(objectiveCRS);
@@ -1071,8 +1071,15 @@ public class Canvas extends Observable implements Localized {
              * Result of this block: POINT_OF_INTEREST_PROPERTY: newPOI
              */
             final MathTransform gridToCRS = newValue.getGridToCRS(PixelInCell.CELL_CORNER);
-            final CoordinateReferenceSystem crs = newValue.getCoordinateReferenceSystem();
-            final GeneralDirectPosition newPOI = new GeneralDirectPosition(crs);
+            final CoordinateReferenceSystem crs;
+            final GeneralDirectPosition newPOI;
+            if (newValue.isDefined(GridGeometry.CRS)) {
+                crs = newValue.getCoordinateReferenceSystem();
+                newPOI = new GeneralDirectPosition(crs);
+            } else {
+                crs = null;
+                newPOI = new GeneralDirectPosition(gridToCRS.getTargetDimensions());
+            }
             gridToCRS.transform(extent.getPointOfInterest(), 0, newPOI.coordinates, 0, 1);
             /*
              * Get the CRS component in the dimensions shown by this canvas.
@@ -1128,10 +1135,10 @@ public class Canvas extends Observable implements Localized {
      *
      * @param  propertyName  name of the property that changed its value.
      * @param  oldValue      the old property value (may be {@code null}).
-     * @param  newValue      the new property value, shall not be {@code null}.
+     * @param  newValue      the new property value.
      */
     private void fireIfChanged(final String propertyName, final Object oldValue, final Object newValue) {
-        if (!newValue.equals(oldValue)) {
+        if (!Objects.equals(oldValue, newValue)) {
             firePropertyChange(propertyName, oldValue, newValue);
         }
     }
