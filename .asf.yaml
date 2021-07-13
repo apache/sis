@@ -1,0 +1,15 @@
+#
+# Configuration file for Apache SIS project.
+#
+# Documentation:  https://s.apache.org/asfyaml
+# Active setting: https://gitbox.apache.org/schemes.cgi?sis-site
+#
+notifications:
+    commits:              commits@sis.apache.org
+    issues:               dev@sis.apache.org
+    issues_status:        issues@sis.apache.org
+    issues_comment:       issues@sis.apache.org
+    pullrequests:         dev@sis.apache.org
+    pullrequests_status:  issues@sis.apache.org
+    pullrequests_comment: issues@sis.apache.org
+    jira_options:         worklog
