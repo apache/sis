@@ -79,6 +79,9 @@
       <fileset dir="${project.root}/storage/sis-geotiff/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
+      <fileset dir="${project.root}/storage/sis-sqlstore/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
       <!-- Pending discussion about how to handle resources in the Shapefile module.
       <fileset dir="${project.root}/storage/sis-shapefile/target/generated-resources">
         <include name="**/*.utf"/>

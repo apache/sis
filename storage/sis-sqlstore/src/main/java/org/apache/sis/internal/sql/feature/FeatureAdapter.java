@@ -16,14 +16,20 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.sql.Connection;
+import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.lang.reflect.Array;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.metadata.sql.SQLBuilder;
+import org.apache.sis.storage.InternalDataStoreException;
+import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.ArraysExt;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -31,148 +37,334 @@ import org.opengis.feature.FeatureType;
 
 
 /**
- * Convert data from a specific query into Feature entities. This object can be prepared once for a specific statement,
- * and reused each time it is executed.
+ * Converter of {@link ResultSet} rows to {@link Feature} instances.
+ * Each {@code FeatureAdapter} instance is specific to the set of rows given by a SQL query,
+ * ignoring {@code DISTINCT}, {@code ORDER BY} and filter conditions in the {@code WHERE} clause.
+ * This class does not hold JDBC resources; {@link ResultSet} must be provided by the caller.
+ * This object can be prepared once and reused every time the query needs to be executed.
  *
- * @implNote For now, only attributes (values) are converted. Associations are delegated to the specific table reading
- * case, through {@link Features} class.
+ * <h2>Multi-threading</h2>
+ * This class is immutable (except for the cache) and safe for concurrent use by many threads.
+ * The content of arrays in this class shall not be modified in order to preserve immutability.
  *
- * This object has an initialization phase, to prepare it for a specific ResultSet, through {@link #prepare(Connection)}
- * method. It allows mappers to fetch specific information from the database when needed.
- *
+ * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-class FeatureAdapter {
-
-    final FeatureType type;
-
-    private final List<PropertyMapper> attributeMappers;
+final class FeatureAdapter {
+    /**
+     * An empty array of adapters, used when there is no dependency.
+     */
+    private static final FeatureAdapter[] EMPTY = new FeatureAdapter[0];
 
     /**
-     * Creates an adapter producing features of the given type, and populating its attributes with input mappers.
+     * The type of features to create.
      *
-     * @param type              the data type to produce as output. Can not be null.
-     * @param attributeMappers  attribute mappers to use to decode SQL values. Mandatory but can be empty.
+     * @see Table#featureType
      */
-    FeatureAdapter(FeatureType type, List<PropertyMapper> attributeMappers) {
-        ArgumentChecks.ensureNonNull("type", type);
-        ArgumentChecks.ensureNonNull("attributeMappers", attributeMappers);
-        this.type = type;
-        this.attributeMappers = Collections.unmodifiableList(new ArrayList<>(attributeMappers));
+    private final FeatureType featureType;
+
+    /**
+     * Attributes in feature instances, excluding operations and associations to other tables.
+     * Elements are in the order of columns declared in the {@code SELECT <columns>} statement.
+     * This array is a shared instance and shall not be modified.
+     *
+     * @see Table#attributes
+     */
+    private final Column[] attributes;
+
+    /**
+     * Name of the properties where are stored associations in feature instances.
+     * The length of this array shall be equal to the {@link #dependencies} array length.
+     * Imported or exported features read by {@code dependencies[i]} will be stored in
+     * the association named {@code associationNames[i]}.
+     */
+    final String[] associationNames;
+
+    /**
+     * Name of the property where to store the association that we can not handle with other {@link #dependencies}.
+     * This deferred association may exist because of circular dependency.
+     */
+    final String deferredAssociation;
+
+    /**
+     * The feature sets referenced through foreigner keys, or {@link #EMPTY} if none.
+     * This includes the associations inferred from both the imported and exported keys.
+     * The first {@link #importCount} iterators are for imported keys, and the remaining
+     * iterators are for the exported keys.
+     */
+    final FeatureAdapter[] dependencies;
+
+    /**
+     * Number of entries in {@link #dependencies} for {@link Relation.Direction#IMPORT}.
+     * The entries immediately following the first {@code importCount} entries are for
+     * {@link Relation.Direction#EXPORT}.
+     */
+    final int importCount;
+
+    /**
+     * One-based indices of the columns to query for each {@link #dependencies} entry.
+     */
+    private final int[][] foreignerKeyIndices;
+
+    /**
+     * Feature instances already created, or {@code null} if the features created by this iterator are not cached.
+     * This map is used when requesting a feature by identifier, not when iterating over all features (note: we
+     * could perform an opportunistic check in a future SIS version). The same map may be shared by all iterators
+     * on the same {@link Table}, but {@link WeakValueHashMap} already provides the required synchronizations.
+     *
+     * <p>The {@link FeatureIterator} class does not require the identifiers to be built from primary key columns.
+     * However if this map has been provided by {@link Table#instanceForPrimaryKeys()}, then the identifiers
+     * need to be primary keys with columns in the exact same order for allowing the same map to be shared.</p>
+     */
+    final WeakValueHashMap<?,Object> instances;
+
+    /**
+     * The component class of the keys in the {@link #instances} map, or {@code null} if the keys are not array.
+     * For example if a primary key is made of two columns of type {@code String}, then this field may be set to
+     * {@code String}.
+     */
+    private final Class<?> keyComponentClass;
+
+    /**
+     * The SQL statement to execute for creating features, without {@code DISTINCT} or {@code ORDER BY} clauses.
+     * May contain a {@code WHERE} clause for fetching a dependency, but not for user-specified filtering.
+     */
+    final String sql;
+
+    /**
+     * Creates a new adapter for features in the given table.
+     *
+     * @param table     the table for which we are creating an adapter.
+     * @param metadata  metadata about the database.
+     */
+    FeatureAdapter(final Table table, final DatabaseMetaData metadata) throws SQLException, InternalDataStoreException {
+        this(table, metadata, new ArrayList<>(), null);
     }
 
     /**
-     * Get a worker for a specific connection. Note that any number of result sets can be parsed with this, as long as
-     * the connection is open.
-     * @param target Connection usable by the mapper all along its lifecycle.
-     * @return A mapper ready-to-read SQL result set.
+     * Creates a new adapter for features in the given table.
+     * This constructor may be invoked recursively for creating adapters for dependencies.
+     *
+     * @param table      the table for which we are creating an adapter.
+     * @param metadata   metadata about the database.
+     * @param following  the relations that we are following. Used for avoiding never ending loop.
+     * @param noFollow   relation to not follow, or {@code null} if none.
      */
-    ResultSetAdapter prepare(final Connection target) {
-        final List<ReadyMapper> rtu = attributeMappers.stream()
-                .map(mapper -> mapper.prepare(target))
-                .collect(Collectors.toList());
-        return new ResultSetAdapter(rtu);
-    }
-
-    /**
-     * Specialization of {@link FeatureAdapter} as a short-live object, able to use a database connection to load third-
-     * party data.
-     */
-    final class ResultSetAdapter {
-        final List<ReadyMapper> mappers;
-
-        ResultSetAdapter(List<ReadyMapper> mappers) {
-            this.mappers = mappers;
-        }
-
-        /**
-         * Read current row as a Feature. For repeated calls, please consider using {@link #prefetch(int, ResultSet)}
-         * instead.
-         *
-         * @param cursor The result set containing query result. It must be positioned on the row you want to read. It
-         *               is also your responsability to move on cursor to another row after this call.
-         * @return A feature holding values of the current row of input result set. Never null.
-         * @throws SQLException If an error occurs while querying a column value.
+    private FeatureAdapter(final Table table, final DatabaseMetaData metadata,
+                           final List<Relation> following, final Relation noFollow)
+             throws SQLException, InternalDataStoreException
+    {
+        this.featureType  = table.featureType;
+        this.attributes   = table.attributes;
+        keyComponentClass = table.primaryKey.valueClass.getComponentType();
+        final Map<String,Integer> columnIndices = new HashMap<>();
+        /*
+         * Create a SELECT clause with all columns that are ordinary attributes.
+         * Order matter, because `FeatureIterator` iterator will map the columns
+         * to the attributes listed in the `attributes` array in that order.
          */
-        Feature read(final ResultSet cursor) throws SQLException {
-            final Feature result = readAttributes(cursor);
-            addImports(result, cursor);
-            addExports(result);
-            return result;
+        final SQLBuilder sql = new SQLBuilder(table.database).append(SQLBuilder.SELECT);
+        for (final Column column : attributes) {
+            appendColumn(sql, column.name, columnIndices);
         }
-
-        private Feature readAttributes(final ResultSet cursor) throws SQLException {
-            final Feature result = type.newInstance();
-            for (ReadyMapper mapper : mappers) mapper.read(cursor, result);
-            return result;
-        }
-
-        /**
-         * Load a number of rows in one go. Beware, behavior of this method is different from {@link #read(ResultSet)},
-         * as it WON'T read currentl row. It wil start by moving to next row, and then read sequentially all rows until
-         * given count is done, or the given result set is over.
-         *
-         * @param size Maximum number of elements to read from given result set. If negative or zero, this function is a
-         *            no-op.
-         * @param cursor Result set to extract data from. To read first entry of it, you must NOT have called {@link ResultSet#next()}
-         *               on it.
-         * @return A modifiable list of read elements. Never null, can be empty. It can contain less elements than asked
-         * but never more.
-         * @throws SQLException If extracting values from input result set fails.
+        /*
+         * Collect information about associations in local arrays before to assign
+         * them to the final fields, because some array lengths may be adjusted.
          */
-        List<Feature> prefetch(final int size, final ResultSet cursor) throws SQLException {
-            // TODO: optimize by resolving import associations by  batch import fetching.
-            final ArrayList<Feature> features = new ArrayList<>(size);
-            for (int i = 0 ; i < size && cursor.next() ; i++) {
-                features.add(read(cursor));
+        int count = table.importedKeys.length
+                  + table.exportedKeys.length;
+        if (count == 0) {
+            importCount         = 0;
+            dependencies        = EMPTY;
+            associationNames    = null;
+            foreignerKeyIndices = null;
+            deferredAssociation = null;
+        } else {
+            String deferredAssociation = null;
+            final FeatureAdapter[] dependencies        = new FeatureAdapter[count];
+            final String[]         associationNames    = new String[count];
+            final int[][]          foreignerKeyIndices = new int[count][];
+            /*
+             * For each foreigner key to another table, append all columns of that foreigner key
+             * and the name of the single feature property where the association will be stored.
+             */
+            count = 0;                                                      // We will recount.
+            for (final Relation dependency : table.importedKeys) {
+                if (dependency != noFollow) {
+                    dependency.startFollowing(following);                   // Safety against never-ending recursivity.
+                    associationNames   [count] = dependency.propertyName;
+                    foreignerKeyIndices[count] = getColumnIndices(sql, dependency, columnIndices);
+                    dependencies       [count] = new FeatureAdapter(dependency.getSearchTable(), metadata, following, noFollow);
+                    dependency.endFollowing(following);
+                    count++;
+                } else {
+                    deferredAssociation = dependency.propertyName;
+                }
             }
-
-            return features;
+            importCount = count;
+            /*
+             * Create adapters for other tables that reference the primary keys of this table. For example
+             * if we have a "City" feature with attributes for the city name, population, etc. and a "Parks"
+             * feature referencing the city where the park is located, in order to populate the "City.parks"
+             * associations we need to iterate over all "Parks" rows referencing the city.
+             */
+            for (final Relation dependency : table.exportedKeys) {
+                dependency.startFollowing(following);                   // Safety against never-ending recursivity.
+                final Table foreigner  = dependency.getSearchTable();
+                final Relation inverse = foreigner.getInverseOf(dependency, table.name);
+                associationNames   [count] = dependency.propertyName;
+                foreignerKeyIndices[count] = getColumnIndices(sql, dependency, columnIndices);
+                dependencies       [count] = new FeatureAdapter(foreigner, metadata, following, inverse);
+                dependency.endFollowing(following);
+                count++;
+            }
+            if (count != 0) {
+                this.dependencies        = ArraysExt.resize(dependencies,        count);
+                this.associationNames    = ArraysExt.resize(associationNames,    count);
+                this.foreignerKeyIndices = ArraysExt.resize(foreignerKeyIndices, count);
+            } else {
+                this.dependencies        = EMPTY;
+                this.associationNames    = null;
+                this.foreignerKeyIndices = null;
+            }
+            this.deferredAssociation = deferredAssociation;
         }
-
-        private void addImports(final Feature target, final ResultSet cursor) {
-            // TODO: see Features class
+        /*
+         * Prepare SQL for a `Statement` if we do not need any condition, or for a `PreparedStatement`
+         * if we need to add a `WHERE` clause. In the later case, we will cache the features already
+         * created if there is a possibility that many rows reference the same feature instance.
+         */
+        table.name.appendFromClause(sql);
+        if (following.isEmpty()) {
+            instances = null;       // A future SIS version could use the map opportunistically if it exists.
+        } else {
+            final Relation componentOf = following.get(following.size() - 1);
+            String separator = " WHERE ";
+            for (final String primaryKey : componentOf.getSearchColumns()) {
+                sql.append(separator).appendIdentifier(primaryKey).append("=?");
+                separator = " AND ";
+            }
+            /*
+             * Following assumes that the foreigner key references the primary key of this table,
+             * in which case `table.primaryKey` should never be null. This assumption may not hold
+             * if the relation has been defined by `DatabaseMetaData.getCrossReference(…)` instead.
+             */
+            if (componentOf.useFullKey()) {
+                instances = table.instanceForPrimaryKeys();
+            } else {
+                instances = new WeakValueHashMap<>(Object.class);       // Can not share the table cache.
+            }
         }
-
-        private void addExports(final Feature target) {
-            // TODO: see Features class
-        }
+        this.sql = sql.toString();
     }
 
-    static final class PropertyMapper {
-        // TODO: by using a indexed implementation of Feature, we could avoid the name mapping. However, a JMH benchmark
-        // would be required in order to be sure it's impacting performance positively. also, features are sparse by
-        // nature, and an indexed implementation could (to verify, still) be bad on memory footprint.
-        final String propertyName;
-        final int columnIndex;
-        final ColumnAdapter fetchValue;
-
-        PropertyMapper(String propertyName, int columnIndex, ColumnAdapter fetchValue) {
-            this.propertyName = propertyName;
-            this.columnIndex = columnIndex;
-            this.fetchValue = fetchValue;
-        }
-
-        ReadyMapper prepare(final Connection target) {
-            return new ReadyMapper(this, fetchValue.prepare(target));
-        }
+    /**
+     * Appends a columns in the given builder and remember the column indices.
+     * An exception is thrown if the column has already been added (should never happen).
+     *
+     * @param  sql            the SQL statement where to add column identifiers after the {@code SELECT} clause.
+     * @param  column         name of the column to add.
+     * @param  columnIndices  map where to add the mapping from column name to 1-based column index.
+     */
+    private static int appendColumn(final SQLBuilder sql, final String column,
+            final Map<String,Integer> columnIndices) throws InternalDataStoreException
+    {
+        int columnCount = columnIndices.size();
+        if (columnCount != 0) sql.append(", ");
+        sql.appendIdentifier(column);
+        if (columnIndices.put(column, ++columnCount) == null) return columnCount;
+        throw new InternalDataStoreException(Resources.format(Resources.Keys.DuplicatedColumn_1, column));
     }
 
-    private static class ReadyMapper {
-        final SQLBiFunction<ResultSet, Integer, ?> reader;
-        final PropertyMapper parent;
-
-        public ReadyMapper(PropertyMapper parent, SQLBiFunction<ResultSet, Integer, ?> reader) {
-            this.reader = reader;
-            this.parent = parent;
+    /**
+     * Computes the 1-based indices of columns of foreigner keys of given dependency.
+     * This method also ensure that the SQL statement contains all required columns,
+     * adding missing columns in the given SQL builder if necessary.
+     *
+     * @param  sql            the SQL statement to complete if there is missing columns.
+     * @param  dependency     the dependency for which to get column indices of foreigner keys.
+     * @param  columnIndices  the map containing existing column indices, or where to add missing column indices.
+     * @return indices of columns of foreigner keys of given dependency. Numbering starts at 1.
+     */
+    private static int[] getColumnIndices(final SQLBuilder sql, final Relation dependency,
+            final Map<String,Integer> columnIndices) throws InternalDataStoreException
+    {
+        final Collection<String> columns = dependency.getForeignerKeys();
+        int i = 0;
+        final int[] indices = new int[columns.size()];
+        for (final String column : columns) {
+            final Integer pos = columnIndices.get(column);
+            indices[i++] = (pos != null) ? pos : appendColumn(sql, column, columnIndices);
         }
+        return indices;
+    }
 
-        private void read(ResultSet cursor, Feature target) throws SQLException {
-            final Object value = reader.apply(cursor, parent.columnIndex);
-            if (value != null) target.setPropertyValue(parent.propertyName, value);
+
+    // ────────────────────────────────────────────────────────────────────────────────────────
+    //     End of adapter construction. Next methods are helper methods for feature iterator.
+    // ────────────────────────────────────────────────────────────────────────────────────────
+
+
+    /**
+     * Creates a feature with attribute values initialized to values fetched from the given result set.
+     * This method does not follow associations.
+     *
+     * @param  result  the result set from which to get attribute values.
+     * @return the feature with attribute values initialized.
+     * @throws Exception if an error occurred while reading the database or converting values.
+     */
+    final Feature createFeature(final ResultSet result) throws Exception {
+        final Feature feature = featureType.newInstance();
+        for (int i=0; i<attributes.length; i++) {
+            final Column column = attributes[i];
+            final Object value = column.valueGetter.getValue(result, i+1);
+            if (value != null) {
+                feature.setPropertyValue(column.label, value);
+            }
+        }
+        return feature;
+    }
+
+    /**
+     * Returns the key to use for caching the feature of a dependency.
+     * If the foreigner key uses only one column, we will use the foreigner key value without creating array.
+     * But if the foreigner key uses more than one column, then we need to create an array holding all values.
+     *
+     * @param  result      the result set over rows expected by this feature adapter.
+     * @param  dependency  index of the dependency for which to create a cache key.
+     * @return key to use for accesses in the {@link #instances} map,
+     *         or {@code null} if any component of the key is null.
+     */
+    final Object getCacheKey(final ResultSet result, final int dependency) throws SQLException {
+        final int[] columnIndices = foreignerKeyIndices[dependency];
+        final int n = columnIndices.length;
+        final Object keys = (n > 1) ? Array.newInstance(dependencies[dependency].keyComponentClass, n) : null;
+        Object key = null;
+        for (int p=0; p<n; p++) {
+            key = result.getObject(columnIndices[p]);
+            if (keys != null) Array.set(keys, p, key);
+            if (key == null) return null;
+        }
+        return (keys != null) ? keys : key;
+    }
+
+    /**
+     * Sets the statement parameters for searching a dependency.
+     *
+     * @param  result      the result set over rows expected by this feature adapter.
+     * @param  target      the statement on which to set parameters.
+     * @param  dependency  index of the dependency for which to set the parameters.
+     */
+    final void setForeignerKeys(final ResultSet source, final PreparedStatement target, final int dependency)
+            throws SQLException
+    {
+        final int[] columnIndices = foreignerKeyIndices[dependency];
+        for (int p=0; p < columnIndices.length;) {
+            final Object k = source.getObject(columnIndices[p]);
+            target.setObject(++p, k);
         }
     }
 }

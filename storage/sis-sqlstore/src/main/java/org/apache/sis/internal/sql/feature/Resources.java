@@ -59,6 +59,11 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Can not fetch a Coordinate Reference System (CRS) for SRID code {0}.
+         */
+        public static final short CanNotFetchCRS_1 = 8;
+
+        /**
          * Provider of connections to the database.
          */
         public static final short DataSource = 1;
@@ -67,6 +72,11 @@ public final class Resources extends IndexedResourceBundle {
          * Unexpected duplication of column named “{0}”.
          */
         public static final short DuplicatedColumn_1 = 5;
+
+        /**
+         * Spatial Reference Identifier (SRID) {1} has more than one entry in “{0}” table.
+         */
+        public static final short DuplicatedSRID_2 = 9;
 
         /**
          * “{0}” is not a valid qualified name for a table.
@@ -87,6 +97,21 @@ public final class Resources extends IndexedResourceBundle {
          * Table names, optionally with their schemas and catalogs.
          */
         public static final short QualifiedTableNames = 2;
+
+        /**
+         * The {0} spatial extension is not found.
+         */
+        public static final short SpatialExtensionNotFound_1 = 12;
+
+        /**
+         * SRID {1} does not define a Coordinate Reference System. The object is a `{0}` instead.
+         */
+        public static final short UnexpectedTypeForSRID_2 = 11;
+
+        /**
+         * No entry found in table “{0}” for Spatial Reference Identifier (SRID) {1}.
+         */
+        public static final short UnknownSRID_2 = 10;
 
         /**
          * No mapping from SQL type “{0}” to a Java class.

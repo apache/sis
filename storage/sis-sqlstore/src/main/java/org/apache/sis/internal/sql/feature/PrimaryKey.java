@@ -16,61 +16,95 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Collection;
+import java.util.Collections;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
-import org.apache.sis.util.ArgumentChecks;
 
 /**
- * Represents SQL primary key constraint. Main information is columns composing the key.
+ * Represents SQL primary key constraint.
+ * It contains the list of columns composing the key.
  *
- * @implNote For now, only list of columns composing the key are returned. However, in the future it would be possible
- * to add other information, as a value type to describe how to expose primary key value.
- *
- * @author Alexis Manin (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @author  Alexis Manin (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-interface PrimaryKey {
+abstract class PrimaryKey {
+    /**
+     * The class of primary key values. If the primary key use more than one column,
+     * then this field is the class of an array; it may be an array of primitive type.
+     */
+    final Class<?> valueClass;
 
-    static Optional<PrimaryKey> create(List<String> cols) {
-        if (cols == null || cols.isEmpty()) return Optional.empty();
-        if (cols.size() == 1) return Optional.of(new Simple(cols.get(0)));
-        return Optional.of(new Composite(cols));
+    /**
+     * For sub-class constructors only.
+     */
+    PrimaryKey(final Class<?> valueClass) {
+        this.valueClass = valueClass;
     }
 
     /**
+     * Creates a new key for the given columns, or returns {@code null} if none.
      *
-     * @return List of column names composing the key. Should neither be null nor empty.
+     * @param  columns  the columns composing the primary key. May be empty.
+     * @return the primary key, or {@code null} if the given list is empty.
      */
-    List<String> getColumns();
+    static PrimaryKey create(final Class<?> valueClass, final Collection<String> columns) {
+        if (columns.isEmpty()) {
+            return null;
+        }
+        final String c = CollectionsExt.singletonOrNull(columns);
+        return (c != null) ? new Single(valueClass, c) : new Composite(valueClass, columns);
+    }
 
-    class Simple implements PrimaryKey {
-        final String column;
+    /**
+     * Returns the list of column names composing the key.
+     * Shall never be null nor empty.
+     *
+     * @return column names composing the key. Contains at least one element.
+     */
+    public abstract List<String> getColumns();
 
-        Simple(String column) {
+    /**
+     * A primary key composed of exactly one column.
+     */
+    private static final class Single extends PrimaryKey {
+        /** The single column name. */
+        private final String column;
+
+        /** Creates a new primary key composed of the given column. */
+        Single(final Class<?> valueClass, final String column) {
+            super(valueClass);
             this.column = column;
         }
 
+        /** Returns the single column composing this primary key. */
         @Override
-        public List<String> getColumns() { return Collections.singletonList(column); }
+        public List<String> getColumns() {
+            return Collections.singletonList(column);
+        }
     }
 
-    class Composite implements PrimaryKey {
-        /**
-         * Name of columns composing primary keys.
-         */
+    /**
+     * A primary key composed of two or more columns.
+     */
+    private static final class Composite extends PrimaryKey {
+        /** Name of columns composing the primary key. */
         private final List<String> columns;
 
-        Composite(List<String> columns) {
-            ArgumentChecks.ensureNonEmpty("Primary key column names", columns);
-            this.columns = Collections.unmodifiableList(new ArrayList<>(columns));
+        /** Creates a new primary key composed of the given columns. */
+        Composite(final Class<?> valueClass, final Collection<String> columns) {
+            super(valueClass);
+            this.columns = UnmodifiableArrayList.wrap(columns.toArray(new String[columns.size()]));
         }
 
+        /** Returns all columns composing this primary key. */
         @Override
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
         public List<String> getColumns() {
             return columns;
         }

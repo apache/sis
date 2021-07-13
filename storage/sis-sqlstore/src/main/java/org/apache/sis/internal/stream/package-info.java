@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.sql.feature;
 
-import java.sql.SQLException;
 
 /**
- * Specialisation of {@link AutoCloseable standard closeable objects} for SQL related resources.
+ * Helper classes for customization of {@code java.util.stream} implementations.
+ * Customized implementation may translate some method calls into SQL statements for example.
  *
- * @author Alexis Manin (Geomatys)
- * @version 2.0
- * @since   2.0
+ * <STRONG>Do not use!</STRONG>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
+ *
+ * @author  Alexis Manin (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-interface SQLCloseable extends AutoCloseable {
-    @Override
-    void close() throws SQLException;
-}
+package org.apache.sis.internal.stream;

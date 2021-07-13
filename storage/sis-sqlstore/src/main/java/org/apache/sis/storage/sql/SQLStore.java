@@ -16,31 +16,30 @@
  */
 package org.apache.sis.storage.sql;
 
-import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Optional;
+import java.util.Collection;
 import javax.sql.DataSource;
-
-import org.opengis.metadata.Metadata;
-import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.opengis.parameter.ParameterValueGroup;
+import java.sql.Connection;
+import java.lang.reflect.Method;
 import org.opengis.util.GenericName;
-
-import org.apache.sis.internal.sql.feature.Database;
-import org.apache.sis.internal.sql.feature.Resources;
-import org.apache.sis.internal.storage.MetadataBuilder;
+import org.opengis.metadata.Metadata;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.metadata.spatial.SpatialRepresentationType;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalNameException;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
+import org.apache.sis.internal.sql.feature.Database;
+import org.apache.sis.internal.sql.feature.Resources;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Exceptions;
 
@@ -53,7 +52,7 @@ import org.apache.sis.util.Exceptions;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -75,10 +74,15 @@ public class SQLStore extends DataStore implements Aggregate {
     private final DataSource source;
 
     /**
+     * The library to use for creating geometric objects, or {@code null} for system default.
+     */
+    private final GeometryLibrary geomLibrary;
+
+    /**
      * The result of inspecting database schema for deriving {@link org.opengis.feature.FeatureType}s.
      * Created when first needed. May be discarded and recreated if the store needs a refresh.
      */
-    private Database model;
+    private Database<?> model;
 
     /**
      * Fully qualified names (including catalog and schema) of the tables to include in this store.
@@ -116,9 +120,10 @@ public class SQLStore extends DataStore implements Aggregate {
             throws DataStoreException
     {
         super(provider, connector);
-        source = connector.getStorageAs(DataSource.class);
         ArgumentChecks.ensureNonNull("tableNames", tableNames);
-        tableNames = tableNames.clone();
+        source      = connector.getStorageAs(DataSource.class);
+        geomLibrary = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
+        tableNames  = tableNames.clone();
         for (int i=0; i<tableNames.length; i++) {
             final GenericName name = tableNames[i];
             ArgumentChecks.ensureNonNullElement("tableNames", i, tableNames);
@@ -159,13 +164,22 @@ public class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Returns customizations on the feature type inferred from the database analysis.
+     */
+    private SchemaModifier customizer() {
+        return (provider instanceof SQLStoreProvider) ? ((SQLStoreProvider) provider).getSchemaModifier() : null;
+    }
+
+    /**
      * Returns the database model, analyzing the database schema when first needed.
      */
-    private synchronized Database model() throws DataStoreException {
+    private synchronized Database<?> model() throws DataStoreException {
         if (model == null) {
             try (Connection c = source.getConnection()) {
-                model = new Database(this, c, source, tableNames, listeners);
-            } catch (SQLException e) {
+                model = Database.create(this, source, c, geomLibrary, tableNames, customizer(), listeners);
+            } catch (DataStoreException e) {
+                throw e;
+            } catch (Exception e) {
                 throw new DataStoreException(Exceptions.unwrap(e));
             }
         }
@@ -179,9 +193,9 @@ public class SQLStore extends DataStore implements Aggregate {
      *
      * @param c  connection to the database.
      */
-    private Database model(final Connection c) throws DataStoreException, SQLException {
+    private Database<?> model(final Connection c) throws Exception {
         if (model == null) {
-            model = new Database(this, c, source, tableNames, listeners);
+            model = Database.create(this, source, c, geomLibrary, tableNames, customizer(), listeners);
         }
         return model;
     }
@@ -199,12 +213,14 @@ public class SQLStore extends DataStore implements Aggregate {
             final MetadataBuilder builder = new MetadataBuilder();
             builder.addSpatialRepresentation(SpatialRepresentationType.TEXT_TABLE);
             try (Connection c = source.getConnection()) {
-                final Database model = model(c);
-                if (model.hasGeometry) {
+                final Database<?> model = model(c);
+                if (model.hasGeometry()) {
                     builder.addSpatialRepresentation(SpatialRepresentationType.VECTOR);
                 }
                 model.listTables(c.getMetaData(), builder);
-            } catch (SQLException e) {
+            } catch (DataStoreException e) {
+                throw e;
+            } catch (Exception e) {
                 throw new DataStoreException(Exceptions.unwrap(e));
             }
             /*

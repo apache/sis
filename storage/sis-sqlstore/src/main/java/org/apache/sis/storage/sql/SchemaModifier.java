@@ -14,29 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.suite;
+package org.apache.sis.storage.sql;
 
-import org.apache.sis.test.TestSuite;
-import org.junit.runners.Suite;
-import org.junit.BeforeClass;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
 
 
 /**
- * All tests from the {@code sis-sqlstore} module, in rough dependency order.
+ * Modifies the feature types inferred from database analysis.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ * @since   1.1
+ * @module
  */
-@Suite.SuiteClasses({
-    org.apache.sis.internal.sql.feature.EWKBTest.class,
-    org.apache.sis.internal.sql.feature.SelectionClauseWriterTest.class,
-    org.apache.sis.internal.sql.postgis.PostgresTest.class,
-    org.apache.sis.storage.sql.SQLStoreTest.class
-})
-public final strictfp class SQLTestSuite extends TestSuite {
+public interface SchemaModifier {
     /**
-     * Verifies the list of tests before to run the suite.
-     * See {@link #verifyTestList(Class, Class[])} for more information.
+     * Invoked after analysis of a table.
+     * The given builder is initialized with all properties inferred from the table.
+     * Implementation of this method can add, remove or modify properties.
+     *
+     * @param  builder  a feature type builder initialized with all properties inferred by the analysis of a table.
      */
-    @BeforeClass
-    public static void verifyTestList() {
-        verifyTestList(SQLTestSuite.class);
-    }
+    void editFeatureType(FeatureTypeBuilder builder);
 }

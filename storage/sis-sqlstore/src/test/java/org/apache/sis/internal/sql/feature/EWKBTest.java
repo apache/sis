@@ -20,15 +20,14 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-
 import org.opengis.referencing.crs.GeographicCRS;
-
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.TestCase;
-
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 
@@ -57,26 +56,36 @@ public strictfp class EWKBTest extends TestCase {
     }
 
     /**
-     * Decodes a geometry encoded in EWKB format and compares with the geometry specified in WKT format.
-     *
-     * @param  wkt        WKT representation of the geometry. This is used as the reference value.
-     * @param  hexEWKB    EWKB representation of the same geometry. This is the value to test.
-     * @throws Exception  if an error occurred while decoding one of the given string.
+     * Creates a reader to use for testing.
      */
-    public void decodeHexadecimal(final String wkt, final String hexEWKB) throws Exception {
-        final GeographicCRS expectedCrs = CommonCRS.defaultGeographic();
-        final EWKBReader reader = new EWKBReader(GF).forCrs(expectedCrs);
-        assertEquals("WKT and hexadecimal EWKB representation don't match",
-                GF.parseWKT(wkt).implementation(), reader.readHexa(hexEWKB));
+    private static <G> EWKBReader<G, ? extends G> createReader(final Geometries<G> GF, final GeographicCRS crs) {
+        return new EWKBReader<>(GF, GF.rootClass, crs, false);
     }
 
     /**
-     * Tests the decoding of a geometry from a byte stream. The purpose of this test is not to check complex geometries,
+     * Decodes a geometry encoded in EWKB format and compares with the geometry specified in WKT format.
+     *
+     * @param  wkt  WKT representation of the geometry. This is used as the reference value.
+     * @param  wkb  WKB representation of the same geometry. This is the value to test.
+     * @throws Exception if an error occurred while decoding one of the given strings.
+     */
+    public void decodeHexadecimal(final String wkt, final String wkb) throws Exception {
+        final GeographicCRS expectedCRS = CommonCRS.defaultGeographic();
+        final EWKBReader<?,?> reader = createReader(GF, expectedCRS);
+        assertEquals("WKT and hexadecimal EWKB representation don't match",
+                GF.parseWKT(wkt).implementation(),
+                reader.readHexa(wkb).implementation());
+    }
+
+    /**
+     * Tests the decoding of a geometry from a byte array. The purpose of this test is not to check complex geometries,
      * which are validated by {@link #decodeHexadecimal(String, String)}. This test only ensures that decoding directly
-     * a byte stream behaves in the same way than through hexadecimal.
+     * a byte array behaves in the same way than decoding a string of hexadecimal digits.
+     *
+     * @throws Exception if an error occurred while decoding the WKB.
      */
     @Test
-    public void testBinary() {
+    public void testBinary() throws Exception {
         final ByteBuffer point = ByteBuffer.allocate(21);
         point.put((byte) 0);    // XDR mode.
 
@@ -87,8 +96,8 @@ public strictfp class EWKBTest extends TestCase {
 
         // Read the point.
         point.rewind();
-        final Object read = new EWKBReader(GeometryLibrary.JTS).read(point);
-        assertEquals(GF.createPoint(42.2, 43.3), read);
+        final GeometryWrapper<?> read = createReader(GF, null).read(point.array());
+        assertEquals(GF.createPoint(42.2, 43.3), read.implementation());
     }
 
     /**

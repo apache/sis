@@ -180,6 +180,18 @@ public class SQLStoreProvider extends DataStoreProvider {
     }
 
     /**
+     * Returns a callback for modifying the feature types inferred from database analysis.
+     * The default implementation returns {@code null}.
+     *
+     * @return callback for user-specified modification to the features, or {@code null} if none.
+     *
+     * @since 1.1
+     */
+    public SchemaModifier getSchemaModifier() {
+        return null;
+    }
+
+    /**
      * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by {@link SQLStore}.
      * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the connection.

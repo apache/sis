@@ -25,24 +25,13 @@
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
- * @implNote Feature type analysis is done through {@link org.apache.sis.internal.sql.feature.Analyzer} class.
- * It relies on internal {@link org.apache.sis.internal.sql.feature.SQLTypeSpecification} API to fetch SQL schema
- * information, and build {@link org.apache.sis.internal.sql.feature.FeatureAdapter an adapter to feature model from it}.
- *
- * This package provides two main {@link org.apache.sis.storage.FeatureSet feature set} implementations:
- * <ul>
- *     <li>{@link org.apache.sis.internal.sql.feature.QueryFeatureSet}: execute a prepared SQL query, then interpret its result as Simple Feature collection.</li>
- *     <li>{@link org.apache.sis.internal.sql.feature.Table}: Analysis of SQL Table to provide a complex feature type modeling associations.</li>
- * </ul>
- *
- * TODO: a lot of code could be factorized to reduce splitting of code base for both use cases above. Notably, all
- * association management is done specifically in table implementation, but should be deported in {@link org.apache.sis.internal.sql.feature.FeatureAdapter}.
- * With that, we could reduce feature set implementations to only QueryFeatureSet, and delegating model analysis upstream.
+ * <h2>Implementation notes</h2>
+ * Feature type analysis is done through {@link org.apache.sis.internal.sql.feature.Analyzer} class.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */

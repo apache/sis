@@ -14,36 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.sql.feature;
+package org.apache.sis.internal.sql.postgis;
 
 import org.apache.sis.test.TestCase;
+import org.apache.sis.util.Version;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link PostGISMapping}.
+ * Tests {@link Postgres}.
  *
  * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-public final strictfp class PostGISMappingTest extends TestCase {
+public final strictfp class PostgresTest extends TestCase {
     /**
-     * Tests {@link PostGISMapping#verifyVersion(String, int)}.
+     * Tests {@link Postgres#parseVersion(String)}.
      */
     @Test
     public void parse_postgis_version() {
-        assertTrue (PostGISMapping.verifyVersion("3.1 USE_GEOS=1 USE_PROJ=1 USE_STATS=1", 2));
-        assertFalse(PostGISMapping.verifyVersion("2.1 USE_GEOS=1 USE_PROJ=1 USE_STATS=1", 3));
-
-        // Verify minimal requirements: we need a text that starts with a number.
-        assertTrue(PostGISMapping.verifyVersion("2", 2));
-        assertTrue(PostGISMapping.verifyVersion("10.123.23", 2));
-
-        assertFalse(PostGISMapping.verifyVersion("3d", 2));
-        assertFalse(PostGISMapping.verifyVersion("d3", 2));
+        final Version version = Postgres.parseVersion("3.1 USE_GEOS=1 USE_PROJ=1 USE_STATS=1");
+        assertEquals(3, version.getMajor());
+        assertEquals(1, version.getMinor());
+        assertNull  (   version.getRevision());
     }
 }

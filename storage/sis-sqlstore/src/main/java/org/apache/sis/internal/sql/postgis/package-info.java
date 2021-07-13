@@ -14,29 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.suite;
-
-import org.apache.sis.test.TestSuite;
-import org.junit.runners.Suite;
-import org.junit.BeforeClass;
-
 
 /**
- * All tests from the {@code sis-sqlstore} module, in rough dependency order.
+ * Specialization of {@code org.apache.sis.internal.sql.feature} for the PostGIS database.
+ *
+ * @author  Alexis Manin (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ * @since   1.1
+ * @module
  */
-@Suite.SuiteClasses({
-    org.apache.sis.internal.sql.feature.EWKBTest.class,
-    org.apache.sis.internal.sql.feature.SelectionClauseWriterTest.class,
-    org.apache.sis.internal.sql.postgis.PostgresTest.class,
-    org.apache.sis.storage.sql.SQLStoreTest.class
-})
-public final strictfp class SQLTestSuite extends TestSuite {
-    /**
-     * Verifies the list of tests before to run the suite.
-     * See {@link #verifyTestList(Class, Class[])} for more information.
-     */
-    @BeforeClass
-    public static void verifyTestList() {
-        verifyTestList(SQLTestSuite.class);
-    }
-}
+package org.apache.sis.internal.sql.postgis;

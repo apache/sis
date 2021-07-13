@@ -16,105 +16,117 @@
  */
 package org.apache.sis.internal.sql.feature;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.stream.Stream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.sql.DataSource;
-
-import org.opengis.feature.Attribute;
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureAssociationRole;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
 import org.opengis.util.GenericName;
-
-import org.apache.sis.internal.metadata.sql.Reflection;
-import org.apache.sis.internal.metadata.sql.SQLBuilder;
-import org.apache.sis.internal.storage.AbstractFeatureSet;
-import org.apache.sis.internal.storage.query.FeatureQuery;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.InternalDataStoreException;
-import org.apache.sis.storage.Query;
-import org.apache.sis.util.Debug;
-import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.FeatureAssociationRole;
 
 
 /**
  * Description of a table in the database, including columns, primary keys and foreigner keys.
- * This class contains a {@link FeatureType} inferred from the table structure. The {@link FeatureType}
- * contains an {@link AttributeType} for each table column, except foreigner keys which are represented
- * by {@link FeatureAssociationRole}s.
+ * This class contains a {@link FeatureType} inferred from the table structure.
+ * The {@link FeatureType} contains an {@link AttributeType} for each table column,
+ * except foreigner keys which are represented by {@link FeatureAssociationRole}s.
+ *
+ * <h2>Multi-threading</h2>
+ * This class is immutable (except for the cache) and safe for concurrent use by many threads.
+ * The content of arrays in this class shall not be modified in order to preserve immutability.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   1.0
  * @module
  */
 final class Table extends AbstractFeatureSet {
     /**
-     * Provider of (pooled) connections to the database.
+     * Information about the database (syntax for building SQL statements, …) together with a cache of CRS.
+     * Contains the provider of (pooled) connections to the database.
      */
-    final DataSource source;
+    final Database<?> database;
 
     /**
      * The structure of this table represented as a feature. Each feature attribute is a table column,
      * except synthetic attributes like "sis:identifier". The feature may also contain associations
      * inferred from foreigner keys that are not immediately apparent in the table.
+     *
+     * @see #getType()
      */
     final FeatureType featureType;
 
     /**
      * The name in the database of this {@code Table} object, together with its schema and catalog.
+     * The catalog and schema parts are optional and can be null, but the table name is mandatory.
      */
     final TableReference name;
 
     /**
-     * Name of all columns to fetch from database, optionally amended with an alias. Alias is used for feature type
-     * attributes which have been renamed to avoid name collisions. In any case, a call to {@link ColumnRef#getAttributeName()}}
-     * will return the name available in target feature type. This list contains only {@link Attribute} names, not any
-     * relation one.
+     * Attributes in feature instances, excluding operations and associations to other tables.
+     * Elements are in the order of columns declared in the {@code SELECT <columns>} statement.
+     * This array shall not be modified after construction.
+     *
+     * <p>Columns may have alias if it was necessary to avoid name collisions.
+     * The alias is given by {@link Column#label} and will be the name used in {@link FeatureType}.</p>
      */
-    final List<ColumnRef> attributes;
+    final Column[] attributes;
 
     /**
      * The columns that constitute the primary key, or {@code null} if there is no primary key.
      */
-    private final String[] primaryKeys;
+    final PrimaryKey primaryKey;
 
     /**
      * The primary keys of other tables that are referenced by this table foreign key columns.
-     * They are 0:1 relations. May be {@code null} if there is no imported keys.
+     * They are 0:1 relations. May be empty if there is no imported keys but never null.
      */
     final Relation[] importedKeys;
 
     /**
      * The foreign keys of other tables that reference this table primary key columns.
-     * They are 0:N relations. May be {@code null} if there is no exported keys.
+     * They are 0:N relations. May be empty if there is no exported keys but never null.
      */
     final Relation[] exportedKeys;
 
     /**
-     * The class of primary key values, or {@code null} if there is no primary keys.
-     * If the primary keys use more than one column, then this field is the class of
-     * an array; it may be an array of primitive type.
+     * {@code true} if this table contains at least one geometry column.
      */
-    final Class<?> primaryKeyClass;
+    final boolean hasGeometry;
 
-    private final SQLTypeSpecification specification;
+    /**
+     * Map from attribute name to columns. This is built from {@link #columns} array when first needed.
+     *
+     * @see #getColumn(String)
+     */
+    private Map<String,Column> attributeToColumns;
+
+    /**
+     * The converter of {@link ResultSet} rows to {@link Feature} instances.
+     * Created when first needed.
+     *
+     * @see #adapter(Connection)
+     */
+    private FeatureAdapter adapter;
 
     /**
      * Feature instances already created for given primary keys. This map is used only when requesting feature
@@ -128,97 +140,42 @@ final class Table extends AbstractFeatureSet {
     private WeakValueHashMap<?,Object> instanceForPrimaryKeys;
 
     /**
-     * {@code true} if this table contains at least one geometry column.
-     */
-    final boolean hasGeometry;
-
-    /**
-     * Keep a reference of target database metadata, to ease creation of {@link SQLBuilder}.
-     */
-    final DatabaseMetaData dbMeta;
-
-    /**
-     * An SQL builder whose sole purpose is to allow creation of new builders without metadata analysis. It allows to
-     * reduce error eventuality, and re-use already  computed information.
-     */
-    private final SQLBuilder sqlTemplate;
-
-    protected final FeatureAdapter adapter;
-
-    /**
-     * Creates a description of the table of the given name.
-     * The table is identified by {@code id}, which contains a (catalog, schema, name) tuple.
-     * The catalog and schema parts are optional and can be null, but the table is mandatory.
+     * Creates a description of the table analyzed by the given object.
      *
-     * @param  analyzer    helper functions, e.g. for converting SQL types to Java types.
-     * @param  id          the catalog, schema and table name of the table to analyze.
-     * @param  importedBy  if this table is imported by the foreigner keys of another table,
-     *                     the parent table. Otherwise {@code null}.
+     * @param  database  information about the database (syntax for building SQL statements, …).
+     * @param  analyzer  helper functions, e.g. for converting SQL types to Java types.
      */
-    Table(final Analyzer analyzer, final TableReference id, final TableReference importedBy)
-            throws SQLException, DataStoreException
-    {
-        super(analyzer.listeners);
-        this.dbMeta = analyzer.metadata;
-        this.sqlTemplate = new SQLBuilder(this.dbMeta, true);
-        this.source = analyzer.source;
-        this.name   = id;
-        /*
-         * Creates a list of associations between the table read by this method and other tables.
-         * The associations are defined by the foreigner keys referencing primary keys. Note that
-         * the table relations can be defined in both ways:  the foreigner keys of this table may
-         * be referencing the primary keys of other tables (Direction.IMPORT) or the primary keys
-         * of this table may be referenced by the foreigner keys of other tables (Direction.EXPORT).
-         * However in both case, we will translate that into associations from this table to the
-         * other tables. We can not rely on IMPORT versus EXPORT for determining the association
-         * navigability because the database designer's choice may be driven by the need to support
-         * multi-occurrences.
-         */
-        /*
-         * For each column in the table that is not a foreigner key, create an AttributeType of the same name.
-         * The Java type is inferred from the SQL type, and the attribute multiplicity in inferred from the SQL
-         * nullability. Attribute names are added in the 'attributeNames' and 'attributeColumns' list. Those
-         * names are usually the same, except when a column is used both as a primary key and as foreigner key.
-         */
-
-        /*
-         * If the primary keys uses more than one column, we will need an array to store it.
-         * If all columns are non-null numbers, use primitive arrays instead than array of wrappers.
-         */
-        this.specification = analyzer.create(id, importedBy);
-        primaryKeys = (String[]) specification.getPK()
-                .map(PrimaryKey::getColumns)
-                .orElse(Collections.EMPTY_LIST)
-                .toArray(new String[0]);
-        this.adapter          = analyzer.buildAdapter(specification);
-        this.featureType      = adapter.type;
-        this.importedKeys     = toArray(specification.getImports());
-        this.exportedKeys     = toArray(specification.getExports());
-        this.primaryKeyClass  = primaryKeys.length < 2 ? Object.class : Object[].class;
-        this.hasGeometry      = specification.getPrimaryGeometryColumn().isPresent();
-        this.attributes       = Collections.unmodifiableList(
-                specification.getColumns().stream()
-                        .map(column -> column.naming)
-                        .collect(Collectors.toList())
-        );
-    }
-
-    @Override
-    public FeatureSet subset(Query query) throws DataStoreException {
-        if (query instanceof FeatureQuery) {
-            final SubsetAdapter subsetAdapter = new SubsetAdapter(fs -> new SQLQueryAdapter.Table(this));
-            return subsetAdapter.subset(this, (FeatureQuery) query);
-        }
-
-        return super.subset(query);
+    Table(final Database<?> database, final TableAnalyzer analyzer) throws Exception {
+        super(database.listeners);
+        this.database = database;
+        name          = analyzer.id;
+        importedKeys  = analyzer.getForeignerKeys(Relation.Direction.IMPORT);
+        exportedKeys  = analyzer.getForeignerKeys(Relation.Direction.EXPORT);
+        attributes    = analyzer.createAttributes();                 // Must be after `spec.getForeignerKeys(IMPORT)`.
+        primaryKey    = analyzer.createAssociations(exportedKeys);   // Must be after `spec.createAttributes(…)`.
+        featureType   = analyzer.buildFeatureType();
+        hasGeometry   = analyzer.hasGeometry;
     }
 
     /**
-     * Returns the given relations as an array, or {@code null} if none.
+     * Creates a new table as a projection (subset of columns) of the given table.
+     *
+     * @todo This constructor is not yet used because it is an unfinished work.
+     *       We need to invent some mechanism for using a subset of the columns.
+     *       A starting point is {@link org.apache.sis.internal.storage.query.FeatureQuery#expectedType(FeatureType)}.
      */
-    private static Relation[] toArray(final Collection<Relation> relations) {
-        final int size = relations.size();
-        return (size != 0) ? relations.toArray(new Relation[size]) : null;
+    Table(final Table parent) {
+        super(parent);
+        database = parent.database;
+        name     = parent.name;
+
+        // TODO: filter the columns.
+        primaryKey   = parent.primaryKey;
+        attributes   = parent.attributes;
+        importedKeys = parent.importedKeys;
+        exportedKeys = parent.exportedKeys;
+        featureType  = parent.featureType;
+        hasGeometry  = parent.hasGeometry;
     }
 
     /**
@@ -228,7 +185,7 @@ final class Table extends AbstractFeatureSet {
      *
      * @param  tables  all tables created.
      */
-    final void setDeferredSearchTables(final Analyzer analyzer, final Map<GenericName, Table> tables) throws DataStoreException {
+    final void setDeferredSearchTables(final Analyzer analyzer, final Map<GenericName,Table> tables) throws DataStoreException {
         for (final Relation.Direction direction : Relation.Direction.values()) {
             final Relation[] relations;
             switch (direction) {
@@ -236,30 +193,27 @@ final class Table extends AbstractFeatureSet {
                 case EXPORT: relations = exportedKeys; break;
                 default: continue;
             }
-            if (relations != null) {
-                for (final Relation relation : relations) {
-                    if (!relation.isSearchTableDefined()) {
-                        // A ClassCastException below would be a bug since 'relation.propertyName' shall be for an association.
-                        final PropertyType property = featureType.getProperty(relation.propertyName.toString());
-                        if (!(property instanceof FeatureAssociationRole)) {
-                            throw new IllegalStateException(String.format(
-                                    "We expect a feature association for %s relation %s. Duplicate key ?",
-                                    direction.name(), relation.propertyName
-                            ));
-                        }
-                        FeatureAssociationRole association = (FeatureAssociationRole) property;
-                        final Table table = tables.get(association.getValueType().getName());
-                        if (table == null) {
-                            throw new InternalDataStoreException(association.toString());
-                        }
-                        final String[] referenced;
-                        switch (direction) {
-                            case IMPORT: referenced = table.primaryKeys; break;
-                            case EXPORT: referenced =  this.primaryKeys; break;
-                            default: throw new AssertionError(direction);
-                        }
-                        relation.setSearchTable(analyzer, table, referenced, direction);
+            for (final Relation relation : relations) {
+                if (!relation.isSearchTableDefined()) {
+                    /*
+                     * `ClassCastException` should never occur below because `relation.propertyName` fields
+                     * have been set to association names. If `ClassCastException` occurs here, it is a bug
+                     * in our object constructions.
+                     */
+                    final FeatureAssociationRole association =
+                            (FeatureAssociationRole) featureType.getProperty(relation.propertyName);
+
+                    final Table table = tables.get(association.getValueType().getName());
+                    if (table == null) {
+                        throw new InternalDataStoreException(association.toString());
                     }
+                    final PrimaryKey referenced;
+                    switch (direction) {
+                        case IMPORT: referenced = table.primaryKey; break;
+                        case EXPORT: referenced =  this.primaryKey; break;
+                        default: throw new AssertionError(direction);
+                    }
+                    relation.setSearchTable(analyzer, table, referenced, direction);
                 }
             }
         }
@@ -273,18 +227,16 @@ final class Table extends AbstractFeatureSet {
 
     /**
      * Appends all children to the given parent. The children are added under the given node.
-     * If the children array is null, then this method does nothing.
+     * If the children array is empty, then this method does nothing.
      *
      * @param  parent    the node where to add children.
-     * @param  children  the children to add, or {@code null} if none.
+     * @param  children  the children to add, or an empty array if none.
      * @param  arrow     the symbol to use for relating the columns of two tables in a foreigner key.
      */
     @Debug
     private static void appendAll(final TreeTable.Node parent, final Relation[] children, final String arrow) {
-        if (children != null) {
-            for (final Relation child : children) {
-                child.appendTo(parent, arrow);
-            }
+        for (final Relation child : children) {
+            child.appendTo(parent, arrow);
         }
     }
 
@@ -296,8 +248,8 @@ final class Table extends AbstractFeatureSet {
     @Debug
     final void appendTo(TreeTable.Node parent) {
         parent = Relation.newChild(parent, featureType.getName().toString());
-        for (final ColumnRef attribute : attributes) {
-            TableReference.newChild(parent, attribute.getAttributeName());
+        for (final Column attribute : attributes) {
+            TableReference.newChild(parent, attribute.label);
         }
         appendAll(parent, importedKeys, " → ");
         appendAll(parent, exportedKeys, " ← ");
@@ -336,6 +288,35 @@ final class Table extends AbstractFeatureSet {
     }
 
     /**
+     * Returns the column from an attribute name specified as XPath.
+     * Current implementation interprets the {@code xpath} value only as the attribute name,
+     * but a future implementation may parse something like a {@code "table/column"} syntax.
+     * It may be necessary with {@code Table} that are actually views generated by queries.
+     *
+     * @param  xpath  the XPath (currently only attribute name).
+     * @return column for the given XPath, or {@code null} if the specified attribute is not found.
+     */
+    final Column getColumn(final String xpath) {
+        Map<String,Column> m;
+        synchronized (this) {
+            m = attributeToColumns;
+            if (m == null) {
+                m = new HashMap<>(Containers.hashMapCapacity(attributes.length));
+                for (final Column c : attributes) {
+                    String label = c.label;
+                    m.put(label, c);
+                    final int s = label.lastIndexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
+                    if (s >= 0) {
+                        m.putIfAbsent(label.substring(s+1), c);
+                    }
+                }
+                attributeToColumns = m;
+            }
+        }
+        return m.get(xpath);
+    }
+
+    /**
      * If this table imports the inverse of the given relation, returns the imported relation.
      * Otherwise returns {@code null}. This method is used for preventing infinite recursivity.
      *
@@ -344,7 +325,7 @@ final class Table extends AbstractFeatureSet {
      * @return the inverse of the given relation, or {@code null} if none.
      */
     final Relation getInverseOf(final Relation exported, final TableReference exportedOwner) {
-        if (importedKeys != null && name.equals(exported)) {
+        if (name.equals(exported)) {
             for (final Relation relation : importedKeys) {
                 if (relation.equals(exportedOwner) && relation.isInverseOf(exported)) {
                     return relation;
@@ -363,7 +344,7 @@ final class Table extends AbstractFeatureSet {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final synchronized WeakValueHashMap<?,Object> instanceForPrimaryKeys() {
         if (instanceForPrimaryKeys == null) {
-            instanceForPrimaryKeys = new WeakValueHashMap<>(primaryKeyClass);
+            instanceForPrimaryKeys = new WeakValueHashMap<>(primaryKey.valueClass);
         }
         return instanceForPrimaryKeys;
     }
@@ -374,13 +355,14 @@ final class Table extends AbstractFeatureSet {
      * change at any time.
      *
      * @param  metadata     information about the database.
+     * @param  distinct     whether to count distinct values instead of all values.
      * @param  approximate  whether approximate or outdated values are acceptable.
      * @return number of rows (may be approximate), or -1 if unknown.
      */
-    final long countRows(final DatabaseMetaData metadata, final boolean approximate) throws SQLException {
+    final long countRows(final DatabaseMetaData metadata, final boolean distinct, final boolean approximate) throws SQLException {
         long count = -1;
         final String[] names = TableReference.splitName(featureType.getName());
-        try (ResultSet reflect = metadata.getIndexInfo(names[2], names[1], names[0], false, approximate)) {
+        try (ResultSet reflect = metadata.getIndexInfo(names[2], names[1], names[0], distinct, approximate)) {
             while (reflect.next()) {
                 final long n = reflect.getLong(Reflection.CARDINALITY);
                 if (!reflect.wasNull()) {
@@ -396,8 +378,17 @@ final class Table extends AbstractFeatureSet {
         return count;
     }
 
-    public SQLBuilder createStatement() {
-        return new SQLBuilder(sqlTemplate);
+    /**
+     * Returns the converter of {@link ResultSet} rows to {@link Feature} instances.
+     * The converter is created the first time that this method is invoked, then cached.
+     *
+     * @param  connection  source of database metadata to use if the adapter needs to be created.
+     */
+    final synchronized FeatureAdapter adapter(final Connection connection) throws SQLException, InternalDataStoreException {
+        if (adapter == null) {
+            adapter = new FeatureAdapter(this, connection.getMetaData());
+        }
+        return adapter;
     }
 
     /**
@@ -409,19 +400,6 @@ final class Table extends AbstractFeatureSet {
      */
     @Override
     public Stream<Feature> features(final boolean parallel) throws DataStoreException {
-        return new StreamSQL(this, parallel);
-    }
-
-    /**
-     * Returns an iterator over the features.
-     *
-     * @param connection  connection to the database.
-     * @param following   the relations that we are following. Used for avoiding never ending loop.
-     * @param noFollow    relation to not follow, or {@code null} if none.
-     */
-    final Features features(final Connection connection, final List<Relation> following, final Relation noFollow)
-            throws SQLException, InternalDataStoreException
-    {
-        return new Features(this, connection, attributes, following, noFollow, false, -1, -1, null);
+        return new FeatureStream(this, parallel);
     }
 }
