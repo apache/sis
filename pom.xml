@@ -432,12 +432,6 @@
         <artifactId>geoapi-conformance</artifactId>
         <version>${geoapi.version}</version>
         <scope>test</scope>
-        <exclusions>            <!-- TODO: remove this exclusion after migration to JUnit 5. -->
-          <exclusion>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
 
       <!-- Libraries (language, XML, network) -->
@@ -535,22 +529,9 @@
            Dependencies to be inherited by all modules.
        =========================================================== -->
   <dependencies>
-    <!--
-      Unit test declaration. Embed aggregator dependency + retrocompatibility artifact ('vintage').
-      The later won't be needed anymore once all JUnit tests have been upgraded to new JUnit version.
-      TODO: remove <version>5.5.2</version> after complete migration to JUnit 5 (dependency version
-      will be inherited from GeoAPI).
-    -->
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>5.8.0-M1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <version>5.8.0-M1</version>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>   <!-- To be removed after https://issues.apache.org/jira/browse/SIS-469 is done. -->

@@ -1,10 +1,9 @@
 package org.apache.sis.internal.sql.feature;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static org.apache.sis.internal.sql.feature.PostGISMapping.verifyVersion;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.*;
 
 public class PostGISMappingTest {
 

@@ -1,6 +1,9 @@
 package org.apache.sis.internal.sql.feature;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 import org.opengis.referencing.crs.GeographicCRS;
 
@@ -9,22 +12,18 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.TestCase;
 
-import org.junit.Assert;
 import org.junit.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvFileSource;
+import static org.junit.Assert.*;
 
 
 public class EWKBTest extends TestCase {
 
     public static final Geometries<?> GF = Geometries.implementation(GeometryLibrary.JTS);
 
-    @ParameterizedTest
-    @CsvFileSource(resources = "hexa_ewkb_4326.csv", numLinesToSkip = 1, delimiter = '\t')
     public void decodeHexadecimal(String wkt, String hexEWKB) throws Exception {
         final GeographicCRS expectedCrs = CommonCRS.defaultGeographic();
         final EWKBReader reader = new EWKBReader(GF).forCrs(expectedCrs);
-        Assert.assertEquals("WKT and hexadecimal EWKB representation don't match",
+        assertEquals("WKT and hexadecimal EWKB representation don't match",
                 GF.parseWKT(wkt).implementation(), reader.readHexa(hexEWKB));
     }
 
@@ -46,6 +45,29 @@ public class EWKBTest extends TestCase {
         point.position(0);
 
         final Object read = new EWKBReader(GeometryLibrary.JTS).read(point);
-        Assert.assertEquals(GF.createPoint(42.2, 43.3), read);
+        assertEquals(GF.createPoint(42.2, 43.3), read);
+    }
+
+    /**
+     * Temporary test for simulating JUnit 5 execution of {@link #decodeHexadecimal(String, String)}
+     * as a parameterized test. To be removed after migration to JUnit 5.
+     *
+     * @throws Exception if test file can not be decoded.
+     */
+    @Test
+    public void testDecodeHexadecimal() throws Exception {
+        try (final BufferedReader in = new BufferedReader(new InputStreamReader(
+                EWKBTest.class.getResourceAsStream("hexa_ewkb_4326.csv"), StandardCharsets.UTF_8)))
+        {
+            String line;
+            int numLinesToSkip = 1;
+            while ((line = in.readLine()) != null) {
+                if (!(line = line.trim()).isEmpty() && line.charAt(0) != '#' && --numLinesToSkip < 0) {
+                    final String[] columns = line.split("\t");
+                    assertEquals(2, columns.length);
+                    decodeHexadecimal(columns[0], columns[1]);
+                }
+            }
+        }
     }
 }

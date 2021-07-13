@@ -291,6 +291,7 @@
       </fileset>
       <fileset dir="${project.root}/storage/sis-sqlstore/src/test/resources">
         <include name="**/*.sql"/>
+        <include name="**/*.csv"/>
       </fileset>
       <fileset dir="${project.root}/storage/sis-earth-observation/src/test/resources">
         <include name="**/*.txt"/>
