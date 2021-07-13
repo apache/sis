@@ -628,12 +628,19 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
              */
             if (numPts < 0) break;
             while ((index = binarySearch(minimums, value)) < 0) {
-                dstPts[peekOff + srcToDst] = unmappedValue(value);
+                final double fill = unmappedValue(value);
+                final int i = peekOff + srcToDst;
+                if (dstFloat != null) {
+                    dstFloat[i] = (float) fill;
+                } else {
+                    dstPts[i] = fill;
+                }
                 if (--numPts < 0) {
                     // Skip also the assignment to `lastUsed` because `index` is invalid.
                     return;
                 }
-                value = srcPts[peekOff += direction];
+                peekOff += direction;
+                value = (srcFloat != null) ? srcFloat[peekOff] : srcPts[peekOff];
             }
             srcOff = peekOff;
         }
