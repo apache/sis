@@ -1,22 +1,49 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.sis.internal.sql.feature;
 
+import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.internal.sql.feature.PostGISMapping.verifyVersion;
 import static org.junit.Assert.*;
 
-public class PostGISMappingTest {
 
+/**
+ * Tests {@link PostGISMapping}.
+ *
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
+ * @since   1.1
+ * @module
+ */
+public final strictfp class PostGISMappingTest extends TestCase {
+    /**
+     * Tests {@link PostGISMapping#verifyVersion(String, int)}.
+     */
     @Test
     public void parse_postgis_version() {
-        assertTrue(verifyVersion("3.1 USE_GEOS=1 USE_PROJ=1 USE_STATS=1", 2));
-        assertFalse(verifyVersion("2.1 USE_GEOS=1 USE_PROJ=1 USE_STATS=1", 3));
+        assertTrue (PostGISMapping.verifyVersion("3.1 USE_GEOS=1 USE_PROJ=1 USE_STATS=1", 2));
+        assertFalse(PostGISMapping.verifyVersion("2.1 USE_GEOS=1 USE_PROJ=1 USE_STATS=1", 3));
 
         // Verify minimal requirements: we need a text that starts with a number.
-        assertTrue(verifyVersion("2", 2));
-        assertTrue(verifyVersion("10.123.23", 2));
+        assertTrue(PostGISMapping.verifyVersion("2", 2));
+        assertTrue(PostGISMapping.verifyVersion("10.123.23", 2));
 
-        assertFalse(verifyVersion("3d", 2));
-        assertFalse(verifyVersion("d3", 2));
+        assertFalse(PostGISMapping.verifyVersion("3d", 2));
+        assertFalse(PostGISMapping.verifyVersion("d3", 2));
     }
 }

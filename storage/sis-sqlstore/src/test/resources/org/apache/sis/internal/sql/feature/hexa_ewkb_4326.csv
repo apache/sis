@@ -1,5 +1,18 @@
-# This dataset has been generated using SQL script given in 'hexa_ewkb_4326.sql' in this folder, against a PostGIS 2.5.2
-wkt	hexadecimal_ewkb
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+
+#
+# This dataset has been generated using SQL script given in 'hexa_ewkb_4326.sql'
+# in this folder, against a PostGIS 2.5.2. It contains two columns separated by
+# a tabulation:
+#
+#  - The geometry in WKT format.
+#  - The same geometry in EWKB format, with bytes encoded as hexadecimal numbers.
+#
+
+WKT	hexadecimal EWKB
 POINT(0 0)	0101000020E610000000000000000000000000000000000000
 LINESTRING(-71.160281 42.258729,-71.160837 42.259113,-71.161144 42.25932)	0102000020E610000003000000E44A3D0B42CA51C06EC328081E21454027BF45274BCA51C0F67B629D2A214540957CEC2E50CA51C07099D36531214540
 POLYGON((0 0,0 1,1 1,1 0,0 0))	0103000020E61000000100000005000000000000000000000000000000000000000000000000000000000000000000F03F000000000000F03F000000000000F03F000000000000F03F000000000000000000000000000000000000000000000000

@@ -65,5 +65,5 @@ INSERT INTO features."Parks" ("country", "city", "native_name", "english_name") 
     ('CAN', 'Montréal', 'Mont Royal',           'Mount Royal'),
     ('FRA', 'Paris',    'Jardin des Tuileries', 'Tuileries Garden'),
     ('FRA', 'Paris',    'Jardin du Luxembourg', 'Luxembourg Garden'),
-    ('JPN', '東京',      '代々木公園',            'Yoyogi-kōen'),
-    ('JPN', '東京',      '新宿御苑',              'Shinjuku Gyoen');
+    ('JPN', '東京',     '代々木公園',           'Yoyogi-kōen'),
+    ('JPN', '東京',     '新宿御苑',             'Shinjuku Gyoen');

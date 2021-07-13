@@ -1,3 +1,12 @@
+
+-- Licensed to the Apache Software Foundation (ASF) under one or more
+-- contributor license agreements. See the NOTICE file distributed with
+-- this work for additional information regarding copyright ownership.
+
+
+-- This SQL script generates the content of `hexa_ewkb_4326.csv` file.
+-- This file is not used directly by the tests.
+
 SELECT wkt, ST_GeomFromText(wkt, 4326) AS hexadecimal_ewkb
 FROM (
          VALUES ('POINT(0 0)'),
