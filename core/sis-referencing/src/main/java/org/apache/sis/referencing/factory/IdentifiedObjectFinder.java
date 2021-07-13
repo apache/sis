@@ -162,6 +162,12 @@ public class IdentifiedObjectFinder {
     boolean ignoreIdentifiers;
 
     /**
+     * {@code true} if the result can be restricted to a singleton.
+     * This is set by {@link #findSingleton(IdentifiedObject)} only.
+     */
+    private boolean wantSingleton;
+
+    /**
      * Creates a finder using the specified factory.
      *
      * <div class="note"><b>Design note:</b>
@@ -299,15 +305,23 @@ public class IdentifiedObjectFinder {
         ArgumentChecks.ensureNonNull("object", object);
         Set<IdentifiedObject> result = getFromCache(object);
         if (result == null) {
-            final AuthorityFactoryProxy<?> previous = proxy;
+            final boolean previousIgnoreAxes = ignoreAxes;
+            final AuthorityFactoryProxy<?> previousProxy = proxy;
             proxy = AuthorityFactoryProxy.getInstance(object.getClass());
             try {
-                if (!ignoreIdentifiers) {
+                /*
+                 * If user wants to ignore axes, we need to return all matches. We can not use the identifier
+                 * because it would reduce the set to a single element. Having all elements is necessary when
+                 * `CoordinateOperationRegistry` searches for a coordinate operation between a pair of CRS.
+                 * The only exception to this rule is when this method is invoked from `findSingleton(…)`.
+                 */
+                if (!ignoreIdentifiers && (!previousIgnoreAxes || wantSingleton)) {
                     /*
                      * First check if one of the identifiers can be used to find directly an identified object.
                      * Verify that the object that we found is actually equal to given one; we do not blindly
                      * trust the identifiers in the user object.
                      */
+                    ignoreAxes = false;
                     IdentifiedObject candidate = createFromIdentifiers(object);
                     if (candidate != null) {
                         return Collections.singleton(candidate);    // Not worth to cache.
@@ -331,7 +345,8 @@ public class IdentifiedObjectFinder {
                 }
                 result = createFromCodes(object);
             } finally {
-                proxy = previous;
+                proxy      = previousProxy;
+                ignoreAxes = previousIgnoreAxes;
             }
             result = cache(object, result);     // Costly operation (even if the result is empty) worth to cache.
         }
@@ -363,6 +378,7 @@ public class IdentifiedObjectFinder {
         IdentifiedObject result = null;
         boolean sameAxisOrder = false;
         boolean ambiguous = false;
+        wantSingleton = true;
         try {
             for (final IdentifiedObject candidate : find(object)) {
                 final boolean so = !ignoreAxes || Utilities.deepEquals(candidate, object, COMPARISON_MODE);
@@ -377,6 +393,8 @@ public class IdentifiedObjectFinder {
             }
         } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(FactoryException.class);
+        } finally {
+            wantSingleton = false;
         }
         return (sameAxisOrder || !ambiguous) ? result : null;
     }

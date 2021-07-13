@@ -24,6 +24,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -38,7 +39,7 @@ import static org.junit.Assert.*;
  * @module
  */
 @DependsOn(LocalizationGridBuilderTest.class)
-public final strictfp class LinearizerTest {
+public final strictfp class LinearizerTest extends TestCase {
     /**
      * Tests {@link LinearTransformBuilder#approximate(MathTransform, Envelope)} on a transform created by
      * {@link LocalizationGridBuilder}. We verify that the {@link Linearizer#approximate(MathTransform,
