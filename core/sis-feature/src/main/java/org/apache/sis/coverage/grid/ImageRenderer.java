@@ -51,6 +51,11 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.Vector;
 
+import static java.lang.Math.addExact;
+import static java.lang.Math.subtractExact;
+import static java.lang.Math.multiplyExact;
+import static java.lang.Math.incrementExact;
+import static java.lang.Math.toIntExact;
 import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
 
 
@@ -125,6 +130,12 @@ public class ImageRenderer {
      * @see #getImageGeometry(int)
      */
     private GridGeometry imageGeometry;
+
+    /**
+     * Offset to add to {@link #buffer} offset for reaching the first sample value for the slice to render.
+     * This is zero for a two-dimensional image, but may be greater for cube having more dimensions.
+     */
+    private final long offsetZ;
 
     /**
      * Location of the first image pixel relative to the grid coverage extent. The (0,0) offset means that the first pixel
@@ -275,12 +286,12 @@ public class ImageRenderer {
         bands = CollectionsExt.toArray(coverage.getSampleDimensions(), SampleDimension.class);
         geometry = coverage.getGridGeometry();
         final GridExtent source = geometry.getExtent();
+        final int dimension = source.getDimension();
         this.sliceExtent = sliceExtent;
         if (sliceExtent != null) {
-            final int dimension = sliceExtent.getDimension();
-            if (source.getDimension() != dimension) {
+            if (sliceExtent.getDimension() != dimension) {
                 throw new MismatchedDimensionException(Errors.format(
-                        Errors.Keys.MismatchedDimension_3, "sliceExtent", source.getDimension(), dimension));
+                        Errors.Keys.MismatchedDimension_3, "sliceExtent", dimension, sliceExtent.getDimension()));
             }
         } else {
             sliceExtent = source;
@@ -300,26 +311,46 @@ public class ImageRenderer {
             final int d = (xmax < xmin) ? xd : yd;
             throw new DisjointExtentException(source, sliceExtent, d);
         }
-        width   = Math.incrementExact(Math.toIntExact(xmax - xmin));
-        height  = Math.incrementExact(Math.toIntExact(ymax - ymin));
-        imageX  = Math.toIntExact(Math.subtractExact(xmin, xreq));
-        imageY  = Math.toIntExact(Math.subtractExact(ymin, yreq));
-        offsetX = Math.subtractExact(xmin, xcov);
-        offsetY = Math.subtractExact(ymin, ycov);
+        width   = incrementExact(toIntExact(xmax - xmin));
+        height  = incrementExact(toIntExact(ymax - ymin));
+        imageX  = toIntExact(subtractExact(xmin, xreq));
+        imageY  = toIntExact(subtractExact(ymin, yreq));
+        offsetX = subtractExact(xmin, xcov);
+        offsetY = subtractExact(ymin, ycov);
+        /*
+         * If we are rendering a slice in a cube having more than 2 dimensions,
+         * there is a "global" offset to add for reachining the beginning of the slice.
+         */
+        if (dimension > GridCoverage2D.BIDIMENSIONAL) {
+            long base = 0, stride = 1;
+            for (int i=0; i<dimension; i++) {
+                if (i != xd && i != yd) {
+                    final long min = source.getLow(i);
+                    final long c = sliceExtent.getLow(i);
+                    if (c > min) {
+                        base = addExact(base, multiplyExact(stride, c - min));
+                    }
+                }
+                stride = multiplyExact(stride, source.getSize(i));
+            }
+            offsetZ = base;
+        } else {
+            offsetZ = 0;
+        }
         /*
          * At this point, the RenderedImage properties have been computed on the assumption
          * that the returned image will be a single tile. Now compute SampleModel properties.
          */
         long pixelStride  = 1;
         for (int i=0; i<xd; i++) {
-            pixelStride = Math.multiplyExact(pixelStride, source.getSize(i));
+            pixelStride = multiplyExact(pixelStride, source.getSize(i));
         }
         long scanlineStride = pixelStride;
         for (int i=xd; i<yd; i++) {
-            scanlineStride = Math.multiplyExact(scanlineStride, source.getSize(i));
+            scanlineStride = multiplyExact(scanlineStride, source.getSize(i));
         }
-        this.pixelStride    = Math.toIntExact(pixelStride);
-        this.scanlineStride = Math.toIntExact(scanlineStride);
+        this.pixelStride    = toIntExact(pixelStride);
+        this.scanlineStride = toIntExact(scanlineStride);
     }
 
     /**
@@ -617,23 +648,24 @@ public class ImageRenderer {
         if (bandOffsets == null) {
             strideFactor = isInterleaved ? getNumBands() : 1;
         }
-        final int ls = Math.multiplyExact(scanlineStride, strideFactor);    // Real scanline stride.
-        final int ps = pixelStride * strideFactor;                          // Can not fail if above operation did not fail.
+        final int ls = multiplyExact(scanlineStride, strideFactor);     // Real scanline stride.
+        final int ps = pixelStride * strideFactor;                      // Can not fail if above operation did not fail.
         /*
          * Number of data elements from the first element of the bank to the first sample of the band.
          * This is usually 0 for all bands, unless the upper-left corner (minX, minY) is not (0,0).
          */
         final int[] offsets = new int[getNumBands()];
-        Arrays.fill(offsets, Math.toIntExact(Math.addExact(
-                Math.multiplyExact(offsetX, ps),
-                Math.multiplyExact(offsetY, ls))));
+        Arrays.fill(offsets, toIntExact(addExact(addExact(
+                multiplyExact(offsetX, ps),
+                multiplyExact(offsetY, ls)),
+                              offsetZ)));
         /*
          * Add the offset specified by the user (if any), or the default offset. The default is 0, 1, 2…
          * for interleaved sample model (all bands in one bank) and 0, 0, 0… for banded sample model.
          */
         if (bandOffsets != null || isInterleaved) {
             for (int i=0; i<offsets.length; i++) {
-                offsets[i] = Math.addExact(offsets[i], (bandOffsets != null) ? bandOffsets[i] : i);
+                offsets[i] = addExact(offsets[i], (bandOffsets != null) ? bandOffsets[i] : i);
             }
         }
         final Point location = new Point(imageX, imageY);

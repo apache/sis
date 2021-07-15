@@ -17,10 +17,20 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.List;
+import java.util.Arrays;
+import java.util.Collections;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferInt;
+import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.util.iso.Names;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 
 /**
@@ -60,5 +70,51 @@ public final strictfp class BufferedGridCoverageTest extends GridCoverage2DTest 
         raster.setSample(0, 1, 0,  -5);
         raster.setSample(1, 1, 0, -10);
         return coverage;
+    }
+
+    /**
+     * Tests the creation of a three-dimensional coverage.
+     */
+    @Test
+    public void testMultidimensional() {
+        final int width  = 5;
+        final int height = 7;
+        final int nbTime = 3;
+        final GridExtent extent = new GridExtent(null, null, new long[] {width, height, nbTime}, false);
+        final GridGeometry domain = new GridGeometry(extent, PixelInCell.CELL_CENTER, MathTransforms.scale(2, 3, 5), null);
+        final SampleDimension band = new SampleDimension(Names.createLocalName(null, null, "Data"), null, Collections.emptyList());
+        /*
+         * Fill slices with all values set to 10, 11 and 12 at time t=0, 1 and 2 respectively.
+         * All values are stored in a single bank.
+         */
+        final int sliceSize = width*height;
+        final int size = sliceSize*nbTime;
+        final int[] buffer = new int[size];
+        for (int t=0, i=0; t<nbTime; t++) {
+            Arrays.fill(buffer, i, i += sliceSize, t + 10);
+        }
+        final DataBufferInt data = new DataBufferInt(buffer, size);
+        final GridCoverage coverage = new BufferedGridCoverage(domain, Collections.singletonList(band), data);
+        /*
+         * Verify a value in each temporal slice.
+         */
+        GridExtent query = new GridExtent(null, null, new long[] {width, height, 0}, true);
+        RenderedImage slice = coverage.render(query);
+        assertSampleEquals(10, slice);
+
+        query = new GridExtent(null, new long[] {0,0,1}, new long[] {width, height, 1}, true);
+        slice = coverage.render(query);
+        assertSampleEquals(11, slice);
+
+        query = new GridExtent(null, new long[] {0,0,2}, new long[] {width, height, 2}, true);
+        slice = coverage.render(query);
+        assertSampleEquals(12, slice);
+    }
+
+    /**
+     * Verifies that an arbitrary pixel taken from the given slice has a value equals to the expected value.
+     */
+    private static void assertSampleEquals(final int expected, final RenderedImage slice) {
+        assertEquals(expected, slice.getTile(0,0).getSample(1, 1, 0));
     }
 }
