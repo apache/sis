@@ -19,6 +19,7 @@ package org.apache.sis.internal.feature;
 import java.util.Set;
 import java.util.Objects;
 import java.util.Iterator;
+import java.util.OptionalInt;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
@@ -89,6 +90,25 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * @return the geometry implementation wrapped by this instance (never {@code null}).
      */
     public abstract Object implementation();
+
+    /**
+     * Returns the Spatial Reference System Identifier (SRID) if available.
+     * The SRID is used in database such as PostGIS and is generally database-dependent.
+     * This is <em>not</em> necessarily an EPSG code, even it is common practice to use
+     * the same numerical values than EPSG. Note that the absence of SRID does not mean
+     * that {@link #getCoordinateReferenceSystem()} would return no CRS.
+     *
+     * <p>Users should invoke the {@link #getCoordinateReferenceSystem()} method instead.
+     * This {@code getSRID()} method is provided for classes such as {@code DataStore} backed by an SQL database.
+     * Those classes have a connection to a {@code "spatial_ref_sys} table providing the mapping from SRID codes
+     * to authority codes such as EPSG. Those {@code DataStore} will typically get the SRID soon after geometry
+     * creation, resolves its CRS and invoke {@link #setCoordinateReferenceSystem(CoordinateReferenceSystem)}.</p>
+     *
+     * @return the Spatial Reference System Identifier of the geometry.
+     */
+    public OptionalInt getSRID() {
+        return OptionalInt.empty();
+    }
 
     /**
      * Gets the Coordinate Reference System (CRS) of this geometry. In some libraries (for example JTS) the CRS

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.OptionalInt;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.IntFunction;
@@ -113,6 +114,18 @@ final class Wrapper extends GeometryWrapper<Geometry> {
     @Override
     public Object implementation() {
         return geometry;
+    }
+
+    /**
+     * Returns the Spatial Reference System Identifier (SRID) if available.
+     * This is <em>not</em> necessarily an EPSG code, even it is common practice to use
+     * the same numerical values than EPSG. Note that the absence of SRID does not mean
+     * that {@link #getCoordinateReferenceSystem()} would return no CRS.
+     */
+    @Override
+    public OptionalInt getSRID() {
+        final int srid = geometry.getSRID();
+        return (srid != 0) ? OptionalInt.of(srid) : OptionalInt.empty();
     }
 
     /**
