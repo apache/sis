@@ -134,6 +134,8 @@ public class ImageRenderer {
     /**
      * Offset to add to {@link #buffer} offset for reaching the first sample value for the slice to render.
      * This is zero for a two-dimensional image, but may be greater for cube having more dimensions.
+     * Despite the "Z" letter in the field name, this field actually combines the offset for <em>all</em>
+     * dimensions other than X and Y.
      */
     private final long offsetZ;
 
@@ -318,39 +320,33 @@ public class ImageRenderer {
         offsetX = subtractExact(xmin, xcov);
         offsetY = subtractExact(ymin, ycov);
         /*
-         * If we are rendering a slice in a cube having more than 2 dimensions,
-         * there is a "global" offset to add for reachining the beginning of the slice.
+         * At this point, the RenderedImage properties have been computed as if the image was a single tile.
+         * Now compute `SampleModel` properties (the strides). Current version still assumes a single tile,
+         * but it could be changed in the future if we want to add tiling support. The following loop also
+         * computes a "global" offset to add for reachining the beginning of the slice if we are rendering
+         * a slice in a three-dimensional (or more) cube.
          */
-        if (dimension > GridCoverage2D.BIDIMENSIONAL) {
-            long base = 0, stride = 1;
-            for (int i=0; i<dimension; i++) {
-                if (i != xd && i != yd) {
-                    final long min = source.getLow(i);
-                    final long c = sliceExtent.getLow(i);
-                    if (c > min) {
-                        base = addExact(base, multiplyExact(stride, c - min));
-                    }
+        long stride         = 1;
+        long pixelStride    = 0;
+        long scanlineStride = 0;
+        long offsetZ        = 0;
+        for (int i=0; i<dimension; i++) {
+            if (i == xd) {
+                pixelStride = stride;
+            } else if (i == yd) {
+                scanlineStride = stride;
+            } else {
+                final long min = source.getLow(i);
+                final long c = sliceExtent.getLow(i);
+                if (c > min) {
+                    offsetZ = addExact(offsetZ, multiplyExact(stride, c - min));
                 }
-                stride = multiplyExact(stride, source.getSize(i));
             }
-            offsetZ = base;
-        } else {
-            offsetZ = 0;
-        }
-        /*
-         * At this point, the RenderedImage properties have been computed on the assumption
-         * that the returned image will be a single tile. Now compute SampleModel properties.
-         */
-        long pixelStride  = 1;
-        for (int i=0; i<xd; i++) {
-            pixelStride = multiplyExact(pixelStride, source.getSize(i));
-        }
-        long scanlineStride = pixelStride;
-        for (int i=xd; i<yd; i++) {
-            scanlineStride = multiplyExact(scanlineStride, source.getSize(i));
+            stride = multiplyExact(stride, source.getSize(i));
         }
         this.pixelStride    = toIntExact(pixelStride);
         this.scanlineStride = toIntExact(scanlineStride);
+        this.offsetZ        = offsetZ;
     }
 
     /**

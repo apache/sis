@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.iso.Names;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.FeatureAssert.*;
 
 
 /**
@@ -77,8 +77,8 @@ public final strictfp class BufferedGridCoverageTest extends GridCoverage2DTest 
      */
     @Test
     public void testMultidimensional() {
-        final int width  = 5;
-        final int height = 7;
+        final int width  = 4;
+        final int height = 3;
         final int nbTime = 3;
         final GridExtent extent = new GridExtent(null, null, new long[] {width, height, nbTime}, false);
         final GridGeometry domain = new GridGeometry(extent, PixelInCell.CELL_CENTER, MathTransforms.scale(2, 3, 5), null);
@@ -98,23 +98,31 @@ public final strictfp class BufferedGridCoverageTest extends GridCoverage2DTest 
         /*
          * Verify a value in each temporal slice.
          */
-        GridExtent query = new GridExtent(null, null, new long[] {width, height, 0}, true);
-        RenderedImage slice = coverage.render(query);
-        assertSampleEquals(10, slice);
-
-        query = new GridExtent(null, new long[] {0,0,1}, new long[] {width, height, 1}, true);
-        slice = coverage.render(query);
-        assertSampleEquals(11, slice);
-
-        query = new GridExtent(null, new long[] {0,0,2}, new long[] {width, height, 2}, true);
-        slice = coverage.render(query);
-        assertSampleEquals(12, slice);
+        final int[] row10 = new int[width]; Arrays.fill(row10, 10);
+        final int[] row11 = new int[width]; Arrays.fill(row11, 11);
+        final int[] row12 = new int[width]; Arrays.fill(row12, 12);
+        assertRenderEqual(coverage, null,               new long[] {width, height, 0}, new int[][] {row10, row10, row10});
+        assertRenderEqual(coverage, new long[] {0,0,1}, new long[] {width, height, 1}, new int[][] {row11, row11, row11});
+        assertRenderEqual(coverage, new long[] {0,0,2}, new long[] {width, height, 2}, new int[][] {row12, row12, row12});
+        assertRenderEqual(coverage, null,               new long[] {width, 0, nbTime}, new int[][] {row10, row11, row12});
+        assertRenderEqual(coverage, null, new long[] {0, height, nbTime}, new int[][] {
+            {10, 10, 10},
+            {11, 11, 11},
+            {12, 12, 12}
+        });
     }
 
     /**
-     * Verifies that an arbitrary pixel taken from the given slice has a value equals to the expected value.
+     * Performs a {@link GridCoverage#render(GridExtent)} operation for the given region and
+     * verifies that pixels taken from the given slice have values equal to the expected values.
+     *
+     * @param coverage   the coverage on which to perform the render operation.
+     * @param low        lower grid coordinates, inclusive, or {@code null} for zeros.
+     * @param high       high grid coordinates, inclusives.
+     * @param expected   expected sample values.
      */
-    private static void assertSampleEquals(final int expected, final RenderedImage slice) {
-        assertEquals(expected, slice.getTile(0,0).getSample(1, 1, 0));
+    private static void assertRenderEqual(final GridCoverage coverage, final long[] low, final long[] high, final int[][] expected) {
+        final RenderedImage slice = coverage.render(new GridExtent(null, low, high, true));
+        assertValuesEqual(slice.getTile(0,0), 0, expected);
     }
 }
