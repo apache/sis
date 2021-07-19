@@ -416,9 +416,9 @@ public final class CRS extends Static {
             final CRSAuthorityFactory factory, final Filter warningFilter) throws FactoryException
     {
         if (crs != null) {
-            final DefinitionVerifier verification = DefinitionVerifier.withAuthority(crs, factory, true);
+            final DefinitionVerifier verification = DefinitionVerifier.withAuthority(crs, factory, true, null);
             if (verification != null) {
-                crs = verification.authoritative;
+                crs = verification.recommendation;
                 if (warningFilter != null) {
                     final LogRecord record = verification.warning(false);
                     if (record != null) {

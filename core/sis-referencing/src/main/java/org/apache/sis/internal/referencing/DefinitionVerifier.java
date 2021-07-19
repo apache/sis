@@ -62,7 +62,7 @@ import org.apache.sis.util.Utilities;
  * but provide a "recommended CRS" field for what we think is the intended CRS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -80,13 +80,14 @@ public final class DefinitionVerifier {
 
     /**
      * Recommended CRS. May be the instance given to the {@link #withAuthority withAuthority(…)} method
-     * or an instance created from the authority factory.
+     * or an instance created from the authority factory. May also be {@code null} if all CRS given to the
+     * {@link #compare(CoordinateReferenceSystem, CoordinateReferenceSystem) compare(…)} method were null.
      *
      * Note that ISO 19162 said <cite>"Should any attributes or values given in the cited identifier be in conflict
      * with attributes or values given explicitly in the WKT description, the WKT values shall prevail."</cite>
      * So we normally do not use this field.
      */
-    public final CoordinateReferenceSystem authoritative;
+    public final CoordinateReferenceSystem recommendation;
 
     /**
      * If {@link #withAuthority withAuthority(…)} produced a localizable warning, the resource key for creating the
@@ -100,15 +101,16 @@ public final class DefinitionVerifier {
     private Object[] arguments;
 
     /**
-     * The locale, fixed for now but may become configurable in a future version.
+     * The locale for warning messages, or {@code null} for the system default.
      */
-    private static final Locale locale = null;
+    private final Locale locale;
 
     /**
      * Creates the result of a call to {@code withAuthority(…)}.
      */
-    private DefinitionVerifier(final CoordinateReferenceSystem authoritative) {
-        this.authoritative = authoritative;
+    private DefinitionVerifier(final CoordinateReferenceSystem recommendation, final Locale locale) {
+        this.recommendation = recommendation;
+        this.locale = locale;
     }
 
     /**
@@ -124,7 +126,7 @@ public final class DefinitionVerifier {
     public static void withAuthority(final CoordinateReferenceSystem crs, final String logger,
             final Class<?> classe, final String method) throws FactoryException
     {
-        final DefinitionVerifier verification = DefinitionVerifier.withAuthority(crs, null, false);
+        final DefinitionVerifier verification = DefinitionVerifier.withAuthority(crs, null, false, null);
         if (verification != null) {
             final LogRecord record = verification.warning(true);
             if (record != null) {
@@ -141,11 +143,12 @@ public final class DefinitionVerifier {
      * @param  crs      the CRS to compare with the authoritative description.
      * @param  factory  the factory to use for fetching authoritative description, or {@code null} for the default.
      * @param  lookup   whether this method is allowed to use {@link IdentifiedObjectFinder}.
+     * @param  locale   the locale for warning messages, or {@code null} for the system default.
      * @return verification result, or {@code null} if the given CRS should be used as-is.
      * @throws FactoryException if an error occurred while querying the authority factory.
      */
     public static DefinitionVerifier withAuthority(final CoordinateReferenceSystem crs, final CRSAuthorityFactory factory,
-            final boolean lookup) throws FactoryException
+            final boolean lookup, final Locale locale) throws FactoryException
     {
         final CoordinateReferenceSystem authoritative;
         final Citation authority = (factory != null) ? factory.getAuthority() : null;
@@ -162,7 +165,7 @@ public final class DefinitionVerifier {
                 authoritative = CRS.forCode(identifier);
             }
         } catch (NoSuchAuthorityCodeException e) {
-            final DefinitionVerifier verifier = new DefinitionVerifier(crs);
+            final DefinitionVerifier verifier = new DefinitionVerifier(crs, locale);
             verifier.arguments = new String[] {e.getLocalizedMessage()};
             return verifier;
         } else if (lookup) {
@@ -189,8 +192,62 @@ public final class DefinitionVerifier {
         }
         /*
          * At this point we found an authoritative description (typically from EPSG database) for the given CRS.
-         * Verify if the given CRS is equal to the authoritative description, or a variant of it. The similarity
-         * variable tells us if we have equality (0), mismatch (-), or equality when using a variant (+).
+         * Verify if the given CRS is equal to the authoritative description, or a variant of it.
+         */
+        return compare(crs, authoritative, identifier != null, identifier == null, locale);
+    }
+
+    /**
+     * Compares the given CRS with an authoritative definition of that CRS.
+     * Typically, {@code crs} is parsed from a Well-Known Text (WKT) definition while
+     * {@code authoritative} is provided by a geodetic database from an authority code.
+     *
+     * <p>The {@link #recommendation} CRS is set as below:</p>
+     * <ul>
+     *   <li>If one of given CRS is {@code null}, then the other CRS (which may also be null) is selected.</li>
+     *   <li>Otherwise if {@code crs} is compatible with {@code authority} with only a change in axis order,
+     *       a CRS derived from {@code authority} but with {@code crs} axis order is silently selected.</li>
+     *   <li>Otherwise {@code authority} is selected and a {@linkplain #warning(boolean) warning message} is prepared.</li>
+     * </ul>
+     *
+     * @param  crs            the CRS to compare against an authoritative definition, or {@code null}.
+     * @param  authoritative  the presumed authoritative definition of the given CRS, or {@code null}.
+     * @param  locale         the locale for warning messages, or {@code null} for the system default.
+     * @return verification result (never {@code null}).
+     */
+    public static DefinitionVerifier compare(final CoordinateReferenceSystem crs,
+            final CoordinateReferenceSystem authoritative, final Locale locale)
+    {
+        if (crs == null || authoritative == null) {
+            return new DefinitionVerifier((crs != null) ? crs : authoritative, locale);
+        } else {
+            return compare(crs, authoritative, false, false, locale);
+        }
+    }
+
+    /**
+     * Implementation of {@link #compare(CoordinateReferenceSystem, CoordinateReferenceSystem)}
+     * and final step in {@code forAuthority(…)} methods. The boolean flags control the behavior
+     * in case of mismatched axis order or full mismatch.
+     *
+     * @param  strictAxisOrder  whether the CRS should comply with authoritative axis order.
+     *                          If {@code true}, mismatched axis order will be reported as a warning.
+     *                          If {@code false}, they will be silently ignored.
+     * @param  nullIfNoMatch    whether to return {@code null} if CRS do not match.
+     *                          If {@code false}, then this method never return {@code null}.
+     * @return verification result, possibly {@code null} if {@code nullIfNoMatch} is {@code true}.
+     */
+    private static DefinitionVerifier compare(final CoordinateReferenceSystem crs,
+                                              final CoordinateReferenceSystem authoritative,
+                                              final boolean strictAxisOrder,
+                                              final boolean nullIfNoMatch,
+                                              final Locale locale)
+    {
+        /*
+         * The similarity flag has the following meaning:
+         *   (-) mismatch
+         *   (0) equality
+         *   (+) equality when using a variant
          */
         int similarity = 0;
         final AbstractCRS ca = AbstractCRS.castOrCopy(authoritative);
@@ -198,7 +255,7 @@ public final class DefinitionVerifier {
         while (!variant.equals(crs, ComparisonMode.APPROXIMATE)) {
             if (similarity < VARIANTS.length) {
                 variant = ca.forConvention(VARIANTS[similarity++]);
-            } else if (identifier == null) {
+            } else if (nullIfNoMatch) {
                 return null;        // Mismatched CRS, but our "authoritative" description was only a guess. Ignore.
             } else {
                 similarity = -1;    // Mismatched CRS and our authoritative description was not a guess. Need warning.
@@ -213,13 +270,13 @@ public final class DefinitionVerifier {
              *     The coordinate system axes in the given “{0}” description do not conform to the expected axes
              *     according “{1}” authoritative description.
              */
-            verifier = new DefinitionVerifier(variant);
-            if (identifier != null) {
+            verifier = new DefinitionVerifier(variant, locale);
+            if (strictAxisOrder) {
                 verifier.resourceKey = Resources.Keys.NonConformAxes_2;
                 verifier.arguments   = new String[2];
             }
         } else {
-            verifier = new DefinitionVerifier(authoritative);
+            verifier = new DefinitionVerifier(authoritative, locale);
             if (similarity != 0) {
                 /*
                  * Warning message (from Resources.properties):

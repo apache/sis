@@ -160,6 +160,24 @@ public final class ReferencingUtilities extends Static {
 
     /**
      * Returns the GeoAPI interface implemented by the given object, or the implementation class
+     * if the interface is unknown. This method can be used when the base type (CRS, CS, Datum…)
+     * is unknown, for example when preparing an error message. If the base type is known, then
+     * the method expecting a {@code baseType} argument should be preferred.
+     *
+     * @param  object    the object for which to get the GeoAPI interface, or {@code null}.
+     * @return GeoAPI interface or implementation class of the given object, or {@code null} if the given object is null.
+     */
+    @SuppressWarnings("unchecked")
+    public static Class<?> getInterface(final Object object) {
+        if (object instanceof AbstractIdentifiedObject) {
+            return ((AbstractIdentifiedObject) object).getInterface();
+        } else {
+            return getInterface(IdentifiedObject.class, (Class) Classes.getClass(object));
+        }
+    }
+
+    /**
+     * Returns the GeoAPI interface implemented by the given object, or the implementation class
      * if the interface is unknown.
      *
      * @param  <T>       compile-time value of {@code baseType}.
@@ -169,9 +187,9 @@ public final class ReferencingUtilities extends Static {
      */
     public static <T extends IdentifiedObject> Class<? extends T> getInterface(final Class<T> baseType, final T object) {
         if (object instanceof AbstractIdentifiedObject) {
-             return ((AbstractIdentifiedObject) object).getInterface().asSubclass(baseType);
+            return ((AbstractIdentifiedObject) object).getInterface().asSubclass(baseType);
         } else {
-             return getInterface(baseType, Classes.getClass(object));
+            return getInterface(baseType, Classes.getClass(object));
         }
     }
 

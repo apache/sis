@@ -133,7 +133,8 @@ public final class StoreFormat extends WKTFormat {
             log(new LogRecord(Level.WARNING, warnings.toString()));
         }
         if (parsed instanceof CoordinateReferenceSystem) try {
-            final DefinitionVerifier v = DefinitionVerifier.withAuthority((CoordinateReferenceSystem) parsed, null, false);
+            final DefinitionVerifier v = DefinitionVerifier.withAuthority(
+                    (CoordinateReferenceSystem) parsed, null, false, getLocale());
             if (v != null) {
                 final LogRecord warning = v.warning(false);
                 if (warning != null) log(warning);
