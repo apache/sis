@@ -340,10 +340,12 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
             if ((kmax | jmax) < 0) {
                 return null;                            // Can not provide the requested number of dimensions.
             }
-            if (jmax >= Long.SIZE) {
-                throw GridGeometry.excessiveDimension(gridToCRS);
+            if (max > 0) {                              // Dimensions are independent if scale factor is zero.
+                if (jmax >= Long.SIZE) {
+                    throw GridGeometry.excessiveDimension(gridToCRS);
+                }
+                selected |= (1L << jmax);
             }
-            selected |= (1L << jmax);
             gridDimensions = ArraysExt.remove(gridDimensions, kmax, 1);
         }
         /*

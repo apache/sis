@@ -530,6 +530,13 @@ public final strictfp class GridGeometryTest extends TestCase {
         assertArrayEquals("resolution", new double[] {0.5, 0.5}, reduced.getResolution(false), STRICT);
         assertTrue("isConversionLinear", reduced.isConversionLinear(0, 1));
         verifyGridToCRS(reduced);
+        /*
+         * Test again by keeping the dimension without scale instead of discarding it.
+         * We have to skip `verifyGridToCRS(reduced)` because matrix is non-invertible.
+         */
+        reduced = grid.reduce(2);
+        tr = reduced.getGridToCRS(PixelInCell.CELL_CORNER);
+        assertMatrixEquals("gridToCRS", new Matrix2(0, 3, 0, 1), MathTransforms.getMatrix(tr), STRICT);
     }
 
     /**
