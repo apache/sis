@@ -60,7 +60,7 @@ import org.opengis.feature.Feature;
 public abstract class Query {
     /*
      * Current version does not yet contain any field. But some fields may be added in the future.
-     * For example some methods from org.apache.sis.internal.storage.query.SimpleQuery may move here.
+     * For example some methods from org.apache.sis.internal.storage.query.FeatureQuery may move here.
      * We use an abstract class instead than an interface for that reason.
      */
 

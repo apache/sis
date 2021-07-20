@@ -35,14 +35,14 @@ import org.opengis.filter.SortProperty;
 
 
 /**
- * The result of {@link SimpleQuery#execute(FeatureSet)} executed using Java {@link Stream} methods.
+ * The result of {@link FeatureQuery#execute(FeatureSet)} executed using Java {@link Stream} methods.
  * Queries executed by this class do not benefit from accelerations provided for example by databases.
  * This class should be used only as a fallback when the query can not be executed natively by
  * {@link FeatureSet#subset(Query)}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -55,7 +55,7 @@ final class FeatureSubset extends AbstractFeatureSet {
     /**
      * The query for filtering the source set of features.
      */
-    private final SimpleQuery query;
+    private final FeatureQuery query;
 
     /**
      * The type of features in this set. May or may not be the same as {@link #source}.
@@ -66,7 +66,7 @@ final class FeatureSubset extends AbstractFeatureSet {
     /**
      * Creates a new set of features by filtering the given set using the given query.
      */
-    FeatureSubset(final FeatureSet source, final SimpleQuery query) {
+    FeatureSubset(final FeatureSet source, final FeatureQuery query) {
         super(source instanceof StoreListeners ? (StoreListeners) source : null);
         this.source = source;
         this.query = query;
@@ -98,9 +98,9 @@ final class FeatureSubset extends AbstractFeatureSet {
         /*
          * Apply filter.
          */
-        final Filter filter = query.getFilter();
-        if (!Filter.include().equals(filter)) {
-            stream = stream.filter(filter::test);
+        final Filter<? super Feature> selection = query.getSelection();
+        if (!Filter.include().equals(selection)) {
+            stream = stream.filter(selection::test);
         }
         /*
          * Apply sorting.
@@ -125,12 +125,14 @@ final class FeatureSubset extends AbstractFeatureSet {
         }
         /*
          * Transform feature instances.
+         * Note: "projection" here is in relational database sense, not map projection.
          */
-        final List<SimpleQuery.Column> columns = query.getColumns();
-        if (columns != null) {
-            final Expression[] expressions = new Expression[columns.size()];
+        final List<FeatureQuery.NamedExpression> projection = query.getProjection();
+        if (projection != null) {
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            final Expression<? super Feature, ?>[] expressions = new Expression[projection.size()];
             for (int i=0; i<expressions.length; i++) {
-                expressions[i] = columns.get(i).expression;
+                expressions[i] = projection.get(i).expression;
             }
             final FeatureType type = getType();
             final String[] names = FeatureUtilities.getNames(type.getProperties(false));

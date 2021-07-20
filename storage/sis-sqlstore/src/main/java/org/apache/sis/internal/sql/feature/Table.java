@@ -40,7 +40,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
-import org.apache.sis.internal.storage.query.SimpleQuery;
+import org.apache.sis.internal.storage.query.FeatureQuery;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.InternalDataStoreException;
@@ -205,9 +205,9 @@ final class Table extends AbstractFeatureSet {
 
     @Override
     public FeatureSet subset(Query query) throws DataStoreException {
-        if (query instanceof SimpleQuery) {
+        if (query instanceof FeatureQuery) {
             final SubsetAdapter subsetAdapter = new SubsetAdapter(fs -> new SQLQueryAdapter.Table(this));
-            return subsetAdapter.subset(this, (SimpleQuery) query);
+            return subsetAdapter.subset(this, (FeatureQuery) query);
         }
 
         return super.subset(query);

@@ -43,7 +43,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.internal.storage.query.SimpleQuery;
+import org.apache.sis.internal.storage.query.FeatureQuery;
 import org.apache.sis.portrayal.MapItem;
 import org.apache.sis.portrayal.MapLayer;
 import org.apache.sis.portrayal.MapLayers;
@@ -367,10 +367,10 @@ public final class SEPortrayer {
      * Creates an optimal query to send to the Featureset, knowing which properties are knowned and
      * the appropriate bounding box to filter.
      */
-    private SimpleQuery prepareQuery(GridGeometry canvas, FeatureSet fs, Set<String> requiredProperties,
+    private FeatureQuery prepareQuery(GridGeometry canvas, FeatureSet fs, Set<String> requiredProperties,
             List<Rule> rules, double symbolsMargin) throws DataStoreException, TransformException
     {
-        final SimpleQuery query = new SimpleQuery();
+        final FeatureQuery query = new FeatureQuery();
         final FeatureType schema = fs.getType();
         /*
          * Check if some used properties are not part of the type.
@@ -414,11 +414,11 @@ public final class SEPortrayer {
         }
         if (geomProperties.isEmpty()) {
             // No geometry selected for rendering.
-            query.setFilter(Filter.exclude());
+            query.setSelection(Filter.exclude());
             return query;
         }
         final Envelope bbox = optimizeBBox(canvas, symbolsMargin);
-        Filter<?> filter;
+        Filter<? super Feature> filter;
         // Make a bbox filter.
         if (geomProperties.size() == 1) {
             final Expression<Feature,?> geomExp = geomProperties.iterator().next();
@@ -472,7 +472,7 @@ public final class SEPortrayer {
                 filter = combined;
             }
         }
-        query.setFilter(filter);
+        query.setSelection(filter);
         /*
          * Reduce requiered attributes.
          */
@@ -499,11 +499,11 @@ public final class SEPortrayer {
             } catch (PropertyNotFoundException ex) {
                 // No id, ignore it.
             }
-            final List<SimpleQuery.Column> columns = new ArrayList<>();
+            final List<FeatureQuery.NamedExpression> columns = new ArrayList<>();
             for (String propName : copy) {
-                columns.add(new SimpleQuery.Column(filterFactory.property(propName), propName));
+                columns.add(new FeatureQuery.NamedExpression(filterFactory.property(propName), propName));
             }
-            query.setColumns(columns.toArray(new SimpleQuery.Column[columns.size()]));
+            query.setProjection(columns.toArray(new FeatureQuery.NamedExpression[columns.size()]));
         }
         //TODO optimize filter
         //TODO add linear resolution

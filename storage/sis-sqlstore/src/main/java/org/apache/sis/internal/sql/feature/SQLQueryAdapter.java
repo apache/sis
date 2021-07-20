@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.apache.sis.internal.metadata.sql.Dialect;
-import org.apache.sis.internal.storage.query.SimpleQuery;
+import org.apache.sis.internal.storage.query.FeatureQuery;
 import org.apache.sis.storage.FeatureSet;
 
 // Branch-dependent imports
@@ -102,7 +102,7 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
     }
 
     @Override
-    public boolean select(List<SimpleQuery.Column> columns) {
+    public boolean select(List<FeatureQuery.NamedExpression> columns) {
         /* We've got a lot of trouble with current column API. It defines an expression and an alias, which allow to
          * infer output property type. However, it's very difficult with current methods to infer source columns used
          * for building output. Note that we could check if column expression is a property name or a literal, but if

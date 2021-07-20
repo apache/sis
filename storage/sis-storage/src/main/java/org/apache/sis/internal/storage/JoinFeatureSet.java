@@ -29,7 +29,7 @@ import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;
 import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.internal.storage.query.SimpleQuery;
+import org.apache.sis.internal.storage.query.FeatureQuery;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
@@ -485,8 +485,8 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
             } else {
                 filter = factory.isNull(expression2);
             }
-            final SimpleQuery query = new SimpleQuery();
-            query.setFilter(filter);
+            final FeatureQuery query = new FeatureQuery();
+            query.setSelection(filter);
             try {
                 filteredStream = filteredSet.subset(query).features(false);
             } catch (DataStoreException e) {

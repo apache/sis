@@ -34,7 +34,7 @@ import org.opengis.feature.FeatureType;
 
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
-import org.apache.sis.internal.storage.query.SimpleQuery;
+import org.apache.sis.internal.storage.query.FeatureQuery;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
@@ -208,9 +208,9 @@ public class QueryFeatureSet extends AbstractFeatureSet {
 
     @Override
     public FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
-        if (query instanceof SimpleQuery) {
+        if (query instanceof FeatureQuery) {
             final org.apache.sis.internal.sql.feature.SubsetAdapter subsetAdapter = new org.apache.sis.internal.sql.feature.SubsetAdapter(fs -> new SubsetAdapter());
-            return subsetAdapter.subset(this, (SimpleQuery) query);
+            return subsetAdapter.subset(this, (FeatureQuery) query);
         }
 
         return super.subset(query);

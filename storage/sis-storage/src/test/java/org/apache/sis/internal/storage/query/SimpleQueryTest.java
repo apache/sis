@@ -42,7 +42,7 @@ import org.opengis.filter.SortOrder;
 
 
 /**
- * Tests {@link SimpleQuery} and (indirectly) {@link FeatureSubset}.
+ * Tests {@link FeatureQuery} and (indirectly) {@link FeatureSubset}.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
@@ -63,7 +63,7 @@ public final strictfp class SimpleQueryTest extends TestCase {
     /**
      * The query to be executed.
      */
-    private final SimpleQuery query;
+    private final FeatureQuery query;
 
     /**
      * Creates a new test.
@@ -82,7 +82,7 @@ public final strictfp class SimpleQueryTest extends TestCase {
             feature(type, 4, 1)
         };
         featureSet = new MemoryFeatureSet(null, type, Arrays.asList(features));
-        query      = new SimpleQuery();
+        query      = new FeatureQuery();
     }
 
     private static Feature feature(final FeatureType type, final int value1, final int value2) {
@@ -114,7 +114,7 @@ public final strictfp class SimpleQueryTest extends TestCase {
     }
 
     /**
-     * Verifies the effect of {@link SimpleQuery#setLimit(long)}.
+     * Verifies the effect of {@link FeatureQuery#setLimit(long)}.
      *
      * @throws DataStoreException if an error occurred while executing the query.
      */
@@ -125,7 +125,7 @@ public final strictfp class SimpleQueryTest extends TestCase {
     }
 
     /**
-     * Verifies the effect of {@link SimpleQuery#setOffset(long)}.
+     * Verifies the effect of {@link FeatureQuery#setOffset(long)}.
      *
      * @throws DataStoreException if an error occurred while executing the query.
      */
@@ -136,7 +136,7 @@ public final strictfp class SimpleQueryTest extends TestCase {
     }
 
     /**
-     * Verifies the effect of {@link SimpleQuery#setSortBy(SortBy...)}.
+     * Verifies the effect of {@link FeatureQuery#setSortBy(SortBy[])}.
      *
      * @throws DataStoreException if an error occurred while executing the query.
      */
@@ -149,29 +149,29 @@ public final strictfp class SimpleQueryTest extends TestCase {
     }
 
     /**
-     * Verifies the effect of {@link SimpleQuery#setFilter(Filter)}.
+     * Verifies the effect of {@link FeatureQuery#setSelection(Filter)}.
      *
      * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
     public void testFilter() throws DataStoreException {
         final FilterFactory<Feature,?,?> factory = DefaultFilterFactory.forFeatures();
-        query.setFilter(factory.equal(factory.property("value1", Integer.class),
+        query.setSelection(factory.equal(factory.property("value1", Integer.class),
                                       factory.literal(2), true, MatchAction.ALL));
         verifyQueryResult(1, 2);
     }
 
     /**
-     * Verifies the effect of {@link SimpleQuery#setColumns(SimpleQuery.Column...)}.
+     * Verifies the effect of {@link FeatureQuery#setProjection(FeatureQuery.Column[])}.
      *
      * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
     public void testColumns() throws DataStoreException {
         final FilterFactory<Feature,?,?> factory = DefaultFilterFactory.forFeatures();
-        query.setColumns(new SimpleQuery.Column(factory.property("value1", Integer.class), (String) null),
-                         new SimpleQuery.Column(factory.property("value1", Integer.class), "renamed1"),
-                         new SimpleQuery.Column(factory.literal("a literal"), "computed"));
+        query.setProjection(new FeatureQuery.NamedExpression(factory.property("value1", Integer.class), (String) null),
+                            new FeatureQuery.NamedExpression(factory.property("value1", Integer.class), "renamed1"),
+                            new FeatureQuery.NamedExpression(factory.literal("a literal"), "computed"));
         query.setLimit(1);
 
         final FeatureSet fs = query.execute(featureSet);

@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import org.apache.sis.internal.storage.query.SimpleQuery;
+import org.apache.sis.internal.storage.query.FeatureQuery;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
 
@@ -47,57 +47,57 @@ final class SubsetAdapter {
         this.driverSupplier = driverSupplier;
     }
 
-    public final FeatureSet subset(final FeatureSet source, SimpleQuery query) {
+    public final FeatureSet subset(final FeatureSet source, FeatureQuery query) {
         final AdapterBuilder driver = driverSupplier.apply(source);
-        final SimpleQuery remaining = new SimpleQuery();
+        final FeatureQuery remaining = new FeatureQuery();
         final long offset = query.getOffset();
         if (offset > 0) {
             remaining.setOffset(driver.offset(offset));
         }
         final long limit = query.getLimit();
-        if (limit != SimpleQuery.UNLIMITED) {
+        if (limit != FeatureQuery.UNLIMITED) {
             remaining.setLimit(driver.limit(limit));
         }
         if (filteringRequired(query)) {
-            final Filter baseFilter = query.getFilter();
+            final Filter baseFilter = query.getSelection();
             try {
                 final Filter remainingFilter = driver.filter(baseFilter);
-                remaining.setFilter(remainingFilter);
+                remaining.setSelection(remainingFilter);
             } catch (UnsupportedOperationException e) {
-                remaining.setFilter(baseFilter);
+                remaining.setSelection(baseFilter);
             }
         }
         if (sortRequired(query) && !driver.sort(query.getSortBy())) {
             remaining.setSortBy(query.getSortBy());
         }
-        if (!allColumnsIncluded(query) && !driver.select(query.getColumns())) {
-            List<SimpleQuery.Column> columns = query.getColumns();
-            remaining.setColumns(columns != null ? columns.toArray(new SimpleQuery.Column[columns.size()]) : null);
+        if (!allColumnsIncluded(query) && !driver.select(query.getProjection())) {
+            List<FeatureQuery.NamedExpression> columns = query.getProjection();
+            remaining.setProjection(columns != null ? columns.toArray(new FeatureQuery.NamedExpression[columns.size()]) : null);
         }
         final FeatureSet driverSubset = driver.build().orElse(source);
         return isNoOp(remaining) ? driverSubset : remaining.execute(driverSubset);
     }
 
-    protected static final boolean isNoOp(final SimpleQuery in) {
+    protected static final boolean isNoOp(final FeatureQuery in) {
         return in.getOffset() <= 0
-                && in.getLimit() == SimpleQuery.UNLIMITED
+                && in.getLimit() == FeatureQuery.UNLIMITED
                 && allColumnsIncluded(in)
                 && !filteringRequired(in)
                 && !sortRequired(in);
     }
 
-    protected static final boolean sortRequired(final SimpleQuery in) {
+    protected static final boolean sortRequired(final FeatureQuery in) {
         final SortProperty[] sortBy = in.getSortBy();
         return sortBy != null && sortBy.length > 0 && Arrays.stream(sortBy).anyMatch(Objects::nonNull);
     }
 
-    protected static final boolean allColumnsIncluded(final SimpleQuery in) {
-        final List<SimpleQuery.Column> cols = in.getColumns();
+    protected static final boolean allColumnsIncluded(final FeatureQuery in) {
+        final List<FeatureQuery.NamedExpression> cols = in.getProjection();
         return cols == null || cols.isEmpty();
     }
 
-    protected static final boolean filteringRequired(SimpleQuery in) {
-        final Filter filter = in.getFilter();
+    protected static final boolean filteringRequired(FeatureQuery in) {
+        final Filter filter = in.getSelection();
         return filter != Filter.include();
     }
 
@@ -121,7 +121,7 @@ final class SubsetAdapter {
          * Set a maximum number of elements to retrieve from custom query.
          *
          * @param limit The count of features to handle.
-         * @return {@link SimpleQuery#UNLIMITED} if this builder can handle completely given limit. The input value if
+         * @return {@link FeatureQuery#UNLIMITED} if this builder can handle completely given limit. The input value if
          * underlying driver cannot do it itself, or must be stacked with default query system. Imagine the case of a
          * partitioned storage, Maybe the driver can load entire chunks of data, and let default implementation cut last
          * returned chunk. For example, in a storage where features are chunked 10 by 10, when querying a limit of 12,
@@ -148,9 +148,9 @@ final class SubsetAdapter {
         /**
          * Submit a sort subquery to the driver.
          *
-         * @param comparison The columns to sort, as specified in {{@link SimpleQuery#getSortBy()}}.
+         * @param comparison The columns to sort, as specified in {{@link FeatureQuery#getSortBy()}}.
          * @return True if driver handles the comparison. If false, it means that driver won't perform any sort, and the
-         * default implementation (i.e {@link SimpleQuery} must handle it.
+         * default implementation (i.e {@link FeatureQuery} must handle it.
          */
         boolean sort(final SortProperty[] comparison);
 
@@ -162,7 +162,7 @@ final class SubsetAdapter {
          * selection won't be done, or only partially, and a fallback filter must be applied over driver feature set to
          * ensure proper selection.
          */
-        boolean select(List<SimpleQuery.Column> columns);
+        boolean select(List<FeatureQuery.NamedExpression> columns);
 
         /**
          * Take a snapshot of all parameters given to query adaptation.

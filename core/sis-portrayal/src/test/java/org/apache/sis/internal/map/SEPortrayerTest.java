@@ -35,7 +35,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
-import org.apache.sis.internal.storage.query.SimpleQuery;
+import org.apache.sis.internal.storage.query.FeatureQuery;
 import org.apache.sis.portrayal.MapItem;
 import org.apache.sis.portrayal.MapLayer;
 import org.apache.sis.portrayal.MapLayers;
@@ -260,8 +260,8 @@ public class SEPortrayerTest extends TestCase {
         final Filter<Feature> filter = filterFactory.or(
                 filterFactory.resourceId("1"),
                 filterFactory.resourceId("20"));
-        final SimpleQuery query = new SimpleQuery();
-        query.setFilter(filter);
+        final FeatureQuery query = new FeatureQuery();
+        query.setSelection(filter);
 
         final MapLayer fishLayer = new MapLayer();
         fishLayer.setData(fishes);

@@ -37,6 +37,7 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.Names;
 
 // Branch-dependent imports
+import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;
@@ -53,10 +54,8 @@ import org.opengis.filter.InvalidFilterValueException;
  * @version 1.1
  * @since   1.0
  * @module
- *
- * @todo Rename {@code FeatureQuery}, then replace {@code Filter<?>} by {@code Filter<Feature>}.
  */
-public class SimpleQuery extends Query implements Cloneable {
+public class FeatureQuery extends Query implements Cloneable {
     /**
      * Sentinel limit value for queries of unlimited length.
      * This value can be given to {@link #setLimit(long)} or retrieved from {@link #getLimit()}.
@@ -69,23 +68,27 @@ public class SimpleQuery extends Query implements Cloneable {
     private static final SortProperty[] UNSORTED = new SortProperty[0];
 
     /**
-     * The columns to retrieve, or {@code null} if all columns shall be included in the query.
+     * The properties to retrieve, or {@code null} if all properties shall be included in the query.
+     * In a database, "properties" are table columns.
+     * Subset of columns is called <cite>projection</cite> in relational database terminology.
      *
-     * @see #getColumns()
-     * @see #setColumns(Column...)
+     * @see #getProjection()
+     * @see #setProjection(NamedExpression[])
      */
-    private Column[] columns;
+    private NamedExpression[] projection;
 
     /**
      * The filter for trimming feature instances.
+     * In a database, "feature instances" are table rows.
+     * Subset of rows is called <cite>selection</cite> in relational database terminology.
      *
-     * @see #getFilter()
-     * @see #setFilter(Filter)
+     * @see #getSelection()
+     * @see #setSelection(Filter)
      */
-    private Filter<?> filter;
+    private Filter<? super Feature> selection;
 
     /**
-     * The number of records to skip from the beginning.
+     * The number of feature instances to skip from the beginning.
      *
      * @see #getOffset()
      * @see #setOffset(long)
@@ -94,7 +97,7 @@ public class SimpleQuery extends Query implements Cloneable {
     private long skip;
 
     /**
-     * The maximum number of records contained in the {@code FeatureSet}.
+     * The maximum number of feature instances contained in the {@code FeatureSet}.
      *
      * @see #getLimit()
      * @see #setLimit(long)
@@ -121,32 +124,34 @@ public class SimpleQuery extends Query implements Cloneable {
     private Quantity<Length> linearResolution;
 
     /**
-     * Creates a new query retrieving no column and applying no filter.
+     * Creates a new query retrieving no property and applying no filter.
      */
-    public SimpleQuery() {
-        filter = Filter.include();
+    public FeatureQuery() {
+        selection = Filter.include();
         sortBy = UNSORTED;
         limit  = UNLIMITED;
     }
 
     /**
-     * Sets the columns to retrieve, or {@code null} if all columns shall be included in the query.
-     * A query column may use a simple or complex expression and an alias to create a new type of
-     * property in the returned features.
-     * This is equivalent to the column names in the {@code SELECT} clause of a SQL statement.
+     * Sets the properties to retrieve, or {@code null} if all properties shall be included in the query.
+     * A query column may use a simple or complex expression and an alias to create a new type of property
+     * in the returned features.
      *
-     * @param  columns  columns to retrieve, or {@code null} to retrieve all properties.
-     * @throws IllegalArgumentException if a column or an alias is duplicated.
+     * <p>This is equivalent to the column names in the {@code SELECT} clause of a SQL statement.
+     * Subset of columns is called <cite>projection</cite> in relational database terminology.</p>
+     *
+     * @param  projection  properties to retrieve, or {@code null} to retrieve all properties.
+     * @throws IllegalArgumentException if a property or an alias is duplicated.
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-    public void setColumns(Column... columns) {
-        if (columns != null) {
-            ArgumentChecks.ensureNonEmpty("columns", columns);
-            columns = columns.clone();
-            final Map<Object,Integer> uniques = new LinkedHashMap<>(Containers.hashMapCapacity(columns.length));
-            for (int i=0; i<columns.length; i++) {
-                final Column c = columns[i];
-                ArgumentChecks.ensureNonNullElement("columns", i, c);
+    public void setProjection(NamedExpression... projection) {
+        if (projection != null) {
+            ArgumentChecks.ensureNonEmpty("projection", projection);
+            projection = projection.clone();
+            final Map<Object,Integer> uniques = new LinkedHashMap<>(Containers.hashMapCapacity(projection.length));
+            for (int i=0; i<projection.length; i++) {
+                final NamedExpression c = projection[i];
+                ArgumentChecks.ensureNonNullElement("projection", i, c);
                 final Object key = c.alias != null ? c.alias : c.expression;
                 final Integer p = uniques.putIfAbsent(key, i);
                 if (p != null) {
@@ -154,17 +159,17 @@ public class SimpleQuery extends Query implements Cloneable {
                 }
             }
         }
-        this.columns = columns;
+        this.projection = projection;
     }
 
     /**
-     * Returns the columns to retrieve, or {@code null} if all columns shall be included in the query.
-     * This is the columns specified in the last call to {@link #setColumns(Column...)}.
+     * Returns the properties to retrieve, or {@code null} if all properties shall be included in the query.
+     * This is the list of expressions specified in the last call to {@link #setProjection(NamedExpression[])}.
      *
-     * @return columns to retrieve, or {@code null} to retrieve all feature properties.
+     * @return properties to retrieve, or {@code null} to retrieve all feature properties.
      */
-    public List<Column> getColumns() {
-        return UnmodifiableArrayList.wrap(columns);
+    public List<NamedExpression> getProjection() {
+        return UnmodifiableArrayList.wrap(projection);
     }
 
     /**
@@ -172,32 +177,32 @@ public class SimpleQuery extends Query implements Cloneable {
      * Features that do not pass the filter are discarded.
      * Discarded features are not counted for the {@linkplain #setLimit(long) query limit}.
      *
-     * @param  filter  the filter, or {@link Filter#include()} if none.
+     * @param  selection  the filter, or {@link Filter#include()} if none.
      */
-    public void setFilter(final Filter<?> filter) {
-        ArgumentChecks.ensureNonNull("filter", filter);
-        this.filter = filter;
+    public void setSelection(final Filter<? super Feature> selection) {
+        ArgumentChecks.ensureNonNull("selection", selection);
+        this.selection = selection;
     }
 
     /**
      * Returns the filter for trimming feature instances.
-     * This is the value specified in the last call to {@link #setFilter(Filter)}.
+     * This is the value specified in the last call to {@link #setSelection(Filter)}.
      *
      * @return the filter, or {@link Filter#include()} if none.
      */
-    public Filter<?> getFilter() {
-        return filter;
+    public Filter<? super Feature> getSelection() {
+        return selection;
     }
 
     /**
-     * Sets the number of records to skip from the beginning.
+     * Sets the number of feature instances to skip from the beginning.
      * Offset and limit are often combined to obtain paging.
      * The offset can not be negative.
      *
      * <p>Note that setting this property can be costly on parallelized streams.
      * See {@link java.util.stream.Stream#skip(long)} for more information.</p>
      *
-     * @param  skip  the number of records to skip from the beginning.
+     * @param  skip  the number of feature instances to skip from the beginning.
      */
     public void setOffset(final long skip) {
         ArgumentChecks.ensurePositive("skip", skip);
@@ -205,23 +210,23 @@ public class SimpleQuery extends Query implements Cloneable {
     }
 
     /**
-     * Returns the number of records to skip from the beginning.
+     * Returns the number of feature instances to skip from the beginning.
      * This is the value specified in the last call to {@link #setOffset(long)}.
      *
-     * @return the number of records to skip from the beginning.
+     * @return the number of feature instances to skip from the beginning.
      */
     public long getOffset() {
         return skip;
     }
 
     /**
-     * Set the maximum number of records contained in the {@code FeatureSet}.
+     * Set the maximum number of feature instances contained in the {@code FeatureSet}.
      * Offset and limit are often combined to obtain paging.
      *
      * <p>Note that setting this property can be costly on parallelized streams.
      * See {@link java.util.stream.Stream#limit(long)} for more information.</p>
      *
-     * @param  limit  maximum number of records contained in the {@code FeatureSet}, or {@link #UNLIMITED}.
+     * @param  limit  maximum number of feature instances contained in the {@code FeatureSet}, or {@link #UNLIMITED}.
      */
     public void setLimit(final long limit) {
         if (limit != UNLIMITED) {
@@ -231,10 +236,10 @@ public class SimpleQuery extends Query implements Cloneable {
     }
 
     /**
-     * Returns the maximum number of records contained in the {@code FeatureSet}.
+     * Returns the maximum number of feature instances contained in the {@code FeatureSet}.
      * This is the value specified in the last call to {@link #setLimit(long)}.
      *
-     * @return maximum number of records contained in the {@code FeatureSet}, or {@link #UNLIMITED}.
+     * @return maximum number of feature instances contained in the {@code FeatureSet}, or {@link #UNLIMITED}.
      */
     public long getLimit() {
         return limit;
@@ -292,14 +297,15 @@ public class SimpleQuery extends Query implements Cloneable {
     }
 
     /**
-     * A property or expression to be retrieved by a {@code Query}, together with the name to assign to it.
-     * Columns can be given to the {@link SimpleQuery#setColumns(Column...)} method.
+     * An expression to be retrieved by a {@code Query}, together with the name to assign to it.
+     * In relational database terminology, subset of columns is called <cite>projection</cite>.
+     * Columns can be given to the {@link FeatureQuery#setProjection(NamedExpression[])} method.
      */
-    public static class Column {
+    public static class NamedExpression {
         /**
-         * The literal, property name or more complex expression to be retrieved by a {@code Query}.
+         * The literal, value reference or more complex expression to be retrieved by a {@code Query}.
          */
-        public final Expression<?,?> expression;
+        public final Expression<? super Feature, ?> expression;
 
         /**
          * The name to assign to the expression result, or {@code null} if unspecified.
@@ -309,9 +315,9 @@ public class SimpleQuery extends Query implements Cloneable {
         /**
          * Creates a new column with the given expression and no name.
          *
-         * @param expression  the literal, property name or expression to be retrieved by a {@code Query}.
+         * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
          */
-        public Column(final Expression<?,?> expression) {
+        public NamedExpression(final Expression<? super Feature, ?> expression) {
             ArgumentChecks.ensureNonNull("expression", expression);
             this.expression = expression;
             this.alias = null;
@@ -320,10 +326,10 @@ public class SimpleQuery extends Query implements Cloneable {
         /**
          * Creates a new column with the given expression and the given name.
          *
-         * @param expression  the literal, property name or expression to be retrieved by a {@code Query}.
+         * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
          * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
          */
-        public Column(final Expression<?,?> expression, final GenericName alias) {
+        public NamedExpression(final Expression<? super Feature, ?> expression, final GenericName alias) {
             ArgumentChecks.ensureNonNull("expression", expression);
             this.expression = expression;
             this.alias = alias;
@@ -333,10 +339,10 @@ public class SimpleQuery extends Query implements Cloneable {
          * Creates a new column with the given expression and the given name.
          * This constructor creates a {@link org.opengis.util.LocalName} from the given string.
          *
-         * @param expression  the literal, property name or expression to be retrieved by a {@code Query}.
+         * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
          * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
          */
-        public Column(final Expression<?,?> expression, final String alias) {
+        public NamedExpression(final Expression<? super Feature, ?> expression, final String alias) {
             ArgumentChecks.ensureNonNull("expression", expression);
             this.expression = expression;
             this.alias = (alias != null) ? Names.createLocalName(null, null, alias) : null;
@@ -353,7 +359,7 @@ public class SimpleQuery extends Query implements Cloneable {
          * @throws InvalidFilterValueException if this method can not determine the result type of the expression
          *         in this column. It may be because that expression is backed by an unsupported implementation.
          *
-         * @see SimpleQuery#expectedType(FeatureType)
+         * @see FeatureQuery#expectedType(FeatureType)
          */
         final void expectedType(final int column, final FeatureType valueType, final FeatureTypeBuilder addTo) {
             final PropertyTypeBuilder resultType = FeatureExpression.expectedType(expression, valueType, addTo);
@@ -388,7 +394,7 @@ public class SimpleQuery extends Query implements Cloneable {
                 return true;
             }
             if (obj != null && getClass() == obj.getClass()) {
-                final Column other = (Column) obj;
+                final NamedExpression other = (NamedExpression) obj;
                 return expression.equals(other.expression) && Objects.equals(alias, other.alias);
             }
             return false;
@@ -446,12 +452,12 @@ public class SimpleQuery extends Query implements Cloneable {
      *         in this query. It may be because that expression is backed by an unsupported implementation.
      */
     final FeatureType expectedType(final FeatureType valueType) {
-        if (columns == null) {
+        if (projection == null) {
             return valueType;           // All columns included: result is of the same type.
         }
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName(valueType.getName());
-        for (int i=0; i<columns.length; i++) {
-            columns[i].expectedType(i, valueType, ftb);
+        for (int i=0; i<projection.length; i++) {
+            projection[i].expectedType(i, valueType, ftb);
         }
         return ftb.build();
     }
@@ -462,13 +468,13 @@ public class SimpleQuery extends Query implements Cloneable {
      * @return a clone of this query.
      */
     @Override
-    public SimpleQuery clone() {
+    public FeatureQuery clone() {
         /*
          * Implementation note: no need to clone the arrays. It is safe to share the same array instances
          * because this class does not modify them and does not return them directly to the user.
          */
         try {
-            return (SimpleQuery) super.clone();
+            return (FeatureQuery) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         }
@@ -481,7 +487,7 @@ public class SimpleQuery extends Query implements Cloneable {
      */
     @Override
     public int hashCode() {
-        return 97 * Arrays.hashCode(columns) + 31 * filter.hashCode()
+        return 97 * Arrays.hashCode(projection) + 31 * selection.hashCode()
               + 7 * Arrays.hashCode(sortBy) + Long.hashCode(limit ^ skip)
               + 3 * Objects.hashCode(linearResolution);
     }
@@ -498,11 +504,11 @@ public class SimpleQuery extends Query implements Cloneable {
             return true;
         }
         if (obj != null && getClass() == obj.getClass()) {
-            final SimpleQuery other = (SimpleQuery) obj;
+            final FeatureQuery other = (FeatureQuery) obj;
             return skip  == other.skip &&
                    limit == other.limit &&
-                   filter.equals(other.filter) &&
-                   Arrays.equals(columns, other.columns) &&
+                   selection.equals(other.selection) &&
+                   Arrays.equals(projection, other.projection) &&
                    Arrays.equals(sortBy,  other.sortBy)  &&
                    Objects.equals(linearResolution, other.linearResolution);
         }
@@ -518,16 +524,16 @@ public class SimpleQuery extends Query implements Cloneable {
     public String toString() {
         final StringBuilder sb = new StringBuilder(80);
         sb.append("SELECT ");
-        if (columns != null) {
-            for (int i=0; i<columns.length; i++) {
+        if (projection != null) {
+            for (int i=0; i<projection.length; i++) {
                 if (i != 0) sb.append(", ");
-                columns[i].appendTo(sb);
+                projection[i].appendTo(sb);
             }
         } else {
             sb.append('*');
         }
-        if (filter != Filter.include()) {
-            sb.append(" WHERE ").append(filter);
+        if (selection != Filter.include()) {
+            sb.append(" WHERE ").append(selection);
         }
         if (sortBy != UNSORTED) {
             sb.append(" ORDER BY ");

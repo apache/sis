@@ -38,7 +38,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.sql.feature.QueryFeatureSet;
-import org.apache.sis.internal.storage.query.SimpleQuery;
+import org.apache.sis.internal.storage.query.FeatureQuery;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
@@ -183,8 +183,8 @@ public final strictfp class SQLStoreTest extends TestCase {
 
     private void verifySimpleQuerySorting(SQLStore dataset) throws DataStoreException {
         final FeatureSet parks = (FeatureSet) dataset.findResource("Parks");
-        final SimpleQuery query = new SimpleQuery();
-        query.setColumns(new SimpleQuery.Column(FF.property("english_name")));
+        final FeatureQuery query = new FeatureQuery();
+        query.setProjection(new FeatureQuery.NamedExpression(FF.property("english_name")));
         query.setSortBy(
                 FF.sort(FF.property("country"), SortOrder.DESCENDING),
                 FF.sort(FF.property("english_name"), SortOrder.ASCENDING)
@@ -207,9 +207,9 @@ public final strictfp class SQLStoreTest extends TestCase {
     }
 
     private void verifySimpleWhere(SQLStore dataset) throws Exception {
-        final SimpleQuery q = new SimpleQuery();
+        final FeatureQuery q = new FeatureQuery();
         q.setSortBy(FF.sort(FF.property("native_name"), SortOrder.ASCENDING));
-        q.setFilter(FF.equal(FF.property("country"), FF.literal("CAN")));
+        q.setSelection(FF.equal(FF.property("country"), FF.literal("CAN")));
         final FeatureSet cities = (FeatureSet) dataset.findResource("Cities");
         final Object[] names;
         try (Stream<Feature> features = cities.subset(q).features(false)) {
@@ -237,10 +237,10 @@ public final strictfp class SQLStoreTest extends TestCase {
             qfs = new QueryFeatureSet("SELECT * FROM features.\"Parks\"", source, c);
         }
 
-        final SimpleQuery sq = new SimpleQuery();
+        final FeatureQuery sq = new FeatureQuery();
         sq.setSortBy(FF.sort(FF.property("native_name"), SortOrder.DESCENDING));
-        sq.setFilter(FF.equal(FF.property("country"), FF.literal("FRA")));
-        sq.setColumns(new SimpleQuery.Column(FF.property("native_name")));
+        sq.setSelection(FF.equal(FF.property("country"), FF.literal("FRA")));
+        sq.setProjection(new FeatureQuery.NamedExpression(FF.property("native_name")));
         final FeatureSet frenchParks = qfs.subset(sq);
         checkQueryType(Collections.singletonMap("native_name", String.class), frenchParks.getType());
         try (Stream<Feature> fs = frenchParks.features(false)) {

@@ -18,7 +18,7 @@ package org.apache.sis.storage;
 
 import java.util.stream.Stream;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.storage.query.SimpleQuery;
+import org.apache.sis.internal.storage.query.FeatureQuery;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -106,8 +106,8 @@ public interface FeatureSet extends DataSet {
      */
     default FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
         ArgumentChecks.ensureNonNull("query", query);
-        if (query instanceof SimpleQuery) {
-            return ((SimpleQuery) query).execute(this);
+        if (query instanceof FeatureQuery) {
+            return ((FeatureQuery) query).execute(this);
         } else {
             throw new UnsupportedQueryException();
         }
