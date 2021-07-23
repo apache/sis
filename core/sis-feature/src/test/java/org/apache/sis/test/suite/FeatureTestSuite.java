@@ -60,6 +60,7 @@ import org.junit.runners.Suite;
     org.apache.sis.filter.TemporalFunctionTest.class,
     org.apache.sis.filter.SpatialUsingJTS_Test.class,
     org.apache.sis.internal.feature.AttributeConventionTest.class,
+    org.apache.sis.internal.feature.GeometryTypeTest.class,
     org.apache.sis.internal.filter.FunctionNamesTest.class,
     org.apache.sis.internal.filter.sqlmm.SQLMMTest.class,
     org.apache.sis.internal.filter.sqlmm.RegistryUsingJTS_Test.class,

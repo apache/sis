@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.util.Locale;
+
 
 /**
  * Implementation-neutral description of the type of geometry.
@@ -80,4 +82,79 @@ public enum GeometryType {
      * Set of geometries of any type except other geometry collection.
      */
     GEOMETRY_COLLECTION;
+
+    /**
+     * The type of this geometry as specified in Well-Known Binary (WKB) specification.
+     * This is also the integer value declared in the {@code "GEOMETRY_TYPE"} column of
+     * the {@code "GEOMETRY_COLUMNS} table of a spatial database.
+     *
+     * <p>The WKB specification defines values in the [0 … 15] range for 2D geometries
+     * and adds 1000 for geometries having <var>Z</var> values.
+     * Then 2000 is added again for geometries having <var>M</var> values.</p>
+     *
+     * @return the geometry type specified in WKB specification.
+     *
+     * @see #forBinaryType(int)
+     */
+    public final int binaryType() {
+        return ordinal();
+    }
+
+    /**
+     * Returns the enumeration value for the given name.
+     * This method is case-insensitive.
+     *
+     * @param  name  the geometry type name, or {@code null}.
+     * @return enumeration value for the given name, or {@code null} if the name was null.
+     * @throws IllegalArgumentException if the name is not recognized.
+     */
+    public static GeometryType forName(String name) {
+        if (name != null) {
+            name = name.trim().toUpperCase(Locale.US);
+            int length = name.length();
+            if (length > 0) {
+                // Remove Z, M or ZM suffix.
+                if (/*non-empty*/ name.charAt(length - 1) == 'M') length--;
+                if (length > 0 && name.charAt(length - 1) == 'Z') length--;
+                name = name.substring(0, length);
+                switch (name) {
+                    case "MULTIPOINT":      return MULTI_POINT;
+                    case "MULTILINESTRING": return MULTI_LINESTRING;
+                    case "MULTIPOLYGON":    return MULTI_POLYGON;
+                    case "GEOMCOLLECTION":  return GEOMETRY_COLLECTION;
+                    default: return valueOf(name);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the enumeration value for the given WKB type, or {@code null} if unknown.
+     * Types for geometries having <var>Z</var> and <var>M</var> are replaced by 2D types.
+     *
+     * @param  type  WKB geometry type.
+     * @return enumeration value for the given type, or {@code null}.
+     *
+     * @see #binaryType()
+     */
+    public static GeometryType forBinaryType(int type) {
+        if (type >= 1000 && type < 4000) {
+            type %= 1000;
+        }
+        switch (type) {
+            default: return null;
+            case 0:  return GEOMETRY;
+            case 1:  return POINT;
+            case 2:  return LINESTRING;
+            case 3:  return POLYGON;
+            case 4:  return MULTI_POINT;
+            case 5:  return MULTI_LINESTRING;
+            case 6:  return MULTI_POLYGON;
+            case 7:  return GEOMETRY_COLLECTION;
+        //  case 13: return CURVE;
+        //  case 14: return SURFACE;
+        //  case 15: return POLYHEDRALSURFACE;
+        }
+    }
 }
