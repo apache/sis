@@ -19,6 +19,7 @@ package org.apache.sis.storage.geotiff;
 import java.nio.file.Path;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
+import java.awt.image.BandedSampleModel;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -121,6 +122,14 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     abstract Compression getCompression();
 
     /**
+     * Returns {@code true} if the sample model interleaves 2 or more sample values per pixel.
+     */
+    private boolean isInterleaved() throws DataStoreException {
+        final SampleModel model = getSampleModel();
+        return model.getNumBands() != 1 && !(model instanceof BandedSampleModel);
+    }
+
+    /**
      * Creates a {@link GridCoverage} which will load pixel data in the given domain.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
@@ -141,7 +150,14 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
                             Resources.Keys.MissingValue_2, Tags.name(Tags.Compression)));
                 }
                 switch (compression) {
-                    case NONE: coverage = new DataSubset(this, subset); break;
+                    case NONE: {
+                        if (subset.hasSubsampling(0) && isInterleaved()) {
+                            coverage = new CompressedSubset(this, subset);
+                        } else {
+                            coverage = new DataSubset(this, subset);
+                        }
+                        break;
+                    }
                     default: {
                         throw new DataStoreContentException(reader.resources().getString(
                                 Resources.Keys.UnsupportedCompressionMethod_1, compression));

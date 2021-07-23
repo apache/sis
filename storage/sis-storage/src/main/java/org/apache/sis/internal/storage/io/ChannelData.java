@@ -32,7 +32,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * querying or modifying the stream position. This class does not define any read or write operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.1
  * @since   0.5 (derived from 0.3)
  * @module
  */
@@ -135,7 +135,7 @@ public abstract class ChannelData implements Markable {
      * @return the bit offset of the stream.
      */
     public final int getBitOffset() {
-        final long position = bufferOffset + buffer.position();
+        final long position = position();
         if ((bitPosition >>> BIT_OFFSET_SIZE) != position) {
             bitPosition = position << BIT_OFFSET_SIZE;
         }
@@ -149,8 +149,7 @@ public abstract class ChannelData implements Markable {
      */
     public final void setBitOffset(final int bitOffset) {
         ensureBetween("bitOffset", 0, Byte.SIZE - 1, bitOffset);
-        final long position = bufferOffset + buffer.position();
-        bitPosition = (position << BIT_OFFSET_SIZE) | bitOffset;
+        bitPosition = (position() << BIT_OFFSET_SIZE) | bitOffset;
     }
 
     /**
@@ -167,7 +166,14 @@ public abstract class ChannelData implements Markable {
      */
     @Override
     public long getStreamPosition() {
-        return bufferOffset + buffer.position();
+        return position();
+    }
+
+    /**
+     * Returns the current byte position of the stream, ignoring overriding by subclasses.
+     */
+    private long position() {
+        return Math.addExact(bufferOffset, buffer.position());
     }
 
     /**
@@ -187,7 +193,7 @@ public abstract class ChannelData implements Markable {
      * @param position the new position of the stream.
      */
     public final void setStreamPosition(final long position) {
-        bufferOffset = position - buffer.position();
+        bufferOffset = Math.subtractExact(position, buffer.position());
         // Clearing the bit offset is needed if we don't want to handle the case of ChannelDataOutput,
         // which use a different stream position calculation when the bit offset is non-zero.
         clearBitOffset();

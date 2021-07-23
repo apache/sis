@@ -23,8 +23,12 @@
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
+ * <p>Current version contains the classes for decompressing sample values.
+ * Those classes may move in another package in a future version if we want
+ * to share them with other image formats.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */

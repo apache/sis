@@ -27,7 +27,6 @@ import java.awt.image.WritableRaster;
 import org.apache.sis.image.DataType;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.internal.storage.io.Region;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.TiledGridCoverage;
@@ -101,6 +100,25 @@ class DataSubset extends TiledGridCoverage implements Localized {
     private final int numTiles;
 
     /**
+     * Number of banks in the image data buffer.
+     * This is equal to the number of bands only for planar images, and 1 in all other cases.
+     */
+    protected final int numBanks;
+
+    /**
+     * Number of interleaved sample values in a pixel. For planar images, this is equal to 1.
+     * For interleaved sample model, this is equal to the number of bands. This value is often
+     * equal to the {@linkplain java.awt.image.ComponentSampleModel#getPixelStride() pixel stride}.
+     */
+    protected final int numInterleaved;
+
+    /**
+     * Number of sample values in a bank (not necessarily a band).
+     * This is tile width × height × {@link #numInterleaved}.
+     */
+    protected final int capacity;
+
+    /**
      * Creates a new data subset. All parameters should have been validated
      * by {@link ImageFileDirectory#validateMandatoryTags()} before this call.
      * This constructor should be invoked inside a synchronized block.
@@ -117,6 +135,23 @@ class DataSubset extends TiledGridCoverage implements Localized {
         final Vector[] tileArrayInfo = source.getTileArrayInfo();
         this.tileOffsets    = tileArrayInfo[0];
         this.tileByteCounts = tileArrayInfo[1];
+        /*
+         * "Banks" (in `java.awt.image.DataBuffer` sense) are synonymous to "bands" for planar image only.
+         * Otherwise there is only one bank no matter the amount of bands. Each bank will be read separately.
+         */
+        if (model instanceof BandedSampleModel) {
+            numBanks = model.getNumBands();
+            numInterleaved = 1;
+        } else {
+            numBanks = 1;
+            numInterleaved = model.getNumBands();
+        }
+        final int n = tileOffsets.size();
+        if (numBanks > n / numTiles) {
+            throw new DataStoreContentException(source.reader.errors().getString(
+                    Errors.Keys.TooFewCollectionElements_3, "tileOffsets", numBanks * numTiles, n));
+        }
+        capacity = multiplyExact(multiplyExact(model.getWidth(), model.getHeight()), numInterleaved);
     }
 
     /**
@@ -133,6 +168,20 @@ class DataSubset extends TiledGridCoverage implements Localized {
     @Override
     protected final String getDisplayName() {
         return source.filename();
+    }
+
+    /**
+     * Returns the type of data in all tiles.
+     */
+    protected final DataType getDataType() {
+        return DataType.forDataBufferType(model.getDataType());
+    }
+
+    /**
+     * Returns the GeoTIFF reader which contains this subset.
+     */
+    final Reader reader() {
+        return source.reader;
     }
 
     /**
@@ -218,7 +267,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
         final WritableRaster[] result = new WritableRaster[iterator.tileCountInQuery];
         final Tile[] missings = new Tile[iterator.tileCountInQuery];
         int numMissings = 0;
-        synchronized (source.reader.store) {
+        synchronized (reader().store) {
             do {
                 final WritableRaster tile = iterator.getCachedTile();
                 if (tile != null) {
@@ -250,6 +299,9 @@ class DataSubset extends TiledGridCoverage implements Localized {
                 tile.getRegionInsideTile(lower, upper, subsampling, BIDIMENSIONAL);
                 tile.copyTileInfo(tileOffsets,    offsets,    numTiles);
                 tile.copyTileInfo(tileByteCounts, byteCounts, numTiles);
+                for (int b=0; b<offsets.length; b++) {
+                    offsets[b] = addExact(offsets[b], reader().origin);
+                }
                 result[tile.indexInResultArray] = tile.cache(
                         readSlice(offsets, byteCounts, lower, upper, subsampling, origin));
             }
@@ -283,23 +335,9 @@ class DataSubset extends TiledGridCoverage implements Localized {
     WritableRaster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
                              final int[] subsampling, final Point location) throws IOException, DataStoreException
     {
-        final DataType type = DataType.forDataBufferType(model.getDataType());
+        final DataType type = getDataType();
         final long width  = subtractExact(upper[0], lower[0]);
         final long height = subtractExact(upper[1], lower[1]);
-        /*
-         * "Banks" (in `java.awt.image.DataBuffer` sense) are synonymous to "bands" for planar image only.
-         * Otherwise there is only one bank not matter the amount of bands. Each bank is read separately.
-         */
-        int numBanks = 1;
-        int numInterleaved = model.getNumBands();
-        if (model instanceof BandedSampleModel) {
-            numBanks = numInterleaved;
-            numInterleaved = 1;
-        }
-        if (numBanks > offsets.length) {
-            throw new DataStoreContentException(source.reader.errors().getString(
-                    Errors.Keys.TooFewCollectionElements_3, "tileOffsets", numBanks * numTiles, tileOffsets.size()));
-        }
         /*
          * The number of bytes to read should not be greater than `byteCount`. It may be smaller however if only
          * a subregion is read. Note that the `length` value may be different than `capacity` if the tile to read
@@ -307,46 +345,51 @@ class DataSubset extends TiledGridCoverage implements Localized {
          */
         final long length  = multiplyExact(type.size() / Byte.SIZE,
                              multiplyExact(multiplyExact(width, height), numInterleaved));
-        final int capacity = multiplyExact(multiplyExact(model.getWidth(), model.getHeight()), numInterleaved);
         final long[] size = new long[] {multiplyFull(numInterleaved, getTileSize(0)), getTileSize(1)};
         /*
          * If we use an interleaved sample model, each "element" from `HyperRectangleReader` perspective is actually
          * a group of `numInterleaved` values. Note that in such case, we can not handle subsampling on the first axis.
+         * Such case should be handled by the `CompressedSubset` subclass instead, even if there is no compression.
          */
-        if (numInterleaved != 1 && subsampling[0] != 1) {
-            throw new InternalDataStoreException();
-        }
+        assert numInterleaved == 1 || subsampling[0] == 1;
         lower[0] *= numInterleaved;
         upper[0] *= numInterleaved;
         /*
          * Read each plane ("banks" in Java2D terminology). Note that a single bank contain all bands
          * in the interleaved sample model case.
          */
-        final HyperRectangleReader hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(type.toDataBufferType()), source.reader.input);
+        final HyperRectangleReader hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(type.toDataBufferType()), reader().input);
         final Region region = new Region(size, lower, upper, subsampling);
         final Buffer[] banks = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
             if (b < byteCounts.length && length > byteCounts[b]) {
-                throw new DataStoreContentException(source.reader.resources().getString(
+                throw new DataStoreContentException(reader().resources().getString(
                         Resources.Keys.UnexpectedTileLength_2, length, byteCounts[b]));
             }
-            hr.setOrigin(addExact(source.reader.origin, offsets[b]));
-            final Buffer buffer = hr.readAsBuffer(region, capacity);
-            /*
-             * The buffer returned by `readAsBuffer(…)` may have less data than the buffer capacity
-             * if the current tile is smaller than the expected tile size (e.g. truncated last tile).
-             * Following code applies the fill value if it is different than the default value (zero).
-             */
-            if (fillValue != null) {
-                final int end = buffer.limit();
-                if (end != capacity) {
-                    Vector.create(buffer.limit(capacity), ImageUtilities.isUnsignedType(model))
-                          .fill(end, capacity, fillValue);
-                }
-            }
-            banks[b] = buffer.limit(capacity);
+            hr.setOrigin(offsets[b]);
+            final Buffer bank = hr.readAsBuffer(region, capacity);
+            fillRemainingRows(bank);
+            banks[b] = bank;
         }
         final DataBuffer buffer = RasterFactory.wrap(type, banks);
         return WritableRaster.createWritableRaster(model, buffer, location);
+    }
+
+    /**
+     * Applies the fill value if it is different than the default value (zero) to all remaining rows.
+     * This method is needed because the buffer filled by read methods may have less data than the buffer
+     * capacity if the current tile is smaller than the expected tile size (e.g. last tile is truncated).
+     *
+     * @param  bank  the buffer where to fill remaining rows.
+     */
+    final void fillRemainingRows(final Buffer bank) {
+        if (fillValue != null) {
+            final int end = bank.limit();
+            if (end != capacity) {
+                Vector.create(bank.limit(capacity), ImageUtilities.isUnsignedType(model))
+                      .fill(end, capacity, fillValue);
+                bank.limit(capacity);
+            }
+        }
     }
 }

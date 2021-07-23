@@ -266,9 +266,11 @@ nextSlice:  for (;;) {
                             if (!failOnMismatch) break;
                             final Point pr = itr.getPosition();
                             final Point pc = itc.getPosition();
-                            assertArrayEquals("Mismatch at position (" + pr.x + ", " + pr.y + ") in full image " +
-                                              "and (" + pc.x + ", " + pc.y + ") in tested sub-image",
-                                              expected, actual, STRICT);
+                            final StringBuilder message = new StringBuilder(100).append("Mismatch at position (")
+                                    .append(pr.x).append(", ").append(pr.y).append(") in full image and (")
+                                    .append(pc.x).append(", ").append(pc.y).append(") in tested sub-image");
+                            findMatchPosition(itr, pr, expected, message);
+                            assertArrayEquals(message.toString(), expected, actual, STRICT);
                         }
                     }
                     assertFalse(itc.next());
@@ -362,5 +364,34 @@ nextSlice:  for (;;) {
             }
         }
         return new PixelIterator.Builder().setRegionOfInterest(sliceAOI).create(image);
+    }
+
+    /**
+     * Explores pixel values around the given position in search for a pixel having the expected values.
+     * If a match is found, the error message is completed with information about the match position.
+     */
+    private static void findMatchPosition(final PixelIterator ir, final Point pr, final double[] expected, final StringBuilder message) {
+        double[] actual = null;
+        for (int dy=0; dy<10; dy++) {
+            for (int dx=0; dx<10; dx++) {
+                if ((dx | dy) != 0) {
+                    for (int c=0; c<4; c++) {
+                        final int x = (c & 1) == 0 ? -dx : dx;
+                        final int y = (c & 2) == 0 ? -dy : dy;
+                        try {
+                            ir.moveTo(pr.x + x, pr.y + y);
+                        } catch (IndexOutOfBoundsException e) {
+                            continue;
+                        }
+                        actual = ir.getPixel(actual);
+                        if (Arrays.equals(expected, actual)) {
+                            message.append(" (note: found a match at offset (").append(x).append(", ").append(y)
+                                   .append(") in full image)");
+                            return;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -33,6 +33,11 @@ import java.awt.image.RasterFormatException;
 import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
+import java.nio.IntBuffer;
+import java.nio.FloatBuffer;
+import java.nio.DoubleBuffer;
 import java.nio.ReadOnlyBufferException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.internal.feature.Resources;
@@ -197,6 +202,26 @@ public final class RasterFactory extends Static {
             }
         }
         return WritableRaster.createWritableRaster(unique(model), buffer, location);
+    }
+
+    /**
+     * Creates a NIO buffer of the specified capacity.
+     * The buffer position will be 0 and its limit will be its capacity.
+     *
+     * @param  dataType  type of buffer to create.
+     * @param  capacity  the {@code Buffer} size.
+     * @return buffer of the specified type and size.
+     */
+    public static Buffer createBuffer(final DataType dataType, final int capacity) {
+        switch (dataType) {
+            case USHORT: // Fallthrough
+            case SHORT:  return ShortBuffer .allocate(capacity);
+            case BYTE:   return ByteBuffer  .allocate(capacity);
+            case INT:    return IntBuffer   .allocate(capacity);
+            case FLOAT:  return FloatBuffer .allocate(capacity);
+            case DOUBLE: return DoubleBuffer.allocate(capacity);
+            default: throw new AssertionError(dataType);
+        }
     }
 
     /**

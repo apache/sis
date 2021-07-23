@@ -195,5 +195,15 @@ public abstract class TiledGridResource extends AbstractGridResource {
              */
             cache = sharedCache ? caller.rasters : new WeakValueHashMap<>(Integer.class);
         }
+
+        /**
+         * Returns {@code true} if this subset contains a subsampling in the given dimension.
+         *
+         * @param  dimension  the dimension to test.
+         * @return {@code true} if there is a subsampling in the given dimension.
+         */
+        public boolean hasSubsampling(final int dimension) {
+            return subsampling[dimension] != 1;
+        }
     }
 }
