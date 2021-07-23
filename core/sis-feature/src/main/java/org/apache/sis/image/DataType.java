@@ -180,6 +180,8 @@ public enum DataType {
 
     /**
      * Returns the enumeration value for the given {@link DataBuffer} constant.
+     * This method is the converse of {@link #toDataBufferType()}.
+     * It is provided for interoperability with Java2D.
      *
      * @param  type  one of {@code DataBuffer.TYPE_*} constants.
      * @return the data type (never {@code null}) for the given data buffer type.
@@ -198,7 +200,7 @@ public enum DataType {
      *
      * @return size in bits of this data type.
      */
-    public int size() {
+    public final int size() {
         return DataBuffer.getDataTypeSize(ordinal());
     }
 
@@ -208,7 +210,7 @@ public enum DataType {
      *
      * @return {@code true} if this type is an unsigned integer type.
      */
-    public boolean isUnsigned() {
+    public final boolean isUnsigned() {
         return ordinal() <= DataBuffer.TYPE_USHORT;
     }
 
@@ -218,7 +220,7 @@ public enum DataType {
      *
      * @return {@code true} if this type is an integer type.
      */
-    public boolean isInteger() {
+    public final boolean isInteger() {
         return ordinal() <= DataBuffer.TYPE_INT;
     }
 
@@ -237,8 +239,19 @@ public enum DataType {
      * @return the smallest of {@link #FLOAT} or {@link #DOUBLE} types
      *         which can store all values of this type without any lost.
      */
-    public DataType toFloat() {
+    public final DataType toFloat() {
         final int type = ordinal();
         return (type < DataBuffer.TYPE_INT || type == DataBuffer.TYPE_FLOAT) ? FLOAT : DOUBLE;
+    }
+
+    /**
+     * Returns the {@link DataBuffer} constant for this enumeration value.
+     * This method is the converse of {@link #forDataBufferType(int)}.
+     * It is provided for interoperability with Java2D.
+     *
+     * @return one of the {@link DataBuffer} constants.
+     */
+    public final int toDataBufferType() {
+        return ordinal();
     }
 }

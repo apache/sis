@@ -37,12 +37,12 @@ public final strictfp class DataTypeTest extends TestCase {
      */
     @Test
     public void verifyOrdinalValues() {
-        assertEquals(DataBuffer.TYPE_BYTE  , DataType.BYTE  .ordinal());
-        assertEquals(DataBuffer.TYPE_USHORT, DataType.USHORT.ordinal());
-        assertEquals(DataBuffer.TYPE_SHORT , DataType.SHORT .ordinal());
-        assertEquals(DataBuffer.TYPE_INT   , DataType.INT   .ordinal());
-        assertEquals(DataBuffer.TYPE_FLOAT , DataType.FLOAT .ordinal());
-        assertEquals(DataBuffer.TYPE_DOUBLE, DataType.DOUBLE.ordinal());
+        assertEquals(DataBuffer.TYPE_BYTE  , DataType.BYTE  .toDataBufferType());
+        assertEquals(DataBuffer.TYPE_USHORT, DataType.USHORT.toDataBufferType());
+        assertEquals(DataBuffer.TYPE_SHORT , DataType.SHORT .toDataBufferType());
+        assertEquals(DataBuffer.TYPE_INT   , DataType.INT   .toDataBufferType());
+        assertEquals(DataBuffer.TYPE_FLOAT , DataType.FLOAT .toDataBufferType());
+        assertEquals(DataBuffer.TYPE_DOUBLE, DataType.DOUBLE.toDataBufferType());
     }
 
     /**

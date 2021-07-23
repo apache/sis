@@ -1355,7 +1355,7 @@ final class ImageFileDirectory extends DataCube {
         if (sampleModel == null) {
             final DataType type = getDataType();
             try {
-                final int bt = type.ordinal();
+                final int bt = type.toDataBufferType();
                 if (bitsPerSample != type.size()) {
                     /*
                      * Supported types for both sample models are TYPE_BYTE, TYPE_USHORT, and TYPE_INT.

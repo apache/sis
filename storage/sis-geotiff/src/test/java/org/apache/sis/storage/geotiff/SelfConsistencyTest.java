@@ -61,7 +61,7 @@ public final strictfp class SelfConsistencyTest extends CoverageReadConsistency 
     }
 
     /**
-     * Closes the test file to be used for all tests.
+     * Closes the test file used by all tests.
      *
      * @throws DataStoreException if an error occurred while closing the file.
      */

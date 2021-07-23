@@ -283,7 +283,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
     WritableRaster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
                              final int[] subsampling, final Point location) throws IOException, DataStoreException
     {
-        final int  type   = model.getDataType();
+        final DataType type = DataType.forDataBufferType(model.getDataType());
         final long width  = subtractExact(upper[0], lower[0]);
         final long height = subtractExact(upper[1], lower[1]);
         /*
@@ -305,7 +305,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * a subregion is read. Note that the `length` value may be different than `capacity` if the tile to read
          * is smaller than the "standard" tile size of the image. It happens often when reading the last strip.
          */
-        final long length  = multiplyExact(DataBuffer.getDataTypeSize(type) / Byte.SIZE,
+        final long length  = multiplyExact(type.size() / Byte.SIZE,
                              multiplyExact(multiplyExact(width, height), numInterleaved));
         final int capacity = multiplyExact(multiplyExact(model.getWidth(), model.getHeight()), numInterleaved);
         final long[] size = new long[] {multiplyFull(numInterleaved, getTileSize(0)), getTileSize(1)};
@@ -322,7 +322,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * Read each plane ("banks" in Java2D terminology). Note that a single bank contain all bands
          * in the interleaved sample model case.
          */
-        final HyperRectangleReader hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(type), source.reader.input);
+        final HyperRectangleReader hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(type.toDataBufferType()), source.reader.input);
         final Region region = new Region(size, lower, upper, subsampling);
         final Buffer[] banks = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
@@ -346,7 +346,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
             }
             banks[b] = buffer.limit(capacity);
         }
-        final DataBuffer buffer = RasterFactory.wrap(DataType.forDataBufferType(type), banks);
+        final DataBuffer buffer = RasterFactory.wrap(type, banks);
         return WritableRaster.createWritableRaster(model, buffer, location);
     }
 }

@@ -73,7 +73,7 @@ public final class RasterFactory extends Static {
      * <p><b>Warning:</b> displaying this image is very slow, except in a few special cases.
      * It should be used only when no standard color model can be used.</p>
      *
-     * @param  dataType       the color model type as one of {@code DataBuffer.TYPE_*} constants.
+     * @param  dataType       the buffer type as one of {@code DataBuffer.TYPE_*} constants.
      * @param  width          the desired image width.
      * @param  height         the desired image height.
      * @param  numComponents  the number of components.
@@ -207,7 +207,7 @@ public final class RasterFactory extends Static {
      *
      * @param  dataType  type of buffer to create.
      * @param  data      the data, one for each band.
-     * @return buffer of the given type (ever null).
+     * @return buffer of the given type (never null).
      * @throws UnsupportedOperationException if a buffer is not backed by an accessible array.
      * @throws ReadOnlyBufferException if a buffer is backed by an array but is read-only.
      * @throws ArrayStoreException if the type of a backing array is not {@code dataType}.
