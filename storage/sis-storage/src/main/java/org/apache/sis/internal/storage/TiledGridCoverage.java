@@ -584,8 +584,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @param  upper        a pre-allocated array where to store relative coordinates after the last pixel.
          * @param  subsampling  a pre-allocated array where to store subsampling.
          * @param  dimension    number of elements to write in the {@code lower} and {@code upper} arrays.
+         * @return {@code true} on success, or {@code false} if the tile is empty.
          */
-        public void getRegionInsideTile(final long[] lower, final long[] upper, final int[] subsampling, int dimension) {
+        public boolean getRegionInsideTile(final long[] lower, final long[] upper, final int[] subsampling, int dimension) {
             System.arraycopy(coverage.subsampling, 0, subsampling, 0, dimension);
             while (--dimension >= 0) {
                 final int  tileSize  = coverage.tileSize[dimension];
@@ -620,8 +621,12 @@ public abstract class TiledGridCoverage extends GridCoverage {
                         offset += s;
                     }
                 }
+                if (offset >= upper[dimension]) {
+                    return false;
+                }
                 lower[dimension] = offset;
             }
+            return true;
         }
 
         /**

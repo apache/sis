@@ -292,18 +292,34 @@ class DataSubset extends TiledGridCoverage implements Localized {
             final Point  origin      = new Point();
             final long[] offsets     = new long[tileOffsets.size() / numTiles];
             final long[] byteCounts  = new long[tileByteCounts.size() / numTiles];
+            boolean needsCompaction  = false;
             for (int i=0; i<numMissings; i++) {
                 final Tile tile = missings[i];
-                origin.x = tile.originX;
-                origin.y = tile.originY;
-                tile.getRegionInsideTile(lower, upper, subsampling, BIDIMENSIONAL);
-                tile.copyTileInfo(tileOffsets,    offsets,    numTiles);
-                tile.copyTileInfo(tileByteCounts, byteCounts, numTiles);
-                for (int b=0; b<offsets.length; b++) {
-                    offsets[b] = addExact(offsets[b], reader().origin);
+                if (tile.getRegionInsideTile(lower, upper, subsampling, BIDIMENSIONAL)) {
+                    origin.x = tile.originX;
+                    origin.y = tile.originY;
+                    tile.copyTileInfo(tileOffsets,    offsets,    numTiles);
+                    tile.copyTileInfo(tileByteCounts, byteCounts, numTiles);
+                    for (int b=0; b<offsets.length; b++) {
+                        offsets[b] = addExact(offsets[b], reader().origin);
+                    }
+                    result[tile.indexInResultArray] = tile.cache(
+                            readSlice(offsets, byteCounts, lower, upper, subsampling, origin));
+                } else {
+                    needsCompaction = true;
                 }
-                result[tile.indexInResultArray] = tile.cache(
-                        readSlice(offsets, byteCounts, lower, upper, subsampling, origin));
+            }
+            /*
+             * If the subsampling is larger than tile size, some tiles were empty and excluded.
+             * The corresponding elements in the `result` array were left to the null value.
+             * We need to compact the array by removing those null elements.
+             */
+            if (needsCompaction) {
+                int n = 0;
+                for (final WritableRaster tile : result) {
+                    if (tile != null) result[n++] = tile;
+                }
+                return Arrays.copyOf(result, n);
             }
         }
         return result;

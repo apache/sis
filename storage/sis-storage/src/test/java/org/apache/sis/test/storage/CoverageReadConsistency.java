@@ -354,6 +354,9 @@ nextSlice:  for (;;) {
         if (allowSubsamplings) {
             final int subX = subsampling[0];
             final int subY = subsampling[1];
+            if (subX > image.getTileWidth() || subY > image.getTileHeight()) {
+                return null;        // `SubsampledImage` does not support this case.
+            }
             int offX = StrictMath.floorMod(image.getMinX(), subX);
             int offY = StrictMath.floorMod(image.getMinY(), subY);
             if (offX != 0) {sliceAOI.x--; offX = subX - offX;}
