@@ -28,10 +28,8 @@ import java.nio.charset.Charset;
 import java.awt.Color;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
-import java.awt.image.BandedSampleModel;
-import java.awt.image.MultiPixelPackedSampleModel;
-import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
+import java.awt.image.RasterFormatException;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.metadata.citation.DateType;
@@ -42,6 +40,7 @@ import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.coverage.j2d.SampleModelFactory;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.storage.DataStoreException;
@@ -1352,38 +1351,10 @@ final class ImageFileDirectory extends DataCube {
      */
     @Override
     protected SampleModel getSampleModel() throws DataStoreContentException {
-        if (sampleModel == null) {
-            final DataType type = getDataType();
-            try {
-                final int bt = type.toDataBufferType();
-                if (bitsPerSample != type.size()) {
-                    /*
-                     * Supported types for both sample models are TYPE_BYTE, TYPE_USHORT, and TYPE_INT.
-                     * Note that if the TIFF data are signed bytes, then we have TYPE_SHORT which will
-                     * cause an exception to be thrown be sample model constructor.
-                     */
-                    if (samplesPerPixel == 1) {
-                        sampleModel = new MultiPixelPackedSampleModel(bt, tileWidth, tileHeight, bitsPerSample);
-                    } else if (!isPlanar) {
-                        final int[] bitMasks = new int[samplesPerPixel];
-                        bitMasks[0] = (1 << bitsPerSample) - 1;
-                        for (int i=1; i<bitMasks.length; i++) {
-                            bitMasks[i] = bitMasks[i-1] << bitsPerSample;
-                        }
-                        sampleModel = new SinglePixelPackedSampleModel(bt, tileWidth, tileHeight, bitMasks);
-                    } else {
-                        // TODO: we can support that with a little bit more work.
-                        throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, type));
-                    }
-                } else if (isPlanar) {
-                    sampleModel = new BandedSampleModel(bt, tileWidth, tileHeight, samplesPerPixel);
-                } else {
-                    sampleModel = new PixelInterleavedSampleModel(bt, tileWidth, tileHeight, samplesPerPixel,
-                            Math.multiplyExact(samplesPerPixel, tileWidth), ArraysExt.range(0, samplesPerPixel));
-                }
-            } catch (IllegalArgumentException e) {
-                throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, type), e);
-            }
+        if (sampleModel == null) try {
+            sampleModel = new SampleModelFactory(getDataType(), tileWidth, tileHeight, samplesPerPixel, bitsPerSample, isPlanar).build();
+        } catch (IllegalArgumentException | RasterFormatException e) {
+            throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, getDataType()), e);
         }
         return sampleModel;
     }

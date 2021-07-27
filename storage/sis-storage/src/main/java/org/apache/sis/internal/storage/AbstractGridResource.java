@@ -25,6 +25,9 @@ import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.concurrent.TimeUnit;
 import java.math.RoundingMode;
+import java.awt.image.ColorModel;
+import java.awt.image.SampleModel;
+import java.awt.image.RasterFormatException;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.operation.TransformException;
@@ -43,6 +46,8 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.PerformanceLevel;
+import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.coverage.j2d.SampleModelFactory;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.jdk9.JDK9;
@@ -171,11 +176,6 @@ public abstract class AbstractGridResource extends AbstractResource implements G
      */
     protected static final class RangeArgument {
         /**
-         * Name of the extent dimension for bands.
-         */
-        private static final DimensionNameType BAND = DimensionNameType.valueOf("BAND");
-
-        /**
          * The range indices specified by user in high bits, together (in the low bits)
          * with the position in the {@code ranges} array where each index was specified.
          * This packing is used for making easier to sort this array in increasing order
@@ -187,6 +187,9 @@ public abstract class AbstractGridResource extends AbstractResource implements G
          * If a {@linkplain #insertSubsampling subsampling} has been applied, indices of the first and last band
          * to read, together with the interval (stride) between bands.  Those information are computed only when
          * the {@code insertFoo(…)} methods are invoked.
+         *
+         * @see #insertBandDimension(GridExtent, int)
+         * @see #insertSubsampling(int[], int)
          */
         private int first, last, interval;
 
@@ -204,9 +207,10 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         }
 
         /**
-         * Returns {@code true} if user specified all bands in increasing order and no subsampling is applied.
+         * Returns {@code true} if user specified all bands in increasing order.
+         * This method always return {@code false} if {@link #insertSubsampling(int[], int)} has been invoked.
          *
-         * @return whether user specified all bands in increasing order without subsampling.
+         * @return whether user specified all bands in increasing order without subsampling inserted.
          */
         public boolean isIdentity() {
             if (interval != 1) return false;
@@ -219,12 +223,28 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         }
 
         /**
-         * Returns the number of sample dimensions. This is the length of the range array supplied by user.
+         * Returns the number of sample dimensions. This is the length of the range array supplied by user,
+         * or the number of bands in the source coverage if the {@code range} array was null or empty.
          *
-         * @return the number of sample dimensions.
+         * @return the number of sample dimensions selected by user.
          */
         public int getNumBands() {
             return packed.length;
+        }
+
+        /**
+         * Returns the indices of bands selected by the user.
+         * This is a copy of the {@code range} argument specified by the user, in same order.
+         * Note that this is not necessarily increasing order.
+         *
+         * @return a copy of the {@code range} argument specified by the user.
+         */
+        public int[] getSelectedBands() {
+            final int[] bands = new int[getNumBands()];
+            for (int i=0; i<bands.length; i++) {
+                bands[getTargetIndex(i)] = getSourceIndex(i);
+            }
+            return bands;
         }
 
         /**
@@ -278,7 +298,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
          *     }
          * }
          *
-         * If the {@code insert} methods have never been invoked, then this method is equivalent to {@link #getSourceIndex(int)}.
+         * If the {@code insertXXX(…)} methods have never been invoked, then this method is equivalent to {@link #getSourceIndex(int)}.
          *
          * @param  i  index of the range index to get, from 0 inclusive to {@link #getNumBands()} exclusive.
          * @return index of the i<sup>th</sup> band to read from the resource, after subsampling.
@@ -289,7 +309,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
 
         /**
          * Returns the increment to apply on index for moving to the same band of the next pixel.
-         * If the {@code insert} methods have never been invoked, then this method returns 1.
+         * If the {@code insertXXX(…)} methods have never been invoked, then this method returns 1.
          *
          * @return the increment to apply on index for moving to the next pixel in the same band.
          *
@@ -304,6 +324,15 @@ public abstract class AbstractGridResource extends AbstractResource implements G
          * will range from the minimum {@code range} value to the maximum {@code range} value inclusive.
          * This method should be used together with {@link #insertSubsampling(int[], int)}.
          *
+         * <h4>Use case</h4>
+         * This method is useful for reading a <var>n</var>-dimensional data cube with values stored in a
+         * {@link java.awt.image.PixelInterleavedSampleModel} fashion (except if {@code bandDimension} is
+         * after all existing {@code areaOfInterest} dimensions, in which case data become organized in a
+         * {@link java.awt.image.BandedSampleModel} fashion). This method converts the specified domain
+         * (decomposed in {@code areaOfInterest} and {@code subsamplings} parameters) into a larger domain
+         * encompassing band dimension as if it was an ordinary space or time dimension. It makes possible
+         * to use this domain with {@link org.apache.sis.internal.storage.io.HyperRectangleReader} for example.
+         *
          * @param  areaOfInterest  the extent to which to add a new dimension for bands.
          * @param  bandDimension   index of the band dimension.
          * @return a new extent with the same values than the given extent plus one dimension for bands.
@@ -311,13 +340,21 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         public GridExtent insertBandDimension(final GridExtent areaOfInterest, final int bandDimension) {
             first = getSourceIndex(0);
             last  = getSourceIndex(packed.length - 1);
-            return areaOfInterest.insert(bandDimension, BAND, first, last, true);
+            return areaOfInterest.insert(bandDimension, DimensionNameType.valueOf("BAND"), first, last, true);
         }
 
         /**
          * Returns the given subsampling with a new dimension added for the bands. The subsampling in the new
          * dimension will be the greatest common divisor of the difference between all user-specified values.
          * This method should be used together with {@link #insertBandDimension(GridExtent, int)}.
+         * See that method for more information.
+         *
+         * <p>Invoking this method changes the values returned by following methods:</p>
+         * <ul>
+         *   <li>{@link #isIdentity()}</li>
+         *   <li>{@link #getSubsampledIndex(int)}</li>
+         *   <li>{@link #getPixelStride()}</li>
+         * </ul>
          *
          * @param  subsamplings   the subsampling to which to add a new dimension for bands.
          * @param  bandDimension  index of the band dimension.
@@ -348,6 +385,59 @@ public abstract class AbstractGridResource extends AbstractResource implements G
                 bands[getTargetIndex(i)] = sourceBands.get(getSourceIndex(i));
             }
             return bands;
+        }
+
+        /**
+         * Returns a sample model for the bands specified by the user.
+         * The model created by this method can be a "view" or can be "compressed":
+         *
+         * <ul class="verbose">
+         *   <li>If {@code view} is {@code true}, the sample model returned by this method will expect the
+         *       same {@link java.awt.image.DataBuffer} than the one expected by the original {@code model}.
+         *       Bands enumerated in the {@code range} argument will be used and other bands will be ignored.
+         *       This mode is efficient if the data are already in memory and we want to avoid copying them.
+         *       An inconvenient is that all bands, including the ignored ones, are retained in memory.</li>
+         *   <li>If {@code view} is {@code false}, then this method will "compress" bank indices and bit masks
+         *       for making them consecutive. For example if the {@code range} argument specifies that the bands
+         *       to read are {1, 3, 4, 6, …}, then "compressed" sample model will use bands {0, 1, 2, 3, …}.
+         *       This mode is efficient if the data are not yet in memory and the reader is capable to skip
+         *       the bands to ignore. In such case, this mode save memory.</li>
+         * </ul>
+         *
+         * @param  model  the original sample model with all bands. Can be {@code null}.
+         * @param  view   whether the band subset shall be a view over the full band set.
+         * @return the sample model for a subset of bands, or {@code null} if the given sample model was null.
+         * @throws RasterFormatException if the given sample model is not recognized.
+         * @throws IllegalArgumentException if an error occurred when constructing the new sample model.
+         *
+         * @see SampleModel#createSubsetSampleModel(int[])
+         * @see SampleModelFactory#subsetAndCompress(int[])
+         */
+        public SampleModel select(final SampleModel model, final boolean view) {
+            if (model == null || isIdentity()) {
+                return model;
+            }
+            final int[] bands = getSelectedBands();
+            if (view) {
+                return model.createSubsetSampleModel(bands);
+            } else {
+                final SampleModelFactory factory = new SampleModelFactory(model);
+                factory.subsetAndCompress(bands);
+                return factory.build();
+            }
+        }
+
+        /**
+         * Returns a color model for the bands specified by the user.
+         *
+         * @param  colors  the original color model with all bands. Can be {@code null}.
+         * @return the color model for a subset of bands, or {@code null} if the given color model was null.
+         */
+        public ColorModel select(final ColorModel colors) {
+            if (colors == null || isIdentity()) {
+                return colors;
+            }
+            return ColorModelFactory.createSubset(colors, getSelectedBands());
         }
 
         /**
