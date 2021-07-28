@@ -18,7 +18,10 @@ package org.apache.sis.internal.storage;
 
 import java.util.List;
 import java.util.Arrays;
+import java.awt.image.ColorModel;
+import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.awt.image.RasterFormatException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -27,12 +30,13 @@ import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
  * Base class of grid coverage resource storing data in tiles.
- * Word "tile" is used for simplicity but can be understood as "chunk"
- * in a <var>n</var>-dimensional generalization.
+ * The word "tile" is used for simplicity but can be understood
+ * as "chunk" in a <var>n</var>-dimensional generalization.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -66,15 +70,49 @@ public abstract class TiledGridResource extends AbstractGridResource {
      * The length of the returned array is the number of dimensions.
      *
      * @return the size of tiles in this resource.
+     * @throws DataStoreException if an error occurred while fetching tile size information.
      */
-    protected abstract int[] getTileSize();
+    protected abstract int[] getTileSize() throws DataStoreException;
+
+    /**
+     * Returns the Java2D sample model describing pixel type and layout for all bands.
+     * The raster size is the {@linkplain #getTileSize() tile size} as stored in the resource.
+     *
+     * <h4>Multi-dimensional data cube</h4>
+     * If this resource has more than 2 dimensions, then this model is for the two first ones (usually horizontal).
+     * The images for all levels in additional dimensions shall use the same sample model.
+     *
+     * @return the sample model for tiles at full resolution with all their bands.
+     * @throws DataStoreException if an error occurred during sample model construction.
+     */
+    protected abstract SampleModel getSampleModel() throws DataStoreException;
+
+    /**
+     * Returns the Java2D color model for rendering images, or {@code null} if none.
+     * The color model shall be compatible with the sample model returned by {@link #getSampleModel()}.
+     *
+     * @return a color model compatible with {@link #getSampleModel()}, or {@code null} if none.
+     * @throws DataStoreException if an error occurred during color model construction.
+     */
+    protected abstract ColorModel getColorModel() throws DataStoreException;
+
+    /**
+     * Returns the value to use for filling empty spaces in rasters,
+     * or {@code null} if none, not different than zero or not valid for the target data type.
+     * This value is used if a tile contains less pixels than expected.
+     * The zero value is excluded because tiles are already initialized to zero by default.
+     *
+     * @return the value to use for filling empty spaces in rasters.
+     * @throws DataStoreException if an error occurred while fetching filling information.
+     */
+    protected abstract Number getFillValue() throws DataStoreException;
 
     /**
      * Parameters that describe the resource subset to be accepted by the {@link TiledGridCoverage} constructor.
      * This is a temporary class used only for transferring information from {@link TiledGridResource}.
      * This class does not perform I/O operations.
      */
-    public static final class Subset {
+    public final class Subset {
         /**
          * The full size of the coverage in the enclosing {@link TiledGridResource}.
          */
@@ -100,9 +138,13 @@ public abstract class TiledGridResource extends AbstractGridResource {
         final List<? extends SampleDimension> ranges;
 
         /**
-         * Indices of {@link TiledGridResource} bands which have been retained
-         * for inclusion in the {@link TiledGridCoverage} to construct.
+         * Indices of {@link TiledGridResource} bands which have been retained for inclusion
+         * in the {@link TiledGridCoverage} to construct, in strictly increasing order.
          * This is {@code null} if all bands shall be included.
+         *
+         * <p>If the user specified bands out of order, the change of band order is taken in
+         * account by the {@link #modelForBandSubset}. This {@code selectedBands} array does
+         * not show any change of order for making sequential readings easier.</p>
          */
         final int[] selectedBands;
 
@@ -119,9 +161,27 @@ public abstract class TiledGridResource extends AbstractGridResource {
         final int[] subsamplingOffsets;
 
         /**
-         * Size of tiles in each dimension.
+         * Size of tiles (or chunks) in the resource, without clipping and subsampling.
          */
         final int[] tileSize;
+
+        /**
+         * The sample model for the bands to read (not the full set of bands in the resource).
+         * The width is {@code tileSize[0]} and the height it {@code tileSize[1]},
+         * i.e. subsampling is <strong>not</strong> applied.
+         */
+        final SampleModel modelForBandSubset;
+
+        /**
+         * The color model for the bands to read (not the full set of bands in the resource).
+         */
+        final ColorModel colorsForBandSubset;
+
+        /**
+         * Value to use for filling empty spaces in rasters, or {@code null} if none,
+         * not different than zero or not valid for the target data type.
+         */
+        final Number fillValue;
 
         /**
          * Cache to use for tiles loaded by the {@link TiledGridCoverage}.
@@ -132,18 +192,25 @@ public abstract class TiledGridResource extends AbstractGridResource {
         /**
          * Creates parameters for the given domain and range.
          *
-         * @param  caller  the resource for which a subset is created.
          * @param  domain  the domain argument specified by user in a call to {@code GridCoverageResource.read(…)}.
          * @param  range   the range argument specified by user in a call to {@code GridCoverageResource.read(…)}.
+         * @param  loadAllBands {@code true} if the reader will load all bands regardless the {@code range} subset,
+         *         or {@code false} if only requested bands will be loaded and other bands will be skipped. See
+         *         {@link AbstractGridResource.RangeArgument#select(SampleModel, boolean) RangeArgument.select(…)}
+         *         for more information.
+         *
          * @throws ArithmeticException if pixel indices exceed 64 bits integer capacity.
          * @throws DataStoreException if a call to {@link TiledGridResource} method failed.
+         * @throws RasterFormatException if the sample model is not recognized.
+         * @throws IllegalArgumentException if an error occurred in an operation
+         *         such as creating the {@code SampleModel} subset for selected bands.
          */
-        public Subset(final TiledGridResource caller, GridGeometry domain, final int[] range) throws DataStoreException {
-            List<SampleDimension> bands        = caller.getSampleDimensions();
-            final RangeArgument   rangeIndices = caller.validateRangeArgument(bands.size(), range);
-            final GridGeometry    gridGeometry = caller.getGridGeometry();
+        public Subset(GridGeometry domain, final int[] range, final boolean loadAllBands) throws DataStoreException {
+            List<SampleDimension> bands        = getSampleDimensions();
+            final RangeArgument   rangeIndices = validateRangeArgument(bands.size(), range);
+            final GridGeometry    gridGeometry = getGridGeometry();
             sourceExtent = gridGeometry.getExtent();
-            tileSize = caller.getTileSize();
+            tileSize = getTileSize();
             boolean sharedCache = true;
             if (domain == null) {
                 domain             = gridGeometry;
@@ -178,22 +245,35 @@ public abstract class TiledGridResource extends AbstractGridResource {
                     }
                 }
             }
+            /*
+             * Get the bands selected by user in strictly increasing order of source band index.
+             * If user has specified bands in a different order, that change of band order will
+             * be handled by the `SampleModel`, not in `selectedBands` array.
+             */
             int[] selectedBands = null;
             if (!rangeIndices.isIdentity()) {
+                sharedCache = false;
                 bands = Arrays.asList(rangeIndices.select(bands));
                 selectedBands = new int[rangeIndices.getNumBands()];
                 for (int i=0; i<selectedBands.length; i++) {
-                    selectedBands[rangeIndices.getTargetIndex(i)] = rangeIndices.getSourceIndex(i);
+                    selectedBands[i] = rangeIndices.getSourceIndex(i);
+                }
+                assert ArraysExt.isSorted(selectedBands, true);
+                if (ArraysExt.isRange(0, selectedBands)) {
+                    selectedBands = null;
                 }
             }
-            this.domain        = domain;
-            this.ranges        = bands;
-            this.selectedBands = selectedBands;
+            this.domain              = domain;
+            this.ranges              = bands;
+            this.selectedBands       = selectedBands;
+            this.modelForBandSubset  = rangeIndices.select(getSampleModel(), loadAllBands);
+            this.colorsForBandSubset = rangeIndices.select(getColorModel());
+            this.fillValue           = getFillValue();
             /*
              * All `TiledGridCoverage` instances can share the same cache if they read all tiles fully.
              * If they read only sub-regions or apply subsampling, then they will need their own cache.
              */
-            cache = sharedCache ? caller.rasters : new WeakValueHashMap<>(Integer.class);
+            cache = sharedCache ? rasters : new WeakValueHashMap<>(Integer.class);
         }
 
         /**

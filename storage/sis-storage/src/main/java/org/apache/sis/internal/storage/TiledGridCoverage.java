@@ -124,6 +124,17 @@ public abstract class TiledGridCoverage extends GridCoverage {
     private final int[] subsampling, subsamplingOffsets;
 
     /**
+     * Indices of {@link TiledGridResource} bands which have been retained for
+     * inclusion in this {@code TiledGridCoverage}, in strictly increasing order.
+     * This is {@code null} if all bands shall be included.
+     *
+     * <p>If the user specified bands out of order, the change of band order is taken in account
+     * by the sample {@link #model}. This {@code selectedBands} array does not show any change
+     * of order for making sequential readings easier.</p>
+     */
+    protected final int[] selectedBands;
+
+    /**
      * Cache of rasters read by this {@code TiledGridCoverage}. This cache may be shared with other coverages
      * created for the same {@link TiledGridResource} resource. For each value, the raster {@code minX} and
      * {@code minY} values can be anything, depending which {@code TiledGridCoverage} was first to load the tile.
@@ -136,6 +147,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * The sample model for all rasters. The size of this sample model is the values of
      * the two first elements of {@link #tileSize} divided by subsampling after clipping.
+     * If user requested to read only a subset of the bands, this sample model is already
+     * the subset.
      */
     protected final SampleModel model;
 
@@ -152,21 +165,17 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * Creates a new tiled grid coverage. All parameters should have been validated before this call.
      *
-     * @param  subset     description of the {@link TiledGridResource} subset to cover.
-     * @param  model      description of image layout before clipping and subsampling.
-     * @param  colors     Java2D color model for images rendered from this coverage.
-     * @param  fillValue  the value to use for filling empty spaces in rasters, of {@code null}.
+     * @param  subset  description of the {@link TiledGridResource} subset to cover.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
-    protected TiledGridCoverage(final TiledGridResource.Subset subset, SampleModel model,
-                                final ColorModel colors, final Number fillValue)
-    {
-        super(subset.domain,  subset.ranges);
+    protected TiledGridCoverage(final TiledGridResource.Subset subset) {
+        super(subset.domain, subset.ranges);
         final GridExtent extent = subset.domain.getExtent();
         final int dimension = subset.sourceExtent.getDimension();
         readExtent          = subset.readExtent;
         subsampling         = subset.subsampling;
         subsamplingOffsets  = subset.subsamplingOffsets;
+        selectedBands       = subset.selectedBands;
         rasters             = subset.cache;
         tileSize            = subset.tileSize;
         tmcOfFirstTile      = new long[dimension];
@@ -188,22 +197,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * At this point, `tileStride` is the total number of tiles in source.
          * This value is not stored but its computation is still useful because
          * we want `ArithmeticException` to be thrown if the value is too high.
-         *
-         * Note: the compatible sample model will require only the memory needed for the new size.
-         * But the subset sample model will use a `DataBuffer` that still consume all the memory of
-         * the sample model for all bands (contrarily to the sample model for a smaller raster size).
-         * It is okay for `PixelInterleavedSampleModel` because we will need to read all bands anyway.
-         * It will be more complicated for the `BandedSampleModel` case.
          */
+        SampleModel model = subset.modelForBandSubset;
         if (model.getWidth() != subSize[0] || model.getHeight() != subSize[1]) {
             model = model.createCompatibleSampleModel(subSize[0], subSize[1]);
         }
-        if (subset.selectedBands != null) {
-            model = model.createSubsetSampleModel(subset.selectedBands);
-        }
         this.model     = model;
-        this.colors    = colors;
-        this.fillValue = fillValue;
+        this.colors    = subset.colorsForBandSubset;
+        this.fillValue = subset.fillValue;
     }
 
     /**

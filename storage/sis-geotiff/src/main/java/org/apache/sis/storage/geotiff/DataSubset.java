@@ -129,7 +129,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
     DataSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
-        super(subset, source.getSampleModel(), source.getColorModel(), source.fillValue());
+        super(subset);
         this.source   = source;
         this.numTiles = toIntExact(source.getNumTiles());
         final Vector[] tileArrayInfo = source.getTileArrayInfo();
@@ -290,8 +290,8 @@ class DataSubset extends TiledGridCoverage implements Localized {
             final long[] upper       = new long[BIDIMENSIONAL];   // Coordinates after the last pixel to read relative to the tile.
             final int[]  subsampling = new int [BIDIMENSIONAL];
             final Point  origin      = new Point();
-            final long[] offsets     = new long[tileOffsets.size() / numTiles];
-            final long[] byteCounts  = new long[tileByteCounts.size() / numTiles];
+            final long[] offsets     = new long[numBanks];
+            final long[] byteCounts  = new long[numBanks];
             boolean needsCompaction  = false;
             for (int i=0; i<numMissings; i++) {
                 final Tile tile = missings[i];
@@ -303,8 +303,8 @@ class DataSubset extends TiledGridCoverage implements Localized {
                     for (int b=0; b<offsets.length; b++) {
                         offsets[b] = addExact(offsets[b], reader().origin);
                     }
-                    result[tile.indexInResultArray] = tile.cache(
-                            readSlice(offsets, byteCounts, lower, upper, subsampling, origin));
+                    WritableRaster r = readSlice(offsets, byteCounts, lower, upper, subsampling, origin);
+                    result[tile.indexInResultArray] = tile.cache(r);
                 } else {
                     needsCompaction = true;
                 }

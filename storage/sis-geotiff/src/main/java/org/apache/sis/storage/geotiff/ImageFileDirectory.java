@@ -332,7 +332,7 @@ final class ImageFileDirectory extends DataCube {
     /**
      * The "no data" or background pixel value, or NaN if undefined.
      *
-     * @see #fillValue()
+     * @see #getFillValue()
      */
     private double noData = Double.NaN;
 
@@ -1495,7 +1495,7 @@ final class ImageFileDirectory extends DataCube {
      * not different than zero or not valid for the target data type.
      */
     @Override
-    protected Number fillValue() {
+    protected Number getFillValue() {
         if (Double.isFinite(noData) && noData != 0) {
             final long min, max;
             switch (sampleFormat) {

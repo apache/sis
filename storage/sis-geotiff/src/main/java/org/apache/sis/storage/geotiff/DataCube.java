@@ -17,7 +17,6 @@
 package org.apache.sis.storage.geotiff;
 
 import java.nio.file.Path;
-import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import org.apache.sis.storage.DataStoreException;
@@ -76,33 +75,6 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     }
 
     /**
-     * Returns the Java2D sample model describing pixel type and layout.
-     * The raster size is the tile size as stored in the GeoTIFF file.
-     *
-     * <h4>Multi-dimensional data cube</h4>
-     * If this resource has more than 2 dimensions, then this model is for the two first ones (usually horizontal).
-     * The images for all levels in additional dimensions shall use the same sample model.
-     *
-     * @throws DataStoreContentException if the type is not recognized.
-     */
-    protected abstract SampleModel getSampleModel() throws DataStoreException;
-
-    /**
-     * Returns the Java2D color model for rendering images.
-     *
-     * @throws DataStoreContentException if the type is not recognized.
-     */
-    protected abstract ColorModel getColorModel() throws DataStoreException;
-
-    /**
-     * Returns the value to use for filling empty spaces in rasters,
-     * or {@code null} if none, not different than zero or not valid for the target data type.
-     * This value is used if a tile contains less pixels than expected.
-     * The zero value is excluded because tiles are already initialized to zero by default.
-     */
-    protected abstract Number fillValue();
-
-    /**
      * Returns the total number of tiles. This is used for computing the stride between a
      * band and the next band in {@link #tileOffsets} and {@link #tileByteCounts} vectors.
      */
@@ -143,7 +115,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
         final GridCoverage coverage;
         try {
             synchronized (reader.store) {
-                final Subset subset = new Subset(this, domain, range);
+                final Subset subset = new Subset(domain, range, false);
                 final Compression compression = getCompression();
                 if (compression == null) {
                     throw new DataStoreContentException(reader.resources().getString(

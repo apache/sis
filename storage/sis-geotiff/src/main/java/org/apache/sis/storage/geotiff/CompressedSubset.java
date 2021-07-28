@@ -91,7 +91,11 @@ final class CompressedSubset extends DataSubset {
         final int      skipY  = subsampling[1] - 1;
         final int      skipX  = numInterleaved * (subsampling[0] - 1);
         final long     head   = numInterleaved * lower[0];
-        final long     tail   = numInterleaved * (getTileSize(0) - (width*subsampling[0] + lower[0])) + skipX;
+        final long     tail   = numInterleaved * (getTileSize(0) - width*subsampling[0]) + skipX - head;
+        /*
+         * `head` and `tail` are the number of sample values to skip at the beginning and end of each row.
+         * Then `skipX` is the number of sample values to skip between each pixel.
+         */
         final Buffer[] banks  = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
             final Buffer   bank = RasterFactory.createBuffer(type, capacity);
