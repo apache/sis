@@ -25,6 +25,7 @@ import org.apache.sis.storage.FeatureSet;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.SortProperty;
 
@@ -49,8 +50,8 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
         this(new ANSIInterpreter());
     }
 
-    protected SQLQueryAdapter(final Dialect dbDialect) {
-        this(forDialect(dbDialect));
+    protected SQLQueryAdapter(final Dialect dbDialect, FeatureType sourceDataType) {
+        this(forDialect(dbDialect, sourceDataType));
     }
 
     protected SQLQueryAdapter(final ANSIInterpreter filterInterpreter) {
@@ -129,7 +130,7 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
     static class Table extends SQLQueryAdapter {
         final org.apache.sis.internal.sql.feature.Table parent;
         public Table(org.apache.sis.internal.sql.feature.Table parent) {
-            super(parent.createStatement().dialect);
+            super(parent.createStatement().dialect, parent.featureType);
             this.parent = parent;
         }
 
@@ -147,10 +148,14 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
      *
      * @param dialect Database dialect that must be produced by the interpreter. If null, {@link Dialect#ANSI} is used
      *                as a fallback.
+     * @param target An optional data type, that gives interpreter extra-information about what dataset is going to be
+     *               filtered.
      */
-    private static ANSIInterpreter forDialect(final Dialect dialect) {
+    private static ANSIInterpreter forDialect(final Dialect dialect, final FeatureType target) {
+        // TODO: maybe in the future, the feature type might be replaced with a dedicated "companion" that
+        // provides various information to help the interpreter, whatever target dialect.
         switch (dialect) {
-            case POSTGRESQL: return new PostGISInterpreter();
+            case POSTGRESQL: return new PostGISInterpreter(target);
             default: return new ANSIInterpreter();
         }
     }

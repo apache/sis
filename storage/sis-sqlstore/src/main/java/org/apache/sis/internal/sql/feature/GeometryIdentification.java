@@ -135,6 +135,12 @@ class GeometryIdentification implements SQLCloseable {
         // Note: we make a query per entry, which could impact performance. However, 99% of defined tables
         // will have only one geometry column. Moreover, even with more than one, with prepared statement, the
         // performance impact should stay low.
+
+        /* TODO: Trace column dependencies if this is a column from a view.
+         * Problem: for views, PostGIS will NOT fill neither srid nor geometry type, UNLESS user has statically cast its
+         * column to match a precise geometry type/srid.
+         * Source: https://gis.stackexchange.com/a/376947/182809
+         */
         final CoordinateReferenceSystem crs = crsIdent.fetchCrs(pgSrid);
         return new GeometryColumn(name, dimension, pgSrid, type, crs);
     }

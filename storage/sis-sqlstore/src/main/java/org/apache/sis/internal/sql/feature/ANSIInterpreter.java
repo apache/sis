@@ -19,6 +19,7 @@ package org.apache.sis.internal.sql.feature;
 import java.util.List;
 import java.util.Collections;
 import java.util.function.BiConsumer;
+import java.util.function.UnaryOperator;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameSpace;
@@ -79,7 +80,18 @@ class ANSIInterpreter extends Visitor<Feature,StringBuilder> {
 
     private final NameSpace scope;
 
+    /**
+     * Called on each and every filter/subfilter visited by this interpreter.
+     */
+    private final UnaryOperator<Filter<Feature>> filterAdapter;
+
     public ANSIInterpreter() {
+        this(null);
+    }
+
+    public ANSIInterpreter(UnaryOperator<Filter<Feature>> filterAdapter) {
+        if (filterAdapter == null) filterAdapter = UnaryOperator.identity();
+        this.filterAdapter = filterAdapter;
         nameFactory = DefaultFactories.forBuildin(NameFactory.class);
         scope = nameFactory.createNameSpace(nameFactory.createLocalName(null, "xpath"),
                                             Collections.singletonMap("separator", "/"));
@@ -333,6 +345,12 @@ class ANSIInterpreter extends Visitor<Feature,StringBuilder> {
         if (sb.length() <= pos) {
             throw new IllegalArgumentException("Expression evaluate to an empty text: " + exp);
         }
+    }
+
+    @Override
+    public void visit(Filter<Feature> filter, StringBuilder accumulator) {
+        final Filter<Feature> adapted = filterAdapter.apply(filter);
+        super.visit(adapted, accumulator);
     }
 
     private static void ensureMatchCase(final boolean isMatchingCase) {

@@ -219,7 +219,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
     class SubsetAdapter extends SQLQueryAdapter {
 
         SubsetAdapter() {
-            super(queryBuilder.dialect);
+            super(queryBuilder.dialect, adapter.type);
         }
 
         @Override

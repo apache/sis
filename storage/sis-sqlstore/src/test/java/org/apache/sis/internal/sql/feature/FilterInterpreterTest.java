@@ -19,6 +19,7 @@ package org.apache.sis.internal.sql.feature;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -30,12 +31,14 @@ import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.InvalidFilterValueException;
 import org.opengis.filter.SpatialOperator;
 import org.opengis.filter.SpatialOperatorName;
+import org.opengis.metadata.acquisition.GeometryType;
 import org.opengis.util.CodeList;
 
 import static org.opengis.filter.SpatialOperatorName.BBOX;
@@ -86,7 +89,11 @@ public final strictfp class FilterInterpreterTest extends TestCase {
      */
     @Test
     public void testGeometricFilterWithTransform() {
-        final PostGISInterpreter interpreter = new PostGISInterpreter();
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("Mock");
+        builder.addAttribute(GeometryType.POINT).setName("Toto").setCRS(CommonCRS.defaultGeographic());
+        final FeatureType mockType = builder.build();
+
+        final PostGISInterpreter interpreter = new PostGISInterpreter(mockType);
         final GeneralEnvelope bbox = new GeneralEnvelope(CommonCRS.WGS84.geographic());
         bbox.setEnvelope(-10, 20, -5, 25);
         String expectedQueryString = "ST_Intersects(\"Toto\"," +

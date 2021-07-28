@@ -17,9 +17,26 @@
 package org.apache.sis.internal.sql.feature;
 
 // Branch-dependent imports
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.logging.Level;
+import java.util.stream.Stream;
+import org.apache.sis.feature.Features;
+import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.util.Constants;
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyNotFoundException;
+import org.opengis.feature.PropertyType;
+import org.opengis.filter.Filter;
 import org.opengis.filter.SpatialOperator;
 import org.opengis.filter.SpatialOperatorName;
+import org.opengis.filter.ValueReference;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import static org.apache.sis.internal.sql.feature.PostGISSpatialFilterAdapter.LOGGER;
 
 
 /**
@@ -31,10 +48,13 @@ import org.opengis.filter.SpatialOperatorName;
  * @module
  */
 final class PostGISInterpreter extends ANSIInterpreter {
-    /**
-     * Creates a new instance.
-     */
-    PostGISInterpreter() {
+
+    PostGISInterpreter(final FeatureType target) {
+        this(new PostGISSpatialFilterAdapter(init(target)));
+    }
+
+    PostGISInterpreter(UnaryOperator<Filter<Feature>> filterAdapter) {
+        super(filterAdapter);
     }
 
     /**
@@ -47,6 +67,57 @@ final class PostGISInterpreter extends ANSIInterpreter {
      */
     @Override
     void bbox(final StringBuilder sb, final SpatialOperator<Feature> filter) {
-        join(sb, filter, "&&");
+        join(sb, filter, " && ");
+    }
+
+    /**
+     * Creates a functor capable of searching the CRS associated to a given value reference. For now, the returned
+     * function will only search in the target feature type. However, providing a functor allows to evolve it without
+     * breaking user API.
+     */
+    private static Function<ValueReference<Feature, ?>, Optional<CoordinateReferenceSystem>> init(final FeatureType target) {
+        if (target == null) return it -> Optional.empty();
+        return it -> searchForPropertyCrs(target, it);
+    }
+
+    private static Optional<CoordinateReferenceSystem> searchForPropertyCrs(final FeatureType target, final ValueReference<Feature, ?> ref) {
+        return searchReference(target, ref)
+                .flatMap(Features::toAttribute)
+                .map(attr -> attr.characteristics().get(AttributeConvention.CRS_CHARACTERISTIC.toString()))
+                .map(it -> {
+                    final Object value = it.getDefaultValue();
+                    return (value instanceof CoordinateReferenceSystem) ? (CoordinateReferenceSystem) value : null;
+                });
+    }
+
+    private static Optional<PropertyType> searchReference(final FeatureType target, final ValueReference<Feature, ?> ref) {
+        final String xPath = ref.getXPath();
+        if (xPath == null) return Optional.empty();
+        final PropertyType brutSearch = searchProperty(target, xPath);
+        if (brutSearch != null) return Optional.of(brutSearch);
+
+        /* TODO: find a more robust strategy to find the property related to a value reference
+         * Notes:
+         *  - In the specific case of an SQL based property name, given XPath could be of the form
+         *    <table>.<attribute>. We try to get it.
+         *  - Another "tweak" is that it is a common pattern to get a name of the form <namespace>:<value>.
+         *  - Other use-cases are not supported yet (Ex: a real xpath -> association1/association2/attribute).
+         */
+        return Stream.of('.', ':')
+                .mapToInt(sep -> xPath.lastIndexOf(sep))
+                .filter(it -> it >= 0 && it < xPath.length())
+                .mapToObj(idx -> xPath.substring(idx+1))
+                .map(name -> searchProperty(target, name))
+                .filter(Objects::nonNull)
+                .findFirst();
+    }
+
+    private static PropertyType searchProperty(FeatureType datatype, String propertyName) {
+        try {
+            return datatype.getProperty(propertyName);
+        } catch (PropertyNotFoundException e) {
+            LOGGER.log(Level.FINER, e, () -> String.format("No property %s in data type %s", propertyName, datatype.getName()));
+            return null;
+        }
     }
 }

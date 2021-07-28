@@ -236,7 +236,7 @@ public abstract class Visitor<R,A> {
      * @param  accumulator  where to write the result of all actions.
      * @throws UnsupportedOperationException if there is no action registered for the given filter.
      */
-    public final void visit(final Filter<R> filter, final A accumulator) {
+    public void visit(final Filter<R> filter, final A accumulator) {
         final CodeList<?> type = (filter != null) ? filter.getOperatorType() : null;
         final BiConsumer<Filter<R>, A> f = filters.get(type);
         if (f != null) {
