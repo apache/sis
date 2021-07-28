@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.Iterator;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -398,7 +399,10 @@ public abstract class Geometries<G> implements Serializable {
      * and other points are the envelope corners in clockwise order. The specified envelope
      * should be two-dimensional (see for example {@link GeneralEnvelope#horizontal()}) but
      * the coordinates does not need to be in (longitude, latitude) order; this method will
-     * reorder coordinates as (x,y) on a best-effort basis.
+     * preserve envelope horizontal axis order. It means that any non-2D axis will be ignored,
+     * and the first horizontal axis in the envelope will be the first axis (x) in the resulting
+     * geometry. To force {@link AxesConvention#RIGHT_HANDED}, you have to transform your bounding
+     * box before calling this method.
      *
      * @param  envelope  the envelope to convert.
      * @param  strategy  how to resolve wrap-around ambiguities on the envelope.
@@ -407,7 +411,7 @@ public abstract class Geometries<G> implements Serializable {
     public GeometryWrapper<G> toGeometry2D(final Envelope envelope, final WraparoundMethod strategy) {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         int x = 0, y = 1;
-        if (crs != null) {
+        if (crs != null && envelope.getDimension() > 2) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
             int cx = AxisDirections.indexOfColinear(cs, AxisDirection.EAST);
             int cy = AxisDirections.indexOfColinear(cs, AxisDirection.NORTH);
@@ -418,8 +422,8 @@ public abstract class Geometries<G> implements Serializable {
                     // May happen if the CRS has only one dimension.
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyEnvelope2D));
                 }
-                x = cx;
-                y = cy;
+                x = Math.min(cx, cy);
+                y = Math.max(cy, cx);
             }
         }
         final GeometryWrapper<G> result;

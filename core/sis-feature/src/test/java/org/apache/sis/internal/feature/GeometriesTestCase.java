@@ -207,18 +207,18 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)} with automatic axis swapping.
+     * Tests {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)} and ensure <em>no</em> axis swapping is done.
      */
     @Test
-    public void testToGeometryAxisSwapping() {
+    public void testToGeometryAxisOrderIsPreserved() {
         final GeneralEnvelope e = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         e.setRange(0,  2,  3);
         e.setRange(1, 89, 19);
-        assertToGeometryEquals(e, WraparoundMethod.NONE,         89, 2,   89, 3,  19, 3,   19, 2,   89, 2);
-        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS, -271, 2, -271, 3,  19, 3,   19, 2, -271, 2);
-        assertToGeometryEquals(e, WraparoundMethod.EXPAND,     -180, 2, -180, 3, 180, 3,  180, 2, -180, 2);
-        assertToGeometryEquals(e, WraparoundMethod.SPLIT,        89, 2,   89, 3, 180, 3,  180, 2,   89, 2,
-                                                               -180, 2, -180, 3,  19, 3,   19, 2, -180, 2);
+        assertToGeometryEquals(e, WraparoundMethod.NONE,       2,   89, 2,  19, 3,  19, 3,   89, 2,   89);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS, 2, -271, 2,  19, 3,  19, 3, -271, 2, -271);
+        assertToGeometryEquals(e, WraparoundMethod.EXPAND,     2, -180, 2, 180, 3, 180, 3, -180, 2, -180);
+        assertToGeometryEquals(e, WraparoundMethod.SPLIT,      2,   89, 2, 180, 3, 180, 3,   89, 2,   89,
+                                                               2, -180, 2,  19, 3,  19, 3, -180, 2, -180);
     }
 
     /**
