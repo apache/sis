@@ -28,6 +28,17 @@ import org.apache.sis.storage.DataStoreContentException;
  * Helper methods for reading a rectangular area, a cube or a hyper-cube from a channel.
  * The data can be stored in an existing array, or a new array can be created.
  * This class does not handle compression; it is rather designed for efficient reading of uncompressed data.
+ * It tries to read the largest possible contiguous blocks of data with single
+ * {@link java.nio.channels.ReadableByteChannel#read(ByteBuffer)} and
+ * {@link ByteBuffer#get(byte[], int, int)} method calls.
+ *
+ * <p>This reader supports subsampling in any dimension. However subsampling in the first dimension
+ * (the one with fastest varying index) is generally not efficient because it forces a large amount
+ * of seek operations. This class makes no special case for making that specific subsampling faster.
+ * It is generally not worth because subsampling in the first dimension is a special case anyway.
+ * It is the "dimension" of bands in an image using the pixel interleaved sample model, so the caller
+ * often needs to process subsampling in the first dimension in a different way than other dimensions
+ * anyway.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

@@ -259,7 +259,8 @@ public abstract class TiledGridResource extends AbstractGridResource {
                     selectedBands[i] = rangeIndices.getSourceIndex(i);
                 }
                 assert ArraysExt.isSorted(selectedBands, true);
-                if (ArraysExt.isRange(0, selectedBands)) {
+                if (rangeIndices.hasAllBands) {
+                    assert ArraysExt.isRange(0, selectedBands);
                     selectedBands = null;
                 }
             }
@@ -284,6 +285,17 @@ public abstract class TiledGridResource extends AbstractGridResource {
          */
         public boolean hasSubsampling(final int dimension) {
             return subsampling[dimension] != 1;
+        }
+
+        /**
+         * Returns {@code true} if the user requested a subset of bands, or {@code false}
+         * if all bands shall be read in order. For this method, a change of band order
+         * is considered as a "subset".
+         *
+         * @return {@code true} if only a subset of bands will be read or if bands will be read out of order.
+         */
+        public boolean hasBandSubset() {
+            return selectedBands != null;
         }
     }
 }

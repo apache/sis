@@ -221,6 +221,8 @@ final class ImageFileDirectory extends DataCube {
      * The {@code samplesPerPixel} value is usually 1 for bilevel, grayscale and palette-color images,
      * and 3 for RGB images. If this value is higher, then the {@code ExtraSamples} TIFF tag should
      * give an indication of the meaning of the additional channels.
+     *
+     * @see #getNumBands()
      */
     private short samplesPerPixel;
 
@@ -1357,6 +1359,14 @@ final class ImageFileDirectory extends DataCube {
             throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, getDataType()), e);
         }
         return sampleModel;
+    }
+
+    /**
+     * Returns the number of components per pixel.
+     */
+    @Override
+    protected int getNumBands() {
+        return samplesPerPixel;
     }
 
     /**

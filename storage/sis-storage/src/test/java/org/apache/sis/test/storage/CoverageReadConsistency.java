@@ -28,8 +28,10 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -71,6 +73,23 @@ public strictfp class CoverageReadConsistency extends TestCase {
      * Can be {@code null} if unavailable (for example because the image is too large).
      */
     private final GridCoverage full;
+
+    /**
+     * Whether to allow random sub-regions to start elsewhere than (0,0).
+     */
+    private boolean allowOffsets;
+
+    /**
+     * Whether to use random subsamplings.
+     */
+    private boolean allowSubsamplings;
+
+    /**
+     * Whether to use random selection of bands.
+     *
+     * @see #randomRange()
+     */
+    private boolean allowBandSubset;
 
     /**
      * The random number generator to use.
@@ -133,7 +152,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
      */
     @Test
     public void testSubRegionAtOrigin() throws DataStoreException {
-        readAndCompareRandomRegions(false, false);
+        readAndCompareRandomRegions();
     }
 
     /**
@@ -145,7 +164,8 @@ public strictfp class CoverageReadConsistency extends TestCase {
     @Test
     @DependsOnMethod("testSubRegionAtOrigin")
     public void testSubRegionsAnywhere() throws DataStoreException {
-        readAndCompareRandomRegions(true, false);
+        allowOffsets = true;
+        readAndCompareRandomRegions();
     }
 
     /**
@@ -157,7 +177,8 @@ public strictfp class CoverageReadConsistency extends TestCase {
     @Test
     @DependsOnMethod("testSubRegionAtOrigin")
     public void testSubsamplingAtOrigin() throws DataStoreException {
-        readAndCompareRandomRegions(false, true);
+        allowSubsamplings = true;
+        readAndCompareRandomRegions();
     }
 
     /**
@@ -169,26 +190,114 @@ public strictfp class CoverageReadConsistency extends TestCase {
     @Test
     @DependsOnMethod({"testSubsamplingAtOrigin", "testSubRegionsAnywhere"})
     public void testSubsamplingAnywhere() throws DataStoreException {
-        readAndCompareRandomRegions(true, true);
+        allowOffsets      = true;
+        allowSubsamplings = true;
+        readAndCompareRandomRegions();
+    }
+
+    /**
+     * Tests reading random subset of bands in random sub-region starting at coordinates (0,0).
+     *
+     * @throws DataStoreException if an error occurred while using the resource.
+     */
+    @Test
+    @DependsOnMethod("testSubRegionAtOrigin")
+    public void testBandSubsetAtOrigin() throws DataStoreException {
+        allowBandSubset = true;
+        readAndCompareRandomRegions();
+    }
+
+    /**
+     * Tests reading random subset of bands in random sub-regions starting at random offsets.
+     *
+     * @throws DataStoreException if an error occurred while using the resource.
+     */
+    @Test
+    @DependsOnMethod({"testBandSubsetAtOrigin", "testSubRegionsAnywhere"})
+    public void testBandSubsetAnywhere() throws DataStoreException {
+        allowOffsets    = true;
+        allowBandSubset = true;
+        readAndCompareRandomRegions();
+    }
+
+    /**
+     * Tests reading random subset of bands in random sub-regions starting at random offsets
+     * with random subsampling applied.
+     *
+     * @throws DataStoreException if an error occurred while using the resource.
+     */
+    @Test
+    @DependsOnMethod({"testBandSubsetAnywhere", "testSubsamplingAnywhere"})
+    public void testAllAnywhere() throws DataStoreException {
+        allowOffsets      = true;
+        allowBandSubset   = true;
+        allowSubsamplings = true;
+        readAndCompareRandomRegions();
+    }
+
+    /**
+     * Creates a random domain to be used as a query on the {@link #resource} to test.
+     * All arrays given to this method will have their values overwritten.
+     *
+     * @param  gg           value of {@link GridCoverage#getGridGeometry()} on the resource to test.
+     * @param  low          pre-allocated array where to write the lower grid coordinates, inclusive.
+     * @param  high         pre-allocated array where to write the upper grid coordinates, inclusive.
+     * @param  subsampling  pre-allocated array where to write the subsampling.
+     */
+    private GridGeometry randomDomain(final GridGeometry gg, final long[] low, final long[] high, final int[] subsampling) {
+        final GridExtent fullExtent = gg.getExtent();
+        final int dimension = fullExtent.getDimension();
+        for (int d=0; d<dimension; d++) {
+            final int span = StrictMath.toIntExact(fullExtent.getSize(d));
+            final int rs = random.nextInt(span);                            // Span of the sub-region - 1.
+            if (allowOffsets) {
+                low[d] = random.nextInt(span - rs);                         // Note: (span - rs) > 0.
+            }
+            high[d] = low[d] + rs;
+            subsampling[d] = 1;
+            if (allowSubsamplings) {
+                subsampling[d] += random.nextInt(StrictMath.max(rs / 16, 1));
+            }
+        }
+        return gg.derive().subgrid(new GridExtent(null, low, high, true), subsampling).build();
+    }
+
+    /**
+     * Returns the subset of bands to use for testing. This method never return {@code null},
+     * but the set of bands is random only if {@link #allowBandSubset} is {@code true}.
+     */
+    private int[] randomRange(final int numBands) {
+        if (!allowBandSubset) {
+            return ArraysExt.range(0, numBands);
+        }
+        final int[] selectedBands = new int[numBands];
+        for (int i=0; i<numBands; i++) {
+            selectedBands[i] = random.nextInt(numBands);
+        }
+        // Remove duplicated elements.
+        long included = 0;
+        int count = 0;
+        for (final int b : selectedBands) {
+            if (included != (included |= Numerics.bitmask(b))) {
+                selectedBands[count++] = b;
+            }
+        }
+        return ArraysExt.resize(selectedBands, count);
     }
 
     /**
      * Implementation of methods testing reading in random sub-regions with random sub-samplings.
      *
-     * @param  allowOffsets       whether to allow sub-regions to start elsewhere than (0,0).
-     * @param  allowSubsamplings  whether to use random subsamplings.
      * @throws DataStoreException if an error occurred while using the resource.
      */
-    private void readAndCompareRandomRegions(final boolean allowOffsets, final boolean allowSubsamplings)
-            throws DataStoreException
-    {
+    private void readAndCompareRandomRegions() throws DataStoreException {
         final GridGeometry gg = resource.getGridGeometry();
-        final GridExtent fullExtent = gg.getExtent();
-        final int    dimension   = fullExtent.getDimension();
+        final int    dimension   = gg.getDimension();
         final long[] low         = new long[dimension];
         final long[] high        = new long[dimension];
         final int [] subsampling = new int [dimension];
         final int [] subOffsets  = new int [dimension];
+        final int    numBands    = resource.getSampleDimensions().size();
         /*
          * We will collect statistics on execution time only if the
          * test is executed in a more verbose mode than the default.
@@ -196,30 +305,15 @@ public strictfp class CoverageReadConsistency extends TestCase {
         final Statistics durations = (VERBOSE || !failOnMismatch) ? new Statistics("time (ms)") : null;
         int failuresCount = 0;
         for (int it=0; it < numIterations; it++) {
-            /*
-             * Create a random domain to be used as a query on the `GridCoverageResource`.
-             */
-            for (int d=0; d<dimension; d++) {
-                final int span = StrictMath.toIntExact(fullExtent.getSize(d));
-                final int rs = random.nextInt(span);                    // Span of the sub-region - 1.
-                if (allowOffsets) {
-                    low[d] = random.nextInt(span - rs);                 // Note: (span - rs) > 0.
-                }
-                high[d] = low[d] + rs;
-                subsampling[d] = 1;
-                if (allowSubsamplings) {
-                    subsampling[d] += random.nextInt(StrictMath.max(rs / 16, 1));
-                }
-            }
-            final GridGeometry domain = gg.derive()
-                    .subgrid(new GridExtent(null, low, high, true), subsampling).build();
+            final GridGeometry domain = randomDomain(gg, low, high, subsampling);
+            final int[] selectedBands = randomRange(numBands);
             /*
              * Read a coverage containing the requested sub-domain. Note that the reader is free to read
              * more data than requested. The extent actually read is `actualReadExtent`. It shall contain
              * fully the requested `domain`.
              */
             final long startTime = System.nanoTime();
-            final GridCoverage subset = resource.read(domain, null);
+            final GridCoverage subset = resource.read(domain, selectedBands);
             final GridExtent actualReadExtent = subset.getGridGeometry().getExtent();
             if (failOnMismatch) {
                 assertEquals("Unexpected number of dimensions.", dimension, actualReadExtent.getDimension());
@@ -251,16 +345,17 @@ nextSlice:  for (;;) {
                 System.arraycopy(sliceMin, BIDIMENSIONAL, sliceMax, BIDIMENSIONAL, dimension - BIDIMENSIONAL);
                 final PixelIterator itr = iterator(full,   sliceMin, sliceMax, subsampling, subOffsets, allowSubsamplings);
                 final PixelIterator itc = iterator(subset, sliceMin, sliceMax, subsampling, subOffsets, false);
-                if (durations != null) {
-                    durations.accept((System.nanoTime() - startTime) / (double) StandardDateFormat.NANOS_PER_MILLISECOND);
-                }
                 if (itr != null) {
                     assertEquals(itr.getDomain().getSize(), itc.getDomain().getSize());
-                    double[] expected = null, actual = null;
+                    final double[] expected = new double[selectedBands.length];
+                    double[] reference = null, actual = null;
                     while (itr.next()) {
                         assertTrue(itc.next());
-                        expected = itr.getPixel(expected);
-                        actual   = itc.getPixel(actual);
+                        reference = itr.getPixel(reference);
+                        actual    = itc.getPixel(actual);
+                        for (int i=0; i<selectedBands.length; i++) {
+                            expected[i] = reference[selectedBands[i]];
+                        }
                         if (!Arrays.equals(expected, actual)) {
                             failuresCount++;
                             if (!failOnMismatch) break;
@@ -269,7 +364,7 @@ nextSlice:  for (;;) {
                             final StringBuilder message = new StringBuilder(100).append("Mismatch at position (")
                                     .append(pr.x).append(", ").append(pr.y).append(") in full image and (")
                                     .append(pc.x).append(", ").append(pc.y).append(") in tested sub-image");
-                            findMatchPosition(itr, pr, expected, message);
+                            findMatchPosition(itr, pr, selectedBands, actual, message);
                             assertArrayEquals(message.toString(), expected, actual, STRICT);
                         }
                     }
@@ -290,6 +385,9 @@ nextSlice:  for (;;) {
                     sliceMin[d] = actualReadExtent.getLow(d);
                 }
                 break;
+            }
+            if (durations != null) {
+                durations.accept((System.nanoTime() - startTime) / (double) StandardDateFormat.NANOS_PER_MILLISECOND);
             }
         }
         /*
@@ -373,8 +471,11 @@ nextSlice:  for (;;) {
      * Explores pixel values around the given position in search for a pixel having the expected values.
      * If a match is found, the error message is completed with information about the match position.
      */
-    private static void findMatchPosition(final PixelIterator ir, final Point pr, final double[] expected, final StringBuilder message) {
-        double[] actual = null;
+    private static void findMatchPosition(final PixelIterator ir, final Point pr, final int[] selectedBands,
+                                          final double[] actual, final StringBuilder message)
+    {
+        final double[] expected = new double[actual.length];
+        double[] reference = null;
         for (int dy=0; dy<10; dy++) {
             for (int dx=0; dx<10; dx++) {
                 if ((dx | dy) != 0) {
@@ -386,7 +487,10 @@ nextSlice:  for (;;) {
                         } catch (IndexOutOfBoundsException e) {
                             continue;
                         }
-                        actual = ir.getPixel(actual);
+                        reference = ir.getPixel(reference);
+                        for (int i=0; i<selectedBands.length; i++) {
+                            expected[i] = reference[selectedBands[i]];
+                        }
                         if (Arrays.equals(expected, actual)) {
                             message.append(" (note: found a match at offset (").append(x).append(", ").append(y)
                                    .append(") in full image)");

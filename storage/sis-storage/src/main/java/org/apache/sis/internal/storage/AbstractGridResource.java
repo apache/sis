@@ -168,7 +168,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
                 previous = r;
             }
         }
-        return new RangeArgument(packed);
+        return new RangeArgument(packed, packed.length == numSampleDimensions);
     }
 
     /**
@@ -182,6 +182,11 @@ public abstract class AbstractGridResource extends AbstractResource implements G
          * of user-specified range index.
          */
         private final long[] packed;
+
+        /**
+         * Whether the selection contains all bands of the resource, not necessarily in order.
+         */
+        public final boolean hasAllBands;
 
         /**
          * If a {@linkplain #insertSubsampling subsampling} has been applied, indices of the first and last band
@@ -201,9 +206,10 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         /**
          * Encapsulates the given {@code range} argument packed in high bits.
          */
-        private RangeArgument(final long[] packed) {
-            this.packed = packed;
-            interval = 1;
+        private RangeArgument(final long[] packed, final boolean hasAllBands) {
+            this.packed      = packed;
+            this.hasAllBands = hasAllBands;
+            this.interval    = 1;
         }
 
         /**
@@ -213,7 +219,9 @@ public abstract class AbstractGridResource extends AbstractResource implements G
          * @return whether user specified all bands in increasing order without subsampling inserted.
          */
         public boolean isIdentity() {
-            if (interval != 1) return false;
+            if (!hasAllBands || interval != 1) {
+                return false;
+            }
             for (int i=0; i<packed.length; i++) {
                 if (packed[i] != ((((long) i) << Integer.SIZE) | i)) {
                     return false;

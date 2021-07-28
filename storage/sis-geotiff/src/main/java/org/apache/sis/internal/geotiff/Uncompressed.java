@@ -26,6 +26,9 @@ import org.apache.sis.util.Classes;
 
 /**
  * A pseudo-inflater which copy values unchanged.
+ * This implementation is useful for handling more complex subsampling
+ * than what {@link org.apache.sis.internal.storage.io.HyperRectangleReader} can handle.
+ * It is also useful for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -52,8 +55,10 @@ public abstract class Uncompressed extends Inflater {
     /**
      * For constructors in inner classes.
      */
-    private Uncompressed(ChannelDataInput input, long start, int pixelsPerRow, int samplesPerPixel, int interpixels, final int sampleSize) {
-        super(input, pixelsPerRow, samplesPerPixel, interpixels);
+    private Uncompressed(final ChannelDataInput input, final long start, final int elementsPerRow,
+                         final int samplesPerElement, final int[] skipAfterElements, final int sampleSize)
+    {
+        super(input, elementsPerRow, samplesPerElement, skipAfterElements);
         this.streamPosition = start;
         this.sampleSize = sampleSize;
     }
@@ -61,25 +66,26 @@ public abstract class Uncompressed extends Inflater {
     /**
      * Creates a new instance.
      *
-     * @param  input            the source of data to decompress.
-     * @param  start            stream position where to start reading.
-     * @param  pixelsPerRow     number of pixels per row. Must be strictly positive.
-     * @param  samplesPerPixel  number of sample values per pixel. Must be strictly positive.
-     * @param  interpixels      number of sample values to skip between pixels. May be zero.
-     * @param  target           where to store sample values.
+     * @param  input   the source of data to decompress.
+     * @param  start   stream position where to start reading.
+     * @param  count   number of elements (usually pixels) per row. Must be strictly positive.
+     * @param  size    number of sample values per element (usually pixel). Must be strictly positive.
+     * @param  skips   number of sample values to skip between elements (pixels). May be empty or null.
+     * @param  target  where to store sample values.
      * @return the inflater for the given targe type.
      * @throws IllegalArgumentException if the buffer type is not recognized.
      */
     public static Uncompressed create(final ChannelDataInput input, final long start,
-            final int pixelsPerRow, final int samplesPerPixel, final int interpixels, final Buffer target)
+            final int count, final int size, final int[] skips, final Buffer target)
     {
-        if (target instanceof ByteBuffer) return new Bytes(input, start, pixelsPerRow, samplesPerPixel, interpixels, (ByteBuffer) target);
+        if (target instanceof ByteBuffer) return new Bytes(input, start, count, size, skips, (ByteBuffer) target);
         throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(target)));
     }
 
     /**
      * Reads a row of sample values and stores them in the target buffer.
-     * Subclasses must override and invoke {@code super.uncompress()} before to do the actual reading.
+     * Subclasses must override this method and invoke {@code super.uncompress()}
+     * before to do the actual reading.
      */
     @Override
     public void uncompressRow() throws IOException {
@@ -108,23 +114,22 @@ public abstract class Uncompressed extends Inflater {
     }
 
     /**
-     * Inflater when the values to read and store are bytes.
+     * Inflater for sample values stored as bytes.
      */
     private static final class Bytes extends Uncompressed {
         /** Where to copy the values that we will read. */
         private final ByteBuffer target;
 
         /** Creates a new inflater which will write in the given buffer. */
-        Bytes(ChannelDataInput input, long start, int pixelsPerRow, int samplesPerPixel, int interpixels, ByteBuffer target) {
-            super(input, start, pixelsPerRow, samplesPerPixel, interpixels, Byte.BYTES);
+        Bytes(ChannelDataInput input, long start, int count, int size, int[] skips, ByteBuffer target) {
+            super(input, start, count, size, skips, Byte.BYTES);
             this.target = target;
         }
 
-        /**
-         * Reads and decompress a row of sample values.
-         */
+        /** Reads and decompress a row of sample values. */
         @Override public void uncompressRow() throws IOException {
             super.uncompressRow();
+            int ip = 0;
             for (int i = chunksPerRow; --i > 0;) {      // (chunksPerRow - 1) iterations.
                 int n = samplesPerChunk;
                 do target.put(input.readByte());
@@ -134,14 +139,18 @@ public abstract class Uncompressed extends Inflater {
                  * We invoke `readByte()` in a loop instead of invoking `skip` because if
                  * the number of bytes to skip is small, this is more efficient.
                  */
-                for (n = interpixels; --n >= 0;) {
-                    input.readByte();
+                if (skipAfterChunks != null) {
+                    for (n = skipAfterChunks[ip]; --n >= 0;) {
+                        input.readByte();
+                    }
+                    if (++ip >= skipAfterChunks.length) ip = 0;
                 }
             }
             /*
-             * Read the last element that was not read in first above `for` loop, but without
-             * skipping `interpixels` values after it. This is necessary for avoiding EOF if
-             * the last pixel to read is in the last column of the tile.
+             * Read the last element that was not read in above `for` loop,
+             * but without skipping `skipAfterElements` sample values after.
+             * This is necessary for avoiding EOF if the last pixel to read
+             * is in the last column of the tile.
              */
             int n = samplesPerChunk;
             do target.put(input.readByte());

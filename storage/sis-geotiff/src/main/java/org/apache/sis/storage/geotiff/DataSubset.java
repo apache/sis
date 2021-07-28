@@ -100,21 +100,32 @@ class DataSubset extends TiledGridCoverage implements Localized {
     private final int numTiles;
 
     /**
-     * Number of banks in the image data buffer.
+     * Number of banks retained for the target image data buffer.
      * This is equal to the number of bands only for planar images, and 1 in all other cases.
+     * If the user asked to read only a subset of the bands, then "number of bands" in above
+     * sentence is the {@linkplain #selectedBands subset} size.
      */
     protected final int numBanks;
 
     /**
-     * Number of interleaved sample values in a pixel. For planar images, this is equal to 1.
-     * For interleaved sample model, this is equal to the number of bands. This value is often
-     * equal to the {@linkplain java.awt.image.ComponentSampleModel#getPixelStride() pixel stride}.
+     * Number of interleaved sample values in a pixel in the GeoTIFF file (ignoring band subset).
+     * For planar images (banded sample model), this is equal to 1. For pixel interleaved image,
+     * this is equal to the number of bands in the original image.
+     *
+     * @see java.awt.image.ComponentSampleModel#getPixelStride()
      */
-    protected final int numInterleaved;
+    protected final int sourcePixelStride;
+
+    /**
+     * Number of interleaved sample values in a pixel of the image to load in memory.
+     * This is similar to {@link #sourcePixelStride}, but taking in account the number
+     * of bands requested by user at reading time.
+     */
+    protected final int targetPixelStride;
 
     /**
      * Number of sample values in a bank (not necessarily a band).
-     * This is tile width × height × {@link #numInterleaved}.
+     * This is tile width × height × {@code targetPixelStride}.
      */
     protected final int capacity;
 
@@ -139,19 +150,24 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * "Banks" (in `java.awt.image.DataBuffer` sense) are synonymous to "bands" for planar image only.
          * Otherwise there is only one bank no matter the amount of bands. Each bank will be read separately.
          */
+        final int maxBank;
         if (model instanceof BandedSampleModel) {
             numBanks = model.getNumBands();
-            numInterleaved = 1;
+            sourcePixelStride = targetPixelStride = 1;
+            maxBank = (selectedBands != null) ? selectedBands[selectedBands.length - 1] : numBanks - 1;
+            // Note: `selectedBands` is in strictly increasing order, so taking the last value is okay.
         } else {
+            maxBank  = 0;
             numBanks = 1;
-            numInterleaved = model.getNumBands();
+            sourcePixelStride = source.getNumBands();
+            targetPixelStride = model .getNumBands();
         }
         final int n = tileOffsets.size();
-        if (numBanks > n / numTiles) {
+        if (maxBank >= n / numTiles) {
             throw new DataStoreContentException(source.reader.errors().getString(
-                    Errors.Keys.TooFewCollectionElements_3, "tileOffsets", numBanks * numTiles, n));
+                    Errors.Keys.TooFewCollectionElements_3, "tileOffsets", (maxBank + 1) * numTiles, n));
         }
-        capacity = multiplyExact(multiplyExact(model.getWidth(), model.getHeight()), numInterleaved);
+        capacity = multiplyExact(multiplyExact(model.getWidth(), model.getHeight()), targetPixelStride);
     }
 
     /**
@@ -192,8 +208,8 @@ class DataSubset extends TiledGridCoverage implements Localized {
         /**
          * Value of {@link DataSubset#tileOffsets} at index {@link #indexInTileVector}.
          * If pixel data are stored in different planes ("banks" in Java2D terminology),
-         * this is the smallest value of all banks.
-         * This is the value that we want in increasing order.
+         * then current implementation takes only the offset of the first bank to read.
+         * This field contains the value that we want in increasing order.
          *
          * @see #compareTo(Tile)
          */
@@ -204,16 +220,13 @@ class DataSubset extends TiledGridCoverage implements Localized {
          *
          * @param iterator  the iterator for which to create a snapshot of its current position.
          */
-        Tile(final AOI domain, final Vector tileOffsets, final int numTiles) {
+        Tile(final AOI domain, final Vector tileOffsets, final int[] selectedBanks, final int numTiles) {
             super(domain);
             int p = indexInTileVector;
-            long offset = tileOffsets.longValue(p);
-            final int limit = tileOffsets.size() - numTiles;
-            while (p < limit) {
-                // TODO: should take in account only the bands selected by user.
-                offset = Math.min(offset, tileOffsets.longValue(p += numTiles));
+            if (selectedBanks != null) {
+                p += selectedBanks[0] * numTiles;
             }
-            byteOffset = offset;
+            byteOffset = tileOffsets.longValue(p);
         }
 
         /**
@@ -225,11 +238,10 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * @param  target    the array where to copy vector values.
          * @param  numTiles  value of {@link DataSubset#numTiles}.
          */
-        final void copyTileInfo(final Vector source, final long[] target, final int numTiles) {
-            int i = indexInTileVector;
+        final void copyTileInfo(final Vector source, final long[] target, final int[] selectedBanks, final int numTiles) {
             for (int j=0; j<target.length; j++) {
+                final int i = indexInTileVector + numTiles * (selectedBanks != null ? selectedBanks[j] : j);
                 target[j] = source.longValue(i);
-                i += numTiles;
             }
         }
 
@@ -263,10 +275,14 @@ class DataSubset extends TiledGridCoverage implements Localized {
         /*
          * Prepare an array for all tiles to be returned. Tiles that are already in memory will be stored
          * in this array directly. Other tiles will be declared in the `missings` array and loaded later.
+         * Each tile will either store all sample values in an interleaved fashion inside a single bank
+         * (`sourcePixelStride` > 1) or use one separated bank per band (`sourcePixelStride` == 1).
          */
+        final int[] selectedBanks = (sourcePixelStride == 1) ? selectedBands : null;
         final WritableRaster[] result = new WritableRaster[iterator.tileCountInQuery];
         final Tile[] missings = new Tile[iterator.tileCountInQuery];
         int numMissings = 0;
+        boolean needsCompaction = false;
         synchronized (reader().store) {
             do {
                 final WritableRaster tile = iterator.getCachedTile();
@@ -274,7 +290,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
                     result[iterator.getIndexInResultArray()] = tile;
                 } else {
                     // Tile not yet loaded. Add to a queue of tiles to load later.
-                    missings[numMissings++] = new Tile(iterator, tileOffsets, numTiles);
+                    missings[numMissings++] = new Tile(iterator, tileOffsets, selectedBanks, numTiles);
                 }
             } while (iterator.next());
             Arrays.sort(missings, 0, numMissings);
@@ -292,14 +308,13 @@ class DataSubset extends TiledGridCoverage implements Localized {
             final Point  origin      = new Point();
             final long[] offsets     = new long[numBanks];
             final long[] byteCounts  = new long[numBanks];
-            boolean needsCompaction  = false;
             for (int i=0; i<numMissings; i++) {
                 final Tile tile = missings[i];
                 if (tile.getRegionInsideTile(lower, upper, subsampling, BIDIMENSIONAL)) {
                     origin.x = tile.originX;
                     origin.y = tile.originY;
-                    tile.copyTileInfo(tileOffsets,    offsets,    numTiles);
-                    tile.copyTileInfo(tileByteCounts, byteCounts, numTiles);
+                    tile.copyTileInfo(tileOffsets,    offsets,    selectedBanks, numTiles);
+                    tile.copyTileInfo(tileByteCounts, byteCounts, selectedBanks, numTiles);
                     for (int b=0; b<offsets.length; b++) {
                         offsets[b] = addExact(offsets[b], reader().origin);
                     }
@@ -309,18 +324,18 @@ class DataSubset extends TiledGridCoverage implements Localized {
                     needsCompaction = true;
                 }
             }
-            /*
-             * If the subsampling is larger than tile size, some tiles were empty and excluded.
-             * The corresponding elements in the `result` array were left to the null value.
-             * We need to compact the array by removing those null elements.
-             */
-            if (needsCompaction) {
-                int n = 0;
-                for (final WritableRaster tile : result) {
-                    if (tile != null) result[n++] = tile;
-                }
-                return Arrays.copyOf(result, n);
+        }
+        /*
+         * If the subsampling is larger than tile size, some tiles were empty and excluded.
+         * The corresponding elements in the `result` array were left to the null value.
+         * We need to compact the array by removing those null elements.
+         */
+        if (needsCompaction) {
+            int n = 0;
+            for (final WritableRaster tile : result) {
+                if (tile != null) result[n++] = tile;
             }
+            return Arrays.copyOf(result, n);
         }
         return result;
     }
@@ -342,7 +357,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * @param  upper        (<var>x</var>, <var>y</var>) coordinates after the last pixel to read relative to the tile.
      * @param  subsampling  (<var>sx</var>, <var>sy</var>) subsampling factors.
      * @param  location     pixel coordinates in the upper-left corner of the tile to return.
-     * @return image decoded from the GeoTIFF file.
+     * @return a single tile decoded from the GeoTIFF file.
      * @throws IOException if an I/O error occurred.
      * @throws DataStoreException if a logical error occurred.
      * @throws RuntimeException if the Java2D image can not be created for another reason
@@ -360,16 +375,16 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * is smaller than the "standard" tile size of the image. It happens often when reading the last strip.
          */
         final long length  = multiplyExact(type.size() / Byte.SIZE,
-                             multiplyExact(multiplyExact(width, height), numInterleaved));
-        final long[] size = new long[] {multiplyFull(numInterleaved, getTileSize(0)), getTileSize(1)};
+                             multiplyExact(multiplyExact(width, height), sourcePixelStride));
+        final long[] size = new long[] {multiplyFull(sourcePixelStride, getTileSize(0)), getTileSize(1)};
         /*
-         * If we use an interleaved sample model, each "element" from `HyperRectangleReader` perspective is actually
-         * a group of `numInterleaved` values. Note that in such case, we can not handle subsampling on the first axis.
+         * If we use an interleaved sample model, each "element" from `HyperRectangleReader` perspective is actually a
+         * group of `sourcePixelStride` values. Note that in such case, we can not handle subsampling on the first axis.
          * Such case should be handled by the `CompressedSubset` subclass instead, even if there is no compression.
          */
-        assert numInterleaved == 1 || subsampling[0] == 1;
-        lower[0] *= numInterleaved;
-        upper[0] *= numInterleaved;
+        assert sourcePixelStride == 1 || subsampling[0] == 1;
+        lower[0] *= sourcePixelStride;
+        upper[0] *= sourcePixelStride;
         /*
          * Read each plane ("banks" in Java2D terminology). Note that a single bank contain all bands
          * in the interleaved sample model case.

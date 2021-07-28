@@ -75,6 +75,16 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     }
 
     /**
+     * Returns the number of components per pixel in the image stored in GeoTIFF file.
+     * This the same value than the one returned by {@code getSampleModel().getNumBands()},
+     * and is also the size of the collection returned by {@link #getSampleDimensions()}.
+     *
+     * @see #getSampleModel()
+     * @see SampleModel#getNumBands()
+     */
+    abstract int getNumBands();
+
+    /**
      * Returns the total number of tiles. This is used for computing the stride between a
      * band and the next band in {@link #tileOffsets} and {@link #tileByteCounts} vectors.
      */
@@ -123,7 +133,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
                 }
                 switch (compression) {
                     case NONE: {
-                        if (subset.hasSubsampling(0) && isInterleaved()) {
+                        if (subset.hasBandSubset() || (subset.hasSubsampling(0) && isInterleaved())) {
                             coverage = new CompressedSubset(this, subset);
                         } else {
                             coverage = new DataSubset(this, subset);

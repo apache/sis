@@ -119,6 +119,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      *
      * This transform maps {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CORNER pixel corners}.
      *
+     * @see #getSubsampling(int)
      * @see #toFullResolution(long, int)
      */
     private final int[] subsampling, subsamplingOffsets;
@@ -232,6 +233,16 @@ public abstract class TiledGridCoverage extends GridCoverage {
      */
     protected final int getTileSize(final int dimension) {
         return tileSize[dimension];
+    }
+
+    /**
+     * Returns the subsampling in the given dimension.
+     *
+     * @param  dimension  dimension for which to get subsampling.
+     * @return subsampling as a value ≥ 1.
+     */
+    protected final int getSubsampling(final int dimension) {
+        return subsampling[dimension];
     }
 
     /**
@@ -580,6 +591,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * (0,0) and the upper coordinates are usually the tile size, but those value may be different
          * if the enclosing {@link TiledGridCoverage} contains only one (potentially big) tile.
          * In that case, the reading process is more like untiled image reading.
+         *
+         * <p>The {@link TiledGridCoverage} subsampling is provided for convenience,
+         * but is constant for all tiles regardless the subregion to read.
+         * The same values can be obtained by {@link #getSubsampling(int)}.</p>
          *
          * @param  lower        a pre-allocated array where to store relative coordinates of the first pixel.
          * @param  upper        a pre-allocated array where to store relative coordinates after the last pixel.

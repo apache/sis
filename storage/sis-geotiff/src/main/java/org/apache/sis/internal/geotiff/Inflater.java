@@ -41,47 +41,59 @@ public abstract class Inflater {
 
     /**
      * Number of chunk per row, as a strictly positive integer.
-     * A chunk is a pixel, except if we can optimize by reading the whole row as a single chunk.
+     * See {@link #samplesPerChunk} for more details about what is a "chunk".
      */
     protected final int chunksPerRow;
 
     /**
      * Number of sample values per chunk, as a strictly positive integer.
-     * A chunk is a pixel, except if we can optimize by reading the whole row as a single chunk.
+     * A chunk can be:
+     * <ul>
+     *   <li>A sample value ({@code samplesPerChunk} = 1).</li>
+     *   <li>A pixel with one sample value per band ({@code samplesPerChunk} = number of bands).</li>
+     *   <li>A full row (optimization when it is possible to read the row in a single I/O method call).</li>
+     * </ul>
      */
     protected final int samplesPerChunk;
 
     /**
-     * Number of sample values to skip between pixels. Positive but often zero.
+     * Number of sample values to skip between chunks on the same row, or {@code null} if none.
+     * If non-null then after reading the chunk at zero-based index <var>x</var>, inflater shall skip
+     * {@code skipAfterChunks[x % skipAfterChunks.length]} sample values before to read the next chunk.
+     * The <var>x</var> index is reset to zero at the beginning of every new row.
      */
-    protected final int interpixels;
+    protected final int[] skipAfterChunks;
 
     /**
      * Creates a new instance.
      *
-     * @param  input            the source of data to decompress.
-     * @param  pixelsPerRow     number of pixels per row. Must be strictly positive.
-     * @param  samplesPerPixel  number of sample values per pixel. Must be strictly positive.
-     * @param  interpixels      number of sample values to skip between pixels. May be zero.
+     * @param  input              the source of data to decompress.
+     * @param  elementsPerRow     number of elements (usually pixels) per row. Must be strictly positive.
+     * @param  samplesPerElement  number of sample values per element (usually pixel). Must be strictly positive.
+     * @param  skipAfterElements  number of sample values to skip between elements (pixels). May be empty or null.
      */
-    protected Inflater(final ChannelDataInput input, final int pixelsPerRow, final int samplesPerPixel, final int interpixels) {
-        ensureStrictlyPositive("pixelsPerRow",    pixelsPerRow);
-        ensureStrictlyPositive("samplesPerPixel", samplesPerPixel);
-        ensurePositive        ("interpixels",     interpixels);
-        ensureNonNull         ("input",           input);
-        if (interpixels == 0) {
-            chunksPerRow    = 1;
-            samplesPerChunk = Math.multiplyExact(samplesPerPixel, pixelsPerRow);
+    protected Inflater(final ChannelDataInput input, final int elementsPerRow, final int samplesPerElement, final int[] skipAfterElements) {
+        ensureNonNull("input", input);
+        ensureStrictlyPositive("elementsPerRow",    elementsPerRow);
+        ensureStrictlyPositive("samplesPerElement", samplesPerElement);
+        this.input = input;
+        skipAfterChunks = skipAfterElements;
+        if (skipAfterElements != null) {
+            for (int i=0; i<skipAfterElements.length; i++) {
+                ensurePositive("skipAfterElements", skipAfterElements[i]);
+            }
+            chunksPerRow    = elementsPerRow;
+            samplesPerChunk = samplesPerElement;
         } else {
-            chunksPerRow    = pixelsPerRow;
-            samplesPerChunk = samplesPerPixel;
+            chunksPerRow    = 1;
+            samplesPerChunk = Math.multiplyExact(samplesPerElement, elementsPerRow);
         }
-        this.interpixels = interpixels;
-        this.input       = input;
     }
 
     /**
      * Reads a row of sample values and stores them in the target buffer.
+     * This is not a complete row; caller may invoke {@link #skip(long)}
+     * for ignoring leading and trailing sample values.
      *
      * @throws IOException if an error occurred while reading the input channel.
      */

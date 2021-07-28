@@ -41,9 +41,55 @@ import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
  */
 final class CompressedSubset extends DataSubset {
     /**
-     * Number of sample values to skip for moving to the next row of a tile.
+     * Number of sample values to skip for moving to the next row of a tile in the GeoTIFF file.
+     * This is not necessarily the same scanline stride than for the tiles created by this class.
      */
     private final long scanlineStride;
+
+    /**
+     * Number of sample values to skip before to read the first value of the first pixel in a row.
+     * The first pixel is at column index 0; subsampling offset is not included in this calculation.
+     */
+    private final int beforeFirstBand;
+
+    /**
+     * Number of sample values to skip for reaching end-of-row after reading the last value of the
+     * <em>first</em> pixel in a row. For computing the actual number of sample values to skip,
+     * the number of sample values read of skipped before the last pixel must be subtracted.
+     */
+    private final int afterLastBand;
+
+    /**
+     * Number of sample values to skip after an element has been read, or {@code null} if none.
+     * An element is a sample value or a complete pixel, depending on {@link #samplesPerElement}.
+     * The {@code skipAfterElements} array is used in a cyclic way:
+     *
+     * <ul>
+     *   <li>Skip {@code skipAfterElements[0]} sample values between element 0 and element 1.</li>
+     *   <li>Skip {@code skipAfterElements[1]} sample values between element 1 and element 2.</li>
+     *   <li><i>etc</i>. When we reach the array end, continue at {@code skipAfterElements[0]}.</li>
+     *   <li>When we start a new row, unconditionally restart at {@code skipAfterElements[0]}.</li>
+     * </ul>
+     *
+     * More generally, skip {@code skipAfterElements[x % skipAfterElements.length]} sample values
+     * after element at the zero-based column index <var>x</var>.
+     */
+    private final int[] skipAfterElements;
+
+    /**
+     * Number of sample values that compose an element (pixel or sample) in the GeoTIFF file.
+     * The value of this field can be:
+     *
+     * <ul>
+     *   <li>1 if an element is a sample value.</li>
+     *   <li>{@link #sourcePixelStride} if an element is a full pixel.</li>
+     *   <li>Any intermediate value if some optimizations have been applied,
+     *       for example for taking advantage of consecutive indices in {@link #selectedBands}.</li>
+     * </ul>
+     *
+     * This value shall always be a divisor of {@link #targetPixelStride}.
+     */
+    private final int samplesPerElement;
 
     /**
      * Creates a new data subset. All parameters should have been validated
@@ -57,7 +103,33 @@ final class CompressedSubset extends DataSubset {
      */
     CompressedSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
         super(source, subset);
-        scanlineStride = multiplyFull(getTileSize(0), numInterleaved);
+        scanlineStride = multiplyFull(getTileSize(0), sourcePixelStride);
+        final int between = sourcePixelStride * (getSubsampling(0) - 1);
+        int afterLastBand = sourcePixelStride * (getTileSize(0) - 1);
+        if (selectedBands != null && sourcePixelStride > 1) {
+            final int n = selectedBands.length;
+            skipAfterElements = new int[n];
+            int b = sourcePixelStride;
+            for (int i = n; --i >= 0;) {
+                // Number of sample values to skip after each band.
+                skipAfterElements[i] = b - (b = selectedBands[i]) - 1;
+            }
+            beforeFirstBand         = b;
+            afterLastBand          += skipAfterElements[n-1];       // Add trailing bands that were left unread.
+            skipAfterElements[n-1] += between + beforeFirstBand;    // Add pixels skipped by subsampling and move to first band.
+            samplesPerElement       = 1;
+            // TODO: we could optimize if we find that all sample values to read are consecutive.
+        } else {
+            skipAfterElements = (between != 0) ? new int[] {between} : null;
+            samplesPerElement = sourcePixelStride;
+            beforeFirstBand   = 0;
+        }
+        this.afterLastBand = afterLastBand;
+        /*
+         * Invariant documented in Javadoc.
+         * Calculation correctness depends on this condition.
+         */
+        assert targetPixelStride % samplesPerElement == 0 : samplesPerElement;
     }
 
     /**
@@ -79,39 +151,43 @@ final class CompressedSubset extends DataSubset {
      * @param  upper        (<var>x</var>, <var>y</var>) coordinates after the last pixel to read relative to the tile.
      * @param  subsampling  (<var>sx</var>, <var>sy</var>) subsampling factors.
      * @param  location     pixel coordinates in the upper-left corner of the tile to return.
-     * @return image decoded from the GeoTIFF file.
+     * @return a single tile decoded from the GeoTIFF file.
      */
     @Override
     WritableRaster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
                              final int[] subsampling, final Point location) throws IOException, DataStoreException
     {
-        final DataType type   = getDataType();
-        final int      width  = pixelCount(lower, upper, subsampling, 0);
-        final int      height = pixelCount(lower, upper, subsampling, 1);
-        final int      skipY  = subsampling[1] - 1;
-        final int      skipX  = numInterleaved * (subsampling[0] - 1);
-        final long     head   = numInterleaved * lower[0];
-        final long     tail   = numInterleaved * (getTileSize(0) - width*subsampling[0]) + skipX - head;
+        final DataType type       = getDataType();
+        final int  width          = pixelCount(lower, upper, subsampling, 0);
+        final int  height         = pixelCount(lower, upper, subsampling, 1);
+        final int  elementsPerRow = width * (targetPixelStride / samplesPerElement);
+        final int  betweenRows    = subsampling[1] - 1;
+        final long head           = beforeFirstBand + sourcePixelStride * (lower[0]);
+        final long tail           = afterLastBand   - sourcePixelStride * (lower[0] + (width-1)*subsampling[0]);
         /*
          * `head` and `tail` are the number of sample values to skip at the beginning and end of each row.
-         * Then `skipX` is the number of sample values to skip between each pixel.
+         * `betweenPixels` is the number of sample values to skip between each pixel, but the actual skips
+         * are more complicated if only a subset of the bands are read. The actual number of sample values
+         * to skip between "elements" is detailed by `skipAfterElements`.
          */
-        final Buffer[] banks  = new Buffer[numBanks];
+        final Buffer[] banks = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
             final Buffer   bank = RasterFactory.createBuffer(type, capacity);
-            final Inflater algo = Uncompressed.create(reader().input, offsets[b], width, numInterleaved, skipX, bank);
+            final Inflater algo = Uncompressed.create(reader().input, offsets[b], elementsPerRow, samplesPerElement, skipAfterElements, bank);
             for (long y = lower[1]; --y >= 0;) {
                 algo.skip(scanlineStride);
+                // TODO: after we finished to implement decompression algorithms,
+                // revisit if we can safely replace the loop by a multiplication.
             }
             for (int y = height; --y > 0;) {        // (height - 1) iterations.
                 algo.skip(head);
                 algo.uncompressRow();
                 algo.skip(tail);
-                for (int j=skipY; --j>=0;) {
+                for (int j=betweenRows; --j>=0;) {
                     algo.skip(scanlineStride);
                 }
             }
-            algo.skip(head);                        // Last iteration without last `skip(…)` calls.
+            algo.skip(head);                        // Last iteration without the trailing `skip(…)` calls.
             algo.uncompressRow();
             fillRemainingRows(bank.flip());
             banks[b] = bank;
