@@ -145,6 +145,8 @@ class ANSIInterpreter extends Visitor<Feature,StringBuilder> {
         setExpressionHandler(FunctionNames.Multiply, new Join(" * "));
         setExpressionHandler(FunctionNames.Literal, (e,sb) -> writeLiteral(sb, (Literal<Feature,?>) e));
         setExpressionHandler(FunctionNames.ValueReference, (e,sb) -> writeColumnName(sb, (ValueReference<Feature,?>) e));
+        // Temporary workaround. Filters created from Filter Encoding XML can specify "PropertyName" instead of "Value reference".
+        setExpressionHandler("PropertyName", (e,sb) -> writeColumnName(sb, (ValueReference<Feature,?>) e));
     }
 
     /**
