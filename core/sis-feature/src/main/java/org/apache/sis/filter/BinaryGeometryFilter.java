@@ -100,17 +100,21 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements SpatialOperator
          */
         final int index;
         final Literal<? super R, ?> literal;
+        final GeometryWrapper<G> value;
         if (geometry2 instanceof Literal<?,?>) {
             literal = (Literal<? super R, ?>) geometry2;
+            value = expression2.apply(null);
             index   = 1;
         } else if (geometry1 instanceof Literal<?,?>) {
             literal = (Literal<? super R, ?>) geometry1;
+            value = expression1.apply(null);
             index = 0;
         } else {
             literal = null;
+            value = null;
             index   = -1;
         }
-        final GeometryWrapper<G> value = (literal == null) ? null : library.castOrWrap(literal.getValue());
+
         try {
             context = new SpatialOperationContext(null, value, systemUnit, index);
             if (value != null) {

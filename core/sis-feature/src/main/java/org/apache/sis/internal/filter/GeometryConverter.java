@@ -19,6 +19,7 @@ package org.apache.sis.internal.filter;
 import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
+import org.apache.sis.geometry.WraparoundMethod;
 import org.opengis.util.ScopedName;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -122,7 +123,9 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      */
     @Override
     public GeometryWrapper<G> apply(final R input) {
-        return library.castOrWrap(expression.apply(input));
+        // TODO: review if this component should only cast geometries. If conversion is kept, check how to propagate
+        // wrap-around method from build context.
+        return library.toGeometry(expression.apply(input), WraparoundMethod.NONE);
     }
 
     /**

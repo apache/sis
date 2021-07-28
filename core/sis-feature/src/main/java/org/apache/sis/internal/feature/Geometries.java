@@ -21,9 +21,12 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.Iterator;
+import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.util.UnconvertibleObjectException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.AxisDirection;
@@ -460,6 +463,32 @@ public abstract class Geometries<G> implements Serializable {
         }
         result.setCoordinateReferenceSystem(crs);
         return result;
+    }
+
+    /**
+     * Convert a given object to a geometry. For now, only bounding boxes are supported. No Wrap-around resolution
+     * is applied. This method is a workaround to attempt conversion of an arbitrary value to a geometry. When more
+     * context is available, prefer using directly typed methods. For example, if you have an {@link Envelope}, you
+     * should use {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)} directly.
+     *
+     * @param value An object to map to Geometry API if needed. Currently supported convertible types are
+     * {@link GeographicBoundingBox} and {@link Envelope}. If param is null or already converted, it is returned as is.
+     * @param adjustmentStrategy The wrap-around method to use if we've got to convert an envelope. If null, default to
+     *                           {@link WraparoundMethod#NONE}.
+     * @return The conversion result, possibly null.
+     * @throws UnconvertibleObjectException If no conversion strategy exists for given object.
+     * @see #toGeometry2D(Envelope, WraparoundMethod) envelope conversion method.
+     */
+    public GeometryWrapper<G> toGeometry(Object value, WraparoundMethod adjustmentStrategy) throws UnconvertibleObjectException {
+        if (value == null) return null;
+        else try {
+            if (value instanceof GeographicBoundingBox) value = new ImmutableEnvelope((GeographicBoundingBox) value);
+            // TODO: what wrap-around method to use ? Should we assume user must manage it before-hand ?
+            if (value instanceof Envelope) value = toGeometry2D((Envelope) value, adjustmentStrategy == null ? WraparoundMethod.NONE : adjustmentStrategy);
+            return castOrWrap(value);
+        } catch (RuntimeException e) {
+            throw new UnconvertibleObjectException("Geometry conversion: unsupported value type: "+value.getClass().getCanonicalName(), e);
+        }
     }
 
     /**
