@@ -19,6 +19,11 @@ package org.apache.sis.internal.geotiff;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.FloatBuffer;
+import java.nio.DoubleBuffer;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
@@ -78,7 +83,12 @@ public abstract class Uncompressed extends Inflater {
     public static Uncompressed create(final ChannelDataInput input, final long start,
             final int count, final int size, final int[] skips, final Buffer target)
     {
-        if (target instanceof ByteBuffer) return new Bytes(input, start, count, size, skips, (ByteBuffer) target);
+        if (target instanceof   ByteBuffer) return new Bytes  (input, start, count, size, skips,   (ByteBuffer) target);
+        if (target instanceof  ShortBuffer) return new Shorts (input, start, count, size, skips,  (ShortBuffer) target);
+        if (target instanceof    IntBuffer) return new Ints   (input, start, count, size, skips,    (IntBuffer) target);
+        if (target instanceof   LongBuffer) return new Longs  (input, start, count, size, skips,   (LongBuffer) target);
+        if (target instanceof  FloatBuffer) return new Floats (input, start, count, size, skips,  (FloatBuffer) target);
+        if (target instanceof DoubleBuffer) return new Doubles(input, start, count, size, skips, (DoubleBuffer) target);
         throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(target)));
     }
 
@@ -114,6 +124,32 @@ public abstract class Uncompressed extends Inflater {
     }
 
     /**
+     * Skips the number of elements specified by the {@link #skipAfterChunks} array at the given index.
+     * This method tries to move by incrementing the buffer position.
+     *
+     * <div class="note"><b>Design note:</b>
+     * we do not use {@link ChannelDataInput#seek(long)} because the displacement is usually small.
+     * Changing the buffer position is sufficient in the majority of cases. If not, then it should
+     * be okay to fill the buffer with next data (instead of doing a seek operation) because there
+     * is usually few remaining values to skip. Performance of this method is important, so we try
+     * to avoid overhead.</div>
+     *
+     * @param  skipIndex  index in {@code skipAfterChunks} array.
+     * @return new {@code skipIndex} value.
+     */
+    final int skipAfterChunk(int skipIndex) throws IOException {
+        int n = skipAfterChunks[skipIndex] * sampleSize;
+        while (n != 0) {
+            final int p = input.buffer.position();
+            final int s = Math.min(p + n, input.buffer.limit());
+            input.buffer.position(s);
+            if ((n -= (s - p)) == 0) break;
+            input.ensureBufferContains(sampleSize);
+        }
+        return (++skipIndex < skipAfterChunks.length) ? skipIndex : 0;
+    }
+
+    /**
      * Inflater for sample values stored as bytes.
      */
     private static final class Bytes extends Uncompressed {
@@ -126,24 +162,17 @@ public abstract class Uncompressed extends Inflater {
             this.target = target;
         }
 
-        /** Reads and decompress a row of sample values. */
+        /** Reads a row of sample values. */
         @Override public void uncompressRow() throws IOException {
             super.uncompressRow();
-            int ip = 0;
+            int skipIndex = 0;
             for (int i = chunksPerRow; --i > 0;) {      // (chunksPerRow - 1) iterations.
                 int n = samplesPerChunk;
-                do target.put(input.readByte());
+                input.ensureBufferContains(n);
+                do target.put(input.buffer.get());      // Number of iterations should be low (often 1).
                 while (--n != 0);
-                /*
-                 * Following loop is executed only if there is subsampling on the X axis.
-                 * We invoke `readByte()` in a loop instead of invoking `skip` because if
-                 * the number of bytes to skip is small, this is more efficient.
-                 */
                 if (skipAfterChunks != null) {
-                    for (n = skipAfterChunks[ip]; --n >= 0;) {
-                        input.readByte();
-                    }
-                    if (++ip >= skipAfterChunks.length) ip = 0;
+                    skipIndex = skipAfterChunk(skipIndex);
                 }
             }
             /*
@@ -153,7 +182,178 @@ public abstract class Uncompressed extends Inflater {
              * is in the last column of the tile.
              */
             int n = samplesPerChunk;
-            do target.put(input.readByte());
+            input.ensureBufferContains(n);
+            do target.put(input.buffer.get());
+            while (--n != 0);
+        }
+    }
+
+    /**
+     * Inflater for sample values stored as short integers.
+     * This is a copy of {@link Bytes} implementation with only the type changed.
+     */
+    private static final class Shorts extends Uncompressed {
+        /** Where to copy the values that we will read. */
+        private final ShortBuffer target;
+
+        /** Creates a new inflater which will write in the given buffer. */
+        Shorts(ChannelDataInput input, long start, int count, int size, int[] skips, ShortBuffer target) {
+            super(input, start, count, size, skips, Short.BYTES);
+            this.target = target;
+        }
+
+        /** Reads a row of sample values. */
+        @Override public void uncompressRow() throws IOException {
+            super.uncompressRow();
+            int skipIndex = 0;
+            for (int i = chunksPerRow; --i > 0;) {
+                int n = samplesPerChunk;
+                input.ensureBufferContains(n * Short.BYTES);
+                do target.put(input.buffer.getShort());
+                while (--n != 0);
+                if (skipAfterChunks != null) {
+                    skipIndex = skipAfterChunk(skipIndex);
+                }
+            }
+            int n = samplesPerChunk;
+            input.ensureBufferContains(n * Short.BYTES);
+            do target.put(input.buffer.getShort());
+            while (--n != 0);
+        }
+    }
+
+    /**
+     * Inflater for sample values stored as 32 bits integers.
+     * This is a copy of {@link Bytes} implementation with only the type changed.
+     */
+    private static final class Ints extends Uncompressed {
+        /** Where to copy the values that we will read. */
+        private final IntBuffer target;
+
+        /** Creates a new inflater which will write in the given buffer. */
+        Ints(ChannelDataInput input, long start, int count, int size, int[] skips, IntBuffer target) {
+            super(input, start, count, size, skips, Integer.BYTES);
+            this.target = target;
+        }
+
+        /** Reads a row of sample values. */
+        @Override public void uncompressRow() throws IOException {
+            super.uncompressRow();
+            int skipIndex = 0;
+            for (int i = chunksPerRow; --i > 0;) {
+                int n = samplesPerChunk;
+                input.ensureBufferContains(n * Integer.BYTES);
+                do target.put(input.buffer.getInt());
+                while (--n != 0);
+                if (skipAfterChunks != null) {
+                    skipIndex = skipAfterChunk(skipIndex);
+                }
+            }
+            int n = samplesPerChunk;
+            input.ensureBufferContains(n * Integer.BYTES);
+            do target.put(input.buffer.getInt());
+            while (--n != 0);
+        }
+    }
+
+    /**
+     * Inflater for sample values stored as long integers.
+     * This is a copy of {@link Bytes} implementation with only the type changed.
+     */
+    private static final class Longs extends Uncompressed {
+        /** Where to copy the values that we will read. */
+        private final LongBuffer target;
+
+        /** Creates a new inflater which will write in the given buffer. */
+        Longs(ChannelDataInput input, long start, int count, int size, int[] skips, LongBuffer target) {
+            super(input, start, count, size, skips, Long.BYTES);
+            this.target = target;
+        }
+
+        /** Reads a row of sample values. */
+        @Override public void uncompressRow() throws IOException {
+            super.uncompressRow();
+            int skipIndex = 0;
+            for (int i = chunksPerRow; --i > 0;) {
+                int n = samplesPerChunk;
+                input.ensureBufferContains(n * Long.BYTES);
+                do target.put(input.buffer.getLong());
+                while (--n != 0);
+                if (skipAfterChunks != null) {
+                    skipIndex = skipAfterChunk(skipIndex);
+                }
+            }
+            int n = samplesPerChunk;
+            input.ensureBufferContains(n * Long.BYTES);
+            do target.put(input.buffer.getLong());
+            while (--n != 0);
+        }
+    }
+
+    /**
+     * Inflater for sample values stored as single-precision floating point numbers.
+     * This is a copy of {@link Bytes} implementation with only the type changed.
+     */
+    private static final class Floats extends Uncompressed {
+        /** Where to copy the values that we will read. */
+        private final FloatBuffer target;
+
+        /** Creates a new inflater which will write in the given buffer. */
+        Floats(ChannelDataInput input, long start, int count, int size, int[] skips, FloatBuffer target) {
+            super(input, start, count, size, skips, Float.BYTES);
+            this.target = target;
+        }
+
+        /** Reads a row of sample values. */
+        @Override public void uncompressRow() throws IOException {
+            super.uncompressRow();
+            int skipIndex = 0;
+            for (int i = chunksPerRow; --i > 0;) {
+                int n = samplesPerChunk;
+                input.ensureBufferContains(n * Float.BYTES);
+                do target.put(input.buffer.getFloat());
+                while (--n != 0);
+                if (skipAfterChunks != null) {
+                    skipIndex = skipAfterChunk(skipIndex);
+                }
+            }
+            int n = samplesPerChunk;
+            input.ensureBufferContains(n * Float.BYTES);
+            do target.put(input.buffer.getFloat());
+            while (--n != 0);
+        }
+    }
+
+    /**
+     * Inflater for sample values stored as double-precision floating point numbers.
+     * This is a copy of {@link Bytes} implementation with only the type changed.
+     */
+    private static final class Doubles extends Uncompressed {
+        /** Where to copy the values that we will read. */
+        private final DoubleBuffer target;
+
+        /** Creates a new inflater which will write in the given buffer. */
+        Doubles(ChannelDataInput input, long start, int count, int size, int[] skips, DoubleBuffer target) {
+            super(input, start, count, size, skips, Double.BYTES);
+            this.target = target;
+        }
+
+        /** Reads a row of sample values. */
+        @Override public void uncompressRow() throws IOException {
+            super.uncompressRow();
+            int skipIndex = 0;
+            for (int i = chunksPerRow; --i > 0;) {
+                int n = samplesPerChunk;
+                input.ensureBufferContains(n * Double.BYTES);
+                do target.put(input.buffer.getDouble());
+                while (--n != 0);
+                if (skipAfterChunks != null) {
+                    skipIndex = skipAfterChunk(skipIndex);
+                }
+            }
+            int n = samplesPerChunk;
+            input.ensureBufferContains(n * Double.BYTES);
+            do target.put(input.buffer.getDouble());
             while (--n != 0);
         }
     }
