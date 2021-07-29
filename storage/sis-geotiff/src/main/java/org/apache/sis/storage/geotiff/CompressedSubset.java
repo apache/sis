@@ -107,19 +107,36 @@ final class CompressedSubset extends DataSubset {
         final int between = sourcePixelStride * (getSubsampling(0) - 1);
         int afterLastBand = sourcePixelStride * (getTileSize(0) - 1);
         if (selectedBands != null && sourcePixelStride > 1) {
-            final int n = selectedBands.length;
-            skipAfterElements = new int[n];
+            final int[] skips = new int[selectedBands.length];
+            final int m = skips.length - 1;
             int b = sourcePixelStride;
-            for (int i = n; --i >= 0;) {
+            for (int i=m; i >= 0; --i) {
                 // Number of sample values to skip after each band.
-                skipAfterElements[i] = b - (b = selectedBands[i]) - 1;
+                skips[i] = b - (b = selectedBands[i]) - 1;
             }
-            beforeFirstBand         = b;
-            afterLastBand          += skipAfterElements[n-1];       // Add trailing bands that were left unread.
-            skipAfterElements[n-1] += between + beforeFirstBand;    // Add pixels skipped by subsampling and move to first band.
-            samplesPerElement       = 1;
-            // TODO: we could optimize if we find that all sample values to read are consecutive.
+            beforeFirstBand = b;
+            afterLastBand  += skips[m];                     // Add trailing bands that were left unread.
+            skips[m]       += between + beforeFirstBand;    // Add pixels skipped by subsampling and move to first band.
+            /*
+             * If there is more than one band and all of them are consecutive, then we can optimize a little bit
+             * by reading "chunks" of the size of those consecutive bands instead of reading each band separately.
+             *
+             * Example: if the image has 5 bands and users requested bands 1, 2 and 3 (no empty space between bands),
+             * then we can read those 3 bands as a "chunk" on 3 sample values instead of reading 3 chunks of 1 value.
+             */
+            if (m != 0 && startsWithZeros(skips, m)) {
+                samplesPerElement = selectedBands.length;
+                skipAfterElements = new int[] {skips[m]};
+            } else {
+                samplesPerElement = 1;
+                skipAfterElements = skips;
+            }
         } else {
+            /*
+             * Case when all bands are read. If there is a subsampling, then `between` is the space (in number of
+             * sample values) between two pixels. If that space is zero, it will be possible to read the whole row
+             * in a single read operation, but that optimization is done in `Inflater` constructor.
+             */
             skipAfterElements = (between != 0) ? new int[] {between} : null;
             samplesPerElement = sourcePixelStride;
             beforeFirstBand   = 0;
@@ -130,6 +147,18 @@ final class CompressedSubset extends DataSubset {
          * Calculation correctness depends on this condition.
          */
         assert targetPixelStride % samplesPerElement == 0 : samplesPerElement;
+    }
+
+    /**
+     * Returns {@code true} if all array elements except the last one are zeros.
+     * A {@code true} value means that all sample values in a pixel are consecutive.
+     *
+     * @param  m  {@code skipAfterElements.length} - 1. Shall be greater than zero.
+     */
+    private static boolean startsWithZeros(final int[] skipAfterElements, int m) {
+        do if (skipAfterElements[--m] != 0) return false;
+        while (m != 0);
+        return true;
     }
 
     /**
