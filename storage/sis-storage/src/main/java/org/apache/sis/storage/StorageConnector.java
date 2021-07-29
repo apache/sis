@@ -86,7 +86,7 @@ import org.apache.sis.setup.OptionKey;
  * is serializable.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -99,13 +99,10 @@ public class StorageConnector implements Serializable {
     /**
      * The default size of the {@link ByteBuffer} to be created.
      * Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.
-     * Note that it usually don't need to be very large, since {@link RewindableLineReader}
-     * will have its own buffer (which may be larger) and {@link ChannelDataInput} methods
-     * writing in existing destination arrays will bypass the buffer.
      *
      * @see RewindableLineReader#BUFFER_SIZE
      */
-    static final int DEFAULT_BUFFER_SIZE = 4096;
+    static final int DEFAULT_BUFFER_SIZE = 8192;
 
     /**
      * The minimal size of the {@link ByteBuffer} to be created. This size is used only
@@ -444,7 +441,7 @@ public class StorageConnector implements Serializable {
             if ((cascade & CLEAR_ON_RESET) != 0) {
                 /*
                  * If the view can not be reset, in some cases we can discard it and recreate a new view when
-                 * first needed. The 'isValid' flag is left to false for telling that a new value is requested.
+                 * first needed. The `isValid` flag is left to false for telling that a new value is requested.
                  */
                 view = null;
                 return true;
@@ -467,7 +464,7 @@ public class StorageConnector implements Serializable {
                 /*
                  * ChannelDataInput can be recycled without the need to discard and recreate them. Note that
                  * this code requires that SeekableByteChannel has been seek to the channel beginning first.
-                 * This should be done by the above 'wrapperFor.reset()' call.
+                 * This should be done by the above `wrapperFor.reset()` call.
                  */
                 final ChannelDataInput input = (ChannelDataInput) view;
                 input.buffer.limit(0);                                      // Must be after channel reset.
@@ -835,8 +832,8 @@ public class StorageConnector implements Serializable {
         /*
          * No instance has been created previously for the requested type. Open the stream now.
          * Some types will need to reset the InputStream or Channel, but the decision of doing
-         * so or not is left to openers. Result will be cached by the 'createFoo()' method.
-         * Note that it may cache 'null' value if no stream of the given type can be created.
+         * so or not is left to openers. Result will be cached by the `createFoo()` method.
+         * Note that it may cache `null` value if no stream of the given type can be created.
          */
         final Object view;
         try {
@@ -933,14 +930,20 @@ public class StorageConnector implements Serializable {
         }
         /*
          * ChannelDataInput depends on ReadableByteChannel, which itself depends on storage
-         * (potentially an InputStream). We need to remember this chain in 'Coupled' objects.
+         * (potentially an InputStream). We need to remember this chain in `Coupled` objects.
          */
         final String name = getStorageName();
         final ReadableByteChannel channel = factory.readable(name, null);
         addView(ReadableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);
         ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);       // User-supplied buffer.
         if (buffer == null) {
-            buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);      // Default buffer if user did not specified any.
+            /*
+             * If the user did not specified a buffer, creates one now. We use a direct buffer for better
+             * leveraging of `ChannelDataInput`, which tries hard to transfer data in the most direct way
+             * between buffers and arrays. By contrast creating a heap buffer would have implied the use
+             * of a temporary direct buffer cached by the JDK itself (in JDK internal implementation).
+             */
+            buffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE);
         }
         final ChannelDataInput asDataInput;
         if (asImageInputStream) {
@@ -1042,7 +1045,7 @@ public class StorageConnector implements Serializable {
                 final int n = in.read(buffer);
                 in.reset();
                 if (n >= 1) {
-                    // Can not invoke asReadOnly() because 'prefetch()' need to be able to write in it.
+                    // Can not invoke asReadOnly() because `prefetch()` needs to be able to write in it.
                     asByteBuffer = ByteBuffer.wrap(buffer).order(in.getByteOrder());
                     asByteBuffer.limit(n);
                 }
@@ -1297,7 +1300,7 @@ public class StorageConnector implements Serializable {
             Object v = c.view;
             if (v != view) {
                 if (v instanceof AutoCloseable) {
-                    toClose.putIfAbsent((AutoCloseable) v, Boolean.TRUE);       // Mark 'v' as needing to be closed.
+                    toClose.putIfAbsent((AutoCloseable) v, Boolean.TRUE);       // Mark `v` as needing to be closed.
                 }
             } else {
                 /*
@@ -1309,7 +1312,7 @@ public class StorageConnector implements Serializable {
                 do {
                     v = c.view;
                     if (v instanceof AutoCloseable) {
-                        toClose.put((AutoCloseable) v, Boolean.FALSE);          // Protect 'v' against closing.
+                        toClose.put((AutoCloseable) v, Boolean.FALSE);          // Protect `v` against closing.
                     }
                     c = c.wrapperFor;
                 } while (c != null);
@@ -1327,14 +1330,14 @@ public class StorageConnector implements Serializable {
          * The "AutoCloseable.close() is not indempotent" problem
          * ------------------------------------------------------
          * We will need a set of objects to close without duplicated values. For example the values associated to the
-         * 'ImageInputStream.class' and 'DataInput.class' keys are often the same instance.  We must avoid duplicated
-         * values because 'ImageInputStream.close()' is not indempotent,  i.e.  invoking their 'close()' method twice
-         * will thrown an IOException.
+         * `ImageInputStream.class` and `DataInput.class` keys are often the same instance.  We must avoid duplicated
+         * values because `ImageInputStream.close()` is not indempotent,  i.e.  invoking their `close()` method twice
+         * will throw an IOException.
          *
          * Generally speaking, all AutoCloseable instances are not guaranteed to be indempotent because this is not
          * required by the interface contract. Consequently we must be careful to not invoke the close() method on
          * the same instance twice (indirectly or indirectly). An exception to this rule is ImageInputStream, which
-         * does not close its underlying stream. Those exceptions are identified by 'cascadeOnClose' set to 'true'.
+         * does not close its underlying stream. Those exceptions are identified by `cascadeOnClose` set to `true`.
          */
         if (!toClose.isEmpty()) {
             for (Coupled c : views.values()) {
