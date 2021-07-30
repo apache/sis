@@ -142,8 +142,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
      *
      * @see TiledGridResource#rasters
      * @see AOI#getCachedTile()
+     * @see #createCacheKey(int)
      */
-    private final Map<Integer, WritableRaster> rasters;
+    private final Map<TiledGridResource.CacheKey, WritableRaster> rasters;
 
     /**
      * The sample model for all rasters. The size of this sample model is the values of
@@ -473,7 +474,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @see Snapshot#cache(WritableRaster)
          */
         public WritableRaster getCachedTile() {
-            WritableRaster tile = rasters.get(indexInTileVector);
+            WritableRaster tile = rasters.get(createCacheKey(indexInTileVector));
             if (tile != null) {
                 // Found a tile. Make sure that the raster starts at the expected coordinates.
                 final int x = getTileOrigin(0);
@@ -514,7 +515,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
              *
              *   - `indexInResultArray` is the index in the `rasters` array to be returned.
              *   - `indexInTileVector`  is the corresponding index in the `tileOffsets` vector.
-             *   - `tmcInSubset[]`      contains the Tile Matrix Coordinates (TMC) relative to this `DataSubset`.
+             *   - `tmcInSubset[]`      contains the Tile Matrix Coordinates (TMC) relative to this `TiledGridCoverage`.
              *   - `tileOffsetAOI[]`    contains the pixel coordinates relative to the user-specified AOI.
              *
              * We do not check for integer overflow in this method because if an overflow is possible,
@@ -548,8 +549,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
         private final TiledGridCoverage coverage;
 
         /**
-         * Tile Matrix Coordinates (TMC) relative to the enclosing {@link DataSubset}.
-         * Tile (0,0) is the tile in the upper-left corner of this {@link DataSubset},
+         * Tile Matrix Coordinates (TMC) relative to the enclosing {@link TiledGridCoverage}.
+         * Tile (0,0) is the tile in the upper-left corner of this {@link TiledGridCoverage},
          * not necessarily the tile in the upper-left corner of the image in the resource.
          */
         private final int[] tmcInSubset;
@@ -560,8 +561,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
         public final int indexInResultArray;
 
         /**
-         * Index of this tile in the {@link DataCube} resource. This is the index of the tile in the
-         * {@link ImageFileDirectory#tileOffsets} and {@link ImageFileDirectory#tileByteCounts} vectors.
+         * Index of this tile in the {@link TiledGridResource}. In a GeoTIFF image, this is
+         * the index of the tile in the {@code tileOffsets} and {@code tileByteCounts} vectors.
          * This index is also used as key in the {@link TiledGridCoverage#rasters} map.
          */
         public final int indexInTileVector;
@@ -655,9 +656,17 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @see AOI#getCachedTile()
          */
         public WritableRaster cache(final WritableRaster raster) {
-            final WritableRaster existing = coverage.rasters.putIfAbsent(indexInTileVector, raster);
+            final WritableRaster existing = coverage.rasters.putIfAbsent(
+                    coverage.createCacheKey(indexInTileVector), raster);
             return (existing != null) ? existing : raster;
         }
+    }
+
+    /**
+     * Creates the key to use for caching the tile at given index.
+     */
+    private TiledGridResource.CacheKey createCacheKey(final int indexInTileVector) {
+        return new TiledGridResource.CacheKey(indexInTileVector, selectedBands, subsampling, subsamplingOffsets);
     }
 
     /**

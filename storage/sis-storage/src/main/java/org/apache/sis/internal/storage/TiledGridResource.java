@@ -45,15 +45,55 @@ import org.apache.sis.util.ArraysExt;
  */
 public abstract class TiledGridResource extends AbstractGridResource {
     /**
+     * A key in the {@link #rasters} cache of tiles.
+     */
+    static final class CacheKey {
+        /** Index in a row-major array of tiles. */ private final int   indexInTileVector;
+        /** Bands in strictly increasing order.  */ private final int[] selectedBands;
+        /** Subsampling factors at read time.    */ private final int[] subsampling;
+        /** Remainder of subsampling divisions.  */ private final int[] subsamplingOffsets;
+
+        /** Creates a key with given arrays hold be reference (no copy). */
+        CacheKey(final int indexInTileVector, final int[] selectedBands,
+                 final int[] subsampling, final int[] subsamplingOffsets)
+        {
+            this.indexInTileVector  = indexInTileVector;
+            this.selectedBands      = selectedBands;
+            this.subsampling        = subsampling;
+            this.subsamplingOffsets = subsamplingOffsets;
+        }
+
+        /** Returns a hash-code value for this key. */
+        @Override public int hashCode() {
+            return indexInTileVector
+                    +   73 * Arrays.hashCode(selectedBands)
+                    + 1063 * Arrays.hashCode(subsampling)
+                    + 7919 * Arrays.hashCode(subsamplingOffsets);
+        }
+
+        /** Compares this key with the given object for equality. */
+        @Override public boolean equals(final Object obj) {
+            if (obj instanceof CacheKey) {
+                final CacheKey other = (CacheKey) obj;
+                return indexInTileVector == other.indexInTileVector
+                        && Arrays.equals(selectedBands,      other.selectedBands)
+                        && Arrays.equals(subsampling,        other.subsampling)
+                        && Arrays.equals(subsamplingOffsets, other.subsamplingOffsets);
+            }
+            return false;
+        }
+    }
+
+    /**
      * All tiles loaded by any {@link TiledGridCoverage} created from this resource.
-     * Keys are tile indices in a row-major array of tiles.
+     * Keys contains tile indices in a row-major array of tiles.
      * For each value, the {@link WritableRaster#getMinX()} and {@code minY} values
      * can be anything, depending which {@link TiledGridResource} was first to load the tile.
      *
      * @see TiledGridCoverage#rasters
      * @see TiledGridCoverage.AOI#getCachedTile()
      */
-    private final WeakValueHashMap<Integer, WritableRaster> rasters;
+    private final WeakValueHashMap<CacheKey, WritableRaster> rasters;
 
     /**
      * Creates a new resource.
@@ -62,7 +102,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
      */
     protected TiledGridResource(final StoreListeners parent) {
         super(parent);
-        rasters = new WeakValueHashMap<>(Integer.class);
+        rasters = new WeakValueHashMap<>(CacheKey.class);
     }
 
     /**
@@ -187,7 +227,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
          * Cache to use for tiles loaded by the {@link TiledGridCoverage}.
          * It is a reference to {@link TiledGridResource#rasters} if shareable.
          */
-        final WeakValueHashMap<Integer, WritableRaster> cache;
+        final WeakValueHashMap<CacheKey, WritableRaster> cache;
 
         /**
          * Creates parameters for the given domain and range.
@@ -236,14 +276,6 @@ public abstract class TiledGridResource extends AbstractGridResource {
                 readExtent         = target.getIntersection();
                 subsampling        = target.getSubsampling();
                 subsamplingOffsets = target.getSubsamplingOffsets();
-                if (sharedCache) {
-                    for (final int s : subsampling) {
-                        if (s != 1) {
-                            sharedCache = false;
-                            break;
-                        }
-                    }
-                }
             }
             /*
              * Get the bands selected by user in strictly increasing order of source band index.
@@ -252,7 +284,6 @@ public abstract class TiledGridResource extends AbstractGridResource {
              */
             int[] selectedBands = null;
             if (!rangeIndices.isIdentity()) {
-                sharedCache = false;
                 bands = Arrays.asList(rangeIndices.select(bands));
                 selectedBands = new int[rangeIndices.getNumBands()];
                 for (int i=0; i<selectedBands.length; i++) {
@@ -274,7 +305,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
              * All `TiledGridCoverage` instances can share the same cache if they read all tiles fully.
              * If they read only sub-regions or apply subsampling, then they will need their own cache.
              */
-            cache = sharedCache ? rasters : new WeakValueHashMap<>(Integer.class);
+            cache = sharedCache ? rasters : new WeakValueHashMap<>(CacheKey.class);
         }
 
         /**
