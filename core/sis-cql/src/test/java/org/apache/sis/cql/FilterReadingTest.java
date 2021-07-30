@@ -26,20 +26,11 @@ import java.text.ParseException;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 
+import org.apache.sis.geometry.AbstractEnvelope;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.opengis.geometry.Envelope;
 import org.opengis.util.CodeList;
 import org.opengis.feature.Feature;
-import org.opengis.filter.Filter;
-import org.opengis.filter.Literal;
-import org.opengis.filter.LogicalOperator;
-import org.opengis.filter.LogicalOperatorName;
-import org.opengis.filter.SpatialOperator;
-import org.opengis.filter.SpatialOperatorName;
-import org.opengis.filter.DistanceOperator;
-import org.opengis.filter.DistanceOperatorName;
-import org.opengis.filter.TemporalOperator;
-import org.opengis.filter.TemporalOperatorName;
-import org.opengis.filter.BinaryComparisonOperator;
-import org.opengis.filter.ComparisonOperatorName;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Quantities;
@@ -57,6 +48,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LinearRing;
 
+// Branch dependant imports
+import org.opengis.filter.*;
 
 /**
  * Test reading CQL filters.
@@ -163,7 +156,7 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
                             FF.contains(FF.property("BoundingBox"), FF.literal(baseGeometryPoint))
                             )
                     ),
-                    FF.bbox(FF.property("BoundingBox"), new Envelope2D(null, 10, 20, 30-10, 40-20))
+                    FF.bbox(FF.property("BoundingBox"), new GeneralEnvelope(new Envelope2D(null, 10, 20, 30-10, 40-20)))
                 ),
                 filter);
     }
@@ -307,11 +300,16 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         testBBOX("BBOX(geometry,-10,-20,10,20)", "geometry", env);
     }
 
-    private void testBBOX(final String cql, final String att, final Envelope2D env) throws CQLException {
+    private void testBBOX(final String cql, final String att, final Envelope env) throws CQLException {
         final Filter<?> filter = CQL.parseFilter(cql);
-        assertInstanceOf(null, SpatialOperator.class, filter);
+        assertInstanceOf(null, BinarySpatialOperator.class, filter);
         assertEquals(SpatialOperatorName.BBOX, filter.getOperatorType());
-        assertEquals(FF.bbox(FF.property(att), env), filter);
+        assertEquals(FF.property(att), ((BinarySpatialOperator)filter).getOperand1());
+        assertEquals(FF.property(att), ((BinarySpatialOperator)filter).getOperand1());
+        final Expression<?, ?> arg2 = ((BinarySpatialOperator) filter).getOperand2();
+        assertTrue("Second argument should be a literal expression", arg2 instanceof Literal);
+        final AbstractEnvelope argEnv = AbstractEnvelope.castOrCopy((Envelope) ((Literal<?, ?>) arg2).getValue());
+        assertTrue(argEnv.equals(env, 1e-2, false));
     }
 
     /**

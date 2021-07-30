@@ -29,6 +29,7 @@ import org.apache.sis.internal.filter.Node;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
+import org.opengis.filter.BinarySpatialOperator;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
@@ -60,14 +61,14 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements SpatialOperator
     /**
      * The first of the two expressions to be used by this function.
      *
-     * @see #getExpression1()
+     * @see BinarySpatialOperator#getOperand1()
      */
     protected final Expression<? super R, GeometryWrapper<G>> expression1;
 
     /**
      * The second of the two expressions to be used by this function.
      *
-     * @see #getExpression2()
+     * @see BinarySpatialOperator#getOperand2()
      */
     protected final Expression<? super R, GeometryWrapper<G>> expression2;
 
@@ -152,11 +153,11 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements SpatialOperator
      * @return the unwrapped expression.
      */
     protected static <R,G> Expression<? super R, ?> original(final Expression<R, ? extends GeometryWrapper<G>> expression) {
-        if (expression instanceof LeafExpression.Transformed<?,?>) {
-            return ((LeafExpression.Transformed<R,?>) expression).original;
-        } else {
-            return unwrap(expression);
+        Expression<? super R, ?> unwrapped = unwrap(expression);
+        if (unwrapped instanceof LeafExpression.Transformed<?, ?>) {
+            unwrapped = ((LeafExpression.Transformed<R, ?>) unwrapped).original;
         }
+        return unwrapped;
     }
 
     /**

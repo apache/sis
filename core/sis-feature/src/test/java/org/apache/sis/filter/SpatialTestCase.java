@@ -36,6 +36,7 @@ import static org.apache.sis.test.Assert.assertSerializedEquals;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
+import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.DistanceOperator;
@@ -118,6 +119,20 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
         x = -3; y = -2;
         bbox = factory.bbox(right, new Envelope2D(null, x, y, 4-x, 1-y));
         assertFalse(bbox.test(null));
+    }
+
+    /**
+     * Ensure that expressions provided as arguments for bbox filter are not hidden. We mean that if they're wrapped for
+     * internal purpose, the wrappers should not be publicly exposed.
+     */
+    @Test
+    public void bbox_preserve_expression_type() {
+        final BinarySpatialOperator<Feature> bbox = factory.bbox(literal(Polygon.RIGHT), new Envelope2D(null, 0, 0, 1, 1));
+        final Expression<? super Feature, ?> arg2 = bbox.getOperand2();
+        assertTrue("The two ways to acquire the second argument return different values", arg2 == bbox.getExpressions().get(1));
+        assertTrue(
+                "Second argument value should be an envelope",
+                arg2 instanceof Literal && ((Literal<Feature, ?>) arg2).getValue() instanceof Envelope);
     }
 
     /**
