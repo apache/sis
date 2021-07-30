@@ -192,5 +192,19 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         public Expression<? super R, ? extends V> optimize(final Optimization optimization) {
             return new Literal<>(getValue());
         }
+
+        @Override
+        public <N> Expression<R, N> toValueType(Class<N> type) {
+            try {
+                return super.toValueType(type);
+            } catch (RuntimeException e) {
+                try {
+                    return original.toValueType(type);
+                } catch (RuntimeException bis) {
+                    e.addSuppressed(bis);
+                    throw e;
+                }
+            }
+        }
     }
 }
