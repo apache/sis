@@ -1297,7 +1297,7 @@ final class ImageFileDirectory extends DataCube {
      */
     @Override
     public GridGeometry getGridGeometry() throws DataStoreContentException {
-        synchronized (reader.store) {
+        synchronized (getSynchronizationLock()) {
             if (referencing != null) {
                 GridGeometry gridGeometry = referencing.gridGeometry;
                 if (gridGeometry == null) try {
@@ -1321,7 +1321,7 @@ final class ImageFileDirectory extends DataCube {
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<SampleDimension> getSampleDimensions() throws DataStoreContentException {
-        synchronized (reader.store) {
+        synchronized (getSynchronizationLock()) {
             if (sampleDimensions == null) {
                 final SampleDimension[] dimensions = new SampleDimension[samplesPerPixel];
                 final SampleDimension.Builder builder = new SampleDimension.Builder();

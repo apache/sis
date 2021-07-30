@@ -27,6 +27,8 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.internal.storage.AbstractGridResource;
+import org.apache.sis.internal.storage.RasterLoadingStrategy;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.image.PixelIterator;
@@ -236,6 +238,16 @@ public strictfp class CoverageReadConsistency extends TestCase {
     }
 
     /**
+     * Applies a random configuration on the resource.
+     */
+    private void randomConfigureResource() {
+        if (resource instanceof AbstractGridResource) {
+            final RasterLoadingStrategy[] choices = RasterLoadingStrategy.values();
+            ((AbstractGridResource) resource).setLoadingStrategy(choices[random.nextInt(choices.length)]);
+        }
+    }
+
+    /**
      * Creates a random domain to be used as a query on the {@link #resource} to test.
      * All arrays given to this method will have their values overwritten.
      *
@@ -291,6 +303,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
      * @throws DataStoreException if an error occurred while using the resource.
      */
     private void readAndCompareRandomRegions() throws DataStoreException {
+        randomConfigureResource();
         final GridGeometry gg = resource.getGridGeometry();
         final int    dimension   = gg.getDimension();
         final long[] low         = new long[dimension];

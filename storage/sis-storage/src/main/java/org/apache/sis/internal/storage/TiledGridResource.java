@@ -20,13 +20,18 @@ import java.util.List;
 import java.util.Arrays;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
+import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.RasterFormatException;
+import org.opengis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.collection.WeakValueHashMap;
@@ -96,6 +101,15 @@ public abstract class TiledGridResource extends AbstractGridResource {
     private final WeakValueHashMap<CacheKey, WritableRaster> rasters;
 
     /**
+     * Whether all tiles should be loaded at {@code read(…)} method call or deferred to a later time.
+     * This field is initially {@code null} and is initialized to its default value only when needed.
+     *
+     * @see #getLoadingStrategy()
+     * @see #setLoadingStrategy(RasterLoadingStrategy)
+     */
+    private RasterLoadingStrategy loadingStrategy;
+
+    /**
      * Creates a new resource.
      *
      * @param  parent  listeners of the parent resource, or {@code null} if none.
@@ -106,13 +120,21 @@ public abstract class TiledGridResource extends AbstractGridResource {
     }
 
     /**
+     * Returns the object on which to perform all synchronizations for thread-safety.
+     * In current implementation, this is the {@link DataStore} that created this resource.
+     * However this restriction may be relaxed in any future version.
+     *
+     * @return the synchronization lock.
+     */
+    protected abstract DataStore getSynchronizationLock();
+
+    /**
      * Returns the size of tiles in this resource.
      * The length of the returned array is the number of dimensions.
      *
      * @return the size of tiles in this resource.
-     * @throws DataStoreException if an error occurred while fetching tile size information.
      */
-    protected abstract int[] getTileSize() throws DataStoreException;
+    protected abstract int[] getTileSize();
 
     /**
      * Returns the Java2D sample model describing pixel type and layout for all bands.
@@ -328,5 +350,100 @@ public abstract class TiledGridResource extends AbstractGridResource {
         public boolean hasBandSubset() {
             return selectedBands != null;
         }
+    }
+
+    /**
+     * If the loading strategy is to load all tiles at {@code read(…)} time, replaces the given coverage
+     * by a coverage will all data in memory. This method should be invoked by subclasses at the end of
+     * their {@link #read(GridGeometry, int...)} method implementation.
+     *
+     * @param  coverage  the {@link TiledGridCoverage} to potentially replace by a coverage with preloaded data.
+     * @return a coverage with preloaded data, or the given coverage if preloading is not enabled.
+     * @throws DataStoreException if an error occurred while preloading data.
+     */
+    protected final GridCoverage preload(final GridCoverage coverage) throws DataStoreException {
+        assert Thread.holdsLock(getSynchronizationLock());
+        // Note: `loadingStrategy` may still be null if unitialized.
+        if (loadingStrategy != RasterLoadingStrategy.AT_RENDER_TIME) {
+            /*
+             * In theory the following condition is redundant with `supportImmediateLoading()`.
+             * We apply it anyway in case the coverage geometry is not what was announced.
+             * This condition is also necessary if `loadingStrategy` has not been initialized.
+             */
+            if (coverage.getGridGeometry().getDimension() == TiledGridCoverage.BIDIMENSIONAL) try {
+                final RenderedImage image = coverage.render(null);
+                return new GridCoverage2D(coverage.getGridGeometry(), coverage.getSampleDimensions(), image);
+            } catch (RuntimeException e) {
+                /*
+                 * The `coverage.render(…)` implementation may have wrapped the checked `DataStoreException`
+                 * because of API restriction. In that case we can unwrap the exception here since this API
+                 * allows it. This is one of the reasons for preferring the `AT_READ_TIME` loading mode.
+                 */
+                Throwable cause = e.getCause();
+                if (cause instanceof DataStoreException) {
+                    throw (DataStoreException) cause;
+                }
+                /*
+                 * The `CannotEvaluateException` wrapper is created by `TiledGridCoverage.render(…)`,
+                 * in which case we avoid that level of indirection for making stack trace simpler.
+                 * But if the exception is another kind, keep it.
+                 */
+                if (cause == null || !(e instanceof CannotEvaluateException)) {
+                    cause = e;
+                }
+                throw new DataStoreException(e.getLocalizedMessage(), cause);
+            }
+        }
+        return coverage;
+    }
+
+    /**
+     * Whether this resource supports immediate loading of raster data.
+     */
+    private boolean supportImmediateLoading() {
+        return getTileSize().length == TiledGridCoverage.BIDIMENSIONAL;
+    }
+
+    /**
+     * Returns an indication about when the "physical" loading of raster data will happen.
+     *
+     * @return current raster data loading strategy for this resource.
+     */
+    @Override
+    public final RasterLoadingStrategy getLoadingStrategy() {
+        synchronized (getSynchronizationLock()) {
+            if (loadingStrategy == null) {
+                setLoadingStrategy(supportImmediateLoading());
+            }
+            return loadingStrategy;
+        }
+    }
+
+    /**
+     * Sets the preferred strategy about when to do the "physical" loading of raster data.
+     *
+     * @param  strategy  the desired strategy for loading raster data.
+     * @return {@code true} if the given strategy has been accepted, or {@code false}
+     *         if this implementation replaced the given strategy by an alternative.
+     */
+    @Override
+    public final boolean setLoadingStrategy(final RasterLoadingStrategy strategy) {
+        synchronized (getSynchronizationLock()) {
+            if (strategy != null) {
+                setLoadingStrategy(strategy == RasterLoadingStrategy.AT_READ_TIME && supportImmediateLoading());
+            }
+            return super.setLoadingStrategy(strategy);
+        }
+    }
+
+    /**
+     * Sets the strategy for the given flag.
+     *
+     * @param  loadAtReadTime  whether all tiles should be read immediately
+     *         at {@code read(…)} method call or deferred at a later time.
+     */
+    private void setLoadingStrategy(final boolean loadAtReadTime) {
+        loadingStrategy = loadAtReadTime ? RasterLoadingStrategy.AT_READ_TIME
+                                         : RasterLoadingStrategy.AT_RENDER_TIME;
     }
 }

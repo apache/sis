@@ -283,7 +283,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
         final Tile[] missings = new Tile[iterator.tileCountInQuery];
         int numMissings = 0;
         boolean needsCompaction = false;
-        synchronized (reader().store) {
+        synchronized (source.getSynchronizationLock()) {
             do {
                 final WritableRaster tile = iterator.getCachedTile();
                 if (tile != null) {

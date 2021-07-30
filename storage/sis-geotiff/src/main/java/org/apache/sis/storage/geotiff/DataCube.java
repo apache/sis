@@ -19,6 +19,7 @@ package org.apache.sis.storage.geotiff;
 import java.nio.file.Path;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -56,6 +57,14 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     DataCube(final Reader reader) {
         super(reader.store.listeners());
         this.reader = reader;
+    }
+
+    /**
+     * Returns the object on which to perform all synchronizations for thread-safety.
+     */
+    @Override
+    protected final DataStore getSynchronizationLock() {
+        return reader.store;
     }
 
     /**
@@ -122,9 +131,9 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     @Override
     public final GridCoverage read(final GridGeometry domain, final int... range) throws DataStoreException {
         final long startTime = System.nanoTime();
-        final GridCoverage coverage;
+        GridCoverage coverage;
         try {
-            synchronized (reader.store) {
+            synchronized (getSynchronizationLock()) {
                 final Subset subset = new Subset(domain, range, false);
                 final Compression compression = getCompression();
                 if (compression == null) {
@@ -145,6 +154,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
                                 Resources.Keys.UnsupportedCompressionMethod_1, compression));
                     }
                 }
+                coverage = preload(coverage);
             }
         } catch (RuntimeException e) {
             throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, filename()), e);
