@@ -152,7 +152,7 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements SpatialOperator
      * @param  expression  the expression to unwrap.
      * @return the unwrapped expression.
      */
-    protected static <R,G> Expression<? super R, ?> original(final Expression<R, ? extends GeometryWrapper<G>> expression) {
+    protected static <R,G> Expression<? super R, ?> original(final Expression<R, GeometryWrapper<G>> expression) {
         Expression<? super R, ?> unwrapped = unwrap(expression);
         if (unwrapped instanceof LeafExpression.Transformed<?, ?>) {
             unwrapped = ((LeafExpression.Transformed<R, ?>) unwrapped).original;

@@ -169,11 +169,11 @@ public abstract class Node implements Serializable {
      * returns the original expression. Otherwise returns the given expression.
      *
      * @param  <R>         the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
+     * @param  <G>         the geometry implementation type.
      * @param  expression  the expression to unwrap.
      * @return the unwrapped expression.
      */
-    @SuppressWarnings("unchecked")
-    protected static <R> Expression<? super R, ?> unwrap(final Expression<R, ?> expression) {
+    protected static <R,G> Expression<? super R, ?> unwrap(final Expression<R, GeometryWrapper<G>> expression) {
         if (expression instanceof GeometryConverter<?,?>) {
             return ((GeometryConverter<R,?>) expression).expression;
         } else {
