@@ -108,8 +108,12 @@ public abstract class Inflater {
             final int elementsPerRow, final int samplesPerElement, final int[] skipAfterElements, final Buffer target)
     {
         switch (compression) {
-            case NONE: return Uncompressed.create(input, start, elementsPerRow, samplesPerElement, skipAfterElements, target);
-            default: return null;
+            case NONE: {
+                return CopyFromBytes.create(input, start, elementsPerRow, samplesPerElement, skipAfterElements, target);
+            }
+            default: {
+                return null;
+            }
         }
     }
 

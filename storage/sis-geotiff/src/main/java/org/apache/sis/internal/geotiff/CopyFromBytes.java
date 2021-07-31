@@ -30,17 +30,19 @@ import org.apache.sis.util.Classes;
 
 
 /**
- * A pseudo-inflater which copy values unchanged.
- * This implementation is useful for handling more complex subsampling
- * than what {@link org.apache.sis.internal.storage.io.HyperRectangleReader} can handle.
- * It is also useful for testing purpose.
+ * A pseudo-inflater which copies values from a buffer of bytes to the destination image buffer.
+ * When reading uncompressed TIFF images, the source buffer is the direct buffer used for I/O operations.
+ * When reading compressed TIFF images, the source buffer is a temporary buffer where data segments are
+ * uncompressed before to be copied to the destination image. This is useful when handling subsampling
+ * on-the-fly at decompression time would be too difficult: implementers can decompress everything in
+ * a temporary buffer and let this {@code CopyFromBytes} class do the subsampling.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-abstract class Uncompressed extends Inflater {
+abstract class CopyFromBytes extends Inflater {
     /**
      * Stream position where to perform the next reading.
      */
@@ -60,7 +62,7 @@ abstract class Uncompressed extends Inflater {
     /**
      * For constructors in inner classes.
      */
-    private Uncompressed(final ChannelDataInput input, final long start, final int elementsPerRow,
+    private CopyFromBytes(final ChannelDataInput input, final long start, final int elementsPerRow,
                          final int samplesPerElement, final int[] skipAfterElements, final int sampleSize)
     {
         super(input, elementsPerRow, samplesPerElement, skipAfterElements);
@@ -80,7 +82,7 @@ abstract class Uncompressed extends Inflater {
      * @return the inflater for the given targe type.
      * @throws IllegalArgumentException if the buffer type is not recognized.
      */
-    public static Uncompressed create(final ChannelDataInput input, final long start,
+    public static CopyFromBytes create(final ChannelDataInput input, final long start,
             final int count, final int size, final int[] skips, final Buffer target)
     {
         if (target instanceof   ByteBuffer) return new Bytes  (input, start, count, size, skips,   (ByteBuffer) target);
@@ -152,7 +154,7 @@ abstract class Uncompressed extends Inflater {
     /**
      * Inflater for sample values stored as bytes.
      */
-    private static final class Bytes extends Uncompressed {
+    private static final class Bytes extends CopyFromBytes {
         /** Where to copy the values that we will read. */
         private final ByteBuffer target;
 
@@ -192,7 +194,7 @@ abstract class Uncompressed extends Inflater {
      * Inflater for sample values stored as short integers.
      * This is a copy of {@link Bytes} implementation with only the type changed.
      */
-    private static final class Shorts extends Uncompressed {
+    private static final class Shorts extends CopyFromBytes {
         /** Where to copy the values that we will read. */
         private final ShortBuffer target;
 
@@ -226,7 +228,7 @@ abstract class Uncompressed extends Inflater {
      * Inflater for sample values stored as 32 bits integers.
      * This is a copy of {@link Bytes} implementation with only the type changed.
      */
-    private static final class Ints extends Uncompressed {
+    private static final class Ints extends CopyFromBytes {
         /** Where to copy the values that we will read. */
         private final IntBuffer target;
 
@@ -260,7 +262,7 @@ abstract class Uncompressed extends Inflater {
      * Inflater for sample values stored as long integers.
      * This is a copy of {@link Bytes} implementation with only the type changed.
      */
-    private static final class Longs extends Uncompressed {
+    private static final class Longs extends CopyFromBytes {
         /** Where to copy the values that we will read. */
         private final LongBuffer target;
 
@@ -294,7 +296,7 @@ abstract class Uncompressed extends Inflater {
      * Inflater for sample values stored as single-precision floating point numbers.
      * This is a copy of {@link Bytes} implementation with only the type changed.
      */
-    private static final class Floats extends Uncompressed {
+    private static final class Floats extends CopyFromBytes {
         /** Where to copy the values that we will read. */
         private final FloatBuffer target;
 
@@ -328,7 +330,7 @@ abstract class Uncompressed extends Inflater {
      * Inflater for sample values stored as double-precision floating point numbers.
      * This is a copy of {@link Bytes} implementation with only the type changed.
      */
-    private static final class Doubles extends Uncompressed {
+    private static final class Doubles extends CopyFromBytes {
         /** Where to copy the values that we will read. */
         private final DoubleBuffer target;
 
