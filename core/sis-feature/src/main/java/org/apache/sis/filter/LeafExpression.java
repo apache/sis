@@ -83,7 +83,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         private static final long serialVersionUID = -8383113218490957822L;
 
         /** The constant value to be returned by {@link #getValue()}. */
-        private final V value;
+        protected final V value;
 
         /** Creates a new literal holding the given constant value. */
         Literal(final V value) {
@@ -168,7 +168,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
 
 
     /**
-     * A literal value which is the result of transforming an other literal.
+     * A literal value which is the result of transforming another literal.
      */
     static final class Transformed<R,V> extends Literal<R,V> implements Optimization.OnExpression<R,V> {
         /** For cross-version compatibility. */
@@ -193,16 +193,27 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
             return new Literal<>(getValue());
         }
 
+        /**
+         * Converts the transformed value if possible, or the original value as a fallback.
+         *
+         * @throws ClassCastException if values can not be provided as instances of the specified class.
+         */
         @Override
-        public <N> Expression<R, N> toValueType(Class<N> type) {
+        @SuppressWarnings("unchecked")
+        public <N> Expression<R,N> toValueType(final Class<N> type) {
+            // Same implementation than `super.toValueType(type)` except for exception handling.
             try {
-                return super.toValueType(type);
-            } catch (RuntimeException e) {
+                final N c = ObjectConverters.convert(value, type);
+                return (c != value) ? new Literal<>(c) : (Literal<R,N>) this;
+            } catch (UnconvertibleObjectException e) {
                 try {
                     return original.toValueType(type);
                 } catch (RuntimeException bis) {
-                    e.addSuppressed(bis);
-                    throw e;
+                    final ClassCastException c = new ClassCastException(Errors.format(
+                            Errors.Keys.CanNotConvertValue_2, getFunctionName(), type));
+                    c.initCause(e);
+                    c.addSuppressed(bis);
+                    throw c;
                 }
             }
         }
