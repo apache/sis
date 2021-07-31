@@ -36,6 +36,7 @@ import static org.junit.Assert.*;
  * Base class of Java2D, ESRI and JTS implementation tests.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   1.0
  * @module
@@ -207,13 +208,16 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)} and ensure <em>no</em> axis swapping is done.
+     * Tests {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)} from a four-dimensional envelope.
+     * Ensures that the horizontal component is identified, but otherwise <em>no</em> axis swapping is done.
      */
     @Test
-    public void testToGeometryAxisOrderIsPreserved() {
-        final GeneralEnvelope e = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
-        e.setRange(0,  2,  3);
-        e.setRange(1, 89, 19);
+    public void testToGeometryFrom4D() {
+        final GeneralEnvelope e = new GeneralEnvelope(HardCodedCRS.GEOID_4D_MIXED_ORDER);
+        e.setRange(0,  -20,   12);      // Height
+        e.setRange(1, 1000, 1007);      // Time
+        e.setRange(2,    2,    3);      // Latitude
+        e.setRange(3,   89,   19);      // Longitude (span anti-meridian).
         assertToGeometryEquals(e, WraparoundMethod.NONE,       2,   89, 2,  19, 3,  19, 3,   89, 2,   89);
         assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS, 2, -271, 2,  19, 3,  19, 3, -271, 2, -271);
         assertToGeometryEquals(e, WraparoundMethod.EXPAND,     2, -180, 2, 180, 3, 180, 3, -180, 2, -180);

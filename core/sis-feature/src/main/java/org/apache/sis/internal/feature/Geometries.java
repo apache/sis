@@ -21,23 +21,23 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.Iterator;
-import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.util.UnconvertibleObjectException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.UnconvertibleObjectException;
 
 
 /**
@@ -382,17 +382,17 @@ public abstract class Geometries<G> implements Serializable {
      * The sequence of points describes each corner, going in clockwise direction and repeating the starting
      * point to properly close the ring.
      *
-     * @param  x  dimension of first axis.
-     * @param  y  dimension of second axis.
+     * @param  xd  dimension of first axis.
+     * @param  yd  dimension of second axis.
      * @return a polyline made of a sequence of 5 points describing the given rectangle.
      */
-    private GeometryWrapper<G> createGeometry2D(final Envelope envelope, final int x, final int y) {
+    private GeometryWrapper<G> createGeometry2D(final Envelope envelope, final int xd, final int yd) {
         final DirectPosition lc = envelope.getLowerCorner();
         final DirectPosition uc = envelope.getUpperCorner();
-        final double xmin = lc.getOrdinate(x);
-        final double ymin = lc.getOrdinate(y);
-        final double xmax = uc.getOrdinate(x);
-        final double ymax = uc.getOrdinate(y);
+        final double xmin = lc.getOrdinate(xd);
+        final double ymin = lc.getOrdinate(yd);
+        final double xmax = uc.getOrdinate(xd);
+        final double ymax = uc.getOrdinate(yd);
         return createWrapper(createPolyline(true, BIDIMENSIONAL, Vector.create(new double[] {
                              xmin, ymin,  xmin, ymax,  xmax, ymax,  xmax, ymin,  xmin, ymin})));
     }
@@ -403,30 +403,35 @@ public abstract class Geometries<G> implements Serializable {
      * should be two-dimensional (see for example {@link GeneralEnvelope#horizontal()}) but
      * the coordinates does not need to be in (longitude, latitude) order; this method will
      * preserve envelope horizontal axis order. It means that any non-2D axis will be ignored,
-     * and the first horizontal axis in the envelope will be the first axis (x) in the resulting
-     * geometry. To force {@link AxesConvention#RIGHT_HANDED}, you have to transform your bounding
-     * box before calling this method.
+     * and the first horizontal axis in the envelope will be the first axis (x) in the resulting geometry.
+     * To force {@link AxesConvention#RIGHT_HANDED}, should transform the bounding box before calling this method.
      *
      * @param  envelope  the envelope to convert.
      * @param  strategy  how to resolve wrap-around ambiguities on the envelope.
      * @return the envelope as a polygon, or potentially as two polygons in {@link WraparoundMethod#SPLIT} case.
      */
     public GeometryWrapper<G> toGeometry2D(final Envelope envelope, final WraparoundMethod strategy) {
-        final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
-        int x = 0, y = 1;
-        if (crs != null && envelope.getDimension() > 2) {
-            final CoordinateSystem cs = crs.getCoordinateSystem();
-            int cx = AxisDirections.indexOfColinear(cs, AxisDirection.EAST);
-            int cy = AxisDirections.indexOfColinear(cs, AxisDirection.NORTH);
-            if (cx >= 0 || cy >= 0) {
-                if ((cx < 0 && (cx = cy - 1) < 0 && (cx = cy + 1) >= cs.getDimension()) ||
-                    (cy < 0 && (cy = cx + 1) >= cs.getDimension() && (cy = cx - 1) < 0))
-                {
-                    // May happen if the CRS has only one dimension.
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyEnvelope2D));
-                }
-                x = Math.min(cx, cy);
-                y = Math.max(cy, cx);
+        int xd = 0, yd = 1;
+        CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
+        final int dimension = envelope.getDimension();
+        if (dimension != BIDIMENSIONAL) {
+            if (dimension < BIDIMENSIONAL) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyEnvelope2D));
+            }
+            final CoordinateReferenceSystem crsND = crs;
+            crs = CRS.getHorizontalComponent(crsND);
+            if (crs == null) {
+                crs = CRS.getComponentAt(crsND, 0, BIDIMENSIONAL);
+            } else if (crs != crsND) {
+                final CoordinateSystem csND = crsND.getCoordinateSystem();
+                final CoordinateSystem cs   = crs  .getCoordinateSystem();
+                xd = AxisDirections.indexOfColinear(csND, cs.getAxis(0).getDirection());
+                yd = AxisDirections.indexOfColinear(csND, cs.getAxis(1).getDirection());
+                if (xd == yd) yd++;    // Paranoiac check (e.g. CS with 2 temporal axes).
+                /*
+                 * `indexOfColinear` returns -1 if the axis has not been found, but it should never
+                 * happen here because we ask for axis directions that are known to exist in the CRS.
+                 */
             }
         }
         final GeometryWrapper<G> result;
@@ -435,26 +440,26 @@ public abstract class Geometries<G> implements Serializable {
                 throw new IllegalArgumentException();
             }
             case NONE: {
-                result = createGeometry2D(envelope, x, y);
+                result = createGeometry2D(envelope, xd, yd);
                 break;
             }
             default: {
                 final GeneralEnvelope ge = new GeneralEnvelope(envelope);
                 ge.normalize();
                 ge.wraparound(strategy);
-                result = createGeometry2D(ge, x, y);
+                result = createGeometry2D(ge, xd, yd);
                 break;
             }
             case SPLIT: {
                 final Envelope[] parts = AbstractEnvelope.castOrCopy(envelope).toSimpleEnvelopes();
                 if (parts.length == 1) {
-                    result = createGeometry2D(parts[0], x, y);
+                    result = createGeometry2D(parts[0], xd, yd);
                     break;
                 }
                 @SuppressWarnings({"unchecked", "rawtypes"})
                 final GeometryWrapper<G>[] polygons = new GeometryWrapper[parts.length];
                 for (int i=0; i<parts.length; i++) {
-                    polygons[i] = createGeometry2D(parts[i], x, y);
+                    polygons[i] = createGeometry2D(parts[i], xd, yd);
                     polygons[i].setCoordinateReferenceSystem(crs);
                 }
                 result = createMultiPolygon(polygons);

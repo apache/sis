@@ -288,6 +288,7 @@ public final strictfp class HardCodedCRS {
             getProperties(HardCodedCS.DAYS), HardCodedDatum.MODIFIED_JULIAN, HardCodedCS.DAYS);
 
     static {
+        // Declared here because otherwise it would be illegal forward references.
         WGS84_4D = new DefaultCompoundCRS(properties("WGS 84 (3D) + time", null), WGS84_3D, TIME);
         WGS84_4D_TIME_FIRST = new DefaultCompoundCRS(properties("time + WGS 84 (3D)", null), TIME, WGS84_3D);
     }
@@ -321,12 +322,13 @@ public final strictfp class HardCodedCRS {
             properties("WGS 84 + height + time", null), WGS84, GRAVITY_RELATED_HEIGHT, TIME);
 
     /**
-     * A (H,λ,φ) CRS where <var>H</var> is the {@link #GRAVITY_RELATED_HEIGHT}.
-     * This is the same CRS than {@link #GEOID_3D} but with height first.
+     * A (H,t,φ,λ) CRS where <var>H</var> is the {@link #GRAVITY_RELATED_HEIGHT}.
      * Such axis order is unusual but we use it as a way to verify that SIS is robust to arbitrary axis order.
+     *
+     * @since 1.1
      */
-    public static final DefaultCompoundCRS GEOID_HEIGHT_FIRST = new DefaultCompoundCRS(
-            properties("height + WGS 84", null), GRAVITY_RELATED_HEIGHT, WGS84);
+    public static final DefaultCompoundCRS GEOID_4D_MIXED_ORDER = new DefaultCompoundCRS(
+            properties("height + time + WGS 84 (φ,λ)", null), GRAVITY_RELATED_HEIGHT, TIME, WGS84_LATITUDE_FIRST);
 
     /**
      * A (λ,φ,H,t) CRS as a nested compound CRS.

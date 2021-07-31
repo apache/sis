@@ -31,7 +31,8 @@ import org.junit.Test;
 import static java.lang.Double.NaN;
 import static org.opengis.test.Validators.*;
 import static org.apache.sis.test.ReferencingAssert.*;
-import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
+import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
+import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84_LATITUDE_FIRST;
 
 
 /**
@@ -652,11 +653,11 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      */
     @Test
     public void testHorizontal() {
-        GeneralEnvelope envelope = new GeneralEnvelope(new double[] {4, 5, -8}, new double[] {8, 7, -3});
-        envelope.setCoordinateReferenceSystem(HardCodedCRS.GEOID_HEIGHT_FIRST);
+        GeneralEnvelope envelope = new GeneralEnvelope(new double[] {4, 12, 5, -8}, new double[] {8, 19, 7, -3});
+        envelope.setCoordinateReferenceSystem(HardCodedCRS.GEOID_4D_MIXED_ORDER);
         envelope = envelope.horizontal();
         assertEnvelopeEquals(envelope, 5, -8, 7, -3);
-        assertSame(WGS84, envelope.getCoordinateReferenceSystem());
+        assertSame(WGS84_LATITUDE_FIRST, envelope.getCoordinateReferenceSystem());
     }
 
     /**

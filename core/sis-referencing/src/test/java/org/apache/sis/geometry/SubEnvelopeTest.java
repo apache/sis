@@ -22,7 +22,7 @@ import org.apache.sis.test.DependsOn;
 import static java.lang.Double.NaN;
 import static org.junit.Assert.*;
 import static org.opengis.test.Validators.validate;
-import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
+import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
 
 /**
