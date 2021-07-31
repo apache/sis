@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff;
+package org.apache.sis.internal.geotiff;
 
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -23,10 +23,10 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link Compression} base class.
+ * Tests the {@link Compression} enumeration.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */

@@ -25,6 +25,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.internal.geotiff.Compression;
 import org.apache.sis.internal.storage.TiledGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.util.resources.Errors;
@@ -140,19 +141,12 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
                     throw new DataStoreContentException(reader.resources().getString(
                             Resources.Keys.MissingValue_2, Tags.name(Tags.Compression)));
                 }
-                switch (compression) {
-                    case NONE: {
-                        if (subset.hasBandSubset() || (subset.hasSubsampling(0) && isInterleaved())) {
-                            coverage = new CompressedSubset(this, subset);
-                        } else {
-                            coverage = new DataSubset(this, subset);
-                        }
-                        break;
-                    }
-                    default: {
-                        throw new DataStoreContentException(reader.resources().getString(
-                                Resources.Keys.UnsupportedCompressionMethod_1, compression));
-                    }
+                if (compression != Compression.NONE || subset.hasBandSubset()
+                        || (subset.hasSubsampling(0) && isInterleaved()))
+                {
+                    coverage = new CompressedSubset(this, subset, compression);
+                } else {
+                    coverage = new DataSubset(this, subset);
                 }
                 coverage = preload(coverage);
             }

@@ -30,8 +30,8 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.geotiff.CompressionTest.class,
     org.apache.sis.storage.geotiff.TypeTest.class,
-    org.apache.sis.storage.geotiff.CompressionTest.class,
     org.apache.sis.storage.geotiff.GeoKeysTest.class,
     org.apache.sis.storage.geotiff.CRSBuilderTest.class,
     org.apache.sis.storage.geotiff.SelfConsistencyTest.class

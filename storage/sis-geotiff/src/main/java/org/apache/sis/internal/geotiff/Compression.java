@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff;
+package org.apache.sis.internal.geotiff;
 
 
 /**
@@ -30,11 +30,11 @@ package org.apache.sis.storage.geotiff;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
-enum Compression {
+public enum Compression {
     /**
      * No compression, but pack data into bytes as tightly as possible, leaving no unused bits except
      * potentially at the end of rows. The component values are stored as an array of type byte.
@@ -122,14 +122,17 @@ enum Compression {
     /**
      * Creates a new compression enumeration.
      */
-    Compression(final int code) {
+    private Compression(final int code) {
         this.code = code;
     }
 
     /**
      * Returns the compression method for the given GeoTIFF code, or {@code null} if none.
+     *
+     * @param  code  the TIFF code for which to get a compression enumeration value.
+     * @return enumeration value for the given code, or {@code null} if none.
      */
-    static Compression valueOf(final long code) {
+    public static Compression valueOf(final long code) {
         if ((code & ~0xFFFF) == 0) {                // Should be a short according TIFF specification.
             switch ((int) code) {
                 case 1:     return NONE;

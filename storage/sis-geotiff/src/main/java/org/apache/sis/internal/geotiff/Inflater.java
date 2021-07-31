@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.geotiff;
 
+import java.nio.Buffer;
 import java.io.IOException;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 
@@ -87,6 +88,28 @@ public abstract class Inflater {
         } else {
             chunksPerRow    = 1;
             samplesPerChunk = Math.multiplyExact(samplesPerElement, elementsPerRow);
+        }
+    }
+
+    /**
+     * Creates a new instance for the given compression.
+     * If the given method is unrecognized, then this method returns {@code null}.
+     *
+     * @param  compression        the compression method.
+     * @param  input              the source of data to decompress.
+     * @param  start              stream position where to start reading.
+     * @param  elementsPerRow     number of elements (usually pixels) per row. Must be strictly positive.
+     * @param  samplesPerElement  number of sample values per element (usually pixel). Must be strictly positive.
+     * @param  skipAfterElements  number of sample values to skip between elements (pixels). May be empty or null.
+     * @param  target             where to store sample values.
+     * @return the inflater for the given targe type, or {@code null} if the compression method is unknown.
+     */
+    public static Inflater create(final Compression compression, final ChannelDataInput input, final long start,
+            final int elementsPerRow, final int samplesPerElement, final int[] skipAfterElements, final Buffer target)
+    {
+        switch (compression) {
+            case NONE: return Uncompressed.create(input, start, elementsPerRow, samplesPerElement, skipAfterElements, target);
+            default: return null;
         }
     }
 

@@ -40,7 +40,7 @@ import org.apache.sis.util.Classes;
  * @since   1.1
  * @module
  */
-public abstract class Uncompressed extends Inflater {
+abstract class Uncompressed extends Inflater {
     /**
      * Stream position where to perform the next reading.
      */

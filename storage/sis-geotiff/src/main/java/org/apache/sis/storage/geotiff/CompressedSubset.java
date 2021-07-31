@@ -22,12 +22,14 @@ import java.io.IOException;
 import java.nio.Buffer;
 import org.apache.sis.internal.storage.TiledGridResource;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
-import org.apache.sis.internal.geotiff.Uncompressed;
+import org.apache.sis.internal.geotiff.Compression;
 import org.apache.sis.internal.geotiff.Inflater;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.image.DataType;
 
 import static java.lang.Math.toIntExact;
+import org.apache.sis.internal.geotiff.Resources;
 import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
 
 
@@ -40,6 +42,11 @@ import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
  * @module
  */
 final class CompressedSubset extends DataSubset {
+    /**
+     * The compression method.
+     */
+    private final Compression compression;
+
     /**
      * Number of sample values to skip for moving to the next row of a tile in the GeoTIFF file.
      * This is not necessarily the same scanline stride than for the tiles created by this class.
@@ -96,13 +103,17 @@ final class CompressedSubset extends DataSubset {
      * by {@link ImageFileDirectory#validateMandatoryTags()} before this call.
      * This constructor should be invoked inside a synchronized block.
      *
-     * @param  source   the resource which contain this {@code DataSubset}.
-     * @param  subset   description of the {@code owner} subset to cover.
-     * @param  rasters  potentially shared cache of rasters read by this {@code DataSubset}.
+     * @param  source       the resource which contain this {@code DataSubset}.
+     * @param  subset       description of the {@code owner} subset to cover.
+     * @param  rasters      potentially shared cache of rasters read by this {@code DataSubset}.
+     * @param  compression  the compression method.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
-    CompressedSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
+    CompressedSubset(final DataCube source, final TiledGridResource.Subset subset, final Compression compression)
+            throws DataStoreException
+    {
         super(source, subset);
+        this.compression = compression;
         scanlineStride = multiplyFull(getTileSize(0), sourcePixelStride);
         final int between = sourcePixelStride * (getSubsampling(0) - 1);
         int afterLastBand = sourcePixelStride * (getTileSize(0) - 1);
@@ -202,7 +213,12 @@ final class CompressedSubset extends DataSubset {
         final Buffer[] banks = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
             final Buffer   bank = RasterFactory.createBuffer(type, capacity);
-            final Inflater algo = Uncompressed.create(reader().input, offsets[b], elementsPerRow, samplesPerElement, skipAfterElements, bank);
+            final Inflater algo = Inflater.create(compression, reader().input, offsets[b],
+                                    elementsPerRow, samplesPerElement, skipAfterElements, bank);
+            if (algo == null) {
+                throw new DataStoreContentException(reader().resources().getString(
+                        Resources.Keys.UnsupportedCompressionMethod_1, compression));
+            }
             for (long y = lower[1]; --y >= 0;) {
                 algo.skip(scanlineStride);
                 // TODO: after we finished to implement decompression algorithms,

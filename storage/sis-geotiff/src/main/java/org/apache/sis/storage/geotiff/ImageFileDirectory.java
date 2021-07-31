@@ -37,6 +37,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.internal.geotiff.Compression;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
