@@ -18,6 +18,9 @@ package org.apache.sis.internal.geotiff;
 
 import java.nio.Buffer;
 import java.io.IOException;
+import java.util.Arrays;
+import org.apache.sis.math.MathFunctions;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 
 import static org.apache.sis.util.ArgumentChecks.ensureStrictlyPositive;
@@ -72,11 +75,11 @@ public abstract class Inflater {
      * @param  elementsPerRow     number of elements (usually pixels) per row. Must be strictly positive.
      * @param  samplesPerElement  number of sample values per element (usually pixel). Must be strictly positive.
      * @param  skipAfterElements  number of sample values to skip between elements (pixels). May be empty or null.
+     * @param  maxChunkSize       maximal value (in number of elements) for the {@link #samplesPerChunk} field.
      */
-    protected Inflater(final ChannelDataInput input, final int elementsPerRow, final int samplesPerElement, final int[] skipAfterElements) {
-        ensureNonNull("input", input);
-        ensureStrictlyPositive("elementsPerRow",    elementsPerRow);
-        ensureStrictlyPositive("samplesPerElement", samplesPerElement);
+    protected Inflater(final ChannelDataInput input, final int elementsPerRow, final int samplesPerElement,
+                       final int[] skipAfterElements, final int maxChunkSize)
+    {
         this.input = input;
         skipAfterChunks = skipAfterElements;
         if (skipAfterElements != null) {
@@ -86,8 +89,22 @@ public abstract class Inflater {
             chunksPerRow    = elementsPerRow;
             samplesPerChunk = samplesPerElement;
         } else {
-            chunksPerRow    = 1;
-            samplesPerChunk = Math.multiplyExact(samplesPerElement, elementsPerRow);
+            int n = 1;
+            int s = Math.multiplyExact(samplesPerElement, elementsPerRow);
+            if (s > maxChunkSize) {
+                /*
+                 * We want the smallest divisor n ≥ s/maxChunkSize. Note that `i` is guaranteed
+                 * to be inside the array index range because the last array element is `s` and
+                 * the value that we search can not be greater.
+                 */
+                final int[] divisors = MathFunctions.divisors(s);
+                int i = Arrays.binarySearch(divisors, Numerics.ceilDiv(s, maxChunkSize));
+                if (i < 0) i = ~i;      // No need for array bound check.
+                n = divisors[i];
+                s /= n;
+            }
+            chunksPerRow    = n;
+            samplesPerChunk = s;
         }
     }
 
@@ -107,6 +124,9 @@ public abstract class Inflater {
     public static Inflater create(final Compression compression, final ChannelDataInput input, final long start,
             final int elementsPerRow, final int samplesPerElement, final int[] skipAfterElements, final Buffer target)
     {
+        ensureNonNull("input", input);
+        ensureStrictlyPositive("elementsPerRow",    elementsPerRow);
+        ensureStrictlyPositive("samplesPerElement", samplesPerElement);
         switch (compression) {
             case NONE: {
                 return CopyFromBytes.create(input, start, elementsPerRow, samplesPerElement, skipAfterElements, target);

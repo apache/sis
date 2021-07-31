@@ -65,7 +65,7 @@ abstract class CopyFromBytes extends Inflater {
     private CopyFromBytes(final ChannelDataInput input, final long start, final int elementsPerRow,
                          final int samplesPerElement, final int[] skipAfterElements, final int sampleSize)
     {
-        super(input, elementsPerRow, samplesPerElement, skipAfterElements);
+        super(input, elementsPerRow, samplesPerElement, skipAfterElements, input.buffer.capacity() / sampleSize);
         this.streamPosition = start;
         this.sampleSize = sampleSize;
     }
