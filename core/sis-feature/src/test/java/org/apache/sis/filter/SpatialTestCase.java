@@ -32,6 +32,7 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.Assert.assertSerializedEquals;
 
 // Branch-dependent imports
@@ -49,6 +50,7 @@ import org.opengis.filter.BinarySpatialOperator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.1
  *
  * @param  <G> root class of geometry implementation.
@@ -122,17 +124,16 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
     }
 
     /**
-     * Ensure that expressions provided as arguments for bbox filter are not hidden. We mean that if they're wrapped for
-     * internal purpose, the wrappers should not be publicly exposed.
+     * Ensures that expressions provided as arguments for BBOX filter are not hidden.
+     * If they are wrapped for internal purpose, the wrappers should not be publicly exposed.
      */
     @Test
     public void bbox_preserve_expression_type() {
         final BinarySpatialOperator<Feature> bbox = factory.bbox(literal(Polygon.RIGHT), new Envelope2D(null, 0, 0, 1, 1));
         final Expression<? super Feature, ?> arg2 = bbox.getOperand2();
-        assertTrue("The two ways to acquire the second argument return different values", arg2 == bbox.getExpressions().get(1));
-        assertTrue(
-                "Second argument value should be an envelope",
-                arg2 instanceof Literal && ((Literal<Feature, ?>) arg2).getValue() instanceof Envelope);
+        assertSame("The two ways to acquire the second argument return different values.", arg2, bbox.getExpressions().get(1));
+        assertInstanceOf("Second argument value should be an envelope.", Envelope.class,
+                         ((Literal<? super Feature, ?>) arg2).getValue());
     }
 
     /**

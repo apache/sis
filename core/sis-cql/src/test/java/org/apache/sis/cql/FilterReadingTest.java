@@ -26,14 +26,13 @@ import java.text.ParseException;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 
-import org.apache.sis.geometry.AbstractEnvelope;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.CodeList;
-import org.opengis.feature.Feature;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Quantities;
+import org.apache.sis.geometry.AbstractEnvelope;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -48,8 +47,10 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LinearRing;
 
-// Branch dependant imports
+// Branch-dependent imports
+import org.opengis.feature.Feature;
 import org.opengis.filter.*;
+
 
 /**
  * Test reading CQL filters.
