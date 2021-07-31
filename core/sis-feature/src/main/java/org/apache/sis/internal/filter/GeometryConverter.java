@@ -19,22 +19,29 @@ package org.apache.sis.internal.filter;
 import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
-import org.apache.sis.geometry.WraparoundMethod;
 import org.opengis.util.ScopedName;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.filter.Optimization;
 
 // Branch-dependent imports
 import org.opengis.filter.Expression;
+import org.opengis.filter.InvalidFilterValueException;
 
 
 /**
- * Expression whose results is a geometry wrapper.
+ * Expression whose results is a geometry wrapper. This converter evaluates another expression,
+ * which is given at construction time, potentially converts the result then wraps it.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.1
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
@@ -116,16 +123,39 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
     }
 
     /**
-     * Evaluates the expression for producing a result of the given type.
+     * Evaluates the expression and converts the value to a geometry wrapper.
+     * For now, only "native" geometry objects, envelope and bounding boxes are supported.
+     * No Wrap-around resolution is applied.
+     *
+     * <p>This method is a workaround for attempting conversion of an arbitrary value to a geometry.
+     * When more context is available, the chain of {@code if (x instanceof y)} statements should
+     * be replaced by subclasses invoking directly the appropriate method. For example if we know
+     * that values are {@link Envelope}, we should use {@link Geometries#toGeometry2D(Envelope,
+     * WraparoundMethod)} directly.</p>
+     *
+     * @todo Try to change the class parameterized type for restricting to geometries {@code <G>}.
+     *       If we can do that, remove all {@code if} statements for doing only geometry wrapping.
+     *       If we can not do that, check how to propagate the wrap-around policy from some context.
      *
      * @param  input  the geometry to evaluate with this expression.
      * @return the geometry boundary.
+     * @throws InvalidFilterValueException if the expression result is not an instance of a supported type.
      */
     @Override
     public GeometryWrapper<G> apply(final R input) {
-        // TODO: review if this component should only cast geometries. If conversion is kept, check how to propagate
-        // wrap-around method from build context.
-        return library.toGeometry(expression.apply(input), WraparoundMethod.NONE);
+        final Object value = expression.apply(input);
+        final Envelope envelope;
+        if (value instanceof GeographicBoundingBox) {
+            envelope = new ImmutableEnvelope((GeographicBoundingBox) value);
+        } else if (value instanceof Envelope) {
+            envelope = (Envelope) value;
+        } else try {
+            return library.castOrWrap(value);
+        } catch (ClassCastException e) {
+            throw new InvalidFilterValueException(Errors.format(
+                    Errors.Keys.IllegalClass_2, library.rootClass, Classes.getClass(value)), e);
+        }
+        return library.toGeometry2D(envelope, WraparoundMethod.NONE);
     }
 
     /**

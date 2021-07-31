@@ -29,11 +29,11 @@ import org.apache.sis.internal.filter.Node;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
-import org.opengis.filter.BinarySpatialOperator;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
 import org.opengis.filter.SpatialOperator;
+import org.opengis.filter.BinarySpatialOperator;
 import org.opengis.filter.InvalidFilterValueException;
 
 
@@ -44,6 +44,7 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.1
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
@@ -104,18 +105,17 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements SpatialOperator
         final GeometryWrapper<G> value;
         if (geometry2 instanceof Literal<?,?>) {
             literal = (Literal<? super R, ?>) geometry2;
-            value = expression2.apply(null);
+            value   = expression2.apply(null);
             index   = 1;
         } else if (geometry1 instanceof Literal<?,?>) {
             literal = (Literal<? super R, ?>) geometry1;
-            value = expression1.apply(null);
-            index = 0;
+            value   = expression1.apply(null);
+            index   = 0;
         } else {
             literal = null;
-            value = null;
+            value   = null;
             index   = -1;
         }
-
         try {
             context = new SpatialOperationContext(null, value, systemUnit, index);
             if (value != null) {

@@ -23,12 +23,10 @@ import java.util.Optional;
 import java.util.Iterator;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
-import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -37,7 +35,6 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.UnconvertibleObjectException;
 
 
 /**
@@ -222,14 +219,23 @@ public abstract class Geometries<G> implements Serializable {
 
     /**
      * Returns a wrapper for the given {@code <G>} or {@code GeometryWrapper<G>} instance.
-     * The given object shall be an instance of {@link #rootClass} or {@link #pointClass}.
+     * The given object can be one of the following choices:
+     *
+     * <ul>
+     *   <li>{@code null}, in which case this method returns {@code null}.</li>
+     *   <li>An instance of {@code GeometryWrapper<G>}, in which case the given object is returned unchanged.
+     *       Note that instances of {@code GeometryWrapper<?>} for implementations other than {@code <G>}
+     *       will cause a {@link ClassCastException} to be thrown.</li>
+     *   <li>An instance of {@link #rootClass} or {@link #pointClass}.</li>
+     * </ul>
+     *
      * This method can be used as an alternative to {@link #wrap(Object)} when the specified
      * geometry shall be an implementation of the specific {@linkplain #library}.
      *
      * @param  geometry  the geometry instance to wrap (can be {@code null}).
-     * @return a wrapper for the given geometry implementation, or {@code null}.
-     * @throws ClassCastException if the the given object is not an implementation
-     *         of the library identified by {@link #library}.
+     * @return a wrapper for the given geometry implementation, or {@code null} if the given object was null.
+     * @throws ClassCastException if the the given object is not a wrapper or a geometry object
+     *         of the implementation of the library identified by {@link #library}.
      *
      * @see #wrap(Object)
      */
@@ -468,32 +474,6 @@ public abstract class Geometries<G> implements Serializable {
         }
         result.setCoordinateReferenceSystem(crs);
         return result;
-    }
-
-    /**
-     * Convert a given object to a geometry. For now, only bounding boxes are supported. No Wrap-around resolution
-     * is applied. This method is a workaround to attempt conversion of an arbitrary value to a geometry. When more
-     * context is available, prefer using directly typed methods. For example, if you have an {@link Envelope}, you
-     * should use {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)} directly.
-     *
-     * @param value An object to map to Geometry API if needed. Currently supported convertible types are
-     * {@link GeographicBoundingBox} and {@link Envelope}. If param is null or already converted, it is returned as is.
-     * @param adjustmentStrategy The wrap-around method to use if we've got to convert an envelope. If null, default to
-     *                           {@link WraparoundMethod#NONE}.
-     * @return The conversion result, possibly null.
-     * @throws UnconvertibleObjectException If no conversion strategy exists for given object.
-     * @see #toGeometry2D(Envelope, WraparoundMethod) envelope conversion method.
-     */
-    public GeometryWrapper<G> toGeometry(Object value, WraparoundMethod adjustmentStrategy) throws UnconvertibleObjectException {
-        if (value == null) return null;
-        else try {
-            if (value instanceof GeographicBoundingBox) value = new ImmutableEnvelope((GeographicBoundingBox) value);
-            // TODO: what wrap-around method to use ? Should we assume user must manage it before-hand ?
-            if (value instanceof Envelope) value = toGeometry2D((Envelope) value, adjustmentStrategy == null ? WraparoundMethod.NONE : adjustmentStrategy);
-            return castOrWrap(value);
-        } catch (RuntimeException e) {
-            throw new UnconvertibleObjectException("Geometry conversion: unsupported value type: "+value.getClass().getCanonicalName(), e);
-        }
     }
 
     /**
