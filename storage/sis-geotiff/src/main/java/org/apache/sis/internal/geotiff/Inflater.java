@@ -115,26 +115,37 @@ public abstract class Inflater {
      * @param  compression        the compression method.
      * @param  input              the source of data to decompress.
      * @param  start              stream position where to start reading.
+     * @param  byteCount          number of bytes to read before decompression.
      * @param  elementsPerRow     number of elements (usually pixels) per row. Must be strictly positive.
      * @param  samplesPerElement  number of sample values per element (usually pixel). Must be strictly positive.
      * @param  skipAfterElements  number of sample values to skip between elements (pixels). May be empty or null.
      * @param  target             where to store sample values.
      * @return the inflater for the given targe type, or {@code null} if the compression method is unknown.
+     * @throws IOException if an I/O operation was required and failed.
      */
-    public static Inflater create(final Compression compression, final ChannelDataInput input, final long start,
+    public static Inflater create(final Compression compression,
+            final ChannelDataInput input, final long start, final long byteCount,
             final int elementsPerRow, final int samplesPerElement, final int[] skipAfterElements, final Buffer target)
+            throws IOException
     {
         ensureNonNull("input", input);
         ensureStrictlyPositive("elementsPerRow",    elementsPerRow);
         ensureStrictlyPositive("samplesPerElement", samplesPerElement);
+        final InflaterChannel inflated;
         switch (compression) {
             case NONE: {
                 return CopyFromBytes.create(input, start, elementsPerRow, samplesPerElement, skipAfterElements, target);
+            }
+            case PACKBITS: {
+                inflated = new PackBits(input, start, byteCount);
+                break;
             }
             default: {
                 return null;
             }
         }
+        return CopyFromBytes.create(inflated.createDataInput(),
+                0, elementsPerRow, samplesPerElement, skipAfterElements, target);
     }
 
     /**

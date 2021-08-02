@@ -213,7 +213,7 @@ final class CompressedSubset extends DataSubset {
         final Buffer[] banks = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
             final Buffer   bank = RasterFactory.createBuffer(type, capacity);
-            final Inflater algo = Inflater.create(compression, reader().input, offsets[b],
+            final Inflater algo = Inflater.create(compression, reader().input, offsets[b], byteCounts[b],
                                     elementsPerRow, samplesPerElement, skipAfterElements, bank);
             if (algo == null) {
                 throw new DataStoreContentException(reader().resources().getString(
