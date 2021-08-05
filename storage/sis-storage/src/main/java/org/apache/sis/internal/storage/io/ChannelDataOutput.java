@@ -104,7 +104,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
         int after = buffer.position() + n;
         if (after > buffer.limit()) {
             /*
-             * We will increase the limit for every new 'put' operation in order to maintain the number
+             * We will increase the limit for every new `put` operation in order to maintain the number
              * of valid bytes in the buffer. If the new limit would exceed the buffer capacity, then we
              * need to write some bytes now.
              */
@@ -139,8 +139,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
         long position = super.getStreamPosition();
         /*
          * ChannelDataOutput uses a different strategy than ChannelDataInput: if some bits were in process
-         * of being written, the buffer position is set to the byte AFTER the byte containing the bits. We
-         * need to apply a correction here for this strategy.
+         * of being written, the buffer position is set to the byte AFTER the byte containing the bits.
+         * We need to apply a correction here for this strategy.
          */
         if (getBitOffset() != 0) {
             position--;
@@ -175,9 +175,9 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
                 bits &= Numerics.bitmask(numBits) - 1;                  // Make sure that high-order bits are zero.
                 final int r = numBits - (Byte.SIZE - bitOffset);
                 /*
-                 * 'r' is the number of bits than we can not store in the current byte. This value may be negative,
+                 * `r` is the number of bits than we can not store in the current byte. This value may be negative,
                  * which means that the current byte has space for more bits than what we have, in which case some
-                 * room will still exist after this method call (i.e. the 'bitOffset' will still non-zero).
+                 * room will still exist after this method call (i.e. the `bitOffset` will still non-zero).
                  */
                 final long mask;
                 if (r >= 0) {
@@ -427,8 +427,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             } while (length != 0);
         } else {
             /*
-             * Since the 'bitOffset' validity is determined by the position, if the position
-             * did not changed, then we need to clear the 'bitOffset' flag manually.
+             * Since the `bitOffset` validity is determined by the position, if the position
+             * did not changed, then we need to clear the `bitOffset` flag manually.
              */
             clearBitOffset();
         }
@@ -470,9 +470,9 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
          * @throws IOException if an error occurred while writing the stream.
          */
         final void writeFully(final int dataSize, int offset, int length) throws IOException {
-            clearBitOffset(); // Actually needed only if length == 0.
+            clearBitOffset();                           // Actually needed only if `length` == 0.
             ensureBufferAccepts(Math.min(length * dataSize, buffer.capacity()));
-            final Buffer view = createView(); // Must be after ensureBufferAccept
+            final Buffer view = createView();           // Must be after `ensureBufferAccept(…)`
             int n = Math.min(view.remaining(), length);
             transfer(offset, n);
             skipInBuffer(n * dataSize);
@@ -629,7 +629,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
              * we can not seek, so we have to pad with some zero values.
              */
             p -= buffer.limit();
-            flush(); // Also set the position to 0.
+            flush();                      // Also set the position to 0.
             if (p <= buffer.capacity()) {
                 buffer.limit((int) p);
                 clear();

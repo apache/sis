@@ -241,7 +241,7 @@ public class ChannelDataInput extends ChannelData {
             numBits -= Byte.SIZE;
         }
         if (numBits != 0) {
-            value >>>= (-numBits); // Discard the unwanted bits.
+            value >>>= (-numBits);                      // Discard the unwanted bits.
             numBits += Byte.SIZE;
             pushBack();
         }
@@ -835,8 +835,8 @@ public class ChannelDataInput extends ChannelData {
         int position;
         if (buffer.hasArray() && length <= buffer.capacity()) {
             ensureBufferContains(length);
-            position = buffer.position();           // Must be after 'ensureBufferContains(int)'.
-            buffer.position(position + length);     // Before 'new String' for consistency with the 'else' block in case of UnsupportedEncodingException.
+            position = buffer.position();           // Must be after `ensureBufferContains(int)`.
+            buffer.position(position + length);     // Before `new String` for consistency with the `else` block in case of UnsupportedEncodingException.
             array = buffer.array();
             position += buffer.arrayOffset();
         } else {

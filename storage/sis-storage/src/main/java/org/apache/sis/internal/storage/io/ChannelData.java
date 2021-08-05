@@ -139,17 +139,33 @@ public abstract class ChannelData implements Markable {
         if ((bitPosition >>> BIT_OFFSET_SIZE) != position) {
             bitPosition = position << BIT_OFFSET_SIZE;
         }
-        return (int) (bitPosition & ((1 << BIT_OFFSET_SIZE) - 1));
+        return (int) (bitPosition & ((1L << BIT_OFFSET_SIZE) - 1));
     }
 
     /**
      * Sets the bit offset to the given value.
+     * The given value shall be between 0 inclusive to {@value Byte#SIZE} exclusive.
      *
      * @param  bitOffset  the new bit offset of the stream.
+     * @throws IllegalArgumentException if the given offset is out of range.
      */
     public final void setBitOffset(final int bitOffset) {
         ensureBetween("bitOffset", 0, Byte.SIZE - 1, bitOffset);
         bitPosition = (position() << BIT_OFFSET_SIZE) | bitOffset;
+    }
+
+    /**
+     * Moves the stream position to the next byte boundary.
+     * If the bit offset is zero, this method does nothing.
+     * Otherwise it skips the remaining bits in current byte.
+     */
+    public final void skipRemainingBits() {
+        if (bitPosition != 0) {             // Quick check for common case.
+            if (getBitOffset() != 0) {
+                buffer.get();               // Should never fail, otherwise bit offset should have been invalid.
+            }
+            clearBitOffset();
+        }
     }
 
     /**

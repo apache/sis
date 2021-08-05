@@ -470,7 +470,7 @@ public final class ImageUtilities extends Static {
             }
             boolean hasSameSize = false;
             for (int i=0; i<numBands; i++) {
-                final double d = target.getSampleSize(i) - source.getSampleSize(i);
+                final int d = target.getSampleSize(i) - source.getSampleSize(i);
                 hasSameSize |= (d == 0);
                 if (d < 0) {
                     return false;
