@@ -697,6 +697,25 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
+     * Ensures that a given value is a divisor of specified number.
+     * This method verifies that {@code (number % divisor) == 0}.
+     * If above condition is not met, the value considered to be wrong is the divisor.
+     *
+     * @param  name     name of the argument for the divisor value. Used only if an exception is thrown.
+     * @param  number   the number to be divided.
+     * @param  divisor  the divisor to verify.
+     * @throws IllegalArgumentException if {@code (number % divisor) != 0}.
+     * @throws ArithmeticException if {@code divisor == 0}.
+     *
+     * @since 1.1
+     */
+    public static void ensureDivisor(final String name, final int number, final int divisor) {
+        if ((number % divisor) != 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotADivisor_3, name, number, divisor));
+        }
+    }
+
+    /**
      * Ensures that the given CRS, if non-null, has the expected number of dimensions.
      * This method does nothing if the given coordinate reference system is null.
      *
