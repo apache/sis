@@ -55,43 +55,60 @@ abstract class CopyFromBytes extends Inflater {
     private boolean positionNeedsRefresh;
 
     /**
-     * Number of bytes in a sample value.
+     * Number of bytes in a bank element. A bank element is usually a sample value.
      */
-    private final int sampleSize;
+    private final int bytesPerElement;
+
+    /**
+     * Number of sample values per primitive element.
+     * Always 1 except for multi-pixels packed images.
+     */
+    private final int samplesPerElement;
 
     /**
      * For constructors in inner classes.
+     *
+     * @param  input              the source of data to decompress.
+     * @param  start              position in the input stream of the first byte to read.
+     * @param  chunksPerRow       number of chunks (usually pixels) per row in target image. Must be strictly positive.
+     * @param  samplesPerChunk    number of sample values per chunk (sample, pixel or row). Must be strictly positive.
+     * @param  skipAfterChunks    number of sample values to skip between chunks. May be empty or null.
+     * @param  samplesPerElement  number of sample values per primitive element. Always 1 except for multi-pixels packed images.
+     * @param  bytesPerElement    number of bytes in a bank element (a bank element is usually a sample value).
      */
-    private CopyFromBytes(final ChannelDataInput input, final long start, final int elementsPerRow,
-                         final int samplesPerElement, final int[] skipAfterElements, final int sampleSize)
+    private CopyFromBytes(final ChannelDataInput input, final long start, final int chunksPerRow,
+                          final int samplesPerChunk, final int[] skipAfterChunks,
+                          final int samplesPerElement, final int bytesPerElement)
     {
-        super(input, elementsPerRow, samplesPerElement, skipAfterElements, input.buffer.capacity() / sampleSize);
-        this.streamPosition = start;
-        this.sampleSize = sampleSize;
+        super(input, chunksPerRow, samplesPerChunk, skipAfterChunks, samplesPerElement, input.buffer.capacity() / bytesPerElement);
+        this.streamPosition    = start;
+        this.bytesPerElement   = bytesPerElement;
+        this.samplesPerElement = samplesPerElement;
     }
 
     /**
      * Creates a new instance.
      *
-     * @param  input   the source of data to decompress.
-     * @param  start   stream position where to start reading.
-     * @param  count   number of elements (usually pixels) per row. Must be strictly positive.
-     * @param  size    number of sample values per element (usually pixel). Must be strictly positive.
-     * @param  skips   number of sample values to skip between elements (pixels). May be empty or null.
-     * @param  target  where to store sample values.
+     * @param  input    the source of data to decompress.
+     * @param  start    stream position where to start reading.
+     * @param  count    number of chunks (usually pixels) per row. Must be strictly positive.
+     * @param  size     number of sample values per chunk (sample, pixel or row). Must be strictly positive.
+     * @param  skips    number of sample values to skip between chunks. May be empty or null.
+     * @param  divisor  factor by which to divide sample size values. Always ≥ 1 and usually = 1.
+     * @param  banks    where to store sample values.
      * @return the inflater for the given targe type.
      * @throws IllegalArgumentException if the buffer type is not recognized.
      */
     public static CopyFromBytes create(final ChannelDataInput input, final long start,
-            final int count, final int size, final int[] skips, final Buffer target)
+            final int count, final int size, final int[] skips, final int divisor, final Buffer banks)
     {
-        if (target instanceof   ByteBuffer) return new Bytes  (input, start, count, size, skips,   (ByteBuffer) target);
-        if (target instanceof  ShortBuffer) return new Shorts (input, start, count, size, skips,  (ShortBuffer) target);
-        if (target instanceof    IntBuffer) return new Ints   (input, start, count, size, skips,    (IntBuffer) target);
-        if (target instanceof   LongBuffer) return new Longs  (input, start, count, size, skips,   (LongBuffer) target);
-        if (target instanceof  FloatBuffer) return new Floats (input, start, count, size, skips,  (FloatBuffer) target);
-        if (target instanceof DoubleBuffer) return new Doubles(input, start, count, size, skips, (DoubleBuffer) target);
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(target)));
+        if (banks instanceof   ByteBuffer) return new Bytes  (input, start, count, size, skips, divisor,   (ByteBuffer) banks);
+        if (banks instanceof  ShortBuffer) return new Shorts (input, start, count, size, skips, divisor,  (ShortBuffer) banks);
+        if (banks instanceof    IntBuffer) return new Ints   (input, start, count, size, skips, divisor,    (IntBuffer) banks);
+        if (banks instanceof   LongBuffer) return new Longs  (input, start, count, size, skips, divisor,   (LongBuffer) banks);
+        if (banks instanceof  FloatBuffer) return new Floats (input, start, count, size, skips, divisor,  (FloatBuffer) banks);
+        if (banks instanceof DoubleBuffer) return new Doubles(input, start, count, size, skips, divisor, (DoubleBuffer) banks);
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(banks)));
     }
 
     /**
@@ -115,18 +132,22 @@ abstract class CopyFromBytes extends Inflater {
      * @throws IOException if an error occurred while reading the input channel.
      */
     @Override
-    public final void skip(final long n) throws IOException {
+    public final void skip(long n) throws IOException {
         if (n != 0) {
             if (positionNeedsRefresh) {
                 positionNeedsRefresh = false;
                 streamPosition = input.getStreamPosition();
             }
-            streamPosition = Math.addExact(streamPosition, n * sampleSize);
+            n *= bytesPerElement;
+            if (n % samplesPerElement != 0) {
+                throw new IllegalArgumentException();   // Condition should have been verified before construction.
+            }
+            streamPosition = Math.addExact(streamPosition, n / samplesPerElement);
         }
     }
 
     /**
-     * Skips the number of elements specified by the {@link #skipAfterChunks} array at the given index.
+     * Skips the number of chunks specified by the {@link #skipAfterChunks} array at the given index.
      * This method tries to move by incrementing the buffer position.
      *
      * <div class="note"><b>Design note:</b>
@@ -140,13 +161,13 @@ abstract class CopyFromBytes extends Inflater {
      * @return new {@code skipIndex} value.
      */
     final int skipAfterChunk(int skipIndex) throws IOException {
-        int n = skipAfterChunks[skipIndex] * sampleSize;
+        int n = skipAfterChunks[skipIndex] * bytesPerElement;
         while (n != 0) {
             final int p = input.buffer.position();
             final int s = Math.min(p + n, input.buffer.limit());
             input.buffer.position(s);
             if ((n -= (s - p)) == 0) break;
-            input.ensureBufferContains(sampleSize);
+            input.ensureBufferContains(bytesPerElement);
         }
         return (++skipIndex < skipAfterChunks.length) ? skipIndex : 0;
     }
@@ -156,12 +177,12 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Bytes extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private final ByteBuffer target;
+        private final ByteBuffer banks;
 
         /** Creates a new inflater which will write in the given buffer. */
-        Bytes(ChannelDataInput input, long start, int count, int size, int[] skips, ByteBuffer target) {
-            super(input, start, count, size, skips, Byte.BYTES);
-            this.target = target;
+        Bytes(ChannelDataInput input, long start, int count, int size, int[] skips, int divisor, ByteBuffer banks) {
+            super(input, start, count, size, skips, divisor, Byte.BYTES);
+            this.banks = banks;
         }
 
         /** Reads a row of sample values. */
@@ -169,23 +190,23 @@ abstract class CopyFromBytes extends Inflater {
             super.uncompressRow();
             int skipIndex = 0;
             for (int i = chunksPerRow; --i > 0;) {      // (chunksPerRow - 1) iterations.
-                int n = samplesPerChunk;
+                int n = elementsPerChunk;
                 input.ensureBufferContains(n);
-                do target.put(input.buffer.get());      // Number of iterations should be low (often 1).
+                do banks.put(input.buffer.get());       // Number of iterations should be low (often 1).
                 while (--n != 0);
                 if (skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
             /*
-             * Read the last element that was not read in above `for` loop,
-             * but without skipping `skipAfterElements` sample values after.
+             * Read the last chunk that was not read in above `for` loop,
+             * but without skipping `skipAfterChunks` sample values after.
              * This is necessary for avoiding EOF if the last pixel to read
              * is in the last column of the tile.
              */
-            int n = samplesPerChunk;
+            int n = elementsPerChunk;
             input.ensureBufferContains(n);
-            do target.put(input.buffer.get());
+            do banks.put(input.buffer.get());
             while (--n != 0);
         }
     }
@@ -196,12 +217,12 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Shorts extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private final ShortBuffer target;
+        private final ShortBuffer banks;
 
         /** Creates a new inflater which will write in the given buffer. */
-        Shorts(ChannelDataInput input, long start, int count, int size, int[] skips, ShortBuffer target) {
-            super(input, start, count, size, skips, Short.BYTES);
-            this.target = target;
+        Shorts(ChannelDataInput input, long start, int count, int size, int[] skips, int divisor, ShortBuffer banks) {
+            super(input, start, count, size, skips, divisor, Short.BYTES);
+            this.banks = banks;
         }
 
         /** Reads a row of sample values. */
@@ -209,17 +230,17 @@ abstract class CopyFromBytes extends Inflater {
             super.uncompressRow();
             int skipIndex = 0;
             for (int i = chunksPerRow; --i > 0;) {
-                int n = samplesPerChunk;
+                int n = elementsPerChunk;
                 input.ensureBufferContains(n * Short.BYTES);
-                do target.put(input.buffer.getShort());
+                do banks.put(input.buffer.getShort());
                 while (--n != 0);
                 if (skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            int n = samplesPerChunk;
+            int n = elementsPerChunk;
             input.ensureBufferContains(n * Short.BYTES);
-            do target.put(input.buffer.getShort());
+            do banks.put(input.buffer.getShort());
             while (--n != 0);
         }
     }
@@ -230,12 +251,12 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Ints extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private final IntBuffer target;
+        private final IntBuffer banks;
 
         /** Creates a new inflater which will write in the given buffer. */
-        Ints(ChannelDataInput input, long start, int count, int size, int[] skips, IntBuffer target) {
-            super(input, start, count, size, skips, Integer.BYTES);
-            this.target = target;
+        Ints(ChannelDataInput input, long start, int count, int size, int[] skips, int divisor, IntBuffer banks) {
+            super(input, start, count, size, skips, divisor, Integer.BYTES);
+            this.banks = banks;
         }
 
         /** Reads a row of sample values. */
@@ -243,17 +264,17 @@ abstract class CopyFromBytes extends Inflater {
             super.uncompressRow();
             int skipIndex = 0;
             for (int i = chunksPerRow; --i > 0;) {
-                int n = samplesPerChunk;
+                int n = elementsPerChunk;
                 input.ensureBufferContains(n * Integer.BYTES);
-                do target.put(input.buffer.getInt());
+                do banks.put(input.buffer.getInt());
                 while (--n != 0);
                 if (skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            int n = samplesPerChunk;
+            int n = elementsPerChunk;
             input.ensureBufferContains(n * Integer.BYTES);
-            do target.put(input.buffer.getInt());
+            do banks.put(input.buffer.getInt());
             while (--n != 0);
         }
     }
@@ -264,12 +285,12 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Longs extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private final LongBuffer target;
+        private final LongBuffer banks;
 
         /** Creates a new inflater which will write in the given buffer. */
-        Longs(ChannelDataInput input, long start, int count, int size, int[] skips, LongBuffer target) {
-            super(input, start, count, size, skips, Long.BYTES);
-            this.target = target;
+        Longs(ChannelDataInput input, long start, int count, int size, int[] skips, int divisor, LongBuffer banks) {
+            super(input, start, count, size, skips, divisor, Long.BYTES);
+            this.banks = banks;
         }
 
         /** Reads a row of sample values. */
@@ -277,17 +298,17 @@ abstract class CopyFromBytes extends Inflater {
             super.uncompressRow();
             int skipIndex = 0;
             for (int i = chunksPerRow; --i > 0;) {
-                int n = samplesPerChunk;
+                int n = elementsPerChunk;
                 input.ensureBufferContains(n * Long.BYTES);
-                do target.put(input.buffer.getLong());
+                do banks.put(input.buffer.getLong());
                 while (--n != 0);
                 if (skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            int n = samplesPerChunk;
+            int n = elementsPerChunk;
             input.ensureBufferContains(n * Long.BYTES);
-            do target.put(input.buffer.getLong());
+            do banks.put(input.buffer.getLong());
             while (--n != 0);
         }
     }
@@ -298,12 +319,12 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Floats extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private final FloatBuffer target;
+        private final FloatBuffer banks;
 
         /** Creates a new inflater which will write in the given buffer. */
-        Floats(ChannelDataInput input, long start, int count, int size, int[] skips, FloatBuffer target) {
-            super(input, start, count, size, skips, Float.BYTES);
-            this.target = target;
+        Floats(ChannelDataInput input, long start, int count, int size, int[] skips, int divisor, FloatBuffer banks) {
+            super(input, start, count, size, skips, divisor, Float.BYTES);
+            this.banks = banks;
         }
 
         /** Reads a row of sample values. */
@@ -311,17 +332,17 @@ abstract class CopyFromBytes extends Inflater {
             super.uncompressRow();
             int skipIndex = 0;
             for (int i = chunksPerRow; --i > 0;) {
-                int n = samplesPerChunk;
+                int n = elementsPerChunk;
                 input.ensureBufferContains(n * Float.BYTES);
-                do target.put(input.buffer.getFloat());
+                do banks.put(input.buffer.getFloat());
                 while (--n != 0);
                 if (skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            int n = samplesPerChunk;
+            int n = elementsPerChunk;
             input.ensureBufferContains(n * Float.BYTES);
-            do target.put(input.buffer.getFloat());
+            do banks.put(input.buffer.getFloat());
             while (--n != 0);
         }
     }
@@ -332,12 +353,12 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Doubles extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private final DoubleBuffer target;
+        private final DoubleBuffer banks;
 
         /** Creates a new inflater which will write in the given buffer. */
-        Doubles(ChannelDataInput input, long start, int count, int size, int[] skips, DoubleBuffer target) {
-            super(input, start, count, size, skips, Double.BYTES);
-            this.target = target;
+        Doubles(ChannelDataInput input, long start, int count, int size, int[] skips, int divisor, DoubleBuffer banks) {
+            super(input, start, count, size, skips, divisor, Double.BYTES);
+            this.banks = banks;
         }
 
         /** Reads a row of sample values. */
@@ -345,17 +366,17 @@ abstract class CopyFromBytes extends Inflater {
             super.uncompressRow();
             int skipIndex = 0;
             for (int i = chunksPerRow; --i > 0;) {
-                int n = samplesPerChunk;
+                int n = elementsPerChunk;
                 input.ensureBufferContains(n * Double.BYTES);
-                do target.put(input.buffer.getDouble());
+                do banks.put(input.buffer.getDouble());
                 while (--n != 0);
                 if (skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            int n = samplesPerChunk;
+            int n = elementsPerChunk;
             input.ensureBufferContains(n * Double.BYTES);
-            do target.put(input.buffer.getDouble());
+            do banks.put(input.buffer.getDouble());
             while (--n != 0);
         }
     }

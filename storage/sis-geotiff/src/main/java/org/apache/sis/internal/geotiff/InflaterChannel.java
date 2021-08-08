@@ -70,6 +70,13 @@ abstract class InflaterChannel implements ReadableByteChannel {
     }
 
     /**
+     * Copies the given byte <var>n</var> times in the given buffer.
+     */
+    static void repeat(final ByteBuffer target, final byte b, int n) {
+        while (--n >= 0) target.put(b);
+    }
+
+    /**
      * Tells whether this channel is still open.
      */
     @Override

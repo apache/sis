@@ -17,6 +17,7 @@
 package org.apache.sis.storage.geotiff;
 
 import java.nio.file.Path;
+import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import org.apache.sis.storage.DataStore;
@@ -114,11 +115,40 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     abstract Compression getCompression();
 
     /**
-     * Returns {@code true} if the sample model interleaves 2 or more sample values per pixel.
+     * Returns {@code true} if the image can be read with the {@link DataSubset} base class,
+     * or {@code false} if the more sophisticated {@link CompressedSubset} sub-class is needed.
+     * The {@link DataSubset#readSlice readSlice(…)} implementation in {@link DataSubset} base
+     * class is more efficient but can be used only if all following conditions hold:
+     *
+     * <ul class="verbose">
+     *   <li>The sample model stores each band in its own bank
+     *       (this condition is relaxed if there is no band subset and no subsampling on the <var>x</var> axis).
+     *       The reason for this restriction is because otherwise, the space skipped between values to read may
+     *       be of irregular sizes, or the number of values to read between spaces may be greater than 1.</li>
+     *   <li>There is only one sample value per bank element (i.e. no multi-pixels packed in single elements).</li>
+     * </ul>
+     *
+     * If above conditions do not hold, then the less direct {@link CompressedSubset} subclass must be used
+     * even if there is no compression.
+     *
+     * @todo The second restriction could be relaxed if the image width (or the width of the subregion to read)
+     *       is a multiple of the number of sample values in a "bank element". For example for a bilevel image
+     *       storing 8 pixels in each single {@code byte}, we could return {@code true} if the region width is
+     *       a multiple of 8.
      */
-    private boolean isInterleaved() throws DataStoreException {
+    private boolean canReadDirect(final Subset subset) throws DataStoreException {
         final SampleModel model = getSampleModel();
-        return model.getNumBands() != 1 && !(model instanceof BandedSampleModel);
+        int b = model.getNumBands();
+        if (b != 1 && !(model instanceof BandedSampleModel)) {              // First condition (see Javadoc).
+            if (subset.hasBandSubset() || subset.hasSubsampling(0)) {       // Exception to first consition.
+                return false;
+            }
+        }
+        final int dataSize = DataBuffer.getDataTypeSize(model.getDataType());
+        do if (model.getSampleSize(--b) != dataSize) {                      // Second condition (see Javadoc).
+            return false;
+        } while (b != 0);
+        return true;
     }
 
     /**
@@ -141,12 +171,15 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
                     throw new DataStoreContentException(reader.resources().getString(
                             Resources.Keys.MissingValue_2, Tags.name(Tags.Compression)));
                 }
-                if (compression != Compression.NONE || subset.hasBandSubset()
-                        || (subset.hasSubsampling(0) && isInterleaved()))
-                {
-                    coverage = new CompressedSubset(this, subset, compression);
-                } else {
+                /*
+                 * The `DataSubset` parent class is the most efficient but has many limitations
+                 * documented in the javadoc of its `readSlice(…)` method. If any pre-condition
+                 * is not met, we need to fallback on the less direct `CompressedSubset` class.
+                 */
+                if (compression == Compression.NONE && canReadDirect(subset)) {
                     coverage = new DataSubset(this, subset);
+                } else {
+                    coverage = new CompressedSubset(this, subset, compression);
                 }
                 coverage = preload(coverage);
             }

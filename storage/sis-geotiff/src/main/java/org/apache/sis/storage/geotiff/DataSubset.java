@@ -22,6 +22,7 @@ import java.nio.Buffer;
 import java.io.IOException;
 import java.awt.Point;
 import java.awt.image.BandedSampleModel;
+import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import org.apache.sis.image.DataType;
@@ -42,6 +43,7 @@ import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
 import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
+import static org.apache.sis.internal.util.Numerics.ceilDiv;
 import static java.lang.Math.toIntExact;
 
 
@@ -112,6 +114,9 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * For planar images (banded sample model), this is equal to 1. For pixel interleaved image,
      * this is equal to the number of bands in the original image.
      *
+     * <p>Note: a sample may be a fraction of byte. For example in a bilevel image, a sample is a bit
+     * and 8 samples are packed in each byte. Conversely a sample may also be 1, 2, 4 or 8 bytes.</p>
+     *
      * @see java.awt.image.ComponentSampleModel#getPixelStride()
      */
     protected final int sourcePixelStride;
@@ -122,12 +127,6 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * of bands requested by user at reading time.
      */
     protected final int targetPixelStride;
-
-    /**
-     * Number of sample values in a bank (not necessarily a band).
-     * This is tile width × height × {@code targetPixelStride}.
-     */
-    protected final int capacity;
 
     /**
      * Creates a new data subset. All parameters should have been validated
@@ -167,7 +166,6 @@ class DataSubset extends TiledGridCoverage implements Localized {
             throw new DataStoreContentException(source.reader.errors().getString(
                     Errors.Keys.TooFewCollectionElements_3, "tileOffsets", (maxBank + 1) * numTiles, n));
         }
-        capacity = multiplyExact(multiplyExact(model.getWidth(), model.getHeight()), targetPixelStride);
     }
 
     /**
@@ -187,10 +185,51 @@ class DataSubset extends TiledGridCoverage implements Localized {
     }
 
     /**
-     * Returns the type of data in all tiles.
+     * Returns the type of data in all tiles. Note that more than one pixel may be packed in
+     * a single element of the returned type (e.g. bilevel image using only one bit per pixel).
+     * The {@link java.awt.image.SampleModel#getSampleSize(int)} method should be invoked for
+     * a complement of information.
      */
     protected final DataType getDataType() {
         return DataType.forDataBufferType(model.getDataType());
+    }
+
+    /**
+     * Returns the size in bits of samples for the specified <em>bank</em> (not band).
+     * If the sample model packs all pixel samples in a single bank element, then this
+     * method returns the sum of the size of sample sizes for all bands.
+     *
+     * @param  bank  the bank for which to get sample size.
+     * @return the size of the samples of the specified bank.
+     *
+     * @see java.awt.image.SampleModel#getSampleSize(int)
+     */
+    protected final int getSampleSize(final int bank) {
+        if (model instanceof ComponentSampleModel) {
+            return DataBuffer.getDataTypeSize(model.getDataType());
+        }
+        if (numBanks != 1) {
+            return model.getSampleSize(bank);
+        }
+        int size = 0;
+        for (int b = model.getNumBands(); --b >= 0;) {
+            size += model.getSampleSize(b);
+        }
+        return size;
+    }
+
+    /**
+     * Returns the size of a bank (not necessarily a band) in number of primitive elements (bytes, integers, …).
+     * This is tile width × height × {@link #targetPixelStride} divided by the number of sample values per element,
+     * with each row starting on an element boundary.
+     *
+     * @param  samplesPerElement  always 1 except when two or more pixels are packed in each element.
+     * @return expected number of primitive elements in the bank.
+     */
+    protected final int getBankCapacity(final int samplesPerElement) {
+        // `ceilDiv(…)` must happen before multiplication by image height.
+        final int scanlineStride = ceilDiv(multiplyExact(model.getWidth(), targetPixelStride), samplesPerElement);
+        return multiplyExact(scanlineStride, model.getHeight());
     }
 
     /**
@@ -348,8 +387,17 @@ class DataSubset extends TiledGridCoverage implements Localized {
      *
      * <p>The length of {@code lower}, {@code upper} and {@code subsampling} arrays shall be 2.</p>
      *
-     * <p>The default implementation in this base class assumes uncompressed data.
-     * Subclasses must override for handling decompression.</p>
+     * <h2>Default implementation</h2>
+     * The default implementation in this base class assumes uncompressed data without band subset.
+     * Subsampling on the <var>X</var> axis is not supported if the image has interleaved pixels.
+     * Packed pixels (é.g. bilevel images with 8 pixels per byte) are not supported.
+     * Those restrictions are verified by {@link DataCube#canReadDirect(TiledGridResource.Subset)}.
+     * Subclasses must override for handling decompression or for resolving above-cited limitations.
+     *
+     * @todo It is possible to relax a little bit some restrictions. If the tile width is a divisor
+     *       of the sample size, we could round {@code lower[0]} and {@code upper[0]} to a multiple
+     *       of {@code sampleSize}. We would need to adjust the coordinates of returned image accordingly.
+     *       This adjustment need to be done by the caller.
      *
      * @param  offsets      position in the channel where tile data begins, one value per bank.
      * @param  byteCounts   number of bytes for the compressed tile data, one value per bank.
@@ -367,15 +415,16 @@ class DataSubset extends TiledGridCoverage implements Localized {
                              final int[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final DataType type = getDataType();
+        final int sampleSize = type.size();     // Assumed same as `SampleModel.getSampleSize(…)` by pre-conditions.
         final long width  = subtractExact(upper[0], lower[0]);
         final long height = subtractExact(upper[1], lower[1]);
         /*
          * The number of bytes to read should not be greater than `byteCount`. It may be smaller however if only
          * a subregion is read. Note that the `length` value may be different than `capacity` if the tile to read
          * is smaller than the "standard" tile size of the image. It happens often when reading the last strip.
+         * This length is used only for verification purpose so it does not need to be exact.
          */
-        final long length  = multiplyExact(type.size() / Byte.SIZE,
-                             multiplyExact(multiplyExact(width, height), sourcePixelStride));
+        final long length = ceilDiv(width * height * sourcePixelStride * sampleSize, Byte.SIZE);
         final long[] size = new long[] {multiplyFull(sourcePixelStride, getTileSize(0)), getTileSize(1)};
         /*
          * If we use an interleaved sample model, each "element" from `HyperRectangleReader` perspective is actually a
@@ -387,7 +436,10 @@ class DataSubset extends TiledGridCoverage implements Localized {
         upper[0] *= sourcePixelStride;
         /*
          * Read each plane ("banks" in Java2D terminology). Note that a single bank contain all bands
-         * in the interleaved sample model case.
+         * in the interleaved sample model case. This block assumes that each bank element contains
+         * exactly one sample value (verified by assertion), as documented in the Javadoc of this method.
+         * If that assumption was not true, we would have to adjust `capacity`, `lower[0]` and `upper[0]`
+         * (we may do that as an optimization in a future version).
          */
         final HyperRectangleReader hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(type.toDataBufferType()), reader().input);
         final Region region = new Region(size, lower, upper, subsampling);
@@ -398,7 +450,8 @@ class DataSubset extends TiledGridCoverage implements Localized {
                         Resources.Keys.UnexpectedTileLength_2, length, byteCounts[b]));
             }
             hr.setOrigin(offsets[b]);
-            final Buffer bank = hr.readAsBuffer(region, capacity);
+            assert getSampleSize(b) == sampleSize;                              // See above comment.
+            final Buffer bank = hr.readAsBuffer(region, getBankCapacity(1));
             fillRemainingRows(bank);
             banks[b] = bank;
         }
@@ -415,10 +468,11 @@ class DataSubset extends TiledGridCoverage implements Localized {
      */
     final void fillRemainingRows(final Buffer bank) {
         if (fillValue != null) {
-            final int end = bank.limit();
-            if (end != capacity) {
+            final int limit    = bank.limit();
+            final int capacity = bank.capacity();   // Equals `this.capacity` except for packed sample model.
+            if (limit != capacity) {
                 Vector.create(bank.limit(capacity), ImageUtilities.isUnsignedType(model))
-                      .fill(end, capacity, fillValue);
+                      .fill(limit, capacity, fillValue);
                 bank.limit(capacity);
             }
         }

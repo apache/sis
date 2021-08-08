@@ -32,6 +32,7 @@ import org.junit.BeforeClass;
 @Suite.SuiteClasses({
     org.apache.sis.internal.geotiff.CompressionTest.class,
     org.apache.sis.internal.geotiff.InflaterTest.class,
+    org.apache.sis.internal.geotiff.CCITTRLETest.class,
     org.apache.sis.storage.geotiff.TypeTest.class,
     org.apache.sis.storage.geotiff.GeoKeysTest.class,
     org.apache.sis.storage.geotiff.CRSBuilderTest.class,

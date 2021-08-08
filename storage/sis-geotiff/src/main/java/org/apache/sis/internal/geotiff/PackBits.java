@@ -60,8 +60,8 @@ final class PackBits extends InflaterChannel {
      */
     @Override
     public int read(final ByteBuffer target) throws IOException {
+        final int start = target.position();
         final ByteBuffer source = input.buffer;
-        int total = 0;                              // Number of bytes that have been read.
         while (target.hasRemaining()) {
             /*
              * If we stopped in the middle of a decompression during the previous call of this method,
@@ -73,17 +73,18 @@ final class PackBits extends InflaterChannel {
              *   - Otherwise if negative, copy the next byte -n+1 times.
              */
             if ((literalCount | duplicatedCount) == 0) {
-                int n;
+                int code;
                 do {
                     if (input.getStreamPosition() >= endPosition) {
-                        return (total != 0) ? total : -1;             // If no byte read, declare end-of-stream.
+                        final int n = target.position() - start;
+                        return (n > 0) ? n : -1;              // If no byte read, declare end-of-stream.
                     }
-                    n = input.readByte();
-                } while (n == Byte.MIN_VALUE);
-                if (n >= 0) {
-                    literalCount = n + 1;
+                    code = input.readByte();
+                } while (code == Byte.MIN_VALUE);
+                if (code >= 0) {
+                    literalCount = code + 1;
                 } else {
-                    duplicatedCount = 1 - n;
+                    duplicatedCount = 1 - code;
                     duplicated = input.readByte();
                 }
             }
@@ -92,9 +93,8 @@ final class PackBits extends InflaterChannel {
              * in both buffers. If the instruction can not be executed fully, then one of `literalCount`
              * or `duplicatedCount` fields will be non-zero.
              */
-            int n;
             if (literalCount != 0) {
-                n = Math.min(literalCount, target.remaining());
+                int n = Math.min(literalCount, target.remaining());
                 int r = source.remaining();
                 if (r == 0) {
                     input.ensureBufferContains(Math.min(n, source.capacity()));
@@ -111,12 +111,11 @@ final class PackBits extends InflaterChannel {
                 }
                 literalCount -= n;
             } else {
-                n = Math.min(duplicatedCount, target.remaining());
-                for (int i=0; i<n; i++) target.put(duplicated);
+                final int n = Math.min(duplicatedCount, target.remaining());
+                repeat(target, duplicated, n);
                 duplicatedCount -= n;
             }
-            total += n;
         }
-        return total;
+        return target.position() - start;
     }
 }

@@ -40,13 +40,13 @@ public final strictfp class InflaterTest extends TestCase {
         // With chunk size below size limit.
         Mock inflater = new Mock(131, 5, null, 1000);
         assertEquals(  1, inflater.chunksPerRow);
-        assertEquals(655, inflater.samplesPerChunk);
+        assertEquals(655, inflater.elementsPerChunk);
         assertNull  (     inflater.skipAfterChunks);
 
         // With chunk size above size limit.
         inflater = new Mock(131, 5, null, 400);
         assertEquals(  5, inflater.chunksPerRow);
-        assertEquals(131, inflater.samplesPerChunk);
+        assertEquals(131, inflater.elementsPerChunk);
         assertNull  (     inflater.skipAfterChunks);
     }
 
@@ -55,7 +55,7 @@ public final strictfp class InflaterTest extends TestCase {
      */
     private static final class Mock extends Inflater {
         Mock(int elementsPerRow, int samplesPerElement, int[] skipAfterElements, int maxChunkSize) {
-            super(null, elementsPerRow, samplesPerElement, skipAfterElements, maxChunkSize);
+            super(null, elementsPerRow, samplesPerElement, skipAfterElements, 1, maxChunkSize);
         }
 
         @Override public void uncompressRow() {}

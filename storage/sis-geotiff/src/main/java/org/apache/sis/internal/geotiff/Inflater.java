@@ -22,15 +22,21 @@ import java.util.Arrays;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.util.ArgumentChecks;
 
-import static org.apache.sis.util.ArgumentChecks.ensureStrictlyPositive;
-import static org.apache.sis.util.ArgumentChecks.ensurePositive;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.util.Numerics.ceilDiv;
 
 
 /**
- * Decompression algorithm.
- * Decompression is applied row-by-row.
+ * Copies values from an input buffer of bytes to the destination image buffer,
+ * potentially applying decompression, sub-region, subsampling and band subset
+ * on-the-fly. Decompression is applied row-by-row.
+ *
+ * <p>If a decompression algorithm can handle all above-cited aspects directly,
+ * it can extend this class directly. If it would be too complicated, an easier
+ * approach is to extend {@link InflaterChannel} instead and wrap that inflater
+ * in a {@link CopyFromBytes} subclass for managing the sub-region, subsampling
+ * and band subset.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -45,117 +51,148 @@ public abstract class Inflater {
 
     /**
      * Number of chunk per row, as a strictly positive integer.
-     * See {@link #samplesPerChunk} for more details about what is a "chunk".
+     * See {@link #elementsPerChunk} for more details about what is a "chunk".
      */
     protected final int chunksPerRow;
 
     /**
-     * Number of sample values per chunk, as a strictly positive integer.
+     * Number of primitive elements per chunk, as a strictly positive integer.
+     * An element is a byte, an integer (16, 32 or 64) bits or a floating point number.
+     * An element is a sample value except in multi-pixels packed images.
      * A chunk can be:
      * <ul>
      *   <li>A sample value ({@code samplesPerChunk} = 1).</li>
      *   <li>A pixel with one sample value per band ({@code samplesPerChunk} = number of bands).</li>
+     *   <li>Multi-pixels (e.g. bilevel image with 8 pixels per byte, which means 8 pixels per "chunk").</li>
      *   <li>A full row (optimization when it is possible to read the row in a single I/O method call).</li>
      * </ul>
      */
-    protected final int samplesPerChunk;
+    protected final int elementsPerChunk;
 
     /**
-     * Number of sample values to skip between chunks on the same row, or {@code null} if none.
+     * Number of primitive elements to skip between chunks on the same row, or {@code null} if none.
      * If non-null then after reading the chunk at zero-based index <var>x</var>, inflater shall skip
-     * {@code skipAfterChunks[x % skipAfterChunks.length]} sample values before to read the next chunk.
+     * {@code skipAfterChunks[x % skipAfterChunks.length]} bank elements before to read the next chunk.
      * The <var>x</var> index is reset to zero at the beginning of every new row.
+     *
+     * <p>This array may be shared by various objects; it is usually not cloned. Do not modify.</p>
      */
     protected final int[] skipAfterChunks;
 
     /**
-     * Creates a new instance.
+     * Creates a new inflater instance.
+     *
+     * <h4>Note on sample definition</h4>
+     * A "sample" is usually a primitive type such as a byte or a float, but may be a unit smaller than a byte
+     * (e.g. 1 bit) if {@code samplesPerElement} is greater than 1. In that case, the {@link #elementsPerChunk}
+     * and {@link #skipAfterChunks} values will be divided by {@code samplesPerElement}.
      *
      * @param  input              the source of data to decompress.
-     * @param  elementsPerRow     number of elements (usually pixels) per row. Must be strictly positive.
-     * @param  samplesPerElement  number of sample values per element (usually pixel). Must be strictly positive.
-     * @param  skipAfterElements  number of sample values to skip between elements (pixels). May be empty or null.
-     * @param  maxChunkSize       maximal value (in number of elements) for the {@link #samplesPerChunk} field.
+     * @param  chunksPerRow       number of chunks (usually pixels) per row in target image. Must be strictly positive.
+     * @param  samplesPerChunk    number of sample values per chunk (sample or pixel). Must be strictly positive.
+     * @param  skipAfterChunks    number of sample values to skip between chunks. May be empty or null.
+     * @param  samplesPerElement  number of sample values per primitive element. Always 1 except for multi-pixels packed images.
+     * @param  maxChunkSize       maximal value (in number of samples) for the {@link #elementsPerChunk} field.
      */
-    protected Inflater(final ChannelDataInput input, final int elementsPerRow, final int samplesPerElement,
-                       final int[] skipAfterElements, final int maxChunkSize)
+    protected Inflater(final ChannelDataInput input, int chunksPerRow, int samplesPerChunk,
+                       int[] skipAfterChunks, final int samplesPerElement, final int maxChunkSize)
     {
         this.input = input;
-        skipAfterChunks = skipAfterElements;
-        if (skipAfterElements != null) {
-            for (int i=0; i<skipAfterElements.length; i++) {
-                ensurePositive("skipAfterElements", skipAfterElements[i]);
+        ArgumentChecks.ensureStrictlyPositive("chunksPerRow",      chunksPerRow);
+        ArgumentChecks.ensureStrictlyPositive("samplesPerChunk",   samplesPerChunk);
+        ArgumentChecks.ensureStrictlyPositive("samplesPerElement", samplesPerElement);
+        if (skipAfterChunks != null) {
+            if (samplesPerElement != 1) {
+                skipAfterChunks = skipAfterChunks.clone();
+                for (int i=0; i<skipAfterChunks.length; i++) {
+                    final int s = skipAfterChunks[i];
+                    ArgumentChecks.ensurePositive("skipAfterChunks", s);
+                    ArgumentChecks.ensureDivisor("samplesPerElement", s, samplesPerElement);
+                    skipAfterChunks[i] /= samplesPerElement;
+                }
             }
-            chunksPerRow    = elementsPerRow;
-            samplesPerChunk = samplesPerElement;
         } else {
-            int n = 1;
-            int s = Math.multiplyExact(samplesPerElement, elementsPerRow);
-            if (s > maxChunkSize) {
+            samplesPerChunk = Math.multiplyExact(samplesPerChunk, chunksPerRow);
+            chunksPerRow = 1;
+            if (samplesPerChunk > maxChunkSize) {
                 /*
                  * We want the smallest divisor n ≥ s/maxChunkSize. Note that `i` is guaranteed
                  * to be inside the array index range because the last array element is `s` and
                  * the value that we search can not be greater.
                  */
-                final int[] divisors = MathFunctions.divisors(s);
-                int i = Arrays.binarySearch(divisors, Numerics.ceilDiv(s, maxChunkSize));
+                final int[] divisors = MathFunctions.divisors(samplesPerChunk);
+                int i = Arrays.binarySearch(divisors, Numerics.ceilDiv(samplesPerChunk, maxChunkSize));
                 if (i < 0) i = ~i;      // No need for array bound check.
-                n = divisors[i];
-                s /= n;
+                /*
+                 * Following loop iterates exactly once unless `samplesPerElement` > 1.
+                 * The intend is to ensure that `samplesPerChunk` is also a divisor of `samplesPerElement`.
+                 * If we can not find such value, current implementation will fail at `ensureDivisor` call.
+                 *
+                 * TODO: to avoid this problem, one possible approach could be to force `maxChunkSize` to be
+                 * wide enough for a full row when `samplesPerChunk` > 1.
+                 */
+                do {
+                    chunksPerRow = divisors[i];
+                    if ((samplesPerChunk % (chunksPerRow * samplesPerElement)) == 0) break;
+                } while (++i < divisors.length);
+                samplesPerChunk /= chunksPerRow;
             }
-            chunksPerRow    = n;
-            samplesPerChunk = s;
         }
+        /*
+         * Following condition can be relaxed when entire rows are read because image formats
+         * are expected to pad the end of every rows. Each new row is aligned on a primitive
+         * element boundary.
+         */
+        if (chunksPerRow != 1) {
+            ArgumentChecks.ensureDivisor("samplesPerElement", samplesPerChunk, samplesPerElement);
+        }
+        this.elementsPerChunk = ceilDiv(samplesPerChunk, samplesPerElement);
+        this.skipAfterChunks  = skipAfterChunks;
+        this.chunksPerRow     = chunksPerRow;
     }
 
     /**
      * Creates a new instance for the given compression.
      * If the given method is unrecognized, then this method returns {@code null}.
      *
+     * <h4>Note on sample definition</h4>
+     * A "sample" is usually a primitive type such as a byte or a float, but may be a unit smaller than a byte
+     * (e.g. 1 bit) if {@code samplesPerElement} is greater than 1. If that case, the {@link #elementsPerChunk}
+     * and {@link #skipAfterChunks} values will be divided by {@code samplesPerElement}.
+     *
      * @param  compression        the compression method.
      * @param  input              the source of data to decompress.
      * @param  start              stream position where to start reading.
      * @param  byteCount          number of bytes to read before decompression.
-     * @param  elementsPerRow     number of elements (usually pixels) per row. Must be strictly positive.
-     * @param  samplesPerElement  number of sample values per element (usually pixel). Must be strictly positive.
-     * @param  skipAfterElements  number of sample values to skip between elements (pixels). May be empty or null.
-     * @param  target             where to store sample values.
+     * @param  sourceWidth        number of pixels in a row of source image.
+     * @param  chunksPerRow       number of chunks (usually pixels) per row in target image. Must be strictly positive.
+     * @param  samplesPerChunk    number of sample values per chunk (sample or pixel). Must be strictly positive.
+     * @param  skipAfterChunks    number of sample values to skip between chunks. May be empty or null.
+     * @param  samplesPerElement  number of sample values per primitive element. Always 1 except for multi-pixels packed images.
+     * @param  banks              where to store sample values.
      * @return the inflater for the given targe type, or {@code null} if the compression method is unknown.
      * @throws IOException if an I/O operation was required and failed.
      */
     public static Inflater create(final Compression compression,
-            final ChannelDataInput input, final long start, final long byteCount,
-            final int elementsPerRow, final int samplesPerElement, final int[] skipAfterElements, final Buffer target)
+            final ChannelDataInput input, final long start, final long byteCount, final int sourceWidth,
+            final int chunksPerRow, final int samplesPerChunk, final int[] skipAfterChunks,
+            final int samplesPerElement, final Buffer banks)
             throws IOException
     {
-        ensureNonNull("input", input);
-        ensureStrictlyPositive("elementsPerRow",    elementsPerRow);
-        ensureStrictlyPositive("samplesPerElement", samplesPerElement);
+        ArgumentChecks.ensureNonNull("input", input);
+        ArgumentChecks.ensureNonNull("banks", banks);
         final InflaterChannel inflated;
         switch (compression) {
             case NONE: {
-                return CopyFromBytes.create(input, start, elementsPerRow, samplesPerElement, skipAfterElements, target);
+                return CopyFromBytes.create(input, start, chunksPerRow, samplesPerChunk, skipAfterChunks, samplesPerElement, banks);
             }
-            case PACKBITS: {
-                inflated = new PackBits(input, start, byteCount);
-                break;
-            }
-            default: {
-                return null;
-            }
+            case PACKBITS: inflated = new PackBits(input, start, byteCount); break;
+            case CCITTRLE: inflated = new CCITTRLE(input, start, byteCount, sourceWidth); break;
+            default: return null;
         }
-        return CopyFromBytes.create(inflated.createDataInput(),
-                0, elementsPerRow, samplesPerElement, skipAfterElements, target);
+        return CopyFromBytes.create(inflated.createDataInput(), 0,
+                chunksPerRow, samplesPerChunk, skipAfterChunks, samplesPerElement, banks);
     }
-
-    /**
-     * Reads a row of sample values and stores them in the target buffer.
-     * This is not a complete row; caller may invoke {@link #skip(long)}
-     * for ignoring leading and trailing sample values.
-     *
-     * @throws IOException if an error occurred while reading the input channel.
-     */
-    public abstract void uncompressRow() throws IOException;
 
     /**
      * Reads the given amount of sample values without storing them.
@@ -165,4 +202,13 @@ public abstract class Inflater {
      * @throws IOException if an error occurred while reading the input channel.
      */
     public abstract void skip(long n) throws IOException;
+
+    /**
+     * Reads a row of sample values and stores them in the target buffer.
+     * This is not a complete row; caller may invoke {@link #skip(long)}
+     * for ignoring leading and trailing sample values.
+     *
+     * @throws IOException if an error occurred while reading the input channel.
+     */
+    public abstract void uncompressRow() throws IOException;
 }
