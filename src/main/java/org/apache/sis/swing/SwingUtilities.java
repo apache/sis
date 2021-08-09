@@ -147,7 +147,7 @@ final class SwingUtilities extends Static {
             final Resources resources = Resources.forLocale(owner!=null ? owner.getLocale() : null);
             final JButton button;
             if (reset instanceof Action) {
-                button = new JButton((Action)reset);
+                button = new JButton((Action) reset);
             } else {
                 button = new JButton(resources.getString(Resources.Keys.Reset));
                 button.addActionListener(reset);

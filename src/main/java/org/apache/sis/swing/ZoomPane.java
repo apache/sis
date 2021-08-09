@@ -1280,7 +1280,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
                 if ((allowedActions & SCALE_X) == 0) sx = 1;
                 if ((allowedActions & SCALE_Y) == 0) sy = 1;
                 change.translate(+centerX, +centerY);
-                change.scale    ( sx     ,  sy     );
+                change.scale    ( sx,       sy     );
                 change.translate(-centerX, -centerY);
             } else {
                 throw new UnsupportedOperationException();
@@ -1554,7 +1554,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
                     x = center.x - size / 2;
                     y = center.y - size / 2;
                 } else {
-                    x = bounds.x + (bounds.width - size) / 2;
+                    x = bounds.x + (bounds.width  - size) / 2;
                     y = bounds.y + (bounds.height - size) / 2;
                 }
                 this.magnifier = magnifier = new MouseReshapeTracker(new RoundRectangle2D.Float(x, y, size, size, 24, 24)) {
@@ -1564,8 +1564,8 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
                 magnifier.setClip(bounds);
                 magnifier.setAdjustable(SwingConstants.NORTH, true);
                 magnifier.setAdjustable(SwingConstants.SOUTH, true);
-                magnifier.setAdjustable(SwingConstants.EAST , true);
-                magnifier.setAdjustable(SwingConstants.WEST , true);
+                magnifier.setAdjustable(SwingConstants.EAST,  true);
+                magnifier.setAdjustable(SwingConstants.WEST,  true);
 
                 addMouseListener      (magnifier);
                 addMouseMotionListener(magnifier);
@@ -1787,7 +1787,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
             magnifier.setClip(getZoomableBounds());
         }
         final Object[] listeners = listenerList.getListenerList();
-        for (int i = listeners.length; (i-=2) >= 0;) {
+        for (int i = listeners.length; (i -= 2) >= 0;) {
             if (listeners[i] == ZoomChangeListener.class) {
                 if (listeners[i + 1] instanceof Synchronizer) try {
                     ((ZoomChangeListener) listeners[i + 1]).zoomChanged(null);

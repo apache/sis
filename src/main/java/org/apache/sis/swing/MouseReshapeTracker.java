@@ -381,8 +381,8 @@ class MouseReshapeTracker extends MouseInputAdapter implements Shape {
         double xmax = Double.NEGATIVE_INFINITY;
         double ymax = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < 4; i++) {
-            tmp.x = (i&1) == 0 ? drawnShape.getMinX() : drawnShape.getMaxX();
-            tmp.y = (i&2) == 0 ? drawnShape.getMinY() : drawnShape.getMaxY();
+            tmp.x = (i & 1) == 0 ? drawnShape.getMinX() : drawnShape.getMaxX();
+            tmp.y = (i & 2) == 0 ? drawnShape.getMinY() : drawnShape.getMaxY();
             transform.transform(tmp, tmp);
             if (tmp.x < xmin) xmin = tmp.x;
             if (tmp.x > xmax) xmax = tmp.x;

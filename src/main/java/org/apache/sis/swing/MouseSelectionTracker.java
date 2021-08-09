@@ -197,8 +197,8 @@ public abstract class MouseSelectionTracker extends MouseInputAdapter {
                     double xmax = Double.NEGATIVE_INFINITY;
                     double ymax = Double.NEGATIVE_INFINITY;
                     for (int i = 0; i < 4; i++) {
-                        point.x = (i&1) == 0 ? shape.getMinX() : shape.getMaxX();
-                        point.y = (i&2) == 0 ? shape.getMinY() : shape.getMaxY();
+                        point.x = (i & 1) == 0 ? shape.getMinX() : shape.getMaxX();
+                        point.y = (i & 2) == 0 ? shape.getMinY() : shape.getMaxY();
                         transform.inverseTransform(point, point);
                         if (point.x < xmin) xmin = point.x;
                         if (point.x > xmax) xmax = point.x;
