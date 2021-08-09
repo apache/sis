@@ -16,6 +16,8 @@
  */
 package org.apache.sis.swing;
 
+import java.awt.BasicStroke;
+import java.awt.Paint;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.RenderedImage;
@@ -31,7 +33,7 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 
 
 /**
- * Shows a {@link RenderedImage}.
+ * Shows a {@link RenderedImage}, optionally with marks such as pixel grid or tile grid.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -51,14 +53,40 @@ public class ImagePane extends ZoomPane {
     private final AffineTransform gridToCRS;
 
     /**
+     * Whether to show the pixel grid.
+     */
+    private boolean paintPixelGrid;
+
+    /**
+     * The paint to use for showing the pixel grid.
+     */
+    private static final Paint PIXEL_GRID_PAINT = Color.DARK_GRAY;
+
+    /**
+     * Whether to show the tile grid.
+     */
+    private boolean paintTileGrid;
+
+    /**
+     * The paint to use for showing the tile grid.
+     */
+    private static final Paint TILE_GRID_PAINT = Color.RED;
+
+    /**
+     * Minimal zoom factor for showing the pixel grid and the tile grid.
+     */
+    private static final double MIN_ZOOM_FACTOR_FOR_GRID = 10;
+
+    /**
      * Show the given coverage in a panel. This method assumes that the coverage is two-dimensional
      * and uses an affine "grid to CRS" transform. This is not well verified because this method is
      * only for quick testing purpose.
      *
      * @param  coverage  the coverage to show.
      * @param  title     window title.
+     * @return the image pane which has been shown.
      */
-    public static void show(final GridCoverage coverage, final String title) {
+    public static ImagePane show(final GridCoverage coverage, final String title) {
         final RenderedImage image = coverage.render(null);
         final GridGeometry gg = (GridGeometry) image.getProperty(PlanarImage.GRID_GEOMETRY_KEY);
         AffineTransform gridToCRS;
@@ -68,7 +96,7 @@ public class ImagePane extends ZoomPane {
             gridToCRS = new AffineTransform();
             System.err.println(e);
         }
-        show(image, gridToCRS, title);
+        return show(image, gridToCRS, title);
     }
 
     /**
@@ -77,13 +105,16 @@ public class ImagePane extends ZoomPane {
      * @param  image      the image to show.
      * @param  gridToCRS  the transform from pixel coordinates to "real world" coordinates.
      * @param  title      window title.
+     * @return the image pane which has been shown.
      */
-    public static void show(final RenderedImage image, final AffineTransform gridToCRS, final String title) {
+    public static ImagePane show(final RenderedImage image, final AffineTransform gridToCRS, final String title) {
+        final ImagePane pane = new ImagePane(image, gridToCRS);
         final JFrame frame = new JFrame(title);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(new ImagePane(image, gridToCRS).createScrollPane());
+        frame.add(pane.createScrollPane());
         frame.pack();
         frame.setVisible(true);
+        return pane;
     }
 
     /**
@@ -99,6 +130,26 @@ public class ImagePane extends ZoomPane {
     }
 
     /**
+     * Sets whether a grid for pixels should be shown.
+     *
+     * @param  visible  whether the pixel grid should be shown.
+     */
+    public void setPaintPixelGrid(final boolean visible) {
+        firePropertyChange("paintPixelGrid", paintPixelGrid, paintPixelGrid = visible);
+        repaint();
+    }
+
+    /**
+     * Sets whether a grid for tiles should be shown.
+     *
+     * @param  visible  whether the tile grid should be shown.
+     */
+    public void setPaintTileGrid(final boolean visible) {
+        firePropertyChange("paintTileGrid", paintTileGrid, paintTileGrid = visible);
+        repaint();
+    }
+
+    /**
      * Requests a window of the size of the image to show.
      */
     @Override
@@ -110,11 +161,41 @@ public class ImagePane extends ZoomPane {
     }
 
     /**
-     * Paints the image.
+     * Paints the image and optionally the grids.
      */
     @Override
     protected void paintComponent(final Graphics2D graphics) {
         graphics.transform(zoom);
         graphics.drawRenderedImage(image, gridToCRS);
+        if ((paintPixelGrid | paintTileGrid) && AffineTransforms2D.getScale(zoom) >= MIN_ZOOM_FACTOR_FOR_GRID) {
+            final int xmin = image.getMinX();
+            final int ymin = image.getMinY();
+            final int xmax = image.getWidth()  + xmin;
+            final int ymax = image.getHeight() + ymin;
+            if (paintPixelGrid) {
+                graphics.setPaint(PIXEL_GRID_PAINT);
+                graphics.setStroke(new BasicStroke(0));
+                for (int y = ymin; y <= ymax; y++) {
+                    graphics.drawLine(xmin, y, xmax, y);
+                }
+                for (int x = xmin; x <= xmax; x++) {
+                    graphics.drawLine(x, ymin, x, ymax);
+                }
+            }
+            if (paintTileGrid) {
+                graphics.setPaint(TILE_GRID_PAINT);
+                graphics.setStroke(new BasicStroke(0.1f));
+                final int tileWidth  = image.getTileWidth();
+                final int tileHeight = image.getTileHeight();
+                final int xoff = image.getTileGridXOffset() + image.getMinTileX() * tileWidth;
+                final int yoff = image.getTileGridYOffset() + image.getMinTileY() * tileHeight;
+                for (int y = yoff; y <= ymax; y += tileHeight) {
+                    graphics.drawLine(xmin, y, xmax, y);
+                }
+                for (int x = xoff; x <= xmax; x += tileWidth) {
+                    graphics.drawLine(x, ymin, x, ymax);
+                }
+            }
+        }
     }
 }
