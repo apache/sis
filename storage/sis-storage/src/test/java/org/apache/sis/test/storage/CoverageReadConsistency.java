@@ -379,6 +379,15 @@ nextSlice:  for (;;) {
                                     .append(pc.x).append(", ").append(pc.y).append(") in tested sub-image");
                             findMatchPosition(itr, pr, selectedBands, actual, message);
                             assertArrayEquals(message.toString(), expected, actual, STRICT);
+                            /*
+                             * POSSIBLE CAUSES FOR TEST FAILURE (known issues):
+                             *
+                             *   - If the `GridGeometry` has no `gridToCRS` transform, then `GridDerivation` manages
+                             *     to save the scales (subsampling factors) anyway but the translations (subsampling
+                             *     offsets) are lost. It causes an image shift if the offsets were not zero. Because
+                             *     `gridToCRS` should never be null with spatial data, we do not complexify the code
+                             *     for what may be a non-issue.
+                             */
                         }
                     }
                     assertFalse(itc.next());

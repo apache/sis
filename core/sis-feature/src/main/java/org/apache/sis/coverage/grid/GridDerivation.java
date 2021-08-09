@@ -142,7 +142,7 @@ public class GridDerivation {
      * of {@code base.extent} with any area of interest specified to a {@code subgrid(…)} method,
      * potentially with some grid size set to 1 by a {@link #slice(DirectPosition)} method.
      * This extent is <strong>not</strong> scaled or subsampled for a given resolution.
-     * It <strong>may</strong> by expanded according the {@link #margin} and {@link #chunkSize} values,
+     * It <strong>may</strong> be expanded according the {@link #margin} and {@link #chunkSize} values,
      * depending on whether the {@link #isBaseExtentExpanded} flag value is {@code true}.
      *
      * <p>This extent is initialized to {@code base.extent} if no slice, scale or sub-grid has been requested.
@@ -528,8 +528,29 @@ public class GridDerivation {
     public GridDerivation subgrid(final GridGeometry areaOfInterest) {
         ensureSubgridNotSet();
         ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);
-        if (areaOfInterest.isEnvelopeOnly()) return subgrid(areaOfInterest.envelope, (double[]) null);
-        if (areaOfInterest.isExtentOnly())   return subgrid(areaOfInterest.extent,      (int[]) null);
+        if (areaOfInterest.isEnvelopeOnly()) {
+            return subgrid(areaOfInterest.envelope, (double[]) null);
+        }
+        if (areaOfInterest.isExtentOnly()) {
+            int[] subsampling = null;
+            if (areaOfInterest.resolution != null) {
+                /*
+                 * In principle `resolution` is always null here because it is computed from `gridToCRS`,
+                 * which is null (otherwise `isExtentOnly()` would have been false). However an exception
+                 * to this rule happens if `areaOfInterest` has been computed by another `GridDerivation`,
+                 * in which case the resolution requested by user is saved even when `gridToCRS` is null.
+                 * In that case the resolution is relative to the base grid of the other `GridDerivation`.
+                 * Note however that the `resolution` field is only an approximation (the exact transform
+                 * would have been stored in `gridToCRS` if it was non-null) and the subsampling offsets
+                 * are lost (they would also have been stored in `gridToCRS`).
+                 */
+                subsampling = new int[areaOfInterest.resolution.length];
+                for (int i=0; i<subsampling.length; i++) {
+                    subsampling[i] = roundSubsampling(areaOfInterest.resolution[i], i);
+                }
+            }
+            return subgrid(areaOfInterest.extent, subsampling);
+        }
         subGridSetter = "subgrid";
         if (base.equals(areaOfInterest)) {
             return this;
@@ -898,6 +919,7 @@ public class GridDerivation {
      */
     @Deprecated
     // TODO: make private (do not delete) after next SIS release.
+    // This method assumes that subsampling are divisors of chunk sizes.
     public GridDerivation subsample(final int... subsampling) {
         ArgumentChecks.ensureNonNull("subsampling", subsampling);
         if (toBase != null) {
@@ -1152,7 +1174,7 @@ public class GridDerivation {
                     resized = resized.forChunkSize(chunkSize);
                 }
                 if (clipping == GridClippingMode.STRICT) {
-                    resized = resized.intersect(baseExtent);
+                    resized = resized.intersect(base.extent);
                 }
                 if (!resized.equals(baseExtent)) {
                     baseExtent = resized;

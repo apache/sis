@@ -66,7 +66,7 @@ abstract class InflaterChannel implements ReadableByteChannel {
      * The {@linkplain #input} stream must be on the start position before to invoke this method.
      */
     final ChannelDataInput createDataInput() throws IOException {
-        return new ChannelDataInput(input.filename, this, ByteBuffer.allocate(InflaterChannel.BUFFER_SIZE), false);
+        return new ChannelDataInput(input.filename, this, ByteBuffer.allocate(BUFFER_SIZE), false);
     }
 
     /**

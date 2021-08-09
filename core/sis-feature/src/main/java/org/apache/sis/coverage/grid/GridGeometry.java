@@ -354,13 +354,20 @@ public class GridGeometry implements LenientComparable, Serializable {
              * the same pixel. We adjust `toOther` instead than invoking `PixelTranslation.translate(cornerToCRS, …)`
              * because we do not know which of `cornerToCRS` or `gridToCRS` has less NaN values.
              */
-            final MathTransform centerShift = MathTransforms.concatenate(
-                    MathTransforms.uniformTranslation(dimension, +0.5), toOther,
-                    MathTransforms.uniformTranslation(dimension, -0.5));
-            cornerToCRS = MathTransforms.concatenate(toOther, other.cornerToCRS);
-            gridToCRS   = MathTransforms.concatenate(centerShift, other.gridToCRS);
-            resolution  = resolution(gridToCRS, extent);
-            nonLinears  = findNonLinearTargets(gridToCRS);
+            if (other.gridToCRS != null) {
+                final MathTransform centerShift = MathTransforms.concatenate(
+                        MathTransforms.uniformTranslation(dimension, +0.5), toOther,
+                        MathTransforms.uniformTranslation(dimension, -0.5));
+                cornerToCRS = MathTransforms.concatenate(toOther, other.cornerToCRS);
+                gridToCRS   = MathTransforms.concatenate(centerShift, other.gridToCRS);
+                resolution  = resolution(gridToCRS, extent);
+                nonLinears  = findNonLinearTargets(gridToCRS);
+            } else {
+                cornerToCRS = null;
+                gridToCRS   = null;
+                resolution  = resolution(toOther, extent);      // Save resolution even if `gridToCRS` is null.
+                nonLinears  = findNonLinearTargets(toOther);
+            }
         }
         /*
          * Recompute the envelope and clip only if a sub-sampling may have been applied (toOther != null).

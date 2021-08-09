@@ -304,6 +304,18 @@ public final strictfp class GridDerivationTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridDerivation#subgrid(GridExtent)} with an integer amount of tiles, operating only on extents.
+     */
+    @Test
+    public void testSubgridWithTilingOnExtent() {
+        final GridGeometry base = new GridGeometry(new GridExtent(200, 225), null, null, null);
+        final GridExtent domain = new GridExtent(null, new long[] {40, 30}, new long[] {99, 104}, true);
+        final GridGeometry test = base.derive().chunkSize(1, 9).subgrid(domain).build();
+        final GridExtent result = test.getExtent();
+        assertExtentEquals(new long[] {40, 27}, new long[] {99, 107}, result);
+    }
+
+    /**
      * Tests {@link GridDerivation#subgrid(Envelope, double...)} with addition of a margin in pixels
      * and an integer amount of tiles.
      */
