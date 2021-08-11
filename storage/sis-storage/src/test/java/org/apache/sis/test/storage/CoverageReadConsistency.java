@@ -16,6 +16,8 @@
  */
 package org.apache.sis.test.storage;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.awt.Point;
@@ -33,10 +35,12 @@ import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import org.junit.AfterClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -52,6 +56,9 @@ import static org.junit.Assert.*;
  * in the code reading sub-regions or applying sub-sampling. This assumption is reasonable if
  * we consider that the code reading the full extent is usually simpler than the code reading
  * a subset of data.
+ *
+ * <p>This class is not thread-safe. Only one instance should exist in the JVM at a given time
+ * (because of the use of static fields).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -110,6 +117,12 @@ public strictfp class CoverageReadConsistency extends TestCase {
     private final boolean failOnMismatch;
 
     /**
+     * Statistics about execution time.
+     * Created only in benchmark mode.
+     */
+    private static List<Statistics> statistics;
+
+    /**
      * Creates a new tester. This constructor reads immediately the coverage at full extent and full resolution.
      * That full coverage will be used as a reference for verifying the pixel values read in sub-domains.
      * Any mismatch in pixel values will cause immediate test failure.
@@ -154,7 +167,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
      */
     @Test
     public void testSubRegionAtOrigin() throws DataStoreException {
-        readAndCompareRandomRegions();
+        readAndCompareRandomRegions("Origin-R");
     }
 
     /**
@@ -167,7 +180,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     @DependsOnMethod("testSubRegionAtOrigin")
     public void testSubRegionsAnywhere() throws DataStoreException {
         allowOffsets = true;
-        readAndCompareRandomRegions();
+        readAndCompareRandomRegions("Subregions");
     }
 
     /**
@@ -180,7 +193,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     @DependsOnMethod("testSubRegionAtOrigin")
     public void testSubsamplingAtOrigin() throws DataStoreException {
         allowSubsamplings = true;
-        readAndCompareRandomRegions();
+        readAndCompareRandomRegions("Origin-S");
     }
 
     /**
@@ -194,7 +207,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     public void testSubsamplingAnywhere() throws DataStoreException {
         allowOffsets      = true;
         allowSubsamplings = true;
-        readAndCompareRandomRegions();
+        readAndCompareRandomRegions("Subsampling");
     }
 
     /**
@@ -206,7 +219,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     @DependsOnMethod("testSubRegionAtOrigin")
     public void testBandSubsetAtOrigin() throws DataStoreException {
         allowBandSubset = true;
-        readAndCompareRandomRegions();
+        readAndCompareRandomRegions("Origin-B");
     }
 
     /**
@@ -219,7 +232,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     public void testBandSubsetAnywhere() throws DataStoreException {
         allowOffsets    = true;
         allowBandSubset = true;
-        readAndCompareRandomRegions();
+        readAndCompareRandomRegions("Bands");
     }
 
     /**
@@ -234,7 +247,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
         allowOffsets      = true;
         allowBandSubset   = true;
         allowSubsamplings = true;
-        readAndCompareRandomRegions();
+        readAndCompareRandomRegions("All");
     }
 
     /**
@@ -300,9 +313,10 @@ public strictfp class CoverageReadConsistency extends TestCase {
     /**
      * Implementation of methods testing reading in random sub-regions with random sub-samplings.
      *
+     * @param  label  a label for the test being run.
      * @throws DataStoreException if an error occurred while using the resource.
      */
-    private void readAndCompareRandomRegions() throws DataStoreException {
+    private void readAndCompareRandomRegions(final String label) throws DataStoreException {
         randomConfigureResource();
         final GridGeometry gg = resource.getGridGeometry();
         final int    dimension   = gg.getDimension();
@@ -315,7 +329,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
          * We will collect statistics on execution time only if the
          * test is executed in a more verbose mode than the default.
          */
-        final Statistics durations = (VERBOSE || !failOnMismatch) ? new Statistics("time (ms)") : null;
+        final Statistics durations = (VERBOSE || !failOnMismatch) ? new Statistics(label) : null;
         int failuresCount = 0;
         for (int it=0; it < numIterations; it++) {
             final GridGeometry domain = randomDomain(gg, low, high, subsampling);
@@ -417,10 +431,25 @@ nextSlice:  for (;;) {
          * or if this `CoverageReadConsistency` is used for benchmark.
          */
         if (durations != null) {
-            out.print(durations);
+            if (statistics == null) {
+                statistics = new ArrayList<>();
+            }
+            statistics.add(durations);
             final int totalCount = durations.count();
             out.println("Number of failures: " + failuresCount + " / " + totalCount
                         + " (" + (failuresCount / (totalCount / 100f)) + "%)");
+        }
+    }
+
+    /**
+     * Prints statistics about execution time (in milliseconds) after all tests completed.
+     */
+    @AfterClass
+    public static void printDurations() {
+        if (statistics != null) {
+            // It is too late for using `TestCase.out`.
+            System.out.print(StatisticsFormat.getInstance().format(statistics.toArray(new Statistics[statistics.size()])));
+            statistics = null;
         }
     }
 
