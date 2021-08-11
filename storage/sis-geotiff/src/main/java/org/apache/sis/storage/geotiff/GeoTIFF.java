@@ -49,7 +49,7 @@ abstract class GeoTIFF implements Closeable {
      * The locale to use for parsers or formatter. This is <strong>not</strong> the locale
      * for warnings or other messages emitted to the users.
      */
-    static final Locale LOCALE = Locale.US;
+    private static final Locale LOCALE = Locale.US;
 
     /**
      * The magic number for big-endian TIFF files or little-endian TIFF files.

@@ -228,7 +228,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             /*
              * Add the filename as an identifier only if the input was something convertible to URI (URL, File or Path),
              * otherwise reader.input.filename may not be useful; it may be just the InputStream classname. If the TIFF
-             * file did not specified any ImageDescription tag, then we will had the filename as a title instead than an
+             * file did not specified any ImageDescription tag, then we will add the filename as a title instead than an
              * identifier because the title is mandatory in ISO 19115 metadata.
              */
             getIdentifier().ifPresent((id) -> builder.addTitleOrIdentifier(id.toString(), MetadataBuilder.Scope.ALL));

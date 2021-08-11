@@ -1277,7 +1277,7 @@ public class GridDerivation {
     /**
      * Rounds a subsampling value according the current {@link RoundingMode}.
      * If a {@link #chunkSize} has been specified, then the subsampling will be a divisor of that size.
-     * This is necessary for avoiding a drift in subsampled pixel coordinates computed from tile coordinates.
+     * This is necessary for avoiding a drift of subsampled pixel coordinates computed from tile coordinates.
      *
      * <div class="note"><b>Drift example:</b>
      * if the tile size is 16 pixels and the subsampling is 3, then the subsampled tile size is ⌊16/3⌋ = 5 pixels.
@@ -1306,8 +1306,8 @@ public class GridDerivation {
         switch (rounding) {
             default:        throw new AssertionError(rounding);
             case NEAREST:   subsampling = (int) Math.min(Math.round(scale), Integer.MAX_VALUE); break;
-            case CONTAINED: // Assume user wants more data in source (ENCLOSING) or target (CONTAINED) grid.
-            case ENCLOSING: subsampling = (int) Math.nextUp(scale); break;
+            case CONTAINED: subsampling = (int) Math.ceil(scale - tolerance(dimension)); break;
+            case ENCLOSING: subsampling = (int) (scale + tolerance(dimension)); break;
         }
         if (subsampling <= 1) {
             return 1;
@@ -1321,21 +1321,39 @@ public class GridDerivation {
                 /*
                  * `binarySearch(…)` should never find an exact match, otherwise (size % r) would have been zero.
                  * Furthermore `i` should never be 0 because divisors[0] = 1, which can not be selected if r > 1.
-                 * We nevertheless check for (i > 0) as a paranoiac safety.
+                 * We do not check `if (i > 0)` "as a safety" because client code such as `TiledGridCoverage`
+                 * will behave erratically if this method does not fulfill its contract (i.e. find a divisor).
+                 * It is better to know now if there is any problem here.
                  */
-                if (i > 0) {
-                    int s = divisors[i-1];
-                    if (rounding == GridRoundingMode.NEAREST && i < divisors.length) {
-                        final int above = divisors[i];
-                        if (above - r < r - s) {
-                            s = above;
+                int s = divisors[i-1];
+                if (i < divisors.length) {
+                    switch (rounding) {
+                        case CONTAINED: {
+                            s = divisors[i];
+                            break;
+                        }
+                        case NEAREST: {
+                            final int above = divisors[i];
+                            if (above - r < r - s) {
+                                s = above;
+                            }
+                            break;
                         }
                     }
-                    return s + (subsampling - r);
                 }
+                return s + (subsampling - r);
             }
         }
         return subsampling;
+    }
+
+    /**
+     * Returns a tolerance factor for comparing scale factors in the given dimension.
+     * The tolerance is such that the errors of pixel coordinates computed using the
+     * scale factor should not be greater than 0.5 pixel.
+     */
+    private double tolerance(final int dimension) {
+        return (base.extent != null) ? 0.5 / base.extent.getSize(dimension, false) : 0;
     }
 
     /**

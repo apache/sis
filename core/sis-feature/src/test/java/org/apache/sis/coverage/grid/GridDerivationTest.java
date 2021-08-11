@@ -374,6 +374,30 @@ public final strictfp class GridDerivationTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridDerivation#subgrid(GridExtent)} with a null "grid to CRS" transform.
+     */
+    @Test
+    public void testSubgridWithoutTransform() {
+        GridExtent   base   = new GridExtent(null, new long[] {100, 200}, new long[] {300, 350}, true);
+        GridExtent   query  = new GridExtent(null, new long[] {120, 180}, new long[] {280, 360}, true);
+        GridGeometry result = new GridGeometry(base, null, null, null).derive().subgrid(query).build();
+        assertExtentEquals(new long[] {120, 200}, new long[] {280, 350}, result.getExtent());
+        assertFalse(result.isDefined(GridGeometry.GRID_TO_CRS));
+        assertFalse(result.isDefined(GridGeometry.CRS));
+        assertFalse(result.isDefined(GridGeometry.RESOLUTION));
+        /*
+         * Try again with a subsampling. We can get the subsampling information back as the resolution.
+         * Note that there is no way with current API to get the subsampling offsets.
+         */
+        result = new GridGeometry(base, null, null, null).derive().subgrid(query, 3, 5).build();
+        assertExtentEquals(new long[] {40, 40}, new long[] {93, 70}, result.getExtent());
+        assertFalse(result.isDefined(GridGeometry.GRID_TO_CRS));
+        assertFalse(result.isDefined(GridGeometry.CRS));
+        assertTrue (result.isDefined(GridGeometry.RESOLUTION));
+        assertArrayEquals(new double[] {3, 5}, result.getResolution(false), STRICT);
+    }
+
+    /**
      * Tests {@link GridDerivation#slice(DirectPosition)}.
      */
     @Test

@@ -31,6 +31,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.StoreUtilities;
+import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
@@ -84,6 +85,7 @@ public class StoreListeners implements Localized {
     /**
      * The declared source of events. This is not necessarily the real source,
      * but this is the source that the implementer wants to declare as public API.
+     * Never {@code null} but may be {@code this}.
      */
     private final Resource source;
 
@@ -214,7 +216,7 @@ public class StoreListeners implements Localized {
          * This is used as a convenience by AbstractResource internal class. We need this hack
          * because subclasses can not reference `this` before super-class constructor completed.
          */
-        if (source == null && this instanceof Resource) {
+        if (source == null && this instanceof AbstractResource) {
             source = (Resource) this;
         } else {
             ArgumentChecks.ensureNonNull("source", source);
@@ -226,7 +228,7 @@ public class StoreListeners implements Localized {
     /**
      * Returns the source of events. This value is specified at construction time.
      *
-     * @return the source of events.
+     * @return the source of events. Never {@code null} but may be {@code this}.
      */
     public Resource getSource() {
         return source;

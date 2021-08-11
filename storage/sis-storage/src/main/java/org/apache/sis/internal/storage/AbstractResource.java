@@ -76,6 +76,12 @@ public class AbstractResource extends StoreListeners implements Resource {
      * Returns the resource persistent identifier if available.
      * The default implementation returns an empty value.
      * Subclasses are strongly encouraged to override if they can provide a value.
+     *
+     * <p>Note that the default implementation of {@link #createMetadata(MetadataBuilder)} uses this identifier
+     * for initializing the {@code metadata/identificationInfo/citation/title} property. So it is generally not
+     * useful to fallback on metadata if the identifier is empty.</p>
+     *
+     * @see org.apache.sis.internal.storage.StoreUtilities#getLabel(Resource)
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
@@ -120,6 +126,7 @@ public class AbstractResource extends StoreListeners implements Resource {
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
     protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
+        // Note: title is mandatory in ISO metadata, contrarily to the identifier.
         getIdentifier().ifPresent((name) -> metadata.addTitle(new Sentence(name)));
         getEnvelope().ifPresent((envelope) -> {
             try {
