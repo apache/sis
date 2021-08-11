@@ -128,7 +128,7 @@ final class CompressedSubset extends DataSubset {
                 // Number of sample values to skip after each band.
                 skips[i] = b - (b = includedBands[i]) - 1;
             }
-            beforeFirstBand = b;
+            beforeFirstBand = b;                            // After above loop, `b` became the index of first band.
             afterLastBand  += skips[m];                     // Add trailing bands that were left unread.
             skips[m]       += between + beforeFirstBand;    // Add pixels skipped by subsampling and move to first band.
             /*
@@ -225,13 +225,15 @@ final class CompressedSubset extends DataSubset {
             final int samplesPerElement = typeSize / sampleSize;        // Always ≥ 1 and usually = 1.
             if (typeSize % sampleSize != 0) {
                 throw new RasterFormatException(reader().errors().getString(
-                        Errors.Keys.NotADivisor_3, "BitsPerSample", typeSize, sampleSize));
+                        Errors.Keys.NotADivisorOrMultiple_4, "BitsPerSample", 0, typeSize, sampleSize));
             }
-            final Buffer bank = RasterFactory.createBuffer(type, getBankCapacity(samplesPerElement));
+            // TiledGridResource shall ensure that following `Inflater.skip(long)` restriction is met.
+            assert (head % samplesPerElement) == 0 : head;
             /*
              * Prepare the object which will perform the actual decompression row-by-row,
              * optionally skipping chunks if a subsampling is applied.
              */
+            final Buffer bank = RasterFactory.createBuffer(type, getBankCapacity(samplesPerElement));
             final Inflater algo = Inflater.create(compression, reader().input, offsets[b], byteCounts[b],
                                     getTileSize(0), chunksPerRow, samplesPerChunk, skipAfterChunks,
                                     samplesPerElement, bank);
@@ -240,9 +242,7 @@ final class CompressedSubset extends DataSubset {
                         Resources.Keys.UnsupportedCompressionMethod_1, compression));
             }
             for (long y = lower[1]; --y >= 0;) {
-                algo.skip(scanlineStride);
-                // TODO: after we finished to implement decompression algorithms,
-                // revisit if we can safely replace the loop by a multiplication.
+                algo.skip(scanlineStride);          // `skip(…)` may round to next element boundary.
             }
             for (int y = height; --y > 0;) {        // (height - 1) iterations.
                 algo.skip(head);

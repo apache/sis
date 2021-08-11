@@ -18,8 +18,10 @@ package org.apache.sis.internal.storage;
 
 import java.util.List;
 import java.util.Arrays;
+import java.awt.image.DataBuffer;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
+import java.awt.image.ComponentSampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.RasterFormatException;
@@ -133,9 +135,40 @@ public abstract class TiledGridResource extends AbstractGridResource {
      * Returns the size of tiles in this resource.
      * The length of the returned array is the number of dimensions.
      *
-     * @return the size of tiles in this resource.
+     * @return the size of tiles (in pixels) in this resource.
      */
     protected abstract int[] getTileSize();
+
+    /**
+     * Returns the number of sample values in an indivisible element of a tile.
+     * An element is a primitive type such as {@code byte}, {@code int} or {@code float}.
+     * This value is usually 1 because each sample value is usually stored in a separated element.
+     * However in multi-pixels packed sample model (e.g. bilevel image with 8 pixels per byte),
+     * it is difficult to start reading an image at <var>x</var> location other than a byte boundary.
+     * By declaring an "atom" size of 8 sample values in dimension 0, the {@link Subset} constructor
+     * will ensure than the sub-region to read starts at a byte boundary when reading a bilevel image.
+     *
+     * @param  dimension  the dimension for which to get the atom size.
+     *         This is in units of sample values (may be bits, bytes, floats, <i>etc</i>).
+     * @return indivisible amount of sample values to read in the specified dimension. Must be ≥ 1.
+     * @throws DataStoreException if an error occurred while fetching the sample model.
+     */
+    private int getAtomSize(final int dimension) throws DataStoreException {
+        if (dimension == 0) {
+            final SampleModel model = getSampleModel();
+            if (model != null && !(model instanceof ComponentSampleModel)) {
+                int size = 1;
+                for (int b = model.getNumBands(); --b >= 0;) {
+                    size = Math.max(size, model.getSampleSize(b));
+                }
+                final int samplesPerElement = DataBuffer.getDataTypeSize(model.getDataType()) / size;
+                if (samplesPerElement >= 1) {
+                    return samplesPerElement;
+                }
+            }
+        }
+        return 1;
+    }
 
     /**
      * Returns the Java2D sample model describing pixel type and layout for all bands.
@@ -295,8 +328,8 @@ public abstract class TiledGridResource extends AbstractGridResource {
                  */
                 int tileWidth  = tileSize[0];
                 int tileHeight = tileSize[1];
-                if (tileWidth  >= sourceExtent.getSize(0)) {tileWidth  = 1; sharedCache = false;}
-                if (tileHeight >= sourceExtent.getSize(1)) {tileHeight = 1; sharedCache = false;}
+                if (tileWidth  >= sourceExtent.getSize(0)) {tileWidth  = getAtomSize(0); sharedCache = false;}
+                if (tileHeight >= sourceExtent.getSize(1)) {tileHeight = getAtomSize(1); sharedCache = false;}
                 final GridDerivation target = gridGeometry.derive().chunkSize(tileWidth, tileHeight)
                                               .rounding(GridRoundingMode.ENCLOSING).subgrid(domain);
                 domain             = target.build();

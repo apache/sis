@@ -700,9 +700,9 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NotABackwardReference_1 = 108;
 
         /**
-         * Value of ‘{0}’ shall be a divisor of {1} but the provided value {2} is not.
+         * Value of ‘{0}’ shall be a {1,choice,0#divisor|1#multiple} of {2} but the given value is {3}.
          */
-        public static final short NotADivisor_3 = 193;
+        public static final short NotADivisorOrMultiple_4 = 193;
 
         /**
          * “{0}” is not a key-value pair.

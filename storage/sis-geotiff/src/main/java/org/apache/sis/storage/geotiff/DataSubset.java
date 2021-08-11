@@ -208,9 +208,6 @@ class DataSubset extends TiledGridCoverage implements Localized {
         if (model instanceof ComponentSampleModel) {
             return DataBuffer.getDataTypeSize(model.getDataType());
         }
-        if (numBanks != 1) {
-            return model.getSampleSize(bank);
-        }
         int size = 0;
         for (int b = model.getNumBands(); --b >= 0;) {
             size += model.getSampleSize(b);

@@ -703,7 +703,7 @@ public final class ArgumentChecks extends Static {
      *
      * @param  name     name of the argument for the divisor value. Used only if an exception is thrown.
      * @param  number   the number to be divided.
-     * @param  divisor  the divisor to verify.
+     * @param  divisor  the value to verify.
      * @throws IllegalArgumentException if {@code (number % divisor) != 0}.
      * @throws ArithmeticException if {@code divisor == 0}.
      *
@@ -711,7 +711,26 @@ public final class ArgumentChecks extends Static {
      */
     public static void ensureDivisor(final String name, final int number, final int divisor) {
         if ((number % divisor) != 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotADivisor_3, name, number, divisor));
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotADivisorOrMultiple_4, name, 0, number, divisor));
+        }
+    }
+
+    /**
+     * Ensures that a given value is a multiple of specified number.
+     * This method verifies that {@code (multiple % number) == 0}.
+     * If above condition is not met, the value considered to be wrong is the multiple.
+     *
+     * @param  name      name of the argument for the multiple value. Used only if an exception is thrown.
+     * @param  number    the number to be multiplied.
+     * @param  multiple  the value to verify.
+     * @throws IllegalArgumentException if {@code (multiple % number) != 0}.
+     * @throws ArithmeticException if {@code number == 0}.
+     *
+     * @since 1.1
+     */
+    public static void ensureMultiple(final String name, final int number, final int multiple) {
+        if ((multiple % number) != 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotADivisorOrMultiple_4, name, 1, number, multiple));
         }
     }
 

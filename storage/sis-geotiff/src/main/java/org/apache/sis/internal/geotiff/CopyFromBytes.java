@@ -128,6 +128,11 @@ abstract class CopyFromBytes extends Inflater {
      * Skips the given amount of sample values without storing them.
      * The given value is in units of sample values, not in bytes.
      *
+     * <h4>Case of multi-pixels packed image</h4>
+     * It is caller's responsibility to ensure that <var>n</var> is a multiple of {@link #samplesPerElement}
+     * if this method is not invoked for skipping all remaining values until end of row.
+     * See {@link Inflater#skip(long)} for more information.
+     *
      * @param  n  number of uncompressed sample values to ignore.
      * @throws IOException if an error occurred while reading the input channel.
      */
@@ -138,11 +143,16 @@ abstract class CopyFromBytes extends Inflater {
                 positionNeedsRefresh = false;
                 streamPosition = input.getStreamPosition();
             }
-            n *= bytesPerElement;
-            if (n % samplesPerElement != 0) {
-                throw new IllegalArgumentException();   // Condition should have been verified before construction.
-            }
-            streamPosition = Math.addExact(streamPosition, n / samplesPerElement);
+            /*
+             * Convert number of sample values to number of elements, then to number of bytes.
+             * The number of sample values to skip shall be a multiple of `samplesPerElement`,
+             * except when skipping all remaining values until end of row. We do not verify
+             * because this method does not know when the row ends.
+             */
+            final boolean r = (n % samplesPerElement) > 0;
+            n /= samplesPerElement; if (r) n++;             // Round after division to next element boundary.
+            n *= bytesPerElement;                           // Must be multiplied only after above rounding.
+            streamPosition = Math.addExact(streamPosition, n);
         }
     }
 

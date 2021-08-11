@@ -107,7 +107,7 @@ public abstract class Inflater {
                 for (int i=0; i<skipAfterChunks.length; i++) {
                     final int s = skipAfterChunks[i];
                     ArgumentChecks.ensurePositive("skipAfterChunks", s);
-                    ArgumentChecks.ensureDivisor("samplesPerElement", s, samplesPerElement);
+                    ArgumentChecks.ensureMultiple("skipAfterChunks", samplesPerElement, s);
                     skipAfterChunks[i] /= samplesPerElement;
                 }
             }
@@ -197,6 +197,27 @@ public abstract class Inflater {
     /**
      * Reads the given amount of sample values without storing them.
      * The given value is in units of sample values, not in bytes.
+     *
+     * <h4>Case of multi-pixels packed image</h4>
+     * If there is more than one sample value per element, then this method may round (at implementation choice)
+     * the stream position to the first element boundary after skipping <var>n</var> sample values. For example
+     * a bilevel image packs 8 sample values per byte. Consequently a call to {@code skip(10)} may skip 2 bytes:
+     * one byte for the first 8 bits, then 2 bits rounded to the next byte boundary.
+     *
+     * <p>The exact rounding mode depends on the compression algorithm. To avoid erratic behavior, callers shall
+     * restrict <var>n</var> to multiples of {@code samplesPerElement} before to read the first pixel in a row.
+     * This restriction does not apply when skipping remaining data after the last pixels in a row, because the
+     * next row will be realigned on an element boundary anyway. The way to perform this realignment depends on
+     * the compression, which is the reason why the exact rounding mode may vary with compression algorithms.</p>
+     *
+     * <p>Restricting <var>n</var> to multiples of {@code samplesPerElement} implies the following restrictions:</p>
+     * <ul>
+     *   <li>No subsampling on the <var>x</var> axis (however subsampling on other axes is still allowed).</li>
+     *   <li>No band subset if interleaved sample model, because the effect is similar to subsampling.</li>
+     *   <li>If {@link org.apache.sis.coverage.grid.GridDerivation} is used for computing the sub-region to read,
+     *       it should have been configured with {@code chunkSize(samplesPerElement)}
+     *       (unless chunk size is already used for tile size).</li>
+     * </ul>
      *
      * @param  n  number of uncompressed sample values to ignore.
      * @throws IOException if an error occurred while reading the input channel.
