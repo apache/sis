@@ -105,7 +105,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * Number of banks retained for the target image data buffer.
      * This is equal to the number of bands only for planar images, and 1 in all other cases.
      * If the user asked to read only a subset of the bands, then "number of bands" in above
-     * sentence is the {@linkplain #selectedBands subset} size.
+     * sentence is the {@linkplain #includedBands subset} size.
      */
     protected final int numBanks;
 
@@ -153,8 +153,8 @@ class DataSubset extends TiledGridCoverage implements Localized {
         if (model instanceof BandedSampleModel) {
             numBanks = model.getNumBands();
             sourcePixelStride = targetPixelStride = 1;
-            maxBank = (selectedBands != null) ? selectedBands[selectedBands.length - 1] : numBanks - 1;
-            // Note: `selectedBands` is in strictly increasing order, so taking the last value is okay.
+            maxBank = (includedBands != null) ? includedBands[includedBands.length - 1] : numBanks - 1;
+            // Note: `includedBands` is in strictly increasing order, so taking the last value is okay.
         } else {
             maxBank  = 0;
             numBanks = 1;
@@ -259,11 +259,11 @@ class DataSubset extends TiledGridCoverage implements Localized {
          *
          * @param iterator  the iterator for which to create a snapshot of its current position.
          */
-        Tile(final AOI domain, final Vector tileOffsets, final int[] selectedBanks, final int numTiles) {
+        Tile(final AOI domain, final Vector tileOffsets, final int[] includedBanks, final int numTiles) {
             super(domain);
             int p = indexInTileVector;
-            if (selectedBanks != null) {
-                p += selectedBanks[0] * numTiles;
+            if (includedBanks != null) {
+                p += includedBanks[0] * numTiles;
             }
             byteOffset = tileOffsets.longValue(p);
         }
@@ -277,9 +277,9 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * @param  target    the array where to copy vector values.
          * @param  numTiles  value of {@link DataSubset#numTiles}.
          */
-        final void copyTileInfo(final Vector source, final long[] target, final int[] selectedBanks, final int numTiles) {
+        final void copyTileInfo(final Vector source, final long[] target, final int[] includedBanks, final int numTiles) {
             for (int j=0; j<target.length; j++) {
-                final int i = indexInTileVector + numTiles * (selectedBanks != null ? selectedBanks[j] : j);
+                final int i = indexInTileVector + numTiles * (includedBanks != null ? includedBanks[j] : j);
                 target[j] = source.longValue(i);
             }
         }
@@ -317,7 +317,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * Each tile will either store all sample values in an interleaved fashion inside a single bank
          * (`sourcePixelStride` > 1) or use one separated bank per band (`sourcePixelStride` == 1).
          */
-        final int[] selectedBanks = (sourcePixelStride == 1) ? selectedBands : null;
+        final int[] includedBanks = (sourcePixelStride == 1) ? includedBands : null;
         final WritableRaster[] result = new WritableRaster[iterator.tileCountInQuery];
         final Tile[] missings = new Tile[iterator.tileCountInQuery];
         int numMissings = 0;
@@ -329,7 +329,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
                     result[iterator.getIndexInResultArray()] = tile;
                 } else {
                     // Tile not yet loaded. Add to a queue of tiles to load later.
-                    missings[numMissings++] = new Tile(iterator, tileOffsets, selectedBanks, numTiles);
+                    missings[numMissings++] = new Tile(iterator, tileOffsets, includedBanks, numTiles);
                 }
             } while (iterator.next());
             Arrays.sort(missings, 0, numMissings);
@@ -352,8 +352,8 @@ class DataSubset extends TiledGridCoverage implements Localized {
                 if (tile.getRegionInsideTile(lower, upper, subsampling, BIDIMENSIONAL)) {
                     origin.x = tile.originX;
                     origin.y = tile.originY;
-                    tile.copyTileInfo(tileOffsets,    offsets,    selectedBanks, numTiles);
-                    tile.copyTileInfo(tileByteCounts, byteCounts, selectedBanks, numTiles);
+                    tile.copyTileInfo(tileOffsets,    offsets,    includedBanks, numTiles);
+                    tile.copyTileInfo(tileByteCounts, byteCounts, includedBanks, numTiles);
                     for (int b=0; b<offsets.length; b++) {
                         offsets[b] = addExact(offsets[b], reader().origin);
                     }

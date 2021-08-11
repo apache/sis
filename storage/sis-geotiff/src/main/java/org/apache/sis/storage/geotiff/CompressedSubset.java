@@ -94,7 +94,7 @@ final class CompressedSubset extends DataSubset {
      *   <li>1 if a chunk is a sample value.</li>
      *   <li>{@link #sourcePixelStride} if a chunk is a full pixel.</li>
      *   <li>Any intermediate value if some optimizations have been applied,
-     *       for example for taking advantage of consecutive indices in {@link #selectedBands}.</li>
+     *       for example for taking advantage of consecutive indices in {@link #includedBands}.</li>
      * </ul>
      *
      * This value shall always be a divisor of {@link #targetPixelStride}.
@@ -120,13 +120,13 @@ final class CompressedSubset extends DataSubset {
         scanlineStride = multiplyFull(getTileSize(0), sourcePixelStride);
         final int between = sourcePixelStride * (getSubsampling(0) - 1);
         int afterLastBand = sourcePixelStride * (getTileSize(0) - 1);
-        if (selectedBands != null && sourcePixelStride > 1) {
-            final int[] skips = new int[selectedBands.length];
+        if (includedBands != null && sourcePixelStride > 1) {
+            final int[] skips = new int[includedBands.length];
             final int m = skips.length - 1;
             int b = sourcePixelStride;
             for (int i=m; i >= 0; --i) {
                 // Number of sample values to skip after each band.
-                skips[i] = b - (b = selectedBands[i]) - 1;
+                skips[i] = b - (b = includedBands[i]) - 1;
             }
             beforeFirstBand = b;
             afterLastBand  += skips[m];                     // Add trailing bands that were left unread.
@@ -139,7 +139,7 @@ final class CompressedSubset extends DataSubset {
              * then we can read those 3 bands as a "chunk" on 3 sample values instead of reading 3 chunks of 1 value.
              */
             if (m != 0 && startsWithZeros(skips, m)) {
-                samplesPerChunk = selectedBands.length;
+                samplesPerChunk = includedBands.length;
                 skipAfterChunks = new int[] {skips[m]};
             } else {
                 samplesPerChunk = 1;

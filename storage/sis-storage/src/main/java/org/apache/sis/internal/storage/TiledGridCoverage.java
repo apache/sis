@@ -127,13 +127,15 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * Indices of {@link TiledGridResource} bands which have been retained for
      * inclusion in this {@code TiledGridCoverage}, in strictly increasing order.
-     * This is {@code null} if all bands shall be included.
+     * An "included" band is stored in memory but not necessarily visible to the user,
+     * because the {@link SampleModel} can be configured for ignoring some bands.
+     * This array is {@code null} if all bands shall be included.
      *
      * <p>If the user specified bands out of order, the change of band order is taken in account
-     * by the sample {@link #model}. This {@code selectedBands} array does not show any change
+     * by the sample {@link #model}. This {@code includedBands} array does not apply any change
      * of order for making sequential readings easier.</p>
      */
-    protected final int[] selectedBands;
+    protected final int[] includedBands;
 
     /**
      * Cache of rasters read by this {@code TiledGridCoverage}. This cache may be shared with other coverages
@@ -177,7 +179,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         readExtent          = subset.readExtent;
         subsampling         = subset.subsampling;
         subsamplingOffsets  = subset.subsamplingOffsets;
-        selectedBands       = subset.selectedBands;
+        includedBands       = subset.includedBands;
         rasters             = subset.cache;
         tileSize            = subset.tileSize;
         tmcOfFirstTile      = new long[dimension];
@@ -666,7 +668,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * Creates the key to use for caching the tile at given index.
      */
     private TiledGridResource.CacheKey createCacheKey(final int indexInTileVector) {
-        return new TiledGridResource.CacheKey(indexInTileVector, selectedBands, subsampling, subsamplingOffsets);
+        return new TiledGridResource.CacheKey(indexInTileVector, includedBands, subsampling, subsamplingOffsets);
     }
 
     /**

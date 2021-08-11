@@ -51,19 +51,20 @@ import org.apache.sis.util.ArraysExt;
 public abstract class TiledGridResource extends AbstractGridResource {
     /**
      * A key in the {@link #rasters} cache of tiles.
+     * Each key shall be unique within its enclosing {@link TiledGridResource} instance.
      */
     static final class CacheKey {
         /** Index in a row-major array of tiles. */ private final int   indexInTileVector;
-        /** Bands in strictly increasing order.  */ private final int[] selectedBands;
+        /** Bands in strictly increasing order.  */ private final int[] includedBands;
         /** Subsampling factors at read time.    */ private final int[] subsampling;
         /** Remainder of subsampling divisions.  */ private final int[] subsamplingOffsets;
 
         /** Creates a key with given arrays hold be reference (no copy). */
-        CacheKey(final int indexInTileVector, final int[] selectedBands,
+        CacheKey(final int indexInTileVector, final int[] includedBands,
                  final int[] subsampling, final int[] subsamplingOffsets)
         {
             this.indexInTileVector  = indexInTileVector;
-            this.selectedBands      = selectedBands;
+            this.includedBands      = includedBands;
             this.subsampling        = subsampling;
             this.subsamplingOffsets = subsamplingOffsets;
         }
@@ -71,7 +72,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
         /** Returns a hash-code value for this key. */
         @Override public int hashCode() {
             return indexInTileVector
-                    +   73 * Arrays.hashCode(selectedBands)
+                    +   73 * Arrays.hashCode(includedBands)
                     + 1063 * Arrays.hashCode(subsampling)
                     + 7919 * Arrays.hashCode(subsamplingOffsets);
         }
@@ -81,7 +82,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
             if (obj instanceof CacheKey) {
                 final CacheKey other = (CacheKey) obj;
                 return indexInTileVector == other.indexInTileVector
-                        && Arrays.equals(selectedBands,      other.selectedBands)
+                        && Arrays.equals(includedBands,      other.includedBands)
                         && Arrays.equals(subsampling,        other.subsampling)
                         && Arrays.equals(subsamplingOffsets, other.subsamplingOffsets);
             }
@@ -202,13 +203,17 @@ public abstract class TiledGridResource extends AbstractGridResource {
         /**
          * Indices of {@link TiledGridResource} bands which have been retained for inclusion
          * in the {@link TiledGridCoverage} to construct, in strictly increasing order.
-         * This is {@code null} if all bands shall be included.
+         * An "included" band is stored in memory but not necessarily visible to the user,
+         * because the {@link SampleModel} can be configured for ignoring some bands.
+         * This array is {@code null} if all bands shall be included.
          *
          * <p>If the user specified bands out of order, the change of band order is taken in
-         * account by the {@link #modelForBandSubset}. This {@code selectedBands} array does
-         * not show any change of order for making sequential readings easier.</p>
+         * account by the {@link #modelForBandSubset}. This {@code includedBands} array does
+         * not apply any change of order for making sequential readings easier.</p>
+         *
+         * @see TiledGridCoverage#includedBands
          */
-        final int[] selectedBands;
+        final int[] includedBands;
 
         /**
          * Coordinate conversion from subsampled grid to the grid at full resolution.
@@ -302,24 +307,24 @@ public abstract class TiledGridResource extends AbstractGridResource {
             /*
              * Get the bands selected by user in strictly increasing order of source band index.
              * If user has specified bands in a different order, that change of band order will
-             * be handled by the `SampleModel`, not in `selectedBands` array.
+             * be handled by the `SampleModel`, not in `includedBands` array.
              */
-            int[] selectedBands = null;
+            int[] includedBands = null;
             if (!rangeIndices.isIdentity()) {
                 bands = Arrays.asList(rangeIndices.select(bands));
-                selectedBands = new int[rangeIndices.getNumBands()];
-                for (int i=0; i<selectedBands.length; i++) {
-                    selectedBands[i] = rangeIndices.getSourceIndex(i);
+                includedBands = new int[rangeIndices.getNumBands()];
+                for (int i=0; i<includedBands.length; i++) {
+                    includedBands[i] = rangeIndices.getSourceIndex(i);
                 }
-                assert ArraysExt.isSorted(selectedBands, true);
+                assert ArraysExt.isSorted(includedBands, true);
                 if (rangeIndices.hasAllBands) {
-                    assert ArraysExt.isRange(0, selectedBands);
-                    selectedBands = null;
+                    assert ArraysExt.isRange(0, includedBands);
+                    includedBands = null;
                 }
             }
             this.domain              = domain;
             this.ranges              = bands;
-            this.selectedBands       = selectedBands;
+            this.includedBands       = includedBands;
             this.modelForBandSubset  = rangeIndices.select(getSampleModel(), loadAllBands);
             this.colorsForBandSubset = rangeIndices.select(getColorModel());
             this.fillValue           = getFillValue();
@@ -348,7 +353,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
          * @return {@code true} if only a subset of bands will be read or if bands will be read out of order.
          */
         public boolean hasBandSubset() {
-            return selectedBands != null;
+            return includedBands != null;
         }
     }
 
