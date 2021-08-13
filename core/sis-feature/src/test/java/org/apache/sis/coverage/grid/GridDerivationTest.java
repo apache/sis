@@ -23,6 +23,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Envelope2D;
@@ -337,7 +338,14 @@ public final strictfp class GridDerivationTest extends TestCase {
         final GridDerivation derivation = grid.derive().margin(4, 3).chunkSize(5, 10);
         grid = derivation.subgrid(envelope, 2, 1).build();
         assertExtentEquals(new long[] {55, 0}, new long[] {204, 39}, derivation.getIntersection());
-        assertExtentEquals(new long[] {14, 0}, new long[] { 50,  9}, grid.getExtent());
+        assertExtentEquals(new long[] {11, 0}, new long[] { 40,  7}, grid.getExtent());
+        assertArrayEquals(new double[] {2.5, 1.25}, grid.getResolution(false), STRICT);
+        /*
+         * Without chunk size, the resolution would have been {2,1} which correspond to a subsampling of {4,4}.
+         * But because of the chunk size, the subsampling have been rounded to {5,5} which correspond to above
+         * resolution. The grid extent, which would have been x:[14 … 50] and y:[0 … 9], is also affected by
+         * the subsampling adjustment.
+         */
     }
 
     /**
@@ -371,6 +379,28 @@ public final strictfp class GridDerivationTest extends TestCase {
         expected.setRange(0,  8000, 11900);
         expected.setRange(1, -7501,  1410);
         assertEnvelopeEquals(expected, tg.getEnvelope(), STRICT);
+    }
+
+    /**
+     * Tests {@link GridDerivation#subgrid(GridGeometry)} with a maximum subsampling value.
+     */
+    @Test
+    public void testSubgridWithMaximumSubsampling() {
+        GridGeometry   query  = grid(  80,   -3,  110,    55, 100, -300);     // Same as above test.
+        GridGeometry   base   = grid(2000, -1000, 9000, 8000,   2,   -1);
+        GridDerivation change = base.derive().chunkSize(390, 70).maximumSubsampling(25, 100).subgrid(query);
+        GridGeometry   result = change.build();
+        Matrix         toCRS  = MathTransforms.getMatrix(result.getGridToCRS(PixelInCell.CELL_CORNER));
+        /*
+         * Subsampling values checked below shall be equal or smaller
+         * than the values given to `maximumSubsampling(…)`.
+         */
+        assertArrayEquals(new int[] {15,  84}, change.getSubsampling());
+        assertArrayEquals(new int[] { 0, -70}, change.getSubsamplingOffsets());
+        assertMatrixEquals("gridToCRS", new Matrix3(
+                 30,   0, 200,
+                  0, -84, 570,
+                  0,   0,   1), toCRS, STRICT);
     }
 
     /**

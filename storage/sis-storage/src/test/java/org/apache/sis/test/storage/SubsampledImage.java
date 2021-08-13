@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Vector;
 import java.awt.image.Raster;
 import java.awt.image.ColorModel;
+import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
@@ -36,7 +37,7 @@ import static org.junit.Assert.*;
  *
  * <h2>Limitations</h2>
  * <ul>
- *   <li>Sample model must be an instance of {@link PixelInterleavedSampleModel}.</li>
+ *   <li>Sample model must be an instance of {@link PixelInterleavedSampleModel} or {@link MultiPixelPackedSampleModel}.</li>
  *   <li>Subsampling must be a divisor of tile size, except in dimensions having only one tile.</li>
  *   <li>Conversion from source coordinates to target coordinates is a division only, without subsampling offsets.</li>
  * </ul>
@@ -84,33 +85,47 @@ final class SubsampledImage extends PlanarImage {
         this.source = source;
         this.subX   = subX;
         this.subY   = subY;
-        final PixelInterleavedSampleModel sm = (PixelInterleavedSampleModel) source.getSampleModel();
-        final int   pixelStride    = sm.getPixelStride();
-        final int   scanlineStride = sm.getScanlineStride();
-        final int   offset         = pixelStride*offX + scanlineStride*offY;
-        final int[] offsets        = sm.getBandOffsets();
-        /*
-         * Conversion from subsampled coordinate x′ to full resolution x is:
-         *
-         *    x = (x′ × subsampling) + offset
-         *
-         * We simulate the offset addition by adding the value in the offset bands.
-         * PixelInterleavedSampleModel uses that value for computing array index as below:
-         *
-         *    y*scanlineStride + x*pixelStride + bandOffsets[b]
-         */
-        for (int i=0; i<offsets.length; i++) {
-            offsets[i] += offset;
+        final SampleModel sourceModel = source.getSampleModel();
+        if (sourceModel instanceof PixelInterleavedSampleModel) {
+            final PixelInterleavedSampleModel sm = (PixelInterleavedSampleModel) sourceModel;
+            final int   pixelStride    = sm.getPixelStride();
+            final int   scanlineStride = sm.getScanlineStride();
+            final int   offset         = pixelStride*offX + scanlineStride*offY;
+            final int[] offsets        = sm.getBandOffsets();
+            /*
+             * Conversion from subsampled coordinate x′ to full resolution x is:
+             *
+             *    x = (x′ × subsampling) + offset
+             *
+             * We simulate the offset addition by adding the value in the offset bands.
+             * PixelInterleavedSampleModel uses that value for computing array index as below:
+             *
+             *    y*scanlineStride + x*pixelStride + bandOffsets[b]
+             */
+            for (int i=0; i<offsets.length; i++) {
+                offsets[i] += offset;
+            }
+            model = new PixelInterleavedSampleModel(sm.getDataType(),
+                    divExclusive(sm.getWidth(),  subX),
+                    divExclusive(sm.getHeight(), subY),
+                    pixelStride*subX, scanlineStride*subY, offsets);
+        } else if (sourceModel instanceof MultiPixelPackedSampleModel) {
+            final MultiPixelPackedSampleModel sm = (MultiPixelPackedSampleModel) sourceModel;
+            assertEquals("Subsampling on the X axis is not supported.", 1, subX);
+            model = new MultiPixelPackedSampleModel(sm.getDataType(),
+                    divExclusive(sm.getWidth(),  subX),
+                    divExclusive(sm.getHeight(), subY),
+                    sm.getPixelBitStride(),
+                    sm.getScanlineStride() * subY,
+                    sm.getDataBitOffset());
+        } else {
+            throw new AssertionError("Unsupported sample model: " + sourceModel);
         }
-        model = new PixelInterleavedSampleModel(sm.getDataType(),
-                divExclusive(sm.getWidth(),  subX),
-                divExclusive(sm.getHeight(), subY),
-                pixelStride*subX, scanlineStride*subY, offsets);
         /*
          * Conditions documented in class javadoc.
          */
-        if (getNumXTiles() > 1) assertEquals(0, sm.getWidth()  % subX);
-        if (getNumYTiles() > 1) assertEquals(0, sm.getHeight() % subY);
+        if (getNumXTiles() > 1) assertEquals(0, sourceModel.getWidth()  % subX);
+        if (getNumYTiles() > 1) assertEquals(0, sourceModel.getHeight() % subY);
     }
 
     /**

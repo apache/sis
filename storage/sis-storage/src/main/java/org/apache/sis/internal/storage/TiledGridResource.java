@@ -162,6 +162,19 @@ public abstract class TiledGridResource extends AbstractGridResource {
     }
 
     /**
+     * Returns the maximal subsampling supported in the given dimension.
+     * The default implementation puts no limit if {@code getAtomSize(dimension)} is 1,
+     * and disables subsampling otherwise.
+     *
+     * @param  dimension  the dimension to test.
+     * @return the maximal subsampling supported in the given dimension.
+     * @throws DataStoreException if an error occurred while fetching the sample model.
+     */
+    protected int getMaximumSubsampling(final int dimension) throws DataStoreException {
+        return getAtomSize(dimension) == 1 ? Integer.MAX_VALUE : 1;
+    }
+
+    /**
      * Returns {@code true} if the reader can load only the requested bands and skip the other bands,
      * or {@code false} if the reader must load all bands. This value controls the amount of data to
      * be loaded by {@link #read(GridGeometry, int...)}:
@@ -356,7 +369,8 @@ public abstract class TiledGridResource extends AbstractGridResource {
                 if (tileWidth  >= sourceExtent.getSize(0)) {tileWidth  = getAtomSize(0); sharedCache = false;}
                 if (tileHeight >= sourceExtent.getSize(1)) {tileHeight = getAtomSize(1); sharedCache = false;}
                 final GridDerivation target = gridGeometry.derive().chunkSize(tileWidth, tileHeight)
-                                              .rounding(GridRoundingMode.ENCLOSING).subgrid(domain);
+                            .maximumSubsampling(getMaximumSubsampling(0), getMaximumSubsampling(1))
+                            .rounding(GridRoundingMode.ENCLOSING).subgrid(domain);
                 domain             = target.build();
                 readExtent         = target.getIntersection();
                 subsampling        = target.getSubsampling();

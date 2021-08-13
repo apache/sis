@@ -126,6 +126,13 @@ public class GridDerivation {
      */
     private int[] chunkSize;
 
+    /**
+     * The maximum subsampling values (inclusive), or {@code null} if none.
+     *
+     * @see #maximumSubsampling(int...)
+     */
+    private int[] maximumSubsampling;
+
     // ──────── FIELDS COMPUTED BY METHODS IN THIS CLASS ──────────────────────────────────────────────────────────────
 
     /**
@@ -308,20 +315,8 @@ public class GridDerivation {
      * @see GridExtent#expand(long...)
      */
     public GridDerivation margin(final int... cellCounts) {
-        ArgumentChecks.ensureNonNull("cellCounts", cellCounts);
         ensureSubgridNotSet();
-        int[] margin = null;
-        for (int i=cellCounts.length; --i >= 0;) {
-            final int n = cellCounts[i];
-            if (n != 0) {
-                ArgumentChecks.ensurePositive("cellCounts", n);
-                if (margin == null) {
-                    margin = new int[i+1];
-                }
-                margin[i] = n;
-            }
-        }
-        this.margin = margin;           // Set only on success. We want null if all margin values are 0.
+        margin = validateCellCounts("cellCounts", cellCounts, 0);
         return this;
     }
 
@@ -351,22 +346,63 @@ public class GridDerivation {
      * @since 1.1
      */
     public GridDerivation chunkSize(final int... cellCounts) {
-        ArgumentChecks.ensureNonNull("cellCounts", cellCounts);
         ensureSubgridNotSet();
-        int[] chunkSize = null;
-        for (int i=cellCounts.length; --i >= 0;) {
-            final int n = cellCounts[i];
-            if (n != 1) {
-                ArgumentChecks.ensureStrictlyPositive("cellCounts", n);
-                if (chunkSize == null) {
-                    chunkSize = new int[i+1];
-                    Arrays.fill(chunkSize, 1);
+        chunkSize = validateCellCounts("cellCounts", cellCounts, 1);
+        return this;
+    }
+
+    /**
+     * Specifies the maximum subsampling values (inclusive) for each dimension.
+     * If a subsampling value is greater than a specified value in the corresponding dimension,
+     * the subsampling will be clamped to the specified maximal value.
+     * Setting a maximum value of 1 in a dimension is equivalent to disabling subsampling in that dimension.
+     *
+     * <p>If this method is never invoked, then there is no maximum value.
+     * If this method is invoked too late, an {@link IllegalStateException} is thrown.
+     * If the {@code cellCounts} array length is shorter than the grid dimension,
+     * then all missing dimensions have no maximum value.</p>
+     *
+     * @param  subsampling  maximal subsampling values (inclusive).
+     * @return {@code this} for method call chaining.
+     * @throws IllegalArgumentException if a value is zero or negative.
+     * @throws IllegalStateException if {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)}
+     *         has already been invoked.
+     *
+     * @since 1.1
+     */
+    public GridDerivation maximumSubsampling(final int... subsampling) {
+        ensureSubgridNotSet();
+        maximumSubsampling = validateCellCounts("subsampling", subsampling, Integer.MAX_VALUE);
+        return this;
+    }
+
+    /**
+     * Returns a copy of the {@code values} array with trailing {@code defaultValue} trimmed.
+     * Returns {@code null} if all values are trimmed. This method verifies that values are valid.
+     *
+     * @param  property  argument name to use in error message in case of errors.
+     * @param  values    user-supplied values.
+     * @return values to save in {@link GridDerivation}.
+     */
+    private static int[] validateCellCounts(final String property, final int[] values, final int defaultValue) {
+        ArgumentChecks.ensureNonNull(property, values);
+        int[] copy = null;
+        for (int i=values.length; --i >= 0;) {
+            final int n = values[i];
+            if (n != defaultValue) {
+                if (defaultValue == 0) {
+                    ArgumentChecks.ensurePositive(property, n);
+                } else {
+                    ArgumentChecks.ensureStrictlyPositive(property, n);
                 }
-                chunkSize[i] = n;
+                if (copy == null) {
+                    copy = new int[i+1];
+                    Arrays.fill(copy, defaultValue);
+                }
+                copy[i] = n;
             }
         }
-        this.chunkSize = chunkSize;         // Set only on success. We want null if all size values are 1.
-        return this;
+        return copy;
     }
 
     /**
@@ -531,44 +567,45 @@ public class GridDerivation {
         if (areaOfInterest.isEnvelopeOnly()) {
             return subgrid(areaOfInterest.envelope, (double[]) null);
         }
+        final double[] scales;
         if (areaOfInterest.isExtentOnly()) {
-            int[] subsampling = null;
-            if (areaOfInterest.resolution != null) {
-                /*
-                 * In principle `resolution` is always null here because it is computed from `gridToCRS`,
-                 * which is null (otherwise `isExtentOnly()` would have been false). However an exception
-                 * to this rule happens if `areaOfInterest` has been computed by another `GridDerivation`,
-                 * in which case the resolution requested by user is saved even when `gridToCRS` is null.
-                 * In that case the resolution is relative to the base grid of the other `GridDerivation`.
-                 * Note however that the `resolution` field is only an approximation (the exact transform
-                 * would have been stored in `gridToCRS` if it was non-null) and the subsampling offsets
-                 * are lost (they would also have been stored in `gridToCRS`).
-                 */
-                subsampling = new int[areaOfInterest.resolution.length];
-                for (int i=0; i<subsampling.length; i++) {
-                    subsampling[i] = roundSubsampling(areaOfInterest.resolution[i], i);
-                }
+            if (baseExtent != null) {
+                baseExtent = baseExtent.intersect(areaOfInterest.extent);
+                subGridSetter = "subgrid";
             }
-            return subgrid(areaOfInterest.extent, subsampling);
-        }
-        subGridSetter = "subgrid";
-        if (base.equals(areaOfInterest)) {
-            return this;
-        }
-        final MathTransform mapCenters;
-        final GridExtent domain = areaOfInterest.getExtent();       // May throw IncompleteGridGeometryException.
-        try {
-            final CoordinateOperationFinder finder = new CoordinateOperationFinder(areaOfInterest, base);
-            final MathTransform mapCorners = finder.gridToGrid();
-            finder.setAnchor(PixelInCell.CELL_CENTER);
-            finder.nowraparound();
-            mapCenters = finder.gridToGrid();                               // We will use only the scale factors.
-            setBaseExtentClipped(domain.toCRS(mapCorners, mapCenters, null));
-        } catch (FactoryException | TransformException e) {
-            throw new IllegalGridGeometryException(e, "areaOfInterest");
-        }
-        if (baseExtent != base.extent && baseExtent.equals(areaOfInterest.extent)) {
-            baseExtent = areaOfInterest.extent;                                         // Share common instance.
+            scales = areaOfInterest.resolution;
+            /*
+             * In principle `resolution` is always null here because it is computed from `gridToCRS`,
+             * which is null (otherwise `isExtentOnly()` would have been false). However an exception
+             * to this rule happens if `areaOfInterest` has been computed by another `GridDerivation`,
+             * in which case the resolution requested by user is saved even when `gridToCRS` is null.
+             * In that case the resolution is relative to the base grid of the other `GridDerivation`.
+             * Note however that the `resolution` field is only an approximation (the exact transform
+             * would have been stored in `gridToCRS` if it was non-null) and the subsampling offsets
+             * are lost (they would also have been stored in `gridToCRS`).
+             */
+        } else {
+            if (base.equals(areaOfInterest)) {
+                return this;
+            }
+            final MathTransform mapCenters;
+            final GridExtent domain = areaOfInterest.getExtent();       // May throw IncompleteGridGeometryException.
+            try {
+                final CoordinateOperationFinder finder = new CoordinateOperationFinder(areaOfInterest, base);
+                final MathTransform mapCorners = finder.gridToGrid();
+                finder.setAnchor(PixelInCell.CELL_CENTER);
+                finder.nowraparound();
+                mapCenters = finder.gridToGrid();                               // We will use only the scale factors.
+                setBaseExtentClipped(domain.toCRS(mapCorners, mapCenters, null));
+                subGridSetter = "subgrid";
+            } catch (FactoryException | TransformException e) {
+                throw new IllegalGridGeometryException(e, "areaOfInterest");
+            }
+            if (baseExtent != base.extent && baseExtent.equals(areaOfInterest.extent)) {
+                baseExtent = areaOfInterest.extent;                                         // Share common instance.
+            }
+            // The `domain` extent must be the source of the `mapCenters` transform.
+            scales = GridGeometry.resolution(mapCenters, domain);
         }
         /*
          * The subsampling will determine the scale factors in the transform from the given desired grid geometry
@@ -577,8 +614,6 @@ public class GridDerivation {
          * the way transforms are concatenated) as the ratio between the resolutions of the `areaOfInterest` and
          * `base` grid geometries, computed in the center of the area of interest.
          */
-        // The `domain` extent must be the source of the `mapCenters` transform.
-        final double[] scales = GridGeometry.resolution(mapCenters, domain);
         if (scales == null) {
             return this;
         }
@@ -732,8 +767,16 @@ public class GridDerivation {
                     if (s > 1) {                                // Also for skipping NaN values.
                         scaled = true;
                         final int i = (modifiedDimensions != null) ? modifiedDimensions[k] : k;
-                        final int accuracy = Math.max(0, Math.getExponent(indices.getSpan(i))) + 1;     // Power of 2.
-                        s = Math.scalb(Math.rint(Math.scalb(s, accuracy)), -accuracy);
+                        if (chunkSize != null) {
+                            s = roundSubsampling(s, i);         // Include clamp to `maximumSubsampling`.
+                        } else {
+                            final int accuracy = Math.max(0, Math.getExponent(indices.getSpan(i))) + 1;   // Power of 2.
+                            s = Math.scalb(Math.rint(Math.scalb(s, accuracy)), -accuracy);
+                            if (maximumSubsampling != null && i < maximumSubsampling.length) {
+                                final double max = maximumSubsampling[i];
+                                if (s > max) s = max;
+                            }
+                        }
                         indices.setRange(i, indices.getLower(i) / s,
                                             indices.getUpper(i) / s);
                     }
@@ -873,7 +916,7 @@ public class GridDerivation {
      *
      * @since 1.1
      */
-    public GridDerivation subgrid(final GridExtent areaOfInterest, final int... subsampling) {
+    public GridDerivation subgrid(final GridExtent areaOfInterest, int... subsampling) {
         ensureSubgridNotSet();
         final int n = base.getDimension();
         if (areaOfInterest != null) {
@@ -883,11 +926,20 @@ public class GridDerivation {
                         Errors.Keys.MismatchedDimension_3, "extent", n, actual));
             }
         }
-        subGridSetter = "subgrid";
         if (areaOfInterest != null && baseExtent != null) {
             baseExtent = baseExtent.intersect(areaOfInterest);
+            subGridSetter = "subgrid";
         }
-        return (subsampling != null) ? subsample(subsampling) : this;
+        if (subsampling == null) {
+            return this;
+        }
+        if (chunkSize != null || maximumSubsampling != null) {
+            subsampling = subsampling.clone();
+            for (int i=0; i<subsampling.length; i++) {
+                subsampling[i] = roundSubsampling(subsampling[i], i);
+            }
+        }
+        return subsample(subsampling);
     }
 
     /**
@@ -903,7 +955,11 @@ public class GridDerivation {
      * </ul>
      *
      * The {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform is scaled accordingly
-     * in order to map approximately to the same {@linkplain GridGeometry#getEnvelope() envelope}.
+     *
+     * <h4>Preconditions</h4>
+     * This method assumes that subsampling are divisors of {@linkplain #chunkSize(int...) chunk sizes}
+     * and are not greater than the {@linkplain #maximumSubsampling(int...) maximum subsampling}.
+     * It is caller responsibility to ensure that those preconditions are met.
      *
      * @param  subsampling  the subsampling to apply on each grid dimension. All values shall be greater than zero.
      *         If the array length is shorter than the number of dimensions, missing values are assumed to be 1.
@@ -919,7 +975,6 @@ public class GridDerivation {
      */
     @Deprecated
     // TODO: make private (do not delete) after next SIS release.
-    // This method assumes that subsampling are divisors of chunk sizes.
     public GridDerivation subsample(final int... subsampling) {
         ArgumentChecks.ensureNonNull("subsampling", subsampling);
         if (toBase != null) {
@@ -1276,6 +1331,7 @@ public class GridDerivation {
 
     /**
      * Rounds a subsampling value according the current {@link RoundingMode}.
+     * If {@link #maximumSubsampling} values have been specified, then subsampling is clamped if needed.
      * If a {@link #chunkSize} has been specified, then the subsampling will be a divisor of that size.
      * This is necessary for avoiding a drift of subsampled pixel coordinates computed from tile coordinates.
      *
@@ -1302,12 +1358,17 @@ public class GridDerivation {
      * @param  dimension  the dimension of the scale factor to round.
      */
     private int roundSubsampling(final double scale, final int dimension) {
-        final int subsampling;
+        int subsampling;
         switch (rounding) {
             default:        throw new AssertionError(rounding);
             case NEAREST:   subsampling = (int) Math.min(Math.round(scale), Integer.MAX_VALUE); break;
             case CONTAINED: subsampling = (int) Math.ceil(scale - tolerance(dimension)); break;
             case ENCLOSING: subsampling = (int) (scale + tolerance(dimension)); break;
+        }
+        int max = Integer.MAX_VALUE;
+        if (maximumSubsampling != null && dimension < maximumSubsampling.length) {
+            max = maximumSubsampling[dimension];
+            if (subsampling > max) subsampling = max;
         }
         if (subsampling <= 1) {
             return 1;
@@ -1326,22 +1387,16 @@ public class GridDerivation {
                  * It is better to know now if there is any problem here.
                  */
                 int s = divisors[i-1];
-                if (i < divisors.length) {
-                    switch (rounding) {
-                        case CONTAINED: {
-                            s = divisors[i];
-                            break;
-                        }
-                        case NEAREST: {
-                            final int above = divisors[i];
-                            if (above - r < r - s) {
-                                s = above;
-                            }
-                            break;
+                final int offset = subsampling - r;
+                if (rounding != GridRoundingMode.ENCLOSING && i < divisors.length) {
+                    final int above = divisors[i];
+                    if (max == Integer.MAX_VALUE || above <= max - offset) {
+                        if (rounding == GridRoundingMode.CONTAINED || above - r < r - s) {
+                            s = above;
                         }
                     }
                 }
-                return s + (subsampling - r);
+                return s + offset;
             }
         }
         return subsampling;
