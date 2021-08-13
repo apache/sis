@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.awt.image.DataBuffer;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
+import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -148,26 +149,47 @@ public abstract class TiledGridResource extends AbstractGridResource {
      * By declaring an "atom" size of 8 sample values in dimension 0, the {@link Subset} constructor
      * will ensure than the sub-region to read starts at a byte boundary when reading a bilevel image.
      *
+     * <p>The default implementation returns the {@linkplain TiledGridCoverage#getPixelsPerElement()
+     * number of pixels per data element} for dimension 0 and returns 1 for all other dimensions.</p>
+     *
      * @param  dimension  the dimension for which to get the atom size.
      *         This is in units of sample values (may be bits, bytes, floats, <i>etc</i>).
      * @return indivisible amount of sample values to read in the specified dimension. Must be ≥ 1.
      * @throws DataStoreException if an error occurred while fetching the sample model.
      */
-    private int getAtomSize(final int dimension) throws DataStoreException {
-        if (dimension == 0) {
-            final SampleModel model = getSampleModel();
-            if (model != null && !(model instanceof ComponentSampleModel)) {
-                int size = 1;
-                for (int b = model.getNumBands(); --b >= 0;) {
-                    size = Math.max(size, model.getSampleSize(b));
-                }
-                final int samplesPerElement = DataBuffer.getDataTypeSize(model.getDataType()) / size;
-                if (samplesPerElement >= 1) {
-                    return samplesPerElement;
-                }
-            }
-        }
-        return 1;
+    protected int getAtomSize(final int dimension) throws DataStoreException {
+        return (dimension == 0) ? TiledGridCoverage.getPixelsPerElement(getSampleModel()) : 1;
+    }
+
+    /**
+     * Returns {@code true} if the reader can load only the requested bands and skip the other bands,
+     * or {@code false} if the reader must load all bands. This value controls the amount of data to
+     * be loaded by {@link #read(GridGeometry, int...)}:
+     *
+     * <ul class="verbose">
+     *   <li>If {@code false}, then {@link TiledGridCoverage#model} will expect the same {@link DataBuffer}
+     *       than the one expected by the {@linkplain #getSampleModel() sample model of this resource}.
+     *       All bands will be loaded but the coverage sample model will ignore the bands that were not
+     *       enumerated in the {@code range} argument. This strategy is convenient when skipping bands
+     *       at reading time is hard.</li>
+     *   <li>If {@code true}, then {@link TiledGridCoverage#model} will have its band indices and bit masks
+     *       "compressed" for making them consecutive. For example if the {@code range} argument specifies that
+     *       the bands to read are {1, 3, 4, 6}, then after "compression" band indices become {0, 1, 2, 3}.
+     *       This strategy is efficient when the reader is capable to skip bands at reading time.</li>
+     * </ul>
+     *
+     * <p>The default implementation returns {@code true} if the sample model is a {@link ComponentSampleModel}
+     * and {@code false} if all other cases, because skipping bands in a packed sample model is more difficult
+     * to implement.</p>
+     *
+     * @return {@code true} if the reader can load only the requested bands and skip other bands, or
+     *         {@code false} if the reader needs to load all bands regardless the {@code range} subset.
+     * @throws DataStoreException if an error occurred while fetching the sample model.
+     *
+     * @see AbstractGridResource.RangeArgument#select(SampleModel, boolean)
+     */
+    protected boolean getDissociableBands() throws DataStoreException {
+        return getSampleModel() instanceof ComponentSampleModel;
     }
 
     /**
@@ -177,6 +199,9 @@ public abstract class TiledGridResource extends AbstractGridResource {
      * <h4>Multi-dimensional data cube</h4>
      * If this resource has more than 2 dimensions, then this model is for the two first ones (usually horizontal).
      * The images for all levels in additional dimensions shall use the same sample model.
+     *
+     * <h4>Performance note</h4>
+     * Implementation should return a cached value, because this method may be invoked many times.
      *
      * @return the sample model for tiles at full resolution with all their bands.
      * @throws DataStoreException if an error occurred during sample model construction.
@@ -228,8 +253,12 @@ public abstract class TiledGridResource extends AbstractGridResource {
         final GridGeometry domain;
 
         /**
-         * Sample dimensions for each image band.
-         * This is the range of the grid coverage to create.
+         * Sample dimensions for each image band. This is the range of the grid coverage to create.
+         * If {@link #includedBands} is non-null, then the the size of this list should be equal to
+         * {@link #includedBands} array length. However bands are not necessarily in the same order:
+         * the order of bands in this {@code ranges} list is the order specified by user, while the
+         * order of bands in {@link #includedBands} is always increasing index order for efficiency
+         * reasons.
          */
         final List<? extends SampleDimension> ranges;
 
@@ -294,10 +323,6 @@ public abstract class TiledGridResource extends AbstractGridResource {
          *
          * @param  domain  the domain argument specified by user in a call to {@code GridCoverageResource.read(…)}.
          * @param  range   the range argument specified by user in a call to {@code GridCoverageResource.read(…)}.
-         * @param  loadAllBands {@code true} if the reader will load all bands regardless the {@code range} subset,
-         *         or {@code false} if only requested bands will be loaded and other bands will be skipped. See
-         *         {@link AbstractGridResource.RangeArgument#select(SampleModel, boolean) RangeArgument.select(…)}
-         *         for more information.
          *
          * @throws ArithmeticException if pixel indices exceed 64 bits integer capacity.
          * @throws DataStoreException if a call to {@link TiledGridResource} method failed.
@@ -305,7 +330,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
          * @throws IllegalArgumentException if an error occurred in an operation
          *         such as creating the {@code SampleModel} subset for selected bands.
          */
-        public Subset(GridGeometry domain, final int[] range, final boolean loadAllBands) throws DataStoreException {
+        public Subset(GridGeometry domain, final int[] range) throws DataStoreException {
             List<SampleDimension> bands        = getSampleDimensions();
             final RangeArgument   rangeIndices = validateRangeArgument(bands.size(), range);
             final GridGeometry    gridGeometry = getGridGeometry();
@@ -343,16 +368,20 @@ public abstract class TiledGridResource extends AbstractGridResource {
              * be handled by the `SampleModel`, not in `includedBands` array.
              */
             int[] includedBands = null;
-            if (!rangeIndices.isIdentity()) {
+            boolean loadAllBands = rangeIndices.isIdentity();
+            if (!loadAllBands) {
                 bands = Arrays.asList(rangeIndices.select(bands));
-                includedBands = new int[rangeIndices.getNumBands()];
-                for (int i=0; i<includedBands.length; i++) {
-                    includedBands[i] = rangeIndices.getSourceIndex(i);
-                }
-                assert ArraysExt.isSorted(includedBands, true);
-                if (rangeIndices.hasAllBands) {
-                    assert ArraysExt.isRange(0, includedBands);
-                    includedBands = null;
+                loadAllBands = !getDissociableBands();
+                if (!loadAllBands) {
+                    includedBands = new int[rangeIndices.getNumBands()];
+                    for (int i=0; i<includedBands.length; i++) {
+                        includedBands[i] = rangeIndices.getSourceIndex(i);
+                    }
+                    assert ArraysExt.isSorted(includedBands, true);
+                    if (rangeIndices.hasAllBands) {
+                        assert ArraysExt.isRange(0, includedBands);
+                        includedBands = null;
+                    }
                 }
             }
             this.domain              = domain;
@@ -369,24 +398,22 @@ public abstract class TiledGridResource extends AbstractGridResource {
         }
 
         /**
-         * Returns {@code true} if this subset contains a subsampling in the given dimension.
+         * Returns {@code true} if reading data in this subset will read contiguous values on the <var>x</var> axis.
+         * This method returns {@code true} if all following conditions are met:
          *
-         * @param  dimension  the dimension to test.
-         * @return {@code true} if there is a subsampling in the given dimension.
-         */
-        public boolean hasSubsampling(final int dimension) {
-            return subsampling[dimension] != 1;
-        }
-
-        /**
-         * Returns {@code true} if the user requested a subset of bands, or {@code false}
-         * if all bands shall be read in order. For this method, a change of band order
-         * is considered as a "subset".
+         * <ul>
+         *   <li>All bands will be read (ignoring change of band order
+         *       because this change is handled by the sample model).</li>
+         *   <li>There is no subsampling on the <var>x</var> axis.</li>
+         * </ul>
          *
-         * @return {@code true} if only a subset of bands will be read or if bands will be read out of order.
+         * Note that the first criterion can often be relaxed when the sample model is an instance
+         * of {@link BandedSampleModel}. This method does not check the sample model type.
+         *
+         * @return whether the values to read on a row are contiguous.
          */
-        public boolean hasBandSubset() {
-            return includedBands != null;
+        public boolean isXContiguous() {
+            return includedBands == null && subsampling[0] == 1;
         }
     }
 

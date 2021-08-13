@@ -22,7 +22,6 @@ import java.nio.Buffer;
 import java.io.IOException;
 import java.awt.Point;
 import java.awt.image.BandedSampleModel;
-import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import org.apache.sis.image.DataType;
@@ -195,37 +194,16 @@ class DataSubset extends TiledGridCoverage implements Localized {
     }
 
     /**
-     * Returns the size in bits of samples for the specified <em>bank</em> (not band).
-     * If the sample model packs all pixel samples in a single bank element, then this
-     * method returns the sum of the size of sample sizes for all bands.
-     *
-     * @param  bank  the bank for which to get sample size.
-     * @return the size of the samples of the specified bank.
-     *
-     * @see java.awt.image.SampleModel#getSampleSize(int)
-     */
-    protected final int getSampleSize(final int bank) {
-        if (model instanceof ComponentSampleModel) {
-            return DataBuffer.getDataTypeSize(model.getDataType());
-        }
-        int size = 0;
-        for (int b = model.getNumBands(); --b >= 0;) {
-            size += model.getSampleSize(b);
-        }
-        return size;
-    }
-
-    /**
      * Returns the size of a bank (not necessarily a band) in number of primitive elements (bytes, integers, …).
      * This is tile width × height × {@link #targetPixelStride} divided by the number of sample values per element,
      * with each row starting on an element boundary.
      *
-     * @param  samplesPerElement  always 1 except when two or more pixels are packed in each element.
+     * @param  pixelsPerElement  always 1 except when two or more pixels are packed in each element.
      * @return expected number of primitive elements in the bank.
      */
-    protected final int getBankCapacity(final int samplesPerElement) {
+    protected final int getBankCapacity(final int pixelsPerElement) {
         // `ceilDiv(…)` must happen before multiplication by image height.
-        final int scanlineStride = ceilDiv(multiplyExact(model.getWidth(), targetPixelStride), samplesPerElement);
+        final int scanlineStride = ceilDiv(multiplyExact(model.getWidth(), targetPixelStride), pixelsPerElement);
         return multiplyExact(scanlineStride, model.getHeight());
     }
 
@@ -407,6 +385,8 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * @throws DataStoreException if a logical error occurred.
      * @throws RuntimeException if the Java2D image can not be created for another reason
      *         (too many exception types to list them all).
+     *
+     * @see DataCube#canReadDirect(TiledGridResource.Subset)
      */
     WritableRaster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
                              final int[] subsampling, final Point location) throws IOException, DataStoreException
@@ -432,7 +412,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
         lower[0] *= sourcePixelStride;
         upper[0] *= sourcePixelStride;
         /*
-         * Read each plane ("banks" in Java2D terminology). Note that a single bank contain all bands
+         * Read each plane ("banks" in Java2D terminology). Note that a single bank contains all bands
          * in the interleaved sample model case. This block assumes that each bank element contains
          * exactly one sample value (verified by assertion), as documented in the Javadoc of this method.
          * If that assumption was not true, we would have to adjust `capacity`, `lower[0]` and `upper[0]`
@@ -447,7 +427,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
                         Resources.Keys.UnexpectedTileLength_2, length, byteCounts[b]));
             }
             hr.setOrigin(offsets[b]);
-            assert getSampleSize(b) == sampleSize;                              // See above comment.
+            assert model.getSampleSize(b) == sampleSize;                        // See above comment.
             final Buffer bank = hr.readAsBuffer(region, getBankCapacity(1));
             fillRemainingRows(bank);
             banks[b] = bank;

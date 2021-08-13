@@ -19,7 +19,6 @@ package org.apache.sis.storage.geotiff;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.awt.Point;
-import java.awt.image.RasterFormatException;
 import java.awt.image.WritableRaster;
 import org.apache.sis.internal.storage.TiledGridResource;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
@@ -28,7 +27,6 @@ import org.apache.sis.internal.geotiff.Inflater;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.image.DataType;
 
 import static java.lang.Math.toIntExact;
@@ -201,7 +199,6 @@ final class CompressedSubset extends DataSubset {
                              final int[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final DataType type     = getDataType();
-        final int  typeSize     = type.size();
         final int  width        = pixelCount(lower, upper, subsampling, 0);
         final int  height       = pixelCount(lower, upper, subsampling, 1);
         final int  chunksPerRow = width * (targetPixelStride / samplesPerChunk);
@@ -213,30 +210,26 @@ final class CompressedSubset extends DataSubset {
          * `betweenPixels` is the number of sample values to skip between each pixel, but the actual skips
          * are more complicated if only a subset of the bands are read. The actual number of sample values
          * to skip between "chunks" is detailed by `skipAfterChunks`.
+         *
+         * `pixelsPerElement` below is a factor for converting a count of pixels to a count of primitive elements
+         * in the bank. The `pixelsPerElement` factor is usually 1, except when more than one pixel is packed in
+         * each single primitive type (e.g. 8 bits per byte in bilevel image). The `head` needs to be a multiple
+         * of `pixelsPerElement`; this restriction is documented in `Inflater.skip(long)` and should have been
+         * verified by `TiledGridResource`.
          */
+        final int pixelsPerElement = getPixelsPerElement();                 // Always ≥ 1 and usually = 1.
+        assert (head % pixelsPerElement) == 0 : head;
+        final int capacity = getBankCapacity(pixelsPerElement);
         final Buffer[] banks = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
-            /*
-             * Factor for converting a count of sample values to a count of primitive elements in the bank.
-             * The `samplesPerElement` factor is usually 1, except when more than one pixel is packed
-             * in each single primitive type (e.g. 8 bits per byte in bilevel image).
-             */
-            final int sampleSize = getSampleSize(b);                    // Size in bits of sample values.
-            final int samplesPerElement = typeSize / sampleSize;        // Always ≥ 1 and usually = 1.
-            if (typeSize % sampleSize != 0) {
-                throw new RasterFormatException(reader().errors().getString(
-                        Errors.Keys.NotADivisorOrMultiple_4, "BitsPerSample", 0, typeSize, sampleSize));
-            }
-            // TiledGridResource shall ensure that following `Inflater.skip(long)` restriction is met.
-            assert (head % samplesPerElement) == 0 : head;
             /*
              * Prepare the object which will perform the actual decompression row-by-row,
              * optionally skipping chunks if a subsampling is applied.
              */
-            final Buffer bank = RasterFactory.createBuffer(type, getBankCapacity(samplesPerElement));
+            final Buffer bank = RasterFactory.createBuffer(type, capacity);
             final Inflater algo = Inflater.create(compression, reader().input, offsets[b], byteCounts[b],
                                     getTileSize(0), chunksPerRow, samplesPerChunk, skipAfterChunks,
-                                    samplesPerElement, bank);
+                                    pixelsPerElement, bank);
             if (algo == null) {
                 throw new DataStoreContentException(reader().resources().getString(
                         Resources.Keys.UnsupportedCompressionMethod_1, compression));

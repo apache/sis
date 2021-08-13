@@ -19,8 +19,11 @@ package org.apache.sis.internal.storage;
 import java.util.Map;
 import java.util.Locale;
 import java.io.IOException;
+import java.awt.Point;
+import java.awt.image.DataBuffer;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
+import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import org.opengis.coverage.CannotEvaluateException;
@@ -292,6 +295,50 @@ public abstract class TiledGridCoverage extends GridCoverage {
     }
 
     /**
+     * Returns the number of pixels in a single bank element. This is usually 1, except for
+     * {@link MultiPixelPackedSampleModel} which packs many pixels in a single bank element.
+     * This value is a power of 2 according {@code MultiPixelPackedSampleModel} specification.
+     *
+     * <div class="note"><b>Note:</b>
+     * this is "pixels per element", not "samples per element". It makes a difference in the
+     * {@link java.awt.image.SinglePixelPackedSampleModel} case, for which this method returns 1
+     * (by contrast a "samples per element" would give a value greater than 1).
+     * But this value can nevertheless be understood as a "samples per element" value
+     * where only one band is considered at a time.</div>
+     *
+     * @return number of pixels in a single bank element. Usually 1.
+     *
+     * @see SampleModel#getSampleSize(int)
+     * @see MultiPixelPackedSampleModel#getPixelBitStride()
+     */
+    protected final int getPixelsPerElement() {
+        return getPixelsPerElement(model);
+    }
+
+    /**
+     * Implementation of {@link #getPixelsPerElement()}.
+     *
+     * @param  model  the sample model from which to infer the number of pixels per bank element.
+     * @return number of pixels in a single bank element. Usually 1.
+     */
+    static int getPixelsPerElement(final SampleModel model) {
+        if (model instanceof MultiPixelPackedSampleModel) {
+            /*
+             * The following code performs the same computation than `MultiPixelPackedSampleModel`
+             * constructor when computing its package-private field `pixelsPerDataElement`.
+             * That constructor ensured that `sampleSize` is a divisor of `typeSize`.
+             */
+            final int typeSize   = DataBuffer.getDataTypeSize(model.getDataType());
+            final int sampleSize = ((MultiPixelPackedSampleModel) model).getPixelBitStride();
+            final int pixelsPerElement = typeSize / sampleSize;
+            if (pixelsPerElement > 0) {                         // Paranoiac check.
+                return pixelsPerElement;
+            }
+        }
+        return 1;
+    }
+
+    /**
      * Returns a two-dimensional slice of grid data as a rendered image.
      *
      * @param  sliceExtent  a subspace of this grid coverage extent, or {@code null} for the whole image.
@@ -478,10 +525,15 @@ public abstract class TiledGridCoverage extends GridCoverage {
         public WritableRaster getCachedTile() {
             WritableRaster tile = rasters.get(createCacheKey(indexInTileVector));
             if (tile != null) {
-                // Found a tile. Make sure that the raster starts at the expected coordinates.
+                /*
+                 * Found a tile, but the sample model may be different because band order may be different.
+                 * In both cases, we need to make sure that the raster starts at the expected coordinates.
+                 */
                 final int x = getTileOrigin(0);
                 final int y = getTileOrigin(1);
-                if (tile.getMinX() != x || tile.getMinY() != y) {
+                if (!model.equals(tile.getSampleModel())) {
+                    tile = WritableRaster.createWritableRaster(model, tile.getDataBuffer(), new Point(x, y));
+                } else if (tile.getMinX() != x || tile.getMinY() != y) {
                     tile = tile.createWritableTranslatedChild(x, y);
                 }
             }

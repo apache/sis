@@ -140,7 +140,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
         final SampleModel model = getSampleModel();
         int b = model.getNumBands();
         if (b != 1 && !(model instanceof BandedSampleModel)) {              // First condition (see Javadoc).
-            if (subset.hasBandSubset() || subset.hasSubsampling(0)) {       // Exception to first consition.
+            if (!subset.isXContiguous()) {                                  // Exception to first consition.
                 return false;
             }
         }
@@ -165,7 +165,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
         GridCoverage coverage;
         try {
             synchronized (getSynchronizationLock()) {
-                final Subset subset = new Subset(domain, range, false);
+                final Subset subset = new Subset(domain, range);
                 final Compression compression = getCompression();
                 if (compression == null) {
                     throw new DataStoreContentException(reader.resources().getString(

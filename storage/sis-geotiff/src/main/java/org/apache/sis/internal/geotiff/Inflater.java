@@ -84,31 +84,31 @@ public abstract class Inflater {
      *
      * <h4>Note on sample definition</h4>
      * A "sample" is usually a primitive type such as a byte or a float, but may be a unit smaller than a byte
-     * (e.g. 1 bit) if {@code samplesPerElement} is greater than 1. In that case, the {@link #elementsPerChunk}
-     * and {@link #skipAfterChunks} values will be divided by {@code samplesPerElement}.
+     * (e.g. 1 bit) if {@code pixelsPerElement} is greater than 1. In that case, the {@link #elementsPerChunk}
+     * and {@link #skipAfterChunks} values will be divided by {@code pixelsPerElement}.
      *
-     * @param  input              the source of data to decompress.
-     * @param  chunksPerRow       number of chunks (usually pixels) per row in target image. Must be strictly positive.
-     * @param  samplesPerChunk    number of sample values per chunk (sample or pixel). Must be strictly positive.
-     * @param  skipAfterChunks    number of sample values to skip between chunks. May be empty or null.
-     * @param  samplesPerElement  number of sample values per primitive element. Always 1 except for multi-pixels packed images.
-     * @param  maxChunkSize       maximal value (in number of samples) for the {@link #elementsPerChunk} field.
+     * @param  input             the source of data to decompress.
+     * @param  chunksPerRow      number of chunks (usually pixels) per row in target image. Must be strictly positive.
+     * @param  samplesPerChunk   number of sample values per chunk (sample or pixel). Must be strictly positive.
+     * @param  skipAfterChunks   number of sample values to skip between chunks. May be empty or null.
+     * @param  pixelsPerElement  number of pixels per primitive element. Always 1 except for multi-pixels packed images.
+     * @param  maxChunkSize      maximal value (in number of samples) for the {@link #elementsPerChunk} field.
      */
     protected Inflater(final ChannelDataInput input, int chunksPerRow, int samplesPerChunk,
-                       int[] skipAfterChunks, final int samplesPerElement, final int maxChunkSize)
+                       int[] skipAfterChunks, final int pixelsPerElement, final int maxChunkSize)
     {
         this.input = input;
-        ArgumentChecks.ensureStrictlyPositive("chunksPerRow",      chunksPerRow);
-        ArgumentChecks.ensureStrictlyPositive("samplesPerChunk",   samplesPerChunk);
-        ArgumentChecks.ensureStrictlyPositive("samplesPerElement", samplesPerElement);
+        ArgumentChecks.ensureStrictlyPositive("chunksPerRow",     chunksPerRow);
+        ArgumentChecks.ensureStrictlyPositive("samplesPerChunk",  samplesPerChunk);
+        ArgumentChecks.ensureStrictlyPositive("pixelsPerElement", pixelsPerElement);
         if (skipAfterChunks != null) {
-            if (samplesPerElement != 1) {
+            if (pixelsPerElement != 1) {
                 skipAfterChunks = skipAfterChunks.clone();
                 for (int i=0; i<skipAfterChunks.length; i++) {
                     final int s = skipAfterChunks[i];
                     ArgumentChecks.ensurePositive("skipAfterChunks", s);
-                    ArgumentChecks.ensureMultiple("skipAfterChunks", samplesPerElement, s);
-                    skipAfterChunks[i] /= samplesPerElement;
+                    ArgumentChecks.ensureMultiple("skipAfterChunks", pixelsPerElement, s);
+                    skipAfterChunks[i] /= pixelsPerElement;
                 }
             }
         } else {
@@ -124,8 +124,8 @@ public abstract class Inflater {
                 int i = Arrays.binarySearch(divisors, Numerics.ceilDiv(samplesPerChunk, maxChunkSize));
                 if (i < 0) i = ~i;      // No need for array bound check.
                 /*
-                 * Following loop iterates exactly once unless `samplesPerElement` > 1.
-                 * The intend is to ensure that `samplesPerChunk` is also a divisor of `samplesPerElement`.
+                 * Following loop iterates exactly once unless `pixelsPerElement` > 1.
+                 * The intend is to ensure that `samplesPerChunk` is also a divisor of `pixelsPerElement`.
                  * If we can not find such value, current implementation will fail at `ensureDivisor` call.
                  *
                  * TODO: to avoid this problem, one possible approach could be to force `maxChunkSize` to be
@@ -133,7 +133,7 @@ public abstract class Inflater {
                  */
                 do {
                     chunksPerRow = divisors[i];
-                    if ((samplesPerChunk % (chunksPerRow * samplesPerElement)) == 0) break;
+                    if ((samplesPerChunk % (chunksPerRow * pixelsPerElement)) == 0) break;
                 } while (++i < divisors.length);
                 samplesPerChunk /= chunksPerRow;
             }
@@ -144,9 +144,9 @@ public abstract class Inflater {
          * element boundary.
          */
         if (chunksPerRow != 1) {
-            ArgumentChecks.ensureDivisor("samplesPerElement", samplesPerChunk, samplesPerElement);
+            ArgumentChecks.ensureDivisor("pixelsPerElement", samplesPerChunk, pixelsPerElement);
         }
-        this.elementsPerChunk = ceilDiv(samplesPerChunk, samplesPerElement);
+        this.elementsPerChunk = ceilDiv(samplesPerChunk, pixelsPerElement);
         this.skipAfterChunks  = skipAfterChunks;
         this.chunksPerRow     = chunksPerRow;
     }
@@ -157,26 +157,26 @@ public abstract class Inflater {
      *
      * <h4>Note on sample definition</h4>
      * A "sample" is usually a primitive type such as a byte or a float, but may be a unit smaller than a byte
-     * (e.g. 1 bit) if {@code samplesPerElement} is greater than 1. If that case, the {@link #elementsPerChunk}
-     * and {@link #skipAfterChunks} values will be divided by {@code samplesPerElement}.
+     * (e.g. 1 bit) if {@code pixelsPerElement} is greater than 1. If that case, the {@link #elementsPerChunk}
+     * and {@link #skipAfterChunks} values will be divided by {@code pixelsPerElement}.
      *
-     * @param  compression        the compression method.
-     * @param  input              the source of data to decompress.
-     * @param  start              stream position where to start reading.
-     * @param  byteCount          number of bytes to read before decompression.
-     * @param  sourceWidth        number of pixels in a row of source image.
-     * @param  chunksPerRow       number of chunks (usually pixels) per row in target image. Must be strictly positive.
-     * @param  samplesPerChunk    number of sample values per chunk (sample or pixel). Must be strictly positive.
-     * @param  skipAfterChunks    number of sample values to skip between chunks. May be empty or null.
-     * @param  samplesPerElement  number of sample values per primitive element. Always 1 except for multi-pixels packed images.
-     * @param  banks              where to store sample values.
+     * @param  compression       the compression method.
+     * @param  input             the source of data to decompress.
+     * @param  start             stream position where to start reading.
+     * @param  byteCount         number of bytes to read before decompression.
+     * @param  sourceWidth       number of pixels in a row of source image.
+     * @param  chunksPerRow      number of chunks (usually pixels) per row in target image. Must be strictly positive.
+     * @param  samplesPerChunk   number of sample values per chunk (sample or pixel). Must be strictly positive.
+     * @param  skipAfterChunks   number of sample values to skip between chunks. May be empty or null.
+     * @param  pixelsPerElement  number of pixels per primitive element. Always 1 except for multi-pixels packed images.
+     * @param  banks             where to store sample values.
      * @return the inflater for the given targe type, or {@code null} if the compression method is unknown.
      * @throws IOException if an I/O operation was required and failed.
      */
     public static Inflater create(final Compression compression,
             final ChannelDataInput input, final long start, final long byteCount, final int sourceWidth,
             final int chunksPerRow, final int samplesPerChunk, final int[] skipAfterChunks,
-            final int samplesPerElement, final Buffer banks)
+            final int pixelsPerElement, final Buffer banks)
             throws IOException
     {
         ArgumentChecks.ensureNonNull("input", input);
@@ -184,14 +184,14 @@ public abstract class Inflater {
         final InflaterChannel inflated;
         switch (compression) {
             case NONE: {
-                return CopyFromBytes.create(input, start, chunksPerRow, samplesPerChunk, skipAfterChunks, samplesPerElement, banks);
+                return CopyFromBytes.create(input, start, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement, banks);
             }
             case PACKBITS: inflated = new PackBits(input, start, byteCount); break;
             case CCITTRLE: inflated = new CCITTRLE(input, start, byteCount, sourceWidth); break;
             default: return null;
         }
         return CopyFromBytes.create(inflated.createDataInput(), 0,
-                chunksPerRow, samplesPerChunk, skipAfterChunks, samplesPerElement, banks);
+                chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement, banks);
     }
 
     /**
@@ -205,17 +205,17 @@ public abstract class Inflater {
      * one byte for the first 8 bits, then 2 bits rounded to the next byte boundary.
      *
      * <p>The exact rounding mode depends on the compression algorithm. To avoid erratic behavior, callers shall
-     * restrict <var>n</var> to multiples of {@code samplesPerElement} before to read the first pixel in a row.
+     * restrict <var>n</var> to multiples of {@code pixelsPerElement} before to read the first pixel in a row.
      * This restriction does not apply when skipping remaining data after the last pixels in a row, because the
      * next row will be realigned on an element boundary anyway. The way to perform this realignment depends on
      * the compression, which is the reason why the exact rounding mode may vary with compression algorithms.</p>
      *
-     * <p>Restricting <var>n</var> to multiples of {@code samplesPerElement} implies the following restrictions:</p>
+     * <p>Restricting <var>n</var> to multiples of {@code pixelsPerElement} implies the following restrictions:</p>
      * <ul>
      *   <li>No subsampling on the <var>x</var> axis (however subsampling on other axes is still allowed).</li>
      *   <li>No band subset if interleaved sample model, because the effect is similar to subsampling.</li>
      *   <li>If {@link org.apache.sis.coverage.grid.GridDerivation} is used for computing the sub-region to read,
-     *       it should have been configured with {@code chunkSize(samplesPerElement)}
+     *       it should have been configured with {@code chunkSize(pixelsPerElement)}
      *       (unless chunk size is already used for tile size).</li>
      * </ul>
      *

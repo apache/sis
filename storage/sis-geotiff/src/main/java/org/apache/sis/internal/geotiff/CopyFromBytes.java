@@ -60,30 +60,36 @@ abstract class CopyFromBytes extends Inflater {
     private final int bytesPerElement;
 
     /**
-     * Number of sample values per primitive element.
+     * Number of pixels per primitive element.
      * Always 1 except for multi-pixels packed images.
+     *
+     * <div class="note"><b>Note:</b>
+     * this is "pixels per element", not "samples per element", because the value of this field shall be 1
+     * in the {@link java.awt.image.SinglePixelPackedSampleModel} case (by contrast a "samples per element"
+     * would have a value greater than 1). But this field can nevertheless be understood as a "samples per
+     * element" value where only one band is considered at a time.</div>
      */
-    private final int samplesPerElement;
+    private final int pixelsPerElement;
 
     /**
      * For constructors in inner classes.
      *
-     * @param  input              the source of data to decompress.
-     * @param  start              position in the input stream of the first byte to read.
-     * @param  chunksPerRow       number of chunks (usually pixels) per row in target image. Must be strictly positive.
-     * @param  samplesPerChunk    number of sample values per chunk (sample, pixel or row). Must be strictly positive.
-     * @param  skipAfterChunks    number of sample values to skip between chunks. May be empty or null.
-     * @param  samplesPerElement  number of sample values per primitive element. Always 1 except for multi-pixels packed images.
-     * @param  bytesPerElement    number of bytes in a bank element (a bank element is usually a sample value).
+     * @param  input             the source of data to decompress.
+     * @param  start             position in the input stream of the first byte to read.
+     * @param  chunksPerRow      number of chunks (usually pixels) per row in target image. Must be strictly positive.
+     * @param  samplesPerChunk   number of sample values per chunk (sample, pixel or row). Must be strictly positive.
+     * @param  skipAfterChunks   number of sample values to skip between chunks. May be empty or null.
+     * @param  pixelsPerElement  number of pixels per primitive element. Always 1 except for multi-pixels packed images.
+     * @param  bytesPerElement   number of bytes in a bank element (a bank element is usually a sample value).
      */
     private CopyFromBytes(final ChannelDataInput input, final long start, final int chunksPerRow,
                           final int samplesPerChunk, final int[] skipAfterChunks,
-                          final int samplesPerElement, final int bytesPerElement)
+                          final int pixelsPerElement, final int bytesPerElement)
     {
-        super(input, chunksPerRow, samplesPerChunk, skipAfterChunks, samplesPerElement, input.buffer.capacity() / bytesPerElement);
-        this.streamPosition    = start;
-        this.bytesPerElement   = bytesPerElement;
-        this.samplesPerElement = samplesPerElement;
+        super(input, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement, input.buffer.capacity() / bytesPerElement);
+        this.streamPosition   = start;
+        this.bytesPerElement  = bytesPerElement;
+        this.pixelsPerElement = pixelsPerElement;
     }
 
     /**
@@ -129,7 +135,7 @@ abstract class CopyFromBytes extends Inflater {
      * The given value is in units of sample values, not in bytes.
      *
      * <h4>Case of multi-pixels packed image</h4>
-     * It is caller's responsibility to ensure that <var>n</var> is a multiple of {@link #samplesPerElement}
+     * It is caller's responsibility to ensure that <var>n</var> is a multiple of {@link #pixelsPerElement}
      * if this method is not invoked for skipping all remaining values until end of row.
      * See {@link Inflater#skip(long)} for more information.
      *
@@ -145,12 +151,12 @@ abstract class CopyFromBytes extends Inflater {
             }
             /*
              * Convert number of sample values to number of elements, then to number of bytes.
-             * The number of sample values to skip shall be a multiple of `samplesPerElement`,
+             * The number of sample values to skip shall be a multiple of `pixelsPerElement`,
              * except when skipping all remaining values until end of row. We do not verify
              * because this method does not know when the row ends.
              */
-            final boolean r = (n % samplesPerElement) > 0;
-            n /= samplesPerElement; if (r) n++;             // Round after division to next element boundary.
+            final boolean r = (n % pixelsPerElement) > 0;
+            n /= pixelsPerElement; if (r) n++;              // Round after division to next element boundary.
             n *= bytesPerElement;                           // Must be multiplied only after above rounding.
             streamPosition = Math.addExact(streamPosition, n);
         }
