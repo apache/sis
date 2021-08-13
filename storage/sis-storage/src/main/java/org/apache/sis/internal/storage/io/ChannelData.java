@@ -126,6 +126,21 @@ public abstract class ChannelData implements Markable {
     }
 
     /**
+     * Implementation of {@link ChannelDataInput#readBit()} provided here for performance reasons.
+     * It is caller responsibility to ensure that the {@link #buffer} contains at least one byte.
+     */
+    final int readBitFromBuffer() {
+        final int bp = buffer.position();
+        final long position = Math.addExact(bufferOffset, bp);
+        if ((bitPosition >>> BIT_OFFSET_SIZE) != position) {
+            bitPosition = position << BIT_OFFSET_SIZE;
+        }
+        final int bitOffset = (Byte.SIZE - 1) - (int) (bitPosition++ & ((1L << BIT_OFFSET_SIZE) - 1));
+        final byte value = (bitOffset != 0) ? buffer.get(bp) : buffer.get();
+        return (value & (1 << bitOffset)) == 0 ? 0 : 1;
+    }
+
+    /**
      * Returns the current bit offset, as an integer between 0 and 7 inclusive.
      *
      * <p>According {@link javax.imageio.stream.ImageInputStream} contract, the bit offset shall be reset to 0

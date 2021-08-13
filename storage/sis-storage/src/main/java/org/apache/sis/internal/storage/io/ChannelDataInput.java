@@ -212,7 +212,8 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException if an error occurred while reading (including EOF).
      */
     public final int readBit() throws IOException {
-        return (int) readBits(1);
+        ensureBufferContains(Byte.BYTES);
+        return readBitFromBuffer();
     }
 
     /**
