@@ -207,7 +207,7 @@ final class ImageFileDirectory extends DataCube {
      *
      * Value 1 is mapped to {@code false} and 2 is mapped to {@code true}.
      */
-    private boolean reverseBitsOrder;
+    private boolean isBitOrderReversed;
 
     /**
      * Number of bits per component.
@@ -574,8 +574,8 @@ final class ImageFileDirectory extends DataCube {
             case Tags.FillOrder: {
                 final int value = type.readInt(input(), count);
                 switch (value) {
-                    case 1: reverseBitsOrder = false; break;
-                    case 2: reverseBitsOrder = true;  break;
+                    case 1: isBitOrderReversed = false; break;
+                    case 2: isBitOrderReversed = true;  break;
                     default: return value;                  // Cause a warning to be reported by the caller.
                 }
                 break;
@@ -1565,6 +1565,15 @@ final class ImageFileDirectory extends DataCube {
     @Override
     Vector[] getTileArrayInfo() {
         return new Vector[] {tileOffsets, tileByteCounts};
+    }
+
+    /**
+     * Returns {@code true} if {@link Integer#reverseBytes(int)} should be invoked on each byte read.
+     * This mode is very rare and should apply only to uncompressed image or CCITT 1D/2D compressions.
+     */
+    @Override
+    boolean isBitOrderReversed() {
+        return isBitOrderReversed;
     }
 
     /**

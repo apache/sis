@@ -227,7 +227,7 @@ final class CompressedSubset extends DataSubset {
              * optionally skipping chunks if a subsampling is applied.
              */
             final Buffer bank = RasterFactory.createBuffer(type, capacity);
-            final Inflater algo = Inflater.create(compression, reader().input, offsets[b], byteCounts[b],
+            final Inflater algo = Inflater.create(compression, input(), offsets[b], byteCounts[b],
                                     getTileSize(0), chunksPerRow, samplesPerChunk, skipAfterChunks,
                                     pixelsPerElement, bank);
             if (algo == null) {

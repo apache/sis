@@ -110,6 +110,12 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     abstract Vector[] getTileArrayInfo();
 
     /**
+     * Returns {@code true} if {@link Integer#reverseBytes(int)} should be invoked on each byte read.
+     * This mode is very rare and should apply only to uncompressed image or CCITT 1D/2D compressions.
+     */
+    abstract boolean isBitOrderReversed();
+
+    /**
      * Returns the compression method, or {@code null} if unspecified.
      */
     abstract Compression getCompression();

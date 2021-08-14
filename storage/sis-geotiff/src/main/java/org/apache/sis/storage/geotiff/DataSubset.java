@@ -33,6 +33,7 @@ import org.apache.sis.internal.storage.TiledGridCoverage;
 import org.apache.sis.internal.storage.TiledGridResource;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Localized;
@@ -212,6 +213,18 @@ class DataSubset extends TiledGridCoverage implements Localized {
      */
     final Reader reader() {
         return source.reader;
+    }
+
+    /**
+     * Returns the input of bytes for compressed raster data. If the TIFF tag {@code FillOrder} is 2
+     * (which should be very rare), the input stream reverse the order of all bits in each byte.
+     */
+    final ChannelDataInput input() throws IOException {
+        ChannelDataInput input = reader().input;
+        if (source.isBitOrderReversed()) {
+            input = ReversedBitsChannel.wrap(input);
+        }
+        return input;
     }
 
     /**
@@ -418,7 +431,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * If that assumption was not true, we would have to adjust `capacity`, `lower[0]` and `upper[0]`
          * (we may do that as an optimization in a future version).
          */
-        final HyperRectangleReader hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(type.toDataBufferType()), reader().input);
+        final HyperRectangleReader hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(type.toDataBufferType()), input());
         final Region region = new Region(size, lower, upper, subsampling);
         final Buffer[] banks = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
