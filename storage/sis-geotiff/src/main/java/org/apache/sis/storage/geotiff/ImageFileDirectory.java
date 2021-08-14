@@ -812,6 +812,40 @@ final class ImageFileDirectory extends DataCube {
             ////////////////////////////////////////////////////////////////////////////////////////////////
 
             /*
+             * The name of the document from which this image was scanned.
+             */
+            case Tags.DocumentName: {
+                for (final String value : type.readString(input(), count, encoding())) {
+                    reader.metadata.addSeries(value);
+                }
+                break;
+            }
+            /*
+             * The name of the page from which this image was scanned.
+             */
+            case Tags.PageName: {
+                for (final String value : type.readString(input(), count, encoding())) {
+                    reader.metadata.addPage(value);
+                }
+                break;
+            }
+            /*
+             * The page number of the page from which this image was scanned.
+             * Should be a vector of length 2 containing the page number and
+             * the total number of pages (with 0 meaning unavailable).
+             */
+            case Tags.PageNumber: {
+                final Vector v = type.readVector(input(), count);
+                int p = 0, n = 0;
+                switch (v.size()) {
+                    default: n = v.intValue(1);     // Fall through
+                    case 1:  p = v.intValue(0);
+                    case 0:  break;
+                }
+                reader.metadata.addPage(p, n);
+                break;
+            }
+            /*
              * A string that describes the subject of the image.
              * For example, a user may wish to attach a comment such as "1988 company picnic" to an image.
              */

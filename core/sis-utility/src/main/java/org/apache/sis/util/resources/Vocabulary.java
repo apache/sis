@@ -945,6 +945,16 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Others = 157;
 
         /**
+         * Page {0}
+         */
+        public static final short Page_1 = 254;
+
+        /**
+         * Page {0} of {1}
+         */
+        public static final short Page_2 = 255;
+
+        /**
          * {0} ({1})
          */
         public static final short Parenthesis_2 = 158;

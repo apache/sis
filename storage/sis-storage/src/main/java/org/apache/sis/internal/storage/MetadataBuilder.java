@@ -96,6 +96,7 @@ import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
+import org.apache.sis.metadata.iso.citation.DefaultSeries;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
@@ -128,6 +129,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
@@ -267,6 +269,19 @@ public class MetadataBuilder {
             citation = new DefaultCitation();
         }
         return citation;
+    }
+
+    /**
+     * Returns the information about the series, or aggregate dataset, of which the dataset is a part.
+     */
+    private DefaultSeries series() {
+        final DefaultCitation citation = citation();
+        DefaultSeries series = DefaultSeries.castOrCopy(citation.getSeries());
+        if (series == null) {
+            series = new DefaultSeries();
+            citation.setSeries(series);
+        }
+        return series;
     }
 
     /**
@@ -1216,6 +1231,60 @@ public class MetadataBuilder {
         if (i18n != null) {
             final DefaultCitation citation = citation();
             citation.setEdition(append(citation.getEdition(), i18n));
+        }
+    }
+
+    /**
+     * Adds the name of the series, or aggregate dataset, of which the dataset is a part.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/citation/series/name}</li>
+     * </ul>
+     *
+     * @param  name  name of the series, or {@code null} for no-operation.
+     */
+    public final void addSeries(final CharSequence name) {
+        final InternationalString i18n = trim(name);
+        if (i18n != null) {
+            final DefaultSeries series = series();
+            series.setName(append(series.getName(), i18n));
+        }
+    }
+
+    /**
+     * Adds details on which pages of the publication the article was published.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/citation/series/page}</li>
+     * </ul>
+     *
+     * @param  page  the page, or {@code null} for no-operation.
+     */
+    public final void addPage(final CharSequence page) {
+        final InternationalString i18n = trim(page);
+        if (i18n != null) {
+            final DefaultSeries series = series();
+            series.setPage(append(series.getPage(), i18n));
+        }
+    }
+
+    /**
+     * Adds details on which pages of the publication the article was published.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/citation/series/page}</li>
+     * </ul>
+     *
+     * @param  page   the page number, or 0 or negative for no-operation.
+     * @param  total  the total number of pages, or 0 or negative if unknown.
+     */
+    public final void addPage(final int page, final int total) {
+        if (page > 0) {
+            addPage(Vocabulary.formatInternational(
+                    (total > 0) ? Vocabulary.Keys.Page_2 : Vocabulary.Keys.Page_1, page, total));
         }
     }
 
