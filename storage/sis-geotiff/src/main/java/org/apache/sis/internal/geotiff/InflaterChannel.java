@@ -64,9 +64,11 @@ abstract class InflaterChannel implements ReadableByteChannel {
     /**
      * Creates the data input stream to use for getting uncompressed data.
      * The {@linkplain #input} stream must be on the start position before to invoke this method.
+     *
+     * @param  channel  the channel to wrap. This is {@code this} unless a {@link Predictor} is applied.
      */
-    final ChannelDataInput createDataInput() throws IOException {
-        return new ChannelDataInput(input.filename, this, ByteBuffer.allocate(BUFFER_SIZE), false);
+    final ChannelDataInput createDataInput(final ReadableByteChannel channel) throws IOException {
+        return new ChannelDataInput(input.filename, channel, ByteBuffer.allocate(BUFFER_SIZE), false);
     }
 
     /**

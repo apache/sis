@@ -26,9 +26,7 @@ import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.internal.geotiff.Compression;
 import org.apache.sis.internal.geotiff.Predictor;
 import org.apache.sis.internal.geotiff.Inflater;
-import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.image.DataType;
 
 import static java.lang.Math.toIntExact;
@@ -44,16 +42,6 @@ import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
  * @module
  */
 final class CompressedSubset extends DataSubset {
-    /**
-     * The compression method.
-     */
-    private final Compression compression;
-
-    /**
-     * The mathematical operator that is applied to the image data before an encoding scheme is applied.
-     */
-    private final Predictor predictor;
-
     /**
      * Number of sample values to skip for moving to the next row of a tile in the GeoTIFF file.
      * This is not necessarily the same scanline stride than for the tiles created by this class.
@@ -111,20 +99,15 @@ final class CompressedSubset extends DataSubset {
      * by {@link ImageFileDirectory#validateMandatoryTags()} before this call.
      * This constructor should be invoked inside a synchronized block.
      *
-     * @param  source       the resource which contain this {@code DataSubset}.
-     * @param  subset       description of the {@code owner} subset to cover.
-     * @param  rasters      potentially shared cache of rasters read by this {@code DataSubset}.
-     * @param  compression  the compression method.
-     * @param  predictor    the mathematical operator applied to image data before compression.
+     * @param  source   the resource which contain this {@code DataSubset}.
+     * @param  subset   description of the {@code owner} subset to cover.
+     * @param  rasters  potentially shared cache of rasters read by this {@code DataSubset}.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
-    CompressedSubset(final DataCube source, final TiledGridResource.Subset subset,
-                     final Compression compression, final Predictor predictor)
+    CompressedSubset(final DataCube source, final TiledGridResource.Subset subset)
             throws DataStoreException
     {
         super(source, subset);
-        this.compression  = compression;
-        this.predictor    = predictor;
         scanlineStride    = multiplyFull(getTileSize(0), sourcePixelStride);
         final int between = sourcePixelStride * (getSubsampling(0) - 1);
         int afterLastBand = sourcePixelStride * (getTileSize(0) - 1);
@@ -229,27 +212,20 @@ final class CompressedSubset extends DataSubset {
          */
         final int pixelsPerElement = getPixelsPerElement();                 // Always ≥ 1 and usually = 1.
         assert (head % pixelsPerElement) == 0 : head;
-        final int capacity = getBankCapacity(pixelsPerElement);
-        final Buffer[] banks = new Buffer[numBanks];
-        final ChannelDataInput input = input();
+        final int              capacity    = getBankCapacity(pixelsPerElement);
+        final Buffer[]         banks       = new Buffer[numBanks];
+        final ChannelDataInput input       = input();
+        final Compression      compression = source.getCompression();
+        final Predictor        predictor   = source.getPredictor();
         for (int b=0; b<numBanks; b++) {
             /*
              * Prepare the object which will perform the actual decompression row-by-row,
              * optionally skipping chunks if a subsampling is applied.
              */
             final Buffer bank = RasterFactory.createBuffer(type, capacity);
-            final Inflater algo = Inflater.create(compression, input, offsets[b], byteCounts[b],
-                                    getTileSize(0), chunksPerRow, samplesPerChunk, skipAfterChunks,
-                                    pixelsPerElement, bank);
-            if (algo == null) {
-                throw new DataStoreContentException(reader().resources().getString(
-                        Resources.Keys.UnsupportedCompressionMethod_1, compression));
-            }
-            // TODO: Add predictor handling here.
-            if (predictor != Predictor.NONE) {
-                throw new DataStoreContentException(reader().resources().getString(
-                        Resources.Keys.UnsupportedPredictor_1, predictor));
-            }
+            final Inflater algo = Inflater.create(compression, predictor, input, offsets[b], byteCounts[b],
+                    sourcePixelStride, getTileSize(0), chunksPerRow, samplesPerChunk, skipAfterChunks,
+                    pixelsPerElement, bank, this);
             for (long y = lower[1]; --y >= 0;) {
                 algo.skip(scanlineStride);          // `skip(…)` may round to next element boundary.
             }

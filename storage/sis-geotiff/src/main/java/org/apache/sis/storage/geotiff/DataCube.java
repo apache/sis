@@ -184,16 +184,15 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
                     throw new DataStoreContentException(reader.resources().getString(
                             Resources.Keys.MissingValue_2, Tags.name(Tags.Compression)));
                 }
-                final Predictor predictor = getPredictor();
                 /*
                  * The `DataSubset` parent class is the most efficient but has many limitations
                  * documented in the javadoc of its `readSlice(…)` method. If any pre-condition
                  * is not met, we need to fallback on the less direct `CompressedSubset` class.
                  */
-                if (compression == Compression.NONE && predictor == Predictor.NONE && canReadDirect(subset)) {
+                if (compression == Compression.NONE && getPredictor() == Predictor.NONE && canReadDirect(subset)) {
                     coverage = new DataSubset(this, subset);
                 } else {
-                    coverage = new CompressedSubset(this, subset, compression, predictor);
+                    coverage = new CompressedSubset(this, subset);
                 }
                 coverage = preload(coverage);
             }

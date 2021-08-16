@@ -165,6 +165,32 @@ public final class JDK9 {
     }
 
     /**
+     * Place holder for {@code ByteBuffer.get(int, byte[])}.
+     *
+     * @param  b     the buffer from which to get bytes.
+     * @param  index index from which the first byte will be read.
+     * @param  dst   destination array
+     */
+    public static void get(final ByteBuffer b, int index, final byte[] dst) {
+        JDK9.get(b, index, dst, 0, dst.length);
+    }
+
+    /**
+     * Place holder for {@code ByteBuffer.get(int, byte[], int, int)}.
+     *
+     * @param  b       the buffer from which to get bytes.
+     * @param  index   index from which the first byte will be read.
+     * @param  dst     destination array
+     * @param  offset  offset in the array of the first byte to write.
+     * @param  length  number of bytes to write.
+     */
+    public static void get(final ByteBuffer b, final int index, final byte[] dst, final int offset, final int length) {
+        for (int i=0; i<length; i++) {
+            dst[offset + i] = b.get(index + i);
+        }
+    }
+
+    /**
      * Place holder for {@code Class.getPackageName()}.
      *
      * @param  c  the class for which to get the package name.

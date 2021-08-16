@@ -25,6 +25,7 @@ import java.nio.LongBuffer;
 import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 
@@ -103,10 +104,11 @@ abstract class CopyFromBytes extends Inflater {
      * @param  divisor  factor by which to divide sample size values. Always ≥ 1 and usually = 1.
      * @param  banks    where to store sample values.
      * @return the inflater for the given targe type.
-     * @throws IllegalArgumentException if the buffer type is not recognized.
+     * @throws UnsupportedEncodingException if the buffer type is not recognized.
      */
     public static CopyFromBytes create(final ChannelDataInput input, final long start,
             final int count, final int size, final int[] skips, final int divisor, final Buffer banks)
+            throws UnsupportedEncodingException
     {
         if (banks instanceof   ByteBuffer) return new Bytes  (input, start, count, size, skips, divisor,   (ByteBuffer) banks);
         if (banks instanceof  ShortBuffer) return new Shorts (input, start, count, size, skips, divisor,  (ShortBuffer) banks);
@@ -114,7 +116,7 @@ abstract class CopyFromBytes extends Inflater {
         if (banks instanceof   LongBuffer) return new Longs  (input, start, count, size, skips, divisor,   (LongBuffer) banks);
         if (banks instanceof  FloatBuffer) return new Floats (input, start, count, size, skips, divisor,  (FloatBuffer) banks);
         if (banks instanceof DoubleBuffer) return new Doubles(input, start, count, size, skips, divisor, (DoubleBuffer) banks);
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(banks)));
+        throw new UnsupportedEncodingException(Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(banks)));
     }
 
     /**

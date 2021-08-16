@@ -72,7 +72,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * The resource which contain this {@code DataSubset}.
      * Used for fetching information like the input channel and where to report warnings.
      */
-    private final DataCube source;
+    final DataCube source;
 
     /**
      * For each tile, the byte offset of that tile as compressed and stored on disk.
@@ -208,18 +208,11 @@ class DataSubset extends TiledGridCoverage implements Localized {
     }
 
     /**
-     * Returns the GeoTIFF reader which contains this subset.
-     */
-    final Reader reader() {
-        return source.reader;
-    }
-
-    /**
      * Returns the input of bytes for compressed raster data. If the TIFF tag {@code FillOrder} is 2
      * (which should be very rare), the input stream reverse the order of all bits in each byte.
      */
     final ChannelDataInput input() throws IOException {
-        ChannelDataInput input = reader().input;
+        ChannelDataInput input = source.reader.input;
         if (source.isBitOrderReversed()) {
             input = ReversedBitsChannel.wrap(input);
         }
@@ -342,7 +335,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
                     tile.copyTileInfo(tileOffsets,    offsets,    includedBanks, numTiles);
                     tile.copyTileInfo(tileByteCounts, byteCounts, includedBanks, numTiles);
                     for (int b=0; b<offsets.length; b++) {
-                        offsets[b] = addExact(offsets[b], reader().origin);
+                        offsets[b] = addExact(offsets[b], source.reader.origin);
                     }
                     WritableRaster r = readSlice(offsets, byteCounts, lower, upper, subsampling, origin);
                     result[tile.indexInResultArray] = tile.cache(r);
@@ -435,7 +428,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
         final Buffer[] banks = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
             if (b < byteCounts.length && length > byteCounts[b]) {
-                throw new DataStoreContentException(reader().resources().getString(
+                throw new DataStoreContentException(source.reader.resources().getString(
                         Resources.Keys.UnexpectedTileLength_2, length, byteCounts[b]));
             }
             hr.setOrigin(offsets[b]);

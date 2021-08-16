@@ -16,13 +16,16 @@
  */
 package org.apache.sis.internal.geotiff;
 
-import java.nio.Buffer;
-import java.io.IOException;
 import java.util.Arrays;
+import java.io.IOException;
+import java.nio.Buffer;
+import java.nio.channels.ReadableByteChannel;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Localized;
 
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
 
@@ -160,39 +163,63 @@ public abstract class Inflater {
      * (e.g. 1 bit) if {@code pixelsPerElement} is greater than 1. If that case, the {@link #elementsPerChunk}
      * and {@link #skipAfterChunks} values will be divided by {@code pixelsPerElement}.
      *
-     * @param  compression       the compression method.
-     * @param  input             the source of data to decompress.
-     * @param  start             stream position where to start reading.
-     * @param  byteCount         number of bytes to read before decompression.
-     * @param  sourceWidth       number of pixels in a row of source image.
-     * @param  chunksPerRow      number of chunks (usually pixels) per row in target image. Must be strictly positive.
-     * @param  samplesPerChunk   number of sample values per chunk (sample or pixel). Must be strictly positive.
-     * @param  skipAfterChunks   number of sample values to skip between chunks. May be empty or null.
-     * @param  pixelsPerElement  number of pixels per primitive element. Always 1 except for multi-pixels packed images.
-     * @param  banks             where to store sample values.
-     * @return the inflater for the given targe type, or {@code null} if the compression method is unknown.
+     * @param  compression        the compression method.
+     * @param  predictor          the mathematical operator to apply after decompression.
+     * @param  input              the source of data to decompress.
+     * @param  start              stream position where to start reading.
+     * @param  byteCount          number of bytes to read before decompression.
+     * @param  sourcePixelStride  number of sample values per pixel in the source image.
+     * @param  sourceWidth        number of pixels in a row of source image.
+     * @param  chunksPerRow       number of chunks (usually pixels) per row in target image. Must be strictly positive.
+     * @param  samplesPerChunk    number of sample values per chunk (sample or pixel). Must be strictly positive.
+     * @param  skipAfterChunks    number of sample values to skip between chunks. May be empty or null.
+     * @param  pixelsPerElement   number of pixels per primitive element. Always 1 except for multi-pixels packed images.
+     * @param  banks              where to store sample values.
+     * @param  caller             locale to use if an error message must be provided.
+     * @return the inflater for the given targe type.
      * @throws IOException if an I/O operation was required and failed.
+     * @throws UnsupportedEncodingException if the compression, predictor or data type is unsupported.
      */
-    public static Inflater create(final Compression compression,
-            final ChannelDataInput input, final long start, final long byteCount, final int sourceWidth,
+    public static Inflater create(final Compression compression, final Predictor predictor,
+            final ChannelDataInput input, final long start, final long byteCount,
+            final int sourcePixelStride, final int sourceWidth,
             final int chunksPerRow, final int samplesPerChunk, final int[] skipAfterChunks,
-            final int pixelsPerElement, final Buffer banks)
-            throws IOException
+            final int pixelsPerElement, final Buffer banks, final Localized caller)
+            throws IOException, UnsupportedEncodingException
     {
         ArgumentChecks.ensureNonNull("input", input);
         ArgumentChecks.ensureNonNull("banks", banks);
         final InflaterChannel inflated;
         switch (compression) {
-            case NONE: {
-                return CopyFromBytes.create(input, start, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement, banks);
-            }
             case LZW:      inflated = new LZW     (input, start, byteCount); break;
             case PACKBITS: inflated = new PackBits(input, start, byteCount); break;
             case CCITTRLE: inflated = new CCITTRLE(input, start, byteCount, sourceWidth); break;
-            default: return null;
+            case NONE: {
+                if (predictor == Predictor.NONE) {
+                    return CopyFromBytes.create(input, start,
+                            chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement, banks);
+                }
+                throw unsupportedEncoding(Resources.Keys.UnsupportedPredictor_1, predictor, caller);
+            }
+            default: {
+                throw unsupportedEncoding(Resources.Keys.UnsupportedCompressionMethod_1, compression, caller);
+            }
         }
-        return CopyFromBytes.create(inflated.createDataInput(), 0,
+        final ReadableByteChannel channel;
+        switch (predictor) {
+            case NONE:       channel = inflated; break;
+            case HORIZONTAL: channel = new HorizontalPredictor(inflated, sourcePixelStride, sourceWidth); break;
+            default: throw unsupportedEncoding(Resources.Keys.UnsupportedPredictor_1, predictor, caller);
+        }
+        return CopyFromBytes.create(inflated.createDataInput(channel), 0,
                 chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement, banks);
+    }
+
+    /**
+     * Returns the exception to throw for an unsupported compression or predictor.
+     */
+    private static UnsupportedEncodingException unsupportedEncoding(final short key, final Enum<?> value, final Localized caller) {
+        return new UnsupportedEncodingException(Resources.forLocale(caller.getLocale()).getString(key, value));
     }
 
     /**
