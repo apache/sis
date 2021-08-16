@@ -91,4 +91,12 @@ abstract class InflaterChannel implements ReadableByteChannel {
     @Override
     public final void close() {
     }
+
+    /**
+     * Returns the resources for error messages. Current implementation does not know the locale.
+     * But if this information become known in a future version, this is the code to update.
+     */
+    final Resources resources() {
+        return Resources.forLocale(null);
+    }
 }

@@ -80,6 +80,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ConstantValueRequired_3 = 3;
 
         /**
+         * Unexpected data for “{1}” compression in the “{0}” file.
+         */
+        public static final short CorruptedCompression_2 = 31;
+
+        /**
          * No value specified for the “{0}” TIFF tag. The {1} default value will be used.
          */
         public static final short DefaultValueForAttribute_2 = 4;

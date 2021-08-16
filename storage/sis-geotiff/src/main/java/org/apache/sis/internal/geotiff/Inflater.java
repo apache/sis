@@ -186,6 +186,7 @@ public abstract class Inflater {
             case NONE: {
                 return CopyFromBytes.create(input, start, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement, banks);
             }
+            case LZW:      inflated = new LZW     (input, start, byteCount); break;
             case PACKBITS: inflated = new PackBits(input, start, byteCount); break;
             case CCITTRLE: inflated = new CCITTRLE(input, start, byteCount, sourceWidth); break;
             default: return null;
