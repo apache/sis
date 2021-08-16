@@ -26,6 +26,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.internal.geotiff.Predictor;
 import org.apache.sis.internal.geotiff.Compression;
 import org.apache.sis.internal.storage.TiledGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
@@ -121,6 +122,12 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     abstract Compression getCompression();
 
     /**
+     * Returns the mathematical operator that is applied to the image data before an encoding scheme is applied.
+     * Should never be null; the default value is {@link Predictor#NONE}.
+     */
+    abstract Predictor getPredictor();
+
+    /**
      * Returns {@code true} if the image can be read with the {@link DataSubset} base class,
      * or {@code false} if the more sophisticated {@link CompressedSubset} sub-class is needed.
      * The {@link DataSubset#readSlice readSlice(…)} implementation in {@link DataSubset} base
@@ -177,15 +184,16 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
                     throw new DataStoreContentException(reader.resources().getString(
                             Resources.Keys.MissingValue_2, Tags.name(Tags.Compression)));
                 }
+                final Predictor predictor = getPredictor();
                 /*
                  * The `DataSubset` parent class is the most efficient but has many limitations
                  * documented in the javadoc of its `readSlice(…)` method. If any pre-condition
                  * is not met, we need to fallback on the less direct `CompressedSubset` class.
                  */
-                if (compression == Compression.NONE && canReadDirect(subset)) {
+                if (compression == Compression.NONE && predictor == Predictor.NONE && canReadDirect(subset)) {
                     coverage = new DataSubset(this, subset);
                 } else {
-                    coverage = new CompressedSubset(this, subset, compression);
+                    coverage = new CompressedSubset(this, subset, compression, predictor);
                 }
                 coverage = preload(coverage);
             }

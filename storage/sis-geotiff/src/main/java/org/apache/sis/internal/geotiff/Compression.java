@@ -18,7 +18,7 @@ package org.apache.sis.internal.geotiff;
 
 
 /**
- * Possible values for {@link Tags#Compression}.
+ * Possible values for {@link org.apache.sis.storage.geotiff.Tags#Compression}.
  * Data compression applies only to raster image data. All other TIFF fields are unaffected.
  *
  * <p>Except otherwise noted, field names in this class are upper-case variant of the names
@@ -112,7 +112,12 @@ public enum Compression {
     /** Unsupported. */ JBIG(34661),
     /** Unsupported. */ SGILOG(34676),
     /** Unsupported. */ SGILOG24(34677),
-    /** Unsupported. */ JP2000(34712);
+    /** Unsupported. */ JP2000(34712),
+
+    /**
+     * Sentinel value for unknown projection.
+     */
+    UNKNOWN(0);
 
     /**
      * The TIFF code for this compression.
@@ -127,10 +132,10 @@ public enum Compression {
     }
 
     /**
-     * Returns the compression method for the given GeoTIFF code, or {@code null} if none.
+     * Returns the compression method for the given GeoTIFF code, or {@code UNKNOWN} if none.
      *
      * @param  code  the TIFF code for which to get a compression enumeration value.
-     * @return enumeration value for the given code, or {@code null} if none.
+     * @return enumeration value for the given code, or {@link #UNKNOWN} if none.
      */
     public static Compression valueOf(final long code) {
         if ((code & ~0xFFFF) == 0) {                // Should be a short according TIFF specification.
@@ -152,6 +157,6 @@ public enum Compression {
                 }
             }
         }
-        return null;
+        return UNKNOWN;
     }
 }

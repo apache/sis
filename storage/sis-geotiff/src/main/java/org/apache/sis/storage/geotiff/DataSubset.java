@@ -133,15 +133,14 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * by {@link ImageFileDirectory#validateMandatoryTags()} before this call.
      * This constructor should be invoked inside a synchronized block.
      *
-     * @param  source   the resource which contain this {@code DataSubset}.
-     * @param  subset   description of the {@code owner} subset to cover.
-     * @param  rasters  potentially shared cache of rasters read by this {@code DataSubset}.
+     * @param  source  the resource which contain this {@code DataSubset}.
+     * @param  subset  description of the {@code owner} subset to cover.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
     DataSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
         super(subset);
-        this.source   = source;
-        this.numTiles = toIntExact(source.getNumTiles());
+        this.source    = source;
+        this.numTiles  = toIntExact(source.getNumTiles());
         final Vector[] tileArrayInfo = source.getTileArrayInfo();
         this.tileOffsets    = tileArrayInfo[0];
         this.tileByteCounts = tileArrayInfo[1];

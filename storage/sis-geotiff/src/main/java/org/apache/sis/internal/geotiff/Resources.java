@@ -199,6 +199,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnsupportedGeoKeyStorage_1 = 21;
 
         /**
+         * Differencing predictor “{0}” is unsupported.
+         */
+        public static final short UnsupportedPredictor_1 = 30;
+
+        /**
          * TIFF file “{0}” uses an unsupported map projection.
          */
         public static final short UnsupportedProjectionMethod_1 = 23;

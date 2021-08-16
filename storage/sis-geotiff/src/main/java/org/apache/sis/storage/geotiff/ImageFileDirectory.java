@@ -37,6 +37,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.internal.geotiff.Predictor;
 import org.apache.sis.internal.geotiff.Compression;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
@@ -178,7 +179,7 @@ final class ImageFileDirectory extends DataCube {
     /**
      * Whether the tiling was specified using the {@code Tile*} family of TIFF tags or the {@code Strip*}
      * family of tags. Value can be {@link #TILE}, {@link #STRIP} or 0 if unspecified. This field is used
-     * for error detection since Each TIFF file shall use exactly one family of tags.
+     * for error detection since each TIFF file shall use exactly one family of tags.
      */
     private byte tileTagFamily;
 
@@ -340,12 +341,25 @@ final class ImageFileDirectory extends DataCube {
     private double noData = Double.NaN;
 
     /**
-     * The compression method, or {@code null} if unknown. If the compression method is unknown
+     * The compression method, or {@code null} if unspecified. If the compression method is unknown
      * or unsupported we can not read the image, but we still can read the metadata.
      *
      * @see #getCompression()
      */
     private Compression compression;
+
+    /**
+     * Mathematical operator that is applied to the image data before an encoding scheme is applied.
+     * This is used mostly with LZW compression. Current values are:
+     *
+     * <ul>
+     *   <li>1: No prediction scheme used before coding.</li>
+     *   <li>2: Horizontal differencing.</li>
+     * </ul>
+     *
+     * @see #getPredictor()
+     */
+    private Predictor predictor;
 
     /**
      * A helper class for building Coordinate Reference System and complete related metadata.
@@ -562,7 +576,19 @@ final class ImageFileDirectory extends DataCube {
             case Tags.Compression: {
                 final long value = type.readLong(input(), count);
                 compression = Compression.valueOf(value);
-                if (compression == null) {
+                if (compression == Compression.UNKNOWN) {
+                    return value;                           // Cause a warning to be reported by the caller.
+                }
+                break;
+            }
+            /*
+             * Mathematical operator that is applied to the image data before an encoding scheme is applied.
+             * 1=none, 2=horizontal differencing. More values may be added in the future.
+             */
+            case Tags.Predictor: {
+                final int value = type.readInt(input(), count);
+                predictor = Predictor.valueOf(value);
+                if (predictor == Predictor.UNKNOWN) {
                     return value;                           // Cause a warning to be reported by the caller.
                 }
                 break;
@@ -941,7 +967,7 @@ final class ImageFileDirectory extends DataCube {
              *   3 = Centimeter.
              */
             case Tags.ResolutionUnit: {
-                final short unit = type.readShort(input(), count);
+                final int unit = type.readInt(input(), count);
                 switch (unit) {
                     case 1:  resolutionUnit = null;             break;
                     case 2:  resolutionUnit = Units.INCH;       break;
@@ -1582,6 +1608,14 @@ final class ImageFileDirectory extends DataCube {
     @Override
     Compression getCompression() {
         return compression;
+    }
+
+    /**
+     * Returns the mathematical operator that is applied to the image data before an encoding scheme is applied.
+     */
+    @Override
+    Predictor getPredictor() {
+        return (predictor != null) ? predictor : Predictor.NONE;
     }
 
     /**
