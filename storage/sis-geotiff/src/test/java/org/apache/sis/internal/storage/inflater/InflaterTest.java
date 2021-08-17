@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.geotiff;
+package org.apache.sis.internal.storage.inflater;
 
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   0.8
+ * @since   1.1
  * @module
  */
 public final strictfp class InflaterTest extends TestCase {

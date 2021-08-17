@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.geotiff;
+package org.apache.sis.internal.storage.inflater;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.internal.jdk9.JDK9;
 
@@ -27,14 +28,14 @@ import org.apache.sis.internal.jdk9.JDK9;
  * <p><b>Note:</b> if we want to support 16 bits, 32 bits <i>etc.</i> sample values,
  * the main difficulty is that if there buffer ends in the middle of a sample value,
  * we need to stop the processing before that last value and stores it somewhere for
- * processing in the next call to {@link InflaterChannel#read(ByteBuffer)}.</p>
+ * processing in the next call to {@link CompressionChannel#read(ByteBuffer)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-final class HorizontalPredictor extends InflaterPredictor {
+final class HorizontalPredictor extends PredictorChannel {
     /**
      * Data on the previous column. The length of this array is the pixel stride.
      */
@@ -53,15 +54,30 @@ final class HorizontalPredictor extends InflaterPredictor {
 
     /**
      * Creates a new predictor.
+     * The {@link #setInput(long, long)} method must be invoked after construction
+     * before a reading process can start.
      *
      * @param  input        the channel that decompress data.
      * @param  pixelStride  number of sample values per pixel in the source image.
      * @param  width        number of pixels in the source image.
      */
-    HorizontalPredictor(final InflaterChannel input, final int pixelStride, final int width) {
+    HorizontalPredictor(final CompressionChannel input, final int pixelStride, final int width) {
         super(input);
         previousColumns = new byte[pixelStride];
         scanlineStride  = Math.multiplyExact(width, pixelStride);
+    }
+
+    /**
+     * Prepares this predictor for reading a new tile or a new band of a tile.
+     *
+     * @param  start      stream position where to start reading.
+     * @param  byteCount  number of byte to read from the input.
+     * @throws IOException if the stream can not be seek to the given start position.
+     */
+    @Override
+    public void setInput(final long start, final long byteCount) throws IOException {
+        super.setInput(start, byteCount);
+        column = 0;
     }
 
     /**
@@ -87,7 +103,7 @@ final class HorizontalPredictor extends InflaterPredictor {
             final int head       = Math.min(position + pixelStride, endOfRow);
             if (column < pixelStride) {
                 // Pixels in the first column are left unchanged.
-                position += Math.min(pixelStride, endOfRow - position);
+                position += Math.min(pixelStride - column, endOfRow - position);
             }
             while (position < head) {
                 buffer.put(position, (byte) (buffer.get(position) + previousColumns[position - startOfRow]));

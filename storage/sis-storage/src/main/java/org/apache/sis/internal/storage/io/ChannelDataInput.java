@@ -876,7 +876,7 @@ public class ChannelDataInput extends ChannelData {
             buffer.clear().limit(0);
         } else if (p >= 0) {
             /*
-             * Requested position is after the current buffer limits and
+             * Requested position is after the current buffer limit and
              * we can not seek, so we have to read everything before.
              */
             do {

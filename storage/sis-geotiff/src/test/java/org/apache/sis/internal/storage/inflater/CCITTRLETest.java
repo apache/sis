@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.geotiff;
+package org.apache.sis.internal.storage.inflater;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -500,7 +500,8 @@ public final strictfp class CCITTRLETest extends TestCase {
     private void verifyReading() throws IOException {
         final CCITTRLE decoder = new CCITTRLE(
                 new ChannelDataInput("sequenceOfAllWords", null, sequenceOfAllWords, true),
-                0, sequenceOfAllWords.limit(), sequenceOfAllWords.limit());
+                sequenceOfAllWords.limit());
+        decoder.setInput(0, sequenceOfAllWords.limit());
         int runLength = 0;
         do {
             assertEquals(decoder.getRunLength(tree), runLength);

@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.geotiff;
+package org.apache.sis.internal.storage.inflater;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
+import org.apache.sis.internal.geotiff.Predictor;
 
 
 /**
@@ -29,17 +29,33 @@ import java.nio.channels.ReadableByteChannel;
  * @since   1.1
  * @module
  */
-abstract class InflaterPredictor implements ReadableByteChannel {
+abstract class PredictorChannel extends PixelChannel {
     /**
      * The channel from which to read data.
      */
-    private final InflaterChannel input;
+    private final CompressionChannel input;
 
     /**
      * Creates a predictor.
+     * The {@link #setInput(long, long)} method must be invoked after construction
+     * before a reading process can start.
+     *
+     * @param  input  the channel that decompress data.
      */
-    protected InflaterPredictor(final InflaterChannel input) {
+    protected PredictorChannel(final CompressionChannel input) {
         this.input = input;
+    }
+
+    /**
+     * Prepares this predictor for reading a new tile or a new band of a tile.
+     *
+     * @param  start      stream position where to start reading.
+     * @param  byteCount  number of byte to read from the input.
+     * @throws IOException if the stream can not be seek to the given start position.
+     */
+    @Override
+    public void setInput(final long start, final long byteCount) throws IOException {
+        input.setInput(start, byteCount);
     }
 
     /**
@@ -53,6 +69,10 @@ abstract class InflaterPredictor implements ReadableByteChannel {
 
     /**
      * Decompresses some bytes from the {@linkplain #input} into the given destination buffer.
+     *
+     * @param  target  the buffer into which bytes are to be transferred.
+     * @return the number of bytes read, or -1 if end-of-stream.
+     * @throws IOException if some other I/O error occurs.
      */
     @Override
     public int read(final ByteBuffer target) throws IOException {
@@ -71,10 +91,11 @@ abstract class InflaterPredictor implements ReadableByteChannel {
     }
 
     /**
-     * Do nothing. The {@linkplain #input} channel is not closed by this operation
-     * because it will typically be needed again for decompressing other tiles.
+     * Closes {@link #input}. Note that it will <strong>not</strong> closes the channel wrapped by {@link #input}
+     * because that channel will typically be needed again for decompressing other tiles.
      */
     @Override
     public final void close() {
+        input.close();
     }
 }

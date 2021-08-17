@@ -16,16 +16,14 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.image.WritableRaster;
 import org.apache.sis.internal.storage.TiledGridResource;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.storage.inflater.Inflater;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
-import org.apache.sis.internal.geotiff.Compression;
-import org.apache.sis.internal.geotiff.Predictor;
-import org.apache.sis.internal.geotiff.Inflater;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.image.DataType;
 
@@ -93,6 +91,13 @@ final class CompressedSubset extends DataSubset {
      * This value shall always be a divisor of {@link #targetPixelStride}.
      */
     private final int samplesPerChunk;
+
+    /**
+     * The inflater, created when reading the first tile and discarded after reading the last tile.
+     *
+     * @see #releaseInflater()
+     */
+    private transient Inflater inflater;
 
     /**
      * Creates a new data subset. All parameters should have been validated
@@ -191,7 +196,7 @@ final class CompressedSubset extends DataSubset {
     WritableRaster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
                              final int[] subsampling, final Point location) throws IOException, DataStoreException
     {
-        final DataType type     = getDataType();
+        final DataType dataType = getDataType();
         final int  width        = pixelCount(lower, upper, subsampling, 0);
         final int  height       = pixelCount(lower, upper, subsampling, 1);
         final int  chunksPerRow = width * (targetPixelStride / samplesPerChunk);
@@ -212,36 +217,64 @@ final class CompressedSubset extends DataSubset {
          */
         final int pixelsPerElement = getPixelsPerElement();                 // Always ≥ 1 and usually = 1.
         assert (head % pixelsPerElement) == 0 : head;
-        final int              capacity    = getBankCapacity(pixelsPerElement);
-        final Buffer[]         banks       = new Buffer[numBanks];
-        final ChannelDataInput input       = input();
-        final Compression      compression = source.getCompression();
-        final Predictor        predictor   = source.getPredictor();
+        if (inflater == null) {
+            inflater = Inflater.create(this, input(), source.getCompression(), source.getPredictor(),
+                        sourcePixelStride, getTileSize(0), chunksPerRow, samplesPerChunk, skipAfterChunks,
+                        pixelsPerElement, dataType);
+        }
+        final Inflater inflater = this.inflater;
+        final int      capacity = getBankCapacity(pixelsPerElement);
+        final Buffer[] banks    = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
             /*
              * Prepare the object which will perform the actual decompression row-by-row,
              * optionally skipping chunks if a subsampling is applied.
              */
-            final Buffer bank = RasterFactory.createBuffer(type, capacity);
-            final Inflater algo = Inflater.create(compression, predictor, input, offsets[b], byteCounts[b],
-                    sourcePixelStride, getTileSize(0), chunksPerRow, samplesPerChunk, skipAfterChunks,
-                    pixelsPerElement, bank, this);
+            final Buffer bank = RasterFactory.createBuffer(dataType, capacity);
+            inflater.setInputOutput(offsets[b], byteCounts[b], bank);
+            /*
+             * At this point, `inflater` is a data input doing decompression eventually followed
+             * by the mathematical operation identified by `predictor`.
+             */
             for (long y = lower[1]; --y >= 0;) {
-                algo.skip(scanlineStride);          // `skip(…)` may round to next element boundary.
+                inflater.skip(scanlineStride);          // `skip(…)` may round to next element boundary.
             }
-            for (int y = height; --y > 0;) {        // (height - 1) iterations.
-                algo.skip(head);
-                algo.uncompressRow();
-                algo.skip(tail);
+            for (int y = height; --y > 0;) {            // (height - 1) iterations.
+                inflater.skip(head);
+                inflater.uncompressRow();
+                inflater.skip(tail);
                 for (int j=betweenRows; --j>=0;) {
-                    algo.skip(scanlineStride);
+                    inflater.skip(scanlineStride);
                 }
             }
-            algo.skip(head);                        // Last iteration without the trailing `skip(…)` calls.
-            algo.uncompressRow();
+            inflater.skip(head);                        // Last iteration without the trailing `skip(…)` calls.
+            inflater.uncompressRow();
             fillRemainingRows(bank.flip());
             banks[b] = bank;
         }
-        return WritableRaster.createWritableRaster(model, RasterFactory.wrap(type, banks), location);
+        return WritableRaster.createWritableRaster(model, RasterFactory.wrap(dataType, banks), location);
+    }
+
+    /**
+     * Returns the object to close for releasing inflater resources.
+     * This method is invoked in a synchronized block before the first call to {@code readSlice(…)}.
+     */
+    @Override
+    final Closeable createInflater() {
+        assert inflater == null;
+        return this::releaseInflater;
+    }
+
+    /**
+     * Invoked after the last tile has been read, or after an exception has been thrown during the reading process.
+     * This method releases any resources used by the inflater.
+     */
+    private void releaseInflater() throws IOException {
+        assert Thread.holdsLock(source.getSynchronizationLock());
+        final Inflater c = inflater;
+        if (c != null) {
+            inflater = null;        // Clear first in case of failure during `close()` execution.
+            c.close();
+        }
     }
 }

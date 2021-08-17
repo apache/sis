@@ -31,6 +31,8 @@ import java.lang.reflect.Field;
  * @version 0.8
  * @since   0.8
  * @module
+ *
+ * @todo Use {@code javax.imageio.plugins.tiff.BaselineTIFFTagSet} with JDK9.
  */
 final class Tags {
 

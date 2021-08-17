@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.geotiff;
+package org.apache.sis.internal.storage.inflater;
 
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.nio.IntBuffer;
-import java.nio.LongBuffer;
 import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
+import org.apache.sis.image.DataType;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Classes;
 
 
 /**
@@ -76,19 +75,20 @@ abstract class CopyFromBytes extends Inflater {
      * For constructors in inner classes.
      *
      * @param  input             the source of data to decompress.
-     * @param  start             position in the input stream of the first byte to read.
      * @param  chunksPerRow      number of chunks (usually pixels) per row in target image. Must be strictly positive.
      * @param  samplesPerChunk   number of sample values per chunk (sample, pixel or row). Must be strictly positive.
      * @param  skipAfterChunks   number of sample values to skip between chunks. May be empty or null.
      * @param  pixelsPerElement  number of pixels per primitive element. Always 1 except for multi-pixels packed images.
      * @param  bytesPerElement   number of bytes in a bank element (a bank element is usually a sample value).
      */
-    private CopyFromBytes(final ChannelDataInput input, final long start, final int chunksPerRow,
-                          final int samplesPerChunk, final int[] skipAfterChunks,
-                          final int pixelsPerElement, final int bytesPerElement)
+    private CopyFromBytes(final ChannelDataInput input,
+                          final int   chunksPerRow,
+                          final int   samplesPerChunk,
+                          final int[] skipAfterChunks,
+                          final int   pixelsPerElement,
+                          final int   bytesPerElement)
     {
         super(input, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement, input.buffer.capacity() / bytesPerElement);
-        this.streamPosition   = start;
         this.bytesPerElement  = bytesPerElement;
         this.pixelsPerElement = pixelsPerElement;
     }
@@ -96,27 +96,46 @@ abstract class CopyFromBytes extends Inflater {
     /**
      * Creates a new instance.
      *
-     * @param  input    the source of data to decompress.
-     * @param  start    stream position where to start reading.
-     * @param  count    number of chunks (usually pixels) per row. Must be strictly positive.
-     * @param  size     number of sample values per chunk (sample, pixel or row). Must be strictly positive.
-     * @param  skips    number of sample values to skip between chunks. May be empty or null.
-     * @param  divisor  factor by which to divide sample size values. Always ≥ 1 and usually = 1.
-     * @param  banks    where to store sample values.
+     * @param  input             the source of data to decompress.
+     * @param  chunksPerRow      number of chunks (usually pixels) per row. Must be strictly positive.
+     * @param  samplesPerChunk   number of sample values per chunk (sample, pixel or row). Must be strictly positive.
+     * @param  skipAfterChunks   number of sample values to skip between chunks. May be empty or null.
+     * @param  pixelsPerElement  number of pixels per primitive element. Always 1 except for multi-pixels packed images.
      * @return the inflater for the given targe type.
      * @throws UnsupportedEncodingException if the buffer type is not recognized.
      */
-    public static CopyFromBytes create(final ChannelDataInput input, final long start,
-            final int count, final int size, final int[] skips, final int divisor, final Buffer banks)
+    static CopyFromBytes create(final ChannelDataInput input,
+                                final DataType dataType,
+                                final int    chunksPerRow,
+                                final int    samplesPerChunk,
+                                final int[]  skipAfterChunks,
+                                final int    pixelsPerElement)
             throws UnsupportedEncodingException
     {
-        if (banks instanceof   ByteBuffer) return new Bytes  (input, start, count, size, skips, divisor,   (ByteBuffer) banks);
-        if (banks instanceof  ShortBuffer) return new Shorts (input, start, count, size, skips, divisor,  (ShortBuffer) banks);
-        if (banks instanceof    IntBuffer) return new Ints   (input, start, count, size, skips, divisor,    (IntBuffer) banks);
-        if (banks instanceof   LongBuffer) return new Longs  (input, start, count, size, skips, divisor,   (LongBuffer) banks);
-        if (banks instanceof  FloatBuffer) return new Floats (input, start, count, size, skips, divisor,  (FloatBuffer) banks);
-        if (banks instanceof DoubleBuffer) return new Doubles(input, start, count, size, skips, divisor, (DoubleBuffer) banks);
-        throw new UnsupportedEncodingException(Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(banks)));
+        switch (dataType) {
+            case USHORT: // Fall through
+            case SHORT:  return new Shorts (input, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
+            case BYTE:   return new Bytes  (input, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
+            case INT:    return new Ints   (input, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
+            case FLOAT:  return new Floats (input, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
+            case DOUBLE: return new Doubles(input, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
+            default: throw new UnsupportedEncodingException(Errors.format(Errors.Keys.UnsupportedType_1, dataType));
+        }
+    }
+
+    /**
+     * Sets the input and output and prepares this inflater for reading a new tile or band of a tile.
+     *
+     * @param  start      input stream position where to start reading.
+     * @param  byteCount  number of bytes to read before decompression.
+     * @param  bank       where to store sample values.
+     * @throws IOException if an I/O operation was required and failed.
+     */
+    @Override
+    public void setInputOutput(final long start, final long byteCount, final Buffer bank) throws IOException {
+        super.setInputOutput(start, byteCount, bank);
+        streamPosition = start;
+        positionNeedsRefresh = false;
     }
 
     /**
@@ -195,12 +214,17 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Bytes extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private final ByteBuffer banks;
+        private ByteBuffer banks;
 
         /** Creates a new inflater which will write in the given buffer. */
-        Bytes(ChannelDataInput input, long start, int count, int size, int[] skips, int divisor, ByteBuffer banks) {
-            super(input, start, count, size, skips, divisor, Byte.BYTES);
-            this.banks = banks;
+        Bytes(ChannelDataInput input, int count, int size, int[] skips, int divisor) {
+            super(input, count, size, skips, divisor, Byte.BYTES);
+        }
+
+        /** Sets the destination bank. */
+        @Override public void setInputOutput(final long start, final long byteCount, final Buffer bank) throws IOException {
+            super.setInputOutput(start, byteCount, bank);
+            banks = (ByteBuffer) bank;
         }
 
         /** Reads a row of sample values. */
@@ -235,12 +259,17 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Shorts extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private final ShortBuffer banks;
+        private ShortBuffer banks;
 
         /** Creates a new inflater which will write in the given buffer. */
-        Shorts(ChannelDataInput input, long start, int count, int size, int[] skips, int divisor, ShortBuffer banks) {
-            super(input, start, count, size, skips, divisor, Short.BYTES);
-            this.banks = banks;
+        Shorts(ChannelDataInput input, int count, int size, int[] skips, int divisor) {
+            super(input, count, size, skips, divisor, Short.BYTES);
+        }
+
+        /** Sets the destination bank. */
+        @Override public void setInputOutput(final long start, final long byteCount, final Buffer bank) throws IOException {
+            super.setInputOutput(start, byteCount, bank);
+            banks = (ShortBuffer) bank;
         }
 
         /** Reads a row of sample values. */
@@ -269,12 +298,17 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Ints extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private final IntBuffer banks;
+        private IntBuffer banks;
 
         /** Creates a new inflater which will write in the given buffer. */
-        Ints(ChannelDataInput input, long start, int count, int size, int[] skips, int divisor, IntBuffer banks) {
-            super(input, start, count, size, skips, divisor, Integer.BYTES);
-            this.banks = banks;
+        Ints(ChannelDataInput input, int count, int size, int[] skips, int divisor) {
+            super(input, count, size, skips, divisor, Integer.BYTES);
+        }
+
+        /** Sets the destination bank. */
+        @Override public void setInputOutput(final long start, final long byteCount, final Buffer bank) throws IOException {
+            super.setInputOutput(start, byteCount, bank);
+            banks = (IntBuffer) bank;
         }
 
         /** Reads a row of sample values. */
@@ -298,51 +332,22 @@ abstract class CopyFromBytes extends Inflater {
     }
 
     /**
-     * Inflater for sample values stored as long integers.
-     * This is a copy of {@link Bytes} implementation with only the type changed.
-     */
-    private static final class Longs extends CopyFromBytes {
-        /** Where to copy the values that we will read. */
-        private final LongBuffer banks;
-
-        /** Creates a new inflater which will write in the given buffer. */
-        Longs(ChannelDataInput input, long start, int count, int size, int[] skips, int divisor, LongBuffer banks) {
-            super(input, start, count, size, skips, divisor, Long.BYTES);
-            this.banks = banks;
-        }
-
-        /** Reads a row of sample values. */
-        @Override public void uncompressRow() throws IOException {
-            super.uncompressRow();
-            int skipIndex = 0;
-            for (int i = chunksPerRow; --i > 0;) {
-                int n = elementsPerChunk;
-                input.ensureBufferContains(n * Long.BYTES);
-                do banks.put(input.buffer.getLong());
-                while (--n != 0);
-                if (skipAfterChunks != null) {
-                    skipIndex = skipAfterChunk(skipIndex);
-                }
-            }
-            int n = elementsPerChunk;
-            input.ensureBufferContains(n * Long.BYTES);
-            do banks.put(input.buffer.getLong());
-            while (--n != 0);
-        }
-    }
-
-    /**
      * Inflater for sample values stored as single-precision floating point numbers.
      * This is a copy of {@link Bytes} implementation with only the type changed.
      */
     private static final class Floats extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private final FloatBuffer banks;
+        private FloatBuffer banks;
 
         /** Creates a new inflater which will write in the given buffer. */
-        Floats(ChannelDataInput input, long start, int count, int size, int[] skips, int divisor, FloatBuffer banks) {
-            super(input, start, count, size, skips, divisor, Float.BYTES);
-            this.banks = banks;
+        Floats(ChannelDataInput input, int count, int size, int[] skips, int divisor) {
+            super(input, count, size, skips, divisor, Float.BYTES);
+        }
+
+        /** Sets the destination bank. */
+        @Override public void setInputOutput(final long start, final long byteCount, final Buffer bank) throws IOException {
+            super.setInputOutput(start, byteCount, bank);
+            banks = (FloatBuffer) bank;
         }
 
         /** Reads a row of sample values. */
@@ -371,12 +376,17 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Doubles extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private final DoubleBuffer banks;
+        private DoubleBuffer banks;
 
         /** Creates a new inflater which will write in the given buffer. */
-        Doubles(ChannelDataInput input, long start, int count, int size, int[] skips, int divisor, DoubleBuffer banks) {
-            super(input, start, count, size, skips, divisor, Double.BYTES);
-            this.banks = banks;
+        Doubles(ChannelDataInput input, int count, int size, int[] skips, int divisor) {
+            super(input, count, size, skips, divisor, Double.BYTES);
+        }
+
+        /** Sets the destination bank. */
+        @Override public void setInputOutput(final long start, final long byteCount, final Buffer bank) throws IOException {
+            super.setInputOutput(start, byteCount, bank);
+            banks = (DoubleBuffer) bank;
         }
 
         /** Reads a row of sample values. */

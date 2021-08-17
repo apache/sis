@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.geotiff;
+package org.apache.sis.internal.storage.inflater;
 
 import java.util.Arrays;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 
 
@@ -32,12 +33,12 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
  * Unisys's patent on the LZW algorithm expired in 2004.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @author  Remi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-final class LZW extends InflaterChannel {
+final class LZW extends CompressionChannel {
     /**
      * A 12 bits code meaning that we have exhausted the 4093 available codes
      * and most reset the table to the initial set of 9 bits code.
@@ -107,16 +108,39 @@ final class LZW extends InflaterChannel {
 
     /**
      * Creates a new channel which will decompress data from the given input.
+     * The {@link #setInput(long, long)} method must be invoked after construction
+     * before a reading process can start.
+     *
+     * @param  input  the source of data to decompress.
      */
-    LZW(final ChannelDataInput input, final long start, final long byteCount) throws IOException {
-        super(input, start, byteCount);
+    public LZW(final ChannelDataInput input) {
+        super(input);
         sequencesForCodes = new byte[(1 << MAX_CODE_SIZE) - FIRST_ADAPTATIVE_CODE][];
-        previousSequence  = ArraysExt.EMPTY_BYTE;
-        codeSize          = MIN_CODE_SIZE;
+    }
+
+    /**
+     * Prepares this inflater for reading a new tile or a new band of a tile.
+     *
+     * @param  start      stream position where to start reading.
+     * @param  byteCount  number of byte to read from the input.
+     * @throws IOException if the stream can not be seek to the given start position.
+     */
+    @Override
+    public void setInput(final long start, final long byteCount) throws IOException {
+        super.setInput(start, byteCount);
+        previousSequence   = ArraysExt.EMPTY_BYTE;
+        codeSize           = MIN_CODE_SIZE;
+        nextAvailableEntry = 0;
+        pending            = null;
+        done               = false;
     }
 
     /**
      * Decompresses some bytes from the {@linkplain #input} into the given destination buffer.
+     *
+     * @param  target  the buffer into which bytes are to be transferred.
+     * @return the number of bytes read, or -1 if end-of-stream.
+     * @throws IOException if some other I/O error occurs.
      */
     @Override
     public int read(final ByteBuffer target) throws IOException {
@@ -137,7 +161,7 @@ final class LZW extends InflaterChannel {
                 return r;   // Can not write more than what we just wrote.
             }
         } else {
-            done |= (input.getStreamPosition() >= endPosition);
+            done |= finished();
         }
         if (done) {
             return -1;

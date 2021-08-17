@@ -23,26 +23,6 @@
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
- * <p>Current version contains the classes for decompressing sample values.
- * Those classes may move in another package in a future version if we want
- * to share them with other image formats.</p>
- *
- * <h2>Definition of terms</h2>
- * <dl>
- *   <dt>Pixel</dt>
- *   <dd>The smallest visual component of an image. Each pixel consists of one or more sample values.
- *       For example, a pixel might have three samples storing the intensity of red, green and blue colors.</dd>
- *
- *   <dt>Sample</dt>
- *   <dd>The value of a pixel in one band. For example if an image has three bands for red, green and blue colors,
- *       then the first sample value of a pixel is the intensity of the red color.</dd>
- *
- *   <dt>Element</dt>
- *   <dd>The element in an array of primitive type for storing one or more sample value.
- *       There is usually one element per sample value, but some images pack many sample values in a single element.
- *       For example a bilevel image stores each sample value in a single bit and packs 8 sample values per byte.</dd>
- * </dl>
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8

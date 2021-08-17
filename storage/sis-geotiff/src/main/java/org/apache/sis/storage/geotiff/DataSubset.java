@@ -19,6 +19,7 @@ package org.apache.sis.storage.geotiff;
 import java.util.Arrays;
 import java.util.Locale;
 import java.nio.Buffer;
+import java.io.Closeable;
 import java.io.IOException;
 import java.awt.Point;
 import java.awt.image.BandedSampleModel;
@@ -312,35 +313,39 @@ class DataSubset extends TiledGridCoverage implements Localized {
                     missings[numMissings++] = new Tile(iterator, tileOffsets, includedBanks, numTiles);
                 }
             } while (iterator.next());
-            Arrays.sort(missings, 0, numMissings);
-            /*
-             * At this point we finished to list all tiles inside the Area Of Interest (AOI), both the ones that
-             * were already in memory and the new ones. The loop below processes only the new tiles, by reading
-             * them in the order they appear in the TIFF file.
-             *
-             * TODO: Use `tile.byteCount` for checking if two tiles are consecutive in the TIFF file.
-             * In such case we should send only one HTTP range request.
-             */
-            final long[] lower       = new long[BIDIMENSIONAL];   // Coordinates of the first pixel to read relative to the tile.
-            final long[] upper       = new long[BIDIMENSIONAL];   // Coordinates after the last pixel to read relative to the tile.
-            final int[]  subsampling = new int [BIDIMENSIONAL];
-            final Point  origin      = new Point();
-            final long[] offsets     = new long[numBanks];
-            final long[] byteCounts  = new long[numBanks];
-            for (int i=0; i<numMissings; i++) {
-                final Tile tile = missings[i];
-                if (tile.getRegionInsideTile(lower, upper, subsampling, BIDIMENSIONAL)) {
-                    origin.x = tile.originX;
-                    origin.y = tile.originY;
-                    tile.copyTileInfo(tileOffsets,    offsets,    includedBanks, numTiles);
-                    tile.copyTileInfo(tileByteCounts, byteCounts, includedBanks, numTiles);
-                    for (int b=0; b<offsets.length; b++) {
-                        offsets[b] = addExact(offsets[b], source.reader.origin);
+            if (numMissings != 0) {
+                Arrays.sort(missings, 0, numMissings);
+                /*
+                 * At this point we finished to list all tiles inside the Area Of Interest (AOI), both the ones that
+                 * were already in memory and the new ones. The loop below processes only the new tiles, by reading
+                 * them in the order they appear in the TIFF file.
+                 *
+                 * TODO: Use `tile.byteCount` for checking if two tiles are consecutive in the TIFF file.
+                 * In such case we should send only one HTTP range request.
+                 */
+                final long[] lower       = new long[BIDIMENSIONAL];   // Coordinates of the first pixel to read relative to the tile.
+                final long[] upper       = new long[BIDIMENSIONAL];   // Coordinates after the last pixel to read relative to the tile.
+                final int[]  subsampling = new int [BIDIMENSIONAL];
+                final Point  origin      = new Point();
+                final long[] offsets     = new long[numBanks];
+                final long[] byteCounts  = new long[numBanks];
+                try (Closeable c = createInflater()) {
+                    for (int i=0; i<numMissings; i++) {
+                        final Tile tile = missings[i];
+                        if (tile.getRegionInsideTile(lower, upper, subsampling, BIDIMENSIONAL)) {
+                            origin.x = tile.originX;
+                            origin.y = tile.originY;
+                            tile.copyTileInfo(tileOffsets,    offsets,    includedBanks, numTiles);
+                            tile.copyTileInfo(tileByteCounts, byteCounts, includedBanks, numTiles);
+                            for (int b=0; b<offsets.length; b++) {
+                                offsets[b] = addExact(offsets[b], source.reader.origin);
+                            }
+                            WritableRaster r = readSlice(offsets, byteCounts, lower, upper, subsampling, origin);
+                            result[tile.indexInResultArray] = tile.cache(r);
+                        } else {
+                            needsCompaction = true;
+                        }
                     }
-                    WritableRaster r = readSlice(offsets, byteCounts, lower, upper, subsampling, origin);
-                    result[tile.indexInResultArray] = tile.cache(r);
-                } else {
-                    needsCompaction = true;
                 }
             }
         }
@@ -358,6 +363,25 @@ class DataSubset extends TiledGridCoverage implements Localized {
         }
         return result;
     }
+
+    /**
+     * Invoked in a synchronized block before the first call to {@code readSlice(…)}.
+     * Subclasses can override this method for allocating resources to be reused for
+     * reading each tile. The {@link Closeable#close()} method of the returned object
+     * will be invoked (even if an exception has been thrown during the reading process)
+     * in the same synchronized block after the last call to {@code readSlice(…)}.
+     *
+     * <p>The default implementation returns a no-operation object. Direct subclasses
+     * can ignore; they do not need to invoke {@code super.createInflater()}.
+     */
+    Closeable createInflater() {
+        return NOOP;
+    }
+
+    /**
+     * No-operation "resource" for {@link #createInflater()} default value.
+     */
+    private static final Closeable NOOP = () -> {};
 
     /**
      * Reads a two-dimensional slice of the data cube from the given input channel. This method is usually

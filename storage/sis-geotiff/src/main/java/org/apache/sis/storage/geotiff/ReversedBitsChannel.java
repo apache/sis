@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
  * For example byte {@code 11010100} will become {@code 00101011}.
  * The use of this class should be very rare.
  *
- * @author  Remi Marechal (Geomatys).
+ * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1

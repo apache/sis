@@ -53,7 +53,7 @@ import static java.lang.Math.abs;
  * outside {@link ResampledImage}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @author  Remi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module

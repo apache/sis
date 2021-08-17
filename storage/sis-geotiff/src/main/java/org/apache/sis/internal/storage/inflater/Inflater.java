@@ -14,14 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.geotiff;
+package org.apache.sis.internal.storage.inflater;
 
 import java.util.Arrays;
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.Buffer;
-import java.nio.channels.ReadableByteChannel;
+import org.apache.sis.image.DataType;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.geotiff.Compression;
+import org.apache.sis.internal.geotiff.Predictor;
+import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.util.ArgumentChecks;
@@ -37,7 +41,7 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  *
  * <p>If a decompression algorithm can handle all above-cited aspects directly,
  * it can extend this class directly. If it would be too complicated, an easier
- * approach is to extend {@link InflaterChannel} instead and wrap that inflater
+ * approach is to extend {@link CompressionChannel} instead and wrap that inflater
  * in a {@link CopyFromBytes} subclass for managing the sub-region, subsampling
  * and band subset.</p>
  *
@@ -46,7 +50,7 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  * @since   1.1
  * @module
  */
-public abstract class Inflater {
+public abstract class Inflater implements Closeable {
     /**
      * The source of data to decompress.
      */
@@ -163,63 +167,105 @@ public abstract class Inflater {
      * (e.g. 1 bit) if {@code pixelsPerElement} is greater than 1. If that case, the {@link #elementsPerChunk}
      * and {@link #skipAfterChunks} values will be divided by {@code pixelsPerElement}.
      *
+     * @param  caller             object calling this method (used in case an error message most be produced).
+     * @param  input              the source of data to decompress.
      * @param  compression        the compression method.
      * @param  predictor          the mathematical operator to apply after decompression.
-     * @param  input              the source of data to decompress.
-     * @param  start              stream position where to start reading.
-     * @param  byteCount          number of bytes to read before decompression.
      * @param  sourcePixelStride  number of sample values per pixel in the source image.
      * @param  sourceWidth        number of pixels in a row of source image.
      * @param  chunksPerRow       number of chunks (usually pixels) per row in target image. Must be strictly positive.
      * @param  samplesPerChunk    number of sample values per chunk (sample or pixel). Must be strictly positive.
      * @param  skipAfterChunks    number of sample values to skip between chunks. May be empty or null.
      * @param  pixelsPerElement   number of pixels per primitive element. Always 1 except for multi-pixels packed images.
-     * @param  banks              where to store sample values.
-     * @param  caller             locale to use if an error message must be provided.
+     * @param  dataType           primitive type used for storing data elements in the bank.
      * @return the inflater for the given targe type.
      * @throws IOException if an I/O operation was required and failed.
      * @throws UnsupportedEncodingException if the compression, predictor or data type is unsupported.
+     *
+     * @todo This is a very long argument list… This method is invoked only by {@code CompressedSubset}.
+     *       Maybe we should inline this method in {@code CompressedSubset}. Before doing so, we should
+     *       probably refactor for bringing {@code CompressedSubset} and related classes in this package,
+     *       in a way that make them usable with other tiled formats than TIFF.
      */
-    public static Inflater create(final Compression compression, final Predictor predictor,
-            final ChannelDataInput input, final long start, final long byteCount,
-            final int sourcePixelStride, final int sourceWidth,
-            final int chunksPerRow, final int samplesPerChunk, final int[] skipAfterChunks,
-            final int pixelsPerElement, final Buffer banks, final Localized caller)
+    @SuppressWarnings("fallthrough")
+    public static Inflater create(final Localized        caller,
+                                  final ChannelDataInput input,
+                                  final Compression      compression,
+                                  final Predictor        predictor,
+                                  final int              sourcePixelStride,
+                                  final int              sourceWidth,
+                                  final int              chunksPerRow,
+                                  final int              samplesPerChunk,
+                                  final int[]            skipAfterChunks,
+                                  final int              pixelsPerElement,
+                                  final DataType         dataType)
             throws IOException, UnsupportedEncodingException
     {
         ArgumentChecks.ensureNonNull("input", input);
-        ArgumentChecks.ensureNonNull("banks", banks);
-        final InflaterChannel inflated;
+        final CompressionChannel inflater;
         switch (compression) {
-            case LZW:      inflated = new LZW     (input, start, byteCount); break;
-            case PACKBITS: inflated = new PackBits(input, start, byteCount); break;
-            case CCITTRLE: inflated = new CCITTRLE(input, start, byteCount, sourceWidth); break;
+            case LZW:      inflater = new LZW     (input); break;
+            case DEFLATE:  inflater = new ZIP     (input); break;
+            case PACKBITS: inflater = new PackBits(input); break;
+            case CCITTRLE: inflater = new CCITTRLE(input, sourceWidth); break;
             case NONE: {
                 if (predictor == Predictor.NONE) {
-                    return CopyFromBytes.create(input, start,
-                            chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement, banks);
+                    return CopyFromBytes.create(input, dataType, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
                 }
-                throw unsupportedEncoding(Resources.Keys.UnsupportedPredictor_1, predictor, caller);
+                throw unsupportedEncoding(caller, Resources.Keys.UnsupportedPredictor_1, predictor);
             }
             default: {
-                throw unsupportedEncoding(Resources.Keys.UnsupportedCompressionMethod_1, compression, caller);
+                throw unsupportedEncoding(caller, Resources.Keys.UnsupportedCompressionMethod_1, compression);
             }
         }
-        final ReadableByteChannel channel;
+        final PixelChannel channel;
         switch (predictor) {
-            case NONE:       channel = inflated; break;
-            case HORIZONTAL: channel = new HorizontalPredictor(inflated, sourcePixelStride, sourceWidth); break;
-            default: throw unsupportedEncoding(Resources.Keys.UnsupportedPredictor_1, predictor, caller);
+            case NONE: {
+                channel = inflater;
+                break;
+            }
+            case HORIZONTAL: {
+                if (pixelsPerElement == 1 && dataType == DataType.BYTE) {
+                    channel = new HorizontalPredictor(inflater, sourcePixelStride, sourceWidth);
+                    break;
+                }
+                // Fallthrough.
+            }
+            default: {
+                throw unsupportedEncoding(caller, Resources.Keys.UnsupportedPredictor_1, predictor);
+            }
         }
-        return CopyFromBytes.create(inflated.createDataInput(channel), 0,
-                chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement, banks);
+        return CopyFromBytes.create(inflater.createDataInput(channel), dataType,
+                chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
     }
 
     /**
      * Returns the exception to throw for an unsupported compression or predictor.
      */
-    private static UnsupportedEncodingException unsupportedEncoding(final short key, final Enum<?> value, final Localized caller) {
+    private static UnsupportedEncodingException unsupportedEncoding(final Localized caller, final short key, final Enum<?> value) {
         return new UnsupportedEncodingException(Resources.forLocale(caller.getLocale()).getString(key, value));
+    }
+
+    /**
+     * Sets the input and output and prepares this inflater for reading a new tile or band of a tile.
+     *
+     * @param  start      input stream position where to start reading.
+     * @param  byteCount  number of bytes to read before decompression.
+     * @param  bank       where to store sample values.
+     * @throws IOException if an I/O operation was required and failed.
+     */
+    public void setInputOutput(final long start, final long byteCount, final Buffer bank) throws IOException {
+        /*
+         * If the input is a wrapper around a decompression algorithm (PackBits, CCITTRLE, etc),
+         * we need to inform the wrapper about the new operation. The call to `setInput(…)` below
+         * will perform a seek operation. As a consequence the buffer content become invalid and
+         * must be emptied.
+         */
+        if (input.channel instanceof PixelChannel) {
+            ((PixelChannel) input.channel).setInput(start, byteCount);
+            input.buffer.limit(0);
+            input.setStreamPosition(start);         // Must be after above call to `limit(0)`.
+        }
     }
 
     /**
@@ -260,4 +306,14 @@ public abstract class Inflater {
      * @throws IOException if an error occurred while reading the input channel.
      */
     public abstract void uncompressRow() throws IOException;
+
+    /**
+     * Releases resources used by this inflater.
+     */
+    @Override
+    public final void close() throws IOException {
+        if (input.channel instanceof PixelChannel) {
+            input.channel.close();
+        }
+    }
 }

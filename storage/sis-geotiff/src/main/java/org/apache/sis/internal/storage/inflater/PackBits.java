@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.geotiff;
+package org.apache.sis.internal.storage.inflater;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,7 +30,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
  * @since   1.1
  * @module
  */
-final class PackBits extends InflaterChannel {
+final class PackBits extends CompressionChannel {
     /**
      * Number of bytes to copy literally from the input.
      * Only one of {@code literalCount} and {@link #duplicatedCount} can be non-zero.
@@ -50,13 +50,35 @@ final class PackBits extends InflaterChannel {
 
     /**
      * Creates a new channel which will decompress data from the given input.
+     * The {@link #setInput(long, long)} method must be invoked after construction
+     * before a reading process can start.
+     *
+     * @param  input  the source of data to decompress.
      */
-    PackBits(final ChannelDataInput input, final long start, final long byteCount) throws IOException {
-        super(input, start, byteCount);
+    public PackBits(final ChannelDataInput input) {
+        super(input);
+    }
+
+    /**
+     * Prepares this inflater for reading a new tile or a new band of a tile.
+     *
+     * @param  start      stream position where to start reading.
+     * @param  byteCount  number of byte to read from the input.
+     * @throws IOException if the stream can not be seek to the given start position.
+     */
+    @Override
+    public void setInput(final long start, final long byteCount) throws IOException {
+        super.setInput(start, byteCount);
+        literalCount    = 0;
+        duplicatedCount = 0;
     }
 
     /**
      * Decompresses some bytes from the {@linkplain #input} into the given destination buffer.
+     *
+     * @param  target  the buffer into which bytes are to be transferred.
+     * @return the number of bytes read, or -1 if end-of-stream.
+     * @throws IOException if some other I/O error occurs.
      */
     @Override
     public int read(final ByteBuffer target) throws IOException {
@@ -75,7 +97,7 @@ final class PackBits extends InflaterChannel {
             if ((literalCount | duplicatedCount) == 0) {
                 int code;
                 do {
-                    if (input.getStreamPosition() >= endPosition) {
+                    if (finished()) {
                         final int n = target.position() - start;
                         return (n > 0) ? n : -1;              // If no byte read, declare end-of-stream.
                     }
