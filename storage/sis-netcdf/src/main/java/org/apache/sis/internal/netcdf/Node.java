@@ -290,7 +290,7 @@ public abstract class Node extends NamedElement {
      * @param  key        one or {@link Errors.Keys} constants.
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
-    final void error(final Class<?> caller, final String method, final Exception exception, final short key, final Object... arguments) {
+    protected final void error(final Class<?> caller, final String method, final Exception exception, final short key, final Object... arguments) {
         warning(decoder.listeners, caller, method, exception, errors(), key, arguments);
     }
 }

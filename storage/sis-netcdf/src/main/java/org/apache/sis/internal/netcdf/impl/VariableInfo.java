@@ -26,7 +26,9 @@ import java.util.Collections;
 import java.util.regex.Matcher;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.time.format.DateTimeParseException;
 import javax.measure.Unit;
+import javax.measure.format.ParserException;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
@@ -50,6 +52,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
@@ -413,20 +416,48 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Parses the given unit symbol and set the {@link #epoch} if the parsed unit is a temporal unit.
      * This method is called by {@link #getUnit()}.
+     *
+     * @throws ParserException if the given symbol can not be parsed.
      */
     @Override
     protected Unit<?> parseUnit(String symbols) {
         final Matcher parts = TIME_UNIT_PATTERN.matcher(symbols);
+        DateTimeParseException dateError = null;
         if (parts.matches()) {
             /*
              * If we enter in this block, the unit is of the form "days since 1970-01-01 00:00:00".
              * The TIME_PATTERN splits the string in two parts, "days" and "1970-01-01 00:00:00".
              * The parse method will replace the space between date and time by 'T' letter.
              */
-            epoch = StandardDateFormat.parseInstantUTC(parts.group(2));
+            try {
+                epoch = StandardDateFormat.parseInstantUTC(parts.group(2));
+            } catch (DateTimeParseException e) {
+                dateError = e;
+            }
             symbols = parts.group(1);
         }
-        return Units.valueOf(symbols);
+        /*
+         * Parse the unit symbol after removing the "since 1970-01-01 00:00:00" part of the text,
+         * even if we failed to parse the date. We need to be tolerant regarding the date because
+         * sometime the text looks like "hours since analysis".
+         */
+        final Unit<?> unit;
+        try {
+            unit = Units.valueOf(symbols);
+        } catch (ParserException e) {
+            if (dateError != null) {
+                e.addSuppressed(dateError);
+            }
+            throw e;
+        }
+        /*
+         * Log the warning about date format only if the rest of this method succeeded.
+         * We report `getUnit()` as the source method because it is the public caller.
+         */
+        if (dateError != null) {
+            error(Variable.class, "getUnit", dateError, Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols);
+        }
+        return unit;
     }
 
     /**
