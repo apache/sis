@@ -745,7 +745,7 @@ public class MetadataSource implements AutoCloseable {
              * Builds the SQL statement with the resolved value.
              */
             if (helper.isEmpty()) {
-                helper.append("SELECT ").appendIdentifier(ID_COLUMN).append(" FROM ")
+                helper.append(SQLBuilder.SELECT).appendIdentifier(ID_COLUMN).append(" FROM ")
                         .appendIdentifier(schema, table).append(" WHERE ");
             } else {
                 helper.append(" AND ");

@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.metadata.sql;
 
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.DatabaseMetaData;
 import org.apache.sis.util.CharSequences;
 
 

@@ -661,7 +661,7 @@ public class MetadataWriter extends MetadataSource {
             columns.add(CODE_COLUMN);
         }
         final String identifier = Types.getCodeName(code);
-        final String query = helper().clear().append("SELECT ").appendIdentifier(CODE_COLUMN)
+        final String query = helper().clear().append(SQLBuilder.SELECT).appendIdentifier(CODE_COLUMN)
                 .append(" FROM ").appendIdentifier(schema(), table).append(" WHERE ")
                 .appendIdentifier(CODE_COLUMN).appendCondition(identifier).toString();
         final boolean exists;

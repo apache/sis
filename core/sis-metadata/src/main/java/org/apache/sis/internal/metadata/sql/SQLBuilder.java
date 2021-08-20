@@ -22,6 +22,7 @@ import java.util.StringTokenizer;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -33,36 +34,18 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @since   0.8
  * @module
  */
-public class SQLBuilder {
+public class SQLBuilder extends Syntax {
     /**
-     * The database dialect. This is used for a few database-dependent syntax.
+     * The {@value} keyword (with a trailing space).
+     * Defined as a convenience for identifying locations in the Java code
+     * where we start to write a SQL statement using a builder.
      */
-    public final Dialect dialect;
+    public static final String SELECT = "SELECT ";
 
     /**
-     * The characters used for quoting identifiers, or an empty string if none.
-     * This is the value returned by {@link DatabaseMetaData#getIdentifierQuoteString()}.
+     * The buffer where the SQL query is created.
      */
-    private final String quote;
-
-    /**
-     * Whether the schema name should be written between quotes. If {@code false},
-     * we will let the database engine uses its default lower case / upper case policy.
-     *
-     * @see #appendIdentifier(String, String)
-     */
-    private final boolean quoteSchema;
-
-    /**
-     * The string that can be used to escape wildcard characters.
-     * This is the value returned by {@link DatabaseMetaData#getSearchStringEscape()}.
-     */
-    private final String escape;
-
-    /**
-     * The buffer where the SQL query is to be created.
-     */
-    private final StringBuilder buffer = new StringBuilder();
+    protected final StringBuilder buffer = new StringBuilder(200);
 
     /**
      * Creates a new {@code SQLBuilder} initialized from the given database metadata.
@@ -72,22 +55,16 @@ public class SQLBuilder {
      * @throws SQLException if an error occurred while fetching the database metadata.
      */
     public SQLBuilder(final DatabaseMetaData metadata, final boolean quoteSchema) throws SQLException {
-        dialect = Dialect.guess(metadata);
-        quote   = metadata.getIdentifierQuoteString();
-        escape  = metadata.getSearchStringEscape();
-        this.quoteSchema = quoteSchema;
+        super(metadata, quoteSchema);
     }
 
     /**
-     * Creates a new {@code SQLBuilder} initialized to the same metadata than the given builder.
+     * Creates a new {@code SQLBuilder} initialized to the same metadata than the given template.
      *
-     * @param other  the builder from which to copy metadata.
+     * @param  other  the template from which to copy metadata.
      */
-    public SQLBuilder(final SQLBuilder other) {
-        dialect     = other.dialect;
-        escape      = other.escape;
-        quote       = other.quote;
-        quoteSchema = other.quoteSchema;
+    public SQLBuilder(final Syntax other) {
+        super(other);
     }
 
     /**
@@ -121,7 +98,7 @@ public class SQLBuilder {
     }
 
     /**
-     * Appends the given long.
+     * Appends the given long integer.
      *
      * @param  n  the long to append.
      * @return this builder, for method call chaining.
@@ -168,17 +145,17 @@ public class SQLBuilder {
     /**
      * Appends an identifier for an element in the given schema.
      * <ul>
-     *   <li>The given schema will be written only if non-null</li>
+     *   <li>The given schema will be written only if non-null.</li>
      *   <li>The given schema will be quoted only if {@code quoteSchema} is {@code true}.</li>
      *   <li>The given identifier is always quoted.</li>
      * </ul>
      *
-     * @param  schema      the schema, or {@code null} if none.
+     * @param  schema      the schema, or {@code null} or empty if none.
      * @param  identifier  the identifier to append.
      * @return this builder, for method call chaining.
      */
     public final SQLBuilder appendIdentifier(final String schema, final String identifier) {
-        if (schema != null) {
+        if (schema != null && !schema.isEmpty()) {
             if (quoteSchema) {
                 appendIdentifier(schema);
             } else {
@@ -192,17 +169,17 @@ public class SQLBuilder {
     /**
      * Appends an identifier for an element in the given schema and catalog.
      *
-     * @param  catalog     the catalog, or {@code null} if none.
-     * @param  schema      the schema, or {@code null} if none.
+     * @param  catalog     the catalog, or {@code null} or empty if none.
+     * @param  schema      the schema, or {@code null} or empty if none.
      * @param  identifier  the identifier to append.
      * @return this builder, for method call chaining.
      */
-    public final SQLBuilder appendIdentifier(final String catalog, String schema, final String identifier) {
+    public final SQLBuilder appendIdentifier(final String catalog, final String schema, final String identifier) {
         if (catalog != null && !catalog.isEmpty()) {
             appendIdentifier(catalog);
             buffer.append('.');
             if (schema == null) {
-                return appendIdentifier("").appendIdentifier(identifier);
+                buffer.append(quote).append(quote).append('.');
             }
         }
         return appendIdentifier(schema, identifier);
@@ -268,6 +245,40 @@ public class SQLBuilder {
             }
             buffer.append(escape).append(tokens.nextToken());
         }
+        return this;
+    }
+
+    /**
+     * Appends {@code OFFSET} and {@code FETCH} clauses for fetching only a page of data.
+     * If a limit or an offset is appended, a space will be added before the clauses.
+     * This method uses ANSI notation for better compatibility with various drivers.
+     *
+     * @param  offset  the offset to use. If zero or negative, no offset is written.
+     * @param  count   number of rows to fetch. If zero or negative, no count is written.
+     * @return this builder, for method call chaining.
+     */
+    public final SQLBuilder appendFetchPage(final long offset, final long count) {
+        if (offset > 0) {
+            buffer.append(" OFFSET ").append(offset).append(" ROW");
+            if (offset > 1) buffer.append('S');
+        }
+        if (count > 0) {
+            buffer.append(" FETCH ").append(offset <= 0 ? "FIRST" : "NEXT").append(' ').append(count).append(" ROW");
+            if (count > 1) buffer.append('S');
+            buffer.append(" ONLY");
+        }
+        return this;
+    }
+
+    /**
+     * Inserts the {@code DISTINCT} keyword after {@code SELECT}.
+     * An {@link AssertionError} may be thrown if the buffer content does not starts with {@value #SELECT}.
+     *
+     * @return this builder, for method call chaining.
+     */
+    public final SQLBuilder insertDistinct() {
+        assert CharSequences.startsWith(buffer, SELECT, false) : buffer;
+        buffer.insert(SELECT.length(), "DISTINCT ");
         return this;
     }
 
@@ -346,7 +357,7 @@ public class SQLBuilder {
      * @param  value  the object for which to double the quotes in the string representation.
      * @return a string representation of the given object with simple quotes doubled.
      */
-    public static String doubleQuotes(final Object value) {
+    private static String doubleQuotes(final Object value) {
         return value.toString().replace("'", "''");
     }
 
