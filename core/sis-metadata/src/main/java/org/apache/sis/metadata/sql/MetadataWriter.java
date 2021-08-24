@@ -112,7 +112,7 @@ import org.opengis.util.ControlledVocabulary;
  * </table>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -521,7 +521,7 @@ public class MetadataWriter extends MetadataSource {
         }
         helper.append(") VALUES (").appendValue(identifier);
         for (final Object value : asSingletons.values()) {
-            helper.append(", ").appendValue(value);
+            helper.append(", ").appendValue(toStorableValue(value));
         }
         final String sql = helper.append(')').toString();
         if (stmt.executeUpdate(sql) != 1) {
@@ -652,7 +652,7 @@ public class MetadataWriter extends MetadataSource {
      * the native SQL {@code ENUM} type for making easier to add new values when a standard
      * is updated.
      */
-    private String addCode(final Statement stmt, final ControlledVocabulary code) throws SQLException, FactoryException {
+    private String addCode(final Statement stmt, final ControlledVocabulary code) throws SQLException {
         assert Thread.holdsLock(this);
         final String table = getTableName(code.getClass());
         final Set<String> columns = getExistingColumns(table);

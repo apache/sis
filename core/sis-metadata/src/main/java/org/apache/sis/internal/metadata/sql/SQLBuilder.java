@@ -19,9 +19,6 @@ package org.apache.sis.internal.metadata.sql;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
-import org.opengis.util.FactoryException;
-import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.util.CharSequences;
 
 
@@ -191,9 +188,8 @@ public class SQLBuilder extends Syntax {
      *
      * @param  value  the value to append, or {@code null}.
      * @return this builder, for method call chaining.
-     * @throws FactoryException if an error occurred while using the geodetic database.
      */
-    public final SQLBuilder appendCondition(final Object value) throws FactoryException {
+    public final SQLBuilder appendCondition(final Object value) {
         if (value == null) {
             buffer.append(" IS NULL");
             return this;
@@ -203,24 +199,35 @@ public class SQLBuilder extends Syntax {
     }
 
     /**
-     * Appends a value in an {@code INSERT} statement.
+     * Appends a value in a {@code SELECT} or {@code INSERT} statement.
+     * The value is written between quotes.
      *
      * @param  value  the value to append, or {@code null}.
      * @return this builder, for method call chaining.
-     * @throws FactoryException if an error occurred while using the geodetic database.
      */
-    public final SQLBuilder appendValue(Object value) throws FactoryException {
+    public final SQLBuilder appendValue(final String value) {
         if (value == null) {
             buffer.append("NULL");
+        } else {
+            buffer.append('\'').append(value.replace("'", "''")).append('\'');
+        }
+        return this;
+    }
+
+    /**
+     * Appends a value in a {@code SELECT} or {@code INSERT} statement.
+     * If the given value is a character string, then it is written between quotes.
+     *
+     * @param  value  the value to append, or {@code null}.
+     * @return this builder, for method call chaining.
+     */
+    public final SQLBuilder appendValue(final Object value) {
+        if (value instanceof Number) {
+            buffer.append(value);
         } else if (value instanceof Boolean) {
             buffer.append((Boolean) value ? "TRUE" : "FALSE");
-        } else if (value instanceof Number) {
-            buffer.append(value);
         } else {
-            if (value instanceof IdentifiedObject) {
-                value = ReferencingServices.getInstance().getPreferredIdentifier((IdentifiedObject) value);
-            }
-            buffer.append('\'').append(doubleQuotes(value)).append('\'');
+            return appendValue((value != null) ? value.toString() : (String) null);
         }
         return this;
     }
@@ -231,7 +238,7 @@ public class SQLBuilder extends Syntax {
      *
      * <p>This method does not double the simple quotes of the given string on intent, because
      * it may be used in a {@code PreparedStatement}. If the simple quotes need to be doubled,
-     * then {@link #doubleQuotes(Object)} should be invoked explicitly.</p>
+     * then {@link #appendValue(String)} should be invoked.</p>
      *
      * @param  value  the value to append.
      * @return this builder, for method call chaining.
@@ -349,16 +356,6 @@ public class SQLBuilder extends Syntax {
                 .appendIdentifier(schema, target).append(" (").appendIdentifier(primaryKey)
                 .append(") ON UPDATE ").append(cascade ? "CASCADE" : "RESTRICT")
                 .append(" ON DELETE RESTRICT").toString();
-    }
-
-    /**
-     * Returns the string representation of the given value with simple quote doubled.
-     *
-     * @param  value  the object for which to double the quotes in the string representation.
-     * @return a string representation of the given object with simple quotes doubled.
-     */
-    private static String doubleQuotes(final Object value) {
-        return value.toString().replace("'", "''");
     }
 
     /**
