@@ -18,6 +18,7 @@ package org.apache.sis.internal.filter;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.function.BiConsumer;
 import org.opengis.util.CodeList;
@@ -26,6 +27,7 @@ import org.apache.sis.internal.feature.Resources;
 // Branch-dependent imports
 import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;
+import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.DistanceOperatorName;
@@ -90,6 +92,23 @@ public abstract class Visitor<R,A> {
     protected Visitor(final boolean hasFilters, final boolean hasExpressions) {
         filters     = hasFilters     ? new HashMap<>() : Collections.emptyMap();
         expressions = hasExpressions ? new HashMap<>() : Collections.emptyMap();
+    }
+
+    /**
+     * Creates a new visitor initialized to the same handlers than the specified visitor.
+     * This constructor can be used for creating a copy from a template before to add or remove handlers.
+     * If any of the {@code copy} argument is {@code false}, it is caller's responsibility to not modify
+     * the corresponding map of handlers because it will be an instance shared with the {@code source}.
+     *
+     * @param  source           the visitor from which to copy the handlers.
+     * @param  copyFilters      whether to copy the map of filter handlers.
+     * @param  copyExpressions  whether to copy the map of expression handlers.
+     *
+     * @see #removeFilterHandlers(Collection)
+     */
+    protected Visitor(final Visitor<R,A> source, final boolean copyFilters, final boolean copyExpressions) {
+        filters     = copyFilters     ? new HashMap<>(source.filters)     : source.filters;
+        expressions = copyExpressions ? new HashMap<>(source.expressions) : source.expressions;
     }
 
     /**
@@ -229,8 +248,31 @@ public abstract class Visitor<R,A> {
     }
 
     /**
+     * Removes all filters of the given types. Types that have no registered handlers are ignored.
+     *
+     * @param  types  types of filters to remove.
+     */
+    protected final void removeFilterHandlers(final Collection<? extends CodeList<?>> types) {
+        filters.keySet().removeAll(types);
+    }
+
+    /**
      * Executes the registered action for the given filter.
      * Actions are registered by calls to {@code setFooHandler(…)} before the call to this {@code visit(…)} method.
+     *
+     * <h4>Note on parameterized type</h4>
+     * This method often needs to be invoked with instances of {@code Filter<? super R>},
+     * because this is the type of filters returned by GeoAPI methods such as {@link LogicalOperator#getOperands()}.
+     * But the parameterized type expected by this method matches the parameterized type of handlers registered by
+     * {@link #setFilterHandler(CodeList, BiConsumer)} and similar methods, which use the exact {@code <R>} type.
+     * This restriction exists because when doing otherwise, parameterized types become hard to express in Java
+     * (we get a cascade of {@code super} keywords, something like {@code <? super ? super R>}).
+     * However doing the {@code (Filter<R>) filter} cast is actually safe if the handlers do not invoke any
+     * {@code filter} method having a return value (directly or indirectly as list elements) restricted to
+     * the exact {@code <R>} type. Such methods do not exist in the GeoAPI interfaces, so the cast is safe
+     * if the {@link BiConsumer} handlers do not invoke implementation-specific methods.
+     * Since only subclasses known the details of registered handlers,
+     * the decision to cast or not is left to those subclasses.
      *
      * @param  filter       the filter for which to execute an action based on its type.
      * @param  accumulator  where to write the result of all actions.
@@ -250,22 +292,27 @@ public abstract class Visitor<R,A> {
      * Executes the registered action for the given expression.
      * Actions are registered by calls to {@code setFooHandler(…)} before the call to this {@code visit(…)} method.
      *
+     * <h4>Note on parameterized type</h4>
+     * This method often needs to be invoked with instances of {@code Expression<? super R, ?>},
+     * because this is the type of filters returned by GeoAPI methods such as {@link Expression#getParameters()}.
+     * But the parameterized type expected by this method matches the parameterized type of handlers registered by
+     * {@link #setExpressionHandler(String, BiConsumer)} and similar methods, which use the exact {@code <R>} type.
+     * This restriction exists because when doing otherwise, parameterized types become hard to express in Java
+     * (we get a cascade of {@code super} keywords, something like {@code <? super ? super R>}).
+     * However doing the {@code (Expression<R>,?) expression} cast is actually safe if the handlers do not invoke
+     * any {@code expression} method having a return value (directly or indirectly as list elements) restricted to
+     * the exact {@code <R>} type. Such methods do not exist in the GeoAPI interfaces, so the cast is safe
+     * if the {@link BiConsumer} handlers do not invoke implementation-specific methods.
+     * Since only subclasses known the details of registered handlers,
+     * the decision to cast or not is left to those subclasses.
+     *
      * @param  expression   the expression for which to execute an action based on its type.
      * @param  accumulator  where to write the result of all actions.
      * @throws UnsupportedOperationException if there is no action registered for the given expression.
      */
-    public final void visit(final Expression<R,?> expression, final A accumulator) {
+    public void visit(final Expression<R,?> expression, final A accumulator) {
         final String type = (expression != null) ? expression.getFunctionName().tip().toString() : null;
         final BiConsumer<Expression<R,?>, A> f = expressions.get(type);
-        /*
-         * This method signature uses `<? super R>` for caller's convenience because this is the type that
-         * we get from `Expression.getParameters()` and similar methods. But the `BiConsumer` uses exactly
-         * `<R>` because doing otherwise causes complications with types that can not be expressed in Java
-         * (kinds of `<? super ? super R>`). The casts below are okay if we do not invoke any `expression`
-         * method with a return value (directly or indirectly as list elements) of exactly `<R>` type.
-         * Such methods do not exist in the GeoAPI interfaces, so we are safe if the `BiConsumer` does
-         * not invoke implementation-specific methods.
-         */
         if (f != null) {
             f.accept(expression, accumulator);
         } else {
