@@ -109,7 +109,9 @@ public class FeatureQuery extends Query implements Cloneable {
      * The expressions to use for sorting the feature instances.
      *
      * @see #getSortBy()
-     * @see #setSortBy(SortBy...)
+     * @see #setSortBy(SortProperty...)
+     *
+     * @todo Should be an instance of {@link org.opengis.filter.SortBy}.
      */
     private SortProperty[] sortBy;
 

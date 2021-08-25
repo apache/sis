@@ -33,18 +33,25 @@ import org.opengis.filter.SortProperty;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  *
  * @todo Current implementation has unchecked casts. Fixing that may require a revision of filter interfaces.
  *       See <a href="https://github.com/opengeospatial/geoapi/issues/32">GeoAPI issue #32</a>.
  */
-final class SortByComparator implements Comparator<Feature> {
+public final class SortByComparator implements Comparator<Feature> {
+    /**
+     * The sort order specified to the constructor.
+     * Not used by this class, but provided for allowing optimizer
+     * to decompose this comparator into its component properties.
+     */
+    public final SortProperty[] orders;
+
     /**
      * The expression to evaluate for getting the values to sort.
      */
-    private final Expression[] properties;
+    private final Expression<?,?>[] properties;
 
     /**
      * {@code false} for ascending order, {@code true} for descending order.
@@ -57,8 +64,9 @@ final class SortByComparator implements Comparator<Feature> {
      * It is caller responsibility to ensure that the given array is non-empty.
      */
     SortByComparator(final SortProperty[] orders) {
-        properties = new Expression[orders.length];
-        descending = new boolean   [orders.length];
+        this.orders = orders;
+        properties  = new Expression[orders.length];
+        descending  = new boolean   [orders.length];
         for (int i=0; i<orders.length; i++) {
             final SortProperty order = orders[i];
             properties[i] = order.getValueReference();
@@ -70,6 +78,10 @@ final class SortByComparator implements Comparator<Feature> {
      * Compares two features for order. Returns -1 if {@code f1} should be sorted before {@code f2},
      * +1 if {@code f2} should be after {@code f1}, or 0 if both are equal. Null features are sorted
      * after all non-null features, regardless sorting order.
+     *
+     * @param  f1  the first feature to compare.
+     * @param  f2  the second feature to compare.
+     * @return -1 if the first feature is before the second, +1 for the converse, or 0 if equal.
      */
     @Override
     public int compare(final Feature f1, final Feature f2) {
