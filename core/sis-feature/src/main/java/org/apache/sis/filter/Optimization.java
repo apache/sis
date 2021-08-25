@@ -18,14 +18,20 @@ package org.apache.sis.filter;
 
 import java.util.Map;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
+import org.opengis.util.CodeList;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.CollectionsExt;
 
 // Branch-dependent imports
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
+import org.opengis.filter.LogicalOperator;
+import org.opengis.filter.LogicalOperatorName;
 
 
 /**
@@ -293,5 +299,92 @@ public class Optimization {
         default Expression<R,V> recreate(Expression<? super R, ?>[] effective) {
             return this;
         }
+    }
+
+    /**
+     * Optimizes or simplifies the given filter and returns it as a list of {@code AND} operands.
+     * If such list can not be built, then this method returns the optimized filter in a singleton list.
+     *
+     * <h4>Use case</h4>
+     * This method tries to transform a filter into a {@code F₀ AND F₁ AND F₂ AND F₃ AND ...} sequence.
+     * This transformation is useful when some operands can be handled by the storage engine
+     * (for example a SQL database) and other operands can not.
+     * For example when reading features from a relational database,
+     * the implementation may choose to express the F₁ and F₃ operands as SQL statements
+     * and apply the other operands in Java code.
+     *
+     * @param  <R>     the type of resources (e.g. {@code Feature}) used as inputs.
+     * @param  filter  the filter to decompose.
+     * @return a sequence of {@code AND} operands, or an empty list if the given filter was null.
+     * @throws ClassCastException if a filter declares the {@code AND}, {@code OR} or {@code NOT} type
+     *         without implementing the {@link LogicalOperator} interface.
+     */
+    @SuppressWarnings("unchecked")
+    public <R> List<Filter<? super R>> applyAndDecompose(final Filter<R> filter) {
+        /*
+         * This unsafe cast is okay if `toAndOperands(…)` do not invoke any `filter` method having a
+         * return value (directly or indirectly as list elements) restricted to the exact `<R>` type.
+         * Such methods do not exist in the GeoAPI interfaces, so we should be safe.
+         */
+        return toAndOperands((Filter<R>) apply(filter));
+    }
+
+    /**
+     * Returns the given filter as a list of {@code AND} operands.
+     * If such list can not be built, then this method returns the given filter in a singleton list.
+     *
+     * @param  <R>     the type of resources (e.g. {@code Feature}) used as inputs.
+     * @param  filter  the filter to decompose.
+     * @return a sequence of {@code AND} operands, or an empty list if the given filter was null.
+     * @throws ClassCastException if a filter declares the {@code AND}, {@code OR} or {@code NOT} type
+     *         without implementing the {@link LogicalOperator} interface.
+     */
+    private static <R> List<Filter<? super R>> toAndOperands(final Filter<R> filter) {
+        if (filter == null) {
+            return Collections.emptyList();
+        }
+        final CodeList<?> type = filter.getOperatorType();
+        if (type == LogicalOperatorName.AND) {
+            return ((LogicalOperator<R>) filter).getOperands();
+        }
+        if (type == LogicalOperatorName.NOT) {
+            final Filter<? super R> nop = getNotOperand(filter);
+            if (nop.getOperatorType() == LogicalOperatorName.OR) {
+                /*
+                 * The cast to `<R>` instead of `<? super R>` should be okay because we do not invoke
+                 * any method with a `<R>` return value. All invoked methods return `<? super R>`.
+                 * So what we actually have is a kind of `<? super ? super R>`.
+                 */
+                @SuppressWarnings("unchecked")
+                final List<Filter<? super R>> operands = ((LogicalOperator<R>) nop).getOperands();
+                final List<Filter<? super R>> result = new ArrayList<>(operands.size());
+                for (Filter<? super R> operand : operands) {
+                    if (operand.getOperatorType() == LogicalOperatorName.NOT) {
+                        operand = getNotOperand(operand);
+                    } else {
+                        operand = new LogicalFunction.Not<>(operand);
+                    }
+                    result.add(operand);
+                }
+                return result;
+            }
+        }
+        return Collections.singletonList(filter);
+    }
+
+    /**
+     * Returns the singleton operand of the given {@code NOT} filter.
+     *
+     * @param  filter  the {@code NOT} filter.
+     * @return the single operand of the {@code NOT} filter (never null).
+     * @throws ClassCastException if the filter does not implement the {@link LogicalOperator} interface.
+     * @throws IllegalArgumentException if the filter does not have a single operand.
+     */
+    private static <R> Filter<? super R> getNotOperand(final Filter<R> filter) {
+        final Filter<? super R> operand = CollectionsExt.singletonOrNull(((LogicalOperator<R>) filter).getOperands());
+        if (operand != null) {
+            return operand;
+        }
+        throw new IllegalArgumentException();
     }
 }
