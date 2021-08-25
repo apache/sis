@@ -162,10 +162,10 @@ public final strictfp class EnvelopeOperationTest extends TestCase {
             final Attribute<GeometryWrapper<?>> property =
                     (Attribute<GeometryWrapper<?>>) feature.getProperty(propertyName);
             final Attribute<CoordinateReferenceSystem> crsCharacteristic = Features.cast(
-                    property.getType().characteristics().get(AttributeConvention.CRS_CHARACTERISTIC.toString()),
+                    property.getType().characteristics().get(AttributeConvention.CRS),
                     CoordinateReferenceSystem.class).newInstance();
             crsCharacteristic.setValue(crs);
-            property.characteristics().put(AttributeConvention.CRS_CHARACTERISTIC.toString(), crsCharacteristic);
+            property.characteristics().put(AttributeConvention.CRS, crsCharacteristic);
             property.setValue(wrapper);
         } else {
             wrapper.setCoordinateReferenceSystem(crs);

@@ -206,6 +206,27 @@ public final class AttributeConvention extends Static {
     public static final String GEOMETRY = "sis:geometry";
 
     /**
+     * String representation of the {@link #ENVELOPE_PROPERTY} name.
+     * This can be used in calls to {@link Feature#getPropertyValue(String)}.
+     */
+    public static final String ENVELOPE = "sis:envelope";
+
+    /**
+     * String representation of the {@link #CRS_CHARACTERISTIC} name.
+     */
+    public static final String CRS = "sis:crs";
+
+    /**
+     * String representation of the {@link #UNIT_CHARACTERISTIC} name.
+     */
+    public static final String UNIT = "sis:unit";
+
+    /**
+     * String representation of the {@link #MAXIMAL_LENGTH_CHARACTERISTIC} name.
+     */
+    public static final String MAXIMAL_LENGTH = "sis:maximalLength";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private AttributeConvention() {
@@ -280,7 +301,7 @@ public final class AttributeConvention extends Static {
      * @return {@code true} if a characteristic for Coordinate Reference System has been found.
      */
     public static boolean characterizedByCRS(final IdentifiedType type) {
-        return hasCharacteristic(type, CRS_CHARACTERISTIC.toString(), CoordinateReferenceSystem.class);
+        return hasCharacteristic(type, CRS, CoordinateReferenceSystem.class);
     }
 
     /**
@@ -295,7 +316,7 @@ public final class AttributeConvention extends Static {
      * @see org.apache.sis.feature.builder.AttributeTypeBuilder#setCRS(CoordinateReferenceSystem)
      */
     public static CoordinateReferenceSystem getCRSCharacteristic(final Property attribute) {
-        return (CoordinateReferenceSystem) getCharacteristic(attribute, CRS_CHARACTERISTIC.toString());
+        return (CoordinateReferenceSystem) getCharacteristic(attribute, CRS);
     }
 
     /**
@@ -314,7 +335,7 @@ public final class AttributeConvention extends Static {
      *         to an object which is not a {@link CoordinateReferenceSystem} instance.
      */
     public static CoordinateReferenceSystem getCRSCharacteristic(final FeatureType feature, final PropertyType attribute) {
-        return (CoordinateReferenceSystem) getCharacteristic(feature, attribute, CRS_CHARACTERISTIC.toString());
+        return (CoordinateReferenceSystem) getCharacteristic(feature, attribute, CRS);
     }
 
     /**
@@ -341,7 +362,7 @@ public final class AttributeConvention extends Static {
      * @see org.apache.sis.feature.builder.AttributeTypeBuilder#setMaximalLength(Integer)
      */
     public static Integer getMaximalLengthCharacteristic(final Property attribute) {
-        return (Integer) getCharacteristic(attribute, MAXIMAL_LENGTH_CHARACTERISTIC.toString());
+        return (Integer) getCharacteristic(attribute, MAXIMAL_LENGTH);
     }
 
     /**
@@ -360,7 +381,7 @@ public final class AttributeConvention extends Static {
      *         to an object which is not a {@link CoordinateReferenceSystem} instance.
      */
     public static Integer getMaximalLengthCharacteristic(final FeatureType feature, final PropertyType attribute) {
-        return (Integer) getCharacteristic(feature, attribute, MAXIMAL_LENGTH_CHARACTERISTIC.toString());
+        return (Integer) getCharacteristic(feature, attribute, MAXIMAL_LENGTH);
     }
 
     /**

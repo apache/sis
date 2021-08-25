@@ -615,7 +615,7 @@ public class SEPortrayerTest extends TestCase {
             assertEquals(6, type.getProperties(true).size());
             assertNotNull(type.getProperty(AttributeConvention.IDENTIFIER));
             assertNotNull(type.getProperty(AttributeConvention.GEOMETRY));
-            assertNotNull(type.getProperty(AttributeConvention.ENVELOPE_PROPERTY.toString()));
+            assertNotNull(type.getProperty(AttributeConvention.ENVELOPE));
             assertNotNull(type.getProperty("id"));
             assertNotNull(type.getProperty("geom"));
             assertNotNull(type.getProperty("description"));

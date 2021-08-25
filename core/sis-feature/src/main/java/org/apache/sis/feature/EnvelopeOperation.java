@@ -139,7 +139,6 @@ final class EnvelopeOperation extends AbstractOperation {
     {
         super(identification);
         String defaultGeometry = null;
-        final String characteristicName = AttributeConvention.CRS_CHARACTERISTIC.toString();
         /*
          * Get all property names without duplicated values. If a property is a link to an attribute,
          * then the key will be the name of the referenced attribute instead of the operation name.
@@ -166,7 +165,7 @@ final class EnvelopeOperation extends AbstractOperation {
                  * "CRS" characteristic. Note that we can not rely on `attributeCRS` being non-null
                  * because an attribute may be characterized by a CRS without providing default CRS.
                  */
-                final AttributeType<?> ct = at.get().characteristics().get(characteristicName);
+                final AttributeType<?> ct = at.get().characteristics().get(AttributeConvention.CRS);
                 if (ct != null && CoordinateReferenceSystem.class.isAssignableFrom(ct.getValueClass())) {
                     attributeCRS = (CoordinateReferenceSystem) ct.getDefaultValue();              // May still null.
                     if (targetCRS == null && isDefault) {
@@ -344,7 +343,7 @@ final class EnvelopeOperation extends AbstractOperation {
                          * will cause a new coordinate operation to be searched.
                          */
                         final Attribute<?> at = ((Attribute<?>) feature.getProperty(attributeNames[i]))
-                                .characteristics().get(AttributeConvention.CRS_CHARACTERISTIC.toString());
+                                .characteristics().get(AttributeConvention.CRS);
                         final Object geomCRS;
                         if (at != null && (geomCRS = at.getValue()) != null) {
                             if (!(geomCRS instanceof CoordinateReferenceSystem)) {
