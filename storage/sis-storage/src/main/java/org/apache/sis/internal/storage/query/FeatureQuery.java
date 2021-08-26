@@ -41,6 +41,8 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;
+import org.opengis.filter.Literal;
+import org.opengis.filter.ValueReference;
 import org.opengis.filter.SortProperty;
 import org.opengis.filter.InvalidFilterValueException;
 
@@ -419,7 +421,13 @@ public class FeatureQuery extends Query implements Cloneable {
          * Appends a string representation of this column in the given buffer.
          */
         final void appendTo(final StringBuilder buffer) {
-            buffer.append(Classes.getShortClassName(expression));       // Class name with enclosing class if any.
+            if (expression instanceof Literal<?,?>) {
+                buffer.append('“').append(((Literal<?,?>) expression).getValue()).append('”');
+            } else if (expression instanceof ValueReference<?,?>) {
+                buffer.append(((ValueReference<?,?>) expression).getXPath());
+            } else {
+                buffer.append(Classes.getShortClassName(expression));   // Class name with enclosing class if any.
+            }
             if (alias != null) {
                 buffer.append(" AS “").append(alias).append('”');
             }
@@ -541,7 +549,8 @@ public class FeatureQuery extends Query implements Cloneable {
             sb.append(" ORDER BY ");
             for (int i=0; i<sortBy.length; i++) {
                 if (i != 0) sb.append(", ");
-                sb.append(sortBy[i]);
+                final SortProperty p = sortBy[i];
+                sb.append(p.getValueReference().getXPath()).append(' ').append(p.getSortOrder());
             }
         }
         if (linearResolution != null) {

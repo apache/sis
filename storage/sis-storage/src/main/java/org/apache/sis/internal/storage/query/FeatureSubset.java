@@ -100,7 +100,7 @@ final class FeatureSubset extends AbstractFeatureSet {
          */
         final Filter<? super Feature> selection = query.getSelection();
         if (!Filter.include().equals(selection)) {
-            stream = stream.filter(selection::test);
+            stream = stream.filter(selection);
         }
         /*
          * Apply sorting.
