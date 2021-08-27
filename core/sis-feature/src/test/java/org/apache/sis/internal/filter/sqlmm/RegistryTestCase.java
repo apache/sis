@@ -381,8 +381,7 @@ public abstract strictfp class RegistryTestCase<G> extends TestCase {
 
         // Test with a missing CRS information.
         setGeometryCRS(null);
-        assertNull(evaluate("ST_Intersects", geometry, point));
-        loggings.assertNextLogContains();       // Any message.
+        assertEquals(Boolean.TRUE, evaluate("ST_Intersects", geometry, point));
     }
 
     /**

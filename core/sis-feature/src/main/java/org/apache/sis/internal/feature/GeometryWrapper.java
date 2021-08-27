@@ -366,10 +366,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
             return other;
         }
         final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
-        if (crs != null) {
-            return other.transform(crs);
-        }
-        throw new TransformException(Errors.format(Errors.Keys.UnspecifiedCRS));
+        return (crs != null) ? other.transform(crs) : this;
     }
 
     /**

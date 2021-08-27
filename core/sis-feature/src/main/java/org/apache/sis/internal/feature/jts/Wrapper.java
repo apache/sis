@@ -652,11 +652,11 @@ add:    for (Geometry next = geometry;;) {
     /**
      * Transforms this geometry to the specified Coordinate Reference System (CRS).
      * If the given CRS is null or is the same CRS than current one, the geometry is returned unchanged.
-     * If the geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
+     * If the geometry has no Coordinate Reference System, then the geometry is returned unchanged.
      *
      * @param  targetCRS  the target coordinate reference system, or {@code null}.
      * @return the transformed geometry (may be the same geometry instance), or {@code null}.
-     * @throws TransformException if the geometry has no CRS or can not be transformed.
+     * @throws TransformException if this geometry can not be transformed.
      */
     @Override
     public GeometryWrapper<Geometry> transform(final CoordinateReferenceSystem targetCRS) throws TransformException {

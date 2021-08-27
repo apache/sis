@@ -27,7 +27,6 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.geometry.Envelope2D;
@@ -218,7 +217,7 @@ public final class JTS extends Static {
      * Transforms the given geometry to the specified Coordinate Reference System (CRS).
      * If the given CRS or the given geometry is null or is the same than current CRS,
      * then the geometry is returned unchanged.
-     * If the geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
+     * If the geometry has no Coordinate Reference System, then the geometry is returned unchanged.
      *
      * <p><b>This operation may be slow!</b>
      * If many geometries need to be transformed, it is better to fetch the {@link CoordinateOperation} only once,
@@ -229,18 +228,17 @@ public final class JTS extends Static {
      * @param  targetCRS  the target coordinate reference system, or {@code null}.
      * @return the transformed geometry, or the same geometry if it is already in target CRS.
      * @throws FactoryException if transformation to the target CRS can not be constructed.
-     * @throws TransformException if the given geometry has no CRS or can not be transformed.
+     * @throws TransformException if the given geometry can not be transformed.
      */
     public static Geometry transform(Geometry geometry, final CoordinateReferenceSystem targetCRS)
             throws FactoryException, TransformException
     {
         if (geometry != null && targetCRS != null) {
             final CoordinateReferenceSystem sourceCRS = getCoordinateReferenceSystem(geometry);
-            if (sourceCRS == null) {
-                throw new TransformException(Errors.format(Errors.Keys.UnspecifiedCRS));
-            }
-            if (!Utilities.equalsIgnoreMetadata(sourceCRS, targetCRS)) {
-                geometry = transform(geometry, findOperation(sourceCRS, targetCRS, geometry), false);
+            if (sourceCRS != null) {
+                if (!Utilities.equalsIgnoreMetadata(sourceCRS, targetCRS)) {
+                    geometry = transform(geometry, findOperation(sourceCRS, targetCRS, geometry), false);
+                }
             }
         }
         return geometry;
