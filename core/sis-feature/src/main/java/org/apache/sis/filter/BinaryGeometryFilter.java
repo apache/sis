@@ -21,10 +21,12 @@ import java.util.Arrays;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.feature.SpatialOperationContext;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.filter.Node;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -32,9 +34,12 @@ import org.apache.sis.util.ArgumentChecks;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
+import org.opengis.filter.ValueReference;
 import org.opengis.filter.SpatialOperator;
 import org.opengis.filter.BinarySpatialOperator;
 import org.opengis.filter.InvalidFilterValueException;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyNotFoundException;
 
 
 /**
@@ -175,17 +180,23 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements SpatialOperator
      */
     @Override
     public final Filter<? super R> optimize(final Optimization optimization) {
-        final Expression<? super R, ?> geometry1  = unwrap(expression1);
-        final Expression<? super R, ?> geometry2  = unwrap(expression2);
-        final Expression<? super R, ?> effective1 = optimization.apply(geometry1);
-        final Expression<? super R, ?> effective2 = optimization.apply(geometry2);
-        final Literal<? super R, ?> literal;
-        final boolean immediate;                // true if the filter should be evaluated immediately.
-        final boolean literalIsNull;            // true if one of the literal value is null.
+        Expression<? super R, ?> geometry1  = unwrap(expression1);
+        Expression<? super R, ?> geometry2  = unwrap(expression2);
+        Expression<? super R, ?> effective1 = optimization.apply(geometry1);
+        Expression<? super R, ?> effective2 = optimization.apply(geometry2);
+        Expression<? super R, ?> other;     // The expression which is not literal.
+        Expression<? super R, GeometryWrapper<G>> wrapper;
+        Literal<? super R, ?> literal;
+        boolean immediate;                  // true if the filter should be evaluated immediately.
+        boolean literalIsNull;              // true if one of the literal value is null.
         if (effective2 instanceof Literal<?,?>) {
+            other     = effective1;
+            wrapper   = expression2;
             literal   = (Literal<? super R, ?>) effective2;
             immediate = (effective1 instanceof Literal<?,?>);
         } else if (effective1 instanceof Literal<?,?>) {
+            other     = effective2;
+            wrapper   = expression1;
             literal   = (Literal<? super R, ?>) effective1;
             immediate = false;
         } else {
@@ -197,6 +208,31 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements SpatialOperator
             // If the literal has no value, then the filter will always evaluate to a negative result.
             result = negativeResult();
         } else {
+            /*
+             * If we are optimizing for a feature type, and if the other expression is a property value,
+             * then try to fetch the CRS of the property values. If we can transform the literal to that
+             * CRS, do it now in order to avoid doing this transformation for all feature instances.
+             */
+            final FeatureType featureType = optimization.getFeatureType();
+            if (featureType != null && other instanceof ValueReference<?,?>) try {
+                final CoordinateReferenceSystem targetCRS = AttributeConvention.getCRSCharacteristic(
+                        featureType, featureType.getProperty(((ValueReference<?,?>) other).getXPath()));
+                if (targetCRS != null) {
+                    final GeometryWrapper<G> geometry    = wrapper.apply(null);
+                    final GeometryWrapper<G> transformed = geometry.transform(targetCRS);
+                    if (geometry != transformed) {
+                        literal = Optimization.literal(transformed);
+                        if (literal == effective1) effective1 = literal;
+                        else effective2 = literal;
+                    }
+                }
+            } catch (PropertyNotFoundException | TransformException e) {
+                warning(e, true);
+            }
+            /*
+             * If one of the "effective" parameter has been modified, recreate a new filter.
+             * If all operands are literal, we can evaluate that filter immediately.
+             */
             Filter<? super R> filter = this;
             if ((effective1 != geometry1) || (effective2 != geometry2)) {
                 filter = recreate(effective1, effective2);
@@ -204,7 +240,6 @@ abstract class BinaryGeometryFilter<R,G> extends Node implements SpatialOperator
             if (!immediate) {
                 return filter;
             }
-            // If all operands are literal, we can evaluate the expression immediately.
             result = filter.test(null);
         }
         return result ? Filter.include() : Filter.exclude();

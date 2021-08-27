@@ -17,6 +17,7 @@
 package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.Arrays;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -460,6 +461,30 @@ public abstract strictfp class RegistryTestCase<G> extends TestCase {
         assertNotSame("Optimization should produce a new expression.", function, optimized);
         assertInstanceOf("Expected immediate expression evaluation.", Literal.class, optimized);
         assertPointEquals(((Literal) optimized).getValue(), HardCodedCRS.WGS84_LATITUDE_FIRST, 30, 10);
+    }
+
+    /**
+     * Tests {@link Optimization} on an arbitrary expression on feature instances.
+     */
+    @Test
+    public void testFeatureOptimization() {
+        geometry = library.createPoint(10, 30);
+        setGeometryCRS(HardCodedCRS.WGS84_LATITUDE_FIRST);
+        function = factory.function("ST_Union", factory.property(P_NAME), factory.literal(geometry));
+
+        final Optimization optimization = new Optimization();
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
+        ftb.addAttribute(library.pointClass).setName(P_NAME).setCRS(HardCodedCRS.WGS84);
+        optimization.setFeatureType(ftb.setName("Test").build());
+        final Expression<? super Feature, ?> optimized = optimization.apply(function);
+        assertNotSame("Optimization should produce a new expression.", function, optimized);
+        /*
+         * Get the second parameter, which should be a literal, and get the point coordinates.
+         * Verify that the order is swapped compared to the order at the beginning of this method.
+         */
+        final Object literal = optimized.getParameters().get(1).apply(null);
+        final DirectPosition point = library.castOrWrap(literal).getCentroid();
+        assertArrayEquals(new double[] {30, 10}, point.getCoordinate(), STRICT);
     }
 
     /**

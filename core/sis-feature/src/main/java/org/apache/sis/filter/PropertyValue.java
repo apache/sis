@@ -19,6 +19,7 @@ package org.apache.sis.filter;
 import java.util.Collection;
 import java.util.Collections;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -29,6 +30,7 @@ import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
 import org.opengis.feature.PropertyNotFoundException;
@@ -38,7 +40,7 @@ import org.opengis.filter.ValueReference;
 
 /**
  * Expression whose value is computed by retrieving the value indicated by the provided name.
- * A property name does not store any value; it acts as an indirection to a property value of
+ * This expression does not store any value; it acts as an indirection to a property value of
  * the evaluated feature.
  *
  * @author  Johann Sorel (Geomatys)
@@ -83,7 +85,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V> implements Val
         if (type == Object.class) {
             return (PropertyValue<V>) new AsObject(name);
         } else {
-            return new Typed<>(type, name);
+            return new Converted<>(type, name);
         }
     }
 
@@ -104,13 +106,31 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V> implements Val
     }
 
     /**
+     * Returns the type of values fetched from {@link Feature} instance.
+     * This is the type before conversion to the {@linkplain #getValueClass() target type}.
+     */
+    protected Class<?> getSourceClass() {
+        return Object.class;
+    }
+
+    /**
      * Returns an expression that provides values as instances of the specified class.
      */
     @Override
     @SuppressWarnings("unchecked")
     public final <N> Expression<Feature,N> toValueType(final Class<N> type) {
-        return type.isAssignableFrom(getValueClass()) ? (PropertyValue<N>) this : create(name, type);
+        if (type.isAssignableFrom(getValueClass())) {
+            return (PropertyValue<N>) this;
+        }
+        final Class<?> source = getSourceClass();
+        if (source != Object.class) {
+            return new CastedAndConverted<>(source, type, name);
+        }
+        return create(name, type);
     }
+
+
+
 
     /**
      * An expression fetching property values as {@code Object}.
@@ -143,15 +163,19 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V> implements Val
         }
     }
 
+
+
+
     /**
      * An expression fetching property values as an object of specified type.
+     * The value is converted from {@link Object} to the specified type.
      */
-    private static final class Typed<V> extends PropertyValue<V> {
+    private static class Converted<V> extends PropertyValue<V> implements Optimization.OnExpression<Feature,V> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -1436865010478207066L;
 
         /** The desired type of values. */
-        private final Class<V> type;
+        protected final Class<V> type;
 
         /**
          * Creates a new expression retrieving values from a property of the given name.
@@ -159,13 +183,16 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V> implements Val
          * @param  type  the desired type for the expression result.
          * @param  name  the name of the property to fetch.
          */
-        Typed(final Class<V> type, final String name) {
+        protected Converted(final Class<V> type, final String name) {
             super(name);
             this.type = type;
         }
 
-        /** Returns the type of values computed by this expression. */
-        @Override public Class<V> getValueClass() {
+        /**
+         * Returns the type of values computed by this expression.
+         */
+        @Override
+        public final Class<V> getValueClass() {
             return type;
         }
 
@@ -187,10 +214,33 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V> implements Val
         }
 
         /**
-         * Provides the expected type of values produced by this expression when a feature of the given type is evaluated.
+         * Tries to optimize this expression. If an {@link ObjectConverter} can be determined in advance
+         * for the {@linkplain Optimization#getFeatureType() feature type for which to optimize},
+         * then a specialized expression is returned. Otherwise this method returns {@code this}.
          */
         @Override
-        public PropertyTypeBuilder expectedType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
+        public final Expression<Feature, ? extends V> optimize(final Optimization optimization) {
+            final FeatureType featureType = optimization.getFeatureType();
+            if (featureType != null) try {
+                final PropertyType property = featureType.getProperty(name);
+                if (property instanceof AttributeType<?>) {
+                    final Class<?> source = ((AttributeType<?>) property).getValueClass();
+                    if (source != null && source != Object.class && !source.isAssignableFrom(getSourceClass())) {
+                        return new CastedAndConverted<>(source, type, name);
+                    }
+                }
+            } catch (PropertyNotFoundException e) {
+                warning(e, true);
+            }
+            return this;
+        }
+
+        /**
+         * Provides the expected type of values produced by this expression
+         * when a feature of the given type is evaluated.
+         */
+        @Override
+        public final PropertyTypeBuilder expectedType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
             final PropertyTypeBuilder p = super.expectedType(valueType, addTo);
             if (p instanceof AttributeTypeBuilder<?>) {
                 final AttributeTypeBuilder<?> a = (AttributeTypeBuilder<?>) p;
@@ -224,5 +274,55 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V> implements Val
             }
         }
         return addTo.addProperty(type);
+    }
+
+
+
+
+    /**
+     * An expression fetching property values as an object of specified type.
+     * The value is first casted from {@link Object} to the expected source type,
+     * then converted to the specified target type.
+     */
+    private static final class CastedAndConverted<S,V> extends Converted<V> {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = -58453954752151703L;
+
+        /** The source type before conversion. */
+        private final Class<S> source;
+
+        /** The conversion from source type to the type to be returned. */
+        private final ObjectConverter<? super S, ? extends V> converter;
+
+        /** Creates a new expression retrieving values from a property of the given name. */
+        CastedAndConverted(final Class<S> source, final Class<V> type, final String name) {
+            super(type, name);
+            this.source = source;
+            converter = ObjectConverters.find(source, type);
+        }
+
+        /**
+         * Returns the type of values fetched from {@link Feature} instance.
+         */
+        @Override
+        protected Class<S> getSourceClass() {
+            return source;
+        }
+
+        /**
+         * Returns the value of the property of the given name.
+         * If no value is found for the given feature, then this method returns {@code null}.
+         */
+        @Override
+        public V apply(final Feature instance) {
+            if (instance != null) try {
+                return converter.apply(source.cast(instance.getPropertyValue(name)));
+            } catch (PropertyNotFoundException e) {
+                warning(e, true);
+            } catch (ClassCastException | UnconvertibleObjectException e) {
+                warning(e, false);
+            }
+            return null;
+        }
     }
 }

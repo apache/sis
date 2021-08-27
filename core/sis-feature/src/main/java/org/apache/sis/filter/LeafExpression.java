@@ -190,7 +190,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
          */
         @Override
         public Expression<? super R, ? extends V> optimize(final Optimization optimization) {
-            return new Literal<>(getValue());
+            return Optimization.literal(getValue());
         }
 
         /**

@@ -32,6 +32,7 @@ import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
 import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;
+import org.opengis.feature.FeatureType;
 
 
 /**
@@ -44,11 +45,15 @@ import org.opengis.filter.LogicalOperatorName;
  *   <li>Immediate evaluation of expressions where all parameters are literal values.</li>
  * </ul>
  *
- * Current version does not yet provide configuration options.
- * But this class is the place where such options may be added in the future.
+ * The following options can enable some additional optimizations:
  *
- * <p>This class is <strong>not</strong> thread-safe. A new instance shall be created
- * for each thread applying optimizations. Example:</p>
+ * <ul>
+ *   <li>The type of the {@code Feature} instances to be filtered.</li>
+ * </ul>
+ *
+ * <h2>Usage in multi-threads context</h2>
+ * This class is <strong>not</strong> thread-safe.
+ * A new instance shall be created for each thread applying optimizations. Example:
  *
  * {@preformat java
  *     Filter<R> filter = ...;
@@ -81,6 +86,11 @@ public class Optimization {
     private static final Object COMPUTING = Void.TYPE;
 
     /**
+     * The type of feature instances to be filtered, or {@code null} if unknown.
+     */
+    private FeatureType featureType;
+
+    /**
      * Filters and expressions already optimized. Also used for avoiding never-ending loops.
      * The map is created when first needed.
      *
@@ -96,6 +106,29 @@ public class Optimization {
      * Creates a new instance.
      */
     public Optimization() {
+    }
+
+    /**
+     * Returns the type of feature instances to be filtered, or {@code null} if unknown.
+     * This is the last value specified by a call to {@link #setFeatureType(FeatureType)}.
+     * The default value is {@code null}.
+     *
+     * @return the type of feature instances to be filtered, or {@code null} if unknown.
+     */
+    public FeatureType getFeatureType() {
+        return featureType;
+    }
+
+    /**
+     * Sets the type of feature instances to be filtered.
+     * If this type is known in advance, specifying it may allow to compute more specific
+     * {@link org.apache.sis.util.ObjectConverter}s or to apply some geometry reprojection
+     * in advance.
+     *
+     * @param  type  the type of feature instances to be filtered, or {@code null} if unknown.
+     */
+    public void setFeatureType(final FeatureType type) {
+        featureType = type;
     }
 
     /**
@@ -172,6 +205,7 @@ public class Optimization {
                 Expression<? super R, ?> e = expressions.get(i);
                 unchanged &= (e == (e = optimization.apply(e)));
                 immediate &= (e instanceof Literal<?,?>);
+                effective[i] = e;
             }
             if (immediate) {
                 return test(null) ? Filter.include() : Filter.exclude();
@@ -275,9 +309,10 @@ public class Optimization {
                 Expression<? super R, ?> e = parameters.get(i);
                 unchanged &= (e == (e = optimization.apply(e)));
                 immediate &= (e instanceof Literal<?,?>);
+                effective[i] = e;
             }
             if (immediate) {
-                return new LeafExpression.Literal<>(apply(null));
+                return literal(apply(null));
             } else if (unchanged) {
                 return this;
             } else {
@@ -386,5 +421,20 @@ public class Optimization {
             return operand;
         }
         throw new IllegalArgumentException();
+    }
+
+    /**
+     * Creates a constant, literal value that can be used in expressions.
+     * This is a helper methods for optimizations that simplified an expression to a constant value.
+     *
+     * @param  <R>    the type of resources used as inputs.
+     * @param  <V>    the type of the value of the literal.
+     * @param  value  the literal value. May be {@code null}.
+     * @return a literal for the given value.
+     *
+     * @see DefaultFilterFactory#literal(Object)
+     */
+    public static <R,V> Literal<R,V> literal(final V value) {
+        return new LeafExpression.Literal<>(value);
     }
 }

@@ -29,6 +29,8 @@ import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
 import org.opengis.filter.FilterFactory;
@@ -39,6 +41,7 @@ import org.opengis.filter.LogicalOperator;
  * Tests {@link LogicalFunction} implementations.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
@@ -183,5 +186,37 @@ public final strictfp class LogicalFunctionTest extends TestCase {
         assertNotSame("Expected a new optimized filter.", original, optimized);
         assertSame("Second optimization should have no effect.", optimized, new Optimization().apply(optimized));
         assertSame("Expression should have been evaluated now.", expected, optimized);
+    }
+
+    /**
+     * Tests {@link Optimization} applied on logical filters when the {@link FeatureType} is known.
+     */
+    @Test
+    public void testFeatureOptimization() {
+        final String attribute = "population";
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
+        ftb.addAttribute(String.class).setName(attribute);
+        final FeatureType type = ftb.setName("Test").build();
+        final Feature instance = type.newInstance();
+        instance.setPropertyValue("population", "1000");
+        /*
+         * Prepare an expression which divide the population value by 5.
+         */
+        final Expression<Feature,Number> e = factory.divide(factory.property(attribute, Integer.class), factory.literal(5));
+        final Optimization optimization = new Optimization();
+        assertSame(e, optimization.apply(e));                       // No optimization.
+        assertEquals(200, e.apply(instance).intValue());
+        /*
+         * Notify the optimizer that property values will be of `String` type.
+         * The optimizer should compute an `ObjectConverter` in advance.
+         */
+        optimization.setFeatureType(type);
+        final Expression<? super Feature, ? extends Number> opt = optimization.apply(e);
+        assertEquals(200, e.apply(instance).intValue());
+        assertNotSame(e, opt);
+
+        final PropertyValue<?> p = (PropertyValue<?>) opt.getParameters().get(0);
+        assertEquals(String.class,  p.getSourceClass());
+        assertEquals(Integer.class, p.getValueClass());
     }
 }

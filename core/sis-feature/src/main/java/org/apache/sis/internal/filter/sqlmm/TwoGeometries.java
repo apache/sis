@@ -18,12 +18,19 @@ package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.List;
 import java.util.Arrays;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.filter.Optimization;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
 
 // Branch-dependent imports
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.Expression;
+import org.opengis.filter.Literal;
+import org.opengis.filter.ValueReference;
 
 
 /**
@@ -66,6 +73,39 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
     @Override
     public Expression<R,Object> recreate(final Expression<? super R, ?>[] effective) {
         return new TwoGeometries<>(operation, effective, getGeometryLibrary());
+    }
+
+    /**
+     * If the CRS of the first argument is known in advance and the second argument is a literal,
+     * transforms the second geometry to the CRS of the first argument. The transformed geometry
+     * is always the second argument because according SQLMM specification, operations shall be
+     * executed in the CRS of the first argument.
+     */
+    @Override
+    public Expression<? super R, ?> optimize(final Optimization optimization) {
+        final FeatureType featureType = optimization.getFeatureType();
+        if (featureType != null) {
+            final Expression<? super R, ?> p1 = unwrap(geometry1);
+            if (p1 instanceof ValueReference<?,?> && unwrap(geometry2) instanceof Literal<?,?>) try {
+                final CoordinateReferenceSystem targetCRS = AttributeConvention.getCRSCharacteristic(
+                        featureType, featureType.getProperty(((ValueReference<?,?>) p1).getXPath()));
+                if (targetCRS != null) {
+                    final GeometryWrapper<G> literal = geometry2.apply(null);
+                    if (literal != null) {
+                        final GeometryWrapper<G> tr = literal.transform(targetCRS);
+                        if (tr != literal) {
+                            @SuppressWarnings({"unchecked","rawtypes"})
+                            final Expression<? super R, ?>[] effective = getParameters().toArray(new Expression[0]);  // TODO: use generator in JDK9.
+                            effective[1] = Optimization.literal(tr);
+                            return recreate(effective);
+                        }
+                    }
+                }
+            } catch (PropertyNotFoundException | TransformException e) {
+                warning(e, true);
+            }
+        }
+        return super.optimize(optimization);
     }
 
     /**
