@@ -31,6 +31,19 @@
  * be provided by the database (sometime through an extension, for example PostGIS on PostgreSQL databases).
  * This Java package uses those provided types and operations.</p>
  *
+ * <h2>Performance tips</h2>
+ * <p>A subset of features can be obtained by applying filters on the stream returned by
+ * {@link org.apache.sis.storage.FeatureSet#features(boolean)}.
+ * While the filter can be any {@link java.util.function.Predicate},
+ * performances will be much better if they are instances of {@link org.opengis.filter.Filter}
+ * because Apache SIS will know how to translate some of them to SQL statements.</p>
+ *
+ * <p>In filter expressions like {@code ST_Intersects(A,B)} where the <var>A</var> and <var>B</var> parameters are
+ * two sub-expressions evaluating to geometry values, if one of those expressions is a literal, then that literal
+ * should be <var>B</var>. The reason is because the SQLMM standard requires us to project <var>B</var> in the
+ * Coordinate Reference System of <var>A</var>. If <var>B</var> is a literal, Apache SIS can do this transformation
+ * only once before to start the filtering process instead of every time that the filter needs to be evaluated.</p>
+ *
  * <h2>Limitations</h2>
  * <ul>
  *   <li>Current implementation does not scan the {@code "GEOMETRY_COLUMNS"} (from Simple Feature Access)

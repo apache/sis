@@ -26,12 +26,29 @@
  * Filters and expressions may contain heterogeneous coordinate reference systems.
  * Apache SIS tries to handle differences in the following way:
  * <ul>
- *   <li>If all evaluated geometries define a {@code srid}, but they are not the same, try to project them in a common space.
- *     The strategy is guided by {@linkplain org.apache.sis.referencing.CRS#suggestCommonTarget Referencing utility method}.
- *     If it cannot provide a common space, fail any ongoing operation.</li>
- *   <li>If no geometry contains any {@code srid}, consider they are defined in the same space, and proceed.</li>
- *   <li>If one geometry define a CRS but the other do not, consider that an ambiguity resides: fail.</li>
+ *   <li>If at least one geometry does not has a CRS, then SIS assumes that the geometries are in the same space.</li>
+ *   <li>If all geometries are in the same CRS, no coordinate operation is applied.</li>
+ *   <li>If geometries have non-null but different CRS, then SIS tries to project the geometries in a common space:
+ *     <ul>
+ *       <li>For SQLMM operations, the CRS of the first operand is used (as required by the specification).</li>
+ *       <li>For other operations, the common CRS is chosen by
+ *         {@linkplain org.apache.sis.referencing.CRS#suggestCommonTarget referencing utility method}.
+ *         If that method cannot provide a common space,
+ *         then an {@link org.opengis.filter.InvalidFilterValueException} is thrown.</li>
+ *     </ul>
+ *   </li>
  * </ul>
+ *
+ * <h2>Performance tips</h2>
+ * <p>In expressions like {@code ST_Intersects(A,B)} where the <var>A</var> and <var>B</var> parameters are two
+ * sub-expressions evaluating to geometry values, if one of those expressions is a literal, then that literal
+ * should be <var>B</var>. The reason is because SQLMM specification requires us to project <var>B</var>
+ * in the Coordinate Reference System of <var>A</var>. If <var>B</var> is a literal, Apache SIS can do
+ * this transformation only once before to start any evaluation instead of every time that the expression
+ * needs to be evaluated.</p>
+ *
+ * <p>Data store implementations should apply {@link org.apache.sis.filter.Optimization} on the filters
+ * before to evaluate them.</p>
  *
  * <h2>Thread-safety</h2>
  * All filter and expression implementations provided by Apache SIS are thread-safe.
