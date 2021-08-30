@@ -18,7 +18,9 @@ package org.apache.sis.internal.storage.inflater;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.geotiff.Predictor;
+import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -36,6 +38,17 @@ abstract class PredictorChannel extends PixelChannel {
     private final CompressionChannel input;
 
     /**
+     * If {@link #read(ByteBuffer)} could not process some trailing bytes,
+     * a copy of those bytes for processing in the next method invocation.
+     */
+    private byte[] deferred;
+
+    /**
+     * Number of values in the {@link #deferred} array.
+     */
+    private int deferredCount;
+
+    /**
      * Creates a predictor.
      * The {@link #setInput(long, long)} method must be invoked after construction
      * before a reading process can start.
@@ -44,6 +57,7 @@ abstract class PredictorChannel extends PixelChannel {
      */
     protected PredictorChannel(final CompressionChannel input) {
         this.input = input;
+        deferred = ArraysExt.EMPTY_BYTE;
     }
 
     /**
@@ -64,8 +78,10 @@ abstract class PredictorChannel extends PixelChannel {
      *
      * @param  buffer  the buffer on which to apply the predictor.
      * @param  start   position of first sample value to process.
+     * @return position after the same sample value processed. Should be {@link ByteBuffer#position()},
+     *         unless the predictor needs more data for processing the last bytes.
      */
-    protected abstract void uncompress(ByteBuffer buffer, int start);
+    protected abstract int uncompress(ByteBuffer buffer, int start);
 
     /**
      * Decompresses some bytes from the {@linkplain #input} into the given destination buffer.
@@ -77,9 +93,22 @@ abstract class PredictorChannel extends PixelChannel {
     @Override
     public int read(final ByteBuffer target) throws IOException {
         final int start = target.position();
-        final int n = input.read(target);
-        uncompress(target, start);
-        return n;
+        if (deferredCount != 0) {
+            final int n = Math.min(deferredCount, target.remaining());
+            target.put(deferred, 0, n);
+            deferredCount -= n;
+        }
+        input.read(target);
+        final int end = uncompress(target, start);
+        deferredCount = target.position() - end;
+        if (deferredCount != 0) {
+            if (deferredCount > deferred.length) {
+                deferred = new byte[deferredCount];
+            }
+            JDK9.get(target, end, deferred, 0, deferredCount);
+            target.position(end);
+        }
+        return end - start;
     }
 
     /**

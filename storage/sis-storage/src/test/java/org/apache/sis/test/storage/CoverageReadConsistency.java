@@ -167,7 +167,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
      */
     @Test
     public void testSubRegionAtOrigin() throws DataStoreException {
-        readAndCompareRandomRegions("Origin-R");
+        readAndCompareRandomRegions("Subregions at (0,0)");
     }
 
     /**
@@ -193,7 +193,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     @DependsOnMethod("testSubRegionAtOrigin")
     public void testSubsamplingAtOrigin() throws DataStoreException {
         allowSubsamplings = true;
-        readAndCompareRandomRegions("Origin-S");
+        readAndCompareRandomRegions("Subsampling at (0,0)");
     }
 
     /**
@@ -219,7 +219,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     @DependsOnMethod("testSubRegionAtOrigin")
     public void testBandSubsetAtOrigin() throws DataStoreException {
         allowBandSubset = true;
-        readAndCompareRandomRegions("Origin-B");
+        readAndCompareRandomRegions("Bands at (0,0)");
     }
 
     /**
@@ -247,7 +247,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
         allowOffsets      = true;
         allowBandSubset   = true;
         allowSubsamplings = true;
-        readAndCompareRandomRegions("All");
+        readAndCompareRandomRegions("All (ms)");
     }
 
     /**

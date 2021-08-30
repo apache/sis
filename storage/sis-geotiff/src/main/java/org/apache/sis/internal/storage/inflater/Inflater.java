@@ -226,8 +226,8 @@ public abstract class Inflater implements Closeable {
             }
             case HORIZONTAL: {
                 if (pixelsPerElement == 1 && dataType == DataType.BYTE) {
-                    channel = new HorizontalPredictor(inflater, sourcePixelStride, sourceWidth);
-                    break;
+                    channel = HorizontalPredictor.create(inflater, dataType, sourcePixelStride, sourceWidth);
+                    if (channel != null) break;
                 }
                 // Fallthrough.
             }
