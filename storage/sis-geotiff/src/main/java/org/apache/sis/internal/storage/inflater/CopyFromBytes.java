@@ -214,7 +214,7 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Bytes extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private ByteBuffer banks;
+        private ByteBuffer bank;
 
         /** Creates a new inflater which will write in the given buffer. */
         Bytes(ChannelDataInput input, int count, int size, int[] skips, int divisor) {
@@ -224,32 +224,33 @@ abstract class CopyFromBytes extends Inflater {
         /** Sets the destination bank. */
         @Override public void setInputOutput(final long start, final long byteCount, final Buffer bank) throws IOException {
             super.setInputOutput(start, byteCount, bank);
-            banks = (ByteBuffer) bank;
+            this.bank = (ByteBuffer) bank;
         }
 
         /** Reads a row of sample values. */
         @Override public void uncompressRow() throws IOException {
             super.uncompressRow();
             int skipIndex = 0;
+            final ByteBuffer source = input.buffer;
             for (int i = chunksPerRow; --i > 0;) {      // (chunksPerRow - 1) iterations.
                 int n = elementsPerChunk;
                 input.ensureBufferContains(n);
-                do banks.put(input.buffer.get());       // Number of iterations should be low (often 1).
+                do bank.put(source.get());              // Number of iterations should be low (often 1).
                 while (--n != 0);
                 if (skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
             /*
-             * Read the last chunk that was not read in above `for` loop,
-             * but without skipping `skipAfterChunks` sample values after.
-             * This is necessary for avoiding EOF if the last pixel to read
-             * is in the last column of the tile.
+             * Read the last chunk that was not read in above `for` loop, but without skipping `skipAfterChunks`
+             * sample values after. This is necessary for avoiding EOF if the last pixel to read is in the last
+             * column of the tile. The `elementsPerChunk` value here may be large if `chunksPerRow` is 1.
              */
-            int n = elementsPerChunk;
-            input.ensureBufferContains(n);
-            do banks.put(input.buffer.get());
-            while (--n != 0);
+            input.ensureBufferContains(elementsPerChunk);
+            final int limit = source.limit();
+            source.limit(source.position() + elementsPerChunk);
+            bank.put(source);
+            source.limit(limit);
         }
     }
 
@@ -259,7 +260,7 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Shorts extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private ShortBuffer banks;
+        private ShortBuffer bank;
 
         /** Creates a new inflater which will write in the given buffer. */
         Shorts(ChannelDataInput input, int count, int size, int[] skips, int divisor) {
@@ -269,26 +270,27 @@ abstract class CopyFromBytes extends Inflater {
         /** Sets the destination bank. */
         @Override public void setInputOutput(final long start, final long byteCount, final Buffer bank) throws IOException {
             super.setInputOutput(start, byteCount, bank);
-            banks = (ShortBuffer) bank;
+            this.bank = (ShortBuffer) bank;
         }
 
         /** Reads a row of sample values. */
         @Override public void uncompressRow() throws IOException {
             super.uncompressRow();
             int skipIndex = 0;
+            final ByteBuffer source = input.buffer;
             for (int i = chunksPerRow; --i > 0;) {
                 int n = elementsPerChunk;
                 input.ensureBufferContains(n * Short.BYTES);
-                do banks.put(input.buffer.getShort());
+                do bank.put(source.getShort());
                 while (--n != 0);
                 if (skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            int n = elementsPerChunk;
-            input.ensureBufferContains(n * Short.BYTES);
-            do banks.put(input.buffer.getShort());
-            while (--n != 0);
+            final int n = elementsPerChunk * Short.BYTES;
+            input.ensureBufferContains(n);
+            bank.put((ShortBuffer) source.asShortBuffer().limit(elementsPerChunk));    // TODO: remove cast in JDK9.
+            source.position(source.position() + n);
         }
     }
 
@@ -298,7 +300,7 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Ints extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private IntBuffer banks;
+        private IntBuffer bank;
 
         /** Creates a new inflater which will write in the given buffer. */
         Ints(ChannelDataInput input, int count, int size, int[] skips, int divisor) {
@@ -308,26 +310,27 @@ abstract class CopyFromBytes extends Inflater {
         /** Sets the destination bank. */
         @Override public void setInputOutput(final long start, final long byteCount, final Buffer bank) throws IOException {
             super.setInputOutput(start, byteCount, bank);
-            banks = (IntBuffer) bank;
+            this.bank = (IntBuffer) bank;
         }
 
         /** Reads a row of sample values. */
         @Override public void uncompressRow() throws IOException {
             super.uncompressRow();
             int skipIndex = 0;
+            final ByteBuffer source = input.buffer;
             for (int i = chunksPerRow; --i > 0;) {
                 int n = elementsPerChunk;
                 input.ensureBufferContains(n * Integer.BYTES);
-                do banks.put(input.buffer.getInt());
+                do bank.put(source.getInt());
                 while (--n != 0);
                 if (skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            int n = elementsPerChunk;
-            input.ensureBufferContains(n * Integer.BYTES);
-            do banks.put(input.buffer.getInt());
-            while (--n != 0);
+            final int n = elementsPerChunk * Integer.BYTES;
+            input.ensureBufferContains(n);
+            bank.put((IntBuffer) source.asIntBuffer().limit(elementsPerChunk));        // TODO: remove cast in JDK9.
+            source.position(source.position() + n);
         }
     }
 
@@ -337,7 +340,7 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Floats extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private FloatBuffer banks;
+        private FloatBuffer bank;
 
         /** Creates a new inflater which will write in the given buffer. */
         Floats(ChannelDataInput input, int count, int size, int[] skips, int divisor) {
@@ -347,26 +350,27 @@ abstract class CopyFromBytes extends Inflater {
         /** Sets the destination bank. */
         @Override public void setInputOutput(final long start, final long byteCount, final Buffer bank) throws IOException {
             super.setInputOutput(start, byteCount, bank);
-            banks = (FloatBuffer) bank;
+            this.bank = (FloatBuffer) bank;
         }
 
         /** Reads a row of sample values. */
         @Override public void uncompressRow() throws IOException {
             super.uncompressRow();
             int skipIndex = 0;
+            final ByteBuffer source = input.buffer;
             for (int i = chunksPerRow; --i > 0;) {
                 int n = elementsPerChunk;
                 input.ensureBufferContains(n * Float.BYTES);
-                do banks.put(input.buffer.getFloat());
+                do bank.put(source.getFloat());
                 while (--n != 0);
                 if (skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            int n = elementsPerChunk;
-            input.ensureBufferContains(n * Float.BYTES);
-            do banks.put(input.buffer.getFloat());
-            while (--n != 0);
+            final int n = elementsPerChunk * Float.BYTES;
+            input.ensureBufferContains(n);
+            bank.put((FloatBuffer) source.asFloatBuffer().limit(elementsPerChunk));    // TODO: remove cast in JDK9.
+            source.position(source.position() + n);
         }
     }
 
@@ -376,7 +380,7 @@ abstract class CopyFromBytes extends Inflater {
      */
     private static final class Doubles extends CopyFromBytes {
         /** Where to copy the values that we will read. */
-        private DoubleBuffer banks;
+        private DoubleBuffer bank;
 
         /** Creates a new inflater which will write in the given buffer. */
         Doubles(ChannelDataInput input, int count, int size, int[] skips, int divisor) {
@@ -386,26 +390,27 @@ abstract class CopyFromBytes extends Inflater {
         /** Sets the destination bank. */
         @Override public void setInputOutput(final long start, final long byteCount, final Buffer bank) throws IOException {
             super.setInputOutput(start, byteCount, bank);
-            banks = (DoubleBuffer) bank;
+            this.bank = (DoubleBuffer) bank;
         }
 
         /** Reads a row of sample values. */
         @Override public void uncompressRow() throws IOException {
             super.uncompressRow();
             int skipIndex = 0;
+            final ByteBuffer source = input.buffer;
             for (int i = chunksPerRow; --i > 0;) {
                 int n = elementsPerChunk;
                 input.ensureBufferContains(n * Double.BYTES);
-                do banks.put(input.buffer.getDouble());
+                do bank.put(source.getDouble());
                 while (--n != 0);
                 if (skipAfterChunks != null) {
                     skipIndex = skipAfterChunk(skipIndex);
                 }
             }
-            int n = elementsPerChunk;
-            input.ensureBufferContains(n * Double.BYTES);
-            do banks.put(input.buffer.getDouble());
-            while (--n != 0);
+            final int n = elementsPerChunk * Double.BYTES;
+            input.ensureBufferContains(n);
+            bank.put((DoubleBuffer) source.asDoubleBuffer().limit(elementsPerChunk));  // TODO: remove cast in JDK9.
+            source.position(source.position() + n);
         }
     }
 }
