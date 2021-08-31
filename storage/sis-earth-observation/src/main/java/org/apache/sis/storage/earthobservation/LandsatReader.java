@@ -16,11 +16,13 @@
  */
 package org.apache.sis.storage.earthobservation;
 
+import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
+import java.util.EnumMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.LineNumberReader;
@@ -95,45 +97,11 @@ import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
 final class LandsatReader extends MetadataBuilder {
-    /**
-     * Names of Landsat bands.
-     *
-     * @todo Those names and the wavelength could be moved to the {@code SpatialMetadata} database,
-     *       as described in <a href="https://issues.apache.org/jira/browse/SIS-338">SIS-338</a>.
-     *       It would make easier to enrich the metadata with more information.
-     *
-     * @see #bands
-     * @see #band(String, int)
-     */
-    private static final String[] BAND_NAMES = {
-        "Coastal Aerosol",                      //   433 nm
-        "Blue",                                 //   482 nm
-        "Green",                                //   562 nm
-        "Red",                                  //   655 nm
-        "Near-Infrared",                        //   865 nm
-        "Short Wavelength Infrared (SWIR) 1",   //  1610 nm
-        "Short Wavelength Infrared (SWIR) 2",   //  2200 nm
-        "Panchromatic",                         //   590 nm
-        "Cirrus",                               //  1375 nm
-        "Thermal Infrared Sensor (TIRS) 1",     // 10800 nm
-        "Thermal Infrared Sensor (TIRS) 2"      // 12000 nm
-    };
-
-    /**
-     * Peak response wavelength for the Landsat bands, in nanometres.
-     *
-     * @see #bands
-     * @see #band(String, int)
-     */
-    private static final short[] WAVELENGTHS = {
-        433, 482, 562, 655, 865, 1610, 2200, 590, 1375, 10800, 12000
-    };
-
     /**
      * The pattern determining if the value of {@code ORIGIN} key is of the form
      * “Image courtesy of the U.S. Geological Survey”.
@@ -157,42 +125,6 @@ final class LandsatReader extends MetadataBuilder {
      * Example: {@code "REFLECTANCE_ADD_BAND_1"}.
      */
     private static final String BAND_SUFFIX = "_BAND";
-
-    /**
-     * A bit mask of the group in which to classify a given band.
-     * There is three groups: panchromatic, reflective or thermal bands:
-     *
-     * <ul>
-     *   <li><b>Panchromatic:</b> band  8.</li>
-     *   <li><b>Reflective:</b>   bands 1, 2, 3, 4, 5, 6, 7, 9.</li>
-     *   <li><b>Thermal:</b>      bands 10, 11.</li>
-     * </ul>
-     *
-     * For a band numbered from 1 to 11 inclusive, the group is computed by
-     * (constants 2 and 3 in that formula depends on the {@link #NUM_GROUPS} value):
-     *
-     * {@preformat java
-     *   group = (BAND_GROUPS >>> 2*(band - 1)) & 3;
-     * }
-     *
-     * The result is one of the {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL} constant values
-     * divided by {@value #DIM}.
-     */
-    static final int BAND_GROUPS = 2692437;     // Value computed by LandsatReaderTest.verifyBandGroupsMask()
-
-    /**
-     * Maximum number of band groups that a metadata may contains.
-     * See {@link #BAND_GROUPS} javadoc for the list of groups.
-     */
-    private static final int NUM_GROUPS = 3;
-
-    /**
-     * Index of panchromatic, reflective or thermal groups in the {@link #gridSizes} array.
-     * The image size is each group is given by {@value #DIM} integers: the width and the height.
-     */
-    static final int PANCHROMATIC = 0*DIM,
-                     REFLECTIVE   = 1*DIM,
-                     THERMAL      = 2*DIM;
 
     /**
      * Index of projected and geographic coordinates in the {@link #corners} array.
@@ -252,11 +184,10 @@ final class LandsatReader extends MetadataBuilder {
      * Image width and hight in pixels, as unsigned integers. Values are (<var>width</var>,<var>height</var>) tuples.
      * Tuples in this array are for {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL} bands, in that order.
      */
-    private final int[] gridSizes;
+    private final EnumMap<BandGroup,Dimension> gridSizes;
 
     /**
-     * The bands description. Any element can be null if the corresponding band is not defined.
-     * The bands can be, in this exact order:
+     * The bands description. The bands can be, in this exact order:
      *
      * <ol>
      *   <li>Coastal Aerosol</li>
@@ -272,11 +203,14 @@ final class LandsatReader extends MetadataBuilder {
      *   <li>Thermal Infrared Sensor (TIRS) 2</li>
      * </ol>
      *
-     * @see #BAND_NAMES
-     * @see #WAVELENGTHS
      * @see #band(String, int)
      */
-    private final DefaultBand[] bands;
+    private final EnumMap<Band,DefaultBand> bands;
+
+    /**
+     * {@link Band#values()}, fetched once for avoiding multiple array creations.
+     */
+    private final Band[] bandEnumerations;
 
     /**
      * The enumeration for the {@code "DATUM"} element, to be used for creating the Coordinate Reference System.
@@ -310,10 +244,11 @@ final class LandsatReader extends MetadataBuilder {
         this.filename  = filename;
         this.listeners = listeners;
         this.factories = new ReferencingFactoryContainer();
-        this.bands     = new DefaultBand[BAND_NAMES.length];
-        this.gridSizes = new int[NUM_GROUPS * DIM];
+        this.bands     = new EnumMap<>(Band.class);
+        this.gridSizes = new EnumMap<>(BandGroup.class);
         this.corners   = new double[GEOGRAPHIC + (4*DIM)];      // GEOGRAPHIC is the last group of corners to store.
         Arrays.fill(corners, Double.NaN);
+        bandEnumerations = Band.values();
     }
 
     /**
@@ -418,14 +353,15 @@ final class LandsatReader extends MetadataBuilder {
     }
 
     /**
-     * Parses the given value and stores it at the given index in the {@link #gridSizes} array.
+     * Parses the given value and stores it in the {@link #gridSizes} map.
      *
-     * @param  index  {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL},
-     *                +1 if parsing the height instead than the width.
      * @param  value  the value to parse.
      */
-    private void parseGridSize(final int index, final String value) throws NumberFormatException {
-        gridSizes[index] = Integer.parseUnsignedInt(value);
+    private void parseGridSize(final BandGroup group, final boolean isX, final String value) throws NumberFormatException {
+        final int s = Integer.parseUnsignedInt(value);
+        final Dimension size = gridSizes.computeIfAbsent(group, (k) -> new Dimension());
+        if (isX) size.width  = s;
+        else     size.height = s;
     }
 
     /**
@@ -625,12 +561,12 @@ final class LandsatReader extends MetadataBuilder {
              * The number of product lines and samples for the panchromatic, reflective and thermal bands.
              * Those parameters are only present if the corresponding band is present in the product.
              */
-            case "PANCHROMATIC_LINES":   parseGridSize(PANCHROMATIC + 1, value); break;
-            case "PANCHROMATIC_SAMPLES": parseGridSize(PANCHROMATIC,     value); break;
-            case "REFLECTIVE_LINES":     parseGridSize(REFLECTIVE + 1,   value); break;
-            case "REFLECTIVE_SAMPLES":   parseGridSize(REFLECTIVE,       value); break;
-            case "THERMAL_LINES":        parseGridSize(THERMAL + 1,      value); break;
-            case "THERMAL_SAMPLES":      parseGridSize(THERMAL,          value); break;
+            case "PANCHROMATIC_LINES":   parseGridSize(BandGroup.PANCHROMATIC, false, value); break;
+            case "PANCHROMATIC_SAMPLES": parseGridSize(BandGroup.PANCHROMATIC, true,  value); break;
+            case "REFLECTIVE_LINES":     parseGridSize(BandGroup.REFLECTIVE,   false, value); break;
+            case "REFLECTIVE_SAMPLES":   parseGridSize(BandGroup.REFLECTIVE,   true,  value); break;
+            case "THERMAL_LINES":        parseGridSize(BandGroup.THERMAL,      false, value); break;
+            case "THERMAL_SAMPLES":      parseGridSize(BandGroup.THERMAL,      true,  value); break;
             /*
              * The grid cell size in meters used in creating the image for the band, if part of the product.
              * This parameter is only included if the corresponding band is included in the product.
@@ -853,18 +789,19 @@ final class LandsatReader extends MetadataBuilder {
      * @param  key    the key without its band number. Used only for formatting warning messages.
      * @param  index  the band index.
      */
-    private DefaultBand band(final String key, int index) {
-        if (index < 1 || index > BAND_NAMES.length) {
+    private DefaultBand band(final String key, final int index) {
+        if (index < 1 || index > bandEnumerations.length) {
             listeners.warning(errors().getString(Errors.Keys.UnexpectedValueInElement_2, key + index, index));
             return null;
         }
-        DefaultBand band = bands[--index];
+        final Band bk = bandEnumerations[index - 1];
+        DefaultBand band = bands.get(bk);
         if (band == null) {
             band = new DefaultBand();
-            band.setDescription(new SimpleInternationalString(BAND_NAMES[index]));
-            band.setPeakResponse((double) WAVELENGTHS[index]);
+            band.setDescription(new SimpleInternationalString(bk.name));
+            band.setPeakResponse((double) bk.wavelength);
             band.setBoundUnits(Units.NANOMETRE);
-            bands[index] = band;
+            bands.put(bk, band);
         }
         return band;
     }
@@ -984,15 +921,13 @@ final class LandsatReader extends MetadataBuilder {
         if (toBoundingBox(GEOGRAPHIC)) {
             addExtent(corners, GEOGRAPHIC);
         }
-        for (int i = 0; i < gridSizes.length; i += DIM) {
-            final int width  = gridSizes[i  ];
-            final int height = gridSizes[i+1];
-            if ((width | height) != 0) {
+        for (final Dimension size : gridSizes.values()) {
+            if ((size.width | size.height) != 0) {
                 newGridRepresentation(MetadataBuilder.GridType.GEORECTIFIED);
                 setAxisName(0, DimensionNameType.SAMPLE);
                 setAxisName(1, DimensionNameType.LINE);
-                setAxisSize(0, Integer.toUnsignedLong(width));
-                setAxisSize(1, Integer.toUnsignedLong(height));
+                setAxisSize(0, Integer.toUnsignedLong(size.width));
+                setAxisSize(1, Integer.toUnsignedLong(size.height));
             }
         }
         /*
@@ -1005,24 +940,18 @@ final class LandsatReader extends MetadataBuilder {
         if (result != null) {
             /*
              * Set information about all non-null bands. The bands are categorized in three groups:
-             * PANCHROMATIC, REFLECTIVE and THERMAL. The group in which each band belong is encoded
-             * in the BAND_GROUPS bitmask.
+             * PANCHROMATIC, REFLECTIVE and THERMAL.
              */
             final DefaultCoverageDescription content = (DefaultCoverageDescription) singletonOrNull(result.getContentInfo());
             if (content != null) {
-                final DefaultAttributeGroup[] groups = new DefaultAttributeGroup[NUM_GROUPS];
-                for (int i=0; i < bands.length; i++) {
-                    final DefaultBand band = bands[i];
-                    if (band != null) {
-                        final int gi = (BAND_GROUPS >>> 2*i) & 3;
-                        DefaultAttributeGroup group = groups[gi];
-                        if (group == null) {
-                            group = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
-                            content.getAttributeGroups().add(group);
-                            groups[gi] = group;
-                        }
-                        group.getAttributes().add(band);
-                    }
+                final EnumMap<BandGroup,DefaultAttributeGroup> groups = new EnumMap<>(BandGroup.class);
+                for (final EnumMap.Entry<Band,DefaultBand> entry : bands.entrySet()) {
+                    final DefaultAttributeGroup group = groups.computeIfAbsent(entry.getKey().group, (k) -> {
+                        DefaultAttributeGroup g = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
+                        content.getAttributeGroups().add(g);
+                        return g;
+                    });
+                    group.getAttributes().add(entry.getValue());
                 }
             }
             result.transitionTo(DefaultMetadata.State.FINAL);

@@ -37,9 +37,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
-import static org.apache.sis.storage.earthobservation.LandsatReader.DIM;
 
 
 /**
@@ -61,21 +60,6 @@ public class LandsatReaderTest extends TestCase {
         final Matcher m = LandsatReader.CREDIT.matcher("Image courtesy of the U.S. Geological Survey");
         assertTrue("matches", m.find());
         assertEquals("end", 22, m.end());
-    }
-
-    /**
-     * Verifies the value of the {@link LandsatReader#BAND_GROUPS} mask.
-     */
-    @Test
-    public void verifyBandGroupsMask() {
-        final int[] PANCHROMATIC = {8};
-        final int[] REFLECTIVE   = {1, 2, 3, 4, 5, 6, 7, 9};
-        final int[] THERMAL      = {10, 11};
-        long mask = 0;
-        for (int i=0; i < PANCHROMATIC.length; i++) mask |= (LandsatReader.PANCHROMATIC/DIM << 2*(PANCHROMATIC[i] - 1));
-        for (int i=0; i <   REFLECTIVE.length; i++) mask |= (LandsatReader.REFLECTIVE/DIM   <<   2*(REFLECTIVE[i] - 1));
-        for (int i=0; i <      THERMAL.length; i++) mask |= (LandsatReader.THERMAL/DIM      <<      2*(THERMAL[i] - 1));
-        assertEquals("BAND_GROUPS", mask, LandsatReader.BAND_GROUPS);
     }
 
     /**
