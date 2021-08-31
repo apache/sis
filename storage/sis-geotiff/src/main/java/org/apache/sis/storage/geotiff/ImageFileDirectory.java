@@ -1388,8 +1388,10 @@ final class ImageFileDirectory extends DataCube {
                 final SampleDimension.Builder builder = new SampleDimension.Builder();
                 final InternationalString name = Vocabulary.formatInternational(Vocabulary.Keys.Value);
                 for (int band = 0; band < samplesPerPixel;) {
-                    builder.addQualitative(name, minValues.get(Math.min(band, minValues.size()-1)),
-                                                 maxValues.get(Math.min(band, maxValues.size()-1)));
+                    if (minValues != null && maxValues != null) {
+                        builder.addQualitative(name, minValues.get(Math.min(band, minValues.size()-1)),
+                                                     maxValues.get(Math.min(band, maxValues.size()-1)));
+                    }
                     dimensions[band] = builder.setName(++band).build();
                     builder.clear();
                 }
@@ -1520,9 +1522,11 @@ final class ImageFileDirectory extends DataCube {
                     if (photometricInterpretation == 0) {
                         ArraysExt.swap(colors, 0, 1);
                     }
-                    colorModel = ColorModelFactory.createColorScale(dataType, samplesPerPixel, visibleBand,
-                            Math.max(minValues.doubleValue(visibleBand), 0),
-                            Math.min(maxValues.doubleValue(visibleBand), (1 << bitsPerSample) - 1), colors);
+                    double min = 0;
+                    double max = Numerics.bitmask(bitsPerSample) - 1;
+                    if (minValues != null) min = Math.max(minValues.doubleValue(visibleBand), min);
+                    if (maxValues != null) max = Math.min(maxValues.doubleValue(visibleBand), max);
+                    colorModel = ColorModelFactory.createColorScale(dataType, samplesPerPixel, visibleBand, min, max, colors);
                     break;
                 }
                 case 2: {                   // RGB: (0,0,0) is black and (255,255,255) is white.

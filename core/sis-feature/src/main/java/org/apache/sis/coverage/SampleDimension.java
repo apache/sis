@@ -797,6 +797,8 @@ public class SampleDimension implements Serializable {
          * @throws IllegalArgumentException if the range is empty.
          */
         public Builder addQualitative(final CharSequence name, final Number minimum, final Number maximum) {
+            ArgumentChecks.ensureNonNull("minimum", minimum);
+            ArgumentChecks.ensureNonNull("maximum", maximum);
             return addQualitative(name, range(Numbers.widestClass(minimum, maximum), minimum, maximum));
         }
 
