@@ -86,11 +86,10 @@ final class ZIP extends CompressionChannel {
                     if (++required >= input.buffer.capacity()) {
                         throw new BufferOverflowException();
                     }
-                    if (finished()) return -1;
                     input.ensureBufferContains(required);
                     setInput(input.buffer);
                 } else if (inflater.finished()) {
-                    break;
+                    return -1;
                 } else {
                     throw new IOException();
                 }

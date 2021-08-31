@@ -74,11 +74,37 @@ public abstract class TiledGridCoverage extends GridCoverage {
     protected static final int BIDIMENSIONAL = 2;
 
     /**
+     * The dimensions of <var>x</var> and <var>y</var> axes.
+     * Static constants for now, may become configurable fields in the future.
+     */
+    protected static final int X_DIMENSION = 0, Y_DIMENSION = 1;
+
+    /**
      * The area to read in unit of the full coverage (without subsampling).
      * This is the intersection between user-specified domain and the source
      * {@link TiledGridResource} domain, expanded to an integer number of tiles.
      */
     private final GridExtent readExtent;
+
+    /**
+     * Whether to force the {@link #readExtent} tile intersection to the {@link #tileSize}.
+     * This is relevant only for the last column of tile matrix, because those tiles may be truncated
+     * if the image size is not a multiple of tile size. It is usually necessary to read those tiles
+     * fully anyway because otherwise, the pixels read from the storage would not be aligned with the
+     * pixels stored in the {@link WritableRaster}. However there is a few exceptions where the read
+     * extent should not be forced to the tile size:
+     *
+     * <ul>
+     *   <li>If the image is untiled, then the {@link org.apache.sis.internal.storage.TiledGridResource.Subset}
+     *       constructor assumes that only the requested region of the tile will be read.</li>
+     *   <li>If the tile is truncated on the storage as well
+     *       (note: this is rare. GeoTIFF for example always stores whole tiles).</li>
+     * </ul>
+     *
+     * <p>In current version this is a flag for the <var>x</var> dimension only. In a future version
+     * it could be flags for other dimensions as well (using bitmask) if it appears to be useful.</p>
+     */
+    private final boolean forceTileSize;
 
     /**
      * Size of all tiles in the domain of this {@code TiledGridCoverage}, without clipping and subsampling.
@@ -152,10 +178,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
     private final Map<TiledGridResource.CacheKey, WritableRaster> rasters;
 
     /**
-     * The sample model for all rasters. The size of this sample model is the values of
-     * the two first elements of {@link #tileSize} divided by subsampling after clipping.
-     * If user requested to read only a subset of the bands, this sample model is already
-     * the subset.
+     * The sample model for all rasters. The size of this sample model is the values of two elements
+     * of {@link #tileSize} divided by subsampling and clipped to the domain. If user requested to
+     * read only a subset of the bands, then this sample model is already the subset.
      */
     protected final SampleModel model;
 
@@ -191,13 +216,13 @@ public abstract class TiledGridCoverage extends GridCoverage {
         int  tileStride       = 1;
         long indexOfFirstTile = 0;
         for (int i=0; i<dimension; i++) {
-            final int ts        = tileSize[i];
-            tmcOfFirstTile[i]   = floorDiv(readExtent.getLow(i), ts);
-            tileStrides   [i]   = tileStride;
-            subSize       [i]   = (int) Math.min(((ts-1) / subsampling[i]) + 1, extent.getSize(i));
-            indexOfFirstTile    = addExact(indexOfFirstTile, multiplyExact(tmcOfFirstTile[i], tileStride));
-            final int tileCount = toIntExact(ceilDiv(subset.sourceExtent.getSize(i), ts));
-            tileStride          = multiplyExact(tileCount, tileStride);
+            final int ts      = tileSize[i];
+            tmcOfFirstTile[i] = floorDiv(readExtent.getLow(i), ts);
+            tileStrides[i]    = tileStride;
+            subSize[i]        = (int) Math.min(((ts-1) / subsampling[i]) + 1, extent.getSize(i));
+            indexOfFirstTile  = addExact(indexOfFirstTile, multiplyExact(tmcOfFirstTile[i], tileStride));
+            int tileCount     = toIntExact(ceilDiv(subset.sourceExtent.getSize(i), ts));
+            tileStride        = multiplyExact(tileCount, tileStride);
         }
         this.indexOfFirstTile = toIntExact(indexOfFirstTile);
         /*
@@ -206,12 +231,13 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * we want `ArithmeticException` to be thrown if the value is too high.
          */
         SampleModel model = subset.modelForBandSubset;
-        if (model.getWidth() != subSize[0] || model.getHeight() != subSize[1]) {
-            model = model.createCompatibleSampleModel(subSize[0], subSize[1]);
+        if (model.getWidth() != subSize[X_DIMENSION] || model.getHeight() != subSize[Y_DIMENSION]) {
+            model = model.createCompatibleSampleModel(subSize[X_DIMENSION], subSize[Y_DIMENSION]);
         }
         this.model     = model;
         this.colors    = subset.colorsForBandSubset;
         this.fillValue = subset.fillValue;
+        forceTileSize  = subSize[X_DIMENSION] * subsampling[X_DIMENSION] == tileSize[X_DIMENSION];
     }
 
     /**
@@ -400,7 +426,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
              *    - Two-dimensional conversion from pixel coordinates to "real world" coordinates.
              */
             final Map<String,Object> properties = DeferredProperty.forGridGeometry(getGridGeometry(), selectedDimensions);
-            image = new TiledImage(properties, colors, imageSize[0], imageSize[1], tileLower[0], tileLower[1], result);
+            image = new TiledImage(properties, colors,
+                    imageSize[X_DIMENSION], imageSize[Y_DIMENSION],
+                    tileLower[X_DIMENSION], tileLower[Y_DIMENSION], result);
         } catch (Exception e) {     // Too many exception types for listing them all.
             throw new CannotEvaluateException(Resources.forLocale(getLocale()).getString(
                     Resources.Keys.CanNotRenderImage_1, getDisplayName()), e);
@@ -477,7 +505,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
              * converts the `tileLower` coordinates to index in the `tileOffsets` and `tileByteCounts` vectors.
              */
             indexInTileVector = indexOfFirstTile;
-            int tileCountInQuery = 1;
+            int tileCountInQuery   =  1;
             for (int i=0; i<dimension; i++) {
                 final int lower   = tileLower[i];
                 final int count   = subtractExact(tileUpper[i], lower);
@@ -529,8 +557,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
                  * Found a tile, but the sample model may be different because band order may be different.
                  * In both cases, we need to make sure that the raster starts at the expected coordinates.
                  */
-                final int x = getTileOrigin(0);
-                final int y = getTileOrigin(1);
+                final int x = getTileOrigin(X_DIMENSION);
+                final int y = getTileOrigin(Y_DIMENSION);
                 if (!model.equals(tile.getSampleModel())) {
                     tile = WritableRaster.createWritableRaster(model, tile.getDataBuffer(), new Point(x, y));
                 } else if (tile.getMinX() != x || tile.getMinY() != y) {
@@ -632,12 +660,12 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @param iterator  the iterator for which to create a snapshot of its current position.
          */
         public Snapshot(final AOI iterator) {
-            coverage = iterator.getCoverage();
-            this.tmcInSubset        = iterator.tmcInSubset.clone();
-            this.indexInResultArray = iterator.indexInResultArray;
-            this.indexInTileVector  = iterator.indexInTileVector;
-            this.originX            = iterator.getTileOrigin(0);
-            this.originY            = iterator.getTileOrigin(1);
+            coverage           = iterator.getCoverage();
+            tmcInSubset        = iterator.tmcInSubset.clone();
+            indexInResultArray = iterator.indexInResultArray;
+            indexInTileVector  = iterator.indexInTileVector;
+            originX            = iterator.getTileOrigin(X_DIMENSION);
+            originY            = iterator.getTileOrigin(Y_DIMENSION);
         }
 
         /**
@@ -669,7 +697,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                  * only one (potentially big) tile, so the tile reading process become a reading of untiled data.
                  */
                 long offset = subtractExact(coverage.readExtent.getLow(dimension), tileBase);
-                upper[dimension] = Math.min(addExact(offset, coverage.readExtent.getSize(dimension)), tileSize);
+                long limit  = Math.min(addExact(offset, coverage.readExtent.getSize(dimension)), tileSize);
                 if (offset < 0) {
                     /*
                      * Example: for `tileSize` = 10 pixels and `subsampling` = 3,
@@ -692,10 +720,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
                         offset += s;
                     }
                 }
-                if (offset >= upper[dimension]) {
+                if (offset >= limit) {          // Test for intersection before we adjust the limit.
                     return false;
                 }
+                if (dimension == X_DIMENSION && coverage.forceTileSize) {
+                    limit = tileSize;
+                }
                 lower[dimension] = offset;
+                upper[dimension] = limit;
             }
             return true;
         }

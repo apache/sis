@@ -40,6 +40,9 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.ArraysExt;
 
+import static org.apache.sis.internal.storage.TiledGridCoverage.X_DIMENSION;
+import static org.apache.sis.internal.storage.TiledGridCoverage.Y_DIMENSION;
+
 
 /**
  * Base class of grid coverage resource storing data in tiles.
@@ -146,32 +149,19 @@ public abstract class TiledGridResource extends AbstractGridResource {
      * This value is usually 1 because each sample value is usually stored in a separated element.
      * However in multi-pixels packed sample model (e.g. bilevel image with 8 pixels per byte),
      * it is difficult to start reading an image at <var>x</var> location other than a byte boundary.
-     * By declaring an "atom" size of 8 sample values in dimension 0, the {@link Subset} constructor
+     * By declaring an "atom" size of 8 sample values in dimension X, the {@link Subset} constructor
      * will ensure than the sub-region to read starts at a byte boundary when reading a bilevel image.
      *
      * <p>The default implementation returns the {@linkplain TiledGridCoverage#getPixelsPerElement()
-     * number of pixels per data element} for dimension 0 and returns 1 for all other dimensions.</p>
+     * number of pixels per data element} for dimension X and returns 1 for all other dimensions.</p>
      *
-     * @param  dimension  the dimension for which to get the atom size.
-     *         This is in units of sample values (may be bits, bytes, floats, <i>etc</i>).
+     * @param  xdim  {@code true} for the size on <var>x</var> dimension, {@code false} for any other dimension.
      * @return indivisible amount of sample values to read in the specified dimension. Must be ≥ 1.
+     *         This is in units of sample values (may be bits, bytes, floats, <i>etc</i>).
      * @throws DataStoreException if an error occurred while fetching the sample model.
      */
-    protected int getAtomSize(final int dimension) throws DataStoreException {
-        return (dimension == 0) ? TiledGridCoverage.getPixelsPerElement(getSampleModel()) : 1;
-    }
-
-    /**
-     * Returns the maximal subsampling supported in the given dimension.
-     * The default implementation puts no limit if {@code getAtomSize(dimension)} is 1,
-     * and disables subsampling otherwise.
-     *
-     * @param  dimension  the dimension to test.
-     * @return the maximal subsampling supported in the given dimension.
-     * @throws DataStoreException if an error occurred while fetching the sample model.
-     */
-    protected int getMaximumSubsampling(final int dimension) throws DataStoreException {
-        return getAtomSize(dimension) == 1 ? Integer.MAX_VALUE : 1;
+    protected int getAtomSize(final boolean xdim) throws DataStoreException {
+        return xdim ? TiledGridCoverage.getPixelsPerElement(getSampleModel()) : 1;
     }
 
     /**
@@ -309,7 +299,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
 
         /**
          * The sample model for the bands to read (not the full set of bands in the resource).
-         * The width is {@code tileSize[0]} and the height it {@code tileSize[1]},
+         * The width is {@code tileSize[X_DIMENSION]} and the height it {@code tileSize[Y_DIMENSION]},
          * i.e. subsampling is <strong>not</strong> applied.
          */
         final SampleModel modelForBandSubset;
@@ -364,13 +354,36 @@ public abstract class TiledGridResource extends AbstractGridResource {
                  * Note that it is possible to disable this restriction in a single dimension, typically the X one
                  * when reading a TIFF image using strips instead of tiles.
                  */
-                int tileWidth  = tileSize[0];
-                int tileHeight = tileSize[1];
-                if (tileWidth  >= sourceExtent.getSize(0)) {tileWidth  = getAtomSize(0); sharedCache = false;}
-                if (tileHeight >= sourceExtent.getSize(1)) {tileHeight = getAtomSize(1); sharedCache = false;}
-                final GridDerivation target = gridGeometry.derive().chunkSize(tileWidth, tileHeight)
-                            .maximumSubsampling(getMaximumSubsampling(0), getMaximumSubsampling(1))
-                            .rounding(GridRoundingMode.ENCLOSING).subgrid(domain);
+                final int atomSizeX = getAtomSize(true);
+                final int atomSizeY = getAtomSize(false);
+                int tileWidth   = tileSize[X_DIMENSION];
+                int tileHeight  = tileSize[Y_DIMENSION];
+                if (tileWidth  >= sourceExtent.getSize(X_DIMENSION)) {tileWidth  = atomSizeX; sharedCache = false;}
+                if (tileHeight >= sourceExtent.getSize(Y_DIMENSION)) {tileHeight = atomSizeY; sharedCache = false;}
+                /*
+                 * Note: if we allow X_DIMENSION and Y_DIMENSION to be anything in the future, then
+                 * BIDIMENSIONAL must become `max(xDim, yDim) + 1` and array must be initialized to 1.
+                 */
+                final int[] chunkSize  = new int[TiledGridCoverage.BIDIMENSIONAL];
+                chunkSize[X_DIMENSION] = tileWidth;
+                chunkSize[Y_DIMENSION] = tileHeight;
+                /*
+                 * Maximal subsampling supported. We put no restriction if subsamplig can occur anywhere
+                 * ("atome size" of 1) and disable subsampling otherwise for avoiding code complexity.
+                 */
+                final int[] maximumSubsampling = new int[chunkSize.length];
+                Arrays.fill(maximumSubsampling, Integer.MAX_VALUE);
+                if (atomSizeX != 1) maximumSubsampling[X_DIMENSION] = 1;
+                if (atomSizeY != 1) maximumSubsampling[Y_DIMENSION] = 1;
+                /*
+                 * Build the domain in units of subsampled pixels, and get the same extent (`readExtent`)
+                 * without subsampling, i.e. in units of cells of the original grid resource.
+                 */
+                final GridDerivation target = gridGeometry.derive().chunkSize(chunkSize)
+                            .maximumSubsampling(maximumSubsampling)
+                            .rounding(GridRoundingMode.ENCLOSING)
+                            .subgrid(domain);
+
                 domain             = target.build();
                 readExtent         = target.getIntersection();
                 subsampling        = target.getSubsampling();
@@ -427,7 +440,7 @@ public abstract class TiledGridResource extends AbstractGridResource {
          * @return whether the values to read on a row are contiguous.
          */
         public boolean isXContiguous() {
-            return includedBands == null && subsampling[0] == 1;
+            return includedBands == null && subsampling[X_DIMENSION] == 1;
         }
     }
 

@@ -109,13 +109,11 @@ final class CompressedSubset extends DataSubset {
      * @param  rasters  potentially shared cache of rasters read by this {@code DataSubset}.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
-    CompressedSubset(final DataCube source, final TiledGridResource.Subset subset)
-            throws DataStoreException
-    {
+    CompressedSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
         super(source, subset);
-        scanlineStride    = multiplyFull(getTileSize(0), sourcePixelStride);
-        final int between = sourcePixelStride * (getSubsampling(0) - 1);
-        int afterLastBand = sourcePixelStride * (getTileSize(0) - 1);
+        scanlineStride    = multiplyFull(getTileSize(X_DIMENSION), sourcePixelStride);
+        final int between = sourcePixelStride * (getSubsampling(X_DIMENSION) - 1);
+        int afterLastBand = sourcePixelStride * (getTileSize(X_DIMENSION) - 1);
         if (includedBands != null && sourcePixelStride > 1) {
             final int[] skips = new int[includedBands.length];
             final int m = skips.length - 1;
@@ -197,12 +195,12 @@ final class CompressedSubset extends DataSubset {
                              final int[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final DataType dataType = getDataType();
-        final int  width        = pixelCount(lower, upper, subsampling, 0);
-        final int  height       = pixelCount(lower, upper, subsampling, 1);
+        final int  width        = pixelCount(lower, upper, subsampling, X_DIMENSION);
+        final int  height       = pixelCount(lower, upper, subsampling, Y_DIMENSION);
         final int  chunksPerRow = width * (targetPixelStride / samplesPerChunk);
         final int  betweenRows  = subsampling[1] - 1;
-        final long head         = beforeFirstBand + sourcePixelStride * (lower[0]);
-        final long tail         = afterLastBand   - sourcePixelStride * (lower[0] + (width-1)*subsampling[0]);
+        final long head         = beforeFirstBand + sourcePixelStride * (lower[X_DIMENSION]);
+        final long tail         = afterLastBand   - sourcePixelStride * (lower[X_DIMENSION] + (width-1)*subsampling[X_DIMENSION]);
         /*
          * `head` and `tail` are the number of sample values to skip at the beginning and end of each row.
          * `betweenPixels` is the number of sample values to skip between each pixel, but the actual skips
@@ -219,7 +217,7 @@ final class CompressedSubset extends DataSubset {
         assert (head % pixelsPerElement) == 0 : head;
         if (inflater == null) {
             inflater = Inflater.create(this, input(), source.getCompression(), source.getPredictor(),
-                        sourcePixelStride, getTileSize(0), chunksPerRow, samplesPerChunk, skipAfterChunks,
+                        sourcePixelStride, getTileSize(X_DIMENSION), chunksPerRow, samplesPerChunk, skipAfterChunks,
                         pixelsPerElement, dataType);
         }
         final Inflater inflater = this.inflater;
