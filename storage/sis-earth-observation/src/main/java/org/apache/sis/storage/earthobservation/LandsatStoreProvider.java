@@ -37,7 +37,7 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  * the part of the caller. However the {@link LandsatStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -62,7 +62,8 @@ public class LandsatStoreProvider extends DataStoreProvider {
         /**
          * The expected keyword after spaces removal.
          */
-        private static final String KEYWORD = "GROUP=L1_METADATA_FILE";
+        private static final String KEYWORD = "GROUP=LANDSAT_METADATA_FILE",
+                                 L1_KEYWORD = "GROUP=L1_METADATA_FILE";
 
         /**
          * The part in process of being parsed:
@@ -126,7 +127,8 @@ public class LandsatStoreProvider extends DataStoreProvider {
          */
         @Override
         protected ProbeResult forKeyword(final char[] keyword, final int length) {
-            if (length == maxLength && KEYWORD.equalsIgnoreCase(new String(keyword))) {
+            final String ks = new String(keyword, 0, length);
+            if (KEYWORD.equalsIgnoreCase(ks) || L1_KEYWORD.equalsIgnoreCase(ks)) {
                 return ProbeResult.SUPPORTED;
             }
             return ProbeResult.UNSUPPORTED_STORAGE;

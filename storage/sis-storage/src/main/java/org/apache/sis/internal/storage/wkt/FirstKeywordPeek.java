@@ -161,7 +161,11 @@ public abstract class FirstKeywordPeek {
                         }
                         keyword[pos++] = (char) c;
                     }
-                    c = (buffer == null) ? IOUtilities.readCodePoint(reader) : buffer.hasRemaining() ? (char) buffer.get() : -1;
+                    if (buffer != null) {
+                        c = buffer.hasRemaining() ? (char) buffer.get() : -1;
+                    } else {
+                        c = IOUtilities.readCodePoint(reader);
+                    }
                 } while ((s = isKeywordChar(c)) >= ACCEPT);
                 /*
                  * At this point we finished to read and store the keyword.

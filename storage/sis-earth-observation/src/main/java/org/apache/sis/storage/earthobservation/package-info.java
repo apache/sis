@@ -34,7 +34,8 @@
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Minh Chinh Vu (VNSC)
- * @version 0.8
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
  * @since   0.8
  * @module
  */

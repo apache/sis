@@ -147,6 +147,11 @@ final class LandsatReader extends MetadataBuilder {
     static final int DIM = 2;
 
     /**
+     * Suffix of groups that describe the processing done on the data instead of the data themselves.
+     */
+    private static final String LINEAGE_SUFFIX = "_RECORD";
+
+    /**
      * The {@value} suffix added to attribute names that are followed by a band number.
      * This band suffix is itself followed by the {@code '_'} character, then the band number.
      * Example: {@code "REFLECTANCE_ADD_BAND_1"}.
@@ -218,6 +223,14 @@ final class LandsatReader extends MetadataBuilder {
      * Group in process of being parsed, or {@code null} if none.
      */
     private String group;
+
+    /**
+     * The last group where we fetched lineage (history) information.
+     * The same file may contain many lineage group.
+     *
+     * @see #parseLineage(String, int, String)
+     */
+    private String lineageGroup;
 
     /**
      * The acquisition time, or {@code null} if not yet known. This needs to be parsed in two steps:
@@ -365,8 +378,17 @@ final class LandsatReader extends MetadataBuilder {
                     start = CharSequences.skipLeadingWhitespaces(line, start + 1, --end);
                     end = CharSequences.skipTrailingWhitespaces(line, start, end);
                 }
+                final String value = line.substring(start, end);
                 try {
-                    parseKeyValuePair(key, band, line.substring(start, end));
+                    if (group == null || !group.endsWith(LINEAGE_SUFFIX)) {
+                        parseKeyValuePair(key, band, value);
+                    } else {
+                        if (!group.equals(lineageGroup)) {
+                            lineageGroup = group;
+                            newLineage();
+                        }
+                        parseLineage(key, band, value);
+                    }
                 } catch (IllegalArgumentException | DateTimeException e) {
                     warning(key, reader, e);
                 }
@@ -407,8 +429,9 @@ final class LandsatReader extends MetadataBuilder {
     }
 
     /**
-     * Invoked for every key-value pairs found in the file.
-     * Leading and trailing spaces, if any, have been removed.
+     * Invoked for every key-value pairs found in the file for the main groups.
+     * A mean group is any group other than {@linkplain #parseLineage lineage}.
+     * Leading and trailing spaces, if any, have been removed from given argument.
      *
      * @param  key    the key in upper cases.
      * @param  band   the band number, or 0 if none.
@@ -430,12 +453,10 @@ final class LandsatReader extends MetadataBuilder {
                 group = null;
                 break;
             }
-
-            ////
-            //// GROUP = METADATA_FILE_INFO
-            ////
-
-            /*
+            /* ┌────────────────────────────────────┐
+             * │ GROUP = METADATA_FILE_INFO     (L1)│
+             * │         PRODUCT_CONTENTS       (L2)│
+             * └────────────────────────────────────┘
              * Origin of the product.
              * Value is "Image courtesy of the U.S. Geological Survey".
              */
@@ -449,6 +470,10 @@ final class LandsatReader extends MetadataBuilder {
                 break;
             }
             /*
+             * Example: "https://doi.org/10.5066/P9OGBGM6"
+             */
+//          case "DIGITAL_OBJECT_IDENTIFIER":
+            /*
              * Product Request ID. NNNNNNNNNNNNN_UUUUU, where NNNNNNNNNNNNN = 13-digit Tracking,
              * Routing, and Metrics (TRAM) order number and UUUUU = 5-digit TRAM unit number.
              * Example: "0501403126384_00011"
@@ -458,10 +483,11 @@ final class LandsatReader extends MetadataBuilder {
                 break;
             }
             /*
-             * The unique Landsat scene identifier.
-             * Format is {@code Ls8ppprrrYYYYDDDGGGVV}.
-             * Example: "LC81230522014071LGN00".
+             * Product: the filename prefix. Example: "LC08_L2SP_197030_20210812_20210819_02_T1"
+             * Scene:   the unique Landsat scene identifier. Example: "LC81230522014071LGN00".
+             * Format:  Ls8ppprrrYYYYDDDGGGVV
              */
+            case "LANDSAT_PRODUCT_ID":
             case "LANDSAT_SCENE_ID": {
                 addTitleOrIdentifier(value, MetadataBuilder.Scope.ALL);
                 break;
@@ -488,15 +514,14 @@ final class LandsatReader extends MetadataBuilder {
              * Example: "LPGS_2.3.0".
              */
 // TODO     case "PROCESSING_SOFTWARE_VERSION":
-
-            ////
-            //// GROUP = PRODUCT_METADATA
-            ////
-
-            /*
+            /* ┌────────────────────────────────────┐
+             * │ GROUP = PRODUCT_METADATA       (L1)│
+             * │         PRODUCT_CONTENTS       (L2)│
+             * └────────────────────────────────────┘
              * The identifier to inform the user of the product type.
              * Value can be "L1T" or "L1GT".
              */
+            case "PROCESSING_LEVEL":
             case "DATA_TYPE": {
                 setProcessingLevelCode("Landsat", value);
                 break;
@@ -628,6 +653,22 @@ final class LandsatReader extends MetadataBuilder {
                 break;
             }
             /*
+             * Examples: UINT8, UINT16, INT16.
+             */
+            case "DATA_TYPE_BAND_": {
+                final int s = value.lastIndexOf("INT");
+                if (s >= 0) try {
+                    final Integer n = Integer.valueOf(value.substring(s + 3));
+                    final DefaultBand db = band(key, band);
+                    if (db != null) {
+                        db.setBitsPerValue(n);
+                    }
+                } catch (NumberFormatException e) {
+                    warning(key, null, e);
+                }
+                break;
+            }
+            /*
              * The file name for L1 metadata.
              * Exemple: "LC81230522014071LGN00_MTL.txt".
              */
@@ -637,12 +678,9 @@ final class LandsatReader extends MetadataBuilder {
                 }
                 break;
             }
-
-            ////
-            //// GROUP = IMAGE_ATTRIBUTES
-            ////
-
-            /*
+            /* ┌────────────────────────────────────┐
+             * │ GROUP = IMAGE_ATTRIBUTES           │
+             * └────────────────────────────────────┘
              * The overall cloud coverage (percent) of the WRS-2 scene as a value between 0 and 100 inclusive.
              * -1 indicates that the score was not calculated.
              */
@@ -671,12 +709,9 @@ final class LandsatReader extends MetadataBuilder {
                 setIlluminationElevationAngle(Double.parseDouble(value));
                 break;
             }
-
-            ////
-            //// GROUP = MIN_MAX_PIXEL_VALUE
-            ////
-
-            /*
+            /* ┌────────────────────────────────────┐
+             * │ GROUP = MIN_MAX_PIXEL_VALUE        │
+             * └────────────────────────────────────┘
              * Minimum achievable spectral radiance value for a band 1.
              * This parameter is only present if this band is included in the product.
              */
@@ -700,12 +735,9 @@ final class LandsatReader extends MetadataBuilder {
                 }
                 break;
             }
-
-            ////
-            //// GROUP = RADIOMETRIC_RESCALING
-            ////
-
-            /*
+            /* ┌────────────────────────────────────┐
+             * │ GROUP = RADIOMETRIC_RESCALING      │
+             * └────────────────────────────────────┘
              * The multiplicative rescaling factor used to convert calibrated DN to Radiance units for a band.
              * Unit is W/(m² sr um)/DN.
              */
@@ -721,12 +753,9 @@ final class LandsatReader extends MetadataBuilder {
                 setTransferFunction(key, band, false, value);
                 break;
             }
-
-            ////
-            //// GROUP = PROJECTION_PARAMETERS
-            ////
-
-            /*
+            /* ┌────────────────────────────────────┐
+             * │ GROUP = PROJECTION_PARAMETERS      │
+             * └────────────────────────────────────┘
              * The map projection used in creating the image.
              * Universal Transverse Mercator (UTM) or Polar Stereographic (PS).
              */
@@ -771,6 +800,28 @@ final class LandsatReader extends MetadataBuilder {
             case "TRUE_SCALE_LAT":         setProjectionParameter(key, Constants.STANDARD_PARALLEL_1, value, false); break;
             case "FALSE_EASTING":          setProjectionParameter(key, Constants.FALSE_EASTING,       value, true);  break;
             case "FALSE_NORTHING":         setProjectionParameter(key, Constants.FALSE_NORTHING,      value, true);  break;
+        }
+    }
+
+    /**
+     * Invoked for every key-value pairs found in a lineage group. This method does a work similar to
+     * {@link #parseKeyValuePair(String, int, String)} except that the result is stored in a section
+     * about data history. Note that the file can contains many distinct lineage sections.
+     */
+    private void parseLineage(final String key, final int band, String value) {
+        switch (key) {
+            case "LANDSAT_PRODUCT_ID": {
+                addSource(value, null, null);
+                break;
+            }
+            case "PROCESSING_LEVEL": {
+                addProcessing(null, value);
+                break;
+            }
+            case "PROCESSING_SOFTWARE_VERSION": {
+                addSoftwareReference(value);
+                break;
+            }
         }
     }
 
