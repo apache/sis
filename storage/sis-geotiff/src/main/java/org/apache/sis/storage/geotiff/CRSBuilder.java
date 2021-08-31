@@ -124,7 +124,7 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see GeoKeys
  *
@@ -1204,6 +1204,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         final GeodeticDatum datum = crs.getDatum();
         verifyIdentifier(crs, datum, GeoKeys.GeodeticDatum);
         verify(datum, angularUnit, linearUnit);
+        geoKeys.remove(GeoKeys.GeogCitation);
     }
 
     /**
