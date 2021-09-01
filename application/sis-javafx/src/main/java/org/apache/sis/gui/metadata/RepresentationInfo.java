@@ -59,7 +59,6 @@ final class RepresentationInfo extends Section<SpatialRepresentation> {
     @Override
     void setInformation(final Metadata metadata) {
         referenceSystem = null;
-        setInformation(nonNull(metadata == null ? null : metadata.getSpatialRepresentationInfo()), SpatialRepresentation[]::new);
         if (metadata != null) {
             for (final ReferenceSystem rs : nonNull(metadata.getReferenceSystemInfo())) {
                 if (rs != null) {
@@ -68,6 +67,7 @@ final class RepresentationInfo extends Section<SpatialRepresentation> {
                 }
             }
         }
+        setInformation(nonNull(metadata == null ? null : metadata.getSpatialRepresentationInfo()), SpatialRepresentation[]::new);
     }
 
     /**
@@ -93,30 +93,40 @@ final class RepresentationInfo extends Section<SpatialRepresentation> {
      *       the resolution. Note that VectorSpatialRepresentation would also needs a table.
      */
     private void build(final GridSpatialRepresentation info) {
-        int dimensionCount = 0;
-        final StringBuffer buffer = new StringBuffer();
+        final Integer dimension = info.getNumberOfDimensions();
+        if (dimension != null) {
+            addLine(Vocabulary.Keys.NumberOfDimensions, owner.getNumberFormat().format(dimension));
+        }
+        final StringBuffer gridSize   = new StringBuffer(20);
+        final StringBuffer resolution = new StringBuffer(20);
         for (final Dimension dim : nonNull(info.getAxisDimensionProperties())) {
             final String  name = owner.string(Types.getCodeTitle(dim.getDimensionName()));
             final Integer size = dim.getDimensionSize();
-            if (size != null) {
-                owner.getNumberFormat().format(size, buffer, new FieldPosition(0));
-                if (name != null) buffer.append(' ');
+            if (name != null || size != null) {
+                if (gridSize.length() != 0) {
+                    gridSize.append(" × ");
+                }
+                if (size != null) {
+                    owner.getNumberFormat().format(size, gridSize, new FieldPosition(0));
+                }
+                if (name != null) {
+                    if (size != null) gridSize.append(' ');
+                    gridSize.append(name);
+                }
             }
-            if (name != null) {
-                buffer.append(name);
-            } else if (size == null) {
-                buffer.append('?');
+            final Double r = dim.getResolution();
+            if (r != null) {
+                if (resolution.length() != 0) {
+                    resolution.append(" × ");
+                }
+                owner.getNumberFormat().format(r, resolution, new FieldPosition(0));
             }
-            buffer.append(" × ");
-            dimensionCount++;
         }
-        if (dimensionCount != 0) {
-            buffer.setLength(buffer.length() - 3);
-            addLine(Vocabulary.Keys.Dimensions, buffer.toString());
+        if (gridSize.length() != 0) {
+            addLine(Vocabulary.Keys.Dimensions, gridSize.toString());
         }
-        final Integer nd = info.getNumberOfDimensions();
-        if (nd != null && nd != dimensionCount) {
-            addLine(Vocabulary.Keys.NumberOfDimensions, owner.getNumberFormat().format(dimensionCount));
+        if (resolution.length() != 0) {
+            addLine(Vocabulary.Keys.Resolution, resolution.toString());
         }
         addLine(Vocabulary.Keys.CellGeometry, owner.string(Types.getCodeTitle(info.getCellGeometry())));
     }

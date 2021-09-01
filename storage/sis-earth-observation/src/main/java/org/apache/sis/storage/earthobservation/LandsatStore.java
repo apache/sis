@@ -16,13 +16,16 @@
  */
 package org.apache.sis.storage.earthobservation;
 
+import java.util.Optional;
 import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.IOException;
-import java.nio.file.StandardOpenOption;
 import java.net.URI;
-import java.util.Optional;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
@@ -80,6 +83,11 @@ public class LandsatStore extends DataStore {
     private Reader source;
 
     /**
+     * The root directory where this file is located, or {@code null} if unknown.
+     */
+    final Path directory;
+
+    /**
      * The {@link LandsatStoreProvider#LOCATION} parameter value, or {@code null} if none.
      */
     private final URI location;
@@ -105,9 +113,28 @@ public class LandsatStore extends DataStore {
      */
     public LandsatStore(final LandsatStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        location = connector.getStorageAs(URI.class);
-        source = connector.getStorageAs(Reader.class);
+        Path path = connector.getStorageAs(Path.class);
+        location  = connector.getStorageAs(URI.class);
+        source    = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(source);
+        if (path != null) {
+            if (source != null) {
+                path = path.getParent();        // If the source has been opened, then the path is a file.
+            } else try {
+                final Path file = LandsatStoreProvider.getMetadataFile(path);
+                if (file != null) {
+                    final Charset encoding = connector.getOption(OptionKey.ENCODING);
+                    if (encoding != null) {
+                        source = Files.newBufferedReader(file, encoding);
+                    } else {
+                        source = Files.newBufferedReader(file);
+                    }
+                }
+            } catch (IOException e) {
+                throw new DataStoreException(e);
+            }
+        }
+        directory = path;
         if (source == null) {
             throw new UnsupportedStorageException(super.getLocale(), LandsatStoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
@@ -149,6 +176,25 @@ public class LandsatStore extends DataStore {
     }
 
     /**
+     * Parses the main Landsat text file.
+     */
+    private void loadMetadata() throws DataStoreException {
+        if (source == null) {
+            throw new DataStoreClosedException(getLocale(), LandsatStoreProvider.NAME, StandardOpenOption.READ);
+        }
+        try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
+            source = null;      // Will be closed at the end of this try-finally block.
+            final LandsatReader parser = new LandsatReader(getDisplayName(), listeners);
+            parser.read(reader);
+            metadata = parser.getMetadata();
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        } catch (FactoryException e) {
+            throw new DataStoreReferencingException(e);
+        }
+    }
+
+    /**
      * Returns information about the dataset as a whole. The returned metadata object can contain information
      * such as the spatiotemporal extent of the dataset, contact information about the creator or distributor,
      * data quality, usage constraints and more.
@@ -159,19 +205,7 @@ public class LandsatStore extends DataStore {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
-            if (source == null) {
-                throw new DataStoreClosedException(getLocale(), LandsatStoreProvider.NAME, StandardOpenOption.READ);
-            }
-            try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
-                source = null;      // Will be closed at the end of this try-finally block.
-                final LandsatReader parser = new LandsatReader(getDisplayName(), listeners);
-                parser.read(reader);
-                metadata = parser.getMetadata();
-            } catch (IOException e) {
-                throw new DataStoreException(e);
-            } catch (FactoryException e) {
-                throw new DataStoreReferencingException(e);
-            }
+            loadMetadata();
         }
         return metadata;
     }

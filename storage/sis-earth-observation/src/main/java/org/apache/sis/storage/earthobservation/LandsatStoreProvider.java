@@ -16,6 +16,9 @@
  */
 package org.apache.sis.storage.earthobservation;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
@@ -86,6 +89,16 @@ public class LandsatStoreProvider extends DataStoreProvider {
          */
         Peek() {
             super(KEYWORD.length());
+        }
+
+        /**
+         * Returns the path to the metadata file relative to the directory specified by user.
+         * This method is invoked if the user gave us the directory containing all Landsat files
+         * instead than the path to the metadata file.
+         */
+        @Override
+        protected Path getAuxiliaryPath(final StorageConnector connector) throws DataStoreException {
+            return getMetadataFile(connector.getStorageAs(Path.class));
         }
 
         /**
@@ -161,6 +174,22 @@ public class LandsatStoreProvider extends DataStoreProvider {
     @Override
     public ParameterDescriptorGroup getOpenParameters() {
         return OPEN_DESCRIPTOR;
+    }
+
+    /**
+     * Returns the metadata file inside the given directory if the file exists, or {@code null} otherwise.
+     *
+     * @param  directory  directory to test, or {@code null} if unknown.
+     * @return metadata file, or {@code null} if it does not exist.
+     */
+    static Path getMetadataFile(final Path directory) {
+        if (directory != null) {
+            final Path file = directory.resolve(Paths.get(directory.getFileName().toString().concat("_MTL.txt")));
+            if (Files.isRegularFile(file)) {
+                return file;
+            }
+        }
+        return null;
     }
 
     /**

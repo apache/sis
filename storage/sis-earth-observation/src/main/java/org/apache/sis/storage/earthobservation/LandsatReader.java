@@ -109,12 +109,6 @@ final class LandsatReader extends MetadataBuilder {
     static final Pattern CREDIT = Pattern.compile("\\bcourtesy\\h+of\\h+(the)?\\b\\s*", Pattern.CASE_INSENSITIVE);
 
     /**
-     * Number of spatial dimensions. This is the number of coordinate values to be stored
-     * in the {@link #gridSizes} and {@link #corners} arrays for each tuple.
-     */
-    static final int DIM = 2;
-
-    /**
      * Suffix of groups that describe the processing done on the data instead of the data themselves.
      */
     private static final String LINEAGE_SUFFIX = "_RECORD";
@@ -125,13 +119,6 @@ final class LandsatReader extends MetadataBuilder {
      * Example: {@code "REFLECTANCE_ADD_BAND_1"}.
      */
     private static final String BAND_SUFFIX = "_BAND";
-
-    /**
-     * Index of projected and geographic coordinates in the {@link #corners} array.
-     * Each kind of coordinates are stored as 4 corners of {@value #DIM} coordinate values.
-     */
-    private static final int PROJECTED  = 0*DIM,
-                             GEOGRAPHIC = 4*DIM;
 
     /**
      * The keyword for end of metadata file.
@@ -158,7 +145,7 @@ final class LandsatReader extends MetadataBuilder {
 
     /**
      * The last group where we fetched lineage (history) information.
-     * The same file may contain many lineage group.
+     * The same file may contain many lineage groups.
      *
      * @see #parseLineage(String, int, String)
      */
@@ -181,13 +168,25 @@ final class LandsatReader extends MetadataBuilder {
     private final double[] corners;
 
     /**
+     * Number of coordinates for the corners in a CRS type (geographic or projected).
+     * This is 4 corners multiplied by the number of dimensions, which is 2.
+     */
+    private static final int NUM_COORDINATES = 8;
+
+    /**
+     * Index of projected and geographic coordinates in the {@link #corners} array.
+     * Each kind of coordinates are stored as 4 corners of {@value #DIMENSION} coordinate values.
+     */
+    private static final int PROJECTED = 0, GEOGRAPHIC = NUM_COORDINATES;
+
+    /**
      * Image width and hight in pixels, as unsigned integers. Values are (<var>width</var>,<var>height</var>) tuples.
      * Tuples in this array are for {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL} bands, in that order.
      */
     private final EnumMap<BandGroup,Dimension> gridSizes;
 
     /**
-     * The bands description. The bands can be, in this exact order:
+     * The bands descriptions. The bands can be, in this exact order:
      *
      * <ol>
      *   <li>Coastal Aerosol</li>
@@ -206,6 +205,11 @@ final class LandsatReader extends MetadataBuilder {
      * @see #band(String, int)
      */
     private final EnumMap<Band,DefaultBand> bands;
+
+    /**
+     * Paths to resources for each band.
+     */
+    final EnumMap<Band,String> resources;
 
     /**
      * {@link Band#values()}, fetched once for avoiding multiple array creations.
@@ -244,11 +248,12 @@ final class LandsatReader extends MetadataBuilder {
         this.filename  = filename;
         this.listeners = listeners;
         this.factories = new ReferencingFactoryContainer();
-        this.bands     = new EnumMap<>(Band.class);
+        this.corners   = new double[2*NUM_COORDINATES];     // 2 types of CRS: GEOGRAPHIC and PROJECTED.
         this.gridSizes = new EnumMap<>(BandGroup.class);
-        this.corners   = new double[GEOGRAPHIC + (4*DIM)];      // GEOGRAPHIC is the last group of corners to store.
-        Arrays.fill(corners, Double.NaN);
+        this.bands     = new EnumMap<>(Band.class);
+        this.resources = new EnumMap<>(Band.class);
         bandEnumerations = Band.values();
+        Arrays.fill(corners, Double.NaN);
     }
 
     /**
@@ -585,6 +590,7 @@ final class LandsatReader extends MetadataBuilder {
                 final DefaultBand db = band(key, band);
                 if (db != null) {
                     db.getNames().add(new DefaultIdentifier(value));
+                    resources.put(bandEnumerations[band-1], value);
                 }
                 break;
             }
@@ -855,7 +861,7 @@ final class LandsatReader extends MetadataBuilder {
         double ymin = Double.POSITIVE_INFINITY;
         double xmax = Double.NEGATIVE_INFINITY;
         double ymax = Double.NEGATIVE_INFINITY;
-        for (int i = base + (4*DIM); --i >= base;) {
+        for (int i = base + NUM_COORDINATES; --i >= base;) {
             double v = corners[i];
             if (v < ymin) ymin = v;
             if (v > ymax) ymax = v;
