@@ -21,7 +21,6 @@ import java.net.URL;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.Files;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.function.Consumer;
@@ -36,7 +35,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.storage.folder.FolderStoreProvider;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.storage.DataStore;
 
@@ -154,16 +152,6 @@ public final class ResourceLoader extends Task<Resource> {
      * Loads the resource after we verified that it is not in the cache.
      */
     private DataStore load() throws DataStoreException {
-        Object input = source;
-        if (input instanceof StorageConnector) {
-            input = ((StorageConnector) input).getStorage();
-        }
-        if ((input instanceof File && ((File) input).isDirectory()) ||
-            (input instanceof Path && Files.isDirectory((Path) input)))
-        {
-            return FolderStoreProvider.INSTANCE.open((source instanceof StorageConnector)
-                              ? (StorageConnector) source : new StorageConnector(input));
-        }
         return DataStores.open(source);
     }
 

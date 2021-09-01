@@ -74,7 +74,8 @@ import org.apache.sis.util.Version;
 @StoreMetadata(formatName    = NetcdfStoreProvider.NAME,
                fileSuffixes  = "nc",
                capabilities  = Capability.READ,
-               resourceTypes = {Aggregate.class, FeatureSet.class, GridCoverageResource.class})
+               resourceTypes = {Aggregate.class, FeatureSet.class, GridCoverageResource.class},
+               isLowPriority = true)
 public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The format name.

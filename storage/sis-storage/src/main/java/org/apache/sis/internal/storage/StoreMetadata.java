@@ -92,4 +92,16 @@ public @interface StoreMetadata {
      * @return information about the expected resource types which might be encounter with this format.
      */
     Class<? extends Resource>[] resourceTypes() default {};
+
+    /**
+     * Returns {@code true} if the data store should be tested last when searching for a data store capable
+     * to open a given file. This method should return {@code true} if the data store claims to be able to
+     * open a wide variety of files, in order to allow specialized data stores to be tested before generic
+     * data stores.
+     *
+     * <p>If many data stores have low priority, the ordering between them is unspecified.</p>
+     *
+     * @return {@code true} if this data store should be tested after all "normal priority" data stores.
+     */
+    boolean isLowPriority() default false;
 }

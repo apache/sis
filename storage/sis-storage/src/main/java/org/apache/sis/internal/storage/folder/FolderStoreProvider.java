@@ -52,9 +52,9 @@ import org.apache.sis.setup.OptionKey;
 
 
 /**
- * The provider of {@link Store} instances. This provider is intentionally <strong>not</strong> registered
- * in {@code META-INF/services/org.apache.sis.storage.DataStoreProvider} because is will open any directory,
- * which may conflict with other providers opening only directory with some specific content.
+ * The provider of {@link Store} instances. This provider is intentionally registered with lowest priority
+ * because it will open any directory, which may conflict with other providers opening only directory with
+ * some specific content.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -64,7 +64,8 @@ import org.apache.sis.setup.OptionKey;
  */
 @StoreMetadata(formatName    = FolderStoreProvider.NAME,
                capabilities  = {Capability.READ, Capability.WRITE},
-               resourceTypes = {Aggregate.class, FeatureSet.class, GridCoverageResource.class})
+               resourceTypes = {Aggregate.class, FeatureSet.class, GridCoverageResource.class},
+               isLowPriority = true)
 public final class FolderStoreProvider extends DataStoreProvider {
     /**
      * A short name or abbreviation for the data format.
@@ -116,14 +117,9 @@ public final class FolderStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * The unique instance of this provider.
-     */
-    public static final FolderStoreProvider INSTANCE = new FolderStoreProvider();
-
-    /**
      * Creates a new provider.
      */
-    private FolderStoreProvider() {
+    public FolderStoreProvider() {
     }
 
     /**

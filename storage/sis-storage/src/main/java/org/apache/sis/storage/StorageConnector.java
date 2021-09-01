@@ -1091,14 +1091,16 @@ public class StorageConnector implements Serializable {
                 c = getView(ByteBuffer.class);
                 if (reset(c)) {                 // reset(c) as a matter of principle, but (c != null) would have worked.
                     final ByteBuffer buffer = (ByteBuffer) c.view;
-                    final int p = buffer.limit();
-                    final long mark = input.getStreamPosition();
-                    input.seek(Math.addExact(mark, p));
-                    final int n = input.read(buffer.array(), p, buffer.capacity() - p);
-                    input.seek(mark);
-                    if (n > 0) {
-                        buffer.limit(p + n);
-                        return true;
+                    if (buffer != null) {
+                        final int p = buffer.limit();
+                        final long mark = input.getStreamPosition();
+                        input.seek(Math.addExact(mark, p));
+                        final int n = input.read(buffer.array(), p, buffer.capacity() - p);
+                        input.seek(mark);
+                        if (n > 0) {
+                            buffer.limit(p + n);
+                            return true;
+                        }
                     }
                 }
             }

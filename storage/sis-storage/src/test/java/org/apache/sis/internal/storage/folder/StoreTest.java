@@ -43,7 +43,7 @@ import static org.junit.Assume.assumeTrue;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -89,11 +89,12 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testSearchProviderParameter() throws URISyntaxException, DataStoreException, IOException {
+        final FolderStoreProvider provider = new FolderStoreProvider();
         final Set<String> identifiers = new HashSet<>(Arrays.asList("Sample 1", "Sample 2", "Sample 3", "data4"));
         final ParameterValueGroup params = FolderStoreProvider.PARAMETERS.createValue();
         params.parameter("location").setValue(testDirectory());
         params.parameter("format").setValue("XML");
-        try (Store store = (Store) FolderStoreProvider.INSTANCE.open(params)) {
+        try (Store store = (Store) provider.open(params)) {
             assertEquals("Expected one less data store.", 3, store.components().size());
             verifyContent(store, identifiers);
         }
