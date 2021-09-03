@@ -53,8 +53,9 @@ import org.apache.sis.storage.Resource;
  * When a warning is emitted, the default behavior is:
  *
  * <ul>
- *   <li>Notify all listeners registered for {@link WarningEvent} type
- *       in this {@code StoreListeners} and in the parent managers.</li>
+ *   <li>Notify all listeners that are registered for a given {@link WarningEvent} type in this {@code StoreListeners}
+ *       and in the parent resource or data store. Each listener will be notified only once, even if the same listener
+ *       is registered in two or more places.</li>
  *   <li>If previous step found no listener registered for {@code WarningEvent},
  *       then log the warning in the first logger found in following choices:
  *     <ol>
@@ -79,6 +80,7 @@ import org.apache.sis.storage.Resource;
 public class StoreListeners implements Localized {
     /**
      * Parent manager to notify in addition to this manager.
+     * This is used when a data store is created for reading components of a larger data store.
      */
     private final StoreListeners parent;
 
@@ -205,7 +207,11 @@ public class StoreListeners implements Localized {
 
     /**
      * Creates a new instance with the given parent and initially no listener.
-     * The parent is typically the listeners of the {@link DataStore} that created a resource.
+     * The parent is typically the {@linkplain DataStore#listeners listeners}
+     * of the {@link DataStore} that created a resource.
+     * When an event is {@linkplain #fire fired}, listeners registered in the parent
+     * will be notified as well as listeners registered in this {@code StoreListeners}.
+     * Each listener will be notified only once even if it has been registered in two places.
      *
      * @param parent  the manager to notify in addition to this manager, or {@code null} if none.
      * @param source  the source of events. Can not be null.

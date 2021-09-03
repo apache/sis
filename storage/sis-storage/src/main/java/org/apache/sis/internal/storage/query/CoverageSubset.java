@@ -47,7 +47,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  */
 final class CoverageSubset extends AbstractGridResource {
     /**
-     * The coverage resource instances which provides the data.
+     * The coverage resource instance which provides the data.
      */
     private final GridCoverageResource source;
 

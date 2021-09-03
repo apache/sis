@@ -64,9 +64,12 @@ public class AbstractResource extends StoreListeners implements Resource {
     private Metadata metadata;
 
     /**
-     * Creates a new resource.
+     * Creates a new resource. This resource will have its own set of listeners,
+     * but the listeners of the data store that created this resource will be notified as well.
      *
      * @param  parent  listeners of the parent resource, or {@code null} if none.
+     *         This is usually the listeners of the {@link org.apache.sis.storage.DataStore}
+     *         that created this resource.
      */
     public AbstractResource(final StoreListeners parent) {
         super(parent, null);
