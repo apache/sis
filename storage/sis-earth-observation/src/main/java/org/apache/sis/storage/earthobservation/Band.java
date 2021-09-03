@@ -16,6 +16,9 @@
  */
 package org.apache.sis.storage.earthobservation;
 
+import org.opengis.util.InternationalString;
+import org.apache.sis.util.iso.SimpleInternationalString;
+
 
 /**
  * Names of Landsat bands.
@@ -50,7 +53,7 @@ enum Band {
     /**
      * Name of Landsat band.
      */
-    final String name;
+    final InternationalString name;
 
     /**
      * Peak response wavelength for the Landsat band, in nanometres.
@@ -62,7 +65,7 @@ enum Band {
      */
     private Band(final BandGroup group, final String name, final short wavelength) {
         this.group      = group;
-        this.name       = name;
+        this.name       = new SimpleInternationalString(name);
         this.wavelength = wavelength;
     }
 }

@@ -1375,7 +1375,14 @@ final class ImageFileDirectory extends DataCube {
             referencing.completeMetadata(metadata);         // Must be after `getGridGeometry()`.
         }
         metadata.addTitleOrIdentifier(identifier.toString(), MetadataBuilder.Scope.RESOURCE);
-        final Metadata md = metadata.build(true);
+        /*
+         * Undocumented feature: if `GeoTiffStore` is not used as a standalone reader but is instead
+         * used as a component of a larger data store (e.g. Landsat), do not freeze the metadata.
+         * This is needed for allowing `LandsatStore` to modify those metadata before to return them
+         * to the user. We may revert this undocumented feature in the future if we provide a better
+         * way to perform metadata amendment.
+         */
+        final Metadata md = metadata.build(!reader.store.hidden);
         metadata = null;
         return md;
     }

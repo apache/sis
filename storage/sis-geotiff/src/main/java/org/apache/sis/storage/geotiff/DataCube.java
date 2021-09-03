@@ -30,6 +30,7 @@ import org.apache.sis.internal.geotiff.Predictor;
 import org.apache.sis.internal.geotiff.Compression;
 import org.apache.sis.internal.storage.TiledGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
+import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
 
@@ -45,7 +46,7 @@ import org.apache.sis.math.Vector;
  * @since   1.1
  * @module
  */
-abstract class DataCube extends TiledGridResource implements ResourceOnFileSystem {
+abstract class DataCube extends TiledGridResource implements ResourceOnFileSystem, StoreResource {
     /**
      * The GeoTIFF reader which contain this {@code DataCube}.
      * Used for fetching information like the input channel and where to report warnings.
@@ -60,6 +61,14 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     DataCube(final Reader reader) {
         super(reader.store.listeners());
         this.reader = reader;
+    }
+
+    /**
+     * Returns the data store that produced this resource.
+     */
+    @Override
+    public final DataStore getOriginator() {
+        return reader.store;
     }
 
     /**

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.earthobservation;
 
+import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.io.Reader;
 import java.io.BufferedReader;
@@ -26,10 +28,15 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import org.opengis.metadata.Metadata;
+import org.opengis.util.NameSpace;
+import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
+import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
@@ -40,6 +47,8 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.setup.OptionKey;
 
 
@@ -76,7 +85,7 @@ import org.apache.sis.setup.OptionKey;
  * @since   0.8
  * @module
  */
-public class LandsatStore extends DataStore {
+public class LandsatStore extends DataStore implements Aggregate {
     /**
      * The reader, or {@code null} if closed.
      */
@@ -101,6 +110,12 @@ public class LandsatStore extends DataStore {
      * The identifier, cached when first requested.
      */
     private GenericName identifier;
+
+    /**
+     * The array of images for each Landsat band, or {@code null} if not yet created.
+     * This array is created together with {@linkplain #metadata} and is unmodifiable.
+     */
+    private BandData[] components;
 
     /**
      * Creates a new Landsat store from the given file, URL, stream or character reader.
@@ -142,6 +157,16 @@ public class LandsatStore extends DataStore {
     }
 
     /**
+     * Returns the name of the directory that contains this data set.
+     * The directory may not exist, for example if the data are read from a ZIP file.
+     * The returned name can be used in user interfaces or in error messages.
+     */
+    @Override
+    public final String getDisplayName() {
+        return (directory != null) ? directory.getFileName().toString() : super.getDisplayName();
+    }
+
+    /**
      * Returns the parameters used to open this Landsat data store.
      * The parameters are described by {@link LandsatStoreProvider#getOpenParameters()} and contains at least
      * a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
@@ -177,6 +202,7 @@ public class LandsatStore extends DataStore {
 
     /**
      * Parses the main Landsat text file.
+     * Also creates the array of components, but without loading GeoTIFF data yet.
      */
     private void loadMetadata() throws DataStoreException {
         if (source == null) {
@@ -187,6 +213,20 @@ public class LandsatStore extends DataStore {
             final LandsatReader parser = new LandsatReader(getDisplayName(), listeners);
             parser.read(reader);
             metadata = parser.getMetadata();
+            /*
+             * Create the array of components. The resource identifier is the band name.
+             * The namespace of each identifier is the name of the data set directory.
+             */
+            final String      name    = getDisplayName();
+            final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+            final NameSpace   scope   = (name != null) ? factory.createNameSpace(factory.createLocalName(null, name), null) : null;
+            int i = 0;
+            components = new BandData[parser.resources.size()];
+            for (final Map.Entry<Band,String> entry : parser.resources.entrySet()) {
+                final Band band = entry.getKey();
+                final LocalName id = factory.createLocalName(scope, band.name());
+                components[i++] = new BandData(this, band, id, entry.getValue());
+            }
         } catch (IOException e) {
             throw new DataStoreException(e);
         } catch (FactoryException e) {
@@ -211,6 +251,23 @@ public class LandsatStore extends DataStore {
     }
 
     /**
+     * Returns the resources for each Landsat band.
+     *
+     * @return all bands that are components of this aggregate. Never {@code null}.
+     * @throws DataStoreException if an error occurred while fetching the components.
+     *
+     * @since 1.1
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public synchronized List<GridCoverageResource> components() throws DataStoreException {
+        if (components == null) {
+            loadMetadata();
+        }
+        return UnmodifiableArrayList.wrap(components);
+    }
+
+    /**
      * Registers a listener to notify when the specified kind of event occurs in this data store.
      * The current implementation of this data store can emit only {@link WarningEvent}s;
      * any listener specified for another kind of events will be ignored.
@@ -231,5 +288,26 @@ public class LandsatStore extends DataStore {
     @Override
     public synchronized void close() throws DataStoreException {
         metadata = null;
+        final BandData[] bands = components;
+        if (bands != null) {
+            components = null;
+            DataStoreException error = null;
+            for (int i=0; i<bands.length; i++) {
+                final BandData band = bands[i];
+                if (band != null) {
+                    bands[i] = null;
+                    try {
+                        band.closeDataStore();
+                    } catch (DataStoreException e) {
+                        if (error == null) {
+                            error = e;
+                        } else {
+                            error.addSuppressed(e);
+                        }
+                    }
+                }
+            }
+            if (error != null) throw error;
+        }
     }
 }

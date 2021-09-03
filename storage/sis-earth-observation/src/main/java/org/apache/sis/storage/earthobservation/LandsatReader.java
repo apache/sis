@@ -60,7 +60,6 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
@@ -804,7 +803,7 @@ final class LandsatReader extends MetadataBuilder {
         DefaultBand band = bands.get(bk);
         if (band == null) {
             band = new DefaultBand();
-            band.setDescription(new SimpleInternationalString(bk.name));
+            band.setDescription(bk.name);
             band.setPeakResponse((double) bk.wavelength);
             band.setBoundUnits(Units.NANOMETRE);
             bands.put(bk, band);
