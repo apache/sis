@@ -75,7 +75,14 @@ import org.apache.sis.util.Version;
                fileSuffixes  = "nc",
                capabilities  = Capability.READ,
                resourceTypes = {Aggregate.class, FeatureSet.class, GridCoverageResource.class},
-               isLowPriority = true)
+               yieldPriority = true)
+/*
+ * Note: we set "low priority" to this provider because the UCAR library supports many file formats,
+ * including GeoTIFF. We want the Apache SIS GeoTIFF data store to be tested before the UCAR library.
+ * Even in the case of real netCDF files, the netCDF format is so generic that we sometime need to
+ * create specialized readers for specific data set, in which case we want the providers of those
+ * specialized readers to be tested before this generic netCDF reader.
+ */
 public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The format name.

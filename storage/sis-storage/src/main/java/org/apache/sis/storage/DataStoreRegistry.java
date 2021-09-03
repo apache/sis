@@ -160,12 +160,12 @@ final class DataStoreRegistry {
         final boolean useSuffix;
 
         /** Whether this category is for providers to test last. */
-        final boolean isLowPriority;
+        final boolean yieldPriority;
 
         /** Creates a new enumeration value. */
-        private Category(final boolean useSuffix, final boolean isLowPriority) {
+        private Category(final boolean useSuffix, final boolean yieldPriority) {
             this.useSuffix     = useSuffix;
-            this.isLowPriority = isLowPriority;
+            this.yieldPriority = yieldPriority;
         }
 
         /** Returns the categories, optionally ignoring file suffix. */
@@ -230,7 +230,7 @@ search:     for (int ci=0; ci < categories.length; ci++) {
                     if (md == null) {
                         accept = (ci == 0);         // If no metadata, test only in first iteration.
                     } else {
-                        accept = (md.isLowPriority() == category.isLowPriority);
+                        accept = (md.yieldPriority() == category.yieldPriority);
                         if (accept & useSuffix) {
                             accept = ArraysExt.containsIgnoreCase(md.fileSuffixes(), extension) == category.useSuffix;
                         }

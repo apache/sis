@@ -99,9 +99,9 @@ public @interface StoreMetadata {
      * open a wide variety of files, in order to allow specialized data stores to be tested before generic
      * data stores.
      *
-     * <p>If many data stores have low priority, the ordering between them is unspecified.</p>
+     * <p>If many data stores yield priority, the ordering between them is unspecified.</p>
      *
      * @return {@code true} if this data store should be tested after all "normal priority" data stores.
      */
-    boolean isLowPriority() default false;
+    boolean yieldPriority() default false;
 }

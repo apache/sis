@@ -65,7 +65,7 @@ import org.apache.sis.setup.OptionKey;
 @StoreMetadata(formatName    = FolderStoreProvider.NAME,
                capabilities  = {Capability.READ, Capability.WRITE},
                resourceTypes = {Aggregate.class, FeatureSet.class, GridCoverageResource.class},
-               isLowPriority = true)
+               yieldPriority = true)
 public final class FolderStoreProvider extends DataStoreProvider {
     /**
      * A short name or abbreviation for the data format.
