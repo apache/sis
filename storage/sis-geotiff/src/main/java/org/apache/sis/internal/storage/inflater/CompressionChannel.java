@@ -92,7 +92,8 @@ abstract class CompressionChannel extends PixelChannel {
      */
     final ChannelDataInput createDataInput(final PixelChannel channel) throws IOException {
         // TODO: remove cast with JDK9.
-        return new ChannelDataInput(input.filename, channel, (ByteBuffer) ByteBuffer.allocate(BUFFER_SIZE).limit(0), true);
+        final ByteBuffer buffer = (ByteBuffer) ByteBuffer.allocate(BUFFER_SIZE).order(input.buffer.order()).limit(0);
+        return new ChannelDataInput(input.filename, channel, buffer, true);
     }
 
     /**
