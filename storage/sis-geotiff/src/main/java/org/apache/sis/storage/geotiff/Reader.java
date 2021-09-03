@@ -29,7 +29,6 @@ import org.opengis.util.NameFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
-import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
@@ -121,11 +120,6 @@ final class Reader extends GeoTIFF {
     private boolean deferredNeedsSort;
 
     /**
-     * Builder for the metadata.
-     */
-    final MetadataBuilder metadata;
-
-    /**
      * The factory to use for creating image identifiers.
      */
     final NameFactory nameFactory;
@@ -141,7 +135,6 @@ final class Reader extends GeoTIFF {
         super(store);
         this.input       = input;
         this.origin      = input.getStreamPosition();
-        this.metadata    = new MetadataBuilder();
         this.doneIFD     = new HashSet<>();
         this.nameFactory = DefaultFactories.forBuildin(NameFactory.class);
         /*
@@ -174,7 +167,7 @@ final class Reader extends GeoTIFF {
                         intSizeExpansion = (byte) (powerOf2 - 2);
                         if (intSizeExpansion == 1) {
                             /*
-                             * Above 'intSizeExpension' calculation was a little bit useless since we accept only
+                             * Above `intSizeExpension` calculation was a little bit useless since we accept only
                              * one result in the end, but we did that generic computation anyway for keeping the
                              * code almost ready if the BigTIFF specification adds support for 16 bytes pointer.
                              */
@@ -275,7 +268,7 @@ final class Reader extends GeoTIFF {
                 final long size  = (type != null) ? Math.multiplyExact(type.size, count) : 0;
                 if (size <= offsetSize) {
                     /*
-                     * If the value can fit inside the number of bytes given by 'offsetSize', then the value is
+                     * If the value can fit inside the number of bytes given by `offsetSize`, then the value is
                      * stored directly at that location. This is the most common way TIFF tag values are stored.
                      */
                     final long position = input.getStreamPosition();

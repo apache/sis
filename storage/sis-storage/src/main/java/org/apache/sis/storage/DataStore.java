@@ -150,21 +150,49 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      *
      * @since 0.8
+     *
+     * @deprecated Replaced by {@link #DataStore(DataStore, DataStoreProvider, StorageConnector, boolean)}.
      */
+    @Deprecated
     protected DataStore(final DataStore parent, final StorageConnector connector) throws DataStoreException {
+        this(parent, (parent != null) ? parent.provider : null, connector, false);
+    }
+
+    /**
+     * Creates a new instance as a child of another data store instance.
+     * Events will be sent not only to {@linkplain #addListener registered listeners} of this {@code DataStore},
+     * but also to listeners of the {@code parent} data store. Each listener will be notified only once, even if
+     * the same listener is registered in the two places.
+     *
+     * @param  parent     the parent that contains this new {@code DataStore} component, or {@code null} if none.
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @param  hidden     {@code true} if this store will not be directly accessible from the parent.
+     *                    It is the case if this store is an {@link Aggregate} and the parent store will
+     *                    expose only some components of the aggregate instead of the aggregate itself.
+     * @throws DataStoreException if an error occurred while creating the data store for the given storage.
+     *
+     * @since 1.1
+     */
+    protected DataStore(final DataStore parent, final DataStoreProvider provider, final StorageConnector connector,
+                        final boolean hidden) throws DataStoreException
+    {
         ArgumentChecks.ensureNonNull("connector", connector);
+        this.provider = provider;
+        name = connector.getStorageName();
         final StoreListeners forwardTo;
         if (parent != null) {
+            locale = parent.locale;
+            if (hidden) {
+                listeners = parent.listeners;
+                return;
+            }
             forwardTo = parent.listeners;
-            provider  = parent.provider;
-            locale    = parent.locale;
         } else {
-            forwardTo = null;
-            provider  = null;
             locale    = Locale.getDefault(Locale.Category.DISPLAY);
+            forwardTo = null;
         }
         listeners = new StoreListeners(forwardTo, this);
-        name = connector.getStorageName();
     }
 
     /**

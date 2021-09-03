@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -32,10 +31,12 @@ import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.RasterFormatException;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.geotiff.Predictor;
 import org.apache.sis.internal.geotiff.Compression;
@@ -52,6 +53,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.math.Vector;
@@ -101,10 +103,20 @@ final class ImageFileDirectory extends DataCube {
     private final GenericName identifier;
 
     /**
+     * Builder for the metadata. This field is reset to {@code null} when not needed anymore.
+     */
+    private MetadataBuilder metadata;
+
+    /**
      * {@code true} if this {@code ImageFileDirectory} has not yet read all deferred entries.
      * When this flag is {@code true}, the {@code ImageFileDirectory} is not yet ready for use.
      */
     boolean hasDeferredEntries;
+
+    /**
+     * {@code true} if {@link #validateMandatoryTags()} has already been invoked.
+     */
+    private boolean isValidated;
 
     /**
      * The size of the image described by this FID, or -1 if the information has not been found.
@@ -418,6 +430,7 @@ final class ImageFileDirectory extends DataCube {
     ImageFileDirectory(final Reader reader, final int index) {
         super(reader);
         identifier = reader.nameFactory.createLocalName(reader.store.identifier, String.valueOf(index + 1));
+        metadata = new MetadataBuilder();
     }
 
     /**
@@ -839,19 +852,23 @@ final class ImageFileDirectory extends DataCube {
 
             /*
              * The name of the document from which this image was scanned.
+             *
+             * Destination: metadata/identificationInfo/citation/series/name
              */
             case Tags.DocumentName: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addSeries(value);
+                    metadata.addSeries(value);
                 }
                 break;
             }
             /*
              * The name of the page from which this image was scanned.
+             *
+             * Destination: metadata/identificationInfo/citation/series/page
              */
             case Tags.PageName: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addPage(value);
+                    metadata.addPage(value);
                 }
                 break;
             }
@@ -859,6 +876,8 @@ final class ImageFileDirectory extends DataCube {
              * The page number of the page from which this image was scanned.
              * Should be a vector of length 2 containing the page number and
              * the total number of pages (with 0 meaning unavailable).
+             *
+             * Destination: metadata/identificationInfo/citation/series/page
              */
             case Tags.PageNumber: {
                 final Vector v = type.readVector(input(), count);
@@ -868,64 +887,76 @@ final class ImageFileDirectory extends DataCube {
                     case 1:  p = v.intValue(0);
                     case 0:  break;
                 }
-                reader.metadata.addPage(p, n);
+                metadata.addPage(p, n);
                 break;
             }
             /*
              * A string that describes the subject of the image.
              * For example, a user may wish to attach a comment such as "1988 company picnic" to an image.
+             *
+             * Destination: metadata/identificationInfo/citation/title
              */
             case Tags.ImageDescription: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addTitle(value);
+                    metadata.addTitle(value);
                 }
                 break;
             }
             /*
              * Person who created the image. Some older TIFF files used this tag for storing
              * Copyright information, but Apache SIS does not support this legacy practice.
+             *
+             * Destination: metadata/identificationInfo/citation/party/name
              */
             case Tags.Artist: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addAuthor(value);
+                    metadata.addAuthor(value);
                 }
                 break;
             }
             /*
              * Copyright notice of the person or organization that claims the copyright to the image.
              * Example: “Copyright, John Smith, 1992. All rights reserved.”
+             *
+             * Destination: metadata/identificationInfo/resourceConstraint
              */
             case Tags.Copyright: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.parseLegalNotice(value);
+                    metadata.parseLegalNotice(value);
                 }
                 break;
             }
             /*
              * Date and time of image creation. The format is: "YYYY:MM:DD HH:MM:SS" with 24-hour clock.
+             *
+             * Destination: metadata/identificationInfo/citation/date
              */
             case Tags.DateTime: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addCitationDate(reader.getDateFormat().parse(value),
+                    metadata.addCitationDate(reader.getDateFormat().parse(value),
                             DateType.CREATION, MetadataBuilder.Scope.RESOURCE);
                 }
                 break;
             }
             /*
              * The computer and/or operating system in use at the time of image creation.
+             *
+             * Destination: metadata/resourceLineage/processStep/processingInformation/procedureDescription
              */
             case Tags.HostComputer: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addHostComputer(value);
+                    metadata.addHostComputer(value);
                 }
                 break;
             }
             /*
              * Name and version number of the software package(s) used to create the image.
+             *
+             * Destination: metadata/resourceLineage/processStep/processingInformation/softwareReference/title
              */
             case Tags.Software: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addSoftwareReference(value);
+                    metadata.addSoftwareReference(value);
                 }
                 break;
             }
@@ -941,10 +972,12 @@ final class ImageFileDirectory extends DataCube {
             /*
              * The model name or number of the scanner, video digitizer, or other type of equipment used to
              * generate the image.
+             *
+             * Destination: metadata/acquisitionInformation/platform/instrument/identifier
              */
             case Tags.Model: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addInstrument(null, value);
+                    metadata.addInstrument(null, value);
                 }
                 break;
             }
@@ -1135,6 +1168,7 @@ final class ImageFileDirectory extends DataCube {
      * @throws DataStoreContentException if a mandatory tag is missing and can not be inferred.
      */
     final void validateMandatoryTags() throws DataStoreContentException {
+        if (isValidated) return;
         if (imageWidth  < 0) throw missingTag(Tags.ImageWidth);
         if (imageHeight < 0) throw missingTag(Tags.ImageLength);
         final short offsetsTag, byteCountsTag;
@@ -1256,25 +1290,33 @@ final class ImageFileDirectory extends DataCube {
         if (referencing != null && !referencing.validateMandatoryTags()) {
             throw missingTag(Tags.ModelTiePoints);
         }
+        isValidated = true;
     }
 
     /**
-     * Completes the metadata with the information stored in the field of this IFD.
+     * Builds the metadata with the information stored in the fields of this IFD.
      * This method is invoked only if the user requested the ISO 19115 metadata.
-     * This method creates a new {@code "metadata/contentInfo"} node for this image.
-     * Information not under the {@code "metadata/contentInfo"} node will be merged
-     * with the current content of the given {@code MetadataBuilder}.
      *
-     * @param   metadata  where to write metadata information. Caller should have already invoked
-     *                    {@link MetadataBuilder#setFormat(String)} before {@code completeMetadata(…)} calls.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
-    final void completeMetadata(final MetadataBuilder metadata, final Locale locale)
-            throws DataStoreContentException, FactoryException
-    {
-        metadata.newCoverage(false);
-        if (compression != null) {
-            metadata.addCompression(compression.name().toLowerCase(locale));
+    @Override
+    protected Metadata createMetadata() throws DataStoreException {
+        /*
+         * Add information about the file format.
+         *
+         * Destination: metadata/identificationInfo/resourceFormat
+         */
+        if (reader.store.hidden) {
+            reader.store.setFormatInfo(metadata);       // Should be before `addCompression(…)`.
         }
+        if (compression != null) {
+            metadata.addCompression(CharSequences.upperCaseToSentence(compression.name()));
+        }
+        /*
+         * Add information about sample dimensions.
+         *
+         * Destination: metadata/contentInfo/attributeGroup/attribute
+         */
         for (int band = 0; band < samplesPerPixel;) {
             metadata.newSampleDimension();
             metadata.setBitPerSample(bitsPerSample);
@@ -1285,6 +1327,8 @@ final class ImageFileDirectory extends DataCube {
         /*
          * Add the resolution into the metadata. Our current ISO 19115 implementation restricts
          * the resolution unit to metres, but it may be relaxed in a future SIS version.
+         *
+         * Destination: metadata/identificationInfo/spatialResolution/distance
          */
         if (!Double.isNaN(resolution) && resolutionUnit != null) {
             metadata.addResolution(resolutionUnit.getConverterTo(Units.METRE).convert(resolution));
@@ -1296,6 +1340,8 @@ final class ImageFileDirectory extends DataCube {
          *   -1 means that Threshholding is 1 or unspecified.
          *   -2 means that Threshholding is 2 but the matrix size has not yet been specified.
          *   -3 means that Threshholding is 3 (randomized process such as error diffusion).
+         *
+         * Destination: metadata/resourceLineage/processStep/description
          */
         switch (Math.min(cellWidth, cellHeight)) {
             case -1: {
@@ -1315,36 +1361,23 @@ final class ImageFileDirectory extends DataCube {
             }
         }
         /*
-         * Add Coordinate Reference System built from GeoTIFF tags.  Note that the CRS may not exist,
-         * in which case the CRS builder returns null. This is safe since all MetadataBuilder methods
-         * ignore null values (a design choice because this pattern come very often).
+         * Add Coordinate Reference System built from GeoTIFF tags. Note that the CRS may not exist.
+         *
+         * Destination: metadata/spatialRepresentationInfo and others.
          */
         if (referencing != null) {
-            getGridGeometry();                  // For calculation of gridGeometry if not already done.
-            referencing.completeMetadata(metadata);
+            final GridGeometry gridGeometry = getGridGeometry();
+            if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) try {
+                metadata.addExtent(gridGeometry.getEnvelope());
+            } catch (TransformException e) {
+                warning(e);
+            }
+            referencing.completeMetadata(metadata);         // Must be after `getGridGeometry()`.
         }
-    }
-
-    /**
-     * Invoked the first time that {@link #getMetadata()} is invoked.
-     *
-     * @param  metadata  the builder where to set metadata properties.
-     * @throws DataStoreException if an error occurred while reading metadata from the data store.
-     */
-    @Override
-    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
-        super.createMetadata(metadata);
-        /*
-         * TODO:
-         *   - Modify ImageFileDirectory.completeMetadata(…) with the addition of a boolean telling that
-         *     that we invoke this method for a single image instead than the whole image. Use that flag
-         *     for skipping MetadataBuilder calls writing in metadata/identificationInfo/resourceFormat.
-         *   - Invoke ImageFileDirectory.completeMetadata(…) if not already done and cache in a field.
-         *   - Add a metadata utility method taking two Metadata in argument, search for properties that
-         *     are equal and replace them by the same instance.
-         *   - Invoke that method from here if GeoTiffStore already has a metadata, or conversely from
-         *     GeoTiffStore if ImageResource already has a metadata.
-         */
+        metadata.addTitleOrIdentifier(identifier.toString(), MetadataBuilder.Scope.RESOURCE);
+        final Metadata md = metadata.build(true);
+        metadata = null;
+        return md;
     }
 
     /**

@@ -86,7 +86,7 @@ public class LandsatReaderTest extends TestCase {
         verifier.addPropertyToIgnore(Metadata.class, "metadataStandard");           // Because hard-coded in SIS.
         verifier.addPropertyToIgnore(Metadata.class, "referenceSystemInfo");        // Very verbose and depends on EPSG connection.
         verifier.addMetadataToVerify(actual);
-        verifier.assertMetadataEquals(
+        verifier.addExpectedValues(
             "defaultLocale+otherLocale[0]",                                                          "en",
             "metadataIdentifier.code",                                                               "LandsatTest",
             "metadataScope[0].resourceScope",                                                        ScopeCode.COVERAGE,
@@ -251,5 +251,7 @@ public class LandsatReaderTest extends TestCase {
             "spatialRepresentationInfo[1].checkPointAvailability",                   false,
 
             "resourceLineage[0].source[0].description", "Pseudo GLS");
+
+        verifier.assertMetadataEquals();
     }
 }

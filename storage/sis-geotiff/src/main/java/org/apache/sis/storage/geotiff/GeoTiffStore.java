@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import java.util.Locale;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.LogRecord;
@@ -29,7 +28,6 @@ import java.nio.file.StandardOpenOption;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
-import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
@@ -37,9 +35,9 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.IllegalNameException;
@@ -120,6 +118,12 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     private List<GridCoverageResource> components;
 
     /**
+     * Whether this {@code GeotiffStore} will be hidden. If {@code true}, then some metadata that would
+     * normally be provided in this {@code GeoTiffStore} will be provided by individual components instead.
+     */
+    final boolean hidden;
+
+    /**
      * Creates a new GeoTIFF store from the given file, URL or stream object.
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
@@ -129,7 +133,37 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @throws DataStoreException if an error occurred while opening the GeoTIFF file.
      */
     public GeoTiffStore(final GeoTiffStoreProvider provider, final StorageConnector connector) throws DataStoreException {
-        super(provider, connector);
+        this(null, provider, connector, false);
+    }
+
+    /**
+     * Creates a new GeoTIFF store as a component of a larger data store.
+     *
+     * <div class="note"><b>Example:</b>
+     * A Landsat data set is a collection of files in a directory or ZIP file,
+     * which includes more than 10 GeoTIFF files (one image per band or product for a scene).
+     * {@link org.apache.sis.storage.earthobservation.LandsatStore} is a data store opening the Landsat
+     * metadata file as the main file, then opening each band/product using a GeoTIFF data store.
+     * Those bands/products are components of the Landsat data store.</div>
+     *
+     * If the {@code hidden} parameter is {@code true}, some metadata that would normally be provided
+     * in this {@code GeoTiffStore} will be provided by individual components instead.
+     *
+     * @param  parent     the parent that contains this new GeoTIFF store component, or {@code null} if none.
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @param  hidden     {@code true} if this GeoTIFF store will not be directly accessible from the parent.
+     *                    It is the case if the parent store will expose only some {@linkplain #components()
+     *                    components} instead of the GeoTIFF store itself.
+     * @throws DataStoreException if an error occurred while opening the GeoTIFF file.
+     *
+     * @since 1.1
+     */
+    public GeoTiffStore(final DataStore parent, final DataStoreProvider provider, final StorageConnector connector,
+                        final boolean hidden) throws DataStoreException
+    {
+        super(parent, provider, connector, hidden);
+        this.hidden = hidden;
         final Charset encoding = connector.getOption(OptionKey.ENCODING);
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
         final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
@@ -193,6 +227,20 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Sets the {@code metadata/identificationInfo/resourceFormat} node to "GeoTIFF" format.
+     */
+    final void setFormatInfo(final MetadataBuilder builder) {
+        try {
+            builder.setFormat(Constants.GEOTIFF);
+        } catch (MetadataStoreException e) {
+            builder.addFormatName(Constants.GEOTIFF);
+            listeners.warning(e);
+        }
+        builder.addEncoding(encoding, MetadataBuilder.Scope.METADATA);
+        builder.addResourceScope(ScopeCode.COVERAGE, null);
+    }
+
+    /**
      * Returns information about the dataset as a whole. The returned metadata object can contain information
      * such as the spatiotemporal extent of the dataset, contact information about the creator or distributor,
      * data quality, usage constraints and more.
@@ -204,26 +252,18 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
             final Reader reader = reader();
-            final MetadataBuilder builder = reader.metadata;
-            try {
-                builder.setFormat(Constants.GEOTIFF);
-            } catch (MetadataStoreException e) {
-                builder.addFormatName(Constants.GEOTIFF);
-                listeners.warning(e);
-            }
-            builder.addEncoding(encoding, MetadataBuilder.Scope.METADATA);
-            builder.addResourceScope(ScopeCode.COVERAGE, null);
-            final Locale locale = getLocale();
+            final MetadataBuilder builder = new MetadataBuilder();
+            setFormatInfo(builder);
             int n = 0;
             try {
                 ImageFileDirectory dir;
                 while ((dir = reader.getImageFileDirectory(n++)) != null) {
-                    dir.completeMetadata(builder, locale);
+                    builder.addFromComponent(dir.getMetadata());
                 }
             } catch (IOException e) {
                 throw errorIO(e);
-            } catch (FactoryException | ArithmeticException e) {
-                throw new DataStoreContentException(getLocale(), Constants.GEOTIFF, reader.input.filename, null).initCause(e);
+            } catch (ArithmeticException e) {
+                listeners.warning(e);
             }
             /*
              * Add the filename as an identifier only if the input was something convertible to URI (URL, File or Path),

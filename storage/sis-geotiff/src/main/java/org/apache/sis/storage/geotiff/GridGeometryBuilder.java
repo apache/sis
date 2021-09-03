@@ -362,6 +362,13 @@ final class GridGeometryBuilder {
      *
      * This method invokes {@link MetadataBuilder#newGridRepresentation(MetadataBuilder.GridType)}
      * with the appropriate {@code GEORECTIFIED} or {@code GEOREFERENCEABLE} type.
+     * Storage locations are:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/*}</li>
+     *   <li>{@code metadata/identificationInfo/spatialRepresentationType}</li>
+     *   <li>{@code metadata/referenceSystemInfo}</li>
+     * </ul>
      *
      * @param  metadata  the helper class where to write metadata values.
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.

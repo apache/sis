@@ -44,15 +44,20 @@ import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.OnLineFunction;
+import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.identification.Identification;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.spatial.GCP;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.metadata.spatial.GeolocationInformation;
+import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
+import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.constraint.Restriction;
+import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -60,8 +65,12 @@ import org.opengis.metadata.acquisition.Context;
 import org.opengis.metadata.acquisition.OperationType;
 import org.opengis.metadata.identification.Progress;
 import org.opengis.metadata.identification.KeywordType;
+import org.opengis.metadata.identification.Resolution;
 import org.opengis.metadata.identification.TopicCategory;
+import org.opengis.metadata.distribution.Distribution;
+import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.Format;
+import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.quality.Element;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.ReferenceSystem;
@@ -140,7 +149,9 @@ import org.apache.sis.measure.Units;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Branch-dependent imports
+import org.opengis.temporal.Duration;
 import org.opengis.feature.FeatureType;
+import org.opengis.metadata.acquisition.AcquisitionInformation;
 import org.opengis.metadata.citation.Responsibility;
 
 
@@ -544,8 +555,9 @@ public class MetadataBuilder {
     private DefaultFormat format() {
         DefaultFormat df = DefaultFormat.castOrCopy(format);
         if (df == null) {
-            format = df = new DefaultFormat();
+            df = new DefaultFormat();
         }
+        format = df;
         return df;
     }
 
@@ -2001,7 +2013,7 @@ parse:      for (int i = 0; i < length;) {
      * Adds and populates a "spatial representation info" node using the given grid geometry.
      * This method invokes implicitly {@link #newGridRepresentation(GridType)}, unless this
      * method returns {@code false} in which case nothing has been done.
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/spatialRepresentationInfo/transformationDimensionDescription}</li>
@@ -2397,7 +2409,11 @@ parse:      for (int i = 0; i < length;) {
     /**
      * Sets the number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
      * This is a convenience method for {@link #setBandIdentifier(MemberName)} when the band is specified only
-     * by a number.
+     * by a number. Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/sequenceIdentifier}</li>
+     * </ul>
      *
      * @param  sequenceIdentifier  the band number, or 0 or negative if none.
      */
@@ -3112,6 +3128,107 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void setISOStandards(final boolean part2) {
         standardISO = part2 ? (byte) 2 : (byte) 1;
+    }
+
+    /**
+     * Appends information from the metadata of a component.
+     * This is an helper method for building the metadata of an aggregate.
+     * Aggregate metadata should be set before to invoke this method, in particular:
+     *
+     * <ul>
+     *   <li>The aggregated resource {@linkplain #addTitle title}.</li>
+     *   <li>The {@linkplain #addFormatName format} (may not be the same than component format).</li>
+     * </ul>
+     *
+     * This method applies the following heuristic rules (may change in any future version).
+     * Those rules assume that the component metadata was built with {@code MetadataBuilder}
+     * (this assumption determines which metadata elements are inspected).
+     *
+     * <ul>
+     *   <li>Content information is added verbatim. There is usually one instance per component.</li>
+     *   <li>Extents are added as one {@link Extent} per component, but without duplicated values.</li>
+     *   <li>All Coordinate Reference System information are added without duplicated values.</li>
+     *   <li>Some citation information are merged in a single citation.
+     *       The following information are ignored because considered too specific to the component:<ul>
+     *         <li>titles</li>
+     *         <li>identifiers</li>
+     *         <li>series (includes page numbers).</li>
+     *       </ul></li>
+     *   <li>{@linkplain #addCompression Compression} are added (without duplicated value) but not the
+     *       other format information (because the aggregate is assumed to have its own format name).</li>
+     *   <li>Distributor names, but not the other distribution information because the aggregated resource
+     *       may not be distributed in the same way then the components.</li>
+     * </ul>
+     *
+     * @param  component  the component from which to append metadata.
+     */
+    public final void addFromComponent(final Metadata component) {
+        /*
+         * Note: this method contains many loops like below:
+         *
+         *     for (Foo r : info.getFoos()) {
+         *         addIfNotPresent(bla().getFoos(), r);
+         *     }
+         *
+         * We could easily factor out the above pattern in a method, but we don't do that because
+         * it would invoke `bla().getFoos()` before the loop. We want that call to happen only if
+         * the collection contains at least one element. Usually there is only 0 or 1 element.
+         */
+        for (final Identification info : component.getIdentificationInfo()) {
+            final Citation c = info.getCitation();
+            if (c != null) {
+                // Title, identifiers and series are assumed to not apply (see Javadoc).
+                final DefaultCitation citation = citation();
+                for (Responsibility r : c.getCitedResponsibleParties()) {
+                    addIfNotPresent(citation.getCitedResponsibleParties(), r);
+                }
+                for (OnlineResource r : c.getOnlineResources()) {
+                    addIfNotPresent(citation.getOnlineResources(), r);
+                }
+                citation.getPresentationForms().addAll(c.getPresentationForms());
+            }
+            final DefaultDataIdentification identification = identification();
+            for (Extent e : info.getExtents()) {
+                addIfNotPresent(identification.getExtents(), e);
+            }
+            for (Resolution r : info.getSpatialResolutions()) {
+                addIfNotPresent(identification.getSpatialResolutions(), r);
+            }
+            for (Duration r : info.getTemporalResolutions()) {
+                addIfNotPresent(identification.getTemporalResolutions(), r);
+            }
+            for (Format r : info.getResourceFormats()) {
+                addCompression(r.getFileDecompressionTechnique());
+                // Ignore format name (see Javadoc).
+            }
+            for (Constraints r : info.getResourceConstraints()) {
+                addIfNotPresent(identification.getResourceConstraints(), r);
+            }
+            identification.getTopicCategories().addAll(info.getTopicCategories());
+            identification.getSpatialRepresentationTypes().addAll(info.getSpatialRepresentationTypes());
+        }
+        final DefaultMetadata metadata = metadata();
+        for (ContentInformation info : component.getContentInfo()) {
+            addIfNotPresent(metadata.getContentInfo(), info);
+        }
+        for (final ReferenceSystem crs : component.getReferenceSystemInfo()) {
+            addReferenceSystem(crs);
+        }
+        for (SpatialRepresentation info : component.getSpatialRepresentationInfo()) {
+            addIfNotPresent(metadata.getSpatialRepresentationInfo(), info);
+        }
+        for (AcquisitionInformation info : component.getAcquisitionInformation()) {
+            addIfNotPresent(metadata.getAcquisitionInformation(), info);
+        }
+        for (Distribution info : component.getDistributionInfo()) {
+            // See Javadoc about why we copy only the distributors.
+            for (Distributor r : info.getDistributors()) {
+                addIfNotPresent(distribution().getDistributors(), r);
+            }
+        }
+        for (Lineage info : component.getResourceLineages()) {
+            addIfNotPresent(metadata.getResourceLineages(), info);
+        }
     }
 
     /**

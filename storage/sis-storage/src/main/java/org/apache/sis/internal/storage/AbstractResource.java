@@ -113,16 +113,29 @@ public class AbstractResource extends StoreListeners implements Resource {
     @Override
     public final synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
-            final MetadataBuilder builder = new MetadataBuilder();
-            createMetadata(builder);
-            metadata = builder.build(true);
+            metadata = createMetadata();
         }
         return metadata;
     }
 
     /**
-     * Invoked the first time that {@link #getMetadata()} is invoked. The default implementation populates
-     * metadata based on information provided by {@link #getIdentifier()} and {@link #getEnvelope()}.
+     * Invoked in a synchronized block the first time that {@link #getMetadata()} is invoked.
+     * The default implementation delegates to {@link #createMetadata(MetadataBuilder)}.
+     * Subclasses can override if they want to use a different kind of builder.
+     *
+     * @return the newly created metadata.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    protected Metadata createMetadata() throws DataStoreException {
+        final MetadataBuilder builder = new MetadataBuilder();
+        createMetadata(builder);
+        return builder.build(true);
+    }
+
+    /**
+     * Invoked by the default implementation of {@link #createMetadata()}.
+     * The default implementation populates metadata based on information
+     * provided by {@link #getIdentifier()} and {@link #getEnvelope()}.
      * Subclasses should override if they can provide more information.
      *
      * @param  metadata  the builder where to set metadata properties.

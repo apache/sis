@@ -44,7 +44,7 @@ import static org.apache.sis.test.TestUtilities.date;
  * for reading netCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -75,7 +75,7 @@ public final strictfp class MetadataReaderTest extends TestCase {
         try (Decoder input = ChannelDecoderTest.createChannelDecoder(TestData.NETCDF_2D_GEOGRAPHIC)) {
             metadata = new MetadataReader(input).read();
         }
-        compareToExpected(metadata);
+        compareToExpected(metadata).assertMetadataEquals();
     }
 
     /**
@@ -91,19 +91,21 @@ public final strictfp class MetadataReaderTest extends TestCase {
         try (Decoder input = createDecoder(TestData.NETCDF_2D_GEOGRAPHIC)) {
             metadata = new MetadataReader(input).read();
         }
-        compareToExpected(metadata);
+        final ContentVerifier verifier = compareToExpected(metadata);
+        verifier.addExpectedValue("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.alternateTitle[1]", "NetCDF-3/CDM");
+        verifier.assertMetadataEquals();
     }
 
     /**
-     * Compares the string representation of the given metadata object with the expected one.
+     * Creates comparator for the string representation of the given metadata object with the expected one.
      * The given metadata shall have been created from the {@link TestData#NETCDF_2D_GEOGRAPHIC} dataset.
      */
-    static void compareToExpected(final Metadata actual) {
+    static ContentVerifier compareToExpected(final Metadata actual) {
         final ContentVerifier verifier = new ContentVerifier();
         verifier.addPropertyToIgnore(Metadata.class, "metadataStandard");
         verifier.addPropertyToIgnore(Metadata.class, "referenceSystemInfo");
         verifier.addMetadataToVerify(actual);
-        verifier.assertMetadataEquals(
+        verifier.addExpectedValues(
             // Hard-coded
             "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.alternateTitle[0]", "NetCDF",
             "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.title", "NetCDF Classic and 64-bit Offset Format",
@@ -156,5 +158,7 @@ public final strictfp class MetadataReaderTest extends TestCase {
             "contentInfo[0].attributeGroup[0].attribute[0].units",                     "°C",
 
             "resourceLineage[0].statement", "Decimated and modified by GeoAPI for inclusion in conformance test suite.");
+
+        return verifier;
     }
 }

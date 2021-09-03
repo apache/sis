@@ -188,7 +188,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
      * @throws DataStoreException if an error occurred while opening the stream.
      */
     private Store(final Store parent, final StorageConnector connector, final NameFactory nameFactory) throws DataStoreException {
-        super(parent, connector);
+        super(parent, parent.getProvider(), connector, false);
         originator        = parent;
         location          = connector.getStorageAs(Path.class);
         locale            = connector.getOption(OptionKey.LOCALE);
