@@ -34,14 +34,19 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.sql.feature.Database;
 import org.apache.sis.internal.sql.feature.Resources;
+import org.apache.sis.internal.sql.feature.SchemaModifier;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Exceptions;
+
+// Branch-dependent imports
+import org.opengis.feature.FeatureType;
 
 
 /**
@@ -116,11 +121,11 @@ public class SQLStore extends DataStore implements Aggregate {
      * @param  tableNames  fully qualified names (including catalog and schema) of the tables to include in this store.
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      */
-    protected SQLStore(final SQLStoreProvider provider, final StorageConnector connector, GenericName... tableNames)
+    public SQLStore(final SQLStoreProvider provider, final StorageConnector connector, GenericName... tableNames)
             throws DataStoreException
     {
         super(provider, connector);
-        ArgumentChecks.ensureNonNull("tableNames", tableNames);
+        ArgumentChecks.ensureNonEmpty("tableNames", tableNames);
         source      = connector.getStorageAs(DataSource.class);
         geomLibrary = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
         tableNames  = tableNames.clone();
@@ -165,9 +170,11 @@ public class SQLStore extends DataStore implements Aggregate {
 
     /**
      * Returns customizations on the feature type inferred from the database analysis.
+     * This is a workaround for giving access to protected method {@code customize(…)}
+     * from a different package.
      */
     private SchemaModifier customizer() {
-        return (provider instanceof SQLStoreProvider) ? ((SQLStoreProvider) provider).getSchemaModifier() : null;
+        return (id,f) -> customize(id.getNames(), f);
     }
 
     /**
@@ -248,6 +255,35 @@ public class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Invoked after analysis of a table for allowing modifications of the inferred feature type.
+     * The given builder is initialized with all properties inferred from the table definition.
+     * Implementation of this method can add, remove or modify properties.
+     *
+     * <p>The database table for which a feature type is created is identified by the {@code table} argument.
+     * This argument is an array of length of 1, 2 or 3 with the following content:</p>
+     *
+     * <ul>
+     *   <li>If a catalog name exists, then the array has a length of 3 with <var>catalog name</var>,
+     *       <var>schema name</var> (possibly null) and <var>table name</var> elements in that order.</li>
+     *   <li>Otherwise if a schema name exists, then the array has a length of 2 with
+     *       <var>schema name</var> and <var>table name</var> elements in that order.</li>
+     *   <li>Otherwise the array has a length of 1 with the <var>table name</var> element.</li>
+     * </ul>
+     *
+     * The default implementation returns {@code feature.build()} without making any change.
+     *
+     * @param  table    the catalog (if present), schema (if present) and table name.
+     * @param  feature  a feature type builder initialized with all properties inferred by the analysis of a table.
+     *                  This builder can be modified in-place.
+     * @return the feature type to use for the specified table.
+     *
+     * @since 1.1
+     */
+    protected FeatureType customize(String[] table, FeatureTypeBuilder feature) {
+        return feature.build();
+    }
+
+    /**
      * Returns the resources (features or coverages) in this SQL store.
      * The list contains only the tables explicitly named at construction time.
      *
@@ -294,6 +330,8 @@ public class SQLStore extends DataStore implements Aggregate {
      * @throws DataStoreException if an error occurred while closing the SQL store.
      */
     @Override
-    public void close() throws DataStoreException {
+    public synchronized void close() throws DataStoreException {
+        // There is no JDBC connection to close here.
+        model = null;
     }
 }

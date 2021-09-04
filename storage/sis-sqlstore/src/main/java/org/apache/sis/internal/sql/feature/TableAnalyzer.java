@@ -185,5 +185,5 @@ abstract class TableAnalyzer {
      *
      * @return the feature type.
      */
-    abstract FeatureType buildFeatureType() throws SQLException;
+    abstract FeatureType buildFeatureType() throws DataStoreException, SQLException;
 }

@@ -83,6 +83,34 @@ public class TableReference {
     }
 
     /**
+     * Returns the components of the table identification.
+     * The returned array has a length of 1, 2 or 3 with the following content:
+     *
+     * <ul>
+     *   <li>If a catalog name exists, then the array has a length of 3 with <var>catalog name</var>,
+     *       <var>schema name</var> (possibly null) and <var>table name</var> elements in that order.</li>
+     *   <li>Otherwise if a schema name exists, then the array has a length of 2 with
+     *       <var>schema name</var> and <var>table name</var> elements in that order.</li>
+     *   <li>Otherwise the array has a length of 1 with the <var>table name</var> element.</li>
+     * </ul>
+     *
+     * @return the catalog (if present), schema (if present) and table names.
+     */
+    @SuppressWarnings("fallthrough")
+    public final String[] getNames() {
+        final String c = trimOrNull(catalog);
+        final String s = trimOrNull(schema);
+        final String[] names = new String[c != null ? 3 : s != null ? 2 : 1];
+        int n = 0;
+        switch (names.length) {
+            default: names[n++] = c;      // Fall through.
+            case 2:  names[n++] = s;
+            case 1:  names[n] = table;
+        }
+        return names;
+    }
+
+    /**
      * Creates a name for the feature type backed by this table.
      * This method does not cache the value;
      * caller is expected to invoke only once and store the name.

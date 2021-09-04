@@ -14,9 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.sql;
+package org.apache.sis.internal.sql.feature;
 
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.storage.DataStoreException;
+
+// Branch-dependent imports
+import org.opengis.feature.FeatureType;
 
 
 /**
@@ -29,11 +33,15 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
  */
 public interface SchemaModifier {
     /**
-     * Invoked after analysis of a table.
-     * The given builder is initialized with all properties inferred from the table.
+     * Invoked after analysis of a table for allowing modifications of the inferred feature type.
+     * The given builder is initialized with all properties inferred from the table definition.
      * Implementation of this method can add, remove or modify properties.
      *
-     * @param  builder  a feature type builder initialized with all properties inferred by the analysis of a table.
+     * @param  table    the catalog (if present), schema (if present) and table name.
+     * @param  feature  a feature type builder initialized with all properties inferred by the analysis of a table.
+     *                  This builder can be modified in-place.
+     * @throws DataStoreException if an error occurred while modifying the feature type.
+     * @return the feature type to use for the specified table.
      */
-    void editFeatureType(FeatureTypeBuilder builder);
+    FeatureType editFeatureType(TableReference table, FeatureTypeBuilder feature) throws DataStoreException;
 }

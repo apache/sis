@@ -46,7 +46,6 @@ import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.storage.sql.SchemaModifier;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.InternalDataStoreException;
@@ -135,7 +134,7 @@ final class Analyzer {
     private transient NameSpace namespace;
 
     /**
-     * User-specified modification to the features, or {@code null} if none.
+     * User-specified modification to the features. Shall not be {@code null}.
      */
     private final SchemaModifier customizer;
 
@@ -146,7 +145,7 @@ final class Analyzer {
      * @param  connection  an existing connection to the database, used only for the lifetime of this {@code Analyzer}.
      * @param  metadata    value of {@code connection.getMetaData()} (provided because already known by caller).
      * @param  isSpatial   whether the database contains "GEOMETRY_COLUMNS" and "SPATIAL_REF_SYS" tables.
-     * @param  customizer  user-specified modification to the features, or {@code null} if none.
+     * @param  customizer  user-specified modification to the features. Shall not be {@code null}.
      */
     Analyzer(final Database<?> database, final Connection connection, final DatabaseMetaData metadata,
              final boolean isSpatial, final SchemaModifier customizer)
@@ -602,7 +601,7 @@ final class Analyzer {
          * </ul>
          */
         @Override
-        public FeatureType buildFeatureType() throws SQLException {
+        public FeatureType buildFeatureType() throws DataStoreException, SQLException {
             feature.setName(id.getName(Analyzer.this));
             String remarks = id.freeText;
             if (id instanceof Relation) {
@@ -618,10 +617,7 @@ final class Analyzer {
             if (remarks != null) {
                 feature.setDefinition(remarks);
             }
-            if (customizer != null) {
-                customizer.editFeatureType(feature);
-            }
-            return feature.build();
+            return customizer.editFeatureType(id, feature);
         }
     }
 
@@ -720,15 +716,12 @@ final class Analyzer {
          * Creates the feature type.
          */
         @Override
-        FeatureType buildFeatureType() {
+        FeatureType buildFeatureType() throws DataStoreException {
             feature.setName(id.getName(Analyzer.this));
             if (id.freeText != null) {
                 feature.setDefinition(id.freeText);
             }
-            if (customizer != null) {
-                customizer.editFeatureType(feature);
-            }
-            return feature.build();
+            return customizer.editFeatureType(id, feature);
         }
     }
 }

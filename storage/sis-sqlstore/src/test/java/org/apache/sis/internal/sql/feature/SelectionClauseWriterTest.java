@@ -17,9 +17,10 @@
 package org.apache.sis.internal.sql.feature;
 
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.sql.SchemaModifier;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.SQLStoreProvider;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -34,6 +35,7 @@ import static org.junit.Assert.*;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.SpatialOperator;
@@ -48,7 +50,7 @@ import org.opengis.filter.SpatialOperator;
  * @since   1.1
  * @module
  */
-public final strictfp class SelectionClauseWriterTest extends TestCase implements SchemaModifier {
+public final strictfp class SelectionClauseWriterTest extends TestCase {
     /**
      * The factory to use for creating the filter objects.
      */
@@ -67,22 +69,41 @@ public final strictfp class SelectionClauseWriterTest extends TestCase implement
     }
 
     /**
+     * The data store to use for testing purpose.
+     * This data store modifies the schema for simulating a spatial database.
+     */
+    private static final class Store extends SQLStore {
+        /**
+         * Creates a new data store.
+         */
+        Store(final StorageConnector connector) throws DataStoreException {
+            super(null, connector, SQLStoreProvider.createTableName(null, null, Database.WILDCARD));
+        }
+
+        /**
+         * Invoked when the feature type interred from the test database is created.
+         * This method add a CRS on a property for testing purpose.
+         */
+        @Override
+        protected FeatureType customize(final String[] table, final FeatureTypeBuilder builder) {
+            assertArrayEquals(new String[] {"APP", "TEST"}, table);
+            ((AttributeTypeBuilder<?>) builder.getProperty("BETA")).setCRS(HardCodedCRS.WGS84);
+            return super.customize(table, builder);
+        }
+    }
+
+    /**
      * Tests on Derby.
      *
      * @throws Exception if an error occurred while testing the database.
      */
     @Test
     public void testOnDerby() throws Exception {
-        final SQLStoreProvider provider = new SQLStoreProvider() {
-            @Override public SchemaModifier getSchemaModifier() {
-                return SelectionClauseWriterTest.this;
-            }
-        };
         try (TestDatabase db = TestDatabase.create("SQLStore")) {
             db.executeSQL(SelectionClauseWriterTest.class,
                     "CREATE TABLE TEST (ALPHA INTEGER, BETA INTEGER, GAMMA INTEGER, PI FLOAT);");
 
-            try (DataStore store = provider.open(new StorageConnector(db.source))) {
+            try (DataStore store = new Store(new StorageConnector(db.source))) {
                 table = (Table) store.findResource("TEST");
                 testSimpleFilter();
                 testGeometricFilter();
@@ -113,15 +134,6 @@ public final strictfp class SelectionClauseWriterTest extends TestCase implement
 
         verifySQL(filter, "ST_Intersects(\"ALPHA\", " +
                 "ST_GeomFromText('POLYGON ((-12.3 43.3, -12.3 51.7, 2.1 51.7, 2.1 43.3, -12.3 43.3))'))");
-    }
-
-    /**
-     * Invoked when the feature type interred from the test database is created.
-     * This method add a CRS on a property for testing purpose.
-     */
-    @Override
-    public void editFeatureType(final FeatureTypeBuilder builder) {
-        ((AttributeTypeBuilder<?>) builder.getProperty("BETA")).setCRS(HardCodedCRS.WGS84);
     }
 
     /**

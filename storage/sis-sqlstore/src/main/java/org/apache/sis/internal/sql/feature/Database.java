@@ -42,7 +42,6 @@ import org.apache.sis.internal.feature.GeometryType;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.sql.postgis.Postgres;
-import org.apache.sis.storage.sql.SchemaModifier;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
