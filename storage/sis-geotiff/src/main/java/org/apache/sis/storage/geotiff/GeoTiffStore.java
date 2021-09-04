@@ -51,8 +51,8 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.ListOfUnknownSize;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
@@ -93,15 +93,29 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * Stored separately because conversion from path to URI back to path is not
      * looseness (relative paths become absolutes).
      *
-     * @todo May become an array later if we want to handle TFW and PRJ file heres.
+     * @todo May become an array later if we want to handle TFW and PRJ file here.
      */
     final Path path;
 
     /**
      * The data store identifier created from the filename, or {@code null} if none.
      * Defined as a namespace for use as the scope of children resources (the images).
+     * This is created when first needed.
+     *
+     * <div class="note"><b>Design note:</b> we do not create this field in the constructor because
+     * its creation invokes the user-overrideable {@link #customize(int, GenericName)} method.</div>
+     *
+     * @see #namespace()
      */
-    final NameSpace identifier;
+    private NameSpace namespace;
+
+    /**
+     * Whether {@link #namespace} has been determined.
+     * Note that the resulting namespace may still be null.
+     *
+     * @see #namespace()
+     */
+    private boolean isNamespaceSet;
 
     /**
      * The metadata, or {@code null} if not yet created.
@@ -179,15 +193,31 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
-        if (location != null) {
+    }
+
+    /**
+     * Returns the namespace to use in identifier of components, or {@code null} if none.
+     * This method must be invoked inside a block synchronized on {@code this}.
+     */
+    final NameSpace namespace() throws DataStoreException {
+        if (!isNamespaceSet && reader != null) {
             final NameFactory f = reader.nameFactory;
-            String filename = IOUtilities.filenameWithoutExtension(input.filename);
-            if (Numerics.isUnsignedInteger(filename)) filename += ".tiff";
-            identifier = f.createNameSpace(f.createLocalName(null, filename), null);
-        } else {
-            // Location not convertible to URI. The string representation is probably a class name, which is not useful.
-            identifier = null;
+            GenericName name = null;
+            /*
+             * We test `location != null` because if the location was not convertible to URI,
+             * then the string representation is probably a class name, which is not useful.
+             */
+            if (location != null) {
+                String filename = IOUtilities.filenameWithoutExtension(reader.input.filename);
+                name = f.createLocalName(null, filename);
+            }
+            name = customize(-1, name);
+            if (name != null) {
+                namespace = f.createNameSpace(name, null);
+            }
+            isNamespaceSet = true;
         }
+        return namespace;
     }
 
     /**
@@ -223,7 +253,11 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
-        return (identifier != null) ? Optional.of(identifier.name()) : Optional.empty();
+        final NameSpace namespace;
+        synchronized (this) {
+            namespace = namespace();
+        }
+        return (namespace != null) ? Optional.of(namespace.name()) : Optional.empty();
     }
 
     /**
@@ -273,7 +307,10 @@ public class GeoTiffStore extends DataStore implements Aggregate {
              */
             getIdentifier().ifPresent((id) -> builder.addTitleOrIdentifier(id.toString(), MetadataBuilder.Scope.ALL));
             builder.setISOStandards(true);
-            metadata = builder.build(true);
+            final DefaultMetadata md = builder.build(false);
+            metadata = customize(-1, md);
+            if (metadata == null) metadata = md;
+            md.transitionTo(DefaultMetadata.State.FINAL);
         }
         return metadata;
     }
@@ -294,6 +331,40 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             throw new DataStoreClosedException(getLocale(), Constants.GEOTIFF, StandardOpenOption.READ);
         }
         return r;
+    }
+
+    /**
+     * Invoked when an identifier is created for a single image or for the whole data store.
+     * Subclasses can override this method for replacing the given identifier by their own.
+     *
+     * @param  image       index of the image for which to compute identifier, or -1 for the whole store.
+     * @param  identifier  the default identifier computed by {@code GeoTiffStore}. May be {@code null}
+     *                     if {@code GeoTiffStore} has been unable to determine an identifier by itself.
+     * @return the identifier to use, or {@code null} if none.
+     * @throws DataStoreException if an exception occurred while computing a new identifier.
+     *
+     * @since 1.1
+     */
+    protected GenericName customize(final int image, final GenericName identifier) throws DataStoreException {
+        return identifier;
+    }
+
+    /**
+     * Invoked when a metadata is created for a single image or for the whole data store.
+     * Subclasses can override this method for modifying or replacing the given metadata.
+     * The given {@link DefaultMetadata} instance is still in modifiable state when this
+     * method is invoked.
+     *
+     * @param  image     index of the image for which to compute metadata, or -1 for the whole store.
+     * @param  metadata  metadata pre-filled by {@code GeoTiffStore} (never null). Can be modified in-place.
+     * @return the metadata to return to user. This is often the same instance than the given {@code metadata}.
+     *         Should never be null.
+     * @throws DataStoreException if an exception occurred while updating metadata.
+     *
+     * @since 1.1
+     */
+    protected Metadata customize(final int image, final DefaultMetadata metadata) throws DataStoreException {
+        return metadata;
     }
 
     /**

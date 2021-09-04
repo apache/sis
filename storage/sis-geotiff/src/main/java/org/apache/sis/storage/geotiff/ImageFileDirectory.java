@@ -46,6 +46,7 @@ import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.SampleModelFactory;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -95,12 +96,17 @@ final class ImageFileDirectory extends DataCube {
     private static final byte SIGNED = 1, UNSIGNED = 0, FLOAT = 3;
 
     /**
+     * Index of this Image File Directory.
+     */
+    private final int index;
+
+    /**
      * The identifier as a sequence number in the namespace of the {@link GeoTiffStore}.
-     * The first image has the sequence number "1".
+     * The first image has the sequence number "1". This is computed when first needed.
      *
      * @see #getIdentifier()
      */
-    private final GenericName identifier;
+    private GenericName identifier;
 
     /**
      * Builder for the metadata. This field is reset to {@code null} when not needed anymore.
@@ -429,7 +435,7 @@ final class ImageFileDirectory extends DataCube {
      */
     ImageFileDirectory(final Reader reader, final int index) {
         super(reader);
-        identifier = reader.nameFactory.createLocalName(reader.store.identifier, String.valueOf(index + 1));
+        this.index = index;
         metadata = new MetadataBuilder();
     }
 
@@ -448,14 +454,29 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
+     * Returns the identifier, creating it when first needed.
+     * This method must be invoked in a synchronized block.
+     */
+    private GenericName identifier() throws DataStoreException {
+        if (identifier == null) {
+            final GenericName name = reader.nameFactory.createLocalName(reader.store.namespace(), String.valueOf(index + 1));
+            identifier = reader.store.customize(index, name);
+            if (identifier == null) identifier = name;
+        }
+        return identifier;
+    }
+
+    /**
      * Returns the identifier as a sequence number in the namespace of the {@link GeoTiffStore}.
      * The first image has the sequence number "1".
      *
      * @see #getMetadata()
      */
     @Override
-    public Optional<GenericName> getIdentifier() {
-        return Optional.of(identifier);
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
+        synchronized (getSynchronizationLock()) {
+            return Optional.of(identifier());
+        }
     }
 
     /**
@@ -1374,17 +1395,12 @@ final class ImageFileDirectory extends DataCube {
             }
             referencing.completeMetadata(metadata);         // Must be after `getGridGeometry()`.
         }
-        metadata.addTitleOrIdentifier(identifier.toString(), MetadataBuilder.Scope.RESOURCE);
-        /*
-         * Undocumented feature: if `GeoTiffStore` is not used as a standalone reader but is instead
-         * used as a component of a larger data store (e.g. Landsat), do not freeze the metadata.
-         * This is needed for allowing `LandsatStore` to modify those metadata before to return them
-         * to the user. We may revert this undocumented feature in the future if we provide a better
-         * way to perform metadata amendment.
-         */
-        final Metadata md = metadata.build(!reader.store.hidden);
+        metadata.addTitleOrIdentifier(identifier().toString(), MetadataBuilder.Scope.RESOURCE);
+        final DefaultMetadata md = metadata.build(false);
+        final Metadata c = reader.store.customize(index, md);
+        md.transitionTo(DefaultMetadata.State.FINAL);
         metadata = null;
-        return md;
+        return (c != null) ? c : md;
     }
 
     /**

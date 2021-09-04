@@ -66,11 +66,6 @@ final class BandData extends GridResourceWrapper {
     private final String filename;
 
     /**
-     * The metadata, created when first needed.
-     */
-    private Metadata metadata;
-
-    /**
      * Creates a new resource for the band identified by the given identifier.
      */
     BandData(final LandsatStore parent, final Band band, final LocalName identifier, final String filename) {
@@ -91,7 +86,7 @@ final class BandData extends GridResourceWrapper {
         } else {
             file = Paths.get(filename);
         }
-        return new GeoTiffStore(parent, parent.getProvider(), new StorageConnector(file), true).components().get(0);
+        return new Reader(file).components().get(0);
     }
 
     /**
@@ -104,28 +99,41 @@ final class BandData extends GridResourceWrapper {
     }
 
     /**
-     * Returns information about this resource.
+     * Reads a band stored as a TIFF image.
      */
-    @Override
-    public synchronized Metadata getMetadata() throws DataStoreException {
-        if (metadata == null) {
-            /*
-             * The GeoTIFF store implementation is known to create instances of `DefaultMetadata`,
-             * and this instance is kept modifiable because the `hidden` argument specified to the
-             * `GeoTiffStore` constructor was `true`. This is an undocumented feature that may be
-             * modified in future SIS versions.
-             */
-            final DefaultMetadata md = (DefaultMetadata) source().getMetadata();
-            for (final Identification id : md.getIdentificationInfo()) {
-                final DefaultCitation c = (DefaultCitation) id.getCitation();
-                if (c != null) {
-                    c.setTitle(band.name);
-                    break;
+    private final class Reader extends GeoTiffStore {
+        /**
+         * Opens the TIFF image designated by the given path.
+         */
+        Reader(final Path file) throws DataStoreException {
+            super(parent, parent.getProvider(), new StorageConnector(file), true);
+        }
+
+        /**
+         * Invoked when the GeoTIFF reader creates the resource identifier.
+         * We use the identifier of the enclosing {@link BandData}.
+         */
+        @Override
+        protected GenericName customize(final int image, final GenericName identifier) {
+            return (image == 0) ? BandData.this.identifier : identifier;
+        }
+
+        /**
+         * Invoked when the GeoTIFF reader creates a metadata.
+         * This method modifies or completes some information inferred by the GeoTIFF reader.
+         */
+        @Override
+        protected Metadata customize(final int image, final DefaultMetadata metadata) {
+            if (image == 0) {
+                for (final Identification id : metadata.getIdentificationInfo()) {
+                    final DefaultCitation c = (DefaultCitation) id.getCitation();
+                    if (c != null) {
+                        c.setTitle(band.name);
+                        break;
+                    }
                 }
             }
-            md.transitionTo(DefaultMetadata.State.FINAL);
-            metadata = md;
+            return metadata;
         }
-        return metadata;
     }
 }
