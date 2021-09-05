@@ -253,7 +253,7 @@ public final class ColorModelFactory {
                 expand(colors, colorMap, lower, upper);
             }
         }
-        return createIndexColorModel(numBands, visibleBand, colorMap, transparent);
+        return createIndexColorModel(numBands, visibleBand, colorMap, true, transparent);
     }
 
     /**
@@ -356,10 +356,13 @@ public final class ColorModelFactory {
      * @param  numBands     the number of bands.
      * @param  visibleBand  the band to display.
      * @param  ARGB         an array of ARGB values.
+     * @param  hasAlpha     indicates whether alpha values are contained in the {@code ARGB} array.
      * @param  transparent  the transparent pixel, or -1 for auto-detection.
      * @return An index color model for the specified array.
      */
-    public static IndexColorModel createIndexColorModel(final int numBands, final int visibleBand, final int[] ARGB, final int transparent) {
+    public static IndexColorModel createIndexColorModel(final int numBands, final int visibleBand, final int[] ARGB,
+            final boolean hasAlpha, final int transparent)
+    {
         /*
          * No need to scan the ARGB values in search of a transparent pixel;
          * the IndexColorModel constructor does that for us.
@@ -369,9 +372,9 @@ public final class ColorModelFactory {
         final int dataType = getTransferType(length);
         final IndexColorModel cm;
         if (numBands == 1) {
-            cm = new IndexColorModel(bits, length, ARGB, 0, true, transparent, dataType);
+            cm = new IndexColorModel(bits, length, ARGB, 0, hasAlpha, transparent, dataType);
         } else {
-            cm = new MultiBandsIndexColorModel(bits, length, ARGB, 0, true, transparent,
+            cm = new MultiBandsIndexColorModel(bits, length, ARGB, 0, hasAlpha, transparent,
                                                dataType, numBands, visibleBand);
         }
         return unique(cm);

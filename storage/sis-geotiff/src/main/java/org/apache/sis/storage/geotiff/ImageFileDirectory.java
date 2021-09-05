@@ -1610,7 +1610,7 @@ final class ImageFileDirectory extends DataCube {
                                 | ((colorMap.intValue(bi++) & 0xFF00) >>> Byte.SIZE);
                     }
                     colorModel = ColorModelFactory.createIndexColorModel(samplesPerPixel, visibleBand, ARGB,
-                                                   Double.isFinite(noData) ? (int) Math.round(noData) : -1);
+                                             true, Double.isFinite(noData) ? (int) Math.round(noData) : -1);
                     break;
                 }
             }

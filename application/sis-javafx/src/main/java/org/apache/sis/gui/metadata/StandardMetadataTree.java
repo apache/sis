@@ -110,6 +110,7 @@ public class StandardMetadataTree extends MetadataTree {
         if (metadata instanceof AbstractMetadata) {
             return ((AbstractMetadata) metadata).asTreeTable();
         } else {
+            // `COMPACT` is the default policy of `AbstractMetadata.asTreeTable()`.
             return MetadataStandard.ISO_19115.asTreeTable(metadata, null, ValueExistencePolicy.COMPACT);
         }
     }

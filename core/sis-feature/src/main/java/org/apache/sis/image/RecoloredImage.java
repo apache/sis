@@ -17,16 +17,20 @@
 package org.apache.sis.image;
 
 import java.util.Map;
+import java.util.Arrays;
 import java.awt.Shape;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
+import org.apache.sis.coverage.Category;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.measure.NumberRange;
 
 
 /**
@@ -81,9 +85,9 @@ final class RecoloredImage extends ImageAdapter {
      * between specified or inferred bounds. The mapping applied by this method is conceptually a linear
      * transform applied on sample values before they are mapped to their colors.
      *
-     * <p>Current implementation can stretch only gray scale images (a future version may extend support to images
-     * using {@linkplain IndexColorModel index color models}). If this method can not stretch the color ramp,
-     * for example because the given image is an RGB image, then the image is returned unchanged.</p>
+     * <p>Current implementation can stretch gray scale and {@linkplain IndexColorModel index color models}).
+     * If this method can not stretch the color ramp, for example because the given image is an RGB image,
+     * then the image is returned unchanged.</p>
      *
      * @param  processor  the processor to use for computing statistics if needed.
      * @param  source     the image to recolor (can be {@code null}).
@@ -97,25 +101,17 @@ final class RecoloredImage extends ImageAdapter {
                                           final Map<String,?> modifiers)
     {
         /*
-         * Current implementation do not stretch index color models because we do not know which pixel values
-         * are "quantitative" values to associate to new colors and which pixel values are "no data" values to
-         * keep at a constant color. Resolving this ambiguity would require the `SampleDimension` objects.
-         */
-        if (source.getColorModel() instanceof IndexColorModel) {
-            return source;
-        }
-        /*
          * Images having more than one band (without any band marked as the single band to show) are probably
          * RGB images. It would be possible to stretch the Red, Green and Blue bands separately, but current
-         * implementation don't do that since we do not have yet a clear use case.
+         * implementation don't do that because we do not have yet a clear use case.
          */
         final int visibleBand = ImageUtilities.getVisibleBand(source);
         if (visibleBand < 0) {
             return source;
         }
         /*
-         * Main use case: color model is (probably) a ScaledColorModel instance, or something we can handle
-         * in the same way.
+         * Main use case: color model is (probably) an IndexColorModel or ScaledColorModel instance,
+         * or something we can handle in the same way.
          */
         RenderedImage statsSource   = source;
         Statistics[]  statsAllBands = null;
@@ -123,6 +119,7 @@ final class RecoloredImage extends ImageAdapter {
         double        minimum       = Double.NaN;
         double        maximum       = Double.NaN;
         double        deviations    = Double.POSITIVE_INFINITY;
+        SampleDimension[] ranges    = null;
         /*
          * Extract and validate parameter values.
          * No calculation started at this stage.
@@ -152,10 +149,14 @@ final class RecoloredImage extends ImageAdapter {
             } else if (value instanceof Statistics[]) {
                 statsAllBands = (Statistics[]) value;
             }
+            value = modifiers.get("sampleDimensions");
+            if (value instanceof SampleDimension[]) {
+                ranges = (SampleDimension[]) value;
+            }
         }
         /*
-         * If minimum and maximum values were not explicitly specified,
-         * compute them from statistics.
+         * If minimum and maximum values were not explicitly specified, compute them from statistics.
+         * If the range is not valid, then the image will be silently returned as-is.
          */
         if (Double.isNaN(minimum) || Double.isNaN(maximum)) {
             if (statistics == null) {
@@ -175,17 +176,70 @@ final class RecoloredImage extends ImageAdapter {
                 if (Double.isNaN(maximum)) maximum = Math.min(statistics.maximum(), mean + deviations);
             }
         }
-        /*
-         * Wraps the given image with its colors ramp scaled between the given bounds. If the given image is
-         * already using a color ramp for the given range of values, then that image is returned unchanged.
-         */
-        if (minimum < maximum) {
-            final SampleModel sm = source.getSampleModel();
-            return create(source, ColorModelFactory.createGrayScale(
-                    sm.getDataType(), sm.getNumBands(), visibleBand, minimum, maximum));
-        } else {
+        if (!(minimum < maximum)) {     // Use ! for catching NaN.
             return source;
         }
+        /*
+         * finished to collect information. Derive a new color model from the existing one.
+         */
+        final ColorModel cm;
+        if (source.getColorModel() instanceof IndexColorModel) {
+            /*
+             * Get the range of indices of RGB values than can be used for interpolations.
+             * We want to exclude qualitative categories (no data, clouds, forests, etc.).
+             * In the vast majority of cases, we have at most one quantitative category.
+             * But if there is 2 or more, then we select the one having largest intersection
+             * with the [minimum … maximum] range.
+             */
+            final IndexColorModel icm = (IndexColorModel) source.getColorModel();
+            final int size = icm.getMapSize();
+            int validMin = 0;
+            int validMax = size - 1;        // Inclusive.
+            double span = 0;
+            if (ranges != null && visibleBand < ranges.length) {
+                final SampleDimension range = ranges[visibleBand];
+                if (range != null) {
+                    for (final Category category : range.getCategories()) {
+                        if (category.isQuantitative()) {
+                            final NumberRange<?> r = category.getSampleRange();
+                            final double min = Math.max(r.getMinDouble(true), 0);
+                            final double max = Math.min(r.getMaxDouble(true), size - 1);
+                            final double s   = Math.min(max, maximum) - Math.max(min, minimum);    // Intersection.
+                            if (s > span) {
+                                validMin = (int) min;
+                                validMax = (int) max;
+                                span = s;
+                            }
+                        }
+                    }
+                }
+            }
+            /*
+             * Create a copy of RGB codes and replace values in the range of the quantitative category.
+             * Values for other categories (qualitative) are left unmodified.
+             */
+            final int   end   = Math.max(Math.min((int) maximum, validMax), validMin);      // Inclusive.
+            final int   start = Math.min(Math.max((int) minimum, validMin), end);
+            final int[] ARGB  = new int[size];
+            icm.getRGBs(ARGB);
+            Arrays.fill(ARGB, validMin, start, icm.getRGB(validMin));
+            Arrays.fill(ARGB, end+1, validMax, icm.getRGB(validMax));
+            final float scale = (float) ((validMax - validMin) / (maximum - minimum));
+            for (int i = start; i <= end; i++) {
+                final float s = (i - start) * scale + validMin;
+                ARGB[i] = icm.getRGB(Math.round(s));
+            }
+            final SampleModel sm = source.getSampleModel();
+            cm = ColorModelFactory.createIndexColorModel(sm.getNumBands(), visibleBand, ARGB, icm.hasAlpha(), icm.getTransparentPixel());
+        } else {
+            /*
+             * Wraps the given image with its colors ramp scaled between the given bounds. If the given image is
+             * already using a color ramp for the given range of values, then that image is returned unchanged.
+             */
+            final SampleModel sm = source.getSampleModel();
+            cm = ColorModelFactory.createGrayScale(sm.getDataType(), sm.getNumBands(), visibleBand, minimum, maximum);
+        }
+        return create(source, cm);
     }
 
     /**

@@ -670,11 +670,11 @@ public class ImageProcessor implements Cloneable {
      *     <th>Values</th>
      *   </tr><tr>
      *     <td>{@code "minimum"}</td>
-     *     <td>Minimum value (omit for computing from statistics).</td>
+     *     <td>Minimum value (omitted if computed from statistics).</td>
      *     <td>{@link Number}</td>
      *   </tr><tr>
      *     <td>{@code "maximum"}</td>
-     *     <td>Maximum value (omit for computing from statistics).</td>
+     *     <td>Maximum value (omitted if computed from statistics).</td>
      *     <td>{@link Number}</td>
      *   </tr><tr>
      *     <td>{@code "multStdDev"}</td>
@@ -688,6 +688,10 @@ public class ImageProcessor implements Cloneable {
      *     <td>{@code "areaOfInterest"}</td>
      *     <td>Pixel coordinates of the region for which to compute statistics.</td>
      *     <td>{@link Shape}</td>
+     *   </tr><tr>
+     *     <td>{@code "sampleDimensions"}</td>
+     *     <td>Meaning of pixel values.</td>
+     *     <td><code>{@linkplain SampleDimension}[]</code></td>
      *   </tr>
      * </table>
      *

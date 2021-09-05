@@ -52,7 +52,7 @@ final class MaskImage extends SourceAlignedImage {
      */
     MaskImage(final ResampledImage image) {
         super(image, ColorModelFactory.createIndexColorModel(
-                1, ImageUtilities.getVisibleBand(image), new int[] {0, -1}, 0));
+                1, ImageUtilities.getVisibleBand(image), new int[] {0, -1}, true, 0));
         if (image.interpolation instanceof Visualization.InterpConvert) try {
             converter = ((Visualization.InterpConvert) image.interpolation).converter.inverse();
         } catch (NoninvertibleTransformException e) {

@@ -266,7 +266,7 @@ final class RenderingData implements Cloneable {
     }
 
     /**
-     * Stretch the color ramp of source image according the current value of {@link #selectedDerivative}.
+     * Stretches the color ramp of source image according the current value of {@link #selectedDerivative}.
      * This method uses the original image as the source of statistics. It saves computation time
      * (no need to recompute the statistics when the projection is changed) and provides more stable
      * visual output when standard deviations are used for configuring the color ramp.
@@ -283,6 +283,9 @@ final class RenderingData implements Cloneable {
             modifiers.put("statistics", statistics);
             if (selectedDerivative == Stretching.AUTOMATIC) {
                 modifiers.put("multStdDev", 3);
+            }
+            if (dataRanges != null) {
+                modifiers.put("sampleDimensions", dataRanges.toArray(SampleDimension[]::new));
             }
             image = processor.stretchColorRamp(image, modifiers);
         }
