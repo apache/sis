@@ -52,7 +52,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * @since   1.1
  * @module
  */
-final class BandData extends GridResourceWrapper implements SchemaModifier {
+final class LandsatResource extends GridResourceWrapper implements SchemaModifier {
     /**
      * The data store that contains this band.
      * Also the object on which to perform synchronization locks.
@@ -62,7 +62,7 @@ final class BandData extends GridResourceWrapper implements SchemaModifier {
     /**
      * The band for which this instance provides data.
      */
-    final Band band;
+    final LandsatBand band;
 
     /**
      * Identifier of the band for which this instance provides data.
@@ -88,7 +88,7 @@ final class BandData extends GridResourceWrapper implements SchemaModifier {
     /**
      * Creates a new resource for the specified band.
      */
-    BandData(final LandsatStore parent, final Band band) {
+    LandsatResource(final LandsatStore parent, final LandsatBand band) {
         this.parent = parent;
         this.band   = band;
         if (band.wavelength != 0) {
@@ -99,7 +99,7 @@ final class BandData extends GridResourceWrapper implements SchemaModifier {
         } else {
             sampleDimension = new DefaultSampleDimension();
         }
-        sampleDimension.setDescription(band.name);
+        sampleDimension.setDescription(band.title);
         if (band.group.reflectance) {
             sampleDimension.setUnits(Units.UNITY);
         } else {
@@ -132,7 +132,7 @@ final class BandData extends GridResourceWrapper implements SchemaModifier {
     }
 
     /**
-     * Returns the resource persistent identifier. The name is the {@link Band#name()}
+     * Returns the resource persistent identifier. The name is the {@link LandsatBand#name()}
      * and the scope (namespace) is the name of the directory that contains this band.
      */
     @Override
@@ -142,7 +142,7 @@ final class BandData extends GridResourceWrapper implements SchemaModifier {
 
     /**
      * Invoked when the GeoTIFF reader creates the resource identifier.
-     * We use the identifier of the enclosing {@link BandData}.
+     * We use the identifier of the enclosing {@link LandsatResource}.
      */
     @Override
     public GenericName customize(final int image, final GenericName fallback) {
@@ -159,7 +159,7 @@ final class BandData extends GridResourceWrapper implements SchemaModifier {
             for (final Identification id : metadata.getIdentificationInfo()) {
                 final DefaultCitation c = (DefaultCitation) id.getCitation();
                 if (c != null) {
-                    c.setTitle(band.name);
+                    c.setTitle(band.title);
                     break;
                 }
             }

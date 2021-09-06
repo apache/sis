@@ -187,7 +187,7 @@ final class LandsatReader extends MetadataBuilder {
      * Image width and hight in pixels, as unsigned integers. Values are (<var>width</var>,<var>height</var>) tuples.
      * Tuples in this array are for {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL} bands, in that order.
      */
-    private final EnumMap<BandGroup,Dimension> gridSizes;
+    private final EnumMap<LandsatBandGroup,Dimension> gridSizes;
 
     /**
      * The bands descriptions. The bands can be, in this exact order:
@@ -208,12 +208,12 @@ final class LandsatReader extends MetadataBuilder {
      *
      * @see #band(String, int)
      */
-    final EnumMap<Band,BandData> bands;
+    final EnumMap<LandsatBand,LandsatResource> bands;
 
     /**
-     * {@link Band#values()}, fetched once for avoiding multiple array creations.
+     * {@link LandsatBand#values()}, fetched once for avoiding multiple array creations.
      */
-    private final Band[] bandEnumerations;
+    private final LandsatBand[] bandEnumerations;
 
     /**
      * The enumeration for the {@code "DATUM"} element, to be used for creating the Coordinate Reference System.
@@ -250,9 +250,9 @@ final class LandsatReader extends MetadataBuilder {
         this.listeners   = listeners;
         this.factories   = new ReferencingFactoryContainer();
         this.corners     = new double[2*NUM_COORDINATES];       // 2 types of CRS: GEOGRAPHIC and PROJECTED.
-        this.gridSizes   = new EnumMap<>(BandGroup.class);
-        this.bands       = new EnumMap<>(Band.class);
-        bandEnumerations = Band.values();
+        this.gridSizes   = new EnumMap<>(LandsatBandGroup.class);
+        this.bands       = new EnumMap<>(LandsatBand.class);
+        bandEnumerations = LandsatBand.values();
         Arrays.fill(corners, Double.NaN);
     }
 
@@ -362,7 +362,7 @@ final class LandsatReader extends MetadataBuilder {
      *
      * @param  value  the value to parse.
      */
-    private void parseGridSize(final BandGroup group, final boolean isX, final String value) throws NumberFormatException {
+    private void parseGridSize(final LandsatBandGroup group, final boolean isX, final String value) throws NumberFormatException {
         final int s = Integer.parseUnsignedInt(value);
         final Dimension size = gridSizes.computeIfAbsent(group, (k) -> new Dimension());
         if (isX) size.width  = s;
@@ -561,12 +561,12 @@ final class LandsatReader extends MetadataBuilder {
              * The number of product lines and samples for the panchromatic, reflective and thermal bands.
              * Those parameters are only present if the corresponding band is present in the product.
              */
-            case "PANCHROMATIC_LINES":   parseGridSize(BandGroup.PANCHROMATIC, false, value); break;
-            case "PANCHROMATIC_SAMPLES": parseGridSize(BandGroup.PANCHROMATIC, true,  value); break;
-            case "REFLECTIVE_LINES":     parseGridSize(BandGroup.REFLECTIVE,   false, value); break;
-            case "REFLECTIVE_SAMPLES":   parseGridSize(BandGroup.REFLECTIVE,   true,  value); break;
-            case "THERMAL_LINES":        parseGridSize(BandGroup.THERMAL,      false, value); break;
-            case "THERMAL_SAMPLES":      parseGridSize(BandGroup.THERMAL,      true,  value); break;
+            case "PANCHROMATIC_LINES":   parseGridSize(LandsatBandGroup.PANCHROMATIC, false, value); break;
+            case "PANCHROMATIC_SAMPLES": parseGridSize(LandsatBandGroup.PANCHROMATIC, true,  value); break;
+            case "REFLECTIVE_LINES":     parseGridSize(LandsatBandGroup.REFLECTIVE,   false, value); break;
+            case "REFLECTIVE_SAMPLES":   parseGridSize(LandsatBandGroup.REFLECTIVE,   true,  value); break;
+            case "THERMAL_LINES":        parseGridSize(LandsatBandGroup.THERMAL,      false, value); break;
+            case "THERMAL_SAMPLES":      parseGridSize(LandsatBandGroup.THERMAL,      true,  value); break;
             /*
              * The grid cell size in meters used in creating the image for the band, if part of the product.
              * This parameter is only included if the corresponding band is included in the product.
@@ -767,15 +767,15 @@ final class LandsatReader extends MetadataBuilder {
      * @param  index  the band index.
      * @return information about the band, or {@code null} if none.
      */
-    private Optional<BandData> band(final String key, final int index) {
+    private Optional<LandsatResource> band(final String key, final int index) {
         if (index < 1 || index > bandEnumerations.length) {
             listeners.warning(errors().getString(Errors.Keys.UnexpectedValueInElement_2, key + index, index));
             return Optional.empty();
         }
-        final Band band = bandEnumerations[index - 1];
-        BandData data = bands.get(band);
+        final LandsatBand band = bandEnumerations[index - 1];
+        LandsatResource data = bands.get(band);
         if (data == null) {
-            data = new BandData(store, band);
+            data = new LandsatResource(store, band);
             bands.put(band, data);
         }
         return Optional.of(data);
@@ -925,8 +925,8 @@ final class LandsatReader extends MetadataBuilder {
          */
         final DefaultCoverageDescription content = (DefaultCoverageDescription) singletonOrNull(result.getContentInfo());
         if (content != null) {
-            final EnumMap<BandGroup,DefaultAttributeGroup> groups = new EnumMap<>(BandGroup.class);
-            for (final EnumMap.Entry<Band,BandData> entry : bands.entrySet()) {
+            final EnumMap<LandsatBandGroup,DefaultAttributeGroup> groups = new EnumMap<>(LandsatBandGroup.class);
+            for (final EnumMap.Entry<LandsatBand,LandsatResource> entry : bands.entrySet()) {
                 final DefaultAttributeGroup group = groups.computeIfAbsent(entry.getKey().group, (k) -> {
                     DefaultAttributeGroup g = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
                     content.getAttributeGroups().add(g);

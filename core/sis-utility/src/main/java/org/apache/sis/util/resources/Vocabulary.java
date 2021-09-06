@@ -955,6 +955,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Page_2 = 255;
 
         /**
+         * Panchromatic
+         */
+        public static final short Panchromatic = 258;
+
+        /**
          * {0} ({1})
          */
         public static final short Parenthesis_2 = 158;
@@ -1005,6 +1010,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Quoted_1 = 165;
 
         /**
+         * Radiance
+         */
+        public static final short Radiance = 256;
+
+        /**
          * Read
          */
         public static final short Read = 166;
@@ -1018,6 +1028,16 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Reference system
          */
         public static final short ReferenceSystem = 168;
+
+        /**
+         * Reflectance
+         */
+        public static final short Reflectance = 257;
+
+        /**
+         * Reflective
+         */
+        public static final short Reflective = 259;
 
         /**
          * Remarks
@@ -1148,6 +1168,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Temporary files
          */
         public static final short TemporaryFiles = 193;
+
+        /**
+         * Thermal
+         */
+        public static final short Thermal = 260;
 
         /**
          * Tile size

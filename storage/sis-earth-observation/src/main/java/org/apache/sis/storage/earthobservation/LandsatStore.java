@@ -35,7 +35,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.Aggregate;
-import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
@@ -49,7 +48,6 @@ import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -112,10 +110,10 @@ public class LandsatStore extends DataStore implements Aggregate {
     private GenericName identifier;
 
     /**
-     * The array of images for each Landsat band, or {@code null} if not yet created.
+     * The array of aggregates for each Landsat band group, or {@code null} if not yet created.
      * This array is created together with {@linkplain #metadata} and is unmodifiable.
      */
-    private BandData[] components;
+    private LandsatAggregate[] components;
 
     /**
      * Creates a new Landsat store from the given file, URL, stream or character reader.
@@ -208,6 +206,11 @@ public class LandsatStore extends DataStore implements Aggregate {
         if (source == null) {
             throw new DataStoreClosedException(getLocale(), LandsatStoreProvider.NAME, StandardOpenOption.READ);
         }
+        final String      name    = getDisplayName();
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameSpace   scope   = (name != null) ? factory.createNameSpace(factory.createLocalName(null, name), null) : null;
+        final LandsatResource[] resources;
+        int count = 0;
         try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
             source = null;      // Will be closed at the end of this try-finally block.
             final LandsatReader parser = new LandsatReader(this, getDisplayName(), listeners);
@@ -217,23 +220,22 @@ public class LandsatStore extends DataStore implements Aggregate {
              * Create the array of components. The resource identifier is the band name.
              * The namespace of each identifier is the name of the data set directory.
              */
-            final String      name    = getDisplayName();
-            final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-            final NameSpace   scope   = (name != null) ? factory.createNameSpace(factory.createLocalName(null, name), null) : null;
-            int i = 0;
-            components = new BandData[parser.bands.size()];
-            for (final Map.Entry<Band,BandData> entry : parser.bands.entrySet()) {
-                final BandData component = entry.getValue();
+            resources = new LandsatResource[parser.bands.size()];
+            for (final Map.Entry<LandsatBand,LandsatResource> entry : parser.bands.entrySet()) {
+                final LandsatResource component = entry.getValue();
                 if (component.filename != null) {
                     component.identifier = factory.createLocalName(scope, entry.getKey().name());
-                    components[i++] = component;
+                    resources[count++] = component;
                 }
             }
-            components = ArraysExt.resize(components, i);
         } catch (IOException e) {
             throw new DataStoreException(e);
         } catch (FactoryException e) {
             throw new DataStoreReferencingException(e);
+        }
+        components = LandsatAggregate.group(listeners, resources, count);
+        for (final LandsatAggregate c : components) {
+            c.identifier = factory.createLocalName(scope, c.group.name());
         }
     }
 
@@ -254,16 +256,15 @@ public class LandsatStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the resources for each Landsat band.
+     * Returns the resources for each group of Landsat bands.
      *
-     * @return all bands that are components of this aggregate. Never {@code null}.
+     * @return all group of bands that are components of this aggregate. Never {@code null}.
      * @throws DataStoreException if an error occurred while fetching the components.
      *
      * @since 1.1
      */
     @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public synchronized List<GridCoverageResource> components() throws DataStoreException {
+    public synchronized List<Aggregate> components() throws DataStoreException {
         if (components == null) {
             loadMetadata();
         }
@@ -291,26 +292,19 @@ public class LandsatStore extends DataStore implements Aggregate {
     @Override
     public synchronized void close() throws DataStoreException {
         metadata = null;
-        final BandData[] bands = components;
-        if (bands != null) {
-            components = null;
-            DataStoreException error = null;
-            for (int i=0; i<bands.length; i++) {
-                final BandData band = bands[i];
-                if (band != null) {
-                    bands[i] = null;
-                    try {
-                        band.closeDataStore();
-                    } catch (DataStoreException e) {
-                        if (error == null) {
-                            error = e;
-                        } else {
-                            error.addSuppressed(e);
-                        }
-                    }
+        DataStoreException error = null;
+        for (final LandsatResource band : LandsatAggregate.bands(components)) {
+            try {
+                band.closeDataStore();
+            } catch (DataStoreException e) {
+                if (error == null) {
+                    error = e;
+                } else {
+                    error.addSuppressed(e);
                 }
             }
-            if (error != null) throw error;
         }
+        components = null;
+        if (error != null) throw error;
     }
 }

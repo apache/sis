@@ -16,6 +16,9 @@
  */
 package org.apache.sis.storage.earthobservation;
 
+import org.apache.sis.util.resources.Vocabulary;
+import org.opengis.util.InternationalString;
+
 
 /**
  * Group of bands.
@@ -26,28 +29,31 @@ package org.apache.sis.storage.earthobservation;
  * @since   1.1
  * @module
  */
-enum BandGroup {
-    /**
-     * Group for band 8.
-     */
-    PANCHROMATIC("Reflectance", true),
-
+enum LandsatBandGroup {
     /**
      * Group for bands 1, 2, 3, 4, 5, 6, 7, 9.
      */
-    REFLECTIVE("Reflectance", true),
+    REFLECTIVE(Vocabulary.Keys.Reflective, Vocabulary.formatInternational(Vocabulary.Keys.Reflectance), true),
+
+    /**
+     * Group for band 8.
+     */
+    PANCHROMATIC(Vocabulary.Keys.Panchromatic, REFLECTIVE.measurement, true),
 
     /**
      * Group for bands 10, 11.
      */
-    THERMAL("Radiance", false);
+    THERMAL(Vocabulary.Keys.Thermal, Vocabulary.formatInternational(Vocabulary.Keys.Radiance), false);
+
+    /**
+     * Localized name of the group.
+     */
+    final InternationalString title;
 
     /**
      * Name of the measurement.
-     *
-     * @todo Localize.
      */
-    final String measurement;
+    final InternationalString measurement;
 
     /**
      * Whether bands in this group measure reflectance.
@@ -58,7 +64,8 @@ enum BandGroup {
     /**
      * Creates a new enumeration value.
      */
-    private BandGroup(final String measurement, final boolean reflectance) {
+    private LandsatBandGroup(final short name, final InternationalString measurement, final boolean reflectance) {
+        this.title = Vocabulary.formatInternational(name);
         this.measurement = measurement;
         this.reflectance = reflectance;
     }
