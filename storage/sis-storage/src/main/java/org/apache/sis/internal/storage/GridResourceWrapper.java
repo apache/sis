@@ -56,6 +56,11 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
     }
 
     /**
+     * Returns the object on which to perform all synchronizations for thread-safety.
+     */
+    protected abstract Object getSynchronizationLock();
+
+    /**
      * Creates the resource on which to delegate operations.
      * This method is invoked in a synchronized block when first needed and the result is cached.
      *
@@ -71,11 +76,13 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
      * @return the resource on which to delegate operations.
      * @throws DataStoreException if the resource can not be created.
      */
-    protected final synchronized GridCoverageResource source() throws DataStoreException {
-        if (source == null) {
-            source = createSource();
+    protected final GridCoverageResource source() throws DataStoreException {
+        synchronized (getSynchronizationLock()) {
+            if (source == null) {
+                source = createSource();
+            }
+            return source;
         }
-        return source;
     }
 
     /**
@@ -196,7 +203,7 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
     @Override
     public <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {
         final GridCoverageResource source;
-        synchronized (this) {
+        synchronized (getSynchronizationLock()) {
             source = this.source;       // No need to invoke the `source()` method here.
         }
         if (source != null) {

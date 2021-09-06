@@ -19,6 +19,7 @@ package org.apache.sis.storage.earthobservation;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
@@ -46,9 +47,8 @@ import org.opengis.util.FactoryException;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
-import org.apache.sis.metadata.iso.content.DefaultBand;
+import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.referencing.CRS;
@@ -125,17 +125,22 @@ final class LandsatReader extends MetadataBuilder {
     private static final String END = "END";
 
     /**
+     * The store for which metadata are read.
+     */
+    private final LandsatStore store;
+
+    /**
+     * Where to send the warnings.
+     */
+    private final StoreListeners listeners;
+
+    /**
      * An identifier of the file being read, or {@code null} if unknown.
      * This is used mostly for formatting error messages.
      *
      * @see #getFilename()
      */
     private String filename;
-
-    /**
-     * Where to send the warnings.
-     */
-    private final StoreListeners listeners;
 
     /**
      * Group in process of being parsed, or {@code null} if none.
@@ -203,12 +208,7 @@ final class LandsatReader extends MetadataBuilder {
      *
      * @see #band(String, int)
      */
-    private final EnumMap<Band,DefaultBand> bands;
-
-    /**
-     * Paths to resources for each band.
-     */
-    final EnumMap<Band,String> resources;
+    final EnumMap<Band,BandData> bands;
 
     /**
      * {@link Band#values()}, fetched once for avoiding multiple array creations.
@@ -240,17 +240,18 @@ final class LandsatReader extends MetadataBuilder {
     /**
      * Creates a new metadata parser.
      *
+     * @param  store      the store for which metadata are read.
      * @param  filename   an identifier of the file being read, or {@code null} if unknown.
      * @param  listeners  where to sent warnings that may occur during the parsing process.
      */
-    LandsatReader(final String filename, final StoreListeners listeners) {
-        this.filename  = filename;
-        this.listeners = listeners;
-        this.factories = new ReferencingFactoryContainer();
-        this.corners   = new double[2*NUM_COORDINATES];     // 2 types of CRS: GEOGRAPHIC and PROJECTED.
-        this.gridSizes = new EnumMap<>(BandGroup.class);
-        this.bands     = new EnumMap<>(Band.class);
-        this.resources = new EnumMap<>(Band.class);
+    LandsatReader(final LandsatStore store, final String filename, final StoreListeners listeners) {
+        this.store       = store;
+        this.filename    = filename;
+        this.listeners   = listeners;
+        this.factories   = new ReferencingFactoryContainer();
+        this.corners     = new double[2*NUM_COORDINATES];       // 2 types of CRS: GEOGRAPHIC and PROJECTED.
+        this.gridSizes   = new EnumMap<>(BandGroup.class);
+        this.bands       = new EnumMap<>(Band.class);
         bandEnumerations = Band.values();
         Arrays.fill(corners, Double.NaN);
     }
@@ -381,18 +382,12 @@ final class LandsatReader extends MetadataBuilder {
      *         or if the result of the parsing was not of the expected type.
      * @throws IllegalArgumentException if the value is out of range.
      */
-    private void parseKeyValuePair(final String key, final int band, String value)
+    private void parseKeyValuePair(final String key, final int band, final String value)
             throws IllegalArgumentException, DateTimeException, DataStoreException
     {
         switch (key) {
-            case "GROUP": {
-                group = value;
-                break;
-            }
-            case "END_GROUP": {
-                group = null;
-                break;
-            }
+            case "GROUP":     group = value; break;
+            case "END_GROUP": group = null;  break;
             /* ┌────────────────────────────────────┐
              * │ GROUP = METADATA_FILE_INFO     (L1)│
              * │         PRODUCT_CONTENTS       (L2)│
@@ -479,14 +474,15 @@ final class LandsatReader extends MetadataBuilder {
              * Value is "GEOTIFF".
              */
             case "OUTPUT_FORMAT": {
-                if (Constants.GEOTIFF.equalsIgnoreCase(value)) try {
-                    value = Constants.GEOTIFF;              // Because 'metadata.setFormat(…)' is case-sensitive.
-                    setFormat(value);
+                String name = value;
+                if (Constants.GEOTIFF.equalsIgnoreCase(name)) try {
+                    name = Constants.GEOTIFF;               // Because 'metadata.setFormat(…)' is case-sensitive.
+                    setFormat(name);
                     break;
                 } catch (MetadataStoreException e) {
                     warning(key, null, e);
                 }
-                addFormatName(value);
+                addFormatName(name);
                 break;
             }
             /*
@@ -586,11 +582,7 @@ final class LandsatReader extends MetadataBuilder {
              * This parameter is only present if the band is included in the product.
              */
             case "FILE_NAME_BAND_": {
-                final DefaultBand db = band(key, band);
-                if (db != null) {
-                    db.getNames().add(new DefaultIdentifier(value));
-                    resources.put(bandEnumerations[band-1], value);
-                }
+                band(key, band).ifPresent((b) -> b.filename = value);
                 break;
             }
             /*
@@ -600,10 +592,7 @@ final class LandsatReader extends MetadataBuilder {
                 final int s = value.lastIndexOf("INT");
                 if (s >= 0) try {
                     final Integer n = Integer.valueOf(value.substring(s + 3));
-                    final DefaultBand db = band(key, band);
-                    if (db != null) {
-                        db.setBitsPerValue(n);
-                    }
+                    sampleDimension(key, band).ifPresent((sd) -> sd.setBitsPerValue(n));
                 } catch (NumberFormatException e) {
                     warning(key, null, e);
                 }
@@ -658,10 +647,7 @@ final class LandsatReader extends MetadataBuilder {
              */
             case "QUANTIZE_CAL_MIN_BAND_": {
                 final Double v = parseDouble(value);        // Done first in case an exception is thrown.
-                final DefaultBand db = band(key, band);
-                if (db != null) {
-                    db.setMinValue(v);
-                }
+                sampleDimension(key, band).ifPresent((sd) -> sd.setMinValue(v));
                 break;
             }
             /*
@@ -670,30 +656,20 @@ final class LandsatReader extends MetadataBuilder {
              */
             case "QUANTIZE_CAL_MAX_BAND_": {
                 final Double v = parseDouble(value);        // Done first in case an exception is thrown.
-                final DefaultBand db = band(key, band);
-                if (db != null) {
-                    db.setMaxValue(v);
-                }
+                sampleDimension(key, band).ifPresent((sd) -> sd.setMaxValue(v));
                 break;
             }
             /* ┌────────────────────────────────────┐
              * │ GROUP = RADIOMETRIC_RESCALING      │
              * └────────────────────────────────────┘
-             * The multiplicative rescaling factor used to convert calibrated DN to Radiance units for a band.
-             * Unit is W/(m² sr um)/DN.
+             * The additive or multiplicative rescaling factor used to convert calibrated
+             * DN to Radiance units for a band. Radiance unit is W/(m² sr um)/DN.
+             * Reflectance unit is dimensionless (a ratio).
              */
-            case "RADIANCE_MULT_BAND_": {
-                setTransferFunction(key, band, true, value);
-                break;
-            }
-            /*
-             * The additive rescaling factor used to convert calibrated DN to Radiance units for a band.
-             * Unit is W/(m² sr um)/DN.
-             */
-            case "RADIANCE_ADD_BAND_": {
-                setTransferFunction(key, band, false, value);
-                break;
-            }
+            case "RADIANCE_MULT_BAND_":    setTransferFunction(key, band, false, true,  value); break;
+            case "REFLECTANCE_MULT_BAND_": setTransferFunction(key, band, true,  true,  value); break;
+            case "RADIANCE_ADD_BAND_":     setTransferFunction(key, band, false, false, value); break;
+            case "REFLECTANCE_ADD_BAND_":  setTransferFunction(key, band, true,  false, value); break;
             /* ┌────────────────────────────────────┐
              * │ GROUP = PROJECTION_PARAMETERS      │
              * └────────────────────────────────────┘
@@ -751,64 +727,65 @@ final class LandsatReader extends MetadataBuilder {
      */
     private void parseLineage(final String key, final int band, String value) {
         switch (key) {
-            case "LANDSAT_PRODUCT_ID": {
-                addSource(value, null, null);
-                break;
-            }
-            case "PROCESSING_LEVEL": {
-                addProcessing(null, value);
-                break;
-            }
-            case "PROCESSING_SOFTWARE_VERSION": {
-                addSoftwareReference(value);
-                break;
-            }
+            case "GROUP":                       group = value;                break;
+            case "END_GROUP":                   group = null;                 break;
+            case "LANDSAT_PRODUCT_ID":          addSource(value, null, null); break;
+            case "PROCESSING_LEVEL":            addProcessing(null, value);   break;
+            case "PROCESSING_SOFTWARE_VERSION": addSoftwareReference(value);  break;
         }
     }
 
     /**
      * Sets a component of the linear transfer function.
      *
-     * @param  key      the key without its band number. Used only for formatting warning messages.
-     * @param  band     index of the band to set.
-     * @param  isScale  {@code true} for setting the scale factor, or {@code false} for setting the offset.
-     * @param  value    the value to set.
+     * @param  key          the key without its band number. Used only for formatting warning messages.
+     * @param  band         index of the band to set.
+     * @param  reflectance  {@code true} if the parameter is about reflectance instead of radiance.
+     * @param  isScale      {@code true} for setting the scale factor, or {@code false} for setting the offset.
+     * @param  value        the value to set.
      */
-    private void setTransferFunction(final String key, final int band, final boolean isScale, final String value) {
+    private void setTransferFunction(final String key, final int band, final boolean reflectance, final boolean isScale, final String value) {
         final Double v = parseDouble(value);            // Done first in case an exception is thrown.
-        final DefaultBand db = band(key, band);
-        if (db != null) {
-            db.setTransferFunctionType(TransferFunctionType.LINEAR);
-            if (isScale) {
-                db.setScaleFactor(v);
-            } else {
-                db.setOffset(v);
+        band(key, band).ifPresent((b) -> {
+            if (b.band.group.reflectance == reflectance) {
+                final DefaultSampleDimension sd = b.sampleDimension;
+                sd.setTransferFunctionType(TransferFunctionType.LINEAR);
+                if (isScale) {
+                    sd.setScaleFactor(v);
+                } else {
+                    sd.setOffset(v);
+                }
             }
-        }
+        });
     }
 
     /**
      * Returns the band at the given index, creating it if needed.
-     * If the given index is out of range, then this method logs a warning and returns {@code null}.
+     * If the given index is out of range, then this method logs a warning and returns an empty value.
      *
      * @param  key    the key without its band number. Used only for formatting warning messages.
      * @param  index  the band index.
+     * @return information about the band, or {@code null} if none.
      */
-    private DefaultBand band(final String key, final int index) {
+    private Optional<BandData> band(final String key, final int index) {
         if (index < 1 || index > bandEnumerations.length) {
             listeners.warning(errors().getString(Errors.Keys.UnexpectedValueInElement_2, key + index, index));
-            return null;
+            return Optional.empty();
         }
-        final Band bk = bandEnumerations[index - 1];
-        DefaultBand band = bands.get(bk);
-        if (band == null) {
-            band = new DefaultBand();
-            band.setDescription(bk.name);
-            band.setPeakResponse((double) bk.wavelength);
-            band.setBoundUnits(Units.NANOMETRE);
-            bands.put(bk, band);
+        final Band band = bandEnumerations[index - 1];
+        BandData data = bands.get(band);
+        if (data == null) {
+            data = new BandData(store, band);
+            bands.put(band, data);
         }
-        return band;
+        return Optional.of(data);
+    }
+
+    /**
+     * Returns metadata about sample dimension at the given index.
+     */
+    private Optional<DefaultSampleDimension> sampleDimension(final String key, final int index) {
+        return band(key, index).map((band) -> band.sampleDimension);
     }
 
     /**
@@ -942,25 +919,23 @@ final class LandsatReader extends MetadataBuilder {
          */
         setISOStandards(true);
         final DefaultMetadata result = build(false);
-        if (result != null) {
-            /*
-             * Set information about all non-null bands. The bands are categorized in three groups:
-             * PANCHROMATIC, REFLECTIVE and THERMAL.
-             */
-            final DefaultCoverageDescription content = (DefaultCoverageDescription) singletonOrNull(result.getContentInfo());
-            if (content != null) {
-                final EnumMap<BandGroup,DefaultAttributeGroup> groups = new EnumMap<>(BandGroup.class);
-                for (final EnumMap.Entry<Band,DefaultBand> entry : bands.entrySet()) {
-                    final DefaultAttributeGroup group = groups.computeIfAbsent(entry.getKey().group, (k) -> {
-                        DefaultAttributeGroup g = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
-                        content.getAttributeGroups().add(g);
-                        return g;
-                    });
-                    group.getAttributes().add(entry.getValue());
-                }
+        /*
+         * Set information about all non-null bands. The bands are categorized in three groups:
+         * PANCHROMATIC, REFLECTIVE and THERMAL.
+         */
+        final DefaultCoverageDescription content = (DefaultCoverageDescription) singletonOrNull(result.getContentInfo());
+        if (content != null) {
+            final EnumMap<BandGroup,DefaultAttributeGroup> groups = new EnumMap<>(BandGroup.class);
+            for (final EnumMap.Entry<Band,BandData> entry : bands.entrySet()) {
+                final DefaultAttributeGroup group = groups.computeIfAbsent(entry.getKey().group, (k) -> {
+                    DefaultAttributeGroup g = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
+                    content.getAttributeGroups().add(g);
+                    return g;
+                });
+                group.getAttributes().add(entry.getValue().sampleDimension);
             }
-            result.transitionTo(DefaultMetadata.State.FINAL);
         }
+        result.transitionTo(DefaultMetadata.State.FINAL);
         return result;
     }
 

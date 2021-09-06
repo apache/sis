@@ -29,7 +29,6 @@ import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import org.opengis.util.NameSpace;
-import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
@@ -50,6 +49,7 @@ import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -210,7 +210,7 @@ public class LandsatStore extends DataStore implements Aggregate {
         }
         try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
             source = null;      // Will be closed at the end of this try-finally block.
-            final LandsatReader parser = new LandsatReader(getDisplayName(), listeners);
+            final LandsatReader parser = new LandsatReader(this, getDisplayName(), listeners);
             parser.read(reader);
             metadata = parser.getMetadata();
             /*
@@ -221,12 +221,15 @@ public class LandsatStore extends DataStore implements Aggregate {
             final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
             final NameSpace   scope   = (name != null) ? factory.createNameSpace(factory.createLocalName(null, name), null) : null;
             int i = 0;
-            components = new BandData[parser.resources.size()];
-            for (final Map.Entry<Band,String> entry : parser.resources.entrySet()) {
-                final Band band = entry.getKey();
-                final LocalName id = factory.createLocalName(scope, band.name());
-                components[i++] = new BandData(this, band, id, entry.getValue());
+            components = new BandData[parser.bands.size()];
+            for (final Map.Entry<Band,BandData> entry : parser.bands.entrySet()) {
+                final BandData component = entry.getValue();
+                if (component.filename != null) {
+                    component.identifier = factory.createLocalName(scope, entry.getKey().name());
+                    components[i++] = component;
+                }
             }
+            components = ArraysExt.resize(components, i);
         } catch (IOException e) {
             throw new DataStoreException(e);
         } catch (FactoryException e) {

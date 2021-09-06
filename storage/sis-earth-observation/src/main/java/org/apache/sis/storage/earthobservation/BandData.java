@@ -23,13 +23,25 @@ import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.identification.Identification;
+import org.opengis.metadata.content.CoverageContentType;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.geotiff.GeoTiffStore;
+import org.apache.sis.internal.geotiff.SchemaModifier;
 import org.apache.sis.internal.storage.GridResourceWrapper;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.content.DefaultImageDescription;
+import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
+import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
+import org.apache.sis.metadata.iso.content.DefaultBand;
+import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.measure.Units;
+import org.apache.sis.util.resources.Vocabulary;
+
+import static org.apache.sis.internal.util.CollectionsExt.first;
 
 
 /**
@@ -40,7 +52,7 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
  * @since   1.1
  * @module
  */
-final class BandData extends GridResourceWrapper {
+final class BandData extends GridResourceWrapper implements SchemaModifier {
     /**
      * The data store that contains this band.
      * Also the object on which to perform synchronization locks.
@@ -50,29 +62,57 @@ final class BandData extends GridResourceWrapper {
     /**
      * The band for which this instance provides data.
      */
-    private final Band band;
+    final Band band;
 
     /**
      * Identifier of the band for which this instance provides data.
+     * Should not be modified after the end of metadata parsing.
      *
      * @see #getIdentifier()
      */
-    private final LocalName identifier;
+    LocalName identifier;
 
     /**
      * Filename of the file to read for band data.
      * This is relative to {@link LandsatStore#directory}.
+     * Should not be modified after the end of metadata parsing.
      */
-    private final String filename;
+    String filename;
 
     /**
-     * Creates a new resource for the band identified by the given identifier.
+     * Metadata about the band.
+     * Should not be modified after the end of metadata parsing.
      */
-    BandData(final LandsatStore parent, final Band band, final LocalName identifier, final String filename) {
-        this.parent     = parent;
-        this.band       = band;
-        this.identifier = identifier;
-        this.filename   = filename;
+    final DefaultSampleDimension sampleDimension;
+
+    /**
+     * Creates a new resource for the specified band.
+     */
+    BandData(final LandsatStore parent, final Band band) {
+        this.parent = parent;
+        this.band   = band;
+        if (band.wavelength != 0) {
+            final DefaultBand b = new DefaultBand();
+            b.setPeakResponse((double) band.wavelength);
+            b.setBoundUnits(Units.NANOMETRE);
+            sampleDimension = b;
+        } else {
+            sampleDimension = new DefaultSampleDimension();
+        }
+        sampleDimension.setDescription(band.name);
+        if (band.group.reflectance) {
+            sampleDimension.setUnits(Units.UNITY);
+        } else {
+            // W/(m² sr um)/DN
+        }
+    }
+
+    /**
+     * Returns the object on which to perform all synchronizations for thread-safety.
+     */
+    @Override
+    protected final Object getSynchronizationLock() {
+        return parent;
     }
 
     /**
@@ -86,7 +126,9 @@ final class BandData extends GridResourceWrapper {
         } else {
             file = Paths.get(filename);
         }
-        return new Reader(file).components().get(0);
+        final StorageConnector connector = new StorageConnector(file);
+        connector.setOption(SchemaModifier.OPTION, this);
+        return new GeoTiffStore(parent, parent.getProvider(), connector, true).components().get(0);
     }
 
     /**
@@ -99,41 +141,86 @@ final class BandData extends GridResourceWrapper {
     }
 
     /**
-     * Reads a band stored as a TIFF image.
+     * Invoked when the GeoTIFF reader creates the resource identifier.
+     * We use the identifier of the enclosing {@link BandData}.
      */
-    private final class Reader extends GeoTiffStore {
-        /**
-         * Opens the TIFF image designated by the given path.
-         */
-        Reader(final Path file) throws DataStoreException {
-            super(parent, parent.getProvider(), new StorageConnector(file), true);
-        }
+    @Override
+    public GenericName customize(final int image, final GenericName fallback) {
+        return (image == 0) ? identifier : fallback;
+    }
 
-        /**
-         * Invoked when the GeoTIFF reader creates the resource identifier.
-         * We use the identifier of the enclosing {@link BandData}.
-         */
-        @Override
-        protected GenericName customize(final int image, final GenericName identifier) {
-            return (image == 0) ? BandData.this.identifier : identifier;
-        }
-
-        /**
-         * Invoked when the GeoTIFF reader creates a metadata.
-         * This method modifies or completes some information inferred by the GeoTIFF reader.
-         */
-        @Override
-        protected Metadata customize(final int image, final DefaultMetadata metadata) {
-            if (image == 0) {
-                for (final Identification id : metadata.getIdentificationInfo()) {
-                    final DefaultCitation c = (DefaultCitation) id.getCitation();
-                    if (c != null) {
-                        c.setTitle(band.name);
-                        break;
-                    }
+    /**
+     * Invoked when the GeoTIFF reader creates a metadata.
+     * This method modifies or completes some information inferred by the GeoTIFF reader.
+     */
+    @Override
+    public Metadata customize(final int image, final DefaultMetadata metadata) {
+        if (image == 0) {
+            for (final Identification id : metadata.getIdentificationInfo()) {
+                final DefaultCitation c = (DefaultCitation) id.getCitation();
+                if (c != null) {
+                    c.setTitle(band.name);
+                    break;
                 }
             }
-            return metadata;
+            /*
+             * All collections below should be singleton and all casts should be safe because we use
+             * one specific implementation (`GeoTiffStore`) which is known to build metadata that way.
+             * A ClassCastException would be a bug in the handling of `isElectromagneticMeasurement(…)`.
+             */
+            final DefaultImageDescription content = (DefaultImageDescription) first(metadata.getContentInfo());
+            final DefaultAttributeGroup   group   = (DefaultAttributeGroup)   first(content.getAttributeGroups());
+            final DefaultSampleDimension  sd      = (DefaultSampleDimension)  first(group.getAttributes());
+            group.getContentTypes().add(CoverageContentType.PHYSICAL_MEASUREMENT);
+            sd.setDescription(sampleDimension.getDescription());
+            sd.setMinValue   (sampleDimension.getMinValue());
+            sd.setMaxValue   (sampleDimension.getMaxValue());
+            sd.setScaleFactor(sampleDimension.getScaleFactor());
+            sd.setOffset     (sampleDimension.getOffset());
+            sd.setUnits      (sampleDimension.getUnits());
+            if (sampleDimension instanceof DefaultBand) {
+                final DefaultBand s = (DefaultBand) sampleDimension;
+                final DefaultBand t = (DefaultBand) sd;
+                t.setPeakResponse(s.getPeakResponse());
+                t.setBoundUnits(s.getBoundUnits());
+            }
         }
+        return metadata;
+    }
+
+    /**
+     * Invoked when a sample dimension is created for a band in an image.
+     */
+    @Override
+    public SampleDimension customize(final int image, final int band, final NumberRange<?> sampleRange,
+                                      final SampleDimension.Builder dimension)
+    {
+        if ((image | band) == 0) {
+            dimension.setName(identifier);
+            if (sampleRange != null) {
+                final Number min    = sampleRange.getMinValue();
+                final Number max    = sampleRange.getMaxValue();
+                final Double scale  = sampleDimension.getScaleFactor();
+                final Double offset = sampleDimension.getOffset();
+                if (min != null && max != null && scale != null && offset != null) {
+                    int lower = min.intValue();
+                    if (lower >= 0) {           // Should always be zero but we are paranoiac.
+                        dimension.addQualitative(Vocabulary.formatInternational(Vocabulary.Keys.Nodata), 0);
+                        if (lower == 0) lower = 1;
+                    }
+                    dimension.addQuantitative(this.band.group.measurement, lower, max.intValue(),
+                                              scale, offset, sampleDimension.getUnits());
+                }
+            }
+        }
+        return dimension.build();
+    }
+
+    /**
+     * Returns {@code true} if the converted values are measurement in the electromagnetic spectrum.
+     */
+    @Override
+    public boolean isElectromagneticMeasurement(final int image) {
+        return (image == 0) && band.wavelength != 0;
     }
 }

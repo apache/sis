@@ -98,6 +98,7 @@ import org.apache.sis.metadata.iso.spatial.DefaultGCPCollection;
 import org.apache.sis.metadata.iso.spatial.DefaultGCP;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
+import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription;
 import org.apache.sis.metadata.iso.content.DefaultRangeElementDescription;
@@ -479,7 +480,7 @@ public class MetadataBuilder {
      */
     private DefaultSampleDimension sampleDimension() {
         if (sampleDimension == null) {
-            sampleDimension = new DefaultSampleDimension();
+            sampleDimension = electromagnetic ? new DefaultBand() : new DefaultSampleDimension();
         }
         return sampleDimension;
     }
@@ -2365,16 +2366,7 @@ parse:      for (int i = 0; i < length;) {
     public final void addNewBand(final SampleDimension band) {
         if (band != null) {
             newSampleDimension();
-            final GenericName g = band.getName();
-            if (g != null) {
-                final MemberName name;
-                if (g instanceof MemberName) {
-                    name = (MemberName) g;
-                } else {
-                    name = Names.createMemberName(null, null, g.tip().toString(), String.class);
-                }
-                setBandIdentifier(name);
-            }
+            setBandIdentifier(band.getName());
             // Really `getMeasurementRange()`, not `getSampleRange()`.
             band.getMeasurementRange().ifPresent((range) -> {
                 addMinimumSampleValue(range.getMinDouble());
@@ -2400,9 +2392,15 @@ parse:      for (int i = 0; i < length;) {
      *
      * @param  sequenceIdentifier  the band name or number, or {@code null} for no-operation.
      */
-    public final void setBandIdentifier(final MemberName sequenceIdentifier) {
+    public final void setBandIdentifier(final GenericName sequenceIdentifier) {
         if (sequenceIdentifier != null) {
-            sampleDimension().setSequenceIdentifier(sequenceIdentifier);
+            final MemberName name;
+            if (sequenceIdentifier instanceof MemberName) {
+                name = (MemberName) sequenceIdentifier;
+            } else {
+                name = Names.createMemberName(null, null, sequenceIdentifier.tip().toString(), Integer.class);
+            }
+            sampleDimension().setSequenceIdentifier(name);
         }
     }
 
@@ -2419,7 +2417,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void setBandIdentifier(final int sequenceIdentifier) {
         if (sequenceIdentifier > 0) {
-            setBandIdentifier(Names.createMemberName(null, null, sequenceIdentifier));
+            sampleDimension().setSequenceIdentifier(Names.createMemberName(null, null, sequenceIdentifier));
         }
     }
 
@@ -2538,6 +2536,16 @@ parse:      for (int i = 0; i < length;) {
                 sampleDimension.setMaxValue(shared(value));
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if current band has the minimum or maximum value defined.
+     *
+     * @return whether minimum or maximum value is defined for current band.
+     */
+    public final boolean hasSampleValueRange() {
+        return (sampleDimension != null)
+                && (sampleDimension.getMinValue() != null || sampleDimension.getMaxValue() != null);
     }
 
     /**

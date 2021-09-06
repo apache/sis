@@ -35,7 +35,6 @@ import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.geotiff.Predictor;
@@ -52,13 +51,13 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.image.DataType;
 
 
@@ -460,7 +459,7 @@ final class ImageFileDirectory extends DataCube {
     private GenericName identifier() throws DataStoreException {
         if (identifier == null) {
             final GenericName name = reader.nameFactory.createLocalName(reader.store.namespace(), String.valueOf(index + 1));
-            identifier = reader.store.customize(index, name);
+            identifier = reader.store.customizer.customize(index, name);
             if (identifier == null) identifier = name;
         }
         return identifier;
@@ -1322,6 +1321,7 @@ final class ImageFileDirectory extends DataCube {
      */
     @Override
     protected Metadata createMetadata() throws DataStoreException {
+        metadata.addTitle(identifier().toString());
         /*
          * Add information about the file format.
          *
@@ -1338,12 +1338,15 @@ final class ImageFileDirectory extends DataCube {
          *
          * Destination: metadata/contentInfo/attributeGroup/attribute
          */
-        for (int band = 0; band < samplesPerPixel;) {
-            metadata.newSampleDimension();
+        metadata.newCoverage(reader.store.customizer.isElectromagneticMeasurement(index));
+        final List<SampleDimension> sampleDimensions = getSampleDimensions();
+        for (int band = 0; band < samplesPerPixel; band++) {
+            metadata.addNewBand(sampleDimensions.get(band));
             metadata.setBitPerSample(bitsPerSample);
-            if (isMinSpecified) metadata.addMinimumSampleValue(minValues.doubleValue(Math.min(band, minValues.size()-1)));
-            if (isMaxSpecified) metadata.addMaximumSampleValue(maxValues.doubleValue(Math.min(band, maxValues.size()-1)));
-            metadata.setBandIdentifier(++band);
+            if (!metadata.hasSampleValueRange()) {
+                if (isMinSpecified) metadata.addMinimumSampleValue(minValues.doubleValue(Math.min(band, minValues.size()-1)));
+                if (isMaxSpecified) metadata.addMaximumSampleValue(maxValues.doubleValue(Math.min(band, maxValues.size()-1)));
+            }
         }
         /*
          * Add the resolution into the metadata. Our current ISO 19115 implementation restricts
@@ -1382,7 +1385,8 @@ final class ImageFileDirectory extends DataCube {
             }
         }
         /*
-         * Add Coordinate Reference System built from GeoTIFF tags. Note that the CRS may not exist.
+         * Add Coordinate Reference System built from GeoTIFF tags.
+         * Note that the CRS may not exist.
          *
          * Destination: metadata/spatialRepresentationInfo and others.
          */
@@ -1395,9 +1399,11 @@ final class ImageFileDirectory extends DataCube {
             }
             referencing.completeMetadata(metadata);         // Must be after `getGridGeometry()`.
         }
-        metadata.addTitleOrIdentifier(identifier().toString(), MetadataBuilder.Scope.RESOURCE);
+        /*
+         * End of metadata construction from TIFF tags.
+         */
         final DefaultMetadata md = metadata.build(false);
-        final Metadata c = reader.store.customize(index, md);
+        final Metadata c = reader.store.customizer.customize(index, md);
         md.transitionTo(DefaultMetadata.State.FINAL);
         metadata = null;
         return (c != null) ? c : md;
@@ -1442,13 +1448,15 @@ final class ImageFileDirectory extends DataCube {
             if (sampleDimensions == null) {
                 final SampleDimension[] dimensions = new SampleDimension[samplesPerPixel];
                 final SampleDimension.Builder builder = new SampleDimension.Builder();
-                final InternationalString name = Vocabulary.formatInternational(Vocabulary.Keys.Value);
                 for (int band = 0; band < samplesPerPixel;) {
+                    NumberRange<?> sampleRange = null;
                     if (minValues != null && maxValues != null) {
-                        builder.addQualitative(name, minValues.get(Math.min(band, minValues.size()-1)),
-                                                     maxValues.get(Math.min(band, maxValues.size()-1)));
+                        sampleRange = NumberRange.createBestFit(
+                                minValues.get(Math.min(band, minValues.size()-1)), true,
+                                maxValues.get(Math.min(band, maxValues.size()-1)), true);
                     }
-                    dimensions[band] = builder.setName(++band).build();
+                    dimensions[band] = reader.store.customizer.customize(
+                            index, band, sampleRange, builder.setName(++band));
                     builder.clear();
                 }
                 sampleDimensions = UnmodifiableArrayList.wrap(dimensions);

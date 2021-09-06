@@ -30,15 +30,36 @@ enum BandGroup {
     /**
      * Group for band 8.
      */
-    PANCHROMATIC,
+    PANCHROMATIC("Reflectance", true),
 
     /**
      * Group for bands 1, 2, 3, 4, 5, 6, 7, 9.
      */
-    REFLECTIVE,
+    REFLECTIVE("Reflectance", true),
 
     /**
      * Group for bands 10, 11.
      */
-    THERMAL
+    THERMAL("Radiance", false);
+
+    /**
+     * Name of the measurement.
+     *
+     * @todo Localize.
+     */
+    final String measurement;
+
+    /**
+     * Whether bands in this group measure reflectance.
+     * If {@code false}, then only radiance is provided.
+     */
+    final boolean reflectance;
+
+    /**
+     * Creates a new enumeration value.
+     */
+    private BandGroup(final String measurement, final boolean reflectance) {
+        this.measurement = measurement;
+        this.reflectance = reflectance;
+    }
 }

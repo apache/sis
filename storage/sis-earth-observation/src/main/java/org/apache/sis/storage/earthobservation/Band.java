@@ -57,6 +57,8 @@ enum Band {
 
     /**
      * Peak response wavelength for the Landsat band, in nanometres.
+     * If this band does not contains measurements in electromagnetic spectrum,
+     * then this value is set to zero.
      */
     final short wavelength;
 

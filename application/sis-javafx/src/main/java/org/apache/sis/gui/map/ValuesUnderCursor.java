@@ -577,7 +577,7 @@ public abstract class ValuesUnderCursor {
                     final int start = buffer.length();
                     final Comparable<?>[] sampleValues = bands.get(i).forConvertedValues(true)
                             .getSampleRange().map((r) -> new Comparable<?>[] {r.getMinValue(), r.getMaxValue()})
-                            .orElseGet(() -> new Comparable<?>[] {0xFF});                   // Arbitrary value.
+                            .orElseGet(() -> new Comparable<?>[] {0xFFFF});                 // Arbitrary value.
                     for (final Comparable<?> value : sampleValues) {
                         final int end = buffer.length();
                         sampleFormats[i].format(value, buffer, field);

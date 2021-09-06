@@ -78,7 +78,7 @@ public class LandsatReaderTest extends TestCase {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
         {
-            final LandsatReader reader = new LandsatReader("LandsatTest.txt", new AbstractResource(null));
+            final LandsatReader reader = new LandsatReader(null, "LandsatTest.txt", new AbstractResource(null));
             reader.read(in);
             actual = reader.getMetadata();
         }
@@ -118,18 +118,6 @@ public class LandsatReaderTest extends TestCase {
             "contentInfo[0].processingLevelCode.authority.title",          "Landsat",
             "contentInfo[0].processingLevelCode.codeSpace",                "Landsat",
             "contentInfo[0].processingLevelCode.code",                     "Pseudo LT1",
-
-            "contentInfo[0].attributeGroup[0].attribute[0].name[0].code",  "TestImage_B1.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[1].name[0].code",  "TestImage_B2.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[2].name[0].code",  "TestImage_B3.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[3].name[0].code",  "TestImage_B4.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[4].name[0].code",  "TestImage_B5.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[5].name[0].code",  "TestImage_B6.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[6].name[0].code",  "TestImage_B7.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[7].name[0].code",  "TestImage_B9.TIF",
-            "contentInfo[0].attributeGroup[1].attribute[0].name[0].code",  "TestImage_B8.TIF",
-            "contentInfo[0].attributeGroup[2].attribute[0].name[0].code",  "TestImage_B10.TIF",
-            "contentInfo[0].attributeGroup[2].attribute[1].name[0].code",  "TestImage_B11.TIF",
 
             "contentInfo[0].attributeGroup[0].attribute[0].description",   "Coastal Aerosol",
             "contentInfo[0].attributeGroup[0].attribute[1].description",   "Blue",
@@ -191,29 +179,39 @@ public class LandsatReaderTest extends TestCase {
             "contentInfo[0].attributeGroup[2].attribute[0].transferFunctionType",  TransferFunctionType.LINEAR,
             "contentInfo[0].attributeGroup[2].attribute[1].transferFunctionType",  TransferFunctionType.LINEAR,
 
-            "contentInfo[0].attributeGroup[0].attribute[0].scaleFactor",  0.0127,
-            "contentInfo[0].attributeGroup[0].attribute[1].scaleFactor",  0.013,
-            "contentInfo[0].attributeGroup[0].attribute[2].scaleFactor",  0.012,
-            "contentInfo[0].attributeGroup[0].attribute[3].scaleFactor",  0.0101,
-            "contentInfo[0].attributeGroup[0].attribute[4].scaleFactor",  0.00619,
-            "contentInfo[0].attributeGroup[0].attribute[5].scaleFactor",  0.00154,
-            "contentInfo[0].attributeGroup[0].attribute[6].scaleFactor",  0.000519,
-            "contentInfo[0].attributeGroup[0].attribute[7].scaleFactor",  0.00242,
-            "contentInfo[0].attributeGroup[1].attribute[0].scaleFactor",  0.0115,
+            "contentInfo[0].attributeGroup[0].attribute[0].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[1].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[2].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[3].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[4].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[5].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[6].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[7].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[1].attribute[0].scaleFactor",  2.0E-5,
             "contentInfo[0].attributeGroup[2].attribute[0].scaleFactor",  0.000334,
             "contentInfo[0].attributeGroup[2].attribute[1].scaleFactor",  0.000334,
 
-            "contentInfo[0].attributeGroup[0].attribute[0].offset",       -63.6,
-            "contentInfo[0].attributeGroup[0].attribute[1].offset",       -65.1,
-            "contentInfo[0].attributeGroup[0].attribute[2].offset",       -60.0,
-            "contentInfo[0].attributeGroup[0].attribute[3].offset",       -50.6,
-            "contentInfo[0].attributeGroup[0].attribute[4].offset",       -31.0,
-            "contentInfo[0].attributeGroup[0].attribute[5].offset",       -7.7,
-            "contentInfo[0].attributeGroup[0].attribute[6].offset",       -2.6,
-            "contentInfo[0].attributeGroup[0].attribute[7].offset",       -12.1,
-            "contentInfo[0].attributeGroup[1].attribute[0].offset",       -57.3,
+            "contentInfo[0].attributeGroup[0].attribute[0].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[1].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[2].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[3].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[4].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[5].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[6].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[7].offset",      -0.1,
+            "contentInfo[0].attributeGroup[1].attribute[0].offset",      -0.1,
             "contentInfo[0].attributeGroup[2].attribute[0].offset",       0.1,
             "contentInfo[0].attributeGroup[2].attribute[1].offset",       0.1,
+
+            "contentInfo[0].attributeGroup[0].attribute[0].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[1].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[2].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[3].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[4].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[5].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[6].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[7].units", "",
+            "contentInfo[0].attributeGroup[1].attribute[0].units", "",
 
             "contentInfo[0].attributeGroup[0].attribute[0].boundUnits",   "nm",
             "contentInfo[0].attributeGroup[0].attribute[1].boundUnits",   "nm",
