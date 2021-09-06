@@ -34,7 +34,6 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.sql.feature.Database;
 import org.apache.sis.internal.sql.feature.Resources;
 import org.apache.sis.internal.sql.feature.SchemaModifier;
@@ -44,9 +43,6 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Exceptions;
-
-// Branch-dependent imports
-import org.opengis.feature.FeatureType;
 
 
 /**
@@ -100,6 +96,12 @@ public class SQLStore extends DataStore implements Aggregate {
     private Metadata metadata;
 
     /**
+     * The user-specified method for customizing the schema inferred by table analysis.
+     * This is {@code null} if there is none.
+     */
+    private final SchemaModifier customizer;
+
+    /**
      * Creates a new instance for the given storage.
      * The given {@code connector} shall contain a {@link DataSource}.
      * The given table names shall be qualified names of 1, 2 or 3 components.
@@ -138,6 +140,7 @@ public class SQLStore extends DataStore implements Aggregate {
             }
         }
         this.tableNames = tableNames;
+        this.customizer = connector.getOption(SchemaModifier.OPTION);
     }
 
     /**
@@ -169,21 +172,12 @@ public class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns customizations on the feature type inferred from the database analysis.
-     * This is a workaround for giving access to protected method {@code customize(…)}
-     * from a different package.
-     */
-    private SchemaModifier customizer() {
-        return (id,f) -> customize(id.getNames(), f);
-    }
-
-    /**
      * Returns the database model, analyzing the database schema when first needed.
      */
     private synchronized Database<?> model() throws DataStoreException {
         if (model == null) {
             try (Connection c = source.getConnection()) {
-                model = Database.create(this, source, c, geomLibrary, tableNames, customizer(), listeners);
+                model = Database.create(this, source, c, geomLibrary, tableNames, customizer, listeners);
             } catch (DataStoreException e) {
                 throw e;
             } catch (Exception e) {
@@ -202,7 +196,7 @@ public class SQLStore extends DataStore implements Aggregate {
      */
     private Database<?> model(final Connection c) throws Exception {
         if (model == null) {
-            model = Database.create(this, source, c, geomLibrary, tableNames, customizer(), listeners);
+            model = Database.create(this, source, c, geomLibrary, tableNames, customizer, listeners);
         }
         return model;
     }
@@ -252,35 +246,6 @@ public class SQLStore extends DataStore implements Aggregate {
             metadata = builder.build(true);
         }
         return metadata;
-    }
-
-    /**
-     * Invoked after analysis of a table for allowing modifications of the inferred feature type.
-     * The given builder is initialized with all properties inferred from the table definition.
-     * Implementation of this method can add, remove or modify properties.
-     *
-     * <p>The database table for which a feature type is created is identified by the {@code table} argument.
-     * This argument is an array of length of 1, 2 or 3 with the following content:</p>
-     *
-     * <ul>
-     *   <li>If a catalog name exists, then the array has a length of 3 with <var>catalog name</var>,
-     *       <var>schema name</var> (possibly null) and <var>table name</var> elements in that order.</li>
-     *   <li>Otherwise if a schema name exists, then the array has a length of 2 with
-     *       <var>schema name</var> and <var>table name</var> elements in that order.</li>
-     *   <li>Otherwise the array has a length of 1 with the <var>table name</var> element.</li>
-     * </ul>
-     *
-     * The default implementation returns {@code feature.build()} without making any change.
-     *
-     * @param  table    the catalog (if present), schema (if present) and table name.
-     * @param  feature  a feature type builder initialized with all properties inferred by the analysis of a table.
-     *                  This builder can be modified in-place.
-     * @return the feature type to use for the specified table.
-     *
-     * @since 1.1
-     */
-    protected FeatureType customize(String[] table, FeatureTypeBuilder feature) {
-        return feature.build();
     }
 
     /**

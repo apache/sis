@@ -134,7 +134,7 @@ final class Analyzer {
     private transient NameSpace namespace;
 
     /**
-     * User-specified modification to the features. Shall not be {@code null}.
+     * User-specified modification to the features, or {@code null} if none.
      */
     private final SchemaModifier customizer;
 
@@ -145,7 +145,7 @@ final class Analyzer {
      * @param  connection  an existing connection to the database, used only for the lifetime of this {@code Analyzer}.
      * @param  metadata    value of {@code connection.getMetaData()} (provided because already known by caller).
      * @param  isSpatial   whether the database contains "GEOMETRY_COLUMNS" and "SPATIAL_REF_SYS" tables.
-     * @param  customizer  user-specified modification to the features. Shall not be {@code null}.
+     * @param  customizer  user-specified modification to the features, or {@code null} if none.
      */
     Analyzer(final Database<?> database, final Connection connection, final DatabaseMetaData metadata,
              final boolean isSpatial, final SchemaModifier customizer)
@@ -296,6 +296,16 @@ final class Analyzer {
      */
     private FeatureTypeBuilder createFeatureTypeBuilder() {
         return new FeatureTypeBuilder(nameFactory, database.geomLibrary.library, database.listeners.getLocale());
+    }
+
+    /**
+     * Creates the feature type from the content of the given builder.
+     */
+    private FeatureType createFeatureType(final TableReference id, final FeatureTypeBuilder feature)
+            throws DataStoreException
+    {
+        feature.setName(id.getName(this));
+        return (customizer != null) ? customizer.editFeatureType(id, feature) : feature.build();
     }
 
     /**
@@ -602,7 +612,6 @@ final class Analyzer {
          */
         @Override
         public FeatureType buildFeatureType() throws DataStoreException, SQLException {
-            feature.setName(id.getName(Analyzer.this));
             String remarks = id.freeText;
             if (id instanceof Relation) {
                 try (ResultSet reflect = metadata.getTables(id.catalog, schemaEsc, tableEsc, null)) {
@@ -617,7 +626,7 @@ final class Analyzer {
             if (remarks != null) {
                 feature.setDefinition(remarks);
             }
-            return customizer.editFeatureType(id, feature);
+            return createFeatureType(id, feature);
         }
     }
 
@@ -717,11 +726,10 @@ final class Analyzer {
          */
         @Override
         FeatureType buildFeatureType() throws DataStoreException {
-            feature.setName(id.getName(Analyzer.this));
             if (id.freeText != null) {
                 feature.setDefinition(id.freeText);
             }
-            return customizer.editFeatureType(id, feature);
+            return createFeatureType(id, feature);
         }
     }
 }
