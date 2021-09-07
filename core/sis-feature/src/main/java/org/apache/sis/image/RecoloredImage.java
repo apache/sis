@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.util.Map;
+import java.util.List;
 import java.util.Arrays;
 import java.awt.Shape;
 import java.awt.image.ColorModel;
@@ -27,6 +28,7 @@ import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.math.Statistics;
@@ -119,39 +121,53 @@ final class RecoloredImage extends ImageAdapter {
         double        minimum       = Double.NaN;
         double        maximum       = Double.NaN;
         double        deviations    = Double.POSITIVE_INFINITY;
-        SampleDimension[] ranges    = null;
+        SampleDimension range       = null;
         /*
          * Extract and validate parameter values.
          * No calculation started at this stage.
          */
         if (modifiers != null) {
-            final Object minValue = modifiers.get("minimum");
-            if (minValue instanceof Number) {
-                minimum = ((Number) minValue).doubleValue();
-            }
-            final Object maxValue = modifiers.get("maximum");
-            if (maxValue instanceof Number) {
-                maximum = ((Number) maxValue).doubleValue();
-            }
+            final Number minValue = Containers.property(modifiers, "minimum", Number.class);
+            final Number maxValue = Containers.property(modifiers, "maximum", Number.class);
+            if (minValue != null) minimum = minValue.doubleValue();
+            if (maxValue != null) maximum = maxValue.doubleValue();
             if (minimum >= maximum) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2, minValue, maxValue));
             }
-            Object value = modifiers.get("multStdDev");
-            if (value instanceof Number) {
-                deviations = ((Number) value).doubleValue();
-                ArgumentChecks.ensureStrictlyPositive("multStdDev", deviations);
+            {   // For keeping `value` in local scope.
+                final Number value = Containers.property(modifiers, "multStdDev", Number.class);
+                if (value != null) {
+                    deviations = value.doubleValue();
+                    ArgumentChecks.ensureStrictlyPositive("multStdDev", deviations);
+                }
             }
-            value = modifiers.get("statistics");
-            if (value instanceof RenderedImage) {
-                statsSource = (RenderedImage) value;
-            } else if (value instanceof Statistics) {
-                statistics = (Statistics) value;
-            } else if (value instanceof Statistics[]) {
-                statsAllBands = (Statistics[]) value;
+            Object value = modifiers.get("statistics");
+            if (value != null) {
+                if (value instanceof RenderedImage) {
+                    statsSource = (RenderedImage) value;
+                } else if (value instanceof Statistics) {
+                    statistics = (Statistics) value;
+                } else if (value instanceof Statistics[]) {
+                    statsAllBands = (Statistics[]) value;
+                } else {
+                    throw illegalPropertyType(modifiers, "statistics", value);
+                }
             }
             value = modifiers.get("sampleDimensions");
-            if (value instanceof SampleDimension[]) {
-                ranges = (SampleDimension[]) value;
+            if (value != null) {
+                if (value instanceof List<?>) {
+                    final List<?> ranges = (List<?>) value;
+                    if (visibleBand < ranges.size()) {
+                        value = ranges.get(visibleBand);
+                    }
+                }
+                if (value != null) {
+                    if (value instanceof SampleDimension) {
+                        range = (SampleDimension) value;
+                    } else {
+                        throw illegalPropertyType(modifiers, "sampleDimensions", value);
+                    }
+                }
             }
         }
         /*
@@ -196,20 +212,17 @@ final class RecoloredImage extends ImageAdapter {
             int validMin = 0;
             int validMax = size - 1;        // Inclusive.
             double span = 0;
-            if (ranges != null && visibleBand < ranges.length) {
-                final SampleDimension range = ranges[visibleBand];
-                if (range != null) {
-                    for (final Category category : range.getCategories()) {
-                        if (category.isQuantitative()) {
-                            final NumberRange<?> r = category.getSampleRange();
-                            final double min = Math.max(r.getMinDouble(true), 0);
-                            final double max = Math.min(r.getMaxDouble(true), size - 1);
-                            final double s   = Math.min(max, maximum) - Math.max(min, minimum);    // Intersection.
-                            if (s > span) {
-                                validMin = (int) min;
-                                validMax = (int) max;
-                                span = s;
-                            }
+            if (range != null) {
+                for (final Category category : range.getCategories()) {
+                    if (category.isQuantitative()) {
+                        final NumberRange<?> r = category.getSampleRange();
+                        final double min = Math.max(r.getMinDouble(true), 0);
+                        final double max = Math.min(r.getMaxDouble(true), size - 1);
+                        final double s   = Math.min(max, maximum) - Math.max(min, minimum);    // Intersection.
+                        if (s > span) {
+                            validMin = (int) min;
+                            validMax = (int) max;
+                            span = s;
                         }
                     }
                 }
@@ -240,6 +253,16 @@ final class RecoloredImage extends ImageAdapter {
             cm = ColorModelFactory.createGrayScale(sm.getDataType(), sm.getNumBands(), visibleBand, minimum, maximum);
         }
         return create(source, cm);
+    }
+
+    /**
+     * Returns the exception to be thrown when a property is of illegal type.
+     */
+    private static IllegalArgumentException illegalPropertyType(
+            final Map<String,?> properties, final String key, final Object value)
+    {
+        return new IllegalArgumentException(Errors.getResources(properties)
+                .getString(Errors.Keys.IllegalPropertyValueClass_2, key, value.getClass()));
     }
 
     /**
