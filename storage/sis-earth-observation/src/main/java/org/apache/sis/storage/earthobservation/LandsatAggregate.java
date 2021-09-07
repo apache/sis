@@ -36,6 +36,10 @@ import org.apache.sis.util.ArraysExt;
  * An aggregate of {@link LandsatResource}.
  * Each aggregate is for one {@link LandsatBandGroup}.
  *
+ * @todo Future implementation should implement {@code GridCoverageResource}
+ *       and provides an aggregated coverage view where each Landsat band is
+ *       a sample dimension.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
