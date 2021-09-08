@@ -31,7 +31,7 @@ import org.opengis.filter.FilterFactory;
 
 
 /**
- * Tests {@link FilterByIdentifier}.
+ * Tests {@link IdentifierFilter}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -39,7 +39,7 @@ import org.opengis.filter.FilterFactory;
  * @since   1.1
  * @module
  */
-public final strictfp class FilterByIdentifierTest extends TestCase {
+public final strictfp class IdentifierFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
@@ -48,7 +48,7 @@ public final strictfp class FilterByIdentifierTest extends TestCase {
     /**
      * Creates a new test case.
      */
-    public FilterByIdentifierTest() {
+    public IdentifierFilterTest() {
         factory = DefaultFilterFactory.forFeatures();
     }
 

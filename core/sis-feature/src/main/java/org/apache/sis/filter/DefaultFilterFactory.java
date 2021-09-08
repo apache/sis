@@ -196,7 +196,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
         public ResourceId<Feature> resourceId(final String identifier, final Version version,
                                               final Instant startTime, final Instant endTime)
         {
-            return new FilterByIdentifier<>(identifier);
+            return new IdentifierFilter<>(identifier);
         }
 
         /**

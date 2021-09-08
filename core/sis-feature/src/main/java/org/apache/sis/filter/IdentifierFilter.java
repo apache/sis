@@ -42,7 +42,7 @@ import org.opengis.filter.ResourceId;
  * @since 1.1
  * @module
  */
-final class FilterByIdentifier<R extends Feature> extends Node implements ResourceId<R> {
+final class IdentifierFilter<R extends Feature> extends Node implements ResourceId<R> {
     /**
      * For cross-version compatibility.
      */
@@ -56,7 +56,7 @@ final class FilterByIdentifier<R extends Feature> extends Node implements Resour
     /**
      * Creates a new filter using the given identifier.
      */
-    FilterByIdentifier(final String identifier) {
+    IdentifierFilter(final String identifier) {
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
         this.identifier = identifier;
     }
@@ -88,7 +88,7 @@ final class FilterByIdentifier<R extends Feature> extends Node implements Resour
 
     /**
      * Returns {@code true} if the given object is a {@link Feature} instance and its identifier
-     * is one of the identifier specified at {@code FilterByIdentifier} construction time.
+     * is one of the identifier specified at {@code IdentifierFilter} construction time.
      */
     @Override
     public boolean test(R object) {

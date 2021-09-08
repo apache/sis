@@ -53,7 +53,7 @@ import org.junit.runners.Suite;
     org.apache.sis.filter.CapabilitiesTest.class,
     org.apache.sis.filter.LeafExpressionTest.class,
     org.apache.sis.filter.LogicalFilterTest.class,
-    org.apache.sis.filter.FilterByIdentifierTest.class,
+    org.apache.sis.filter.IdentifierFilterTest.class,
     org.apache.sis.filter.ArithmeticFunctionTest.class,
     org.apache.sis.filter.ComparisonFilterTest.class,
     org.apache.sis.filter.LikeFilterTest.class,
