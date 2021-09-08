@@ -397,7 +397,7 @@ public class Optimization {
                     if (operand.getOperatorType() == LogicalOperatorName.NOT) {
                         operand = getNotOperand(operand);
                     } else {
-                        operand = new LogicalFunction.Not<>(operand);
+                        operand = new LogicalFilter.Not<>(operand);
                     }
                     result.add(operand);
                 }

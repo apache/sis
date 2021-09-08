@@ -45,7 +45,7 @@ import org.opengis.filter.LogicalOperatorName;
  * @since 1.1
  * @module
  */
-abstract class LogicalFunction<R> extends Node implements LogicalOperator<R>, Optimization.OnFilter<R> {
+abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Optimization.OnFilter<R> {
     /**
      * For cross-version compatibility.
      */
@@ -62,7 +62,7 @@ abstract class LogicalFunction<R> extends Node implements LogicalOperator<R>, Op
      * @param  op  operands of the new operator.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    LogicalFunction(final Collection<? extends Filter<? super R>> op) {
+    LogicalFilter(final Collection<? extends Filter<? super R>> op) {
         ArgumentChecks.ensureNonEmpty("operands", op);
         operands = op.toArray(new Filter[op.size()]);
         if (operands.length < 2) {
@@ -79,7 +79,7 @@ abstract class LogicalFunction<R> extends Node implements LogicalOperator<R>, Op
      * @param  op  operands of the new operator.
      * @return the new operator.
      */
-    protected abstract LogicalFunction<R> createSameType(Collection<? extends Filter<? super R>> op);
+    protected abstract LogicalFilter<R> createSameType(Collection<? extends Filter<? super R>> op);
 
     /**
      * Returns a list containing all of the child filters of this object.
@@ -102,7 +102,7 @@ abstract class LogicalFunction<R> extends Node implements LogicalOperator<R>, Op
     /**
      * The "And" operation (⋀).
      */
-    static final class And<R> extends LogicalFunction<R> {
+    static final class And<R> extends LogicalFilter<R> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 152892064260384713L;
 
@@ -112,7 +112,7 @@ abstract class LogicalFunction<R> extends Node implements LogicalOperator<R>, Op
         }
 
         /** Creates a new logical operator of the same kind than this operator. */
-        @Override protected LogicalFunction<R> createSameType(Collection<? extends Filter<? super R>> op) {
+        @Override protected LogicalFilter<R> createSameType(Collection<? extends Filter<? super R>> op) {
             return new And<>(op);
         }
 
@@ -146,7 +146,7 @@ abstract class LogicalFunction<R> extends Node implements LogicalOperator<R>, Op
     /**
      * The "Or" operation (⋁).
      */
-    static final class Or<R> extends LogicalFunction<R> {
+    static final class Or<R> extends LogicalFilter<R> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 3805785720811330282L;
 
@@ -156,7 +156,7 @@ abstract class LogicalFunction<R> extends Node implements LogicalOperator<R>, Op
         }
 
         /** Creates a new logical operator of the same kind than this operator. */
-        @Override protected LogicalFunction<R> createSameType(Collection<? extends Filter<? super R>> op) {
+        @Override protected LogicalFilter<R> createSameType(Collection<? extends Filter<? super R>> op) {
             return new Or<>(op);
         }
 
@@ -271,7 +271,7 @@ abstract class LogicalFunction<R> extends Node implements LogicalOperator<R>, Op
                 unchanged &= effective.add(f);
             } else {
                 unchanged = false;
-                for (Filter<? super R> s : ((LogicalFunction<? super R>) f).operands) {
+                for (Filter<? super R> s : ((LogicalFilter<? super R>) f).operands) {
                     if (f != ignore) {
                         if (f == shortCircuit) {
                             return shortCircuit;

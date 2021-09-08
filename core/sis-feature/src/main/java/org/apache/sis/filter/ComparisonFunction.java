@@ -781,10 +781,10 @@ abstract class ComparisonFunction<R> extends BinaryFunction<R,Object,Object>
 
     /**
      * The {@code "PropertyIsBetween"} filter. This can be seen as a specialization of
-     * {@link org.apache.sis.filter.LogicalFunction.And} when one expression is
+     * {@link org.apache.sis.filter.LogicalFilter.And} when one expression is
      * {@link LessThanOrEqualTo} and a second expression is {@link GreaterThanOrEqualTo}.
      *
-     * @see org.apache.sis.filter.LogicalFunction.And
+     * @see org.apache.sis.filter.LogicalFilter.And
      */
     static final class Between<R> extends Node implements BetweenComparisonOperator<R> {
         /** For cross-version compatibility during (de)serialization. */

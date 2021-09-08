@@ -38,7 +38,7 @@ import org.opengis.filter.LogicalOperator;
 
 
 /**
- * Tests {@link LogicalFunction} implementations.
+ * Tests {@link LogicalFilter} implementations.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -46,7 +46,7 @@ import org.opengis.filter.LogicalOperator;
  * @since   1.1
  * @module
  */
-public final strictfp class LogicalFunctionTest extends TestCase {
+public final strictfp class LogicalFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
@@ -55,7 +55,7 @@ public final strictfp class LogicalFunctionTest extends TestCase {
     /**
      * Creates a new test case.
      */
-    public LogicalFunctionTest() {
+    public LogicalFilterTest() {
         factory = DefaultFilterFactory.forFeatures();
     }
 

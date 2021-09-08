@@ -440,7 +440,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      */
     @Override
     public LogicalOperator<R> and(final Collection<? extends Filter<? super R>> operands) {
-        return new LogicalFunction.And<>(operands);
+        return new LogicalFilter.And<>(operands);
     }
 
     /**
@@ -454,7 +454,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      */
     @Override
     public LogicalOperator<R> or(final Collection<? extends Filter<? super R>> operands) {
-        return new LogicalFunction.Or<>(operands);
+        return new LogicalFilter.Or<>(operands);
     }
 
     /**
@@ -467,7 +467,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      */
     @Override
     public LogicalOperator<R> not(final Filter<? super R> operand) {
-        return new LogicalFunction.Not<>(operand);
+        return new LogicalFilter.Not<>(operand);
     }
 
     /**
