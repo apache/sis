@@ -1002,6 +1002,6 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      */
     @Override
     public SortProperty sort(final ValueReference<? super R, ?> property, final SortOrder order) {
-        return new DefaultSortBy(property, order);
+        return new DefaultSortProperty(property, order);
     }
 }

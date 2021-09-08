@@ -33,7 +33,7 @@ import org.opengis.filter.ValueReference;
  * @since   1.1
  * @module
  */
-final class DefaultSortBy implements SortProperty, Serializable {
+final class DefaultSortProperty implements SortProperty, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -56,7 +56,7 @@ final class DefaultSortBy implements SortProperty, Serializable {
      * @param property  property on which to apply sorting.
      * @param order     the desired order: {@code ASCENDING} or {@code DESCENDING}.
      */
-    DefaultSortBy(final ValueReference<?,?> property, final SortOrder order) {
+    DefaultSortProperty(final ValueReference<?,?> property, final SortOrder order) {
         this.property = property;
         this.order    = order;
         ArgumentChecks.ensureNonNull("property", property);
@@ -95,8 +95,8 @@ final class DefaultSortBy implements SortProperty, Serializable {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof DefaultSortBy) {
-            final DefaultSortBy other = (DefaultSortBy) obj;
+        if (obj instanceof DefaultSortProperty) {
+            final DefaultSortProperty other = (DefaultSortProperty) obj;
             return property.equals(other.property)
                    && order.equals(other.order);
         }
