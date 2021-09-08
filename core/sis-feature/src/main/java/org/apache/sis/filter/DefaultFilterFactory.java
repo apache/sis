@@ -249,7 +249,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
                                              final Expression<? super R, ?> expression2,
                                              boolean isMatchingCase, MatchAction matchAction)
     {
-        return new ComparisonFunction.EqualTo<>(expression1, expression2, isMatchingCase, matchAction);
+        return new ComparisonFilter.EqualTo<>(expression1, expression2, isMatchingCase, matchAction);
     }
 
     /**
@@ -269,7 +269,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
                                                 final Expression<? super R, ?> expression2,
                                                 boolean isMatchingCase, MatchAction matchAction)
     {
-        return new ComparisonFunction.NotEqualTo<>(expression1, expression2, isMatchingCase, matchAction);
+        return new ComparisonFilter.NotEqualTo<>(expression1, expression2, isMatchingCase, matchAction);
     }
 
     /**
@@ -289,7 +289,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
                                             final Expression<? super R, ?> expression2,
                                             boolean isMatchingCase, MatchAction matchAction)
     {
-        return new ComparisonFunction.LessThan<>(expression1, expression2, isMatchingCase, matchAction);
+        return new ComparisonFilter.LessThan<>(expression1, expression2, isMatchingCase, matchAction);
     }
 
     /**
@@ -309,7 +309,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
                                                final Expression<? super R, ?> expression2,
                                                boolean isMatchingCase, MatchAction matchAction)
     {
-        return new ComparisonFunction.GreaterThan<>(expression1, expression2, isMatchingCase, matchAction);
+        return new ComparisonFilter.GreaterThan<>(expression1, expression2, isMatchingCase, matchAction);
     }
 
     /**
@@ -329,7 +329,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
                                                    final Expression<? super R, ?> expression2,
                                                    boolean isMatchingCase, MatchAction matchAction)
     {
-        return new ComparisonFunction.LessThanOrEqualTo<>(expression1, expression2, isMatchingCase, matchAction);
+        return new ComparisonFilter.LessThanOrEqualTo<>(expression1, expression2, isMatchingCase, matchAction);
     }
 
     /**
@@ -349,7 +349,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
                                                       final Expression<? super R, ?> expression2,
                                                       boolean isMatchingCase, MatchAction matchAction)
     {
-        return new ComparisonFunction.GreaterThanOrEqualTo<>(expression1, expression2, isMatchingCase, matchAction);
+        return new ComparisonFilter.GreaterThanOrEqualTo<>(expression1, expression2, isMatchingCase, matchAction);
     }
 
     /**
@@ -367,7 +367,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
                                                 final Expression<? super R, ?> lowerBoundary,
                                                 final Expression<? super R, ?> upperBoundary)
     {
-        return new ComparisonFunction.Between<>(expression, lowerBoundary, upperBoundary);
+        return new ComparisonFilter.Between<>(expression, lowerBoundary, upperBoundary);
     }
 
     /**

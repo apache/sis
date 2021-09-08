@@ -76,7 +76,7 @@ import org.opengis.filter.BetweenComparisonOperator;
  * @since 1.1
  * @module
  */
-abstract class ComparisonFunction<R> extends BinaryFunction<R,Object,Object>
+abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         implements BinaryComparisonOperator<R>, Optimization.OnFilter<R>
 {
     /**
@@ -103,7 +103,7 @@ abstract class ComparisonFunction<R> extends BinaryFunction<R,Object,Object>
      * @param  isMatchingCase  specifies whether comparisons are case sensitive.
      * @param  matchAction     specifies how the comparisons shall be evaluated for a collection of values.
      */
-    ComparisonFunction(final Expression<? super R, ?> expression1,
+    ComparisonFilter(final Expression<? super R, ?> expression1,
                        final Expression<? super R, ?> expression2,
                        final boolean isMatchingCase, final MatchAction matchAction)
     {
@@ -161,7 +161,7 @@ abstract class ComparisonFunction<R> extends BinaryFunction<R,Object,Object>
     @Override
     public final boolean equals(final Object obj) {
         if (super.equals(obj)) {
-            final ComparisonFunction<?> other = (ComparisonFunction<?>) obj;
+            final ComparisonFilter<?> other = (ComparisonFilter<?>) obj;
             return other.isMatchingCase == isMatchingCase && matchAction.equals(other.matchAction);
         }
         return false;
@@ -243,7 +243,7 @@ abstract class ComparisonFunction<R> extends BinaryFunction<R,Object,Object>
     private boolean evaluate(Object left, Object right) {
         /*
          * For numbers, the apply(…) method inherited from parent class will delegate to specialized methods like
-         * applyAsDouble(…). All implementations of those specialized methods in ComparisonFunction return integer,
+         * applyAsDouble(…). All implementations of those specialized methods in ComparisonFilter return integer,
          * so call to intValue() will not cause information lost.
          */
         if (left instanceof Number && right instanceof Number) {
@@ -542,7 +542,7 @@ abstract class ComparisonFunction<R> extends BinaryFunction<R,Object,Object>
     /**
      * The {@code "PropertyIsLessThan"} {@literal (<)} filter.
      */
-    static final class LessThan<R> extends ComparisonFunction<R> {
+    static final class LessThan<R> extends ComparisonFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 6126039112844823196L;
 
@@ -582,7 +582,7 @@ abstract class ComparisonFunction<R> extends BinaryFunction<R,Object,Object>
     /**
      * The {@code "PropertyIsLessThanOrEqualTo"} (≤) filter.
      */
-    static final class LessThanOrEqualTo<R> extends ComparisonFunction<R> {
+    static final class LessThanOrEqualTo<R> extends ComparisonFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 6357459227911760871L;
 
@@ -622,7 +622,7 @@ abstract class ComparisonFunction<R> extends BinaryFunction<R,Object,Object>
     /**
      * The {@code "PropertyIsGreaterThan"} {@literal (>)} filter.
      */
-    static final class GreaterThan<R> extends ComparisonFunction<R> {
+    static final class GreaterThan<R> extends ComparisonFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 8605517892232632586L;
 
@@ -662,7 +662,7 @@ abstract class ComparisonFunction<R> extends BinaryFunction<R,Object,Object>
     /**
      * The {@code "PropertyIsGreaterThanOrEqualTo"} (≥) filter.
      */
-    static final class GreaterThanOrEqualTo<R> extends ComparisonFunction<R> {
+    static final class GreaterThanOrEqualTo<R> extends ComparisonFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 1514185657159141882L;
 
@@ -702,7 +702,7 @@ abstract class ComparisonFunction<R> extends BinaryFunction<R,Object,Object>
     /**
      * The {@code "PropertyIsEqualTo"} (=) filter.
      */
-    static final class EqualTo<R> extends ComparisonFunction<R> {
+    static final class EqualTo<R> extends ComparisonFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 8502612221498749667L;
 
@@ -742,7 +742,7 @@ abstract class ComparisonFunction<R> extends BinaryFunction<R,Object,Object>
     /**
      * The {@code "PropertyIsNotEqualTo"} (≠) filter.
      */
-    static final class NotEqualTo<R> extends ComparisonFunction<R> {
+    static final class NotEqualTo<R> extends ComparisonFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -3295957142249035362L;
 

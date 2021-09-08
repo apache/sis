@@ -33,7 +33,7 @@ import org.opengis.filter.BetweenComparisonOperator;
 
 
 /**
- * Tests {@link ComparisonFunction} implementations.
+ * Tests {@link ComparisonFilter} implementations.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -41,7 +41,7 @@ import org.opengis.filter.BetweenComparisonOperator;
  * @since   1.1
  * @module
  */
-public final strictfp class ComparisonFunctionTest extends TestCase {
+public final strictfp class ComparisonFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
@@ -54,7 +54,7 @@ public final strictfp class ComparisonFunctionTest extends TestCase {
 
     /**
      * Expected name of the filter to be evaluated. The {@code evaluate(…)} methods
-     * will compare {@link ComparisonFunction#getFunctionName()} against this value.
+     * will compare {@link ComparisonFilter#getFunctionName()} against this value.
      */
     private ComparisonOperatorName expectedName;
 
@@ -66,7 +66,7 @@ public final strictfp class ComparisonFunctionTest extends TestCase {
     /**
      * Creates a new test case.
      */
-    public ComparisonFunctionTest() {
+    public ComparisonFilterTest() {
         factory = DefaultFilterFactory.forFeatures();
         c05 = factory.literal(5);
         c10 = factory.literal(10);
@@ -79,7 +79,7 @@ public final strictfp class ComparisonFunctionTest extends TestCase {
      */
     private boolean evaluate(final BinaryComparisonOperator<Feature> filter) {
         this.filter = filter;
-        assertInstanceOf("Expected SIS implementation.", ComparisonFunction.class, filter);
+        assertInstanceOf("Expected SIS implementation.", ComparisonFilter.class, filter);
         assertEquals("operatorType", expectedName, filter.getOperatorType());
         assertSame("expression[0]", c10, filter.getExpressions().get(0));
         return filter.test(null);
@@ -90,7 +90,7 @@ public final strictfp class ComparisonFunctionTest extends TestCase {
      */
     private boolean evaluate(final BetweenComparisonOperator<Feature> filter) {
         this.filter = filter;
-        assertInstanceOf("Expected SIS implementation.", ComparisonFunction.Between.class, filter);
+        assertInstanceOf("Expected SIS implementation.", ComparisonFilter.Between.class, filter);
         assertEquals("operatorType", expectedName, filter.getOperatorType());
         return filter.test(null);
     }

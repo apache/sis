@@ -156,14 +156,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
             if (right instanceof Period) {
                 return evaluate((Period) left, (Period) right);
             }
-            final Instant t = ComparisonFunction.toInstant(right);
+            final Instant t = ComparisonFilter.toInstant(right);
             if (t != null) {
                 return evaluate((Period) left, t);
             }
         } else {
-            final Instant t = ComparisonFunction.toInstant(left);
+            final Instant t = ComparisonFilter.toInstant(left);
             if (t != null) {
-                final Instant t2 = ComparisonFunction.toInstant(expression2.apply(candidate));
+                final Instant t2 = ComparisonFilter.toInstant(expression2.apply(candidate));
                 if (t2 != null) {
                     return evaluate(t, t2);
                 }
