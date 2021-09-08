@@ -41,7 +41,7 @@ import org.opengis.filter.LikeOperator;
  * @since 1.1
  * @module
  */
-final class DefaultLike<R> extends Node implements LikeOperator<R>, Optimization.OnFilter<R> {
+final class LikeFilter<R> extends Node implements LikeOperator<R>, Optimization.OnFilter<R> {
     /**
      * For cross-version compatibility.
      */
@@ -101,7 +101,7 @@ final class DefaultLike<R> extends Node implements LikeOperator<R>, Optimization
      * @param escape          pattern character for indicating that the next character should be matched literally.
      * @param isMatchingCase  specifies how a filter expression processor should perform string comparisons.
      */
-    DefaultLike(final Expression<? super R, ?> expression, final String pattern,
+    LikeFilter(final Expression<? super R, ?> expression, final String pattern,
             final char wildcard, final char singleChar, final char escape, final boolean isMatchingCase)
     {
         ArgumentChecks.ensureNonNull("pattern", pattern);
@@ -145,7 +145,7 @@ final class DefaultLike<R> extends Node implements LikeOperator<R>, Optimization
     /**
      * Creates a new filter of the same type but different parameters.
      */
-    private DefaultLike(final DefaultLike<R> original, final Expression<? super R, ?> expression) {
+    private LikeFilter(final LikeFilter<R> original, final Expression<? super R, ?> expression) {
         this.expression     = expression;
         this.pattern        = original.pattern;
         this.wildcard       = original.wildcard;
@@ -160,7 +160,7 @@ final class DefaultLike<R> extends Node implements LikeOperator<R>, Optimization
      */
     @Override
     public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
-        return new DefaultLike<>(this, effective[0]);
+        return new LikeFilter<>(this, effective[0]);
     }
 
     /**

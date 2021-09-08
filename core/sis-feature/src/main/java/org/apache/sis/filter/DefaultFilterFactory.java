@@ -385,7 +385,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public LikeOperator<R> like(final Expression<? super R, ?> expression, final String pattern,
             final char wildcard, final char singleChar, final char escape, final boolean isMatchingCase)
     {
-        return new DefaultLike<>(expression, pattern, wildcard, singleChar, escape, isMatchingCase);
+        return new LikeFilter<>(expression, pattern, wildcard, singleChar, escape, isMatchingCase);
     }
 
     /**

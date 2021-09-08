@@ -28,35 +28,35 @@ import org.opengis.filter.Literal;
 
 
 /**
- * Tests {@link DefaultLike} implementations.
+ * Tests {@link LikeFilter} implementations.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-public final strictfp class DefaultLikeTest extends TestCase {
+public final strictfp class LikeFilterTest extends TestCase {
     /**
-     * Tests {@link DefaultLike#isMetaCharacter(char)}.
+     * Tests {@link LikeFilter#isMetaCharacter(char)}.
      */
     @Test
     public void testIsMetaCharacter() {
-        assertTrue (DefaultLike.isMetaCharacter('.'));
-        assertTrue (DefaultLike.isMetaCharacter('*'));
-        assertTrue (DefaultLike.isMetaCharacter('?'));
-        assertTrue (DefaultLike.isMetaCharacter('('));
-        assertTrue (DefaultLike.isMetaCharacter(')'));
-        assertTrue (DefaultLike.isMetaCharacter('['));
-        assertTrue (DefaultLike.isMetaCharacter(']'));
-        assertTrue (DefaultLike.isMetaCharacter('{'));
-        assertTrue (DefaultLike.isMetaCharacter('}'));
-        assertTrue (DefaultLike.isMetaCharacter('\\'));
-        assertTrue (DefaultLike.isMetaCharacter('^'));
-        assertTrue (DefaultLike.isMetaCharacter('$'));
-        assertTrue (DefaultLike.isMetaCharacter('|'));
-        assertTrue (DefaultLike.isMetaCharacter('+'));
-        assertFalse(DefaultLike.isMetaCharacter('&'));
-        assertFalse(DefaultLike.isMetaCharacter('-'));
+        assertTrue (LikeFilter.isMetaCharacter('.'));
+        assertTrue (LikeFilter.isMetaCharacter('*'));
+        assertTrue (LikeFilter.isMetaCharacter('?'));
+        assertTrue (LikeFilter.isMetaCharacter('('));
+        assertTrue (LikeFilter.isMetaCharacter(')'));
+        assertTrue (LikeFilter.isMetaCharacter('['));
+        assertTrue (LikeFilter.isMetaCharacter(']'));
+        assertTrue (LikeFilter.isMetaCharacter('{'));
+        assertTrue (LikeFilter.isMetaCharacter('}'));
+        assertTrue (LikeFilter.isMetaCharacter('\\'));
+        assertTrue (LikeFilter.isMetaCharacter('^'));
+        assertTrue (LikeFilter.isMetaCharacter('$'));
+        assertTrue (LikeFilter.isMetaCharacter('|'));
+        assertTrue (LikeFilter.isMetaCharacter('+'));
+        assertFalse(LikeFilter.isMetaCharacter('&'));
+        assertFalse(LikeFilter.isMetaCharacter('-'));
     }
 
     /**
