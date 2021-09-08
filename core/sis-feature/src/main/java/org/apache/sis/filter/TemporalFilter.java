@@ -47,7 +47,7 @@ import org.opengis.filter.TemporalOperatorName;
  * @since 1.1
  * @module
  */
-abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
+abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         implements TemporalOperator<T>, Optimization.OnFilter<T>
 {
     /**
@@ -61,7 +61,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      * @param  expression1  the first of the two expressions to be used by this function.
      * @param  expression2  the second of the two expressions to be used by this function.
      */
-    TemporalFunction(final Expression<? super T, ?> expression1,
+    TemporalFilter(final Expression<? super T, ?> expression1,
                      final Expression<? super T, ?> expression2)
     {
         super(expression1, expression2);
@@ -212,7 +212,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin = other.begin  AND  self.end = other.end}</li>
      * </ul>
      */
-    static final class Equals<T> extends TemporalFunction<T> {
+    static final class Equals<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -6060822291802339424L;
 
@@ -265,7 +265,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.end < other.begin}</li>
      * </ul>
      */
-    static final class Before<T> extends TemporalFunction<T> {
+    static final class Before<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -3422629447456003982L;
 
@@ -316,7 +316,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin > other.end}</li>
      * </ul>
      */
-    static final class After<T> extends TemporalFunction<T> {
+    static final class After<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 5410476260417497682L;
 
@@ -365,7 +365,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin = other.begin  AND  self.end < other.end}</li>
      * </ul>
      */
-    static final class Begins<T> extends TemporalFunction<T> {
+    static final class Begins<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -7880699329127762233L;
 
@@ -400,7 +400,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin > other.begin  AND  self.end = other.end}</li>
      * </ul>
      */
-    static final class Ends<T> extends TemporalFunction<T> {
+    static final class Ends<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -5508229966320563437L;
 
@@ -436,7 +436,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin = other.begin  AND  self.end > other.end}</li>
      * </ul>
      */
-    static final class BegunBy<T> extends TemporalFunction<T> {
+    static final class BegunBy<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -7212413827394364384L;
 
@@ -477,7 +477,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin < other.begin  AND  self.end = other.end}</li>
      * </ul>
      */
-    static final class EndedBy<T> extends TemporalFunction<T> {
+    static final class EndedBy<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 8586566103462153666L;
 
@@ -517,7 +517,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.end = other.begin}</li>
      * </ul>
      */
-    static final class Meets<T> extends TemporalFunction<T> {
+    static final class Meets<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -3534843269384858443L;
 
@@ -561,7 +561,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin = other.end}</li>
      * </ul>
      */
-    static final class MetBy<T> extends TemporalFunction<T> {
+    static final class MetBy<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 5358059498707330482L;
 
@@ -605,7 +605,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin > other.begin  AND  self.end < other.end}</li>
      * </ul>
      */
-    static final class During<T> extends TemporalFunction<T> {
+    static final class During<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -4674319635076886196L;
 
@@ -646,7 +646,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin < other.begin  AND  self.end > other.end}</li>
      * </ul>
      */
-    static final class Contains<T> extends TemporalFunction<T> {
+    static final class Contains<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 9107531246948034411L;
 
@@ -692,7 +692,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin < other.begin  AND  self.end > other.begin  AND  self.end < other.end}</li>
      * </ul>
      */
-    static final class Overlaps<T> extends TemporalFunction<T> {
+    static final class Overlaps<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 1517443045593389773L;
 
@@ -730,7 +730,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin > other.begin  AND  self.begin < other.end  AND  self.end > other.end}</li>
      * </ul>
      */
-    static final class OverlappedBy<T> extends TemporalFunction<T> {
+    static final class OverlappedBy<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 2228673820507226463L;
 
@@ -766,7 +766,7 @@ abstract class TemporalFunction<T> extends BinaryFunction<T,Object,Object>
      * The {@code "AnyInteracts"} filter.
      * This is a shortcut for NOT (Before OR Meets OR MetBy OR After).
      */
-    static final class AnyInteracts<T> extends TemporalFunction<T> {
+    static final class AnyInteracts<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 5972351564286442392L;
 

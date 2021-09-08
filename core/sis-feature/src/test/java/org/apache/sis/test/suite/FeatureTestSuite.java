@@ -57,7 +57,7 @@ import org.junit.runners.Suite;
     org.apache.sis.filter.ArithmeticFunctionTest.class,
     org.apache.sis.filter.ComparisonFunctionTest.class,
     org.apache.sis.filter.LikeFilterTest.class,
-    org.apache.sis.filter.TemporalFunctionTest.class,
+    org.apache.sis.filter.TemporalFilterTest.class,
     org.apache.sis.filter.BinarySpatialFilterUsingJTS_Test.class,
     org.apache.sis.internal.feature.AttributeConventionTest.class,
     org.apache.sis.internal.feature.GeometryTypeTest.class,

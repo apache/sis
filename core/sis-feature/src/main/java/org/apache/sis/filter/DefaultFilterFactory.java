@@ -672,7 +672,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> after(final Expression<? super R, ? extends T> time1,
                                      final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.After<>(time1, time2);
+        return new TemporalFilter.After<>(time1, time2);
     }
 
     /**
@@ -688,7 +688,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> before(final Expression<? super R, ? extends T> time1,
                                       final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.Before<>(time1, time2);
+        return new TemporalFilter.Before<>(time1, time2);
     }
 
     /**
@@ -704,7 +704,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> begins(final Expression<? super R, ? extends T> time1,
                                       final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.Begins<>(time1, time2);
+        return new TemporalFilter.Begins<>(time1, time2);
     }
 
     /**
@@ -720,7 +720,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> begunBy(final Expression<? super R, ? extends T> time1,
                                        final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.BegunBy<>(time1, time2);
+        return new TemporalFilter.BegunBy<>(time1, time2);
     }
 
     /**
@@ -736,7 +736,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> tcontains(final Expression<? super R, ? extends T> time1,
                                          final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.Contains<>(time1, time2);
+        return new TemporalFilter.Contains<>(time1, time2);
     }
 
     /**
@@ -752,7 +752,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> during(final Expression<? super R, ? extends T> time1,
                                       final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.During<>(time1, time2);
+        return new TemporalFilter.During<>(time1, time2);
     }
 
     /**
@@ -768,7 +768,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> tequals(final Expression<? super R, ? extends T> time1,
                                        final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.Equals<>(time1, time2);
+        return new TemporalFilter.Equals<>(time1, time2);
     }
 
     /**
@@ -784,7 +784,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> toverlaps(final Expression<? super R, ? extends T> time1,
                                          final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.Overlaps<>(time1, time2);
+        return new TemporalFilter.Overlaps<>(time1, time2);
     }
 
     /**
@@ -800,7 +800,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> meets(final Expression<? super R, ? extends T> time1,
                                      final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.Meets<>(time1, time2);
+        return new TemporalFilter.Meets<>(time1, time2);
     }
 
     /**
@@ -816,7 +816,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> ends(final Expression<? super R, ? extends T> time1,
                                     final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.Ends<>(time1, time2);
+        return new TemporalFilter.Ends<>(time1, time2);
     }
 
     /**
@@ -832,7 +832,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> overlappedBy(final Expression<? super R, ? extends T> time1,
                                             final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.OverlappedBy<>(time1, time2);
+        return new TemporalFilter.OverlappedBy<>(time1, time2);
     }
 
     /**
@@ -848,7 +848,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> metBy(final Expression<? super R, ? extends T> time1,
                                      final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.MetBy<>(time1, time2);
+        return new TemporalFilter.MetBy<>(time1, time2);
     }
 
     /**
@@ -864,7 +864,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> endedBy(final Expression<? super R, ? extends T> time1,
                                        final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.EndedBy<>(time1, time2);
+        return new TemporalFilter.EndedBy<>(time1, time2);
     }
 
     /**
@@ -881,7 +881,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> anyInteracts(final Expression<? super R, ? extends T> time1,
                                             final Expression<? super R, ? extends T> time2)
     {
-        return new TemporalFunction.AnyInteracts<>(time1, time2);
+        return new TemporalFilter.AnyInteracts<>(time1, time2);
     }
 
     /**

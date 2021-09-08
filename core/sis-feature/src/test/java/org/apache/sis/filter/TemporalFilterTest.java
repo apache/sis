@@ -33,7 +33,7 @@ import org.opengis.filter.TemporalOperatorName;
 
 
 /**
- * Tests {@link TemporalFunction} implementations.
+ * Tests {@link TemporalFilter} implementations.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -41,7 +41,7 @@ import org.opengis.filter.TemporalOperatorName;
  * @since   1.1
  * @module
  */
-public final strictfp class TemporalFunctionTest extends TestCase {
+public final strictfp class TemporalFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
@@ -62,7 +62,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     /**
      * Creates a new test case.
      */
-    public TemporalFunctionTest() {
+    public TemporalFilterTest() {
         factory = DefaultFilterFactory.forFeatures();
         expression1 = new PeriodLiteral();
         expression2 = new PeriodLiteral();
@@ -77,7 +77,7 @@ public final strictfp class TemporalFunctionTest extends TestCase {
      * @param  name  expected filter name.
      */
     private void validate(final TemporalOperatorName name) {
-        assertInstanceOf("Expected SIS implementation.", TemporalFunction.class, filter);
+        assertInstanceOf("Expected SIS implementation.", TemporalFilter.class, filter);
         assertEquals("name", name, filter.getOperatorType());
         final List<Expression<? super Feature, ?>> operands = filter.getExpressions();
         assertEquals(2, operands.size());
