@@ -20,11 +20,12 @@
  *
  * <p>References:</p>
  * <ul>
- *   <li><a href="http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf">TIFF specification</a>: baseline</li>
- *   <li><a href="http://partners.adobe.com/public/developer/en/tiff/TIFFphotoshop.pdf">TIFF Tecnical Notes</a>: add new compressions</li>
- *   <li><a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a></li>
- *   <li><a href="http://download.osgeo.org/geotiff/spec/geotiff.rtf">GeoTIFF specification</a></li>
- *   <li><a href="http://geotiff.maptools.org/proj_list">GeoTIFF projections list</a></li>
+ *   <li><a href="https://www.adobe.io/content/dam/udp/en/open/standards/tiff/TIFF6.pdf">TIFF specification 6.0</a>: baseline.</li>
+ *   <li><a href="https://www.adobe.io/content/dam/udp/en/open/standards/tiff/TIFFPM6.pdf">TIFF Tecnical Notes</a>: add new tags.</li>
+ *   <li><a href="https://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a></li>
+ *   <li><a href="https://www.iso.org/standard/34342.html">ISO 12639:2004 — Tag image file format for image technology (TIFF/IT)</a></li>
+ *   <li><a href="http://docs.opengeospatial.org/is/19-008r4/19-008r4.html">OGC GeoTIFF standard</a></li>
+ *   <li><a href="http://geotiff.maptools.org/proj_list/">GeoTIFF projections list</a></li>
  * </ul>
  *
  * @author  Rémi Maréchal (Geomatys)
