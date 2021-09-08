@@ -20,7 +20,7 @@ import org.locationtech.jts.geom.Geometry;
 
 
 /**
- * Tests {@link SpatialFunction} implementations using JTS library.
+ * Tests {@link BinarySpatialFilter} implementations using JTS library.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -28,11 +28,11 @@ import org.locationtech.jts.geom.Geometry;
  * @since   1.1
  * @module
  */
-public final strictfp class SpatialUsingJTS_Test extends SpatialTestCase<Geometry> {
+public final strictfp class BinarySpatialFilterUsingJTS_Test extends BinarySpatialFilterTestCase<Geometry> {
     /**
      * Creates a new test.
      */
-    public SpatialUsingJTS_Test() {
+    public BinarySpatialFilterUsingJTS_Test() {
         super(Geometry.class);
     }
 }

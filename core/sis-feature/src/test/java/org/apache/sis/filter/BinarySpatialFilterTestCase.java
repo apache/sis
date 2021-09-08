@@ -45,7 +45,7 @@ import org.opengis.filter.BinarySpatialOperator;
 
 
 /**
- * {@link SpatialFunction} tests shared by all geometry libraries.
+ * {@link BinarySpatialFilter} tests shared by all geometry libraries.
  * Subclasses must specify a geometry library such as JTS, ESRI or Java2D.
  *
  * @author  Johann Sorel (Geomatys)
@@ -58,7 +58,7 @@ import org.opengis.filter.BinarySpatialOperator;
  * @since 1.1
  * @module
  */
-public abstract strictfp class SpatialTestCase<G> extends TestCase {
+public abstract strictfp class BinarySpatialFilterTestCase<G> extends TestCase {
     /**
      * The factory to use for testing purpose.
      */
@@ -75,7 +75,7 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
      * @param  rootGeometry  the root geometry class as on of JTS, ESRI or Java2D root class.
      */
     @SuppressWarnings("unchecked")
-    protected SpatialTestCase(final Class<G> rootGeometry) {
+    protected BinarySpatialFilterTestCase(final Class<G> rootGeometry) {
         factory = new DefaultFilterFactory.Features<>(rootGeometry, Object.class, WraparoundMethod.SPLIT);
         library = (Geometries<G>) Geometries.implementation(rootGeometry);
         assertEquals(rootGeometry, library.rootClass);
@@ -108,7 +108,7 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
     }
 
     /**
-     * Tests {@link FilterFactory#bbox(Expression, Envelope)}
+     * Tests {@link DefaultFilterFactory#bbox(Expression, Envelope)}
      */
     @Test
     public void testBBOX() {
@@ -137,7 +137,7 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
     }
 
     /**
-     * Tests {@link FilterFactory#beyond(Expression, Expression, Quantity)}
+     * Tests {@link DefaultFilterFactory#beyond(Expression, Expression, Quantity)}
      */
     @Test
     public void testBeyond() {
@@ -152,7 +152,7 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
     }
 
     /**
-     * Tests {@link FilterFactory#contains(Expression, Expression)}
+     * Tests {@link DefaultFilterFactory#contains(Expression, Expression)}
      */
     @Test
     public void testContains() {
@@ -166,7 +166,7 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
     }
 
     /**
-     * Tests {@link FilterFactory#crosses(Expression, Expression)}
+     * Tests {@link DefaultFilterFactory#crosses(Expression, Expression)}
      */
     @Test
     public void testCrosses() {
@@ -183,7 +183,7 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
     }
 
     /**
-     * Tests {@link FilterFactory#within(Expression, Expression, Quantity)}
+     * Tests {@link DefaultFilterFactory#within(Expression, Expression, Quantity)}
      */
     @Test
     public void testDWithin() {
@@ -198,7 +198,7 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
     }
 
     /**
-     * Tests {@link FilterFactory#disjoint(Expression, Expression)}
+     * Tests {@link DefaultFilterFactory#disjoint(Expression, Expression)}
      */
     @Test
     public void testDisjoint() {
@@ -215,7 +215,7 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
     }
 
     /**
-     * Tests {@link FilterFactory#equals(Expression, Expression)}
+     * Tests {@link DefaultFilterFactory#equals(Expression, Expression)}
      */
     @Test
     public void testEquals() {
@@ -232,7 +232,7 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
     }
 
     /**
-     * Tests {@link FilterFactory#intersects(Expression, Expression)}
+     * Tests {@link DefaultFilterFactory#intersects(Expression, Expression)}
      */
     @Test
     public void testIntersect() {
@@ -255,7 +255,7 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
     }
 
     /**
-     * Tests {@link FilterFactory#overlaps(Expression, Expression)}
+     * Tests {@link DefaultFilterFactory#overlaps(Expression, Expression)}
      */
     @Test
     public void testOverlaps() {
@@ -275,7 +275,7 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
     }
 
     /**
-     * Tests {@link FilterFactory#touches(Expression, Expression)}
+     * Tests {@link DefaultFilterFactory#touches(Expression, Expression)}
      */
     @Test
     public void testTouches() {
@@ -295,7 +295,7 @@ public abstract strictfp class SpatialTestCase<G> extends TestCase {
     }
 
     /**
-     * Tests {@link FilterFactory#within(Expression, Expression)}
+     * Tests {@link DefaultFilterFactory#within(Expression, Expression)}
      */
     @Test
     public void testWithin() {

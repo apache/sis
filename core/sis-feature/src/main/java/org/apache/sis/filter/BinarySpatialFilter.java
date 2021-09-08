@@ -46,14 +46,14 @@ import org.opengis.filter.BinarySpatialOperator;
  * @since 1.1
  * @module
  */
-final class SpatialFunction<R,G> extends BinaryGeometryFilter<R,G> implements BinarySpatialOperator<R> {
+final class BinarySpatialFilter<R,G> extends BinaryGeometryFilter<R,G> implements BinarySpatialOperator<R> {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -7600403345673820881L;
 
     /**
-     * Nature of the operation applied by this {@code SpatialFunction}.
+     * Nature of the operation applied by this {@code BinarySpatialFilter}.
      */
     private final SpatialOperatorName operatorType;
 
@@ -65,7 +65,7 @@ final class SpatialFunction<R,G> extends BinaryGeometryFilter<R,G> implements Bi
      * @param  bounds    the bounds to check geometry against.
      * @return a filter checking for interactions of the bounding boxes.
      */
-    SpatialFunction(final Geometries<G> library, final Expression<? super R, ?> geometry,
+    BinarySpatialFilter(final Geometries<G> library, final Expression<? super R, ?> geometry,
                     final Envelope bounds, final WraparoundMethod wraparound)
     {
         super(library, geometry, new LeafExpression.Transformed<>(library.toGeometry2D(bounds, wraparound),
@@ -76,13 +76,13 @@ final class SpatialFunction<R,G> extends BinaryGeometryFilter<R,G> implements Bi
     /**
      * Creates a spatial operator all types other than BBOX.
      *
-     * @param  operatorType  nature of the operation applied by this {@code SpatialFunction}.
+     * @param  operatorType  nature of the operation applied by this {@code BinarySpatialFilter}.
      * @param  library       the geometry library to use.
      * @param  geometry1     expression fetching the first geometry of the binary operator.
      * @param  geometry2     expression fetching the second geometry of the binary operator.
      * @return a filter for the specified operation between the two geometries.
      */
-    SpatialFunction(final SpatialOperatorName operatorType,
+    BinarySpatialFilter(final SpatialOperatorName operatorType,
                     final Geometries<G> library,
                     final Expression<? super R, ?> geometry1,
                     final Expression<? super R, ?> geometry2)
@@ -101,7 +101,7 @@ final class SpatialFunction<R,G> extends BinaryGeometryFilter<R,G> implements Bi
     protected BinaryGeometryFilter<R,G> recreate(final Expression<? super R, ?> geometry1,
                                                  final Expression<? super R, ?> geometry2)
     {
-        return new SpatialFunction<>(operatorType, getGeometryLibrary(expression1), geometry1, geometry2);
+        return new BinarySpatialFilter<>(operatorType, getGeometryLibrary(expression1), geometry1, geometry2);
     }
 
     /**

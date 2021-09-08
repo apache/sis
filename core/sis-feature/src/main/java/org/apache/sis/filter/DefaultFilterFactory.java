@@ -484,7 +484,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      */
     @Override
     public BinarySpatialOperator<R> bbox(final Expression<? super R, ? extends G> geometry, final Envelope bounds) {
-        return new SpatialFunction<>(library, geometry, bounds, wraparound);
+        return new BinarySpatialFilter<>(library, geometry, bounds, wraparound);
     }
 
     /**
@@ -502,7 +502,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public BinarySpatialOperator<R> equals(final Expression<? super R, ? extends G> geometry1,
                                            final Expression<? super R, ? extends G> geometry2)
     {
-        return new SpatialFunction<>(SpatialOperatorName.EQUALS, library, geometry1, geometry2);
+        return new BinarySpatialFilter<>(SpatialOperatorName.EQUALS, library, geometry1, geometry2);
     }
 
     /**
@@ -518,7 +518,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public BinarySpatialOperator<R> disjoint(final Expression<? super R, ? extends G> geometry1,
                                              final Expression<? super R, ? extends G> geometry2)
     {
-        return new SpatialFunction<>(SpatialOperatorName.DISJOINT, library, geometry1, geometry2);
+        return new BinarySpatialFilter<>(SpatialOperatorName.DISJOINT, library, geometry1, geometry2);
     }
 
     /**
@@ -534,7 +534,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public BinarySpatialOperator<R> intersects(final Expression<? super R, ? extends G> geometry1,
                                                final Expression<? super R, ? extends G> geometry2)
     {
-        return new SpatialFunction<>(SpatialOperatorName.INTERSECTS, library, geometry1, geometry2);
+        return new BinarySpatialFilter<>(SpatialOperatorName.INTERSECTS, library, geometry1, geometry2);
     }
 
     /**
@@ -550,7 +550,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public BinarySpatialOperator<R> touches(final Expression<? super R, ? extends G> geometry1,
                                             final Expression<? super R, ? extends G> geometry2)
     {
-        return new SpatialFunction<>(SpatialOperatorName.TOUCHES, library, geometry1, geometry2);
+        return new BinarySpatialFilter<>(SpatialOperatorName.TOUCHES, library, geometry1, geometry2);
     }
 
     /**
@@ -566,7 +566,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public BinarySpatialOperator<R> crosses(final Expression<? super R, ? extends G> geometry1,
                                             final Expression<? super R, ? extends G> geometry2)
     {
-        return new SpatialFunction<>(SpatialOperatorName.CROSSES, library, geometry1, geometry2);
+        return new BinarySpatialFilter<>(SpatialOperatorName.CROSSES, library, geometry1, geometry2);
     }
 
     /**
@@ -583,7 +583,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public BinarySpatialOperator<R> within(final Expression<? super R, ? extends G> geometry1,
                                            final Expression<? super R, ? extends G> geometry2)
     {
-        return new SpatialFunction<>(SpatialOperatorName.WITHIN, library, geometry1, geometry2);
+        return new BinarySpatialFilter<>(SpatialOperatorName.WITHIN, library, geometry1, geometry2);
     }
 
     /**
@@ -599,7 +599,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public BinarySpatialOperator<R> contains(final Expression<? super R, ? extends G> geometry1,
                                              final Expression<? super R, ? extends G> geometry2)
     {
-        return new SpatialFunction<>(SpatialOperatorName.CONTAINS, library, geometry1, geometry2);
+        return new BinarySpatialFilter<>(SpatialOperatorName.CONTAINS, library, geometry1, geometry2);
     }
 
     /**
@@ -616,7 +616,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public BinarySpatialOperator<R>  overlaps(final Expression<? super R, ? extends G> geometry1,
                                               final Expression<? super R, ? extends G> geometry2)
     {
-        return new SpatialFunction<>(SpatialOperatorName.OVERLAPS, library, geometry1, geometry2);
+        return new BinarySpatialFilter<>(SpatialOperatorName.OVERLAPS, library, geometry1, geometry2);
     }
 
     /**
