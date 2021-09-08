@@ -995,13 +995,15 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
 
     /**
      * Indicates an property by which contents should be sorted, along with intended order.
+     * The given expression should evaluate to {@link Comparable} objects,
+     * but {@link Iterable} objects are accepted as well.
      *
      * @param  property  the property to sort by.
      * @param  order     the sorting order, ascending or descending.
      * @return definition of sort order of a property.
      */
     @Override
-    public SortProperty sort(final ValueReference<? super R, ?> property, final SortOrder order) {
-        return new DefaultSortProperty(property, order);
+    public SortProperty<R> sort(final ValueReference<? super R, ?> property, final SortOrder order) {
+        return new DefaultSortProperty<>(property, order);
     }
 }

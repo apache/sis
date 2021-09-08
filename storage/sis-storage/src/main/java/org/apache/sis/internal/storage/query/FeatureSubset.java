@@ -31,7 +31,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;
-import org.opengis.filter.SortProperty;
+import org.opengis.filter.SortBy;
 
 
 /**
@@ -105,9 +105,9 @@ final class FeatureSubset extends AbstractFeatureSet {
         /*
          * Apply sorting.
          */
-        final SortProperty[] sortBy = query.getSortBy();
-        if (sortBy.length > 0) {
-            stream = stream.sorted(new SortByComparator(sortBy));
+        final SortBy<Feature> sortBy = query.getSortBy();
+        if (sortBy != null) {
+            stream = stream.sorted(sortBy);
         }
         /*
          * Apply offset.

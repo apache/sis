@@ -136,7 +136,7 @@ public final strictfp class SimpleQueryTest extends TestCase {
     }
 
     /**
-     * Verifies the effect of {@link FeatureQuery#setSortBy(SortBy[])}.
+     * Verifies the effect of {@link FeatureQuery#setSortBy(SortProperty[])}.
      *
      * @throws DataStoreException if an error occurred while executing the query.
      */

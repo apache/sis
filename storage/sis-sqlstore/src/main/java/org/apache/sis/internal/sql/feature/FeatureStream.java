@@ -35,12 +35,11 @@ import org.apache.sis.internal.storage.query.SortByComparator;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
-import org.opengis.filter.SortProperty;
+import org.opengis.filter.SortBy;
 
 
 /**
@@ -98,9 +97,9 @@ final class FeatureStream extends DeferredStream<Feature> {
     private boolean distinct;
 
     /**
-     * The {@code ORDER BY} clauses, or {@code null} or empty if none.
+     * The {@code ORDER BY} clauses, or {@code null} if none.
      */
-    private SortProperty[] sort;
+    private SortBy<? super Feature> sort;
 
     /**
      * Number of rows to skip in underlying SQL query, or 0 for none.
@@ -243,13 +242,17 @@ final class FeatureStream extends DeferredStream<Feature> {
     public Stream<Feature> sorted(final Comparator<? super Feature> comparator) {
         if (isPagined() || hasComparator) {
             return delegate().sorted(comparator);
-        } else if (comparator instanceof SortByComparator) {
-            sort = ArraysExt.concatenate(sort, ((SortByComparator) comparator).orders);
-            return this;
-        } else {
-            hasComparator = true;
-            return super.sorted(comparator);
         }
+        if (sort == null && comparator instanceof SortBy<?>) {
+            sort = (SortBy<? super Feature>) comparator;
+            return this;
+        }
+        if (sort instanceof SortByComparator && comparator instanceof SortByComparator) {
+            sort = new SortByComparator((SortByComparator) sort, (SortByComparator) comparator);
+            return this;
+        }
+        hasComparator = true;
+        return super.sorted(comparator);
     }
 
     /**

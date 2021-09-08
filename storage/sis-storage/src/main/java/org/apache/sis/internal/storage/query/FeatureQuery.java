@@ -43,6 +43,7 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
 import org.opengis.filter.ValueReference;
+import org.opengis.filter.SortBy;
 import org.opengis.filter.SortProperty;
 import org.opengis.filter.InvalidFilterValueException;
 
@@ -63,11 +64,6 @@ public class FeatureQuery extends Query implements Cloneable {
      * This value can be given to {@link #setLimit(long)} or retrieved from {@link #getLimit()}.
      */
     public static final long UNLIMITED = -1;
-
-    /**
-     * The value of {@link #sortBy} when no sorting is applied.
-     */
-    private static final SortProperty[] UNSORTED = new SortProperty[0];
 
     /**
      * The properties to retrieve, or {@code null} if all properties shall be included in the query.
@@ -111,11 +107,9 @@ public class FeatureQuery extends Query implements Cloneable {
      * The expressions to use for sorting the feature instances.
      *
      * @see #getSortBy()
-     * @see #setSortBy(SortProperty...)
-     *
-     * @todo Should be an instance of {@link org.opengis.filter.SortBy}.
+     * @see #setSortBy(SortBy)
      */
-    private SortProperty[] sortBy;
+    private SortBy<Feature> sortBy;
 
     /**
      * Hint used by resources to optimize returned features.
@@ -132,8 +126,7 @@ public class FeatureQuery extends Query implements Cloneable {
      */
     public FeatureQuery() {
         selection = Filter.include();
-        sortBy = UNSORTED;
-        limit  = UNLIMITED;
+        limit = UNLIMITED;
     }
 
     /**
@@ -255,29 +248,37 @@ public class FeatureQuery extends Query implements Cloneable {
      * returned by the {@link org.apache.sis.storage.FeatureSet}.
      * {@code SortBy} clauses are applied in declaration order, like SQL.
      *
-     * @param  sortBy  expressions to use for sorting the feature instances.
+     * @param  properties  expressions to use for sorting the feature instances,
+     *                     or {@code null} or an empty array if none.
      */
-    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-    public void setSortBy(SortProperty... sortBy) {
-        if (sortBy == null || sortBy.length == 0) {
-            sortBy = UNSORTED;
-        } else {
-            sortBy = sortBy.clone();
-            for (int i=0; i < sortBy.length; i++) {
-                ArgumentChecks.ensureNonNullElement("sortBy", i, sortBy[i]);
-            }
+    @SafeVarargs
+    public final void setSortBy(final SortProperty<Feature>... properties) {
+        SortBy<Feature> sortBy = null;
+        if (properties != null && properties.length != 0) {
+            sortBy = new SortByComparator(properties);
         }
+        setSortBy(sortBy);
+    }
+
+    /**
+     * Sets the expressions to use for sorting the feature instances.
+     * {@code SortBy} objects are used to order the {@link org.opengis.feature.Feature} instances
+     * returned by the {@link org.apache.sis.storage.FeatureSet}.
+     *
+     * @param  sortBy  expressions to use for sorting the feature instances, or {@code null} if none.
+     */
+    public void setSortBy(final SortBy<Feature> sortBy) {
         this.sortBy = sortBy;
     }
 
     /**
      * Returns the expressions to use for sorting the feature instances.
-     * They are the values specified in the last call to {@link #setSortBy(SortBy...)}.
+     * They are the values specified in the last call to {@link #setSortBy(SortBy)}.
      *
-     * @return expressions to use for sorting the feature instances, or an empty array if none.
+     * @return expressions to use for sorting the feature instances, or {@code null} if none.
      */
-    public SortProperty[] getSortBy() {
-        return (sortBy.length == 0) ? UNSORTED : sortBy.clone();
+    public SortBy<Feature> getSortBy() {
+        return sortBy;
     }
 
     /**
@@ -498,7 +499,7 @@ public class FeatureQuery extends Query implements Cloneable {
     @Override
     public int hashCode() {
         return 97 * Arrays.hashCode(projection) + 31 * selection.hashCode()
-              + 7 * Arrays.hashCode(sortBy) + Long.hashCode(limit ^ skip)
+              + 7 * Objects.hashCode(sortBy) + Long.hashCode(limit ^ skip)
               + 3 * Objects.hashCode(linearResolution);
     }
 
@@ -518,8 +519,8 @@ public class FeatureQuery extends Query implements Cloneable {
             return skip  == other.skip &&
                    limit == other.limit &&
                    selection.equals(other.selection) &&
-                   Arrays.equals(projection, other.projection) &&
-                   Arrays.equals(sortBy,  other.sortBy)  &&
+                   Arrays .equals(projection,       other.projection) &&
+                   Objects.equals(sortBy,           other.sortBy) &&
                    Objects.equals(linearResolution, other.linearResolution);
         }
         return false;
@@ -545,11 +546,11 @@ public class FeatureQuery extends Query implements Cloneable {
         if (selection != Filter.include()) {
             sb.append(" WHERE ").append(selection);
         }
-        if (sortBy != UNSORTED) {
-            sb.append(" ORDER BY ");
-            for (int i=0; i<sortBy.length; i++) {
-                if (i != 0) sb.append(", ");
-                final SortProperty p = sortBy[i];
+        if (sortBy != null) {
+            String separator = " ORDER BY ";
+            for (final SortProperty<Feature> p : sortBy.getSortProperties()) {
+                sb.append(separator);
+                separator = ", ";
                 sb.append(p.getValueReference().getXPath()).append(' ').append(p.getSortOrder());
             }
         }

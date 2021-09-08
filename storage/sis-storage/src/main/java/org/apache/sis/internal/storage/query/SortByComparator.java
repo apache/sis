@@ -16,113 +16,85 @@
  */
 package org.apache.sis.internal.storage.query;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import org.apache.sis.util.collection.Containers;
+import java.util.List;
+import java.io.Serializable;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
-import org.opengis.filter.SortOrder;
-import org.opengis.filter.Expression;
+import org.opengis.filter.SortBy;
 import org.opengis.filter.SortProperty;
 
 
 /**
- * Comparator sorting features by an array of {@code SortBy} expressions, applied in order.
+ * Comparator sorting features using an array of {@link SortProperty} elements applied in order.
+ * This is restricted to comparator of {@link Feature} instances for now because this is the only
+ * comparator that we currently need, and it makes {@linkplain #SortByComparator(SortByComparator,
+ * SortByComparator) concatenations} type-safe. We may generalize in the future if needed.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
  * @module
- *
- * @todo Current implementation has unchecked casts. Fixing that may require a revision of filter interfaces.
- *       See <a href="https://github.com/opengeospatial/geoapi/issues/32">GeoAPI issue #32</a>.
  */
-public final class SortByComparator implements Comparator<Feature> {
+public final class SortByComparator implements SortBy<Feature>, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -7964849249532212389L;
+
     /**
      * The sort order specified to the constructor.
-     * Not used by this class, but provided for allowing optimizer
-     * to decompose this comparator into its component properties.
+     *
+     * @see #getSortProperties()
      */
-    public final SortProperty[] orders;
-
-    /**
-     * The expression to evaluate for getting the values to sort.
-     */
-    private final Expression<?,?>[] properties;
-
-    /**
-     * {@code false} for ascending order, {@code true} for descending order.
-     * If unspecified or unknown, we assume ascending order.
-     */
-    private final boolean[] descending;
+    private final SortProperty<Feature>[] properties;
 
     /**
      * Creates a new comparator for the given sort expressions.
      * It is caller responsibility to ensure that the given array is non-empty.
      */
-    SortByComparator(final SortProperty[] orders) {
-        this.orders = orders;
-        properties  = new Expression[orders.length];
-        descending  = new boolean   [orders.length];
-        for (int i=0; i<orders.length; i++) {
-            final SortProperty order = orders[i];
-            properties[i] = order.getValueReference();
-            descending[i] = SortOrder.DESCENDING.equals(order.getSortOrder());
+    SortByComparator(SortProperty<Feature>[] properties) {
+        properties = properties.clone();
+        this.properties = properties;
+        for (int i=0; i < properties.length; i++) {
+            ArgumentChecks.ensureNonNullElement("properties", i, properties[i]);
         }
     }
 
     /**
-     * Compares two features for order. Returns -1 if {@code f1} should be sorted before {@code f2},
-     * +1 if {@code f2} should be after {@code f1}, or 0 if both are equal. Null features are sorted
-     * after all non-null features, regardless sorting order.
+     * Creates a new comparator as the concatenation of the two given comparators.
      *
-     * @param  f1  the first feature to compare.
-     * @param  f2  the second feature to compare.
-     * @return -1 if the first feature is before the second, +1 for the converse, or 0 if equal.
+     * @param  s1  the first "sort by" to concatenate.
+     * @param  s2  the second "sort by" to concatenate.
+     */
+    public SortByComparator(final SortByComparator s1, final SortByComparator s2) {
+        properties = ArraysExt.concatenate(s1.properties, s2.properties);
+    }
+
+    /**
+     * Returns the properties whose values are used for sorting.
+     * The list shall have a minimum of one element.
      */
     @Override
-    public int compare(final Feature f1, final Feature f2) {
-        if (f1 != f2) {
-            if (f1 == null) return +1;
-            if (f2 == null) return -1;
-            for (int i=0; i<properties.length; i++) {
-                final Expression property = properties[i];
-                Object o1 = property.apply(f1);
-                Object o2 = property.apply(f2);
-                if (o1 != o2) {
-                    if (o1 == null) return +1;
-                    if (o2 == null) return -1;
-                    final int result;
-                    /*
-                     * No @SuppressWarnings("unchecked") below: those casts are really unsafe;
-                     * we can not make them safe with current Filter API. See GeoAPI issue #32.
-                     */
-                    if (o1 instanceof Iterable<?>) {
-                        result = Containers.compare(((Iterable) o1).iterator(), iterator(o2));
-                    } else if (o2 instanceof Iterable<?>) {
-                        result = Containers.compare(iterator(o1), ((Iterable) o2).iterator());
-                    } else {
-                        result = ((Comparable) o1).compareTo(o2);
-                    }
-                    if (result != 0) {
-                        return descending[i] ? -result : result;
-                    }
-                }
-            }
-        }
-        return 0;
+    public List<SortProperty<Feature>> getSortProperties() {
+        return UnmodifiableArrayList.wrap(properties);
     }
 
     /**
-     * Returns an iterator for the given object.
-     *
-     * @todo Intentionally raw return type, but no {@literal @SuppressWarning} annotation because this
-     *       is a real problem with current Filter API which needs to be fixed. See GeoAPI issue #32.
+     * Compares two resources for order. Returns a negative number if {@code r1} should be sorted before {@code r2},
+     * a positive number if {@code r2} should be after {@code r1}, or 0 if both resources are equal.
+     * The ordering of null resources or null property values is unspecified.
      */
-    private static Iterator iterator(final Object o) {
-        return (o instanceof Iterable<?>) ? ((Iterable<?>) o).iterator() : Collections.singleton(o).iterator();
+    @Override
+    public int compare(final Feature r1, final Feature r2) {
+        for (final SortProperty<Feature> p : properties) {
+            final int c = p.compare(r1, r2);
+            if (c != 0) return c;
+        }
+        return 0;
     }
 }

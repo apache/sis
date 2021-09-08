@@ -34,6 +34,7 @@ import org.apache.sis.util.collection.WeakValueHashMap;
 import org.opengis.feature.Feature;
 import org.opengis.filter.SortOrder;
 import org.opengis.filter.SortProperty;
+import org.opengis.filter.SortBy;
 
 
 /**
@@ -99,12 +100,12 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
      * @param connection  connection to the database, used for creating the statement.
      * @param distinct    whether the set should contain distinct feature instances.
      * @param filter      condition to append, not including the {@code WHERE} keyword.
-     * @param sort        the {@code ORDER BY} clauses, or {@code null} or empty if none.
+     * @param sort        the {@code ORDER BY} clauses, or {@code null} if none.
      * @param offset      number of rows to skip in underlying SQL query, or ≤ 0 for none.
      * @param count       maximum number of rows to return, or ≤ 0 for no limit.
      */
     FeatureIterator(final Table table, final Connection connection,
-             final boolean distinct, final String filter, final SortProperty[] sort,
+             final boolean distinct, final String filter, final SortBy<? super Feature> sort,
              final long offset, final long count)
             throws SQLException, InternalDataStoreException
     {
@@ -120,7 +121,7 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
             }
             if (sort != null) {
                 String separator = " ORDER BY ";
-                for (final SortProperty s : sort) {
+                for (final SortProperty<? super Feature> s : sort.getSortProperties()) {
                     builder.append(separator).appendIdentifier(s.getValueReference().getXPath());
                     final SortOrder order = s.getSortOrder();
                     if (order != null) {
