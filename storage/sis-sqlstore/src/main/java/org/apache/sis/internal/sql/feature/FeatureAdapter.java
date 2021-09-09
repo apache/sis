@@ -157,9 +157,13 @@ final class FeatureAdapter {
                            final List<Relation> following, final Relation noFollow)
              throws SQLException, InternalDataStoreException
     {
-        this.featureType  = table.featureType;
-        this.attributes   = table.attributes;
-        keyComponentClass = table.primaryKey.valueClass.getComponentType();
+        this.featureType = table.featureType;
+        this.attributes  = table.attributes;
+        if (table.primaryKey != null) {
+            keyComponentClass = table.primaryKey.valueClass.getComponentType();
+        } else {
+            keyComponentClass = null;
+        }
         final Map<String,Integer> columnIndices = new HashMap<>();
         /*
          * Create a SELECT clause with all columns that are ordinary attributes.

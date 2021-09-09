@@ -213,7 +213,9 @@ final class Table extends AbstractFeatureSet {
                         case EXPORT: referenced =  this.primaryKey; break;
                         default: throw new AssertionError(direction);
                     }
-                    relation.setSearchTable(analyzer, table, referenced, direction);
+                    if (referenced != null) {
+                        relation.setSearchTable(analyzer, table, referenced, direction);
+                    }
                 }
             }
         }
