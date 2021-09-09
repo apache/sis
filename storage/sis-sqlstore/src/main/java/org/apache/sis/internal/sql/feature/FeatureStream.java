@@ -243,12 +243,9 @@ final class FeatureStream extends DeferredStream<Feature> {
         if (isPagined() || hasComparator) {
             return delegate().sorted(comparator);
         }
-        if (sort == null && comparator instanceof SortBy<?>) {
-            sort = (SortBy<? super Feature>) comparator;
-            return this;
-        }
-        if (sort instanceof SortByComparator && comparator instanceof SortByComparator) {
-            sort = new SortByComparator((SortByComparator) sort, (SortByComparator) comparator);
+        final SortBy<? super Feature> c = SortByComparator.concatenate(sort, comparator);
+        if (c != null) {
+            sort = c;
             return this;
         }
         hasComparator = true;

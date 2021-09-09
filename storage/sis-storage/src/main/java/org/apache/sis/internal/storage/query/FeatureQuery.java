@@ -254,8 +254,8 @@ public class FeatureQuery extends Query implements Cloneable {
     @SafeVarargs
     public final void setSortBy(final SortProperty<Feature>... properties) {
         SortBy<Feature> sortBy = null;
-        if (properties != null && properties.length != 0) {
-            sortBy = new SortByComparator(properties);
+        if (properties != null) {
+            sortBy = SortByComparator.create(properties);
         }
         setSortBy(sortBy);
     }
