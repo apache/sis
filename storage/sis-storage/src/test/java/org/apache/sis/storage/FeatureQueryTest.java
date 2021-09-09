@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.query;
+package org.apache.sis.storage;
 
 import java.util.List;
 import java.util.Arrays;
@@ -22,8 +22,6 @@ import java.util.stream.Collectors;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -49,7 +47,7 @@ import org.opengis.filter.SortOrder;
  * @since   1.0
  * @module
  */
-public final strictfp class SimpleQueryTest extends TestCase {
+public final strictfp class FeatureQueryTest extends TestCase {
     /**
      * An arbitrary amount of features, all of the same type.
      */
@@ -68,7 +66,7 @@ public final strictfp class SimpleQueryTest extends TestCase {
     /**
      * Creates a new test.
      */
-    public SimpleQueryTest() {
+    public FeatureQueryTest() {
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         ftb.setName("Test");
         ftb.addAttribute(Integer.class).setName("value1");

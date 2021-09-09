@@ -18,7 +18,6 @@ package org.apache.sis.storage;
 
 import java.util.stream.Stream;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.storage.query.FeatureQuery;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;

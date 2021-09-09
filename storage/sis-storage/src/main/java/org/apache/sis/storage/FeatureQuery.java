@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.query;
+package org.apache.sis.storage;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Objects;
+import java.util.OptionalLong;
+import java.io.Serializable;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.util.GenericName;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.filter.SortByComparator;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.Query;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.Containers;
@@ -49,21 +48,40 @@ import org.opengis.filter.InvalidFilterValueException;
 
 
 /**
- * Mimics {@code SQL SELECT} statements using OGC Filter and Expressions.
+ * Definition of filtering to apply for fetching a subset of {@link FeatureSet}.
+ * This query mimics {@code SQL SELECT} statements using OGC Filter and Expressions.
  * Information stored in this query can be used directly with {@link java.util.stream.Stream} API.
+ *
+ * <h2>Terminology</h2>
+ * This class uses relational database terminology:
+ * <ul>
+ *   <li>A <cite>selection</cite> is a filter choosing the features instances to include in the subset.
+ *       In relational databases, a feature instances are mapped to table rows.</li>
+ *   <li>A <cite>projection</cite> (not to be confused with map projection) is the set of feature property to keep.
+ *       In relational databases, feature properties are mapped to table columns.</li>
+ * </ul>
+ *
+ * <h2>Optional values</h2>
+ * All aspects of this query are optional and initialized to "none".
+ * Unless otherwise specified, all methods accept a null argument or can return a null value, which means "none".
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.0
+ * @since   1.1
  * @module
  */
-public class FeatureQuery extends Query implements Cloneable {
+public class FeatureQuery extends Query implements Cloneable, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -5841189659773611160L;
+
     /**
      * Sentinel limit value for queries of unlimited length.
-     * This value can be given to {@link #setLimit(long)} or retrieved from {@link #getLimit()}.
+     * This value applies to the {@link #limit} field.
      */
-    public static final long UNLIMITED = -1;
+    private static final long UNLIMITED = -1;
 
     /**
      * The properties to retrieve, or {@code null} if all properties shall be included in the query.
@@ -87,6 +105,7 @@ public class FeatureQuery extends Query implements Cloneable {
 
     /**
      * The number of feature instances to skip from the beginning.
+     * This is zero if there is no instance to skip.
      *
      * @see #getOffset()
      * @see #setOffset(long)
@@ -96,6 +115,7 @@ public class FeatureQuery extends Query implements Cloneable {
 
     /**
      * The maximum number of feature instances contained in the {@code FeatureSet}.
+     * This is {@link #UNLIMITED} if there is no limit.
      *
      * @see #getLimit()
      * @see #setLimit(long)
@@ -113,7 +133,7 @@ public class FeatureQuery extends Query implements Cloneable {
 
     /**
      * Hint used by resources to optimize returned features.
-     * Different stores makes use of vector tiles of different scales.
+     * Different stores make use of vector tiles of different scales.
      * A {@code null} value means to query data at their full resolution.
      *
      * @see #getLinearResolution()
@@ -122,11 +142,32 @@ public class FeatureQuery extends Query implements Cloneable {
     private Quantity<Length> linearResolution;
 
     /**
-     * Creates a new query retrieving no property and applying no filter.
+     * Creates a new query applying no filter.
      */
     public FeatureQuery() {
-        selection = Filter.include();
         limit = UNLIMITED;
+    }
+
+    /**
+     * Sets the properties to retrieve, or {@code null} if all properties shall be included in the query.
+     * This convenience method wraps the given expression in {@link NamedExpression}s without alias and
+     * delegates to {@link #setProjection(NamedExpression...)}.
+     *
+     * @param  properties  properties to retrieve, or {@code null} to retrieve all properties.
+     * @throws IllegalArgumentException if a property is duplicated.
+     */
+    @SafeVarargs
+    public final void setProjection(final Expression<? super Feature, ?>... properties) {
+        NamedExpression[] wrappers = null;
+        if (properties != null) {
+            wrappers = new NamedExpression[properties.length];
+            for (int i=0; i<wrappers.length; i++) {
+                final Expression<? super Feature, ?> e = properties[i];
+                ArgumentChecks.ensureNonNullElement("properties", i, e);
+                wrappers[i] = new NamedExpression(e);
+            }
+        }
+        setProjection(wrappers);
     }
 
     /**
@@ -137,18 +178,18 @@ public class FeatureQuery extends Query implements Cloneable {
      * <p>This is equivalent to the column names in the {@code SELECT} clause of a SQL statement.
      * Subset of columns is called <cite>projection</cite> in relational database terminology.</p>
      *
-     * @param  projection  properties to retrieve, or {@code null} to retrieve all properties.
+     * @param  properties  properties to retrieve, or {@code null} to retrieve all properties.
      * @throws IllegalArgumentException if a property or an alias is duplicated.
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-    public void setProjection(NamedExpression... projection) {
-        if (projection != null) {
-            ArgumentChecks.ensureNonEmpty("projection", projection);
-            projection = projection.clone();
-            final Map<Object,Integer> uniques = new LinkedHashMap<>(Containers.hashMapCapacity(projection.length));
-            for (int i=0; i<projection.length; i++) {
-                final NamedExpression c = projection[i];
-                ArgumentChecks.ensureNonNullElement("projection", i, c);
+    public void setProjection(NamedExpression... properties) {
+        if (properties != null) {
+            ArgumentChecks.ensureNonEmpty("properties", properties);
+            properties = properties.clone();
+            final Map<Object,Integer> uniques = new LinkedHashMap<>(Containers.hashMapCapacity(properties.length));
+            for (int i=0; i<properties.length; i++) {
+                final NamedExpression c = properties[i];
+                ArgumentChecks.ensureNonNullElement("properties", i, c);
                 final Object key = c.alias != null ? c.alias : c.expression;
                 final Integer p = uniques.putIfAbsent(key, i);
                 if (p != null) {
@@ -156,17 +197,18 @@ public class FeatureQuery extends Query implements Cloneable {
                 }
             }
         }
-        this.projection = projection;
+        this.projection = properties;
     }
 
     /**
      * Returns the properties to retrieve, or {@code null} if all properties shall be included in the query.
-     * This is the list of expressions specified in the last call to {@link #setProjection(NamedExpression[])}.
+     * This is the expressions specified in the last call to {@link #setProjection(NamedExpression[])}.
+     * The default value is null.
      *
      * @return properties to retrieve, or {@code null} to retrieve all feature properties.
      */
-    public List<NamedExpression> getProjection() {
-        return UnmodifiableArrayList.wrap(projection);
+    public NamedExpression[] getProjection() {
+        return (projection != null) ? projection.clone() : null;
     }
 
     /**
@@ -174,18 +216,18 @@ public class FeatureQuery extends Query implements Cloneable {
      * Features that do not pass the filter are discarded.
      * Discarded features are not counted for the {@linkplain #setLimit(long) query limit}.
      *
-     * @param  selection  the filter, or {@link Filter#include()} if none.
+     * @param  selection  the filter, or {@code null} if none.
      */
     public void setSelection(final Filter<? super Feature> selection) {
-        ArgumentChecks.ensureNonNull("selection", selection);
         this.selection = selection;
     }
 
     /**
      * Returns the filter for trimming feature instances.
      * This is the value specified in the last call to {@link #setSelection(Filter)}.
+     * The default value is {@code null}, which means that no filtering is applied.
      *
-     * @return the filter, or {@link Filter#include()} if none.
+     * @return the filter, or {@code null} if none.
      */
     public Filter<? super Feature> getSelection() {
         return selection;
@@ -209,11 +251,19 @@ public class FeatureQuery extends Query implements Cloneable {
     /**
      * Returns the number of feature instances to skip from the beginning.
      * This is the value specified in the last call to {@link #setOffset(long)}.
+     * The default value is zero, which means that no features are skipped.
      *
      * @return the number of feature instances to skip from the beginning.
      */
     public long getOffset() {
         return skip;
+    }
+
+    /**
+     * Removes any limit defined by {@link #setLimit(long)}.
+     */
+    public void setUnlimited() {
+        limit = UNLIMITED;
     }
 
     /**
@@ -223,12 +273,10 @@ public class FeatureQuery extends Query implements Cloneable {
      * <p>Note that setting this property can be costly on parallelized streams.
      * See {@link java.util.stream.Stream#limit(long)} for more information.</p>
      *
-     * @param  limit  maximum number of feature instances contained in the {@code FeatureSet}, or {@link #UNLIMITED}.
+     * @param  limit  maximum number of feature instances contained in the {@code FeatureSet}.
      */
     public void setLimit(final long limit) {
-        if (limit != UNLIMITED) {
-            ArgumentChecks.ensurePositive("limit", limit);
-        }
+        ArgumentChecks.ensurePositive("limit", limit);
         this.limit = limit;
     }
 
@@ -236,16 +284,15 @@ public class FeatureQuery extends Query implements Cloneable {
      * Returns the maximum number of feature instances contained in the {@code FeatureSet}.
      * This is the value specified in the last call to {@link #setLimit(long)}.
      *
-     * @return maximum number of feature instances contained in the {@code FeatureSet}, or {@link #UNLIMITED}.
+     * @return maximum number of feature instances contained in the {@code FeatureSet}, or empty if none.
      */
-    public long getLimit() {
-        return limit;
+    public OptionalLong getLimit() {
+        return (limit >= 0) ? OptionalLong.of(limit) : OptionalLong.empty();
     }
 
     /**
      * Sets the expressions to use for sorting the feature instances.
-     * {@code SortBy} objects are used to order the {@link org.opengis.feature.Feature} instances
-     * returned by the {@link org.apache.sis.storage.FeatureSet}.
+     * {@code SortBy} objects are used to order the {@link Feature} instances returned by the {@link FeatureSet}.
      * {@code SortBy} clauses are applied in declaration order, like SQL.
      *
      * @param  properties  expressions to use for sorting the feature instances,
@@ -262,8 +309,7 @@ public class FeatureQuery extends Query implements Cloneable {
 
     /**
      * Sets the expressions to use for sorting the feature instances.
-     * {@code SortBy} objects are used to order the {@link org.opengis.feature.Feature} instances
-     * returned by the {@link org.apache.sis.storage.FeatureSet}.
+     * {@code SortBy} objects are used to order the {@link Feature} instances returned by the {@link FeatureSet}.
      *
      * @param  sortBy  expressions to use for sorting the feature instances, or {@code null} if none.
      */
@@ -273,7 +319,7 @@ public class FeatureQuery extends Query implements Cloneable {
 
     /**
      * Returns the expressions to use for sorting the feature instances.
-     * They are the values specified in the last call to {@link #setSortBy(SortBy)}.
+     * This is the value specified in the last call to {@link #setSortBy(SortBy)}.
      *
      * @return expressions to use for sorting the feature instances, or {@code null} if none.
      */
@@ -306,9 +352,15 @@ public class FeatureQuery extends Query implements Cloneable {
      * In relational database terminology, subset of columns is called <cite>projection</cite>.
      * Columns can be given to the {@link FeatureQuery#setProjection(NamedExpression[])} method.
      */
-    public static class NamedExpression {
+    public static class NamedExpression implements Serializable {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -6919525113513842514L;
+
         /**
          * The literal, value reference or more complex expression to be retrieved by a {@code Query}.
+         * Never {@code null}.
          */
         public final Expression<? super Feature, ?> expression;
 
@@ -447,7 +499,7 @@ public class FeatureQuery extends Query implements Cloneable {
      * @param  source  the set of features to filter, sort or process.
      * @return a view over the given feature set containing only the filtered feature instances.
      */
-    public FeatureSet execute(final FeatureSet source) {
+    final FeatureSet execute(final FeatureSet source) {
         ArgumentChecks.ensureNonNull("source", source);
         return new FeatureSubset(source, clone());
     }
@@ -527,7 +579,8 @@ public class FeatureQuery extends Query implements Cloneable {
     }
 
     /**
-     * Returns a textual representation looking like an SQL Select query.
+     * Returns a textual representation of this query for debugging purposes.
+     * The default implementation returns a string that looks like an SQL Select query.
      *
      * @return textual representation of this query.
      */

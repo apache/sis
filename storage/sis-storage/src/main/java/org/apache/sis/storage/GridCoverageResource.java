@@ -20,7 +20,6 @@ import java.util.List;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.internal.storage.query.CoverageQuery;
 import org.apache.sis.util.ArgumentChecks;
 
 

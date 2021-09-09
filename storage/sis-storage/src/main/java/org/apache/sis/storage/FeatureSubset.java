@@ -14,16 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.query;
+package org.apache.sis.storage;
 
-import java.util.List;
+import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.event.StoreListeners;
 
 // Branch-dependent imports
@@ -99,7 +96,7 @@ final class FeatureSubset extends AbstractFeatureSet {
          * Apply filter.
          */
         final Filter<? super Feature> selection = query.getSelection();
-        if (!Filter.include().equals(selection)) {
+        if (selection != null && !selection.equals(Filter.include())) {
             stream = stream.filter(selection);
         }
         /*
@@ -119,20 +116,20 @@ final class FeatureSubset extends AbstractFeatureSet {
         /*
          * Apply limit.
          */
-        final long limit = query.getLimit();
-        if (limit >= 0) {
-            stream = stream.limit(limit);
+        final OptionalLong limit = query.getLimit();
+        if (limit.isPresent()) {
+            stream = stream.limit(limit.getAsLong());
         }
         /*
          * Transform feature instances.
          * Note: "projection" here is in relational database sense, not map projection.
          */
-        final List<FeatureQuery.NamedExpression> projection = query.getProjection();
+        final FeatureQuery.NamedExpression[] projection = query.getProjection();
         if (projection != null) {
             @SuppressWarnings({"unchecked", "rawtypes"})
-            final Expression<? super Feature, ?>[] expressions = new Expression[projection.size()];
+            final Expression<? super Feature, ?>[] expressions = new Expression[projection.length];
             for (int i=0; i<expressions.length; i++) {
-                expressions[i] = projection.get(i).expression;
+                expressions[i] = projection[i].expression;
             }
             final FeatureType type = getType();
             final String[] names = FeatureUtilities.getNames(type.getProperties(false));

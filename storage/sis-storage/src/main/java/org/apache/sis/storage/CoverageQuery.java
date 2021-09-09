@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.query;
+package org.apache.sis.storage;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.io.Serializable;
 import java.math.RoundingMode;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Angle;
@@ -25,15 +26,16 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.storage.Query;
-import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * A simple query configuration for coverage resources for requesting a subset of the domain and the range.
- * Experimental for now, may move to public API in a future version.
+ * Definition of filtering to apply for fetching a subset of {@link GridCoverageResource}.
+ * This query allows requesting a subset of the coverage domain and the range.
+ *
+ * <h2>Optional values</h2>
+ * All aspects of this query are optional and initialized to "none".
+ * Unless otherwise specified, all methods accept a null argument or can return a null value, which means "none".
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -41,7 +43,12 @@ import org.apache.sis.util.ArgumentChecks;
  * @since   1.1
  * @module
  */
-public final class CoverageQuery extends Query implements Cloneable {
+public class CoverageQuery extends Query implements Cloneable, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -4296814883807414158L;
+
     /**
      * Desired grid extent and resolution, or {@code null} for reading the whole domain.
      */
@@ -115,7 +122,7 @@ public final class CoverageQuery extends Query implements Cloneable {
     }
 
     /**
-     * Set a number of additional cells to read on each border of the source grid coverage.
+     * Sets a number of additional cells to read on each border of the source grid coverage.
      * If non-zero, this property expands the {@linkplain #getDomain() domain} to be read
      * by the specified margin.
      *
@@ -158,7 +165,7 @@ public final class CoverageQuery extends Query implements Cloneable {
      * @return a view over the given coverage resource containing only the given domain and range.
      * @throws UnsupportedQueryException if this query contains filtering options not yet supported.
      */
-    public GridCoverageResource execute(final GridCoverageResource source) throws UnsupportedQueryException {
+    final GridCoverageResource execute(final GridCoverageResource source) throws UnsupportedQueryException {
         ArgumentChecks.ensureNonNull("source", source);
         return new CoverageSubset(source, clone());
     }
@@ -214,7 +221,8 @@ public final class CoverageQuery extends Query implements Cloneable {
     }
 
     /**
-     * Returns a textual representation looking like an SQL Select query.
+     * Returns a textual representation of this query for debugging purposes.
+     * The default implementation returns a string that looks like an SQL Select query.
      *
      * @return textual representation of this query.
      */

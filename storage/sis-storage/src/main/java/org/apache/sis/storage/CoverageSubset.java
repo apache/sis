@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.query;
+package org.apache.sis.storage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,11 +25,7 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.GridClippingMode;
 import org.apache.sis.coverage.grid.DisjointExtentException;
-import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.util.UnmodifiableArrayList;

@@ -17,6 +17,7 @@
 package org.apache.sis.storage;
 
 import org.opengis.feature.Feature;
+import org.opengis.filter.QueryExpression;
 
 
 /**
@@ -54,10 +55,8 @@ import org.opengis.feature.Feature;
  *
  * @since 0.8
  * @module
- *
- * @todo Retrofit {@link org.opengis.filter.QueryExpression}.
  */
-public abstract class Query {
+public abstract class Query implements QueryExpression {
     /*
      * Current version does not yet contain any field. But some fields may be added in the future.
      * For example some methods from org.apache.sis.internal.storage.query.FeatureQuery may move here.
