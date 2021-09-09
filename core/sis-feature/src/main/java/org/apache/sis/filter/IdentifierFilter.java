@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.filter.Node;
 import org.apache.sis.internal.feature.AttributeConvention;
 
 // Branch-dependent imports
@@ -42,7 +41,7 @@ import org.opengis.filter.ResourceId;
  * @since 1.1
  * @module
  */
-final class IdentifierFilter<R extends Feature> extends Node implements ResourceId<R> {
+final class IdentifierFilter<R extends Feature> extends FilterNode<R> implements ResourceId<R> {
     /**
      * For cross-version compatibility.
      */

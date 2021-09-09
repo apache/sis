@@ -35,7 +35,6 @@ import java.time.chrono.ChronoLocalDateTime;
 import java.time.chrono.ChronoZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
-import org.apache.sis.internal.filter.Node;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -786,7 +785,7 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
      *
      * @see org.apache.sis.filter.LogicalFilter.And
      */
-    static final class Between<R> extends Node implements BetweenComparisonOperator<R> {
+    static final class Between<R> extends FilterNode<R> implements BetweenComparisonOperator<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -2434954008425799595L;
 

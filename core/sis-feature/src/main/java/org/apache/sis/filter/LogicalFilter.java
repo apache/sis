@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.filter.Node;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
@@ -45,7 +44,7 @@ import org.opengis.filter.LogicalOperatorName;
  * @since 1.1
  * @module
  */
-abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Optimization.OnFilter<R> {
+abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator<R>, Optimization.OnFilter<R> {
     /**
      * For cross-version compatibility.
      */
@@ -71,6 +70,16 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
         for (int i=0; i<operands.length; i++) {
             ArgumentChecks.ensureNonNullElement("operands", i, operands[i]);
         }
+    }
+
+    /**
+     * Creates a new logical operator with the two given operands.
+     * This method does not verify if the operands are non-null;
+     * this check should be already done by the caller.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    LogicalFilter(final Filter<? super R> operand1, final Filter<? super R> operand2) {
+        operands = new Filter[] {operand1, operand2};
     }
 
     /**
@@ -109,6 +118,11 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
         /** Creates a new operator for the given operands. */
         And(final Collection<? extends Filter<? super R>> op) {
             super(op);
+        }
+
+        /** Creates a new operator for the two given operands. */
+        And(final Filter<? super R> operand1, final Filter<? super R> operand2) {
+            super(operand1, operand2);
         }
 
         /** Creates a new logical operator of the same kind than this operator. */
@@ -155,6 +169,11 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
             super(op);
         }
 
+        /** Creates a new operator for the two given operands. */
+        Or(final Filter<? super R> operand1, final Filter<? super R> operand2) {
+            super(operand1, operand2);
+        }
+
         /** Creates a new logical operator of the same kind than this operator. */
         @Override protected LogicalFilter<R> createSameType(Collection<? extends Filter<? super R>> op) {
             return new Or<>(op);
@@ -190,7 +209,7 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
     /**
      * The negation filter (¬).
      */
-    static final class Not<R> extends Node implements LogicalOperator<R>, Optimization.OnFilter<R> {
+    static final class Not<R> extends FilterNode<R> implements LogicalOperator<R>, Optimization.OnFilter<R> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -1296823195138427781L;
 

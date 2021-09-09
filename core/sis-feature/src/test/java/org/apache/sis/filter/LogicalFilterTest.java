@@ -92,6 +92,16 @@ public final strictfp class LogicalFilterTest extends TestCase {
     }
 
     /**
+     * Verifies that {@link Filter#negate()} is overridden.
+     */
+    @Test
+    public void testNegate() {
+        final Literal<Feature,String>  literal = factory.literal("text");
+        final Filter<Feature>          operand = factory.isNull(literal);
+        assertInstanceOf("Predicate.negate()", LogicalFilter.Not.class, operand.negate());
+    }
+
+    /**
      * Implementation of {@link #testAnd()} and {@link #testOr()}.
      *
      * @param  binary    the function creating a logical operator from two operands.

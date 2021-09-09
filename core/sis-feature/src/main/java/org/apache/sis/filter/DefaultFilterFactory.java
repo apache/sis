@@ -430,6 +430,22 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     }
 
     /**
+     * Creates a {@code AND} filter between two filters.
+     *
+     * @param  operand1  the first operand of the AND operation.
+     * @param  operand2  the second operand of the AND operation.
+     * @return a filter evaluating {@code operand1 AND operand2}.
+     *
+     * @see LogicalOperatorName#AND
+     */
+    @Override
+    public LogicalOperator<R> and(final Filter<? super R> operand1, final Filter<? super R> operand2) {
+        ArgumentChecks.ensureNonNull("operand1", operand1);
+        ArgumentChecks.ensureNonNull("operand2", operand2);
+        return new LogicalFilter.And<>(operand1, operand2);
+    }
+
+    /**
      * Creates a {@code AND} filter between two or more filters.
      *
      * @param  operands  a collection of at least 2 operands.
@@ -441,6 +457,22 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     @Override
     public LogicalOperator<R> and(final Collection<? extends Filter<? super R>> operands) {
         return new LogicalFilter.And<>(operands);
+    }
+
+    /**
+     * Creates a {@code OR} filter between two filters.
+     *
+     * @param  operand1  the first operand of the OR operation.
+     * @param  operand2  the second operand of the OR operation.
+     * @return a filter evaluating {@code operand1 OR operand2}.
+     *
+     * @see LogicalOperatorName#OR
+     */
+    @Override
+    public LogicalOperator<R> or(final Filter<? super R> operand1, final Filter<? super R> operand2) {
+        ArgumentChecks.ensureNonNull("operand1", operand1);
+        ArgumentChecks.ensureNonNull("operand2", operand2);
+        return new LogicalFilter.Or<>(operand1, operand2);
     }
 
     /**

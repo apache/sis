@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
+import java.util.function.Predicate;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -229,6 +230,55 @@ public class Optimization {
          */
         default Filter<R> recreate(Expression<? super R, ?>[] effective) {
             return this;
+        }
+
+        /**
+         * Returns the {@code AND} logical operation between this filter and the given predicate.
+         * If the given predicate is an instance of {@link Filter}, then the returned predicate
+         * is an instance of {@code Optimization.OnFilter}.
+         *
+         * @param  other  the other predicate.
+         * @return the {@code AND} logical operation between this filter and the given predicate.
+         *
+         * @see DefaultFilterFactory#and(Filter, Filter)
+         */
+        @Override
+        default Predicate<R> and(final Predicate<? super R> other) {
+            if (other instanceof Filter<?>) {
+                return new LogicalFilter.And<>(this, (Filter<? super R>) other);
+            } else {
+                return Filter.super.and(other);
+            }
+        }
+
+        /**
+         * Returns the {@code OR} logical operation between this filter and the given predicate.
+         * If the given predicate is an instance of {@link Filter}, then the returned predicate
+         * is an instance of {@code Optimization.OnFilter}.
+         *
+         * @param  other  the other predicate.
+         * @return the {@code OR} logical operation between this filter and the given predicate.
+         *
+         * @see DefaultFilterFactory#or(Filter, Filter)
+         */
+        @Override
+        default Predicate<R> or(final Predicate<? super R> other) {
+            if (other instanceof Filter<?>) {
+                return new LogicalFilter.Or<>(this, (Filter<? super R>) other);
+            } else {
+                return Filter.super.and(other);
+            }
+        }
+
+        /**
+         * Returns the logical negation of this filter.
+         * The returned predicate is an instance of {@code Optimization.OnFilter}.
+         *
+         * @return the logical negation of this filter.
+         */
+        @Override
+        default Predicate<R> negate() {
+            return new LogicalFilter.Not<>(this);
         }
     }
 
