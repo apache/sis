@@ -158,7 +158,7 @@ public final strictfp class SQLStoreTest extends TestCase {
             try (SQLStore store = new SQLStore(new SQLStoreProvider(), new StorageConnector(tmp.source),
                     SQLStoreProvider.createTableName(null, inMemory ? null : SCHEMA, "Cities")))
             {
-                final FeatureSet cities = (FeatureSet) store.findResource("Cities");
+                final FeatureSet cities = store.findResource("Cities");
                 /*
                  * Feature properties should be in same order than columns in the database table, except for
                  * the generated identifier. Note that the country is an association to another feature.
@@ -167,11 +167,11 @@ public final strictfp class SQLStoreTest extends TestCase {
                         new String[] {"sis:identifier", "pk:country", "country",   "native_name", "english_name", "population",  "parks"},
                         new Object[] {null,             String.class, "Countries", String.class,  String.class,   Integer.class, "Parks"});
 
-                verifyFeatureType(((FeatureSet) store.findResource("Countries")).getType(),
+                verifyFeatureType(store.findResource("Countries").getType(),
                         new String[] {"sis:identifier", "code",       "native_name"},
                         new Object[] {null,             String.class, String.class});
 
-                verifyFeatureType(((FeatureSet) store.findResource("Parks")).getType(),
+                verifyFeatureType(store.findResource("Parks").getType(),
                         new String[] {"sis:identifier", "pk:country", "FK_City", "city",       "native_name", "english_name"},
                         new Object[] {null,             String.class, "Cities",  String.class, String.class,  String.class});
 
@@ -309,7 +309,7 @@ public final strictfp class SQLStoreTest extends TestCase {
         /*
          * Build the query and get a new set of features.
          */
-        final FeatureSet   parks = (FeatureSet) dataset.findResource("Parks");
+        final FeatureSet   parks = dataset.findResource("Parks");
         final FeatureQuery query = new FeatureQuery();
         query.setProjection(new FeatureQuery.NamedExpression(FF.property(desiredProperty)));
         query.setSortBy(FF.sort(FF.property("country"),       SortOrder.DESCENDING),
@@ -349,7 +349,7 @@ public final strictfp class SQLStoreTest extends TestCase {
          * so we use `assertSetEquals(…)` for making the test insensitive to feature order. An alternative would be
          * to add a `query.setSortBy(…)` call, but we avoid that for making this test only about the `WHERE` clause.
          */
-        final FeatureSet   cities = (FeatureSet) dataset.findResource("Cities");
+        final FeatureSet   cities = dataset.findResource("Cities");
         final FeatureQuery query  = new FeatureQuery();
         query.setSelection(FF.equal(FF.property("country"), FF.literal("CAN")));
         final Object[] names;

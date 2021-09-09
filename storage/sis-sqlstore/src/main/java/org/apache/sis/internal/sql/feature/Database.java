@@ -43,7 +43,6 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.sql.postgis.Postgres;
 import org.apache.sis.storage.sql.SQLStore;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.DataStoreException;
@@ -419,7 +418,7 @@ public class Database<G> extends Syntax  {
      *
      * @return all tables in an unmodifiable list.
      */
-    public final List<Resource> tables() {
+    public final List<FeatureSet> tables() {
         return UnmodifiableArrayList.wrap(tables);
     }
 

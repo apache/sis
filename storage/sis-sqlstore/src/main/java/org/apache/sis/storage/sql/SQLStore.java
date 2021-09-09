@@ -25,8 +25,8 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalNameException;
@@ -249,14 +249,14 @@ public class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the resources (features or coverages) in this SQL store.
+     * Returns the tables (feature sets) in this SQL store.
      * The list contains only the tables explicitly named at construction time.
      *
      * @return children resources that are components of this SQL store.
      * @throws DataStoreException if an error occurred while fetching the components.
      */
     @Override
-    public Collection<Resource> components() throws DataStoreException {
+    public Collection<FeatureSet> components() throws DataStoreException {
         return model().tables();
     }
 
@@ -272,7 +272,7 @@ public class SQLStore extends DataStore implements Aggregate {
      * @throws DataStoreException if another kind of error occurred while searching resources.
      */
     @Override
-    public Resource findResource(final String identifier) throws DataStoreException {
+    public FeatureSet findResource(final String identifier) throws DataStoreException {
         return model().findTable(this, identifier);
     }
 
