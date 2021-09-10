@@ -54,6 +54,7 @@ final class CoverageSubset extends AbstractGridResource {
 
     /**
      * Creates a new coverage resource by filtering the given coverage using the given query.
+     * This given query is stored as-is (it is not cloned neither optimized).
      *
      * @param source  the coverage resource instances which provides the data.
      * @param query   the domain and range to read from the {@code source} coverage.
@@ -99,7 +100,7 @@ final class CoverageSubset extends AbstractGridResource {
     private GridGeometry clip(final GridGeometry domain, final GridRoundingMode rounding, final GridClippingMode clipping)
             throws DataStoreException
     {
-        final GridGeometry areaOfInterest = query.getDomain();
+        final GridGeometry areaOfInterest = query.getSelection();
         if (domain == null) return areaOfInterest;
         if (areaOfInterest == null) return domain;
         try {
@@ -135,7 +136,7 @@ final class CoverageSubset extends AbstractGridResource {
     @Override
     public List<SampleDimension> getSampleDimensions() throws DataStoreException {
         final List<SampleDimension> dimensions = source.getSampleDimensions();
-        final int[] range = query.getRange();
+        final int[] range = query.getProjection();
         if (range == null) {
             return dimensions;
         }
@@ -155,7 +156,7 @@ final class CoverageSubset extends AbstractGridResource {
      * Loads a subset of the grid coverage represented by this resource.
      * The domain to be read by the resource is computed as below:
      * <ul>
-     *   <li>If the query specifies a {@linkplain CoverageQuery#getDomain() domain},
+     *   <li>If the query specifies a {@link CoverageQuery#getSelection() domain},
      *       the given domain is intersected with the query domain.</li>
      *   <li>If the query specifies a {@linkplain CoverageQuery#getSourceDomainExpansion() domain expansion},
      *       the given domain is expanded by the amount specified in the query.</li>
@@ -176,7 +177,7 @@ final class CoverageSubset extends AbstractGridResource {
          * specified `domain` but inside the source domain, which may be larger.
          */
         domain = clip(domain, GridRoundingMode.ENCLOSING, GridClippingMode.BORDER_EXPANSION);
-        final int[] qr = query.getRange();
+        final int[] qr = query.getProjection();
         if (range == null) {
             range = qr;
         } else if (qr != null) {

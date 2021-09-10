@@ -152,7 +152,7 @@ public final strictfp class FeatureQueryTest extends TestCase {
      * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
-    public void testFilter() throws DataStoreException {
+    public void testSelection() throws DataStoreException {
         final FilterFactory<Feature,?,?> factory = DefaultFilterFactory.forFeatures();
         query.setSelection(factory.equal(factory.property("value1", Integer.class),
                                       factory.literal(2), true, MatchAction.ALL));
@@ -165,7 +165,7 @@ public final strictfp class FeatureQueryTest extends TestCase {
      * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
-    public void testColumns() throws DataStoreException {
+    public void testProjection() throws DataStoreException {
         final FilterFactory<Feature,?,?> factory = DefaultFilterFactory.forFeatures();
         query.setProjection(new FeatureQuery.NamedExpression(factory.property("value1", Integer.class), (String) null),
                             new FeatureQuery.NamedExpression(factory.property("value1", Integer.class), "renamed1"),
@@ -193,5 +193,20 @@ public final strictfp class FeatureQueryTest extends TestCase {
         assertEquals(3, result.getPropertyValue("value1"));
         assertEquals(3, result.getPropertyValue("renamed1"));
         assertEquals("a literal", result.getPropertyValue("computed"));
+    }
+
+    /**
+     * Verifies the effect of {@link FeatureQuery#setProjection(String[])}.
+     *
+     * @throws DataStoreException if an error occurred while executing the query.
+     */
+    @Test
+    public void testProjectionByNames() throws DataStoreException {
+        query.setProjection("value2");
+        query.setLimit(1);
+        final FeatureSet  fs = query.execute(featureSet);
+        final Feature result = TestUtilities.getSingleton(fs.features(false).collect(Collectors.toList()));
+        final PropertyType p = TestUtilities.getSingleton(result.getType().getProperties(true));
+        assertEquals("value2", p.getName().toString());
     }
 }

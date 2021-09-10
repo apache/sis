@@ -99,7 +99,7 @@ public final strictfp class CoverageQueryTest extends TestCase {
     public void testWithSubgrid() throws DataStoreException {
         final GridGeometry subGrid = createSubGrid(0);
         final CoverageQuery query = new CoverageQuery();
-        query.setDomain(subGrid);
+        query.setSelection(subGrid);
 
         final GridCoverageResource subset = resource.subset(query);
         assertEquals(subGrid, subset.getGridGeometry());
@@ -116,12 +116,46 @@ public final strictfp class CoverageQueryTest extends TestCase {
         final int expansion = 3;
         final GridGeometry subGrid = createSubGrid(0);
         final CoverageQuery query = new CoverageQuery();
-        query.setDomain(subGrid);
+        query.setSelection(subGrid);
         query.setSourceDomainExpansion(expansion);
 
         final GridCoverageResource subset = resource.subset(query);
         assertEquals(createSubGrid(expansion), subset.getGridGeometry());
         verifyRead(subset, expansion);
+    }
+
+    /**
+     * Tests using only the methods defined in the {@link Query} base class.
+     *
+     * @throws DataStoreException if query execution failed.
+     */
+    @Test
+    public void testQueryMethods() throws DataStoreException {
+        final GridGeometry subGrid = createSubGrid(0);
+        final Query query = new CoverageQuery();
+        query.setSelection(subGrid.getEnvelope());
+        query.setProjection("0");
+
+        final GridCoverageResource subset = resource.subset(query);
+        assertEquals(subGrid, subset.getGridGeometry());
+        verifyRead(subset, 0);
+    }
+
+    /**
+     * Tests using an invalid sample dimension name.
+     *
+     * @throws DataStoreException if query execution failed.
+     */
+    @Test
+    public void testInvalidName() throws DataStoreException {
+        final Query query = new CoverageQuery();
+        query.setProjection("Apple");
+        try {
+            resource.subset(query);
+            fail("Expected UnsupportedQueryException.");
+        } catch (UnsupportedQueryException e) {
+            assertTrue(e.getMessage().contains("Apple"));
+        }
     }
 
     /**

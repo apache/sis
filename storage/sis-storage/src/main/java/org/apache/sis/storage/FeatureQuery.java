@@ -25,11 +25,14 @@ import java.io.Serializable;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.util.GenericName;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.filter.SortByComparator;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
@@ -39,6 +42,7 @@ import org.apache.sis.util.iso.Names;
 // Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.filter.FilterFactory;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
@@ -150,6 +154,29 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     }
 
     /**
+     * Sets the properties to retrieve by their names. This convenience method wraps the
+     * given names in {@link ValueReference} expressions without alias and delegates to
+     * {@link #setProjection(NamedExpression...)}.
+     *
+     * @param  properties  properties to retrieve, or {@code null} to retrieve all properties.
+     * @throws IllegalArgumentException if a property is duplicated.
+     */
+    @Override
+    public void setProjection(final String... properties) {
+        NamedExpression[] wrappers = null;
+        if (properties != null) {
+            final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
+            wrappers = new NamedExpression[properties.length];
+            for (int i=0; i<wrappers.length; i++) {
+                final String p = properties[i];
+                ArgumentChecks.ensureNonNullElement("properties", i, p);
+                wrappers[i] = new NamedExpression(ff.property(p));
+            }
+        }
+        setProjection(wrappers);
+    }
+
+    /**
      * Sets the properties to retrieve, or {@code null} if all properties shall be included in the query.
      * This convenience method wraps the given expression in {@link NamedExpression}s without alias and
      * delegates to {@link #setProjection(NamedExpression...)}.
@@ -210,6 +237,23 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      */
     public NamedExpression[] getProjection() {
         return (projection != null) ? projection.clone() : null;
+    }
+
+    /**
+     * Sets the approximate area of feature instances to include in the subset.
+     * This convenience method creates a filter that checks if the bounding box
+     * of the feature's {@code "sis:geometry"} property interacts with the given envelope.
+     *
+     * @param  domain  the approximate area of interest, or {@code null} if none.
+     */
+    @Override
+    public void setSelection(final Envelope domain) {
+        Filter<? super Feature> filter = null;
+        if (domain != null) {
+            final FilterFactory<Feature,Object,?> ff = DefaultFilterFactory.forFeatures();
+            filter = ff.bbox(ff.property(AttributeConvention.GEOMETRY), domain);
+        }
+        setSelection(filter);
     }
 
     /**
