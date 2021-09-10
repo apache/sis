@@ -62,6 +62,7 @@ final class FeatureSubset extends AbstractFeatureSet {
 
     /**
      * Creates a new set of features by filtering the given set using the given query.
+     * This given query is stored as-is (it is not cloned neither optimized).
      */
     FeatureSubset(final FeatureSet source, final FeatureQuery query) {
         super(source instanceof StoreListeners ? (StoreListeners) source : null);

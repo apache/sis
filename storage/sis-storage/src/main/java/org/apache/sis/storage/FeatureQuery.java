@@ -30,6 +30,7 @@ import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.filter.SortByComparator;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.filter.Optimization;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.Containers;
@@ -498,10 +499,17 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      *
      * @param  source  the set of features to filter, sort or process.
      * @return a view over the given feature set containing only the filtered feature instances.
+     * @throws DataStoreException if an error occurred during creation of the subset.
      */
-    final FeatureSet execute(final FeatureSet source) {
+    final FeatureSet execute(final FeatureSet source) throws DataStoreException {
         ArgumentChecks.ensureNonNull("source", source);
-        return new FeatureSubset(source, clone());
+        final FeatureQuery query = clone();
+        if (query.selection != null) {
+            final Optimization optimization = new Optimization();
+            optimization.setFeatureType(source.getType());
+            query.selection = optimization.apply(query.selection);
+        }
+        return new FeatureSubset(source, query);
     }
 
     /**
