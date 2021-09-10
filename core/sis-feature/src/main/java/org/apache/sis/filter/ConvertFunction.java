@@ -43,7 +43,7 @@ import org.opengis.feature.FeatureType;
  * @param  <S>  the type of value computed by the wrapped exception. This is the type to convert.
  * @param  <V>  the type of value computed by this expression. This is the type after conversion.
  *
- * @see GeometryConverter
+ * @see org.apache.sis.internal.filter.GeometryConverter
  *
  * @since 1.1
  * @module

@@ -557,7 +557,7 @@
     <maven.compiler.target>8</maven.compiler.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
     <sis.non-free.version>1.0</sis.non-free.version>                <!-- Used only if "non-free" profile is activated. -->
-    <javafx.version>14.0.1</javafx.version>                         <!-- Used only if "javafx" profile is activated. -->
+    <javafx.version>17</javafx.version>                             <!-- Used only if "javafx" profile is activated. -->
     <geoapi.version>4.0-SNAPSHOT</geoapi.version>
     <jaxb.version>2.3.3</jaxb.version>
   </properties>
@@ -622,7 +622,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.0.0-M2</version>
+        <version>3.0.0</version>
         <executions>
           <execution>
             <id>enforce</id>
@@ -651,7 +651,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.2.0</version>
         <executions>
           <execution>
             <id>remove-old-artifacts</id>
@@ -685,7 +685,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M4</version>
+        <version>3.0.0-M5</version>
         <configuration>
           <trimStackTrace>false</trimStackTrace>
           <includes>
@@ -739,7 +739,7 @@
       <!-- Set "*-source-release.zip" filename prefix to "sis-*" instead of "parent-*" -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.1.1</version>
+        <version>3.3.0</version>
         <executions>
           <execution>
             <id>source-release-assembly</id>
@@ -859,7 +859,7 @@
       <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.1.1</version>
+        <version>3.3.1</version>
         <configuration>
           <source>${maven.compiler.source}</source>             <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
