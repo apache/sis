@@ -18,9 +18,9 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Set;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.storage.io.ByteWriter;
@@ -37,9 +37,10 @@ import org.apache.sis.math.Vector;
  * </ul>
  *
  * The base class if for local cache. The inner class is for the global cache.
+ * {@code GridCacheKey}s are associated to {@link GridCacheValue}s in a hash map.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -67,7 +68,9 @@ class GridCacheKey {
     }
 
     /**
-     * Creates a global key from the given local key.
+     * Creates a global key from the given local key. This constructor is for {@link Global} construction only,
+     * because the information stored by this constructor are not sufficient for testing if two grids are equal.
+     * The {@link Global} subclass will add a MD5 checksum.
      */
     private GridCacheKey(final GridCacheKey keyLocal) {
         width  = keyLocal.width;
@@ -89,7 +92,7 @@ class GridCacheKey {
      * Returns the localization grid from the local cache if one exists, or {@code null} if none.
      * This method looks only in the local cache. For the global cache, see {@link Global#lock()}.
      */
-    final MathTransform cached(final Decoder decoder) {
+    final GridCacheValue cached(final Decoder decoder) {
         return decoder.localizationGrids.get(this);
     }
 
@@ -101,8 +104,8 @@ class GridCacheKey {
      * @param  grid     the grid to cache.
      * @return the cached grid. Should be the given {@code grid} instance, unless another grid has been cached concurrently.
      */
-    final MathTransform cache(final Decoder decoder, final MathTransform grid) {
-        final MathTransform tr = decoder.localizationGrids.putIfAbsent(this, grid);
+    final GridCacheValue cache(final Decoder decoder, final GridCacheValue grid) {
+        final GridCacheValue tr = decoder.localizationGrids.putIfAbsent(this, grid);
         return (tr != null) ? tr : grid;
     }
 
@@ -116,15 +119,15 @@ class GridCacheKey {
      */
     static final class Global extends GridCacheKey {
         /**
-         * The global cache shared by all netCDF files. All grids are retained by soft references.
+         * The global cache shared by all netCDF files. All grids are retained by weak references.
          */
-        private static final Cache<GridCacheKey,MathTransform> CACHE = new Cache<>(12, 0, true);
+        private static final Cache<GridCacheKey,GridCacheValue> CACHE = new Cache<>(12, 0, false);
 
         /**
          * The algorithms tried for making the localization grids more linear.
          * May be empty but shall not be null.
          */
-        private final Set<Linearizer> linearizers;
+        private final Set<Linearizer.Type> linearizerTypes;
 
         /**
          * Concatenation of the digests of the two vectors.
@@ -142,7 +145,10 @@ class GridCacheKey {
          */
         Global(final GridCacheKey keyLocal, final Vector vx, final Vector vy, final Set<Linearizer> linearizers) {
             super(keyLocal);
-            this.linearizers = linearizers;
+            linearizerTypes = EnumSet.noneOf(Linearizer.Type.class);
+            for (final Linearizer linearizer : linearizers) {
+                linearizerTypes.add(linearizer.type);
+            }
             final MessageDigest md;
             try {
                 md = MessageDigest.getInstance("MD5");
@@ -180,8 +186,8 @@ class GridCacheKey {
          * This method must be used with a {@code try … finally} block as below:
          *
          * {@preformat java
-         *     MathTransform tr;
-         *     final Cache.Handler<MathTransform> handler = key.lock();
+         *     GridCacheValue tr;
+         *     final Cache.Handler<GridCacheValue> handler = key.lock();
          *     try {
          *         tr = handler.peek();
          *         if (tr == null) {
@@ -192,7 +198,7 @@ class GridCacheKey {
          *     }
          * }
          */
-        final Cache.Handler<MathTransform> lock() {
+        final Cache.Handler<GridCacheValue> lock() {
             return CACHE.lock(this);
         }
 
@@ -201,7 +207,7 @@ class GridCacheKey {
          * The hash code uses a digest of coordinate values given at construction time.
          */
         @Override public int hashCode() {
-            return super.hashCode() + linearizers.hashCode() + Arrays.hashCode(digest);
+            return super.hashCode() + linearizerTypes.hashCode() + Arrays.hashCode(digest);
         }
 
         /**
@@ -213,7 +219,7 @@ class GridCacheKey {
         @Override public boolean equals(final Object other) {
             if (super.equals(other)) {
                 final Global that = (Global) other;
-                if (linearizers.equals(that.linearizers)) {
+                if (linearizerTypes.equals(that.linearizerTypes)) {
                     return Arrays.equals(digest, that.digest);
                 }
             }

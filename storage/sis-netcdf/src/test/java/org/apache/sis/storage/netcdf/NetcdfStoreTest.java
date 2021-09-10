@@ -32,7 +32,7 @@ import static org.opengis.test.Assert.*;
  * Tests {@link NetcdfStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -63,7 +63,7 @@ public final strictfp class NetcdfStoreTest extends TestCase {
             metadata = store.getMetadata();
             assertSame("Should be cached.", metadata, store.getMetadata());
         }
-        MetadataReaderTest.compareToExpected(metadata);
+        MetadataReaderTest.compareToExpected(metadata).assertMetadataEquals();
     }
 
     /**

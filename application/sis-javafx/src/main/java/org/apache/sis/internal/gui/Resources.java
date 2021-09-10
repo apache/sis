@@ -17,8 +17,11 @@
 package org.apache.sis.internal.gui;
 
 import java.net.URL;
+import java.util.Locale;
 import java.util.MissingResourceException;
-import javax.annotation.processing.Generated;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.MenuItem;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
@@ -29,8 +32,8 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public final class Resources extends IndexedResourceBundle {
@@ -40,7 +43,6 @@ public final class Resources extends IndexedResourceBundle {
      * inlines final integer values, using long identifiers will not bloat the constant
      * pools of compiled classes.
      */
-    @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
     public static final class Keys extends KeyConstants {
         /**
          * The unique instance of key constants handler.
@@ -54,24 +56,290 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
-         * All files
+         * About…
          */
-        public static final short AllFiles = 3;
+        public static final short About = 46;
 
         /**
-         * Coordinate Reference Systems
+         * All files
          */
-        public static final short CRSs = 1;
+        public static final short AllFiles = 1;
+
+        /**
+         * Along {0}
+         */
+        public static final short Along_1 = 35;
+
+        /**
+         * Azimuthal equidistant
+         */
+        public static final short AzimuthalEquidistant = 42;
+
+        /**
+         * Can not close “{0}”. Data may be lost.
+         */
+        public static final short CanNotClose_1 = 2;
+
+        /**
+         * Can not create reference system “{0}”.
+         */
+        public static final short CanNotCreateCRS_1 = 3;
+
+        /**
+         * Can not create XML document.
+         */
+        public static final short CanNotCreateXML = 4;
+
+        /**
+         * Can not fetch tile ({0}, {1}).
+         */
+        public static final short CanNotFetchTile_2 = 5;
+
+        /**
+         * Can not open “{0}”.
+         */
+        public static final short CanNotReadFile_1 = 6;
+
+        /**
+         * A resource contained in the file can not be read. The cause is given below.
+         */
+        public static final short CanNotReadResource = 7;
+
+        /**
+         * An error occurred while rendering the data.
+         */
+        public static final short CanNotRender = 8;
+
+        /**
+         * Can not use the “{0}” reference system.
+         */
+        public static final short CanNotUseRefSys_1 = 9;
+
+        /**
+         * Centered projection
+         */
+        public static final short CenteredProjection = 43;
+
+        /**
+         * Clear all
+         */
+        public static final short ClearAll = 55;
+
+        /**
+         * Close
+         */
+        public static final short Close = 10;
+
+        /**
+         * Copy
+         */
+        public static final short Copy = 11;
+
+        /**
+         * Copy as
+         */
+        public static final short CopyAs = 12;
+
+        /**
+         * Copy coordinates
+         */
+        public static final short CopyCoordinates = 50;
+
+        /**
+         * Copy file path
+         */
+        public static final short CopyFilePath = 51;
+
+        /**
+         * Display start
+         */
+        public static final short DisplayStart = 38;
+
+        /**
+         * Displayed size
+         */
+        public static final short DisplayedSize = 41;
+
+        /**
+         * Does not cover the area of interest.
+         */
+        public static final short DoesNotCoverAOI = 13;
+
+        /**
+         * An error occurred at the following location:
+         */
+        public static final short ErrorAt = 53;
+
+        /**
+         * Error closing file
+         */
+        public static final short ErrorClosingFile = 14;
+
+        /**
+         * Error creating reference system
+         */
+        public static final short ErrorCreatingCRS = 15;
+
+        /**
+         * Error during data access
+         */
+        public static final short ErrorDataAccess = 16;
+
+        /**
+         * Details about error
+         */
+        public static final short ErrorDetails = 17;
+
+        /**
+         * Error exporting data
+         */
+        public static final short ErrorExportingData = 18;
+
+        /**
+         * Error opening file
+         */
+        public static final short ErrorOpeningFile = 19;
+
+        /**
+         * Exit
+         */
+        public static final short Exit = 20;
+
+        /**
+         * Full screen
+         */
+        public static final short FullScreen = 22;
 
         /**
          * Geospatial data files
          */
-        public static final short GeospatialFiles = 4;
+        public static final short GeospatialFiles = 23;
+
+        /**
+         * Help
+         */
+        public static final short Help = 47;
+
+        /**
+         * Image start
+         */
+        public static final short ImageStart = 36;
+
+        /**
+         * {0} – inconsistency in `{1}` property
+         */
+        public static final short InconsistencyIn_2 = 39;
+
+        /**
+         * Generate isolines at constant interval
+         * starting from given minimum.
+         */
+        public static final short IsolinesInRange = 57;
+
+        /**
+         * Loading…
+         */
+        public static final short Loading = 24;
+
+        /**
+         * Main window
+         */
+        public static final short MainWindow = 25;
+
+        /**
+         * Mercator
+         */
+        public static final short Mercator = 44;
+
+        /**
+         * New window
+         */
+        public static final short NewWindow = 26;
+
+        /**
+         * No feature type information.
+         */
+        public static final short NoFeatureTypeInfo = 27;
+
+        /**
+         * Open…
+         */
+        public static final short Open = 28;
 
         /**
          * Open data file
          */
-        public static final short OpenDataFile = 2;
+        public static final short OpenDataFile = 29;
+
+        /**
+         * Open recent file
+         */
+        public static final short OpenRecentFile = 54;
+
+        /**
+         * Orthographic
+         */
+        public static final short Orthographic = 52;
+
+        /**
+         * Range of values…
+         */
+        public static final short RangeOfValues = 56;
+
+        /**
+         * Select a coordinate reference system
+         */
+        public static final short SelectCRS = 30;
+
+        /**
+         * For changing the projection, use contextual menu on the map.
+         */
+        public static final short SelectCrsByContextMenu = 49;
+
+        /**
+         * Send to
+         */
+        public static final short SendTo = 31;
+
+        /**
+         * Size or position
+         */
+        public static final short SizeOrPosition = 40;
+
+        /**
+         * Standard error stream
+         */
+        public static final short StandardErrorStream = 32;
+
+        /**
+         * Tabular data
+         */
+        public static final short TabularData = 33;
+
+        /**
+         * Tile index start
+         */
+        public static final short TileIndexStart = 37;
+
+        /**
+         * Universal Transverse Mercator
+         */
+        public static final short UTM = 45;
+
+        /**
+         * Visualize
+         */
+        public static final short Visualize = 34;
+
+        /**
+         * Web site
+         */
+        public static final short WebSite = 48;
+
+        /**
+         * Windows
+         */
+        public static final short Windows = 21;
     }
 
     /**
@@ -92,6 +360,17 @@ public final class Resources extends IndexedResourceBundle {
     @Override
     protected KeyConstants getKeyConstants() {
         return Keys.INSTANCE;
+    }
+
+    /**
+     * Returns resources in the given locale.
+     *
+     * @param  locale  the locale, or {@code null} for the default locale.
+     * @return resources in the given locale.
+     * @throws MissingResourceException if resources can not be found.
+     */
+    public static Resources forLocale(final Locale locale) throws MissingResourceException {
+        return getBundle(Resources.class, locale);
     }
 
     /**
@@ -164,5 +443,18 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg2) throws MissingResourceException
     {
         return getInstance().getString(key, arg0, arg1, arg2);
+    }
+
+    /**
+     * Creates a new menu item with a localized text specified by the given key.
+     *
+     * @param  key       the key for the text of the menu item.
+     * @param  onAction  action to execute when the menu is selected.
+     * @return the menu item with the specified text and action.
+     */
+    public MenuItem menu(final short key, final EventHandler<ActionEvent> onAction) {
+        final MenuItem item = new MenuItem(getString(key));
+        item.setOnAction(onAction);
+        return item;
     }
 }

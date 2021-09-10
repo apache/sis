@@ -186,10 +186,10 @@ public final strictfp class FranceGeocentricInterpolationTest extends DatumShift
      */
     private static void verifyGrid(final DatumShiftGridFile<Angle,Length> grid) throws TransformException {
         final Envelope envelope = grid.getDomainOfValidity();
-        assertEquals("xmin",  2.2 - 0.05, envelope.getMinimum(0), 1E-12);
-        assertEquals("xmax",  2.5 + 0.05, envelope.getMaximum(0), 1E-12);
-        assertEquals("ymin", 48.5 - 0.05, envelope.getMinimum(1), 1E-12);
-        assertEquals("ymax", 49.0 + 0.05, envelope.getMaximum(1), 1E-12);
+        assertEquals("xmin",  2.2, envelope.getMinimum(0), 1E-12);
+        assertEquals("xmax",  2.5, envelope.getMaximum(0), 1E-12);
+        assertEquals("ymin", 48.5, envelope.getMinimum(1), 1E-12);
+        assertEquals("ymax", 49.0, envelope.getMaximum(1), 1E-12);
         /*
          * The values in the NTG_88 document are:
          *

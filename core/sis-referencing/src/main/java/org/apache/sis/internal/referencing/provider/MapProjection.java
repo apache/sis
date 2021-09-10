@@ -21,13 +21,13 @@ import java.util.HashMap;
 import java.util.NoSuchElementException;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
+import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
-import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -175,14 +175,17 @@ public abstract class MapProjection extends AbstractProvider {
      *
      * @see #redimension(int, int)
      * @see GeodeticOperation#redimensioned
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
+    @Deprecated
     private OperationMethod redimensioned;
 
     /**
      * Constructs a math transform provider from a set of parameters. The provider
      * {@linkplain #getIdentifiers() identifiers} will be the same than the parameter ones.
      *
-     * @param parameters The set of parameters (never {@code null}).
+     * @param  parameters  the set of parameters (never {@code null}).
      */
     protected MapProjection(final ParameterDescriptorGroup parameters) {
         super(2, 2, parameters);
@@ -205,8 +208,11 @@ public abstract class MapProjection extends AbstractProvider {
      * @return the redimensioned projection method, or {@code this} if no change is needed.
      *
      * @since 0.8
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
     @Override
+    @Deprecated
     public final OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         if (sourceDimensions != 3 || targetDimensions != 3) {
             return super.redimension(sourceDimensions, targetDimensions);

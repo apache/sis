@@ -68,7 +68,7 @@ public abstract strictfp class ImageTestCase extends TestCase {
     protected boolean viewEnabled;
 
     /**
-     * Set to {@code true} if we have show at least one image.
+     * Set to {@code true} if we have shown at least one image.
      * This is used for avoiding useless {@link TestViewer} class loading in {@link #waitForFrameDisposal()}.
      */
     private static volatile boolean viewUsed;

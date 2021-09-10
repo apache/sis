@@ -262,6 +262,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
         }
         if (expected instanceof Set<?> && actual instanceof Set<?>) {
             assertEquals("Set.equals(Object) failed:", expected, actual);
+            assertEquals("Unexpected hash code value.", expected.hashCode(), actual.hashCode());
         }
     }
 

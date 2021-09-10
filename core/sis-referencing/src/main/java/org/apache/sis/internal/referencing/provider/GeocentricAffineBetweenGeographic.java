@@ -59,9 +59,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
      * in this class) because this parameter is used with both two- and three-dimensional operation methods.
      * If we want to provide a default value, we could but it would complicate a little bit the code since we
      * could no longer reuse the same {@code PARAMETERS} constant for operation methods of any number of dimensions.
-     * Furthermore it would not solve the case where the number of input dimensions is different than the number of
-     * output dimensions. We can not afford to have wrong default values since it would confuse our interpretation
-     * of user's parameters in {@link #createMathTransform(MathTransformFactory, ParameterValueGroup)}.</p>
+     * TODO: this paragraph will not apply anymore after {@link #redimensioned} is removed.</p>
      *
      * @see GeographicToGeocentric#DIMENSION
      *
@@ -171,8 +169,8 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
     }
 
     /**
-     * Notifies {@code DefaultMathTransformFactory} that map projections require values for the
-     * {@code "src_semi_major"}, {@code "src_semi_minor"} , {@code "tgt_semi_major"} and
+     * Notifies {@code DefaultMathTransformFactory} that this operation requires values for
+     * the {@code "src_semi_major"}, {@code "src_semi_minor"}, {@code "tgt_semi_major"} and
      * {@code "tgt_semi_minor"} parameters.
      *
      * @return 3, meaning that the operation requires source and target ellipsoids.

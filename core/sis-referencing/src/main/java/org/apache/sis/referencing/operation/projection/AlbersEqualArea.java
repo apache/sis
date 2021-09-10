@@ -42,7 +42,7 @@ import static org.apache.sis.internal.referencing.provider.AlbersEqualArea.*;
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Albers_projection">Albers projection on Wikipedia</a></li>
- *   <li><a href="http://mathworld.wolfram.com/AlbersEqual-AreaConicProjection.html">Albers Equal-Area Conic projection on MathWorld</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/AlbersEqual-AreaConicProjection.html">Albers Equal-Area Conic projection on MathWorld</a></li>
  * </ul>
  *
  * <p>The {@code "standard_parallel_2"} parameter is optional and will be given the same value as
@@ -50,7 +50,7 @@ import static org.apache.sis.internal.referencing.provider.AlbersEqualArea.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -58,7 +58,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -3024658742514888646L;
+    private static final long serialVersionUID = -3466040922402982480L;
 
     /**
      * Internal coefficients for computation, depending only on eccentricity and values of standards parallels.
@@ -82,6 +82,15 @@ public class AlbersEqualArea extends EqualAreaProjection {
     final double C;
 
     /**
+     * A bound of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
+     * Some (not all) θ values need to be shifted inside that range before to use them
+     * in trigonometric functions.
+     *
+     * @see Initializer#boundOfScaledLongitude(DoubleDouble)
+     */
+    final double θ_bound;
+
+    /**
      * Creates an Albers Equal Area projection from the given parameters.
      *
      * @param method      description of the projection parameters.
@@ -102,7 +111,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         roles.put(ParameterRole.FALSE_EASTING,    EASTING_AT_FALSE_ORIGIN);
         roles.put(ParameterRole.FALSE_NORTHING,   NORTHING_AT_FALSE_ORIGIN);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_FALSE_ORIGIN);
-        return new Initializer(method, parameters, roles, (byte) 0);
+        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
     }
 
     /**
@@ -163,7 +172,8 @@ public class AlbersEqualArea extends EqualAreaProjection {
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(0, rn, null); rn.negate();
         denormalize.convertBefore(1, rn, ρ0);   rn.inverseDivide(-1);
-        normalize.convertAfter(0, rn, null);
+        normalize.convertAfter(0, rn, null);    // On this line, `rn` became `n`.
+        θ_bound = initializer.boundOfScaledLongitude(rn);
     }
 
     /**
@@ -171,8 +181,9 @@ public class AlbersEqualArea extends EqualAreaProjection {
      */
     AlbersEqualArea(final AlbersEqualArea other) {
         super(other);
-        nm = other.nm;
-        C  = other.C;
+        nm      = other.nm;
+        C       = other.C;
+        θ_bound = other.θ_bound;
     }
 
     /**
@@ -227,8 +238,9 @@ public class AlbersEqualArea extends EqualAreaProjection {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double θ = srcPts[srcOff  ];      // θ = n⋅λ
-        final double φ = srcPts[srcOff+1];
+        // θ = n⋅λ  reduced to  [−n⋅π … n⋅π]  range.
+        final double θ = wraparoundScaledLongitude(srcPts[srcOff], θ_bound);
+        final double φ = srcPts[srcOff + 1];
         final double cosθ = cos(θ);
         final double sinθ = sin(θ);
         final double sinφ = sin(φ);
@@ -243,8 +255,8 @@ public class AlbersEqualArea extends EqualAreaProjection {
         /*
          * End of map projection. Now compute the derivative.
          */
-        final double me = 1 - eccentricitySquared;
-        final double dρ_dφ = -0.5 * nm*dqm_dφ(sinφ, cos(φ)*me) / (me*ρ);
+        final double ome = 1 - eccentricitySquared;
+        final double dρ_dφ = -0.5 * nm*dqm_dφ(sinφ, cos(φ)*ome) / (ome*ρ);
         return new Matrix2(cosθ*ρ, dρ_dφ*sinθ,          // ∂x/∂λ, ∂x/∂φ
                           -sinθ*ρ, dρ_dφ*cosθ);         // ∂y/∂λ, ∂y/∂φ
     }
@@ -288,7 +300,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @author  Rémi Maréchal (Geomatys)
-     * @version 0.8
+     * @version 1.1
      * @since   0.8
      * @module
      */
@@ -296,7 +308,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 9090765015127854096L;
+        private static final long serialVersionUID = -7238296545347764989L;
 
         /**
          * Constructs a new map projection from the parameters of the given projection.
@@ -315,8 +327,9 @@ public class AlbersEqualArea extends EqualAreaProjection {
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate)
         {
-            final double θ = srcPts[srcOff];                // θ = n⋅λ
-            final double φ = srcPts[srcOff+1];
+            // θ = n⋅λ  reduced to  [−n⋅π … n⋅π]  range.
+            final double θ = wraparoundScaledLongitude(srcPts[srcOff], θ_bound);
+            final double φ = srcPts[srcOff + 1];
             final double cosθ = cos(θ);
             final double sinθ = sin(θ);
             final double sinφ = sin(φ);

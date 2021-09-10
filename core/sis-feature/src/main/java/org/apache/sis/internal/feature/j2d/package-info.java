@@ -16,7 +16,8 @@
  */
 
 /**
- * Methods specific to the Java2D.
+ * Centralizes usages of some (not all) Java2D geometry API by Apache SIS.
+ * We use this class for isolating dependencies from the {@code org.apache.feature} package to Java2D API.
  *
  * <STRONG>Do not use!</STRONG>
  *
@@ -24,7 +25,7 @@
  * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.internal.referencing.j2d
  *

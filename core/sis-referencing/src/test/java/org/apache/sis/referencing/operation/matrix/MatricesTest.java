@@ -17,11 +17,13 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.test.DependsOnMethod;
@@ -38,7 +40,8 @@ import static org.opengis.referencing.cs.AxisDirection.*;
  * Tests the {@link Matrices} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -364,6 +367,23 @@ public final strictfp class MatricesTest extends TestCase {
     }
 
     /**
+     * Tests {@link Matrices#createAffine(Matrix, DirectPosition)}.
+     */
+    @Test
+    public void testCreateAffine() {
+        MatrixSIS derivative = Matrices.create(2, 3, new double[] {
+            2, 3, 8,
+            0, 7, 5
+        });
+        DirectPosition translation = new DirectPosition2D(-3, 9);
+        assertEquals(Matrices.create(3, 4, new double[] {
+            2, 3, 8, -3,
+            0, 7, 5,  9,
+            0, 0, 0,  1
+        }), Matrices.createAffine(derivative, translation));
+    }
+
+    /**
      * Tests {@link Matrices#resizeAffine(Matrix, int, int)}.
      */
     @Test
@@ -433,6 +453,22 @@ public final strictfp class MatricesTest extends TestCase {
             9, 8, 5,
             4, 3, 0
         }), matrix);
+    }
+
+    /**
+     * Tests {@link Matrices#equals(Matrix, Matrix, double, boolean)}.
+     */
+    @Test
+    public void testEquals() {
+        Matrix2 m1 = new Matrix2(-1.001, 0, 0, 1);
+        Matrix2 m2 = new Matrix2(-1,     0, 0, 1);
+        assertTrue(Matrices.equals(m1, m2, 0.002, true));
+        /*
+         * An infinite value with a relative tolerance threshold causes an infinite threshold,
+         * which is undesirable. Verify that the comparison code handle is robust to infinities.
+         */
+        m1 = new Matrix2(Double.POSITIVE_INFINITY, 0, 0, 1);
+        assertFalse(Matrices.equals(m1, m2, 0.002, true));
     }
 
     /**

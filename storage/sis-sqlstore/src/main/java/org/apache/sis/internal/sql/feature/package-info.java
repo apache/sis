@@ -25,9 +25,13 @@
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
+ * <h2>Implementation notes</h2>
+ * Feature type analysis is done through {@link org.apache.sis.internal.sql.feature.Analyzer} class.
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   1.0
  * @module
  */

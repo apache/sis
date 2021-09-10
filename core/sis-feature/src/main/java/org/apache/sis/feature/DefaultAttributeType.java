@@ -74,7 +74,7 @@ import org.opengis.feature.AttributeType;
  *   <li>The same characteristic name (e.g. “accuracy”) can be used for different attributes
  *       (e.g. “temperature”, “humidity”, <i>etc.</i>) since all characteristics are local to their attribute.</li>
  *   <li>A reference to an attribute gives also access to its characteristics. For example any method expecting
- *       an {@code Attribute} argument, when given a measurement, can also get its accuracy in same time.</li>
+ *       an {@code Attribute} argument, when given a measurement, can also get its accuracy at the same time.</li>
  *   <li>In the common case of a {@linkplain DefaultFeatureType#isSimple() simple feature} with characteristics
  *       that are constants, declaring them as attribute characteristics allows to specify the constants only once.</li>
  * </ul>

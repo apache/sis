@@ -38,6 +38,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
     org.apache.sis.internal.referencing.ReferencingUtilitiesTest.class,
     org.apache.sis.internal.referencing.WraparoundAdjustmentTest.class,
+    org.apache.sis.internal.referencing.ExtentSelectorTest.class,
     org.apache.sis.internal.referencing.WKTKeywordsTest.class,
     org.apache.sis.internal.referencing.WKTUtilitiesTest.class,
     org.apache.sis.internal.jaxb.referencing.CodeTest.class,
@@ -147,8 +148,8 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.SpecializableTransformTest.class,
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
-    org.apache.sis.referencing.operation.AbstractSingleOperationTest.class,
     org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
+    org.apache.sis.referencing.operation.transform.WraparoundTransformTest.class,
 
     // Registration of map projections and other math transforms.
     org.apache.sis.internal.referencing.provider.AffineTest.class,
@@ -181,6 +182,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.LambertConicConformalTest.class,
     org.apache.sis.referencing.operation.projection.TransverseMercatorTest.class,
     org.apache.sis.referencing.operation.projection.ZonedGridSystemTest.class,
+    org.apache.sis.referencing.operation.projection.CassiniSoldnerTest.class,
     org.apache.sis.referencing.operation.projection.PolarStereographicTest.class,
     org.apache.sis.referencing.operation.projection.ObliqueStereographicTest.class,
     org.apache.sis.referencing.operation.projection.ObliqueMercatorTest.class,
@@ -192,6 +194,8 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.PolyconicTest.class,
     org.apache.sis.referencing.operation.projection.MollweideTest.class,
     org.apache.sis.referencing.operation.projection.OrthographicTest.class,
+    org.apache.sis.referencing.operation.projection.AzimuthalEquidistantTest.class,
+    org.apache.sis.referencing.operation.projection.ModifiedAzimuthalEquidistantTest.class,
     org.apache.sis.referencing.operation.projection.SatelliteTrackingTest.class,
 
     // Coordinate operation and derived Coordinate Reference Systems (cyclic dependency).
@@ -219,6 +223,7 @@ import org.junit.BeforeClass;
     org.apache.sis.io.wkt.GeodeticObjectParserTest.class,
     org.apache.sis.io.wkt.WKTFormatTest.class,
     org.apache.sis.io.wkt.WKTParserTest.class,
+    org.apache.sis.io.wkt.WKTDictionaryTest.class,
     org.apache.sis.io.wkt.ComparisonWithEPSG.class,
 
     // Geodetic object creations from authority codes.
@@ -259,6 +264,11 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.builder.ResidualGridTest.class,
     org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
     org.apache.sis.referencing.operation.builder.LocalizationGridBuilderTest.class,
+    org.apache.sis.referencing.operation.builder.LinearizerTest.class,
+
+    // GeoAPI conformance test suite.
+    org.apache.sis.referencing.geoapi.AuthorityFactoryTest.class,
+    org.apache.sis.referencing.geoapi.ParameterizedTransformTest.class,
 
     // Geometry and miscellaneous
     org.apache.sis.geometry.AbstractDirectPositionTest.class,

@@ -26,7 +26,7 @@ import static org.junit.Assert.*;
  * Tests the {@link Namespaces} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -41,6 +41,7 @@ public final strictfp class NamespacesTest extends TestCase {
         assertEquals("gmi",  Namespaces.getPreferredPrefix("http://standards.iso.org/iso/19115/-2/gmi/1.0", null));
         assertEquals("srv",  Namespaces.getPreferredPrefix("http://standards.iso.org/iso/19115/-3/srv/2.0", null));
         assertEquals("srv1", Namespaces.getPreferredPrefix("http://www.isotc211.org/2005/srv", null));
+        assertEquals("gmd",  Namespaces.getPreferredPrefix("http://www.isotc211.org/2005/gmd", null));
     }
 
     /**

@@ -16,15 +16,16 @@
  */
 package org.apache.sis.util;
 
-import java.util.Map;                                               // For javadoc
+import java.util.Map;
 import java.util.BitSet;
+import java.util.Collection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.internal.util.Strings;
-
 import org.apache.sis.util.resources.Errors;
 
 
@@ -82,7 +83,8 @@ import org.apache.sis.util.resources.Errors;
  * in the {@linkplain java.util.Locale#getDefault() default locale} if the check failed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -190,12 +192,33 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
+     * Makes sure that given collection is non-null and non-empty.
+     * If it is null, then a {@link NullArgumentException} is thrown.
+     * Otherwise if it {@linkplain Collection#isEmpty() is empty}, then an {@link IllegalArgumentException} is thrown.
+     *
+     * @param  name     the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  toCheck  the user argument to check against null value and empty collection.
+     * @throws NullArgumentException if {@code toCheck} is null.
+     * @throws IllegalArgumentException if {@code toCheck} is empty.
+     *
+     * @since 1.1
+     */
+    public static void ensureNonEmpty(final String name, final Collection<?> toCheck) {
+        if (toCheck == null) {
+            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, name));
+        }
+        if (toCheck.isEmpty()) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
+        }
+    }
+
+    /**
      * Ensures that the given {@code values} array is non-null and non-empty. This method can also ensures that all values
      * are between the given bounds (inclusive) and are distinct. The distinct values requirement is useful for validating
      * arrays of spatiotemporal dimension indices, where dimensions can not be repeated.
      *
      * <p>Note that a successful call to {@code ensureNonEmpty(name, values, 0, max, true)} implies
-     * 1 ≦ {@code values.length} ≦ {@code max}.</p>
+     * 1 ≤ {@code values.length} ≤ {@code max}.</p>
      *
      * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
      * @param  values    integer values to validate.
@@ -217,7 +240,7 @@ public final class ArgumentChecks extends Static {
         if (values.length == 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
         }
-        long found = 0;                             // Cheap way to check for duplication when (max - min) ≦ 64.
+        long found = 0;                             // Cheap way to check for duplication when (max - min) ≤ 64.
         BitSet more = null;                         // Used only if above cheap way is not sufficient.
         for (int i=0; i<values.length; i++) {
             final int index = values[i];
@@ -674,6 +697,44 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
+     * Ensures that a given value is a divisor of specified number.
+     * This method verifies that {@code (number % divisor) == 0}.
+     * If above condition is not met, the value considered to be wrong is the divisor.
+     *
+     * @param  name     name of the argument for the divisor value. Used only if an exception is thrown.
+     * @param  number   the number to be divided.
+     * @param  divisor  the value to verify.
+     * @throws IllegalArgumentException if {@code (number % divisor) != 0}.
+     * @throws ArithmeticException if {@code divisor == 0}.
+     *
+     * @since 1.1
+     */
+    public static void ensureDivisor(final String name, final int number, final int divisor) {
+        if ((number % divisor) != 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotADivisorOrMultiple_4, name, 0, number, divisor));
+        }
+    }
+
+    /**
+     * Ensures that a given value is a multiple of specified number.
+     * This method verifies that {@code (multiple % number) == 0}.
+     * If above condition is not met, the value considered to be wrong is the multiple.
+     *
+     * @param  name      name of the argument for the multiple value. Used only if an exception is thrown.
+     * @param  number    the number to be multiplied.
+     * @param  multiple  the value to verify.
+     * @throws IllegalArgumentException if {@code (multiple % number) != 0}.
+     * @throws ArithmeticException if {@code number == 0}.
+     *
+     * @since 1.1
+     */
+    public static void ensureMultiple(final String name, final int number, final int multiple) {
+        if ((multiple % number) != 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotADivisorOrMultiple_4, name, 1, number, multiple));
+        }
+    }
+
+    /**
      * Ensures that the given CRS, if non-null, has the expected number of dimensions.
      * This method does nothing if the given coordinate reference system is null.
      *
@@ -809,6 +870,38 @@ public final class ArgumentChecks extends Static {
                 throw new MismatchedDimensionException(Errors.format(
                         Errors.Keys.MismatchedDimension_3, name, expected, dimension));
             }
+        }
+    }
+
+    /**
+     * Ensures that the given transform, if non-null, has the expected number of source and target dimensions.
+     * This method does nothing if the given transform is null.
+     *
+     * @param  name            the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expectedSource  the expected number of source dimensions.
+     * @param  expectedTarget  the expected number of target dimensions.
+     * @param  transform       the transform to check for its dimension, or {@code null}.
+     * @throws MismatchedDimensionException if the given transform is non-null and does
+     *         not have the expected number of dimensions.
+     *
+     * @since 1.1
+     */
+    public static void ensureDimensionsMatch(final String name, int expectedSource, final int expectedTarget,
+                                             final MathTransform transform) throws MismatchedDimensionException
+    {
+        if (transform != null) {
+            int side = 0;
+            int dimension = transform.getSourceDimensions();
+            if (dimension == expectedSource) {
+                dimension = transform.getTargetDimensions();
+                if (dimension == expectedTarget) {
+                    return;
+                }
+                expectedSource = expectedTarget;
+                side = 1;
+            }
+            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedTransformDimension_4,
+                                                                 name, side, expectedSource, dimension));
         }
     }
 }

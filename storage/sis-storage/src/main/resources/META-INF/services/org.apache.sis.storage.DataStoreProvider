@@ -1,3 +1,4 @@
 org.apache.sis.internal.storage.xml.StoreProvider
 org.apache.sis.internal.storage.wkt.StoreProvider
 org.apache.sis.internal.storage.csv.StoreProvider
+org.apache.sis.internal.storage.folder.FolderStoreProvider

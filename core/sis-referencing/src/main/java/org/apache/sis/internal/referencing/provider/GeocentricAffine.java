@@ -56,7 +56,7 @@ import org.apache.sis.util.logging.Logging;
  * "Geocentric translations" is an operation name defined by EPSG.</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -341,7 +341,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
         if (datumShift != null) try {
             parameters.setPositionVectorTransformation(datumShift, BURSAWOLF_TOLERANCE);
         } catch (IllegalArgumentException e) {
-            log(Loggers.COORDINATE_OPERATION, "createParameters", e);
+            recoverableException(GeocentricAffine.class, e);
             return null;
         } else {
             /*
@@ -394,14 +394,14 @@ public abstract class GeocentricAffine extends GeodeticOperation {
          * Following lines will set all Bursa-Wolf parameter values (scale, translation
          * and rotation terms). In the particular case of Molodensky method, we have an
          * additional parameter for the number of source and target dimensions (2 or 3).
+         * If the number of source and target dimensions are not the same, set to 3 and
+         * let the caller adds or removes an ellipsoidal height as needed.
          */
         final Parameters values = createParameters(descriptor, parameters, isTranslation);
         switch (method) {
             case MOLODENSKY:
             case ABRIDGED_MOLODENSKY: {
-                if (dimension <= 3) {
-                    values.getOrCreate(Molodensky.DIMENSION).setValue(dimension);
-                }
+                values.getOrCreate(Molodensky.DIMENSION).setValue(Math.min(dimension, 3));
                 break;
             }
         }
@@ -435,7 +435,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
                          * Should not occur, except sometime on inverse transform of relatively complex datum shifts
                          * (more than just translation terms). We can fallback on formatting the full matrix.
                          */
-                        log(Loggers.WKT, "asDatumShift", e);
+                        Logging.recoverableException(Logging.getLogger(Loggers.WKT), GeocentricAffine.class, "asDatumShift", e);
                         continue;
                     }
                     final boolean isTranslation = parameters.isTranslation();
@@ -458,12 +458,5 @@ public abstract class GeocentricAffine extends GeodeticOperation {
     private static boolean isOperation(final String expected, final Object actual) {
         return (actual instanceof Parameterized) &&
                IdentifiedObjects.isHeuristicMatchForName(((Parameterized) actual).getParameterDescriptors(), expected);
-    }
-
-    /**
-     * Logs a warning about a failure to compute the Bursa-Wolf parameters.
-     */
-    private static void log(final String logger, final String method, final Exception e) {
-        Logging.recoverableException(Logging.getLogger(logger), GeocentricAffine.class, method, e);
     }
 }

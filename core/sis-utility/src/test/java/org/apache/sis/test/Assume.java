@@ -54,7 +54,7 @@ public final strictfp class Assume extends org.junit.Assume {
         Path path = type.getDirectory();
         assumeNotNull("$SIS_DATA/" + type + " directory not found.", path);
         path = path.resolve(file);
-        assumeTrue("Specified directory not found.", Files.isDirectory(path));
+        assumeTrue("Specified file or directory not found.", Files.exists(path));
         assumeTrue("Specified directory not readable.", Files.isReadable(path));
         return path;
     }

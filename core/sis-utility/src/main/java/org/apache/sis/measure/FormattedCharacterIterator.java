@@ -51,7 +51,7 @@ import org.apache.sis.internal.simple.SimpleCharacterIterator;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")     // Not needed - see comment about clone() at the end of this file.
+@SuppressWarnings("CloneableImplementsClone")     // Not needed - see comment about clone() at the end of this file.
 final class FormattedCharacterIterator extends SimpleCharacterIterator implements AttributedCharacterIterator {
     /**
      * For cross-version compatibility.

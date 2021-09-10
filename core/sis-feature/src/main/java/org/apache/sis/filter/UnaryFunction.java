@@ -16,84 +16,81 @@
  */
 package org.apache.sis.filter;
 
-import java.io.Serializable;
+import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
+import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.filter.Filter;
+import org.apache.sis.internal.filter.Node;
 
 // Branch-dependent imports
-import org.opengis.filter.FilterVisitor;
-import org.opengis.filter.expression.Expression;
+import org.opengis.filter.Filter;
+import org.opengis.filter.Expression;
+import org.opengis.filter.NilOperator;
+import org.opengis.filter.NullOperator;
 
 
 /**
- * Base class for filters performing operations on one value.
- * The nature of the operation is dependent on the subclass.
+ * Base class for expressions, comparators or filters performing operations on one expressions.
+ * The nature of the operation depends on the subclass.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
+ * @param  <V>  the type of value computed by the expression.
+ *
+ * @since 1.1
  * @module
  */
-abstract class UnaryFunction extends Node implements Serializable {
+class UnaryFunction<R,V> extends Node {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 4441264252138631694L;
+    private static final long serialVersionUID = 2020526901451551162L;
 
     /**
      * The expression to be used by this operator.
      *
      * @see #getExpression()
      */
-    protected final Expression expression;
+    protected final Expression<? super R, ? extends V> expression;
 
     /**
      * Creates a new unary operator.
      */
-    UnaryFunction(final Expression expression) {
+    UnaryFunction(final Expression<? super R, ? extends V> expression) {
         ArgumentChecks.ensureNonNull("expression", expression);
         this.expression = expression;
     }
 
     /**
-     * Returns the expressions to be used by this operator.
+     * Returns the expression used as parameter by this function.
+     * Defined for {@link Expression#getParameters()} implementations.
      */
-    public final Expression getExpression() {
-        return expression;
+    public final List<Expression<? super R, ?>> getParameters() {
+        return getExpressions();
     }
 
     /**
-     * Returns the singleton expression tested by this operator.
+     * Returns the expression used as parameter by this filter.
+     * Defined for {@link Filter#getExpressions()} implementations.
+     *
+     * @return a list of size 1 containing the singleton expression.
      */
-    @Override
-    protected final Collection<?> getChildren() {
-        return Collections.singleton(expression);
+    public final List<Expression<? super R, ?>> getExpressions() {
+        return Collections.singletonList(expression);
     }
 
     /**
-     * Returns a hash code value for this operator.
+     * Returns the expression used by this operator possibly completed in subclasses with other parameters.
+     * This is used for {@link #toString()}, {@link #hashCode()} and {@link #equals(Object)} implementations.
      */
     @Override
-    public final int hashCode() {
-        // We use the symbol as a way to differentiate the subclasses.
-        return expression.hashCode() ^ symbol();
-    }
-
-    /**
-     * Compares this operator with the given object for equality.
-     */
-    @Override
-    public final boolean equals(final Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (obj != null && obj.getClass() == getClass()) {
-            return expression.equals(((UnaryFunction) obj).expression);
-        }
-        return false;
+    protected Collection<?> getChildren() {
+        return getExpressions();
     }
 
 
@@ -102,69 +99,71 @@ abstract class UnaryFunction extends Node implements Serializable {
      * is equivalent to no value present. The value 0 is a valid value and is not considered
      * {@code null}.
      */
-    static final class IsNull extends UnaryFunction implements org.opengis.filter.PropertyIsNull {
+    static final class IsNull<R> extends UnaryFunction<R,Object>
+            implements NullOperator<R>, Optimization.OnFilter<R>
+ {
         /** For cross-version compatibility. */
-        private static final long serialVersionUID = 5538743632585679484L;
+        private static final long serialVersionUID = 2960285515924533419L;
 
         /** Creates a new operator. */
-        IsNull(Expression expression) {
+        IsNull(final Expression<? super R,?> expression) {
             super(expression);
         }
 
-        /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
-        @Override protected char   symbol()  {return '∅';}
-
-        /** Returns {@code true} if the given value evaluates to {@code null}. */
-        @Override public boolean evaluate(final Object object) {
-            return expression.evaluate(object) == null;
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+            return new IsNull<>(effective[0]);
         }
 
-        /** Implementation of the visitor pattern. */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
+        /** Identification of the operation. */
+        @Override protected char symbol() {
+            return '∅';
+        }
+
+        /** Evaluate this filter on the given object. */
+        @Override public boolean test(final R object) {
+            return expression.apply(object) == null;
         }
     }
 
 
     /**
-     * The negation filter (¬).
+     * Filter operator that checks if an expression's value is nil.
+     * The difference with {@link IsNull} is that a value should exist but
+     * can not be provided for the reason given by {@link #getNilReason()}.
      */
-    static final class Not extends Node implements org.opengis.filter.Not {
+    static final class IsNil<R> extends UnaryFunction<R,Object>
+            implements NilOperator<R>, Optimization.OnFilter<R>
+    {
         /** For cross-version compatibility. */
-        private static final long serialVersionUID = -1296823195138427781L;
+        private static final long serialVersionUID = -7540765433296725888L;
 
-        /** The filter to negate. */
-        private final Filter filter;
+        /** The reason why the value is nil, or {@code null} for accepting any reason. */
+        private final String nilReason;
 
-        /** Creates a new filter. */
-        Not(final Filter filter) {
-            ArgumentChecks.ensureNonNull("filter", filter);
-            this.filter = filter;
+        /** Creates a new operator. */
+        IsNil(final Expression<? super R,?> expression, final String nilReason) {
+            super(expression);
+            this.nilReason = nilReason;
         }
 
-        /** Identification of this operation. */
-        @Override protected String getName() {return "Not";}
-        @Override protected char   symbol()  {return '¬';}
-
-        /** Returns the singleton filter used by this operation. */
-        @Override protected Collection<Filter> getChildren() {
-            return Collections.singletonList(filter);
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+            return new IsNil<>(effective[0], nilReason);
         }
 
-        /** Returns */
-        @Override public Filter getFilter() {
-            return filter;
+        /** Returns the reason why the value is nil. */
+        @Override public Optional<String> getNilReason() {
+            return Optional.ofNullable(nilReason);
         }
 
         /** Evaluate this filter on the given object. */
-        @Override public boolean evaluate(final Object object) {
-            return !filter.evaluate(object);
-        }
-
-        /** Implementation of the visitor pattern. */
-        @Override public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
+        @Override public boolean test(final R object) {
+            final NilReason value = NilReason.forObject(expression.apply(object));
+            if (value     == null) return false;
+            if (nilReason == null) return true;
+            final String explanation = NilReason.OTHER.equals(value) ? value.getOtherExplanation() : value.toString();
+            return nilReason.equalsIgnoreCase(explanation);
         }
     }
 }

@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
-import org.apache.sis.internal.util.Numerics;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.ParameterDescriptor;
@@ -25,7 +24,6 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
@@ -37,7 +35,7 @@ import static org.apache.sis.internal.referencing.provider.Orthographic.*;
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Orthographic_projection_in_cartography">Orthographic projection on Wikipedia</a></li>
- *   <li><a href="http://mathworld.wolfram.com/OrthographicProjection.html">Orthographic projection on MathWorld</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/OrthographicProjection.html">Orthographic projection on MathWorld</a></li>
  * </ul>
  *
  * <h2>Description</h2>
@@ -79,7 +77,7 @@ public class Orthographic extends NormalizedProjection {
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, (byte) 0);
+        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
     }
 
     /**
@@ -125,8 +123,30 @@ public class Orthographic extends NormalizedProjection {
     }
 
     /**
+     * Returns the names of additional internal parameters which need to be taken in account when
+     * comparing two {@code Orthographic} projections or formatting them in debug mode.
+     *
+     * <p>We could report any of the internal parameters. But since they are all derived from φ₀ and
+     * the {@linkplain #eccentricity eccentricity} and since the eccentricity is already reported by
+     * the super-class, we report only φ₀ as a representative of the internal parameters.</p>
+     */
+    @Override
+    final String[] getInternalParameterNames() {
+        return new String[] {"φ₀"};
+    }
+
+    /**
+     * Returns the values of additional internal parameters which need to be taken in account when
+     * comparing two {@code Orthographic} projections or formatting them in debug mode.
+     */
+    @Override
+    final double[] getInternalParameterValues() {
+        return new double[] {(cosφ0 < PI/4) ? acos(cosφ0) : asin(sinφ0)};
+    }
+
+    /**
      * Converts the specified (λ,φ) coordinate and stores the (<var>x</var>,<var>y</var>) result in {@code dstPts}.
-     * The units of measurement are implementation-specific (see subclass javadoc).
+     * The units of measurement are implementation-specific (see super-class javadoc).
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
@@ -244,18 +264,5 @@ public class Orthographic extends NormalizedProjection {
             j.inverseTransform(this, x, y, dstPts, dstOff);
             dstPts[dstOff] = IEEEremainder(dstPts[dstOff], PI);
         }
-    }
-
-    /**
-     * Compares the given object with this transform for equivalence.
-     */
-    @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (super.equals(object, mode)) {
-            final Orthographic that = (Orthographic) object;
-            return Numerics.epsilonEqual(sinφ0, that.sinφ0, mode) &&
-                   Numerics.epsilonEqual(cosφ0, that.cosφ0, mode);
-        }
-        return false;
     }
 }

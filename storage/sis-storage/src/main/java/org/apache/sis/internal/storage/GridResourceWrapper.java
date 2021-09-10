@@ -1,0 +1,227 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.internal.storage;
+
+import java.util.List;
+import java.util.Optional;
+import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.Query;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
+import org.opengis.util.GenericName;
+
+
+/**
+ * A grid coverage resource which is a wrapper around another grid coverage resource.
+ * Wrappers can be used for delaying data loading, modifying the identifier, completing metadata, <i>etc</i>.
+ * The wrapped resource is created only when first needed.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ * @since   1.1
+ * @module
+ */
+public abstract class GridResourceWrapper implements GridCoverageResource {
+    /**
+     * The coverage resource instance which provides the data.
+     * This is initially {@code null} and created when first needed.
+     */
+    private GridCoverageResource source;
+
+    /**
+     * Creates a new wrapper.
+     */
+    protected GridResourceWrapper() {
+    }
+
+    /**
+     * Returns the object on which to perform all synchronizations for thread-safety.
+     */
+    protected abstract Object getSynchronizationLock();
+
+    /**
+     * Creates the resource on which to delegate operations.
+     * This method is invoked in a synchronized block when first needed and the result is cached.
+     *
+     * @return the resource on which to delegate operations.
+     * @throws DataStoreException if the resource can not be created.
+     */
+    protected abstract GridCoverageResource createSource() throws DataStoreException;
+
+    /**
+     * Returns the potentially cached source.
+     * This method invokes {@link #createSource()} when first needed and caches the result.
+     *
+     * @return the resource on which to delegate operations.
+     * @throws DataStoreException if the resource can not be created.
+     */
+    protected final GridCoverageResource source() throws DataStoreException {
+        synchronized (getSynchronizationLock()) {
+            if (source == null) {
+                source = createSource();
+            }
+            return source;
+        }
+    }
+
+    /**
+     * Returns the resource persistent identifier.
+     * The default implementation delegates to the source.
+     *
+     * @return a persistent identifier unique within the data store, or absent if this resource has no such identifier.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
+     */
+    @Override
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
+        return source().getIdentifier();
+    }
+
+    /**
+     * Returns information about this resource.
+     * The default implementation delegates to the source.
+     *
+     * @return information about this resource. Should not be {@code null}.
+     * @throws DataStoreException if an error occurred while reading the metadata.
+     */
+    @Override
+    public Metadata getMetadata() throws DataStoreException {
+        return source().getMetadata();
+    }
+
+    /**
+     * Returns the spatiotemporal extent of this resource in its most natural coordinate reference system.
+     * This is not necessarily the smallest bounding box encompassing all data.
+     * The default implementation delegates to the source.
+     *
+     * @return the spatiotemporal resource extent. May be absent if none or too costly to compute.
+     * @throws DataStoreException if an error occurred while reading or computing the envelope.
+     */
+    @Override
+    public Optional<Envelope> getEnvelope() throws DataStoreException {
+        return source().getEnvelope();
+    }
+
+    /**
+     * Returns the valid extent of grid coordinates together with the conversion from those grid
+     * coordinates to real world coordinates. The default implementation delegates to the source.
+     *
+     * @return extent of grid coordinates together with their mapping to "real world" coordinates.
+     * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
+     */
+    @Override
+    public GridGeometry getGridGeometry() throws DataStoreException {
+        return source().getGridGeometry();
+    }
+
+    /**
+     * Returns the ranges of sample values together with the conversion from samples to real values.
+     * The default implementation delegates to the source.
+     *
+     * @return ranges of sample values together with their mapping to "real values".
+     * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
+     */
+    @Override
+    public List<SampleDimension> getSampleDimensions() throws DataStoreException {
+        return source().getSampleDimensions();
+    }
+
+    /**
+     * Loads a subset of the grid coverage represented by this resource.
+     * The default implementation delegates to the source.
+     *
+     * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
+     * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
+     * @return the grid coverage for the specified domain and range.
+     * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     */
+    @Override
+    public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
+        return source().read(domain, range);
+    }
+
+    /**
+     * Requests a subset of the coverage.
+     * The default implementation delegates to the source.
+     *
+     * @param  query  definition of domain (grid extent) and range (sample dimensions) filtering applied at reading time.
+     * @return resulting coverage resource (never {@code null}).
+     * @throws DataStoreException if an error occurred while processing the query.
+     */
+    @Override
+    public GridCoverageResource subset(final Query query) throws DataStoreException {
+        return source().subset(query);
+    }
+
+    /**
+     * Registers a listener to notify when the specified kind of event occurs in this resource or in children.
+     * The default implementation delegates to the source.
+     *
+     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  listener   listener to notify about events.
+     * @param  eventType  type of {@link StoreEvent} to listen (can not be {@code null}).
+     */
+    @Override
+    public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
+        final GridCoverageResource source;
+        try {
+            source = source();
+        } catch (DataStoreException e) {
+            throw new BackingStoreException(e);
+        }
+        source.addListener(eventType, listener);
+    }
+
+    /**
+     * Unregisters a listener previously added to this resource for the given type of events.
+     * The default implementation delegates to the source.
+     *
+     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  listener   listener to stop notifying about events.
+     * @param  eventType  type of {@link StoreEvent} which were listened (can not be {@code null}).
+     */
+    @Override
+    public <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {
+        final GridCoverageResource source;
+        synchronized (getSynchronizationLock()) {
+            source = this.source;       // No need to invoke the `source()` method here.
+        }
+        if (source != null) {
+            source.removeListener(eventType, listener);
+        }
+    }
+
+    /**
+     * Closes the data store associated to the resource, then discards the resource.
+     * This method does not verify if the data store is still used by other resources.
+     *
+     * @throws DataStoreException if an error occurred while closing the data store.
+     */
+    public final void closeDataStore() throws DataStoreException {
+        final GridCoverageResource s = source;
+        source = null;
+        if (s instanceof StoreResource) {
+            ((StoreResource) s).getOriginator().close();
+        }
+    }
+}

@@ -57,7 +57,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * serializable, is left to subclasses.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -98,6 +98,21 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
     }
 
     /**
+     * Returns the coordinate reference system in which the coordinate tuple is given.
+     * May be {@code null} if this particular {@code DirectPosition} is included in a larger object
+     * with such a reference to a {@linkplain CoordinateReferenceSystem coordinate reference system}.
+     *
+     * <p>The default implementation returns {@code null}.
+     * Subclasses should override this method if the CRS can be provided.</p>
+     *
+     * @return the coordinate reference system, or {@code null}.
+     */
+    @Override
+    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+        return null;
+    }
+
+    /**
      * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
      *
      * @return the coordinates.
@@ -109,6 +124,23 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
             coordinates[i] = getOrdinate(i);
         }
         return coordinates;
+    }
+
+    /**
+     * Sets the coordinate value along the specified dimension.
+     *
+     * <p>The default implementation throws {@link UnsupportedOperationException}.
+     * Subclasses need to override this method if this direct position is mutable.</p>
+     *
+     * @param  dimension  the dimension for the coordinate of interest.
+     * @param  value      the coordinate value of interest.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
+     *         than the {@linkplain #getDimension() position dimension}.
+     * @throws UnsupportedOperationException if this direct position is immutable.
+     */
+    @Override
+    public void setOrdinate(int dimension, double value) {
+        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
     }
 
     /**

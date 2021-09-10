@@ -29,6 +29,7 @@ import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationNotFoundException;
+import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -38,6 +39,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.ImmutableIdentifier;
+import org.apache.sis.referencing.operation.DefaultOperationMethod;
 
 
 /**
@@ -45,7 +47,7 @@ import org.apache.sis.referencing.ImmutableIdentifier;
  * Each subclasses should have a singleton instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -54,6 +56,25 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * Number of input and output dimensions.
      */
     private final int dimension;
+
+    /**
+     * An operation method that describe this coordinate system conversion.
+     * This is used for providing a value in {@link DefaultMathTransformFactory#getLastMethodUsed()}.
+     */
+    private final transient OperationMethod method;
+
+    /**
+     * The {@linkplain #method} augmented with one pass through dimension.
+     * May be the same instance than {@link #method} if that method is already 3D.
+     *
+     * <div class="note"><b>Note:</b> if {@link #method} is "Polar to Cartesian",
+     * then {@code method3D} is "Cylindrical to Cartesian".</div>
+     *
+     * This method is used for {@link org.opengis.referencing.operation.CoordinateOperation} WKT formatting.
+     * Contrarily to {@link #method}, this {@code method3D} is never used for {@link MathTransform} WKT.
+     * Instead, the later case is represented by a concatenation of {@link #method} with a pass-through.
+     */
+    private final transient OperationMethod method3D;
 
     /**
      * An empty contextual parameter, used only for representing conversion from degrees to radians.
@@ -80,11 +101,21 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * Subclasses may need to invoke {@link ContextualParameters#normalizeGeographicInputs(double)}
      * or {@link ContextualParameters#denormalizeGeographicOutputs(double)} after this constructor.
      */
-    CoordinateSystemTransform(final String method, final int dimension) {
+    CoordinateSystemTransform(final String method, final String method3D, final int dimension) {
         this.dimension = dimension;
+        this.method    = method(method);
+        this.method3D  = (method3D != null) ? method(method3D) : this.method;
+        this.context   = new ContextualParameters(this.method.getParameters(), dimension, dimension);
+    }
+
+    /**
+     * Creates an operation method of the given name.
+     */
+    private static OperationMethod method(final String name) {
         final Map<String,?> properties = Collections.singletonMap(DefaultParameterDescriptorGroup.NAME_KEY,
-                new ImmutableIdentifier(Citations.SIS, Constants.SIS, method));
-        context = new ContextualParameters(new DefaultParameterDescriptorGroup(properties, 1, 1), dimension, dimension);
+                new ImmutableIdentifier(Citations.SIS, Constants.SIS, name));
+        final DefaultParameterDescriptorGroup descriptor = new DefaultParameterDescriptorGroup(properties, 1, 1);
+        return new DefaultOperationMethod(properties, descriptor);
     }
 
     /**
@@ -160,7 +191,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * weight in the common case where the conversions handled by this class are not needed.
      */
     static MathTransform create(final MathTransformFactory factory, final CoordinateSystem source,
-            final CoordinateSystem target) throws FactoryException
+            final CoordinateSystem target, final ThreadLocal<OperationMethod> lastMethod) throws FactoryException
     {
         int passthrough = 0;
         CoordinateSystemTransform kernel = null;
@@ -196,11 +227,13 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
                 final MathTransform before = factory.createAffineTransform(
                         CoordinateSystems.swapAndScaleAxes(source,
                         CoordinateSystems.replaceAxes(source, AxesConvention.NORMALIZED)));
-                final MathTransform after = factory.createAffineTransform(
+                final MathTransform after  = factory.createAffineTransform(
                         CoordinateSystems.swapAndScaleAxes(
                         CoordinateSystems.replaceAxes(target, AxesConvention.NORMALIZED), target));
-                return factory.createConcatenatedTransform(before,
-                       factory.createConcatenatedTransform(tr, after));
+                final MathTransform result = factory.createConcatenatedTransform(before,
+                                             factory.createConcatenatedTransform(tr, after));
+                lastMethod.set(passthrough == 0 ? kernel.method : kernel.method3D);
+                return result;
             }
         } catch (IllegalArgumentException | IncommensurableException e) {
             cause = e;

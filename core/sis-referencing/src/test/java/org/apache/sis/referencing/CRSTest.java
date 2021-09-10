@@ -22,6 +22,7 @@ import java.util.Arrays;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
@@ -236,7 +237,7 @@ public final strictfp class CRSTest extends TestCase {
         assertFalse(CRS.isHorizontalCRS(HardCodedCRS.TIME));
         assertFalse(CRS.isHorizontalCRS(HardCodedCRS.ELLIPSOIDAL_HEIGHT));
         assertTrue (CRS.isHorizontalCRS(HardCodedCRS.WGS84));
-        assertTrue (CRS.isHorizontalCRS(HardCodedCRS.WGS84_φλ));
+        assertTrue (CRS.isHorizontalCRS(HardCodedCRS.WGS84_LATITUDE_FIRST));
         assertFalse(CRS.isHorizontalCRS(HardCodedCRS.WGS84_3D));
         assertFalse(CRS.isHorizontalCRS(HardCodedCRS.GEOID_4D));
         assertFalse(CRS.isHorizontalCRS(HardCodedCRS.GEOCENTRIC));
@@ -252,9 +253,8 @@ public final strictfp class CRSTest extends TestCase {
         assertNull(CRS.getHorizontalComponent(HardCodedCRS.ELLIPSOIDAL_HEIGHT));
         assertNull(CRS.getHorizontalComponent(HardCodedCRS.GEOCENTRIC));
 
-        assertSame(HardCodedCRS.WGS84,    CRS.getHorizontalComponent(HardCodedCRS.WGS84));
-        assertSame(HardCodedCRS.WGS84_φλ, CRS.getHorizontalComponent(HardCodedCRS.WGS84_φλ));
-
+        assertSame(HardCodedCRS.WGS84,                 CRS.getHorizontalComponent(HardCodedCRS.WGS84));
+        assertSame(HardCodedCRS.WGS84_LATITUDE_FIRST,  CRS.getHorizontalComponent(HardCodedCRS.WGS84_LATITUDE_FIRST));
         assertEqualsIgnoreMetadata(HardCodedCRS.WGS84, CRS.getHorizontalComponent(HardCodedCRS.WGS84_3D));
     }
 
@@ -285,7 +285,7 @@ public final strictfp class CRSTest extends TestCase {
     public void testGetTemporalComponent() {
         assertNull(CRS.getTemporalComponent(HardCodedCRS.ELLIPSOIDAL_HEIGHT));
         assertNull(CRS.getTemporalComponent(HardCodedCRS.WGS84));
-        assertNull(CRS.getTemporalComponent(HardCodedCRS.WGS84_φλ));
+        assertNull(CRS.getTemporalComponent(HardCodedCRS.WGS84_LATITUDE_FIRST));
         assertNull(CRS.getTemporalComponent(HardCodedCRS.WGS84_3D));
 
         assertSame(HardCodedCRS.TIME, CRS.getTemporalComponent(HardCodedCRS.TIME));
@@ -368,8 +368,24 @@ public final strictfp class CRSTest extends TestCase {
      */
     @Test
     public void testReduceGeographic3D() throws FactoryException {
-        assertSame(CommonCRS.Vertical.ELLIPSOIDAL.crs(),   CRS.reduce(HardCodedCRS.WGS84_3D, 2));
-        assertSame(CommonCRS.WGS84.normalizedGeographic(), CRS.reduce(HardCodedCRS.WGS84_3D, 0, 1));
+        final GeographicCRS crs = HardCodedCRS.WGS84_3D;
+        assertSame(CommonCRS.Vertical.ELLIPSOIDAL.crs(),   CRS.reduce(crs, 2));
+        assertSame(CommonCRS.WGS84.normalizedGeographic(), CRS.reduce(crs, 0, 1));
+    }
+
+    /**
+     * Tests {@link CRS#reduce(CoordinateReferenceSystem, int...)} with a three-dimensional projected CRS
+     * to be reduced to a two-dimensional CRS.
+     *
+     * @throws FactoryException if an error occurred while creating a CRS.
+     *
+     * @since 1.1
+     */
+    @Test
+    public void testReduceProjected3D() throws FactoryException {
+        final ProjectedCRS crs = HardCodedConversions.mercator3D();
+        assertSame(CommonCRS.Vertical.ELLIPSOIDAL.crs(), CRS.reduce(crs, 2));
+        assertEqualsIgnoreMetadata(HardCodedConversions.mercator(), CRS.reduce(crs, 0, 1));
     }
 
     /**

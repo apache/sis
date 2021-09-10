@@ -43,7 +43,7 @@ public final class XPaths extends Static {
      * Examples:
      * <ul>
      *   <li>{@code "urn:ogc:def:uom:EPSG::9001"}</li>
-     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"}</li>
+     *   <li>{@code "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"}</li>
      * </ul>
      *
      * @param  uri     the URI candidate to verify.
@@ -88,7 +88,7 @@ scan:   while (offset < length) {
      *
      * <ul>
      *   <li>{@code uom} for Unit Of Measurement (example:
-     *       {@code "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"})</li>
+     *       {@code "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"})</li>
      * </ul>
      *
      * @param  type  the object type.

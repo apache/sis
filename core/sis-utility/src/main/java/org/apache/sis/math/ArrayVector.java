@@ -33,6 +33,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.measure.NumberRange;
 
 
@@ -41,7 +42,7 @@ import org.apache.sis.measure.NumberRange;
  * so changes in the underlying array is reflected in this vector and vice-versa.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -206,6 +207,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return Double.class;
         }
 
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public boolean isSinglePrecision() {
+            return false;
+        }
+
         /** Returns the length of the backing array. */
         @Override public int size() {
             return array.length;
@@ -248,6 +254,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            Arrays.fill(array, fromIndex, toIndex, value.doubleValue());
+            modCount++;
+        }
+
         /** Finds index of a match or mismatch (depending on {@code equality}). */
         @Override int indexOf(final int toSearch, int index, final boolean equality) {
             final long first = Double.doubleToLongBits(array[toSearch]);
@@ -255,17 +267,19 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return index;
         }
 
+        /** Returns {@code true} if this vector is empty or contains only {@code NaN} values. */
+        @Override public boolean isEmptyOrNaN() {
+            for (final double v : array) {
+                if (!Double.isNaN(v)) return false;
+            }
+            return true;
+        }
+
         /** Returns whether this vector in the given range is equals to the specified vector. */
-        @Override boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+        @Override boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other instanceof Doubles) {
-                // TODO: replace by Arrays.equals(…) with JDK9.
-                final double[] cmp = ((Doubles) other).array;
-                while (lower < upper) {
-                    if (Double.doubleToLongBits(array[lower++]) != Double.doubleToLongBits(cmp[otherOffset++])) {
-                        return false;
-                    }
-                }
-                return true;
+                return JDK9.equals(array, lower, upper,
+                        ((Doubles) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
         }
@@ -327,6 +341,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return Float.class;
         }
 
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public boolean isSinglePrecision() {
+            return true;
+        }
+
         /** Returns the length of the backing array. */
         @Override public final int size() {
             return array.length;
@@ -355,6 +374,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            Arrays.fill(array, fromIndex, toIndex, value.floatValue());
+            modCount++;
+        }
+
         /** Finds index of a match or mismatch (depending on {@code equality}). */
         @Override final int indexOf(final int toSearch, int index, final boolean equality) {
             final int first = Float.floatToIntBits(array[toSearch]);
@@ -362,17 +387,19 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return index;
         }
 
+        /** Returns {@code true} if this vector is empty or contains only {@code NaN} values. */
+        @Override public final boolean isEmptyOrNaN() {
+            for (final float v : array) {
+                if (!Float.isNaN(v)) return false;
+            }
+            return true;
+        }
+
         /** Returns whether this vector in the given range is equals to the specified vector. */
-        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+        @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                // TODO: replace by Arrays.equals(…) with JDK9.
-                final float[] cmp = ((Floats) other).array;
-                while (lower < upper) {
-                    if (Float.floatToIntBits(array[lower++]) != Float.floatToIntBits(cmp[otherOffset++])) {
-                        return false;
-                    }
-                }
-                return true;
+                return JDK9.equals(array, lower, upper,
+                        ((Floats) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
         }
@@ -428,6 +455,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             super(array);
         }
 
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public boolean isSinglePrecision() {
+            return false;
+        }
+
         /** Returns the value at the given index. */
         @Override public double doubleValue(final int index) {
             return DecimalFunctions.floatToDouble(super.floatValue(index));
@@ -476,6 +508,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return Long.class;
         }
 
+        /** Returns whether this vector is empty. */
+        @Override public final boolean isEmptyOrNaN() {
+            return array.length == 0;
+        }
+
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public final boolean isSinglePrecision() {
+            return false;
+        }
+
         /** Values in this vector are guaranteed to be integers. */
         @Override public final boolean isInteger() {
             return true;
@@ -499,6 +541,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            verifyType(value, Numbers.LONG);
+            Arrays.fill(array, fromIndex, toIndex, value.longValue());
+            modCount++;
+        }
+
         /** Finds index of a match or mismatch (depending on {@code equality}). */
         @Override final int indexOf(final int toSearch, int index, final boolean equality) {
             final long first = array[toSearch];
@@ -507,16 +556,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns whether this vector in the given range is equals to the specified vector. */
-        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+        @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                // TODO: replace by Arrays.equals(…) with JDK9.
-                final long[] cmp = ((Longs) other).array;
-                while (lower < upper) {
-                    if (array[lower++] != cmp[otherOffset++]) {
-                        return false;
-                    }
-                }
-                return true;
+                return JDK9.equals(array, lower, upper,
+                        ((Longs) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
         }
@@ -594,6 +637,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return Integer.class;
         }
 
+        /** Returns whether this vector is empty. */
+        @Override public final boolean isEmptyOrNaN() {
+            return array.length == 0;
+        }
+
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public final boolean isSinglePrecision() {
+            return false;
+        }
+
         /** Values in this vector are guaranteed to be integers. */
         @Override public final boolean isInteger() {
             return true;
@@ -618,6 +671,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            verifyType(value, Numbers.INTEGER);
+            Arrays.fill(array, fromIndex, toIndex, value.intValue());
+            modCount++;
+        }
+
         /** Finds index of a match or mismatch (depending on {@code equality}). */
         @Override final int indexOf(final int toSearch, int index, final boolean equality) {
             final int first = array[toSearch];
@@ -626,16 +686,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns whether this vector in the given range is equals to the specified vector. */
-        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+        @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                // TODO: replace by Arrays.equals(…) with JDK9.
-                final int[] cmp = ((Integers) other).array;
-                while (lower < upper) {
-                    if (array[lower++] != cmp[otherOffset++]) {
-                        return false;
-                    }
-                }
-                return true;
+                return JDK9.equals(array, lower, upper,
+                        ((Integers) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
         }
@@ -716,6 +770,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return Short.class;
         }
 
+        /** Returns whether this vector is empty. */
+        @Override public final boolean isEmptyOrNaN() {
+            return array.length == 0;
+        }
+
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public final boolean isSinglePrecision() {
+            return true;
+        }
+
         /** Values in this vector are guaranteed to be integers. */
         @Override public final boolean isInteger() {
             return true;
@@ -741,6 +805,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            verifyType(value, Numbers.SHORT);
+            Arrays.fill(array, fromIndex, toIndex, value.shortValue());
+            modCount++;
+        }
+
         /** Finds index of a match or mismatch (depending on {@code equality}). */
         @Override final int indexOf(final int toSearch, int index, final boolean equality) {
             final short first = array[toSearch];
@@ -749,16 +820,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns whether this vector in the given range is equals to the specified vector. */
-        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+        @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                // TODO: replace by Arrays.equals(…) with JDK9.
-                final short[] cmp = ((Shorts) other).array;
-                while (lower < upper) {
-                    if (array[lower++] != cmp[otherOffset++]) {
-                        return false;
-                    }
-                }
-                return true;
+                return JDK9.equals(array, lower, upper,
+                        ((Shorts) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
         }
@@ -813,6 +878,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return Byte.class;
         }
 
+        /** Returns whether this vector is empty. */
+        @Override public final boolean isEmptyOrNaN() {
+            return array.length == 0;
+        }
+
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public final boolean isSinglePrecision() {
+            return true;
+        }
+
         /** Values in this vector are guaranteed to be integers. */
         @Override public final boolean isInteger() {
             return true;
@@ -839,6 +914,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            verifyType(value, Numbers.BYTE);
+            Arrays.fill(array, fromIndex, toIndex, value.byteValue());
+            modCount++;
+        }
+
         /** Finds index of a match or mismatch (depending on {@code equality}). */
         @Override final int indexOf(final int toSearch, int index, final boolean equality) {
             final byte first = array[toSearch];
@@ -849,14 +931,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equals to the specified vector. */
         @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
             if (other.getClass() == getClass()) {
-                // TODO: replace by Arrays.equals(…) with JDK9.
-                final byte[] cmp = ((Bytes) other).array;
-                while (lower < upper) {
-                    if (array[lower++] != cmp[otherOffset++]) {
-                        return false;
-                    }
-                }
-                return true;
+                return JDK9.equals(array, lower, upper,
+                        ((Bytes) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
         }
@@ -1129,6 +1205,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return Double.class;
         }
 
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public final boolean isSinglePrecision() {
+            return false;
+        }
+
         /** Returns {@code true} if the element at the given index is null or NaN. */
         @Override public boolean isNaN(final int index) {
             String value = array[index];
@@ -1164,6 +1245,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             modCount++;
             return old;
         }
+
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            Arrays.fill(array, fromIndex, toIndex, value.toString());
+            modCount++;
+        }
     }
 
     /**
@@ -1189,11 +1276,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Returns {@code true} if the element at the given index is null or NaN. */
         @Override public boolean isNaN(final int index) {
-            Number value = array[index];
-            if (value == null) return true;
-            if (value instanceof Float)  return ((Float)  value).isNaN();
-            if (value instanceof Double) return ((Double) value).isNaN();
-            return false;
+            return Numbers.isNaN(array[index]);
         }
 
         @Override public int           size()          {return array.length;}
@@ -1215,6 +1298,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             array[index] = value;
             modCount++;
             return old;
+        }
+
+        /** Sets the value of all elements in the given range. */
+        @Override public void fill(final int fromIndex, final int toIndex, final Number value) {
+            Arrays.fill(array, fromIndex, toIndex, value);
+            modCount++;
         }
     }
 }

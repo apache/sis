@@ -26,38 +26,48 @@ import org.apache.sis.util.CharSequences;
  * that can not (to our knowledge) be inferred from the {@link DatabaseMetaData}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.1
  * @since   0.7
  * @module
  */
 public enum Dialect {
     /**
      * The database is presumed to use ANSI SQL syntax.
+     *
+     * @see DatabaseMetaData#supportsANSI92EntryLevelSQL()
      */
-    ANSI(null, false),
+    ANSI(null, false, true),
 
     /**
      * The database uses Derby syntax. This is ANSI, with some constraints that PostgreSQL does not have
      * (for example column with {@code UNIQUE} constraint must explicitly be specified as {@code NOT NULL}).
      */
-    DERBY("derby", false),
+    DERBY("derby", false, true),
 
     /**
      * The database uses HSQL syntax. This is ANSI, but does not allow {@code INSERT} statements inserting many lines.
      * It also have a {@code SHUTDOWN} command which is specific to HSQLDB.
      */
-    HSQL("hsqldb", false),
+    HSQL("hsqldb", false, true),
 
     /**
      * The database uses PostgreSQL syntax. This is ANSI, but provided an a separated
      * enumeration value because it allows a few additional commands like {@code VACUUM}.
      */
-    POSTGRESQL("postgresql", true),
+    POSTGRESQL("postgresql", true, true),
 
     /**
      * The database uses Oracle syntax. This is ANSI, but without {@code "AS"} keyword.
      */
-    ORACLE("oracle", false);
+    ORACLE("oracle", false, true),
+
+    /**
+     * The database uses SQLite syntax. This is ANSI, but with several limitations.
+     *
+     * @see <a href="https://www.sqlite.org/omitted.html">SQL Features That SQLite Does Not Implement</a>
+     */
+    SQLITE("sqlite", false, false);
 
     /**
      * The protocol in JDBC URL, or {@code null} if unknown.
@@ -68,7 +78,7 @@ public enum Dialect {
     /**
      * Whether this dialect support table inheritance.
      */
-    public final boolean isTableInheritanceSupported;
+    public final boolean supportsTableInheritance;
 
     /**
      * {@code true} if child tables inherit the index of their parent tables.
@@ -76,14 +86,26 @@ public enum Dialect {
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-358">SIS-358</a>
      */
-    public final boolean isIndexInheritanceSupported = false;
+    public final boolean supportsIndexInheritance = false;
+
+    /**
+     * Whether this dialect support adding table constraints after creation.
+     * This feature is not yet supported in SQLite.
+     *
+     * @see DatabaseMetaData#supportsAlterTableWithAddColumn()
+     */
+    public final boolean supportsAlterTableWithAddConstraint;
 
     /**
      * Creates a new enumeration value for a SQL dialect for the given protocol.
      */
-    private Dialect(final String protocol, final boolean isTableInheritanceSupported) {
+    private Dialect(final String  protocol,
+                    final boolean supportsTableInheritance,
+                    final boolean supportsAlterTableWithAddConstraint)
+    {
         this.protocol = protocol;
-        this.isTableInheritanceSupported = isTableInheritanceSupported;
+        this.supportsTableInheritance = supportsTableInheritance;
+        this.supportsAlterTableWithAddConstraint = supportsAlterTableWithAddConstraint;
     }
 
     /**

@@ -47,9 +47,13 @@ import java.awt.geom.Point2D;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.CoordinateOperation;
 
@@ -58,7 +62,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
  * Tests the {@link Classes} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -90,14 +94,26 @@ public final strictfp class ClassesTest extends TestCase {
      * Tests {@link Classes#getAllInterfaces(Class)}.
      */
     @Test
+    @SuppressWarnings("")
     public void testGetAllInterfaces() {
-        final Set<Class<?>> interfaces = getInterfaceSet(ArrayList.class);
-        assertTrue(interfaces.contains(List        .class));
-        assertTrue(interfaces.contains(Collection  .class));
-        assertTrue(interfaces.contains(Iterable    .class));
-        assertTrue(interfaces.contains(RandomAccess.class));
-        assertTrue(interfaces.contains(Serializable.class));
-        assertTrue(interfaces.contains(Cloneable   .class));
+        assertArrayEquals(new Class[] {
+            GeographicCRS.class,
+            EllipsoidalCS.class,                // Shall be before parent types listed below.
+            GeodeticCRS.class,
+            SingleCRS.class,
+            CoordinateReferenceSystem.class,
+            ReferenceSystem.class,
+            IdentifiedObject.class,
+            CoordinateSystem.class
+        }, getAllInterfaces(MixedImpl.class));
+    }
+
+    /**
+     * A dummy class which implements two interfaces having a common parent.
+     * The intent is to verify that explicitly declared interfaces are listed
+     * before parent interfaces in {@link #testGetAllInterfaces()}.
+     */
+    private abstract static class MixedImpl implements GeographicCRS, EllipsoidalCS {
     }
 
     /**

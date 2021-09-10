@@ -818,7 +818,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          * identified objects may have names with the same scopes in the same order. We
          * also need to iterate over all rows in order to know the number of columns.
          *
-         * The first column is reserved for the identifier. We put null as a sentinal key for
+         * The first column is reserved for the identifier. We put null as a sentinel key for
          * that column name, to be replaced later by "Identifier" in user locale. We can not
          * put the localized strings in the map right now because they could conflict with
          * the scope of some alias to be processed below.

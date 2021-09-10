@@ -25,7 +25,7 @@ import java.nio.Buffer;
  * The kind of buffer and the primitive type in the array depend on the implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -51,6 +51,11 @@ interface DataTransfer {
      * to the subclass constructor, or the array created by {@link #createDataArray(int)}.
      */
     Object dataArray();
+
+    /**
+     * Returns {@link #dataArray()} wrapped in a buffer.
+     */
+    Buffer dataArrayAsBuffer();
 
     /**
      * Creates a destination array of the given length.

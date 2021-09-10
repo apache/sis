@@ -59,15 +59,35 @@ import org.apache.sis.internal.storage.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.3
  * @module
  */
 public final class IOUtilities extends Static {
     /**
+     * The symbol for current directory.
+     */
+    public static final String CURRENT_DIRECTORY_SYMBOL = ".";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private IOUtilities() {
+    }
+
+    /**
+     * Returns {@code true} if the given object is a {@link Path}, {@link File}, {@link URL}, {@link URI}
+     * or {@link CharSequence}. They are the types accepted by methods such as {@link #filename(Object)}.
+     *
+     * @param  path  the object to verify.
+     * @return whether the given object is of known type.
+     *
+     * @since 1.1
+     */
+    public static boolean isKindOfPath(final Object path) {
+        return (path instanceof URI)  || (path instanceof URL)  ||      // Test final classes first.
+               (path instanceof Path) || (path instanceof File) ||
+               (path instanceof CharSequence);
     }
 
     /**
@@ -403,7 +423,7 @@ public final class IOUtilities extends Static {
              * except in the particular case where there is just one letter before ':'. In such
              * case, it may be the drive letter of a Windows file.
              */
-            if (s<0 || (s==1 && Character.isLetter(path.charAt(0)) && !path.regionMatches(2, "//", 0, 2))) {
+            if (s<0 || (s==1 && Character.isLetter(path.charAt(0)) && !path.startsWith("//", 2))) {
                 return new File(path);
             }
         }
@@ -418,6 +438,30 @@ public final class IOUtilities extends Static {
          * If a URI is needed, callers should use toURI(url, encoding).
          */
         return url;
+    }
+
+    /**
+     * Converts the given object to a {@link Path} if the object is a known type, or returns {@code null} otherwise.
+     * Current implementation recognizes {@link CharSequence}, {@link Path}, {@link File}, {@link URI}
+     * but not {@link URL}, because conversion of URL requires to know the encoding.
+     *
+     * @param  path  the object to convert to a path.
+     * @return the given object as a path, or {@code null}.
+     * @throws IllegalArgumentException if the given object is an instance of a supported type but can not be converted.
+     * @throws FileSystemNotFoundException if the file system identified by URI can not be used.
+     */
+    public static Path toPathOrNull(final Object path) {
+        if (path instanceof Path) {
+            return (Path) path;
+        } else if (path instanceof File) {
+            return ((File) path).toPath();
+        } else if (path instanceof URI) {
+            return Paths.get((URI) path);
+        } else if (path instanceof CharSequence) {
+            return Paths.get(path.toString());
+        } else {
+            return null;
+        }
     }
 
     /**

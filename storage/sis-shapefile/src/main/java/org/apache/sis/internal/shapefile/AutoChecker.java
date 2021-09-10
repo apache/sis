@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.sis.internal.system.Modules;
 
 import org.apache.sis.util.logging.Logging;
 
@@ -34,7 +35,7 @@ import org.apache.sis.util.logging.Logging;
  */
 public abstract class AutoChecker {
     /** Logger. */
-    private static Logger LOGGER = Logging.getLogger(AutoChecker.class);
+    static Logger LOGGER = Logging.getLogger(Modules.SHAPEFILE);
 
     /**
      * Format a resource bundle message.

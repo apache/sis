@@ -91,7 +91,7 @@ public class ObliqueMercator extends ConformalProjection {
         if (identMatch(method, "(?i).*\\bvariant\\s*B\\b.*", IDENTIFIER  ))        return CENTER;
         if (identMatch(method, "(?i).*\\bTwo[_\\s]Point[_\\s]Natural\\b.*", null)) return TWO_POINTS;
         if (identMatch(method, "(?i).*\\bTwo[_\\s]Point[_\\s]Center\\b.*",  null)) return TWO_POINTS | CENTER;
-        return 0;       // Unidentified case, to be considered as variant A.
+        return STANDARD_VARIANT;                // Unidentified case, to be considered as variant A.
     }
 
     /**
@@ -353,12 +353,13 @@ public class ObliqueMercator extends ConformalProjection {
         final double dU_dλ = -B * (cosγ0 / T) * dV_dλ;
         final double dU_dφ = dQ_dφ * (sinγ0 + (sinγ0 + U)/(Q*Q) - U) / (2*T);
         final double dS_dφ = 0.5*dQ_dφ * (1 + 1/(Q*Q));
-        final double M = (S*cosγ0 + V*sinγ0);
-        final double L = hypot(dV_dλ, M);
-        final double P = L + dV_dλ;
-        final double D = (P*P + M*M);
-        final double dy_dλ = 2 * B * (dV_dλ * (sinγ0*P + (V - sinγ0*M) * M/L) + V*M) / D;      // Y = atan2(M, T)
-        final double dy_dφ = 2 * cosγ0 * dS_dφ * (P - M*M/L) / D;
+        final double M   = (S*cosγ0 + V*sinγ0);
+        final double L   = fastHypot(dV_dλ, M);
+        final double M_L = M / L;
+        final double P   = L + dV_dλ;
+        final double D   = (P*P + M*M);
+        final double dy_dλ = 2 * B * (dV_dλ * (sinγ0*P + (V - sinγ0*M) * M_L) + V*M) / D;    // Y = atan2(M, T)
+        final double dy_dφ = 2 * cosγ0 * dS_dφ * (P - M*M_L) / D;
         final double R = U*U - 1;
         return new Matrix2(dU_dλ/R, dU_dφ/R,
                            dy_dλ,   dy_dφ);

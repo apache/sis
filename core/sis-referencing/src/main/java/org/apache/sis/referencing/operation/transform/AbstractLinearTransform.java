@@ -44,11 +44,10 @@ import org.opengis.util.FactoryException;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
-@SuppressWarnings("CloneInNonCloneableClass")   // Intentionally not Cloneable despite the clone() method.
 abstract class AbstractLinearTransform extends AbstractMathTransform implements LinearTransform, Matrix, Serializable {
     /**
      * For cross-version compatibility.
@@ -59,6 +58,8 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      * The inverse transform, or {@code null} if not yet created.
      * This field is part of the serialization form in order to avoid rounding errors if a user
      * asks for the inverse of the inverse (i.e. the original transform) after deserialization.
+     *
+     * @see #inverse()
      */
     volatile LinearTransform inverse;
 
@@ -80,9 +81,10 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
 
     /**
      * Returns a copy of the matrix that user can modify.
+     * The object returned by this method is not of the same class than this object.
      */
     @Override
-    @SuppressWarnings("CloneDoesntCallSuperClone")
+    @SuppressWarnings({"CloneInNonCloneableClass", "CloneDoesntCallSuperClone"})
     public final Matrix clone() {
         return Matrices.copy(this);
     }
@@ -126,7 +128,8 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
     }
 
     /**
-     * Creates the inverse transform of this object.
+     * Returns the inverse transform of this object.
+     * This method invokes {@link #createInverse()} when first needed, then caches the result.
      */
     @Override
     @SuppressWarnings("DoubleCheckedLocking")                           // Okay since 'inverse' is volatile.
@@ -136,22 +139,29 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
             synchronized (this) {
                 inv = inverse;
                 if (inv == null) {
-                    /*
-                     * Should never be the identity transform at this point (except during tests) because
-                     * MathTransforms.linear(…) should never instantiate this class in the identity case.
-                     * But we check anyway as a paranoiac safety.
-                     */
-                    if (isIdentity()) {
-                        inv = this;
-                    } else {
-                        inv = MathTransforms.linear(Matrices.inverse(this));
-                        if (inv instanceof AbstractLinearTransform) {
-                            ((AbstractLinearTransform) inv).inverse = this;
-                        }
-                    }
+                    inv = createInverse();
                     inverse = inv;
                 }
             }
+        }
+        return inv;
+    }
+
+    /**
+     * Invoked by {@link #inverse()} the first time that the inverse transform needs to be computed.
+     */
+    LinearTransform createInverse() throws NoninvertibleTransformException {
+        /*
+         * Should never be the identity transform at this point (except during tests) because
+         * MathTransforms.linear(…) should never instantiate this class in the identity case.
+         * But we check anyway as a paranoiac safety.
+         */
+        if (isIdentity()) {
+            return this;
+        }
+        final LinearTransform inv = MathTransforms.linear(Matrices.inverse(this));
+        if (inv instanceof AbstractLinearTransform) {
+            ((AbstractLinearTransform) inv).inverse = this;
         }
         return inv;
     }

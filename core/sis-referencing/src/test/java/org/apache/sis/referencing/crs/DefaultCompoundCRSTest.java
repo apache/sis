@@ -174,7 +174,7 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
      */
     @Test
     public void testNormalization() {
-        final DefaultGeographicCRS crs2 = HardCodedCRS.WGS84_φλ;
+        final DefaultGeographicCRS crs2 = HardCodedCRS.WGS84_LATITUDE_FIRST;
         final DefaultGeographicCRS rh2  = crs2.forConvention(AxesConvention.RIGHT_HANDED);
         final DefaultCompoundCRS   crs3 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "3D"), crs2, HEIGHT);
         final DefaultCompoundCRS   crs4 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), crs3, TIME);

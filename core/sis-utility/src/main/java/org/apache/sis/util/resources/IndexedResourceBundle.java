@@ -75,7 +75,7 @@ import org.apache.sis.measure.Range;
  * multiple threads.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -471,6 +471,11 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Writes the localized string identified by the given key followed by a colon.
      * The way to write the colon depends on the language.
      *
+     * <div class="note"><b>API note:</b>
+     * we do not provide a method with {@link StringBuilder} argument and without {@link IOException} clause
+     * because it is not needed by Apache SIS in practice. We found that codes invoking this method with a
+     * {@link StringBuilder} happen in contexts where an {@link IOException} is thrown elsewhere anyway.</div>
+     *
      * @param  key         the key for the desired string.
      * @param  toAppendTo  where to write the localized string followed by a colon.
      * @throws IOException if an error occurred while writing to the given destination.
@@ -479,23 +484,37 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      */
     public final void appendLabel(final short key, final Appendable toAppendTo) throws IOException {
         toAppendTo.append(getString(key));
-        if (Locale.FRENCH.getLanguage().equals(getLocale().getLanguage())) {
-            toAppendTo.append("\u00A0:");
+        final String colon = colon();
+        if (colon != null) {
+            toAppendTo.append(colon);
         } else {
             toAppendTo.append(':');
         }
     }
 
     /**
-     * Gets a string for the given key and appends "…" to it.
-     * This method is typically used for creating menu items.
+     * Returns the localized string identified by the given key followed by a colon.
+     * This is the same functionality as {@link #appendLabel(short, Appendable)} but
+     * without temporary buffer.
      *
      * @param  key  the key for the desired string.
-     * @return the string for the given key.
-     * @throws MissingResourceException if no object for the given key can be found.
+     * @return localized string followed by a colon.
+     *
+     * @since 1.1
      */
-    public final String getMenuLabel(final short key) throws MissingResourceException {
-        return getString(key) + '…';
+    public final String getLabel(final short key) {
+        final String text = getString(key);
+        final String colon = colon();
+        return (colon != null) ? (text + colon) : (text + ':');
+    }
+
+    /**
+     * Returns the colon to write after localized text.
+     *
+     * @todo Should be a localized resource by itself.
+     */
+    private String colon() {
+        return Locale.FRENCH.getLanguage().equals(getLocale().getLanguage()) ? "\u00A0:" : null;
     }
 
     /**

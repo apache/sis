@@ -127,6 +127,7 @@ public class Colors implements Cloneable, Serializable {
      * @param  key    the syntactic element for which to set the color.
      * @param  color  the color to give to the specified element, or {@code null} if none.
      * @throws IllegalArgumentException if the given color name is not recognized.
+     * @throws UnsupportedOperationException if this {@code Colors} instance is immutable.
      */
     public void setName(final ElementKind key, final String color) throws IllegalArgumentException {
         if (isImmutable) {

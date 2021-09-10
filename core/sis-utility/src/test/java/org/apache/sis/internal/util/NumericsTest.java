@@ -21,7 +21,6 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.math.Vector;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
@@ -35,7 +34,7 @@ import static org.junit.Assert.*;
  * Tests the {@link Numerics} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -82,17 +81,6 @@ public final strictfp class NumericsTest extends TestCase {
         assertEquals(Double.valueOf(value =   10), Numerics.valueOf(value));
         assertEquals(Double.valueOf(value = -150), Numerics.valueOf(value));
         assertEquals(Double.valueOf(value =  NaN), Numerics.valueOf(value));
-    }
-
-    /**
-     * Tests {@link Numerics#isUnsignedInteger(String)}.
-     */
-    @Test
-    public void testIsUnsignedInteger() {
-        assertFalse(Numerics.isUnsignedInteger(null));
-        assertFalse(Numerics.isUnsignedInteger(""));
-        assertTrue (Numerics.isUnsignedInteger("12345"));
-        assertFalse(Numerics.isUnsignedInteger("123A5"));
     }
 
     /**
@@ -188,17 +176,5 @@ public final strictfp class NumericsTest extends TestCase {
         final int e = StrictMath.getExponent(value) - SIGNIFICAND_SIZE_OF_FLOAT;
         final float recomposed = StrictMath.scalb((float) expected, e);
         assertEquals(value, StrictMath.copySign(recomposed, value), 0f);
-    }
-
-    /**
-     * Tests {@link Numerics#suggestFractionDigits(Vector[])}.
-     */
-    @Test
-    public void testSuggestFractionDigits() {
-        final int[] f = Numerics.suggestFractionDigits(new Vector[] {
-            Vector.create(new double[] {10, 100,   0.1, 1000.1}),
-            Vector.create(new double[] {15, 140.1, 0.4, Double.NaN}),
-            Vector.create(new double[] {20, 400,   0.5, Double.NaN})});
-        assertArrayEquals(new int[] {0, 0, 3, 3}, f);
     }
 }

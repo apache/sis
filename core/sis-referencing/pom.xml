@@ -50,7 +50,7 @@
       <email>mattmann@apache.org</email>
       <url>http://sunset.usc.edu/~mattmann/</url>
       <organization>NASA Jet Propulsion Laboratory</organization>
-      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <organizationUrl>https://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
       <roles>
         <role>committer</role>
@@ -61,7 +61,7 @@
       <id>desruisseaux</id>
       <email>desruisseaux@apache.org</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
@@ -72,7 +72,7 @@
       <id>rmarechal</id>
       <email>remi.marechal@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
@@ -169,5 +169,26 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <!-- Because the EPSG database is not free, require the user to ask it explicitly. -->
+  <profiles>
+    <profile>
+      <id>non-free</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.sis.non-free</groupId>
+          <artifactId>sis-epsg</artifactId>
+          <version>${sis.non-free.version}</version>
+          <scope>test</scope>
+          <exclusions>
+            <exclusion>
+              <groupId>*</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 
 </project>

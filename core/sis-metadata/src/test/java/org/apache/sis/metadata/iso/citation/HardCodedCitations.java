@@ -67,7 +67,7 @@ public final strictfp class HardCodedCitations extends Static {
     }
 
     /**
-     * The <a href="http://www.epsg.org">EPSG Geodetic Parameter Dataset</a> authority.
+     * The <a href="https://epsg.org/">EPSG Geodetic Parameter Dataset</a> authority.
      * This citation contains the "EPSG" {@linkplain Citation#getIdentifiers() identifier}.
      *
      * <p>String representation:</p>
@@ -82,7 +82,7 @@ public final strictfp class HardCodedCitations extends Static {
      *     │   │   ├─Name……………………………………… International Association of Oil & Gas Producers
      *     │   │   └─Contact info
      *     │   │       └─Online resource
-     *     │   │           ├─Linkage………… http://www.epsg.org
+     *     │   │           ├─Linkage………… https://epsg.org/
      *     │   │           └─Function……… Information
      *     │   └─Role………………………………………………… Principal investigator
      *     └─Presentation form………………………… Table digital
@@ -90,7 +90,7 @@ public final strictfp class HardCodedCitations extends Static {
      */
     public static final DefaultCitation EPSG;
     static {
-        final DefaultOnlineResource r = new DefaultOnlineResource(URI.create("http://www.epsg.org"));
+        final DefaultOnlineResource r = new DefaultOnlineResource(URI.create("https://epsg.org/"));
         r.setFunction(OnLineFunction.INFORMATION);
 
         final DefaultResponsibleParty p = new DefaultResponsibleParty(Role.PRINCIPAL_INVESTIGATOR);

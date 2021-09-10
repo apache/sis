@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Optional;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -33,7 +34,7 @@ import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.coverage.RasterFactory;
+import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -42,7 +43,6 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.coverage.IllegalSampleDimensionException;
-import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -51,11 +51,12 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.internal.storage.MetadataBuilder;
 
 
 /**
@@ -100,7 +101,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * than variable name because the former is controlled vocabulary. The use of controlled vocabulary for identifiers increases
      * the chances of stability or consistency between similar products.
      *
-     * <p>The value set by constructor may be updated by {@link #resolveNameCollision(RasterResource, Decoder)},
+     * <p>The value set by constructor may be updated by {@link #resolveNameCollision(Decoder)},
      * but should not be modified after that point.</p>
      *
      * @see #getIdentifier()
@@ -126,7 +127,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
 
     /**
      * The netCDF variables for each sample dimensions. The length of this array shall be equal to {@code ranges.length},
-     * except if bands are stored as one variable dimension ({@link #bandDimension} ≧ 0) in which case the length shall
+     * except if bands are stored as one variable dimension ({@link #bandDimension} ≥ 0) in which case the length shall
      * be exactly 1. Accesses to this array need to take in account that the length may be only 1. Example:
      *
      * {@preformat java
@@ -160,6 +161,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
     /**
      * The object to use for synchronization. For now we use a {@code synchronized} statement,
      * but it may be changed to {@link java.util.concurrent.locks.Lock} in a future version.
+     *
+     * @see DiscreteSampling#lock
      */
     private final Object lock;
 
@@ -170,7 +173,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * @param  name      the name for the resource.
      * @param  grid      the grid geometry (size, CRS…) of the {@linkplain #data} cube.
      * @param  bands     the variables providing actual data. Shall contain at least one variable.
-     * @param  numBands  the number of bands. Shall be {@code bands.size()} except if {@code bandsDimension} ≧ 0.
+     * @param  numBands  the number of bands. Shall be {@code bands.size()} except if {@code bandsDimension} ≥ 0.
      * @param  bandDim   if one of {@link #data} dimension provides values for different bands, that dimension index. Otherwise -1.
      * @param  lock      the lock to use in {@code synchronized(lock)} statements.
      */
@@ -203,7 +206,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         final Variable[]     variables = decoder.getVariables().clone();        // Needs a clone because may be modified.
         final List<Variable> siblings  = new ArrayList<>(4);                    // Usually has only 1 element, sometime 2.
         final List<Resource> resources = new ArrayList<>(variables.length);     // The raster resources to be returned.
-        final Map<GenericName,RasterResource> firstOfName = new HashMap<>();    // For detecting name collisions.
+        final Map<GenericName,List<RasterResource>> byName = new HashMap<>();   // For detecting name collisions.
         for (int i=0; i<variables.length; i++) {
             final Variable variable = variables[i];
             if (variable == null || variable.getRole() != VariableRole.COVERAGE) {
@@ -279,7 +282,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
                                  * is the case, then we consider that those two variables should be kept together.
                                  */
                                 for (final String k : VECTOR_COMPONENT_NAMES) {
-                                    if (cn.regionMatches(prefixLength, k, 0, k.length())) {
+                                    if (cn.startsWith(k, prefixLength)) {
                                         siblings.add(candidate);
                                         variables[j] = null;
                                         break;
@@ -306,40 +309,95 @@ public final class RasterResource extends AbstractGridResource implements Resour
                 numBands = siblings.size();
             }
             final RasterResource r = new RasterResource(decoder, name.trim(), grid, siblings, numBands, bandDimension, lock);
-            r.resolveNameCollision(firstOfName.putIfAbsent(r.identifier, r), decoder);
+            r.addToNameMap(byName);
             resources.add(r);
             siblings.clear();
         }
+        /*
+         * At this point all resources have been prepared. If the same standard name is used by more than one resource,
+         * replace the standard name by the identifier for all resources in collision (an "all or nothing" replacement).
+         * The identifiers should be unique, which should resolve the name collision. We nevertheless check again after
+         * renaming until there is nothing to change.
+         */
+        boolean changed;
+        do {
+            changed = false;
+            List<RasterResource> collisions = null;
+            for (final Iterator<List<RasterResource>> it = byName.values().iterator(); it.hasNext();) {
+                final List<RasterResource> rs = it.next();
+                if (rs.size() >= 2) {
+                    it.remove();                            // Remove resources before to re-insert them in next loop below.
+                    if (collisions == null) {
+                        collisions = rs;
+                    } else {
+                        collisions.addAll(rs);
+                    }
+                }
+            }
+            if (collisions != null) {                       // After above loop because may change the byName` map.
+                for (final RasterResource r : collisions) {
+                    changed |= r.resolveNameCollision(decoder);
+                    r.addToNameMap(byName);                 // For checking if new names cause new collisions.
+                }
+            }
+        }
+        while (changed);
         return resources;
     }
 
     /**
-     * If the given resource is non-null, modifies the name of this resource for avoiding name collision.
-     * The {@code other} resource shall be non-null when the caller detected that there is a name collision
-     * with that resource.
-     *
-     * @param  other  the other resource for which there is a name collision, or {@code null} if no collision.
+     * Adds the name of the given resource to the given map. This is used for resolving name collision: any entry
+     * associated to two values or more will have the resources renamed by {@link #resolveNameCollision(Decoder)}.
      */
-    private void resolveNameCollision(final RasterResource other, final Decoder decoder) {
-        if (other != null) {
-            if (identifier.equals(other.identifier)) {
-                other.resolveNameCollision(decoder);
-            }
-            resolveNameCollision(decoder);
-        }
+    private void addToNameMap(final Map<GenericName,List<RasterResource>> byName) {
+        byName.computeIfAbsent(identifier, (key) -> new ArrayList<>()).add(this);
     }
 
     /**
      * Invoked when the name of this resource needs to be changed because it collides with the name of another resource.
-     * This method appends the variable name, which should be unique in each netCDF file.
+     * This method uses the variable name, which should be unique in each netCDF file. If this resource wraps more than
+     * one variable (for example "eastward_velocity" and "northward_velocity"), then this method takes the common part
+     * of all variable names ("velocity" in above example).
+     *
+     * @return whether this resource has been renamed as an effect of this method call.
      */
-    private void resolveNameCollision(final Decoder decoder) {
-        String name = identifier + " (" + data[0].getName() + ')';
-        identifier = decoder.nameFactory.createLocalName(decoder.namespace, name);
+    private boolean resolveNameCollision(final Decoder decoder) {
+        String name = null;
+        for (final Variable v : data) {
+            name = (String) CharSequences.commonWords(name, v.getName());
+        }
+        if (name == null || name.isEmpty()) {
+            name = data[0].getName();           // If unable to get a common name, fallback on the first one.
+        }
+        final GenericName newValue = decoder.nameFactory.createLocalName(decoder.namespace, name);
+        if (newValue.equals(identifier)) return false;
+        identifier = newValue;
+        return true;
     }
 
     /**
-     * Returns the variable name as an identifier of this resource.
+     * Invoked the first time that {@link #getMetadata()} is invoked. Computes metadata based on information
+     * provided by {@link #getIdentifier()}, {@link #getGridGeometry()}, {@link #getSampleDimensions()} and
+     * variable names.
+     *
+     * @param  metadata  the builder where to set metadata properties.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    @Override
+    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
+        String title = null;
+        for (final Variable v : data) {
+            title = (String) CharSequences.commonWords(title, v.getDescription());
+            metadata.addIdentifier(v.getGroupName(), v.getName(), MetadataBuilder.Scope.RESOURCE);
+        }
+        if (title != null && !title.isEmpty()) {
+            metadata.addTitle(CharSequences.camelCaseToSentence(title).toString());
+        }
+        super.createMetadata(metadata);
+    }
+
+    /**
+     * Returns the standard name (if non ambiguous) or the variable name as an identifier of this resource.
      */
     @Override
     public Optional<GenericName> getIdentifier() {
@@ -358,7 +416,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
 
     /**
      * Returns the variable at the given index. This method can be invoked when the caller has not verified
-     * if we are in the special case where all bands are in the same variable ({@link #bandDimension} ≧ 0).
+     * if we are in the special case where all bands are in the same variable ({@link #bandDimension} ≥ 0).
      */
     private Variable getVariable(final int i) {
         return data[bandDimension >= 0 ? 0 : i];
@@ -406,11 +464,11 @@ public final class RasterResource extends AbstractGridResource implements Resour
          * by UCAR because we need the range of packed values instead than the range of converted values.
          */
         NumberRange<?> range;
-        if (!createEnumeration(builder, band, index) && (range = band.getValidRange()) != null) try {
+        if (!createEnumeration(builder, band) && (range = band.getValidRange()) != null) try {
             final MathTransform1D mt = band.getTransferFunction().getTransform();
             if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
                 /*
-                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
+                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissingUnsigned):
                  * if the type of the range is equal to the type of the scale, and the type of the
                  * data is not wider, then assume that the minimum and maximum are real values.
                  * This is identified in Apache SIS by the range given as a MeasurementRange.
@@ -476,13 +534,13 @@ public final class RasterResource extends AbstractGridResource implements Resour
             final Object label = entry.getValue();
             if (label instanceof Integer) {
                 final int role = (Integer) label;               // Bit 0 set (value 1) = pad value, bit 1 set = missing value.
-                final int i = (role == 1) ? 1 : 0;              // i=1 if role is only pad value, i=0 otherwise.
+                final int i = (role == Convention.FILL_VALUE_MASK) ? 1 : 0;   // i=1 if role is only pad value, i=0 otherwise.
                 name = names[i];
                 if (name == null) {
                     name = Vocabulary.formatInternational(i == 0 ? Vocabulary.Keys.MissingValue : Vocabulary.Keys.FillValue);
                     names[i] = name;
                 }
-                if (setBackground & (role & 1) != 0) {
+                if (setBackground & (role & Convention.FILL_VALUE_MASK) != 0) {
                     setBackground = false;                      // Declare only one fill value.
                     builder.setBackground(name, n);
                     continue;
@@ -523,27 +581,17 @@ public final class RasterResource extends AbstractGridResource implements Resour
      *
      * @param  builder  the builder to use for creating the sample dimension.
      * @param  band     the data for which to create a sample dimension.
-     * @param  index    index in the variable dimension identified by {@link #bandDimension}.
      * @return {@code true} if flag attributes have been found, or {@code false} otherwise.
      */
-    private static boolean createEnumeration(final SampleDimension.Builder builder, final Variable band, final int index) {
-        CharSequence[] names = band.getAttributeAsStrings(AttributeNames.FLAG_NAMES, ' ');
-        if (names == null) {
-            names = band.getAttributeAsStrings(AttributeNames.FLAG_MEANINGS, ' ');
-            if (names == null) return false;
+    private static boolean createEnumeration(final SampleDimension.Builder builder, final Variable band) {
+        final Map<Integer,String> enumeration = band.getEnumeration();
+        if (enumeration == null) {
+            return false;
         }
-        Vector values = band.getAttributeAsVector(AttributeNames.FLAG_VALUES);
-        if (values == null) {
-            values = band.getAttributeAsVector(AttributeNames.FLAG_MASKS);
-            if (values == null) return false;
-        }
-        final int length = values.size();
-        for (int i=0; i<length; i++) {
-            final Number value = values.get(i);
-            final CharSequence name;
-            if (i < names.length) {
-                name = names[i];
-            } else {
+        for (final Map.Entry<Integer,String> entry : enumeration.entrySet()) {
+            final Number value = entry.getKey();
+            CharSequence name = entry.getValue();
+            if (name == null) {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.Unnamed);
             }
             builder.addQualitative(name, value, value);
@@ -561,6 +609,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
      */
     @Override
     public GridCoverage read(GridGeometry domain, final int... range) throws DataStoreException {
+        final long startTime = System.nanoTime();
         final RangeArgument rangeIndices = validateRangeArgument(ranges.length, range);
         if (domain == null) {
             domain = gridGeometry;
@@ -592,7 +641,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
                     .rounding(GridRoundingMode.ENCLOSING)
                     .subgrid(domain);
             GridExtent areaOfInterest = targetGeometry.getIntersection();           // Pixel indices of data to read.
-            int[]      subsamplings   = targetGeometry.getSubsamplings();           // Slice to read or subsampling to apply.
+            int[]      subsamplings   = targetGeometry.getSubsampling();            // Slice to read or subsampling to apply.
             int        numBuffers     = bands.length;                               // By default, one variable per band.
             domain = targetGeometry.build();                                        // Adjust user-specified domain to data geometry.
             if (bandDimension >= 0) {
@@ -660,8 +709,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
         } catch (DisjointExtentException e) {
             throw new NoSuchDataException(canNotReadFile(), e);
         } catch (RuntimeException e) {                          // Many exceptions thrown by RasterFactory.wrap(…).
-            final Throwable cause = e.getCause();
-            if (cause instanceof TransformException) {
+            final Exception cause = getReferencingCause(e);
+            if (cause != null) {
                 throw new DataStoreReferencingException(canNotReadFile(), cause);
             } else {
                 throw new DataStoreContentException(canNotReadFile(), e);
@@ -670,8 +719,10 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (imageBuffer == null) {
             throw new DataStoreContentException(Errors.getResources(getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
-        return new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer,
+        final Raster raster = new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer,
                 rangeIndices.getPixelStride(), bandOffsets, String.valueOf(identifier));
+        logReadOperation(location, domain, startTime);
+        return raster;
     }
 
     /**

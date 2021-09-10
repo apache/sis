@@ -90,7 +90,7 @@ public class PolarStereographic extends ConformalProjection {
         if (identMatch(method, "(?i).*\\bvariant\\s*C\\b.*",  PolarStereographicC.IDENTIFIER)) return C;
         if (identMatch(method, "(?i).*\\bNorth\\b.*",         null)) return NORTH;
         if (identMatch(method, "(?i).*\\bSouth\\b.*",         null)) return SOUTH;
-        return 0; // Unidentified case, to be considered as variant B.
+        return STANDARD_VARIANT;            // Unidentified case, to be considered as variant B.
     }
 
     /**
@@ -206,7 +206,8 @@ public class PolarStereographic extends ConformalProjection {
              *
              * In the spherical case, should give ρ == 2.
              */
-            ρ = new DoubleDouble(2 / sqrt(pow(1+eccentricity, 1+eccentricity) * pow(1-eccentricity, 1-eccentricity)));
+            ρ = new DoubleDouble(2 / sqrt(pow(1+eccentricity, 1+eccentricity)
+                                        * pow(1-eccentricity, 1-eccentricity)));
             ρF = null;
         } else {
             /*
@@ -334,7 +335,7 @@ public class PolarStereographic extends ConformalProjection {
         final double x = srcPts[srcOff  ];
         final double y = srcPts[srcOff+1];
         dstPts[dstOff  ] = atan2(x, y);         // Really (x,y), not (y,x)
-        dstPts[dstOff+1] = -φ(hypot(x, y));
+        dstPts[dstOff+1] = -φ(fastHypot(x, y));
     }
 
 

@@ -60,6 +60,8 @@ import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.Emptiable;
+import org.apache.sis.metadata.MetadataCopier;
+import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
@@ -135,8 +137,11 @@ import org.apache.sis.math.FunctionProperty;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
- * @since   0.3
+ * @version 1.1
+ *
+ * @see org.apache.sis.storage.Resource#getMetadata()
+ *
+ * @since 0.3
  * @module
  */
 @XmlType(name = "MD_Metadata_Type", propOrder = {
@@ -386,6 +391,12 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
+     * <h4>Use case</h4>
+     * This method is useful before {@linkplain org.apache.sis.xml.XML#marshal(Object) XML marshalling}
+     * or serialization, which may not be supported by all implementations.
+     * However the returned metadata is not guaranteed to be {@linkplain State#EDITABLE editable}.
+     * For editable metadata, see {@link #deepCopy(Metadata)}.
+     *
      * @param  object  the object to get as a SIS implementation, or {@code null} if none.
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
@@ -395,6 +406,32 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             return (DefaultMetadata) object;
         }
         return new DefaultMetadata(object);
+    }
+
+    /**
+     * Returns an editable copy of the given metadata. All children are also copied.
+     * This method is more expensive than {@link #castOrCopy(Metadata)} because the
+     * copy is unconditional and much deeper.
+     * However the result is guaranteed to be editable.
+     *
+     * <h4>Use case</h4>
+     * Metadata returned by {@link org.apache.sis.storage.Resource#getMetadata()} are typically unmodifiable.
+     * This {@code deepCopy(…)} method is useful for completing those metadata with new elements, for example
+     * before insertion in a catalog.
+     *
+     * @param  object  the metadata to copy, or {@code null} if none.
+     * @return a deep copy of the given object, or {@code null} if the argument was null.
+     *
+     * @see #deepCopy(State)
+     * @see State#EDITABLE
+     *
+     * @since 1.1
+     */
+    public static DefaultMetadata deepCopy(final Metadata object) {
+        if (object == null) {
+            return null;
+        }
+        return (DefaultMetadata) new MetadataCopier(MetadataStandard.ISO_19115).copy(Metadata.class, object);
     }
 
     /*
@@ -760,11 +797,15 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         checkWritePermission(parentMetadata);
         // See "Note about deprecated methods implementation"
         DefaultCitation parent = DefaultCitation.castOrCopy(parentMetadata);
-        if (parent == null) {
-            parent = new DefaultCitation();
+        if (newValue != null) {
+            if (parent == null) {
+                parent = new DefaultCitation();
+            }
+            parent.setTitle(new SimpleInternationalString(newValue));
+            setParentMetadata(parent);
+        } else if (parent != null) {
+            parent.setTitle(null);
         }
-        parent.setTitle(new SimpleInternationalString(newValue));
-        setParentMetadata(parent);
     }
 
     /**
@@ -1268,20 +1309,23 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setDataSetUri(final String newValue) throws URISyntaxException {
-        final URI uri = new URI(newValue);
+        final URI uri = (newValue != null) ? new URI(newValue) : null;
         Collection<Identification> info = identificationInfo;   // See "Note about deprecated methods implementation"
         checkWritePermission(MetadataUtilities.valueIfDefined(info));
         AbstractIdentification firstId = AbstractIdentification.castOrCopy(CollectionsExt.first(info));
         if (firstId == null) {
+            if (uri == null) return;
             firstId = new DefaultDataIdentification();
         }
         DefaultCitation citation = DefaultCitation.castOrCopy(firstId.getCitation());
         if (citation == null) {
+            if (uri == null) return;
             citation = new DefaultCitation();
         }
         Collection<OnlineResource> onlineResources = citation.getOnlineResources();
         DefaultOnlineResource firstOnline = DefaultOnlineResource.castOrCopy(CollectionsExt.first(onlineResources));
         if (firstOnline == null) {
+            if (uri == null) return;
             firstOnline = new DefaultOnlineResource();
         }
         firstOnline.setLinkage(uri);

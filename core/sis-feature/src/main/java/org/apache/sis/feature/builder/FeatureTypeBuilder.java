@@ -41,6 +41,7 @@ import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Numbers;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;
@@ -101,7 +102,8 @@ import org.opengis.feature.Operation;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  *
  * @see org.apache.sis.parameter.ParameterBuilder
  *
@@ -682,7 +684,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
             // We disallow Feature.class because that type shall be handled as association instead than attribute.
             throw new IllegalArgumentException(errors().getString(Errors.Keys.IllegalArgumentValue_2, "valueClass", valueClass));
         }
-        final AttributeTypeBuilder<V> property = new AttributeTypeBuilder<>(this, valueClass);
+        final AttributeTypeBuilder<V> property = new AttributeTypeBuilder<>(this, Numbers.primitiveToWrapper(valueClass));
         properties.add(property);
         clearCache();
         return property;

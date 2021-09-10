@@ -90,7 +90,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * method and by accepting buffer in the {@link #create(Object, boolean)} method.</div>
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.util.collection.IntegerList
  *
@@ -267,6 +267,22 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     public abstract Class<? extends Number> getElementType();
 
     /**
+     * Returns {@code true} if values in this vector can be casted to single-precision floating point numbers
+     * ({@code float}) without precision lost. In case of doubt, this method conservatively returns {@code false}.
+     *
+     * @return whether values in this vector can be casted to {@code float} primitive type.
+     *
+     * @see #floatValue(int)
+     * @see #floatValues()
+     *
+     * @since 1.1
+     */
+    public boolean isSinglePrecision() {
+        final byte type = Numbers.getEnumConstant(getElementType());
+        return (type == Numbers.FLOAT) || (type >= Numbers.BYTE && type <= Numbers.SHORT);
+    }
+
+    /**
      * Returns an estimation of the number of bits used by each value in this vector.
      * This is an estimation only and should be used only as a hint.
      */
@@ -320,6 +336,23 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     public abstract int size();
 
     /**
+     * Returns {@code true} if this vector is empty or contains only {@code NaN} values.
+     *
+     * @return whether this vector is empty or contains only {@code NaN} values.
+     *
+     * @since 1.1
+     */
+    public boolean isEmptyOrNaN() {
+        final int n = size();
+        for (int i=0; i<n; i++) {
+            if (!isNaN(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns {@code true} if the value at the given index is {@code null} or {@code NaN}.
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
@@ -357,6 +390,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
      *
      * @see #floatValues()
+     * @see #isSinglePrecision()
      */
     public float floatValue(int index) {
         return (float) doubleValue(index);
@@ -511,6 +545,22 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      */
     @Override
     public abstract Number set(int index, Number value);
+
+    /**
+     * Sets a range of elements to the given number. Invoking this method is equivalent
+     * to invoking {@link #set(int, Number)} in a loop, but potentially much more efficient.
+     *
+     * @param  fromIndex  index of the first element (inclusive) to be filled with the specified value.
+     * @param  toIndex    index of the last element (exclusive) to be filled with the specified value.
+     * @param  value      the value to be stored in elements of the vector.
+     *
+     * @since 1.1
+     */
+    public void fill(int fromIndex, final int toIndex, final Number value) {
+        // Subclasses override with more efficient implementations.
+        ArgumentChecks.ensureValidIndexRange(size(), fromIndex, toIndex);
+        while (fromIndex < toIndex) set(fromIndex++, value);
+    }
 
     /**
      * Returns the index of the first value which is equal (if {@code equality} is true)
@@ -700,7 +750,7 @@ search:     for (;;) {
      * the [0 … {@link #size()} - 1] range:
      *
      * <blockquote><code>{@linkplain Math#abs(double) abs}({@linkplain #doubleValue(int) doubleValue}(<var>i</var>)
-     * - (doubleValue(0) + increment*<var>i</var>)) ≦ tolerance</code></blockquote>
+     * - (doubleValue(0) + increment*<var>i</var>)) ≤ tolerance</code></blockquote>
      *
      * The tolerance threshold can be zero if exact matches are desired.
      * The return value (if non-null) is always a signed value,
@@ -931,6 +981,11 @@ search:     for (;;) {
             return Vector.this.getElementType();
         }
 
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public boolean isSinglePrecision() {
+            return Vector.this.isSinglePrecision();
+        }
+
         /** Returns the length of this subvector. */
         @Override public int size() {
             return length;
@@ -1130,6 +1185,11 @@ search:     for (;;) {
         /** Returns the type of elements in this vector. */
         @Override public Class<? extends Number> getElementType() {
             return Vector.this.getElementType();
+        }
+
+        /** Returns whether values are convertible to {@code float} type. */
+        @Override public boolean isSinglePrecision() {
+            return Vector.this.isSinglePrecision();
         }
 
         /** Delegates to the enclosing vector. */
@@ -1458,6 +1518,7 @@ search:     for (;;) {
      * @return a copy of all floating point values in this vector.
      *
      * @see #floatValue(int)
+     * @see #isSinglePrecision()
      */
     public float[] floatValues() {
         final float[] array = new float[size()];

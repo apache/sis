@@ -23,6 +23,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.referencing.MathTransformsOrFactory;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
@@ -49,7 +50,7 @@ import org.apache.sis.util.ArraysExt;
  * The output dimensions can be verified with a call to {@link #getTargetDimensions()}.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -97,6 +98,15 @@ public class TransformSeparator {
     private final MathTransformsOrFactory factory;
 
     /**
+     * Whether {@link #separate()} is allowed to add new dimensions in {@link #sourceDimensions}
+     * if this is required for computing all values specified in {@link #targetDimensions}.
+     *
+     * @see #isSourceExpandable()
+     * @see #setSourceExpandable(boolean)
+     */
+    private boolean isSourceExpandable;
+
+    /**
      * Constructs a separator for the given transform.
      *
      * @param transform  the transform to separate.
@@ -119,13 +129,15 @@ public class TransformSeparator {
 
     /**
      * Resets this transform separator in the same state than after construction. This method clears any
-     * {@linkplain #getSourceDimensions() source dimensions} and {@linkplain #getTargetDimensions() target dimensions} settings.
+     * {@linkplain #getSourceDimensions() source} and {@linkplain #getTargetDimensions() target dimensions}
+     * settings and disables {@linkplain #isSourceExpandable() source expansion}.
      * This method can be invoked when the same {@code MathTransform} needs to be separated in more than one part,
      * for example an horizontal and a vertical component.
      */
     public void clear() {
-        sourceDimensions = null;
-        targetDimensions = null;
+        sourceDimensions   = null;
+        targetDimensions   = null;
+        isSourceExpandable = false;
     }
 
     /**
@@ -158,7 +170,7 @@ public class TransformSeparator {
 
     /**
      * Adds the specified {@code dimensions} to the specified sequence.
-     * Values must be given in strictly increasing order.
+     * Values must be given in strictly increasing order (this will be verified by this method).
      *
      * @param  sequence    the {@link #sourceDimensions} or {@link #targetDimensions} sequence to update.
      * @param  dimensions  the user-supplied dimensions to add to the given sequence.
@@ -167,7 +179,7 @@ public class TransformSeparator {
      */
     private static int[] add(int[] sequence, final int[] dimensions, final int max) throws IllegalArgumentException {
         int offset = 0;
-        int previous = -1;  // This initial value will ensure that we have no negative value.
+        int previous = -1;                          // This initial value will ensure that we have no negative value.
         if (sequence != null && (offset = sequence.length) != 0) {
             previous = sequence[offset - 1];
             sequence = Arrays.copyOf(sequence, offset + dimensions.length);
@@ -351,6 +363,37 @@ public class TransformSeparator {
     }
 
     /**
+     * Returns whether {@code separate()} is allowed to expand the list of source dimensions.
+     * The default value is {@code false}, which means that {@link #separate()} either returns
+     * a {@link MathTransform} having exactly the requested {@linkplain #getSourceDimensions()
+     * source dimensions}, or throws a {@link FactoryException}.
+     *
+     * @return whether {@code separate()} is allowed to add new source dimensions
+     *         instead of throwing a {@link FactoryException}.
+     *
+     * @since 1.1
+     */
+    public boolean isSourceExpandable() {
+        return isSourceExpandable;
+    }
+
+    /**
+     * Sets whether {@code separate()} is allowed to expand the list of source dimensions.
+     * The default value is {@code false}, which means that {@code separate()} will throw a {@link FactoryException}
+     * if some {@linkplain #getTargetDimensions() target dimensions} can not be computed without inputs that are not
+     * in the list of {@linkplain #getSourceDimensions() source dimensions}. If this flag is set to {@code true},
+     * then {@link #separate()} will be allowed to augment the list of source dimensions with any inputs that are
+     * essential for producing all requested outputs.
+     *
+     * @param  enabled  whether to allow source dimensions expansion.
+     *
+     * @since 1.1
+     */
+    public void setSourceExpandable(final boolean enabled) {
+        isSourceExpandable = enabled;
+    }
+
+    /**
      * Separates the math transform specified at construction time for given dimension indices.
      * This method creates a math transform that use only the {@linkplain #addSourceDimensions(int...) specified
      * source dimensions} and return only the {@linkplain #addTargetDimensions(int...) specified target dimensions}.
@@ -377,7 +420,10 @@ public class TransformSeparator {
      */
     public MathTransform separate() throws FactoryException {
         MathTransform tr = transform;
-        final boolean isSourceSpecified = (sourceDimensions != null);
+        final int[] specifiedSources = sourceDimensions;
+        if (isSourceExpandable) {
+            sourceDimensions = null;                        // Take all sources for now, will filter later.
+        }
         if (sourceDimensions == null || containsAll(sourceDimensions, 0, tr.getSourceDimensions())) {
             if (targetDimensions != null && !containsAll(targetDimensions, 0, tr.getTargetDimensions())) {
                 tr = filterTargetDimensions(tr, targetDimensions);
@@ -395,7 +441,7 @@ public class TransformSeparator {
              */
             final int[] requested = targetDimensions;
             tr = filterSourceDimensions(tr, sourceDimensions);            // May update targetDimensions.
-            assert ArraysExt.isSorted(targetDimensions, true) : "targetDimensions";
+            assert ArraysExt.isSorted(targetDimensions, true);
             if (requested != null) {
                 final int[] inferred = targetDimensions;
                 targetDimensions = requested;
@@ -428,8 +474,8 @@ public class TransformSeparator {
             expected = targetDimensions.length;
             actual   = tr.getTargetDimensions();
             if (actual == expected) {
-                if (!isSourceSpecified) {
-                    tr = removeUnusedSourceDimensions(tr);
+                if (specifiedSources == null || isSourceExpandable) {
+                    tr = removeUnusedSourceDimensions(tr, specifiedSources);
                 }
                 return tr;
             }
@@ -683,44 +729,50 @@ reduce:     for (int j=0; j <= numTgt; j++) {
 
     /**
      * Removes the sources dimensions that are not required for computing the target dimensions.
-     * This method is invoked only if {@link #sourceDimensions} is non-null at {@link #separate()} invocation time.
+     * This method is invoked only if {@link #sourceDimensions} is null at {@link #separate()} invocation time.
      * This method can operate only on the first transform of a transformation chain.
      * If this method succeed, then {@link #sourceDimensions} will be updated.
      *
      * <p>This method can process only linear transforms (potentially indirectly through a concatenated transform).
      * Actually it would be possible to also process pass-through transform followed by a linear transform, but this
      * case should have been optimized during transform concatenation. If it is not the case, consider improving the
-     * {@link PassThroughTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)} method instead then
+     * {@link PassThroughTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)} method instead than
      * this one.</p>
      *
-     * @param  head  the first transform of a transformation chain.
+     * @param  head      the first transform of a transformation chain.
+     * @param  required  sources to keep even if not necessary, or {@code null} if none.
      * @return the reduced transform, or {@code head} if this method did not reduced the transform.
      */
-    private MathTransform removeUnusedSourceDimensions(final MathTransform head) {
+    private MathTransform removeUnusedSourceDimensions(final MathTransform head, final int[] required) {
         Matrix m = MathTransforms.getMatrix(head);
         if (m != null) {
-            int[] retainedDimensions = ArraysExt.EMPTY_INT;
-            final int dimension = m.getNumCol() - 1;            // Number of source dimensions (ignore translations column).
-            final int numRows   = m.getNumRow();                // Number of target dimensions + 1.
+            final int numRows   = m.getNumRow();            // Number of target dimensions + 1.
+            final int dimension = m.getNumCol() - 1;        // Number of source dimensions (ignore translations column).
+            int   retainedCount = 0;                        // Number of source dimensions to keep.
+            int[] retainedDimensions = new int[dimension];
             for (int i=0; i<dimension; i++) {
-                for (int j=0; j<numRows; j++) {
-                    if (m.getElement(j,i) != 0) {
-                        // Found a source dimension which is required by target dimension.
-                        final int length = retainedDimensions.length;
-                        retainedDimensions = Arrays.copyOf(retainedDimensions, length+1);
-                        retainedDimensions[length] = i;
-                        break;
+                if (required != null && Arrays.binarySearch(required, i) >= 0) {
+                    // Dimension to retain unconditionally.
+                    retainedDimensions[retainedCount++] = i;
+                } else {
+                    for (int j=0; j<numRows; j++) {
+                        if (m.getElement(j,i) != 0) {
+                            // Found a source dimension which is required by target dimension.
+                            retainedDimensions[retainedCount++] = i;
+                            break;
+                        }
                     }
                 }
             }
-            if (retainedDimensions.length != dimension) {
+            if (retainedCount != dimension) {
+                retainedDimensions = Arrays.copyOf(retainedDimensions, retainedCount);
                 /*
                  * If we do not retain all dimensions, remove the matrix columns corresponding to the excluded
                  * source dimensions and create a new transform. We remove consecutive columns in single calls
                  * to 'removeColumns', from 'lower' inclusive to 'upper' exclusive.
                  */
                 int upper = dimension;
-                for (int i = retainedDimensions.length; --i >= -1;) {
+                for (int i = retainedCount; --i >= -1;) {
                     final int keep = (i >= 0) ? retainedDimensions[i] : -1;
                     final int lower = keep + 1;                                     // First column to exclude.
                     if (lower != upper) {
@@ -733,7 +785,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
                  * If the user specified source dimensions, the indices need to be adjusted.
                  * This loop has no effect if all source dimensions were kept before this method call.
                  */
-                for (int i=0; i<retainedDimensions.length; i++) {
+                for (int i=0; i<retainedCount; i++) {
                     retainedDimensions[i] = sourceDimensions[retainedDimensions[i]];
                 }
                 sourceDimensions = retainedDimensions;
@@ -741,7 +793,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
             }
         } else if (head instanceof ConcatenatedTransform) {
             final MathTransform transform1 = ((ConcatenatedTransform) head).transform1;
-            final MathTransform reduced = removeUnusedSourceDimensions(transform1);
+            final MathTransform reduced = removeUnusedSourceDimensions(transform1, required);
             if (reduced != transform1) {
                 return MathTransforms.concatenate(reduced, ((ConcatenatedTransform) head).transform2);
             }

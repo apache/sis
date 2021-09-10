@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.gml;
 
 import java.net.URISyntaxException;
 import org.apache.sis.measure.Units;
-import org.apache.sis.internal.xml.Schemas;
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -27,14 +27,24 @@ import static org.junit.Assert.*;
 
 
 /**
- * Test {@link Measure}.
+ * Tests {@link Measure}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.1
  * @since   0.3
  * @module
  */
 public final strictfp class MeasureTest extends TestCase {
+    /**
+     * The URL used in {@code uom} attribute of XML elements which contains a measurements.
+     * Example:
+     *
+     * {@preformat xml
+     *     <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
+     * }
+     */
+    public static final String UOM_URL = CodeListUID.METADATA_ROOT_LEGACY + CodeListUID.UOM_PATH;
+
     /**
      * Tests the {@link Measure#getUOM()}.
      */
@@ -57,11 +67,11 @@ public final strictfp class MeasureTest extends TestCase {
     @DependsOnMethod("testGetUOM")
     public void testSetUOM() throws URISyntaxException {
         final Measure measure = new Measure();
-        measure.setUOM("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#m");
+        measure.setUOM("http://www.isotc211.org/2005/resources/uom/gmxUom.xml#m");
         assertEquals(Units.METRE, measure.unit);
         assertEquals("urn:ogc:def:uom:EPSG::9001", measure.getUOM());
         measure.asXPointer = true;
-        assertEquals(Schemas.METADATA_ROOT_LEGACY + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='m'])", measure.getUOM());
+        assertEquals(UOM_URL + "#xpointer(//*[@gml:id='m'])", measure.getUOM());
 
         measure.unit = null;
         measure.asXPointer = false;
@@ -69,12 +79,12 @@ public final strictfp class MeasureTest extends TestCase {
         assertEquals(Units.DEGREE, measure.unit);
         assertEquals("urn:ogc:def:uom:EPSG::9102", measure.getUOM());
         measure.asXPointer = true;
-        assertEquals(Schemas.METADATA_ROOT_LEGACY + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='deg'])", measure.getUOM());
+        assertEquals(UOM_URL + "#xpointer(//*[@gml:id='deg'])", measure.getUOM());
 
         measure.unit = null;
         measure.asXPointer = true;
         measure.setUOM("gmxUom.xml#kg");                        // Not really an existing unit in 'gmxUom'.
         assertEquals(Units.KILOGRAM, measure.unit);
-        assertEquals(Schemas.METADATA_ROOT_LEGACY + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='kg'])", measure.getUOM());
+        assertEquals(UOM_URL + "#xpointer(//*[@gml:id='kg'])", measure.getUOM());
     }
 }

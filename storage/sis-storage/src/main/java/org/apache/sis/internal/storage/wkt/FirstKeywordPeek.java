@@ -19,6 +19,9 @@ package org.apache.sis.internal.storage.wkt;
 import java.io.Reader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
@@ -30,7 +33,7 @@ import org.apache.sis.util.Characters;
  * Inspects the type of a text file based on the first keyword.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -63,6 +66,21 @@ public abstract class FirstKeywordPeek {
      */
     public FirstKeywordPeek(final int maxLength) {
         this.maxLength = maxLength;
+    }
+
+    /**
+     * If the data to read is not provided by the connector by rather by some auxiliary file
+     * relative to the connector, returns the path to that auxiliary file.
+     * The default implementation returns {@code null}.
+     *
+     * @param  connector  the connector from which to derive the path to auxiliary file to test.
+     * @return path to the auxiliary file to test, or {@code null} if it does not exist.
+     * @throws DataStoreException if an error occurred while determining the auxiliary file.
+     *
+     * @since 1.1
+     */
+    protected Path getAuxiliaryPath(final StorageConnector connector) throws DataStoreException {
+        return null;
     }
 
     /**
@@ -115,19 +133,16 @@ public abstract class FirstKeywordPeek {
     }
 
     /**
-     * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to begin with an expected keyword
+     * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to begin with an expected keyword.
      * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the storage
      * header.
      *
-     * @param  connector information about the storage (URL, stream, JDBC connection, <i>etc</i>).
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable.
-     * @throws DataStoreException if an I/O or SQL error occurred.
+     * @throws DataStoreException if an I/O error occurred.
      */
-    @SuppressWarnings("null")
     public final ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
-        char[] keyword = null;
-        int pos = 0;
         try {
             final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
             final Reader reader;
@@ -135,55 +150,108 @@ public abstract class FirstKeywordPeek {
                 buffer.mark();
                 reader = null;
             } else {
-                // User gave us explicitly a Reader (e.g. a StringReader wrapping a String instance).
-                reader = connector.getStorageAs(Reader.class);
-                if (reader == null) {
-                    return ProbeResult.UNSUPPORTED_STORAGE;
-                }
-                reader.mark(READ_AHEAD_LIMIT);
-            }
-            /*
-             * Ignore leading spaces and comments if any, then get a keyword no longer than 'maxLength'.
-             * That keyword shall be followed by [ or (, ignoring whitespaces.
-             */
-            int c;
-            while ((c = nextAfterSpaces(buffer, reader)) == COMMENT) {
-                toEndOfLine(buffer, reader);
-            }
-            int s;
-            if ((s = isKeywordChar(c)) >= ACCEPT) {
-                keyword = new char[maxLength];
-                do {
-                    if (s == ACCEPT) {
-                        if (pos >= keyword.length) {
-                            pos = 0;                // Keyword too long.
-                            break;
-                        }
-                        keyword[pos++] = (char) c;
-                    }
-                    c = (buffer == null) ? IOUtilities.readCodePoint(reader) : buffer.hasRemaining() ? (char) buffer.get() : -1;
-                } while ((s = isKeywordChar(c)) >= ACCEPT);
                 /*
-                 * At this point we finished to read and store the keyword.
-                 * Verify if the keyword is followed by a character that indicate a keyword end.
+                 * If we do not have a `ByteBuffer`, maybe the user gave us explicitly a `Reader` wrapping
+                 * something else than a stream (e.g. a `StringReader` wrapping a `String` instance).
                  */
-                if (Character.isWhitespace(c)) {
-                    c = nextAfterSpaces(buffer, reader);
+                reader = connector.getStorageAs(Reader.class);
+                if (reader != null) {
+                    reader.mark(READ_AHEAD_LIMIT);
+                } else {
+                    final Path file = getAuxiliaryPath(connector);
+                    if (file != null) {
+                        return probeContent(file);
+                    } else {
+                        return ProbeResult.UNSUPPORTED_STORAGE;
+                    }
                 }
-                if (!isPostKeyword(c)) {
-                    pos = 0;
-                }
             }
-            if (buffer != null) {
-                buffer.reset();
-            } else {
-                reader.reset();
-            }
-            if (c < 0) {
-                return ProbeResult.INSUFFICIENT_BYTES;
-            }
+            return probeContent(buffer, reader);
         } catch (IOException e) {
             throw new DataStoreException(e);
+        }
+    }
+
+    /**
+     * Returns {@link ProbeResult#SUPPORTED} if the content of given file begins with an expected keyword.
+     * This method can be invoked as an alternative to {@link #probeContent(StorageConnector)} when the file
+     * to test is not the specified storage, but some auxiliary file.
+     *
+     * @param  file  the file to partially read.
+     * @return {@link ProbeResult#SUPPORTED} if the given file seems to be readable.
+     * @throws DataStoreException if an I/O error occurred.
+     *
+     * @see #getAuxiliaryPath(StorageConnector)
+     *
+     * @since 1.1
+     */
+    public final ProbeResult probeContent(final Path file) throws DataStoreException {
+        final ByteBuffer buffer = ByteBuffer.allocate(maxLength + 100);
+        try {
+            try (SeekableByteChannel channel = Files.newByteChannel(file)) {
+                int n;
+                do n = channel.read(buffer);
+                while (n >= 0 && buffer.hasRemaining());
+            }
+            return probeContent((ByteBuffer) buffer.flip().mark(), null);        // TODO: remove cast in JDK9.
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
+    }
+
+    /**
+     * Tests the first keyword from one of the given inputs.
+     * Exactly one of the two arguments shall be non-null.
+     */
+    private ProbeResult probeContent(final ByteBuffer buffer, final Reader reader) throws IOException {
+        char[] keyword = null;
+        int pos = 0;
+        /*
+         * Ignore leading spaces and comments if any, then get a keyword no longer than `maxLength`.
+         * That keyword should be followed by '[', '(', '=' or ':' character, ignoring whitespaces.
+         */
+        int c;
+        while ((c = nextAfterSpaces(buffer, reader)) == COMMENT) {
+            toEndOfLine(buffer, reader);
+        }
+        int s;
+        if ((s = isKeywordChar(c)) >= ACCEPT) {
+            keyword = new char[maxLength];
+            do {
+                if (s == ACCEPT) {
+                    if (pos >= keyword.length) {
+                        pos = 0;                // Keyword too long.
+                        break;
+                    }
+                    keyword[pos++] = (char) c;
+                }
+                if (buffer != null) {
+                    c = buffer.hasRemaining() ? (char) buffer.get() : -1;
+                } else {
+                    c = IOUtilities.readCodePoint(reader);
+                }
+            } while ((s = isKeywordChar(c)) >= ACCEPT);
+            /*
+             * At this point we finished to read and store the keyword.
+             * Verify if the keyword is followed by a character that indicate a keyword end.
+             */
+            if (Character.isWhitespace(c)) {
+                c = nextAfterSpaces(buffer, reader);
+            }
+            if (!isPostKeyword(c)) {
+                pos = 0;
+            }
+        }
+        if (buffer != null) {
+            buffer.reset();
+        } else {
+            reader.reset();
+        }
+        if (c < 0) {
+            return ProbeResult.INSUFFICIENT_BYTES;
+        }
+        if (pos == 0) {
+            return ProbeResult.UNSUPPORTED_STORAGE;
         }
         return forKeyword(keyword, pos);
     }

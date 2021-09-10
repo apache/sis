@@ -68,7 +68,7 @@ import org.apache.sis.internal.referencing.DirectPositionView;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Simon Reynard (Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 1.0
+ * @version 1.1
  *
  * @see DatumShiftGrid
  * @see org.apache.sis.referencing.operation.builder.LocalizationGridBuilder
@@ -129,7 +129,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      *
      * @see #createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
-    @SuppressWarnings( {"OverridableMethodCallDuringObjectConstruction", "fallthrough"})
+    @SuppressWarnings( {"OverridableMethodCallInConstructor", "fallthrough"})
     protected <T extends Quantity<T>> InterpolatedTransform(final DatumShiftGrid<T,T> grid) throws NoninvertibleMatrixException {
         /*
          * Create the contextual parameters using the descriptor of the provider that created the datum shift grid.
@@ -229,6 +229,17 @@ public class InterpolatedTransform extends DatumShiftTransform {
             throw new FactoryException(e.getLocalizedMessage(), e);
         }
         return tr.context.completeTransform(factory, tr);
+    }
+
+    /**
+     * Returns the grid of datum shifts specified at construction time.
+     *
+     * @return the grid of datum shifts from source to target datum.
+     *
+     * @since 1.1
+     */
+    public final DatumShiftGrid<?,?> getShiftGrid() {
+        return grid;
     }
 
     /**
@@ -351,7 +362,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
      *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
      *       conversion between float and double will be handled by those LinearTransforms.  If nevertheless
-     *       this MolodenskyTransform is at the beginning or the end of a transformation chain,  the methods
+     *       this InterpolatedTransform is at the beginning or the end of a transformation chain, the methods
      *       inherited from the subclass will work (but may be slightly slower).
      */
 
@@ -387,7 +398,9 @@ public class InterpolatedTransform extends DatumShiftTransform {
     /**
      * Compares the specified object with this math transform for equality.
      *
-     * @return {@inheritDoc}
+     * @param  object  the object to compare with this transform.
+     * @param  mode    the strictness level of the comparison. Default to {@link ComparisonMode#STRICT STRICT}.
+     * @return {@code true} if the given object is considered equals to this math transform.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -402,6 +415,24 @@ public class InterpolatedTransform extends DatumShiftTransform {
     /**
      * Transforms target coordinates to source coordinates. This is done by iteratively finding target coordinates
      * that shift to the input coordinates. The input coordinates is used as the first approximation.
+     *
+     * <h2>Algorithm</h2>
+     * The algorithm used in this class takes some inspiration from the
+     * <a href="https://en.wikipedia.org/wiki/Gradient_descent">Gradient descent</a> method, except that we do not use
+     * <em>gradient</em> direction. Instead we use <em>positional error</em> direction computed with Jacobian matrix.
+     * Instead of moving in the opposite of gradient direction, we move in the opposite of positional error vector.
+     * This algorithm works well when the errors are small, which is the case for datum shift grids such as NADCON.
+     * It may work not so well with strongly curved <cite>localization grids</cite> as found in some netCDF files.
+     * In such case, the iterative algorithm may throw a {@link TransformException} with "No convergence" message.
+     * We could improve the algorithm by multiplying the translation vector by some factor {@literal 0 < γ < 1},
+     * for example by taking inspiration from the Barzilai–Borwein method. But this is not yet done for avoiding
+     * a computation cost penalty for the main target of this class, which is datum shift grids.
+     *
+     * <h3>Possible improvement</h3>
+     * If strongly curved localization grids need to be supported, a possible strategy for choosing a γ factor could
+     * be to compare the translation vector at an iteration step with the translation vector at previous iteration.
+     * If the two vectors cancel each other, we can retry with γ=0.5. This is assuming that the position we are
+     * looking for is located midway betweeb the two positions explored by the two iteration steps.
      *
      * @author  Rueben Schulz (UBC)
      * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -494,6 +525,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
 
         /**
          * Transforms an arbitrary amount of coordinate tuples.
+         * See class javadoc for some information about the algorithm.
          *
          * @throws TransformException if a point can not be transformed.
          */
@@ -584,6 +616,13 @@ public class InterpolatedTransform extends DatumShiftTransform {
                             assert Math.abs(dx - d[0]) < tol &
                                    Math.abs(dy - d[1]) < tol : Arrays.toString(d) + " versus [" + dx + ", " + dy + "]";
                         }
+                        /*
+                         * At this point we got the gradient vector, which is (dx,dy). In the simplest "gradient descent" method,
+                         * we would just subtract this vector from (xi,yi). It works well with datum shift grids (which are close
+                         * to flat) but does not converge with some strongly curved localization grids of remote sensors.
+                         * A solution would be to multiply (dx,dy) by some γ factor where 0 < γ < 1, but this is not done
+                         * yet for avoiding the computation cost of determining the γ value (see class javadoc).
+                         */
                         xi -= dx;
                         yi -= dy;
                         if (!(Math.abs(ex) > tol || Math.abs(ey) > tol)) break;     // Use '!' for catching NaN.

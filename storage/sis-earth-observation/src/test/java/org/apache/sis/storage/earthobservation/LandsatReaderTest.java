@@ -37,9 +37,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
-import static org.apache.sis.storage.earthobservation.LandsatReader.DIM;
 
 
 /**
@@ -47,7 +46,7 @@ import static org.apache.sis.storage.earthobservation.LandsatReader.DIM;
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -61,21 +60,6 @@ public class LandsatReaderTest extends TestCase {
         final Matcher m = LandsatReader.CREDIT.matcher("Image courtesy of the U.S. Geological Survey");
         assertTrue("matches", m.find());
         assertEquals("end", 22, m.end());
-    }
-
-    /**
-     * Verifies the value of the {@link LandsatReader#BAND_GROUPS} mask.
-     */
-    @Test
-    public void verifyBandGroupsMask() {
-        final int[] PANCHROMATIC = {8};
-        final int[] REFLECTIVE   = {1, 2, 3, 4, 5, 6, 7, 9};
-        final int[] THERMAL      = {10, 11};
-        long mask = 0;
-        for (int i=0; i < PANCHROMATIC.length; i++) mask |= (LandsatReader.PANCHROMATIC/DIM << 2*(PANCHROMATIC[i] - 1));
-        for (int i=0; i <   REFLECTIVE.length; i++) mask |= (LandsatReader.REFLECTIVE/DIM   <<   2*(REFLECTIVE[i] - 1));
-        for (int i=0; i <      THERMAL.length; i++) mask |= (LandsatReader.THERMAL/DIM      <<      2*(THERMAL[i] - 1));
-        assertEquals("BAND_GROUPS", mask, LandsatReader.BAND_GROUPS);
     }
 
     /**
@@ -94,7 +78,7 @@ public class LandsatReaderTest extends TestCase {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
         {
-            final LandsatReader reader = new LandsatReader("LandsatTest.txt", new AbstractResource(null));
+            final LandsatReader reader = new LandsatReader(null, "LandsatTest.txt", new AbstractResource(null));
             reader.read(in);
             actual = reader.getMetadata();
         }
@@ -102,7 +86,7 @@ public class LandsatReaderTest extends TestCase {
         verifier.addPropertyToIgnore(Metadata.class, "metadataStandard");           // Because hard-coded in SIS.
         verifier.addPropertyToIgnore(Metadata.class, "referenceSystemInfo");        // Very verbose and depends on EPSG connection.
         verifier.addMetadataToVerify(actual);
-        verifier.assertMetadataEquals(
+        verifier.addExpectedValues(
             "defaultLocale+otherLocale[0]",                                                          "en",
             "metadataIdentifier.code",                                                               "LandsatTest",
             "metadataScope[0].resourceScope",                                                        ScopeCode.COVERAGE,
@@ -134,18 +118,6 @@ public class LandsatReaderTest extends TestCase {
             "contentInfo[0].processingLevelCode.authority.title",          "Landsat",
             "contentInfo[0].processingLevelCode.codeSpace",                "Landsat",
             "contentInfo[0].processingLevelCode.code",                     "Pseudo LT1",
-
-            "contentInfo[0].attributeGroup[0].attribute[0].name[0].code",  "TestImage_B1.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[1].name[0].code",  "TestImage_B2.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[2].name[0].code",  "TestImage_B3.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[3].name[0].code",  "TestImage_B4.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[4].name[0].code",  "TestImage_B5.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[5].name[0].code",  "TestImage_B6.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[6].name[0].code",  "TestImage_B7.TIF",
-            "contentInfo[0].attributeGroup[0].attribute[7].name[0].code",  "TestImage_B9.TIF",
-            "contentInfo[0].attributeGroup[1].attribute[0].name[0].code",  "TestImage_B8.TIF",
-            "contentInfo[0].attributeGroup[2].attribute[0].name[0].code",  "TestImage_B10.TIF",
-            "contentInfo[0].attributeGroup[2].attribute[1].name[0].code",  "TestImage_B11.TIF",
 
             "contentInfo[0].attributeGroup[0].attribute[0].description",   "Coastal Aerosol",
             "contentInfo[0].attributeGroup[0].attribute[1].description",   "Blue",
@@ -207,29 +179,39 @@ public class LandsatReaderTest extends TestCase {
             "contentInfo[0].attributeGroup[2].attribute[0].transferFunctionType",  TransferFunctionType.LINEAR,
             "contentInfo[0].attributeGroup[2].attribute[1].transferFunctionType",  TransferFunctionType.LINEAR,
 
-            "contentInfo[0].attributeGroup[0].attribute[0].scaleFactor",  0.0127,
-            "contentInfo[0].attributeGroup[0].attribute[1].scaleFactor",  0.013,
-            "contentInfo[0].attributeGroup[0].attribute[2].scaleFactor",  0.012,
-            "contentInfo[0].attributeGroup[0].attribute[3].scaleFactor",  0.0101,
-            "contentInfo[0].attributeGroup[0].attribute[4].scaleFactor",  0.00619,
-            "contentInfo[0].attributeGroup[0].attribute[5].scaleFactor",  0.00154,
-            "contentInfo[0].attributeGroup[0].attribute[6].scaleFactor",  0.000519,
-            "contentInfo[0].attributeGroup[0].attribute[7].scaleFactor",  0.00242,
-            "contentInfo[0].attributeGroup[1].attribute[0].scaleFactor",  0.0115,
+            "contentInfo[0].attributeGroup[0].attribute[0].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[1].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[2].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[3].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[4].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[5].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[6].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[0].attribute[7].scaleFactor",  2.0E-5,
+            "contentInfo[0].attributeGroup[1].attribute[0].scaleFactor",  2.0E-5,
             "contentInfo[0].attributeGroup[2].attribute[0].scaleFactor",  0.000334,
             "contentInfo[0].attributeGroup[2].attribute[1].scaleFactor",  0.000334,
 
-            "contentInfo[0].attributeGroup[0].attribute[0].offset",       -63.6,
-            "contentInfo[0].attributeGroup[0].attribute[1].offset",       -65.1,
-            "contentInfo[0].attributeGroup[0].attribute[2].offset",       -60.0,
-            "contentInfo[0].attributeGroup[0].attribute[3].offset",       -50.6,
-            "contentInfo[0].attributeGroup[0].attribute[4].offset",       -31.0,
-            "contentInfo[0].attributeGroup[0].attribute[5].offset",       -7.7,
-            "contentInfo[0].attributeGroup[0].attribute[6].offset",       -2.6,
-            "contentInfo[0].attributeGroup[0].attribute[7].offset",       -12.1,
-            "contentInfo[0].attributeGroup[1].attribute[0].offset",       -57.3,
+            "contentInfo[0].attributeGroup[0].attribute[0].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[1].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[2].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[3].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[4].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[5].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[6].offset",      -0.1,
+            "contentInfo[0].attributeGroup[0].attribute[7].offset",      -0.1,
+            "contentInfo[0].attributeGroup[1].attribute[0].offset",      -0.1,
             "contentInfo[0].attributeGroup[2].attribute[0].offset",       0.1,
             "contentInfo[0].attributeGroup[2].attribute[1].offset",       0.1,
+
+            "contentInfo[0].attributeGroup[0].attribute[0].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[1].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[2].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[3].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[4].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[5].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[6].units", "",
+            "contentInfo[0].attributeGroup[0].attribute[7].units", "",
+            "contentInfo[0].attributeGroup[1].attribute[0].units", "",
 
             "contentInfo[0].attributeGroup[0].attribute[0].boundUnits",   "nm",
             "contentInfo[0].attributeGroup[0].attribute[1].boundUnits",   "nm",
@@ -257,15 +239,17 @@ public class LandsatReaderTest extends TestCase {
             "spatialRepresentationInfo[1].axisDimensionProperties[0].dimensionName", DimensionNameType.SAMPLE,
             "spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionName", DimensionNameType.LINE,
             "spatialRepresentationInfo[1].axisDimensionProperties[1].dimensionName", DimensionNameType.LINE,
-            "spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionSize", 15000,
-            "spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionSize", 15500,
-            "spatialRepresentationInfo[1].axisDimensionProperties[0].dimensionSize", 7600,
-            "spatialRepresentationInfo[1].axisDimensionProperties[1].dimensionSize", 7800,
+            "spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionSize", 7600,
+            "spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionSize", 7800,
+            "spatialRepresentationInfo[1].axisDimensionProperties[0].dimensionSize", 15000,
+            "spatialRepresentationInfo[1].axisDimensionProperties[1].dimensionSize", 15500,
             "spatialRepresentationInfo[0].transformationParameterAvailability",      false,
             "spatialRepresentationInfo[1].transformationParameterAvailability",      false,
             "spatialRepresentationInfo[0].checkPointAvailability",                   false,
             "spatialRepresentationInfo[1].checkPointAvailability",                   false,
 
             "resourceLineage[0].source[0].description", "Pseudo GLS");
+
+        verifier.assertMetadataEquals();
     }
 }

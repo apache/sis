@@ -16,14 +16,17 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.Quantity;
+import javax.measure.UnconvertibleException;
 import javax.measure.UnitConverter;
 import javax.measure.quantity.Time;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import javax.measure.format.ParserException;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -39,7 +42,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -145,5 +148,76 @@ public final class Quantities extends Static {
             }
         }
         return (Q) quantity;
+    }
+
+    /**
+     * Returns the smallest of two quantities. Values are converted to {@linkplain Unit#getSystemUnit() system unit}
+     * before to be compared. If one of the two quantities is {@code null} or has NaN value, then the other quantity
+     * is returned. If the two quantities have equal converted values, then the first quantity is returned.
+     *
+     * @param  <Q>  type of quantities.
+     * @param  q1   the first quantity (can be {@code null}).
+     * @param  q2   the second quantity (can be {@code null}).
+     * @return the smallest of the two given quantities.
+     *
+     * @since 1.1
+     */
+    public static <Q extends Quantity<Q>> Quantity<Q> min(final Quantity<Q> q1, final Quantity<Q> q2) {
+        return minOrMax(q1, q2, false);
+    }
+
+    /**
+     * Returns the largest of two quantities. Values are converted to {@linkplain Unit#getSystemUnit() system unit}
+     * before to be compared. If one of the two quantities is {@code null} or has NaN value, then the other quantity
+     * is returned. If the two quantities have equal converted values, then the first quantity is returned.
+     *
+     * @param  <Q>  type of quantities.
+     * @param  q1   the first quantity (can be {@code null}).
+     * @param  q2   the second quantity (can be {@code null}).
+     * @return the largest of the two given quantities.
+     *
+     * @since 1.1
+     */
+    public static <Q extends Quantity<Q>> Quantity<Q> max(final Quantity<Q> q1, final Quantity<Q> q2) {
+        return minOrMax(q1, q2, true);
+    }
+
+    /**
+     * Implementation of {@link #min(Quantity, Quantity)} and {@link #max(Quantity, Quantity)}.
+     */
+    private static <Q extends Quantity<Q>> Quantity<Q> minOrMax(final Quantity<Q> q1, final Quantity<Q> q2, final boolean max) {
+        if (q1 == null) return q2;
+        if (q2 == null) return q1;
+        final Unit<Q> u1 = q1.getUnit();
+        final Unit<Q> u2 = q2.getUnit();
+        final Unit<Q> s1 = u1.getSystemUnit();
+        final Unit<Q> s2 = u2.getSystemUnit();
+        if (!Objects.equals(s1, s2)) {
+            throw new UnconvertibleException((String) null);
+        }
+        Number v1 = u1.getConverterTo(s1).convert(q1.getValue());
+        Number v2 = u2.getConverterTo(s2).convert(q2.getValue());
+        if (Numbers.isNaN(v2)) return q1;
+        if (Numbers.isNaN(v1)) return q2;
+        /*
+         * If the two types are instances of `Scalar`, we can compare them directly. Otherwise convert the
+         * `Scalar` type (if any) to `Double` type, then convert again to the widest type of both values.
+         */
+        final boolean t1 = (v1 instanceof Scalar);
+        final boolean t2 = (v2 instanceof Scalar);
+        if (!(t1 & t2)) {
+            if (t1) v1 = v1.doubleValue();
+            if (t2) v2 = v2.doubleValue();
+            final Class<? extends Number> type = Numbers.widestClass(v1, v2);
+            v1 = Numbers.cast(v1, type);
+            v2 = Numbers.cast(v2, type);
+        }
+        /*
+         * Both v1 and v2 are instance of `Comparable<?>` because `Numbers.widestClass(…)`
+         * accepts only known number types such as `Integer`, `Float`, `BigDecimal`, etc.
+         */
+        @SuppressWarnings("unchecked")
+        final int c = ((Comparable) v1).compareTo((Comparable) v2);
+        return (max ? c >= 0 : c <= 0) ? q1 : q2;
     }
 }

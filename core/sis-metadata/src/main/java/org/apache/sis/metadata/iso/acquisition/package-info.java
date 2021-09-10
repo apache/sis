@@ -91,7 +91,7 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mac/1.0/mac.xsd",
+@XmlSchema(location="https://standards.iso.org/iso/19115/-3/mac/1.0/mac.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MAC,
            xmlns = {
                 @XmlNs(prefix = "mac", namespaceURI = Namespaces.MAC),      // Metadata for Acquisition

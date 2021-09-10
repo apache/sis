@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.List;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.LazySet;
+import org.apache.sis.util.Workaround;
 
 
 /**
@@ -34,6 +35,7 @@ import org.apache.sis.internal.referencing.LazySet;
  * @since   0.7
  * @module
  */
+@Workaround(library="JDK", version="1.8")
 public final class Providers extends LazySet<OperationMethod> {
     /**
      * Creates new set of provider.

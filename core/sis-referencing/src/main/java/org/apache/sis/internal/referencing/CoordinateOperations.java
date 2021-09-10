@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.function.Supplier;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
 import org.opengis.referencing.cs.CSFactory;
@@ -33,8 +34,9 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
@@ -50,7 +52,7 @@ import org.apache.sis.util.collection.Containers;
  * until first needed. Contains also utility methods related to coordinate operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -79,6 +81,13 @@ public final class CoordinateOperations extends SystemListener {
      * (the later is used in datum shift in geocentric coordinates).
      */
     public static final String OPERATION_TYPE_KEY = "operationType";
+
+    /**
+     * Value of {@link org.apache.sis.referencing.operation.CoordinateOperationContext#getConstantCoordinates()}.
+     * This thread-local is used as a workaround for the fact that we do not yet provide a public API for this
+     * functionality. This workaround should be deleted after a public API is defined.
+     */
+    public static final ThreadLocal<Supplier<double[]>> CONSTANT_COORDINATES = new ThreadLocal<>();
 
     /**
      * Cached values or {@link #wrapAroundChanges wrapAroundChanges(…)}, created when first needed.
@@ -136,6 +145,15 @@ public final class CoordinateOperations extends SystemListener {
             factory = c = DefaultFactories.forBuildin(CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
         }
         return c;
+    }
+
+    /**
+     * Returns the SIS implementation of {@link MathTransformFactory}.
+     *
+     * @return SIS implementation of transform factory.
+     */
+    public static DefaultMathTransformFactory factoryMT() {
+        return DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class);
     }
 
     /**

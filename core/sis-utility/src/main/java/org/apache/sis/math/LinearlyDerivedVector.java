@@ -31,7 +31,7 @@ import org.apache.sis.measure.NumberRange;
  * This is mostly the case if coefficients are finite and {@link #scale} is non-zero, as asserted at construction time.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see Vector#transform(double, double)
  *
@@ -82,6 +82,14 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
     }
 
     /**
+     * Double-precision values are not guaranteed to be convertible to single-precision floating point type.
+     */
+    @Override
+    public boolean isSinglePrecision() {
+        return false;
+    }
+
+    /**
      * Returns {@code true} if this vector contains only integer values. This implementation delegates
      * to the {@linkplain #base} vector if coefficients are integers, or scans all values otherwise.
      */
@@ -99,6 +107,16 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
     @Override
     public int size() {
         return base.size();
+    }
+
+    /**
+     * Returns {@code true} if this vector is empty or contains only {@code NaN} values.
+     * The implementation delegates to the {@linkplain #base} vector since linear relationship
+     * does not change whether values are NaN.
+     */
+    @Override
+    public boolean isEmptyOrNaN() {
+        return base.isEmptyOrNaN();
     }
 
     /**
@@ -144,11 +162,17 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
      * if the {@linkplain #base} vector stores values using integer primitive type.
      */
     @Override
-    public Number set(final int index, Number value) {
-        if (value != null) {
-            value = (value.doubleValue() - offset) / scale;
-        }
-        return convert(base.set(index, value));
+    public Number set(final int index, final Number value) {
+        return convert(base.set(index, inverse(value)));
+    }
+
+    /**
+     * Sets a range of elements to the given number. This action is likely to loose precision
+     * if the {@linkplain #base} vector stores values using integer primitive type.
+     */
+    @Override
+    public void fill(final int fromIndex, final int toIndex, final Number value) {
+        base.fill(fromIndex, toIndex, inverse(value));
     }
 
     /**
@@ -193,7 +217,20 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
      */
     private Number convert(Number value) {
         if (value != null) {
-            value = value.doubleValue() * scale + offset;       // TODO: use Math.fml in JDK9.
+            value = value.doubleValue() * scale + offset;       // TODO: use Math.fma in JDK9.
+        }
+        return value;
+    }
+
+    /**
+     * Applies the inverse linear function on the given value.
+     *
+     * @param  value  the number to inverse convert, or {@code null}.
+     * @return the inverse converted number (may be {@code null}).
+     */
+    private Number inverse(Number value) {
+        if (value != null) {
+            value = (value.doubleValue() - offset) / scale;
         }
         return value;
     }

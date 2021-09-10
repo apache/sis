@@ -95,8 +95,8 @@ public final strictfp class IdentifiedObjectsTest extends TestCase {
      * @see CRSTest#testIdentifiedObjectLookup()
      */
     public static void testLookupEPSG() throws FactoryException {
-        assertEquals("EPSG:4326", Integer.valueOf(4326), IdentifiedObjects.lookupEPSG(HardCodedCRS.WGS84_φλ));
-        String urn = IdentifiedObjects.lookupURN(HardCodedCRS.WGS84_φλ, null);
+        assertEquals("EPSG:4326", Integer.valueOf(4326), IdentifiedObjects.lookupEPSG(HardCodedCRS.WGS84_LATITUDE_FIRST));
+        String urn = IdentifiedObjects.lookupURN(HardCodedCRS.WGS84_LATITUDE_FIRST, null);
         assertTrue(urn, urn.matches("urn\\:ogc\\:def\\:crs\\:EPSG\\:.*\\:4326"));
     }
 

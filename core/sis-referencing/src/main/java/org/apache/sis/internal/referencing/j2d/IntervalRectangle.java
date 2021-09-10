@@ -41,7 +41,13 @@ import org.apache.sis.internal.util.Strings;
  *       {@link Envelope2D#contains(Rectangle2D)} or {@link Envelope2D#intersects(Rectangle2D)} methods.</li>
  * </ul>
  *
- * This class does <strong>not</strong> support by itself rectangles spanning the anti-meridian of a geographic CRS.
+ * This class provides the following additional methods which are not defined in {@link Rectangle2D}:
+ * <ul>
+ *   <li>{@link #containsInclusive(double, double)}</li>
+ *   <li>{@link #distanceSquared(double, double)}</li>
+ * </ul>
+ *
+ * This class does <strong>not</strong> support by itself rectangles crossing the anti-meridian of a geographic CRS.
  * However the {@link #getX()}, {@link #getY()}, {@link #getWidth()} and {@link #getHeight()} methods are defined in
  * the straightforward way expected by {@link Envelope2D#intersects(Rectangle2D)} and similar methods for computing
  * correct result if the given {@code Rectangle2D} crosses the anti-meridian.
@@ -53,11 +59,11 @@ import org.apache.sis.internal.util.Strings;
  * recommended approach, but for Apache SIS private classes this is a way to reduce pressure on garbage collector.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")
+@SuppressWarnings("CloneableImplementsClone")
 public class IntervalRectangle extends Rectangle2D {
     /** Minimal <var>x</var> coordinate value. */ public double xmin;
     /** Minimal <var>y</var> coordinate value. */ public double ymin;
@@ -78,7 +84,7 @@ public class IntervalRectangle extends Rectangle2D {
      *
      * <div class="note"><b>Note:</b> this constructor expands envelopes that cross the anti-meridian
      * because the methods defined in this class are not designed for handling such envelopes.
-     * If a rectangle with negative width is nevertheless desired for envelope spanning the anti-meridian,
+     * If a rectangle with negative width is nevertheless desired for envelope crossing the anti-meridian,
      * one can use the following constructor:
      *
      * {@preformat java
@@ -100,7 +106,7 @@ public class IntervalRectangle extends Rectangle2D {
      * This constructor unconditionally assigns {@code lower} coordinates to {@link #xmin}, {@link #ymin} and
      * {@code upper} coordinates to {@link #xmax}, {@link #ymax} regardless of their values; this constructor
      * does not verify if {@code lower} coordinates are smaller than {@code upper} coordinates.
-     * This is sometime useful for creating a rectangle spanning the anti-meridian,
+     * This is sometime useful for creating a rectangle crossing the anti-meridian,
      * even if {@code IntervalRectangle} class does not support such rectangles by itself.
      *
      * @param lower  the limits in the direction of decreasing coordinate values for each dimension.
@@ -370,6 +376,8 @@ public class IntervalRectangle extends Rectangle2D {
 
     /**
      * Tests if a specified coordinate is inside the boundary of this {@code Rectangle2D}.
+     * The maximal <var>x</var> and <var>y</var> values (i.e. the right and bottom edges
+     * of this rectangle) are exclusive.
      *
      * @param  x  the <var>x</var> coordinates to test.
      * @param  y  the <var>y</var> coordinates to test.
@@ -378,6 +386,53 @@ public class IntervalRectangle extends Rectangle2D {
     @Override
     public final boolean contains(final double x, final double y) {
         return (x >= xmin && y >= ymin && x < xmax && y < ymax);
+    }
+
+    /**
+     * Tests if a specified coordinate is inside the boundary of this {@code Rectangle2D}
+     * with all edges inclusive.
+     *
+     * @param  x  the <var>x</var> coordinates to test.
+     * @param  y  the <var>y</var> coordinates to test.
+     * @return {@code true} if the specified coordinates are inside this rectangle, all edges included.
+     */
+    public final boolean containsInclusive(final double x, final double y) {
+        return (x >= xmin && x <= xmax && y >= ymin && y <= ymax);
+    }
+
+    /**
+     * Returns the square of the minimal distance between a point and this rectangle.
+     * If the point is inside the rectangle or on the edge, then this method returns 0.
+     *
+     * @param  x  the <var>x</var> coordinates to test.
+     * @param  y  the <var>y</var> coordinates to test.
+     * @return square of minimal distance, or 0 if the point is inside this rectangle.
+     */
+    public final double distanceSquared(final double x, final double y) {
+        int outcode = 0;
+        double dx = java.lang.Double.POSITIVE_INFINITY;
+        double dy = java.lang.Double.POSITIVE_INFINITY;
+        double d;
+        if ((d = (x - xmax)) >= 0)           {dx = d; outcode =  1;}
+        if ((d = (y - ymax)) >= 0)           {dy = d; outcode |= 2;}
+        if ((d = (xmin - x)) >= 0 && d < dx) {dx = d; outcode |= 1;}
+        if ((d = (ymin - y)) >= 0 && d < dy) {dy = d; outcode |= 2;}
+        switch (outcode) {
+            case 1:  return dx*dx;                                  // Only x coordinate is outside.
+            case 2:  return dy*dy;                                  // Only y coordinate is outside.
+            case 3:  return dx*dx + dy*dy;                          // Both coordinates are outside.
+            case 0:  assert containsInclusive(x, y); return 0;      // No coordinate is outside.
+            default: throw new AssertionError(outcode);
+        }
+        /*
+         * Note: if we want non-squared distance in a future version, we can rely on the fact
+         * that `dx` and `dy` are guaranteed positives (no need to take the absolute value).
+         * So we would replace the 3 first cases as below:
+         *
+         *     case 1:  return dx;
+         *     case 2:  return dy;
+         *     case 3:  return Math.hypot(dx, dy);
+         */
     }
 
     /**

@@ -66,6 +66,7 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.wkt.StoreFormat;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.referencing.CRS;
@@ -251,25 +252,11 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Trims the leading and trailing spaces of the given string.
-     * If the string is null, empty or contains only spaces, then this method returns {@code null}.
-     */
-    private static String trim(String value) {
-        if (value != null) {
-            value = value.trim();
-            if (value.isEmpty()) {
-                value = null;
-            }
-        }
-        return value;
-    }
-
-    /**
      * Reads the attribute value for the given name, then trims the leading and trailing spaces.
      * If the value is null, empty or contains only spaces, then this method returns {@code null}.
      */
     private String stringValue(final String name) {
-        return trim(decoder.stringValue(name));
+        return Strings.trimOrNull(decoder.stringValue(name));
     }
 
     /**
@@ -716,9 +703,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
              * the 'sourceDimensions' and 'sourceSizes' arrays are for the grid dimension which is most closely
              * oriented toward the axis direction.
              */
-            if (axis.getDimension() >= 1) {
-                setAxisSize(i, axis.getSize());
-            }
+            final int d = i;    // Because lambda expressions want final variable.
+            axis.getMainSize().ifPresent((s) -> setAxisSize(d, s));
             final AttributeNames.Dimension attributeNames;
             switch (axis.abbreviation) {
                 case 'λ': case 'θ':           attributeNames = AttributeNames.LONGITUDE; break;
@@ -945,18 +931,18 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      */
     private void addSampleDimension(final Variable variable) {
         newSampleDimension();
-        final String name = trim(variable.getName());
+        final String name = Strings.trimOrNull(variable.getName());
         if (name != null) {
             final NameFactory f = decoder.nameFactory;
             final StringBuilder buffer = new StringBuilder(20);
             variable.writeDataTypeName(buffer);
             setBandIdentifier(f.createMemberName(null, name, f.createTypeName(null, buffer.toString())));
         }
-        final String id = variable.getAttributeAsString(CF.STANDARD_NAME);
-        if (id != null && !id.equals(name)) {
+        final String id = Strings.trimOrNull(variable.getStandardName());
+        if (!id.equals(name)) {
             addBandName(variable.getAttributeAsString(ACDD.standard_name_vocabulary), id);
         }
-        final String description = trim(variable.getDescription());
+        final String description = Strings.trimOrNull(variable.getDescription());
         if (description != null && !description.equals(name) && !description.equals(id)) {
             addBandDescription(description);
         }

@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.regex.Pattern;
+import javax.measure.Unit;
+import javax.measure.format.ParserException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -40,6 +42,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.measure.Units;
 import ucar.nc2.constants.CF;
 
 
@@ -126,10 +129,17 @@ public final class GCOM_C extends Convention {
 
     /**
      * Mapping from ACDD or CF-Convention attribute names to names of attributes used by GCOM-C.
+     * This map does not include attributes for geographic extent because the "Lower_left_latitude",
+     * "Lower_left_longitude", "Lower_right_latitude", <i>etc.</i> attributes are difficult to use.
+     * They are corners in the grid with no clear relationship with "real world" West and East bounds.
+     * We have no way to detect anti-meridian spanning (the {@code left > right} test is useless) and
+     * the minimal latitude may be in the middle of a border. Consequently a bounding box made from
+     * the corner minimal and maximal coordinates is not guaranteed to encompass the whole data,
+     * and may even contain no data at all.
      */
     private static final Map<String,String> ATTRIBUTES;
     static {
-        final Map<String,String> m = new HashMap<>();
+        final Map<String,String> m = new HashMap<>(16);
         m.put(AttributeNames.TITLE,               "Product_name");             // identification­Info / citation / title
         m.put(AttributeNames.PRODUCT_VERSION,     "Product_version");          // identification­Info / citation / edition
         m.put(AttributeNames.IDENTIFIER.TEXT,     "Product_file_name");        // identification­Info / citation / identifier / code
@@ -153,9 +163,11 @@ public final class GCOM_C extends Convention {
     /**
      * Names of attributes for sample values having "no-data" meaning.
      * All those names have {@value #SUFFIX} suffix.
+     *
+     * @see #nodataValues(Variable)
      */
     private static final String[] NO_DATA = {
-        "Error_DN",
+        "Error_DN",                                 // Must be first: will be used as "no data" value.
         "Land_DN",
         "Cloud_error_DN",
         "Retrieval_error_DN"
@@ -280,15 +292,18 @@ public final class GCOM_C extends Convention {
     }
 
     /**
-     * Returns an enumeration of two-dimensional non-linear transforms that may be tried in attempts to make
-     * localization grid more linear.
+     * Returns the two-dimensional non-linear transforms to apply for making the localization grid more linear.
+     * This method returns a singleton without specifying the identity transform as an acceptable alternative.
+     * It means that the specified projection (UTM) is considered mandatory for this format.
      *
      * @param  decoder  the netCDF file for which to determine linearizers that may possibly apply.
-     * @return enumeration of two-dimensional non-linear transforms to try.
+     * @return enumeration of two-dimensional non-linear transforms to apply.
+     *
+     * @see #defaultHorizontalCRS(boolean)
      */
     @Override
     public Set<Linearizer> linearizers(final Decoder decoder) {
-        return Collections.singleton(Linearizer.GROUND_TRACK);
+        return Collections.singleton(new Linearizer(CommonCRS.WGS84, Linearizer.Type.UTM));
     }
 
     /**
@@ -409,15 +424,14 @@ public final class GCOM_C extends Convention {
 
     /**
      * Returns the default prime meridian, ellipsoid, datum or CRS to use if no information is found in the netCDF file.
-     * While GCOM documentation said that the datum is WGS 84, we have found that the map projection applied use spherical
-     * formulas.
+     * GCOM documentation said that the datum is WGS 84.
      *
-     * @param  spherical  ignored, since we assume a sphere in all cases.
+     * @param  spherical  ignored, since we assume an ellipsoid in all cases.
      * @return information about geodetic objects to use if no explicit information is found in the file.
      */
     @Override
     public CommonCRS defaultHorizontalCRS(final boolean spherical) {
-        return CommonCRS.SPHERE;
+        return CommonCRS.WGS84;
     }
 
 
@@ -456,13 +470,20 @@ public final class GCOM_C extends Convention {
     @Override
     public Map<Number,Object> nodataValues(final Variable data) {
         final Map<Number, Object> pads = super.nodataValues(data);
-        for (String name : NO_DATA) {
+        for (int i=0; i<NO_DATA.length; i++) {
+            String name = NO_DATA[i];
             final double value = data.getAttributeAsNumber(name);
             if (Double.isFinite(value)) {
-                if (name.endsWith(SUFFIX)) {
-                    name = name.substring(0, name.length() - SUFFIX.length());
+                final Object label;
+                if (i != 0) {
+                    if (name.endsWith(SUFFIX)) {
+                        name = name.substring(0, name.length() - SUFFIX.length());
+                    }
+                    label = name.replace('_', ' ');
+                } else {
+                    label = FILL_VALUE_MASK | MISSING_VALUE_MASK;
                 }
-                pads.put(value, name.replace('_', ' '));
+                pads.put(value, label);
             }
         }
         return pads;
@@ -485,5 +506,26 @@ public final class GCOM_C extends Convention {
             if (Double.isFinite(offset)) tr.setOffset(offset);
         }
         return tr;
+    }
+
+    /**
+     * Returns the unit of measurement to use as a fallback if it can not be determined in a standard way.
+     *
+     * @param  data  the variable for which to get the unit of measurement.
+     * @return the unit of measurement, or {@code null} if none or unknown.
+     * @throws ParserException if the unit symbol can not be parsed.
+     */
+    @Override
+    public Unit<?> getUnitFallback(final Variable data) throws ParserException {
+        if ("Image_data".equals(data.getGroupName())) {
+            final String symbol = data.getAttributeAsString("Unit");
+            if (symbol != null && !symbol.equalsIgnoreCase("NA")) {
+                if (symbol.equalsIgnoreCase("degree")) {
+                    return Units.CELSIUS;
+                }
+                return Units.valueOf(symbol);
+            }
+        }
+        return super.getUnitFallback(data);
     }
 }

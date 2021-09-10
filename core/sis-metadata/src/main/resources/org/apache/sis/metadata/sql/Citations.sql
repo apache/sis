@@ -34,23 +34,23 @@ CREATE TABLE metadata."OnlineResource" (
   "function" metadata."OnLineFunctionCode");
 
 INSERT INTO metadata."OnlineResource" ("ID", "linkage") VALUES
-  ('EPSG',    'http://www.epsg.org/'),
-  ('ESRI',    'http://www.esri.com/'),
+  ('EPSG',    'https://epsg.org/'),
+  ('ESRI',    'https://www.esri.com/'),
   ('GeoTIFF', 'https://trac.osgeo.org/geotiff/'),
   ('IHO',     'https://www.iho.int/'),
-  ('IOGP',    'http://www.iogp.org/'),
+  ('IOGP',    'https://www.iogp.org/'),
   ('ISBN',    'https://www.isbn-international.org/'),
-  ('ISSN',    'http://www.issn.org/'),
-  ('ISO',     'http://www.iso.org/'),
+  ('ISSN',    'https://www.issn.org/'),
+  ('ISO',     'https://www.iso.org/'),
   ('NetCDF',  'https://www.unidata.ucar.edu/software/netcdf/'),
-  ('OGC',     'http://www.opengeospatial.org/'),
-  ('OGCNA',   'http://www.opengeospatial.org/ogcna'),
-  ('Oracle',  'http://www.oracle.com/'),
+  ('OGC',     'https://www.ogc.org/'),
+  ('OGCNA',   'https://www.ogc.org/ogcna'),
+  ('Oracle',  'https://www.oracle.com/'),
   ('OSGeo',   'https://www.osgeo.org/'),
   ('PostGIS', 'https://postgis.net/'),
   ('Proj4',   'https://proj4.org/'),
-  ('SIS',     'http://sis.apache.org/'),
-  ('WMS',     'http://www.opengeospatial.org/standards/wms');
+  ('SIS',     'https://sis.apache.org/'),
+  ('WMS',     'https://www.ogc.org/standards/wms');
 
 UPDATE metadata."OnlineResource" SET "function" = 'information';
 

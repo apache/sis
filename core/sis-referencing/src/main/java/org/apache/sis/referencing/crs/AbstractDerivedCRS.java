@@ -53,7 +53,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * (not by a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.1
  *
  * @param <C>  the conversion type, either {@code Conversion} or {@code Projection}.
  *
@@ -105,11 +105,10 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
         super(properties, derivedCS);
         ArgumentChecks.ensureNonNull("baseCRS", baseCRS);
         ArgumentChecks.ensureNonNull("conversion", conversion);
-        final MathTransform baseToDerived = conversion.getMathTransform();
-        if (baseToDerived != null) {
-            ArgumentChecks.ensureDimensionMatches("baseCRS",   baseToDerived.getSourceDimensions(), baseCRS);
-            ArgumentChecks.ensureDimensionMatches("derivedCS", baseToDerived.getTargetDimensions(), derivedCS);
-        }
+        ArgumentChecks.ensureDimensionsMatch("baseToDerived",
+                baseCRS.getCoordinateSystem().getDimension(),
+                derivedCS.getDimension(),
+                conversion.getMathTransform());
         conversionFromBase = createConversionFromBase(properties, baseCRS, conversion);
     }
 

@@ -88,7 +88,7 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location="http://standards.iso.org/iso/19115/-3/msr/1.0/msr.xsd",
+@XmlSchema(location="https://standards.iso.org/iso/19115/-3/msr/1.0/msr.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MSR,
            xmlns = {
                 @XmlNs(prefix = "msr", namespaceURI = Namespaces.MSR),      // Metadata for Spatial Representation

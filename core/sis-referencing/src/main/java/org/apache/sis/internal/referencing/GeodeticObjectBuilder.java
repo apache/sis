@@ -63,7 +63,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
  * However this class may move in a public package later if we feel confident that its API is mature enough.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -376,11 +376,11 @@ public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> 
      * </div>
      *
      * @param  baseCRS    coordinate reference system to base the derived CRS on.
-     * @param  derivedCS  the coordinate system for the derived CRS.
+     * @param  derivedCS  the coordinate system for the derived CRS, or {@code null} for the default.
      * @return the projected CRS.
      * @throws FactoryException if an error occurred while building the projected CRS.
      */
-    public ProjectedCRS createProjectedCRS(final GeographicCRS baseCRS, final CartesianCS derivedCS) throws FactoryException {
+    public ProjectedCRS createProjectedCRS(final GeographicCRS baseCRS, CartesianCS derivedCS) throws FactoryException {
         ensureConversionMethodSet();
         onCreate(false);
         try {
@@ -400,6 +400,9 @@ public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> 
             properties.put(Conversion.ALIAS_KEY, alias);
             if (name != null) {
                 properties.put(Conversion.NAME_KEY, name);
+            }
+            if (derivedCS == null) {
+                derivedCS = factories.getStandardProjectedCS();
             }
             return factories.getCRSFactory().createProjectedCRS(properties, baseCRS, conversion, derivedCS);
         } finally {
@@ -572,6 +575,6 @@ public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> 
             }
         }
         throw new IllegalArgumentException(Resources.forLocale(locale).getString(
-                Resources.Keys.CanNotSeparateCRS_1, IdentifiedObjects.getName(source, null)));
+                Resources.Keys.CanNotSeparateCRS_1, IdentifiedObjects.getDisplayName(source, locale)));
     }
 }

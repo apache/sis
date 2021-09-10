@@ -33,15 +33,16 @@ import org.opengis.util.RecordType;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.AbstractMapEntry;
 import org.apache.sis.internal.metadata.RecordSchemaSIS;
 
 
 /**
  * A list of logically related elements as (<var>name</var>, <var>value</var>) pairs in a dictionary.
- * By definition, all record members have a [1 … 1] multiplicity
+ * By definition, all record fields have a [1 … 1] multiplicity
  * (for a more flexible construct, see {@linkplain org.apache.sis.feature features}).
- * Since all members are expected to be assigned a value, the initial values on {@code DefaultRecord}
+ * Since all fields are expected to be assigned a value, the initial values on {@code DefaultRecord}
  * instantiation are unspecified. Some may be null, or some may be zero.
  *
  * <h2>Limitations</h2>
@@ -56,7 +57,7 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.1
  *
  * @see DefaultRecordType
  * @see DefaultRecordSchema
@@ -101,7 +102,7 @@ public class DefaultRecord implements Record, Serializable {
 
     /**
      * Creates a new record initialized to a shallow copy of the given record.
-     * The members contained in the given record are <strong>not</strong> recursively copied.
+     * The fields contained in the given record are <strong>not</strong> recursively copied.
      *
      * @param  record  the record to copy (can not be null).
      *
@@ -114,7 +115,7 @@ public class DefaultRecord implements Record, Serializable {
             final Object source = ((DefaultRecord) record).values;
             System.arraycopy(source, 0, values, 0, Array.getLength(source));
         } else {
-            for (final Map.Entry<MemberName,Integer> entry : definition.memberIndices().entrySet()) {
+            for (final Map.Entry<MemberName,Integer> entry : definition.fieldIndices().entrySet()) {
                 final MemberName name = entry.getKey();
                 final Object value = record.locate(name);
                 if (value != null) {
@@ -131,7 +132,7 @@ public class DefaultRecord implements Record, Serializable {
     }
 
     /**
-     * Returns a SIS implementation with the name and members of the given arbitrary implementation.
+     * Returns a SIS implementation with the name and fields of the given arbitrary implementation.
      * This method performs the first applicable action in the following choices:
      *
      * <ul>
@@ -140,12 +141,12 @@ public class DefaultRecord implements Record, Serializable {
      *       then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultRecord} instance is created using the
      *       {@linkplain #DefaultRecord(Record) copy constructor} and returned.
-     *       Note that this is a shallow copy operation, since the members contained
+     *       Note that this is a shallow copy operation, since the fields contained
      *       in the given object are not recursively copied.</li>
      * </ul>
      *
      * @param  other The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the members of the given object
+     * @return A SIS implementation containing the fields of the given object
      *         (may be the given object itself), or {@code null} if the argument was {@code null}.
      *
      * @since 0.8
@@ -175,15 +176,15 @@ public class DefaultRecord implements Record, Serializable {
      *
      * @return the dictionary of all (<var>name</var>, <var>value</var>) pairs in this record.
      *
-     * @see RecordType#getMemberTypes()
+     * @see RecordType#getFieldTypes()
      */
     @Override
-    public Map<MemberName, Object> getAttributes() {
+    public Map<MemberName, Object> getFields() {
         if (values == null) {                         // Should never be null, except temporarily at XML unmarshalling time.
             return Collections.emptyMap();
         }
         return new AbstractMap<MemberName, Object>() {
-            /** Returns the number of members in the record. */
+            /** Returns the number of fields in the record. */
             @Override
             public int size() {
                 return definition.size();
@@ -216,13 +217,13 @@ public class DefaultRecord implements Record, Serializable {
      * {@link AbstractMap} uses this set for providing a default implementation of most methods.
      */
     private final class Entries extends AbstractSet<Map.Entry<MemberName,Object>> {
-        /** Returns the number of members in the record. */
+        /** Returns the number of fields in the record. */
         @Override
         public int size() {
             return definition.size();
         }
 
-        /** Returns an iterator over all record members. */
+        /** Returns an iterator over all record fields. */
         @Override
         public Iterator<Map.Entry<MemberName, Object>> iterator() {
             return new Iter();
@@ -235,16 +236,16 @@ public class DefaultRecord implements Record, Serializable {
      * default implementation of most methods.
      */
     private final class Iter implements Iterator<Map.Entry<MemberName,Object>> {
-        /** Index of the next record member to return in the iteration. */
+        /** Index of the next record field to return in the iteration. */
         private int index;
 
-        /** Returns {@code true} if there is more record members to iterate over. */
+        /** Returns {@code true} if there is more record fields to iterate over. */
         @Override
         public boolean hasNext() {
             return index < definition.size();
         }
 
-        /** Returns an entry containing the name and value of the next record member. */
+        /** Returns an entry containing the name and value of the next record field. */
         @Override
         public Map.Entry<MemberName, Object> next() {
             if (hasNext()) {
@@ -260,27 +261,27 @@ public class DefaultRecord implements Record, Serializable {
      * and {@link DefaultRecord#set(MemberName, Object)} methods.
      */
     private final class Entry extends AbstractMapEntry<MemberName,Object> {
-        /** Index of the record member represented by this entry. */
+        /** Index of the record field represented by this entry. */
         private final int index;
 
-        /** Creates a new entry for the record member at the given index. */
+        /** Creates a new entry for the record field at the given index. */
         Entry(final int index) {
             this.index = index;
         }
 
-        /** Returns the name of the record member contained in this entry. */
+        /** Returns the name of the record field contained in this entry. */
         @Override
         public MemberName getKey() {
             return definition.getName(index);
         }
 
-        /** Returns the current record member value. */
+        /** Returns the current record field value. */
         @Override
         public Object getValue() {
             return locate(getKey());
         }
 
-        /** Sets the record member value and returns the previous value. */
+        /** Sets the record field value and returns the previous value. */
         @Override
         public Object setValue(final Object value) {
             final MemberName name = getKey();
@@ -307,7 +308,7 @@ public class DefaultRecord implements Record, Serializable {
      *
      * @param  name   the name of the attribute to modify.
      * @param  value  the new value for the attribute.
-     * @throws IllegalArgumentException if the given name is not a member of this record.
+     * @throws IllegalArgumentException if the given name is not a field of this record.
      * @throws ClassCastException if the given value is not an instance of the expected type for this record.
      */
     @Override
@@ -448,7 +449,8 @@ public class DefaultRecord implements Record, Serializable {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-419">SIS-419</a>
      */
     private void setValue(String value) {
-        if (value != null && !(value = value.trim()).isEmpty()) {
+        value = Strings.trimOrNull(value);
+        if (value != null) {
             values = new String[] {value};
         }
     }

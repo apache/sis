@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.cs;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import javax.measure.Unit;
@@ -55,7 +57,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  * between two coordinate systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -237,6 +239,49 @@ public final class CoordinateSystems extends Static {
     }
 
     /**
+     * Adds all single coordinate systems in the given list.
+     * This method is used for decomposing a coordinate systems into its components.
+     */
+    private static void components(final CoordinateSystem cs, final List<CoordinateSystem> addTo) {
+        if (cs instanceof DefaultCompoundCS) {
+            for (final CoordinateSystem c : ((DefaultCompoundCS) cs).getComponents()) {
+                components(c, addTo);
+            }
+        } else {
+            addTo.add(cs);
+        }
+    }
+
+    /**
+     * Returns {@code true} if all {@code CoordinateSystem} interfaces of {@code targetCS} have a counterpart in
+     * {@code sourceCS}. This method is equivalent to {@link Classes#implementSameInterfaces(Class, Class, Class)}
+     * except that it decomposes {@link DefaultCompoundCS} in its components before to check the two collections
+     * of interfaces.
+     *
+     * <div class="note"><b>Example:</b>
+     * if {@code sourceCS} is a {@link DefaultCompoundCS} containing {@link EllipsoidalCS} and a vertical or temporal
+     * coordinate system and {@code targetCS} is an {@link EllipsoidalCS} only, then this method returns {@code true}.
+     * But if {@code targetCS} is a {@link CartesianCS} or contains any other CS which is not a component of source CS,
+     * then this method returns {@code false}.</div>
+     */
+    static boolean hasAllTargetTypes(final CoordinateSystem sourceCS, final CoordinateSystem targetCS) {
+        final List<CoordinateSystem> sources = new ArrayList<>(sourceCS.getDimension());
+        final List<CoordinateSystem> targets = new ArrayList<>(targetCS.getDimension());
+        components(sourceCS, sources);
+        components(targetCS, targets);
+next:   for (final CoordinateSystem cs : targets) {
+            for (int i=0; i<sources.size(); i++) {
+                if (Classes.implementSameInterfaces(sources.get(i).getClass(), cs.getClass(), CoordinateSystem.class)) {
+                    sources.remove(i);
+                    continue next;
+                }
+            }
+            return false;           // Found no `sourceCS` component for at least one of the `targetCS` components.
+        }
+        return true;
+    }
+
+    /**
      * Returns an affine transform between two coordinate systems.
      * Only units and axes order (e.g. transforming from
      * ({@linkplain AxisDirection#NORTH North}, {@linkplain AxisDirection#WEST West}) to
@@ -279,7 +324,10 @@ public final class CoordinateSystems extends Static {
         ArgumentChecks.ensureNonNull("sourceCS", sourceCS);
         ArgumentChecks.ensureNonNull("targetCS", targetCS);
         if (!Classes.implementSameInterfaces(sourceCS.getClass(), targetCS.getClass(), CoordinateSystem.class)) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.IncompatibleCoordinateSystemTypes));
+            // Above line was a relatively cheap test. Try the more expansive test below only if necessary.
+            if (!hasAllTargetTypes(sourceCS, targetCS)) {
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.IncompatibleCoordinateSystemTypes));
+            }
         }
         final AxisDirection[] srcAxes = getAxisDirections(sourceCS);
         final AxisDirection[] dstAxes = getAxisDirections(targetCS);
@@ -505,7 +553,7 @@ public final class CoordinateSystems extends Static {
      * it does not yet scan the EPSG database (this may change in future Apache SIS version).
      * The current list of known coordinate systems is given below.</p>
      *
-     * <table>
+     * <table class="sis">
      *   <caption>Known coordinate systems (CS)</caption>
      *   <tr><th>EPSG</th> <th>CS type</th> <th colspan="3">Axis directions</th> <th>Horizontal unit</th></tr>
      *   <tr><td>6424</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td></td>   <td>degree</td></tr>

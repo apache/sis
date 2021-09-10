@@ -23,7 +23,7 @@
     xmlns:gmd          = "http://www.isotc211.org/2005/gmd"
     xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xlink        = "http://www.w3.org/1999/xlink"
-    xsi:schemaLocation = "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd">
+    xsi:schemaLocation = "http://www.isotc211.org/2005/gmd https://www.isotc211.org/2005/gmd/gmd.xsd">
 
   <gmd:title>
     <gco:CharacterString>Fight against poverty</gco:CharacterString>
@@ -35,7 +35,7 @@
         <gco:DateTime>2015-10-17T02:00:00+02:00</gco:DateTime>
       </gmd:date>
       <gmd:dateType>
-        <gmd:CI_DateTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
+        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
                              codeListValue="adopted">Adopted</gmd:CI_DateTypeCode>
       </gmd:dateType>
     </gmd:CI_Date>
@@ -59,7 +59,7 @@
                 <gco:CharacterString>High delay, low throughput, and low altitude service.</gco:CharacterString>
               </gmd:description>
               <gmd:function>
-                <gmd:CI_OnLineFunctionCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"
+                <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"
                                            codeListValue="offlineAccess">Offline access</gmd:CI_OnLineFunctionCode>
               </gmd:function>
             </gmd:CI_OnlineResource>
@@ -70,7 +70,7 @@
         </gmd:CI_Contact>
       </gmd:contactInfo>
       <gmd:role>
-        <gmd:CI_RoleCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+        <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
                          codeListValue="originator">Originator</gmd:CI_RoleCode>
       </gmd:role>
     </gmd:CI_ResponsibleParty>
@@ -82,13 +82,13 @@
       </gmd:individualName>
       <gmd:contactInfo xlink:href="#ip-protocol"/>
       <gmd:role>
-        <gmd:CI_RoleCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+        <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
                          codeListValue="funder">Funder</gmd:CI_RoleCode>
       </gmd:role>
     </gmd:CI_ResponsibleParty>
   </gmd:citedResponsibleParty>
   <gmd:presentationForm>
-    <gmd:CI_PresentationFormCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_PresentationFormCode"
+    <gmd:CI_PresentationFormCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_PresentationFormCode"
                                  codeListValue="physicalObject">Physical object</gmd:CI_PresentationFormCode>
   </gmd:presentationForm>
 </gmd:CI_Citation>

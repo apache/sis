@@ -203,14 +203,14 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         final Set<AuthorityFactoryMock> mock = Collections.singleton(new AuthorityFactoryMock("MOCK", "2.3"));
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
 
-        assertSame("Straight",      HardCodedCRS  .WGS84_φλ,  factory.createGeographicCRS("MOCK:4326"));
-        assertSame("With spaces",   HardCodedCRS  .WGS84,     factory.createGeographicCRS("  mock :  84 "));
-        assertSame("With version",  HardCodedDatum.WGS84,     factory.createGeodeticDatum("mock:2.3:6326"));
-        assertSame("Empty version", HardCodedDatum.GREENWICH, factory.createPrimeMeridian(" MoCk :: 8901"));
-        assertSame("With spaces",   HardCodedCRS  .DEPTH,     factory.createVerticalCRS  (" MoCk : : 9905"));
-        assertSame("Version 0",     HardCodedDatum.SPHERE,    factory.createGeodeticDatum("MOCK: 0:6047"));
-        assertSame("With spaces",   Extents       .WORLD,     factory.createExtent       ("MOCK: 2.3 : 1262"));
-        assertSame("With spaces",   Units         .METRE,     factory.createUnit         (" MoCK : : 9001 "));
+        assertSame("Straight",      HardCodedCRS  .WGS84_LATITUDE_FIRST, factory.createGeographicCRS("MOCK:4326"));
+        assertSame("With spaces",   HardCodedCRS  .WGS84,                factory.createGeographicCRS("  mock :  84 "));
+        assertSame("With version",  HardCodedDatum.WGS84,                factory.createGeodeticDatum("mock:2.3:6326"));
+        assertSame("Empty version", HardCodedDatum.GREENWICH,            factory.createPrimeMeridian(" MoCk :: 8901"));
+        assertSame("With spaces",   HardCodedCRS  .DEPTH,                factory.createVerticalCRS  (" MoCk : : 9905"));
+        assertSame("Version 0",     HardCodedDatum.SPHERE,               factory.createGeodeticDatum("MOCK: 0:6047"));
+        assertSame("With spaces",   Extents       .WORLD,                factory.createExtent       ("MOCK: 2.3 : 1262"));
+        assertSame("With spaces",   Units         .METRE,                factory.createUnit         (" MoCK : : 9001 "));
         assertEquals("Greenwich",   factory.getDescriptionText("MOCK:8901").toString());
         try {
             factory.createGeodeticDatum("MOCK2:4326");
@@ -233,13 +233,13 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         final Set<AuthorityFactoryMock> mock = Collections.singleton(new AuthorityFactoryMock("MOCK", "2.3"));
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
 
-        assertSame("Empty version", HardCodedCRS  .WGS84_φλ,  factory.createGeographicCRS("urn:ogc:def:crs:MOCK::4326"));
-        assertSame("With spaces",   HardCodedCRS  .WGS84,     factory.createGeographicCRS(" urn : ogc  : def:crs :  mock : :  84 "));
-        assertSame("Mixed case",    HardCodedCRS  .DEPTH,     factory.createVerticalCRS  (" Urn : OGC : dEf : CRS : MoCk : : 9905"));
-        assertSame("With version",  HardCodedDatum.WGS84,     factory.createDatum        ("urn:ogc:def:datum:mock:2.3:6326"));
-        assertSame("Empty version", HardCodedDatum.GREENWICH, factory.createObject       ("urn:ogc:def:meridian: MoCk :: 8901"));
-        assertSame("Version 0",     HardCodedDatum.SPHERE,    factory.createGeodeticDatum("urn:ogc:def:datum:MOCK: 0 :6047"));
-        assertSame("Upper case",    Units         .METRE,     factory.createUnit         ("URN:OGC:DEF:UOM:MOCK::9001"));
+        assertSame("Empty version", HardCodedCRS  .WGS84_LATITUDE_FIRST, factory.createGeographicCRS("urn:ogc:def:crs:MOCK::4326"));
+        assertSame("With spaces",   HardCodedCRS  .WGS84,                factory.createGeographicCRS(" urn : ogc  : def:crs :  mock : :  84 "));
+        assertSame("Mixed case",    HardCodedCRS  .DEPTH,                factory.createVerticalCRS  (" Urn : OGC : dEf : CRS : MoCk : : 9905"));
+        assertSame("With version",  HardCodedDatum.WGS84,                factory.createDatum        ("urn:ogc:def:datum:mock:2.3:6326"));
+        assertSame("Empty version", HardCodedDatum.GREENWICH,            factory.createObject       ("urn:ogc:def:meridian: MoCk :: 8901"));
+        assertSame("Version 0",     HardCodedDatum.SPHERE,               factory.createGeodeticDatum("urn:ogc:def:datum:MOCK: 0 :6047"));
+        assertSame("Upper case",    Units         .METRE,                factory.createUnit         ("URN:OGC:DEF:UOM:MOCK::9001"));
         try {
             factory.createGeographicCRS("urn:ogc:def:datum:MOCK::4326");
             fail("Should create an object of the wrong type.");
@@ -262,10 +262,10 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         final Set<AuthorityFactoryMock> mock = Collections.singleton(new AuthorityFactoryMock("MOCK", "2.3"));
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
 
-        assertSame("HTTP",          HardCodedCRS  .WGS84_φλ,  factory.createGeographicCRS("http://www.opengis.net/def/crs/mock/0/4326"));
-        assertSame("GML",           HardCodedCRS  .WGS84_φλ,  factory.createObject       ("http://www.opengis.net/gml/srs/mock.xml#4326"));
-        assertSame("With spaces",   HardCodedCRS  .WGS84,     factory.createGeographicCRS("http://www.opengis.net/gml/srs/ mock.xml # 84 "));
-        assertSame("Mixed case",    HardCodedCRS  .DEPTH,     factory.createVerticalCRS  ("HTTP://www.OpenGIS.net/GML/SRS/MoCk.xml#9905"));
+        assertSame("HTTP",        HardCodedCRS.WGS84_LATITUDE_FIRST, factory.createGeographicCRS("http://www.opengis.net/def/crs/mock/0/4326"));
+        assertSame("GML",         HardCodedCRS.WGS84_LATITUDE_FIRST, factory.createObject       ("http://www.opengis.net/gml/srs/mock.xml#4326"));
+        assertSame("With spaces", HardCodedCRS.WGS84,                factory.createGeographicCRS("http://www.opengis.net/gml/srs/ mock.xml # 84 "));
+        assertSame("Mixed case",  HardCodedCRS.DEPTH,                factory.createVerticalCRS  ("HTTP://www.OpenGIS.net/GML/SRS/MoCk.xml#9905"));
         try {
             factory.createDatum("http://www.opengis.net/gml/srs/mock.xml#6326");
             fail("Should create an object of the wrong type.");
@@ -355,7 +355,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
     {
         CompoundCRS crs = factory.createCompoundCRS(heightOnWGS84);
         assertArrayEquals("WGS 84 + MSL height", new SingleCRS[] {
-            HardCodedCRS.WGS84_φλ, HardCodedCRS.GRAVITY_RELATED_HEIGHT
+            HardCodedCRS.WGS84_LATITUDE_FIRST, HardCodedCRS.GRAVITY_RELATED_HEIGHT
         }, crs.getComponents().toArray());
     }
 

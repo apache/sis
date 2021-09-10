@@ -336,15 +336,17 @@ public abstract class DataStoreProvider {
     }
 
     /**
-     * Returns the logger where to report warnings. This logger is used only if no
-     * {@link org.apache.sis.storage.event.StoreListener} has been registered for
-     * {@link org.apache.sis.storage.event.WarningEvent}.
+     * Returns the logger where to report warnings or loading operations.
+     * This logger is used only if no {@link org.apache.sis.storage.event.StoreListener}
+     * has been registered for {@link org.apache.sis.storage.event.WarningEvent}.
      *
      * <p>The default implementation returns a logger with the same name as the package name
      * of the subclass of this {@code DataStoreProvider} instance. Subclasses should override
      * this method if they can provide a more specific logger.</p>
      *
      * @return the logger to use as a fallback (when there is no listeners) for warning messages.
+     *
+     * @see org.apache.sis.storage.event.StoreListeners#getLogger()
      *
      * @since 1.0
      */

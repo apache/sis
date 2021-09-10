@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.gml;
 
+import javax.xml.bind.annotation.XmlValue;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
@@ -34,7 +36,32 @@ import org.apache.sis.util.iso.Types;
  * @since 0.3
  * @module
  */
-public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> extends XmlAdapter<CodeListUID,BoundType> {
+public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> extends XmlAdapter<CodeListAdapter.Value, BoundType> {
+    /**
+     * Wraps the {@link CodeList} value in a GML document. This class does not need to be public
+     * even if exported from public {@link CodeListAdapter} API, because it is used only by JAXB
+     * and JAXB can access private members.
+     */
+    static final class Value {
+        /** The code space of the {@link #value} as a URI, or {@code null}. */
+        @XmlAttribute
+        String codeSpace;
+
+        /** The code list identifier. */
+        @XmlValue
+        String value;
+
+        /** Empty constructor for JAXB only. */
+        Value() {
+        }
+
+        /** Creates a new wrapper for the given value. */
+        Value(final String codeSpace, final CodeList<?> code) {
+           this.codeSpace = codeSpace;
+           value = Types.getCodeName(code);
+        }
+    }
+
     /**
      * Empty constructor for subclasses only.
      */
@@ -66,7 +93,7 @@ public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> ext
      * @return a code list which represents the GML value.
      */
     @Override
-    public final BoundType unmarshal(final CodeListUID identifier) {
+    public final BoundType unmarshal(final Value identifier) {
         return (identifier != null) ? Types.forCodeName(getCodeListClass(), identifier.value, true) : null;
     }
 
@@ -78,7 +105,7 @@ public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> ext
      * @return the proxy for the given code list.
      */
     @Override
-    public final CodeListUID marshal(final BoundType code) {
-        return (code != null) ? new CodeListUID(getCodeSpace(), code) : null;
+    public final Value marshal(final BoundType code) {
+        return (code != null) ? new Value(getCodeSpace(), code) : null;
     }
 }

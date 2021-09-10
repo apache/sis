@@ -30,7 +30,7 @@ import static org.apache.sis.util.Numbers.*;
  * Tests the {@link Numbers} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -101,18 +101,27 @@ public final strictfp class NumbersTest extends TestCase {
      */
     @Test
     public void testPrimitiveToWrapper() {
-        assertEquals(Byte   .class, primitiveToWrapper(Byte   .TYPE));
-        assertEquals(Short  .class, primitiveToWrapper(Short  .TYPE));
-        assertEquals(Integer.class, primitiveToWrapper(Integer.TYPE));
-        assertEquals(Long   .class, primitiveToWrapper(Long   .TYPE));
-        assertEquals(Float  .class, primitiveToWrapper(Float  .TYPE));
-        assertEquals(Double .class, primitiveToWrapper(Double .TYPE));
-        assertEquals(Byte   .class, primitiveToWrapper(Byte   .class));
-        assertEquals(Short  .class, primitiveToWrapper(Short  .class));
-        assertEquals(Integer.class, primitiveToWrapper(Integer.class));
-        assertEquals(Long   .class, primitiveToWrapper(Long   .class));
-        assertEquals(Float  .class, primitiveToWrapper(Float  .class));
-        assertEquals(Double .class, primitiveToWrapper(Double .class));
+        verifyPrimitiveToWrapper(Byte     .class,  Byte     .TYPE);
+        verifyPrimitiveToWrapper(Short    .class,  Short    .TYPE);
+        verifyPrimitiveToWrapper(Integer  .class,  Integer  .TYPE);
+        verifyPrimitiveToWrapper(Long     .class,  Long     .TYPE);
+        verifyPrimitiveToWrapper(Float    .class,  Float    .TYPE);
+        verifyPrimitiveToWrapper(Double   .class,  Double   .TYPE);
+        verifyPrimitiveToWrapper(Character.class,  Character.TYPE);
+        verifyPrimitiveToWrapper(Boolean  .class,  Boolean  .TYPE);
+        verifyPrimitiveToWrapper(Void     .class,  Void     .TYPE);
+        assertSame(String.class, primitiveToWrapper(String.class));
+    }
+
+    /**
+     * Asserts that calls to {@link Numbers#primitiveToWrapper(Class)} produces the expected wrapper.
+     * The {@code <N>} parameter type is for making sure that e.g. {@link Integer#TYPE} has the same
+     * type declaration than {@code Integer.class} despite being different {@link Class} instances.
+     */
+    private static <N> void verifyPrimitiveToWrapper(final Class<N> wrapper, final Class<N> primitive) {
+        assertNotSame(wrapper, primitive);
+        assertSame   (wrapper, primitiveToWrapper(primitive));
+        assertSame   (wrapper, primitiveToWrapper(wrapper));
     }
 
     /**
@@ -120,18 +129,27 @@ public final strictfp class NumbersTest extends TestCase {
      */
     @Test
     public void testWrapperToPrimitive() {
-        assertEquals(Byte   .TYPE, wrapperToPrimitive(Byte   .TYPE));
-        assertEquals(Short  .TYPE, wrapperToPrimitive(Short  .TYPE));
-        assertEquals(Integer.TYPE, wrapperToPrimitive(Integer.TYPE));
-        assertEquals(Long   .TYPE, wrapperToPrimitive(Long   .TYPE));
-        assertEquals(Float  .TYPE, wrapperToPrimitive(Float  .TYPE));
-        assertEquals(Double .TYPE, wrapperToPrimitive(Double .TYPE));
-        assertEquals(Byte   .TYPE, wrapperToPrimitive(Byte   .class));
-        assertEquals(Short  .TYPE, wrapperToPrimitive(Short  .class));
-        assertEquals(Integer.TYPE, wrapperToPrimitive(Integer.class));
-        assertEquals(Long   .TYPE, wrapperToPrimitive(Long   .class));
-        assertEquals(Float  .TYPE, wrapperToPrimitive(Float  .class));
-        assertEquals(Double .TYPE, wrapperToPrimitive(Double .class));
+        verifyWrapperToPrimitive(Byte     .TYPE,  Byte     .class);
+        verifyWrapperToPrimitive(Short    .TYPE,  Short    .class);
+        verifyWrapperToPrimitive(Integer  .TYPE,  Integer  .class);
+        verifyWrapperToPrimitive(Long     .TYPE,  Long     .class);
+        verifyWrapperToPrimitive(Float    .TYPE,  Float    .class);
+        verifyWrapperToPrimitive(Double   .TYPE,  Double   .class);
+        verifyWrapperToPrimitive(Character.TYPE,  Character.class);
+        verifyWrapperToPrimitive(Boolean  .TYPE,  Boolean  .class);
+        verifyWrapperToPrimitive(Void     .TYPE,  Void     .class);
+        assertSame(String.class, wrapperToPrimitive(String.class));
+    }
+
+    /**
+     * Asserts that calls to {@link Numbers#wrapperToPrimitive(Class)} produces the expected wrapper.
+     * The {@code <N>} parameter type is for making sure that e.g. {@link Integer#TYPE} has the same
+     * type declaration than {@code Integer.class} despite being different {@link Class} instances.
+     */
+    private static <N> void verifyWrapperToPrimitive(final Class<N> primitive, final Class<N> wrapper) {
+        assertNotSame(primitive, wrapper);
+        assertSame   (primitive, wrapperToPrimitive(wrapper));
+        assertSame   (primitive, wrapperToPrimitive(primitive));
     }
 
     /**

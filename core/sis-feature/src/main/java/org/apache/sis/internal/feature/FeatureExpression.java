@@ -19,7 +19,7 @@ package org.apache.sis.internal.feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
-import org.opengis.filter.expression.Expression;
+import org.opengis.filter.Expression;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
@@ -34,11 +34,24 @@ import org.apache.sis.feature.builder.PropertyTypeBuilder;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ *
+ * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
+ * @param  <V>  the type of values computed by the expression.
+ *
+ * @since 1.0
  * @module
  */
-public interface FeatureExpression {
+public interface FeatureExpression<R,V> extends Expression<R,V> {
+    /**
+     * Returns the type of values computed by this expression, or {@code Object.class} if unknown.
+     *
+     * @return the type of values computed by this expression.
+     */
+    default Class<?> getValueClass() {
+        return Object.class;
+    }
+
     /**
      * Provides the expected type of values produced by this expression when a feature of the given
      * type is evaluated. The resulting type shall describe a "static" property, i.e. it can be an
@@ -60,8 +73,6 @@ public interface FeatureExpression {
      * <ol>
      *   <li>If the expression implements {@link FeatureExpression}, delegate to {@link #expectedType(FeatureType,
      *       FeatureTypeBuilder)}. Note that the invoked method may throw an {@link IllegalArgumentException}.</li>
-     *   <li>Otherwise if {@link Expression#evaluate(Object, Class)} with a {@code PropertyType.class} argument
-     *       returns a non-null property, adds that property to the given builder.</li>
      *   <li>Otherwise if the given feature type contains exactly one property (including inherited properties),
      *       adds that property to the given builder.</li>
      *   <li>Otherwise returns {@code null}.</li>
@@ -77,21 +88,13 @@ public interface FeatureExpression {
      * @throws IllegalArgumentException if this method can operate only on some feature types
      *         and the given type is not one of them.
      */
-    public static PropertyTypeBuilder expectedType(final Expression expression, final FeatureType valueType, final FeatureTypeBuilder addTo) {
-        if (expression instanceof FeatureExpression) {
-            return ((FeatureExpression) expression).expectedType(valueType, addTo);
+    public static PropertyTypeBuilder expectedType(final Expression<?,?> expression,
+            final FeatureType valueType, final FeatureTypeBuilder addTo)
+    {
+        if (expression instanceof FeatureExpression<?,?>) {
+            return ((FeatureExpression<?,?>) expression).expectedType(valueType, addTo);
         }
-        PropertyType pt = null;
-        if (expression != null) {
-            // TODO: remove this hack if we can get more type-safe Expression.
-            pt = expression.evaluate(valueType, PropertyType.class);
-        }
-        if (pt == null) {
-            pt = CollectionsExt.singletonOrNull(valueType.getProperties(true));
-            if (pt == null) {
-                return null;
-            }
-        }
-        return addTo.addProperty(pt);
+        final PropertyType pt = CollectionsExt.singletonOrNull(valueType.getProperties(true));
+        return (pt == null) ? null : addTo.addProperty(pt);
     }
 }

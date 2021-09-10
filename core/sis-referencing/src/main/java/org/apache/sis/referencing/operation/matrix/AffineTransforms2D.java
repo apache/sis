@@ -25,6 +25,10 @@ import java.awt.geom.RectangularShape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
@@ -36,9 +40,10 @@ import static java.awt.geom.AffineTransform.*;
 /**
  * Bridge between {@link Matrix} and Java2D {@link AffineTransform} instances.
  * Those {@code AffineTransform} instances can be viewed as 3×3 matrices.
+ * Contains also utility methods operating on {@link AffineTransform} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.4
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -47,6 +52,25 @@ public final class AffineTransforms2D extends Static {
      * Do not allows instantiation of this class.
      */
     private AffineTransforms2D() {
+    }
+
+    /**
+     * Returns the given transform as a Java2D affine transform.
+     *
+     * @param  transform  the transform to convert, or {@code null}.
+     * @return the transform argument if it can be safely casted (including {@code null} argument) or converted.
+     * @throws IllegalArgumentException if the given transform can not be caster or converted.
+     *
+     * @see #toMathTransform(AffineTransform)
+     */
+    public static AffineTransform castOrCopy(final MathTransform transform) throws IllegalArgumentException {
+        if (transform == null || transform instanceof AffineTransform) {
+            return (AffineTransform) transform;
+        }
+        if (transform instanceof LinearTransform) {
+            return castOrCopy(((LinearTransform) transform).getMatrix());
+        }
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.NotAnAffineTransform));
     }
 
     /**
@@ -67,7 +91,7 @@ public final class AffineTransforms2D extends Static {
         }
         MatrixSIS.ensureSizeMatch(3, 3, matrix);
         if (!Matrices.isAffine(matrix)) {
-            throw new IllegalStateException(Resources.format(Resources.Keys.NotAnAffineTransform));
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.NotAnAffineTransform));
         }
         return new AffineTransform(matrix.getElement(0,0), matrix.getElement(1,0),
                                    matrix.getElement(0,1), matrix.getElement(1,1),
@@ -84,6 +108,26 @@ public final class AffineTransforms2D extends Static {
         return new Matrix3(transform.getScaleX(), transform.getShearX(), transform.getTranslateX(),
                            transform.getShearY(), transform.getScaleY(), transform.getTranslateY(),
                            0,                     0,                     1);
+    }
+
+    /**
+     * Creates a math transform from the given affine transform.
+     * This method is the converse of {@link #castOrCopy(MathTransform)}.
+     *
+     * @param  transform  the affine transform to cast or copy as a {@link MathTransform}, or {@code null}.
+     * @return a {@link MathTransform} doing the same operation than the given {@link AffineTransform},
+     *         or {@code null} if the given transform was null.
+     *
+     * @see #castOrCopy(MathTransform)
+     *
+     * @since 1.1
+     */
+    public static LinearTransform toMathTransform(final AffineTransform transform) {
+        if (transform == null || transform instanceof LinearTransform) {
+            return (LinearTransform) transform;
+        } else {
+            return new AffineTransform2D(transform);
+        }
     }
 
     /**
@@ -207,7 +251,7 @@ public final class AffineTransforms2D extends Static {
             dest.setRect(xmin, ymin, xmax-xmin, ymax-ymin);
             return dest;
         }
-        return new Rectangle2D.Double(xmin, ymin, xmax-xmin, ymax-ymin);
+        return new IntervalRectangle(xmin, ymin, xmax, ymax);
     }
 
     /**
@@ -251,7 +295,7 @@ public final class AffineTransforms2D extends Static {
             dest.setRect(xmin, ymin, xmax-xmin, ymax-ymin);
             return dest;
         }
-        return new Rectangle2D.Double(xmin, ymin, xmax-xmin, ymax-ymin);
+        return new IntervalRectangle(xmin, ymin, xmax, ymax);
     }
 
     /**
@@ -413,5 +457,17 @@ public final class AffineTransforms2D extends Static {
         if (shear == 0) return abs(scale);                  // Optimization for a very common case.
         if (scale == 0) return abs(shear);                  // Not as common as above, but still common enough.
         return hypot(scale, shear);
+    }
+
+    /**
+     * Returns a global scale factor for the specified affine transform. This scale factor combines
+     * {@link #getScaleX0 getScaleX0(tr)} and {@link #getScaleY0 getScaleY0(tr)}. The way to compute
+     * such a "global" scale is somewhat arbitrary and may change in any future version.
+     *
+     * @param  tr  the affine transform to inspect.
+     * @return a "global" scale factor.
+     */
+    public static double getScale(final AffineTransform tr) {
+        return 0.5 * (AffineTransforms2D.getScaleX0(tr) + AffineTransforms2D.getScaleY0(tr));
     }
 }

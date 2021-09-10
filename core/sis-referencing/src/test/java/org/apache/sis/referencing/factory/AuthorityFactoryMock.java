@@ -136,7 +136,7 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
         }
         switch (n) {
             case   84: return HardCodedCRS.WGS84;
-            case 4326: return HardCodedCRS.WGS84_φλ;
+            case 4326: return HardCodedCRS.WGS84_LATITUDE_FIRST;
             case 4979: return HardCodedCRS.GEOCENTRIC;
             case 5714: return HardCodedCRS.GRAVITY_RELATED_HEIGHT;
             case 9905: return HardCodedCRS.DEPTH;

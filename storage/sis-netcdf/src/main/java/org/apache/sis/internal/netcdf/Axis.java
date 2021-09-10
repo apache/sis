@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
+import java.util.OptionalLong;
 import java.io.IOException;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -34,6 +35,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.util.Numerics;
@@ -57,12 +59,12 @@ import ucar.nc2.constants.CF;
 
 /**
  * Information about a coordinate system axes. In netCDF files, all axes can be related to 1 or more dimensions
- * of the grid domain. Those grid domain dimensions are specified by the {@link #sourceDimensions} array.
+ * of the grid domain. Those grid domain dimensions are specified by the {@link #gridDimensionIndices} array.
  * Whether the array length is 1 or 2 depends on whether the wrapped netCDF axis is an instance of
  * {@link ucar.nc2.dataset.CoordinateAxis1D} or {@link ucar.nc2.dataset.CoordinateAxis2D} respectively.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see Grid#getAxes(Decoder)
  *
@@ -110,18 +112,27 @@ public final class Axis extends NamedElement {
      * for ISO 19115 {@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize}
      * metadata property.
      *
-     * <p>A given {@link Grid} should not have two {@code Axis} instances with equal {@code sourceDimensions} array.
-     * When {@code sourceDimensions.length} ≧ 2 we may have two {@code Axis} instances with the same indices in their
-     * {@code sourceDimensions} arrays, but those indices should be in different order.</p>
+     * <p>A given {@link Grid} should not have two {@code Axis} instances with equal {@code gridDimensionIndices}.
+     * When {@code gridDimensionIndices.length} ≥ 2 we may have two {@code Axis} instances with the same indices
+     * in their {@code gridDimensionIndices} arrays, but those indices should be in different order.</p>
      *
+     * <p>The array length should be equal to {@link Variable#getNumDimensions()}. However this {@code Axis} class
+     * is tolerant to situations where the array length is shorter, which may happen if some grid dimensions where
+     * not recognized or can not be handled for whatever reason that {@link Grid} decided.</p>
+     *
+     * <p>This field is {@code null} if this {@code Axis} instance is not built for a {@link Grid}.
+     * In particular, this field has no meaning for CRS of geometries in a {@link FeatureSet}.
+     * See {@link #Axis(Variable)} for a list of methods than can not be used in such case.</p>
+     *
+     * @suu #getNumDimensions()
      * @see #getMainDirection()
      */
-    final int[] sourceDimensions;
+    final int[] gridDimensionIndices;
 
     /**
      * The number of cell elements along the source grid dimensions, as unsigned integers. The length of this
-     * array shall be equal to the {@link #sourceDimensions} length. For each element, {@code sourceSizes[i]}
-     * shall be equal to the number of grid cells in the grid dimension at index {@code sourceDimensions[i]}.
+     * array shall be equal to the {@link #gridDimensionIndices} length. For each element, {@code gridSizes[i]}
+     * shall be equal to the number of grid cells in the grid dimension at index {@code gridDimensionIndices[i]}.
      *
      * <p>This array should contain the same information as {@code coordinates.getShape()} but potentially in
      * a different order and with potentially one element (not necessarily the first one) set to a lower value
@@ -130,9 +141,14 @@ public final class Axis extends NamedElement {
      * <p>Note that while we defined those values as unsigned for consistency with {@link Variable} dimensions,
      * not all operations in this {@code Axis} class support values greater than the signed integer range.</p>
      *
+     * <p>This array is {@code null} if {@link #gridDimensionIndices} is {@code null}, i.e. if this axis is not
+     * used for building a {@link Grid}. See {@link #Axis(Variable)} for a list of methods than can not be used.</p>
+     *
+     * @see #getMainSize()
+     * @see #getSizeProduct(int)
      * @see Variable#getGridDimensions()
      */
-    private final int[] sourceSizes;
+    private final int[] gridSizes;
 
     /**
      * Values of coordinates on this axis for given grid indices. This variables is often one-dimensional,
@@ -142,19 +158,41 @@ public final class Axis extends NamedElement {
     final Variable coordinates;
 
     /**
+     * Creates an axis for a {@link FeatureSet}. This constructor leaves the {@link #gridDimensionIndices}
+     * and {@link #gridSizes} array to {@code null}, which forbid the use of following methods:
+     *
+     * <ul>
+     *   <li>{@link #mainDimensionFirst(Axis[], int)}</li>
+     *   <li>{@link #trySetTransform(Matrix, int, int, List)}</li>
+     *   <li>{@link #createLocalizationGrid(Axis)}</li>
+     *   <li>{@link #getSizeProduct(int)} (private method)</li>
+     * </ul>
+     *
+     * All above methods should be used by {@link Grid} only.
+     */
+    Axis(final Variable coordinates) {
+        this.coordinates = coordinates;
+        abbreviation = AxisType.abbreviation(coordinates);
+        final AxisDirection dir = direction(coordinates.getUnitsString());
+        direction = (dir != null) ? dir : AxisDirections.fromAbbreviation(abbreviation);
+        gridDimensionIndices = null;
+        gridSizes = null;
+    }
+
+    /**
      * Constructs a new axis associated to an arbitrary number of grid dimension. The given arrays are stored
      * as-in (not cloned) and their content may be modified after construction by {@link Grid#getAxes(Decoder)}.
      *
-     * @param  abbreviation      axis abbreviation, also identifying its type. This is a controlled vocabulary.
-     * @param  direction         direction of positive values ("up" or "down"), or {@code null} if unknown.
-     * @param  sourceDimensions  the index of the grid dimension associated to this axis, initially in netCDF order.
-     * @param  sourceSizes       the number of cell elements along that axis, as unsigned integers.
-     * @param  coordinates       coordinates of the localization grid used by this axis.
+     * @param  abbreviation          axis abbreviation, also identifying its type. This is a controlled vocabulary.
+     * @param  direction             direction of positive values ("up" or "down"), or {@code null} if unknown.
+     * @param  gridDimensionIndices  indices of grid dimension associated to this axis, initially in netCDF order.
+     * @param  gridSizes             number of cell elements along above grid dimensions, as unsigned integers.
+     * @param  coordinates           coordinates of the localization grid used by this axis.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public Axis(final char abbreviation, final String direction, final int[] sourceDimensions, final int[] sourceSizes,
+    public Axis(final char abbreviation, final String direction, final int[] gridDimensionIndices, final int[] gridSizes,
                 final Variable coordinates) throws IOException, DataStoreException
     {
         /*
@@ -172,7 +210,7 @@ public final class Axis extends NamedElement {
          */
         AxisDirection dir = Types.forCodeName(AxisDirection.class, direction, false);
         AxisDirection check = AxisDirections.fromAbbreviation(abbreviation);
-        final boolean isSigned = (dir != null);     // Whether 'dir' takes in account the direction of positive values.
+        final boolean isSigned = (dir != null);     // Whether `dir` takes in account the direction of positive values.
         boolean isConsistent = true;
         if (dir == null) {
             dir = check;
@@ -192,21 +230,21 @@ public final class Axis extends NamedElement {
                     Resources.Keys.AmbiguousAxisDirection_4, coordinates.getFilename(), coordinates.getName(), dir, check);
             if (isSigned) {
                 if (AxisDirections.isOpposite(dir)) {
-                    check = AxisDirections.opposite(check);         // Apply the sign of 'dir' on 'check'.
+                    check = AxisDirections.opposite(check);         // Apply the sign of `dir` on `check`.
                 }
                 dir = check;
             }
         }
-        this.direction        = dir;
-        this.abbreviation     = abbreviation;
-        this.sourceDimensions = sourceDimensions;
-        this.sourceSizes      = sourceSizes;
-        this.coordinates      = coordinates;
+        this.direction            = dir;
+        this.abbreviation         = abbreviation;
+        this.gridDimensionIndices = gridDimensionIndices;
+        this.gridSizes            = gridSizes;
+        this.coordinates          = coordinates;
         /*
          * If the variable for localization grid declares a fill value, maybe the last rows are all NaN.
          * We need to trim them from this axis, otherwise it will confuse the grid geometry calculation.
          * Following operation must be done before mainDimensionFirst(…) is invoked, otherwise the order
-         * of elements in 'sourceSizes' would not be okay anymore.
+         * of elements in `gridSizes` would not be okay anymore.
          */
         if (coordinates.getAttributeType(CDM.FILL_VALUE) != null) {
             final int page = getSizeProduct(1);            // Must exclude first dimension from computation.
@@ -214,8 +252,8 @@ public final class Axis extends NamedElement {
             int n = data.size();
             while (--n >= 0 && data.isNaN(n)) {}
             final int nr = Numerics.ceilDiv(++n, page);
-            assert nr <= sourceSizes[0] : nr;
-            sourceSizes[0] = nr;
+            assert nr <= gridSizes[0] : nr;
+            gridSizes[0] = nr;
             assert getSizeProduct(0) == n : n;
         }
     }
@@ -261,11 +299,11 @@ public final class Axis extends NamedElement {
      * @see #getMainDirection()
      */
     final void mainDimensionFirst(final Axis[] axes, final int count) throws IOException, DataStoreException {
-        final int d0 = sourceDimensions[0];
-        final int d1 = sourceDimensions[1];
+        final int d0 = gridDimensionIndices[0];
+        final int d1 = gridDimensionIndices[1];
         boolean s = false;
         for (int i=0; i<count; i++) {
-            final int[] other = axes[i].sourceDimensions;
+            final int[] other = axes[i].gridDimensionIndices;
             if (other.length != 0) {
                 final int first = other[0];
                 if  (first == d1) return;           // Swapping would cause a collision.
@@ -288,8 +326,8 @@ public final class Axis extends NamedElement {
          *  (6)              (7)              (8)
          */
         if (!s) {
-            final int[] x = sampleIndices(sourceSizes[0]);
-            final int[] y = sampleIndices(sourceSizes[1]);
+            final int[] x = sampleIndices(gridSizes[0]);
+            final int[] y = sampleIndices(gridSizes[1]);
             double xInc = 0, yInc = 0;
             for (int c=x.length * y.length; --c >= 0;) {
                 final int i = x[c % y.length];
@@ -302,8 +340,8 @@ public final class Axis extends NamedElement {
                 return;
             }
         }
-        ArraysExt.swap(sourceSizes,      0, 1);
-        ArraysExt.swap(sourceDimensions, 0, 1);
+        ArraysExt.swap(gridSizes,            0, 1);
+        ArraysExt.swap(gridDimensionIndices, 0, 1);
     }
 
     /**
@@ -340,9 +378,11 @@ public final class Axis extends NamedElement {
      * value returned by this method is the index of the "main" dimension in this array of length 2.
      *
      * @return 0 or 1, depending on whether coordinates vary mostly on columns or on rows respectively.
+     *
+     * @see #getMainSize()
      */
-    final int getMainDirection() {
-        return (sourceDimensions.length < 2 || sourceDimensions[0] <= sourceDimensions[1]) ? 0 : 1;
+    private int getMainDirection() {
+        return (getNumDimensions() < 2 || gridDimensionIndices[0] <= gridDimensionIndices[1]) ? 0 : 1;
     }
 
     /**
@@ -352,49 +392,57 @@ public final class Axis extends NamedElement {
      *
      * @return number of dimension of the localization grid used by this axis.
      */
-    public final int getDimension() {
-        return sourceDimensions.length;
+    final int getNumDimensions() {
+        return (gridDimensionIndices != null) ? gridDimensionIndices.length : coordinates.getNumDimensions();
     }
 
     /**
-     * Returns the product of all {@link #sourceSizes} values starting at the given index.
+     * Returns the product of all {@link #gridSizes} values starting at the given index.
      * The product of all sizes given by {@code getSizeProduct(0)} shall be the length of
      * the vector returned by {@link #read()}.
      *
      * @param  i  index of the first size to include in the product.
-     * @return the product of all {@link #sourceSizes} values starting at the given index.
+     * @return the product of all {@link #gridSizes} values starting at the given index.
      * @throws ArithmeticException if the product can not be represented as a signed 32 bits integer.
      */
     private int getSizeProduct(int i) {
         int length = 1;
-        while (i < sourceSizes.length) {
+        while (i < gridSizes.length) {
             length = Math.multiplyExact(length, getSize(i++));
         }
         return length;
     }
 
     /**
-     * Returns the {@link #sourceSizes} value at the given index, making sure it is representable as a
+     * Returns the {@link #gridSizes} value at the given index, making sure it is representable as a
      * signed integer value. This method is invoked by operations not designed for unsigned integers.
      *
-     * @param  i  index of the desired dimension, in the same order than {@link #sourceDimensions}.
+     * @param  i  index of the desired dimension, in the same order than {@link #gridDimensionIndices}.
      * @throws ArithmeticException if the size can not be represented as a signed 32 bits integer.
      */
     private int getSize(final int i) {
-        final int n = sourceSizes[i];
+        final int n = gridSizes[i];
         if (n >= 0) return n;
         throw new ArithmeticException(coordinates.errors().getString(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
     }
 
     /**
      * Returns the number of cells in the first dimension of the localization grid used by this axis.
-     * If the localization grid has more than one dimension ({@link #getDimension()} {@literal > 1}),
+     * If the localization grid has more than one dimension ({@link #getNumDimensions()} {@literal > 1}),
      * then all additional dimensions are ignored. The first dimension should be the main one.
      *
      * @return number of cells in the first (main) dimension of the localization grid.
      */
-    public final long getSize() {
-        return (sourceSizes.length != 0) ? Integer.toUnsignedLong(sourceSizes[0]) : 0;
+    public final OptionalLong getMainSize() {
+        final int m = getMainDirection();
+        if (gridSizes != null && gridSizes.length > m) {
+            return OptionalLong.of(Integer.toUnsignedLong(gridSizes[m]));
+        }
+        final List<Dimension> dimensions = coordinates.getGridDimensions();
+        if (dimensions.size() > m) {
+            return OptionalLong.of(dimensions.get(m).length());
+        }
+        return OptionalLong.empty();
     }
 
     /**
@@ -418,7 +466,8 @@ public final class Axis extends NamedElement {
 
     /**
      * Returns {@code true} if the given axis specifies the same direction and unit of measurement than this axis.
-     * This is used for testing if a predefined axis can be used instead than invoking {@link #toISO(CSFactory, int)}.
+     * This is used for testing if a predefined axis can be used instead than invoking
+     * {@link #toISO(CSFactory, int, boolean)}.
      */
     final boolean isSameUnitAndDirection(final CoordinateSystemAxis axis) {
         if (!axis.getDirection().equals(direction)) {
@@ -502,9 +551,11 @@ public final class Axis extends NamedElement {
      *
      * @param  factory  the factory to use for creating the coordinate system axis.
      * @param  order    0 if creating the first axis, 1 if creating the second axis, <i>etc</i>.
+     * @param  grid     {@code true} if building a CRS for a grid, or {@code false} for features.
      * @return the ISO axis.
      */
-    final CoordinateSystemAxis toISO(final CSFactory factory, final int order)
+    @SuppressWarnings("fallthrough")
+    final CoordinateSystemAxis toISO(final CSFactory factory, final int order, final boolean grid)
             throws DataStoreException, FactoryException, IOException
     {
         /*
@@ -542,10 +593,9 @@ public final class Axis extends NamedElement {
         /*
          * Axis abbreviation, direction and unit of measurement are mandatory. If any of them is null,
          * creation of CoordinateSystemAxis is likely to fail with an InvalidGeodeticParameterException.
-         * We provide default values for the most well-identified axes and leave other values to null.
-         * Those null values can be accepted if users specify their own factory.
+         * We provide default values for the most well-identified axes.
          *
-         * The default values are SI base units except degrees, which is the usually angular units for netCDF files.
+         * The default values are SI base units except degrees, which is the usual angular units for netCDF files.
          * Providing default units is a little bit dangerous, but we can not create CRS otherwise. Note that wrong
          * defaults become harmless if the CRS is overwritten by GridMapping attributes in Variable.getGridGeometry().
          */
@@ -559,21 +609,30 @@ public final class Axis extends NamedElement {
                 case 'E': case 'N': unit = Units.METRE;  break;     // Projected easting and northing.
                 case 't':           unit = Units.SECOND; break;     // Time.
                 case 'x': case 'y': {
-                    final Vector values = coordinates.read();
-                    final Number increment = values.increment(0);
-                    if (increment != null && increment.doubleValue() == 1) {
-                        // Do not test values.doubleValue(0) since different conventions exit (0-based, 1-based, etc).
-                        unit = Units.PIXEL;
+                    if (grid) {
+                        final Vector values = read();
+                        final Number increment = values.increment(0);
+                        if (increment != null && increment.doubleValue() == 1) {
+                            // Do not test values.doubleValue(0) since different conventions exit (0-based, 1-based, etc).
+                            unit = Units.PIXEL;
+                            break;
+                        }
                     }
-                    break;
+                    // Else fallthrough.
                 }
+                default: unit = Units.UNITY; break;
             }
         }
         AxisDirection dir = direction;
         if (dir == null) {
-            switch (order) {
-                case 0: dir = AxisDirection.COLUMN_POSITIVE; break;
-                case 1: dir = AxisDirection.ROW_POSITIVE; break;
+            if (Units.isTemporal(unit)) {
+                dir = AxisDirection.FUTURE;
+            } else if (Units.isPressure(unit)) {
+                dir = AxisDirection.UP;
+            } else switch (order) {
+                case 0:  dir = AxisDirection.COLUMN_POSITIVE; break;
+                case 1:  dir = AxisDirection.ROW_POSITIVE;    break;
+                default: dir = AxisDirection.OTHER;           break;
             }
         }
         final String abbr;
@@ -582,7 +641,7 @@ public final class Axis extends NamedElement {
         } else if (dir != null && unit != null) {
             abbr = AxisDirections.suggestAbbreviation(name, dir, unit);
         } else {
-            abbr = null;
+            abbr = "A" + (order + 1);
         }
         return factory.createCoordinateSystemAxis(properties, abbr, dir, unit);
     }
@@ -609,17 +668,25 @@ public final class Axis extends NamedElement {
     final boolean trySetTransform(final Matrix gridToCRS, final int lastSrcDim, final int tgtDim,
             final List<MathTransform> nonLinears) throws IOException, DataStoreException
     {
-        switch (getDimension()) {
+        switch (getNumDimensions()) {
             /*
-             * Defined as a matter of principle, but should never happen.
+             * Variable is a scalar, which is represented by an array of length 1.
+             * There is no source dimension, only a target dimension fixed to a constant value.
+             * Consequently the scale factor does not exist in the matrix, only the translation.
              */
-            case 0: return true;
+            case 0: {
+                final Vector data = read();
+                if (!data.isEmpty()) {
+                    gridToCRS.setElement(tgtDim, gridToCRS.getNumCol() - 1, data.doubleValue(0));
+                }
+                return true;
+            }
             /*
              * Normal case where the axis has only one dimension.
              */
             case 1: {
                 final Vector data = read();
-                final int srcDim = lastSrcDim - sourceDimensions[0];                // Convert from netCDF to "natural" order.
+                final int srcDim = lastSrcDim - gridDimensionIndices[0];    // Convert from netCDF to "natural" order.
                 if (coordinates.trySetTransform(gridToCRS, srcDim, tgtDim, data)) {
                     return true;
                 } else {
@@ -638,7 +705,7 @@ public final class Axis extends NamedElement {
              *    20 20 20 20                  10 12 15 20
              *
              * can be reduced to a one-dimensional {10 12 15 20} vector (orientation matter however).
-             * We detect those cases by the call to data.repetitions(sourceSizes). In above examples,
+             * We detect those cases by the call to data.repetitions(gridSizes). In above examples,
              * we would get {4} for the case illustrated on left side, and {1,4} for the right side.
              * The array length tells us if the variation is horizontal or vertical, and the product
              * of all numbers gives us the variation width. That width must match the grid width,
@@ -649,7 +716,7 @@ public final class Axis extends NamedElement {
              */
             case 2: {
                 Vector data = read();
-                final int[] repetitions = data.repetitions(sourceSizes);        // Detects repetitions as illustrated above.
+                final int[] repetitions = data.repetitions(gridSizes);      // Detects repetitions as illustrated above.
                 long repetitionLength = 1;
                 for (int r : repetitions) {
                     repetitionLength = Math.multiplyExact(repetitionLength, r);
@@ -658,7 +725,7 @@ public final class Axis extends NamedElement {
                 for (int i=0; i<=1; i++) {
                     final int width  = getSize(ri ^ i    );
                     final int height = getSize(ri ^ i ^ 1);
-                    if (repetitionLength % width == 0) {            // Repetition length shall be grid width (or a divisor).
+                    if (repetitionLength % width == 0) {        // Repetition length shall be grid width (or a divisor).
                         final int length, step;
                         if (repetitions.length >= 2) {
                             length = height;
@@ -701,30 +768,33 @@ public final class Axis extends NamedElement {
      * @return the localization grid, or {@code null} if none can be built.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
+     * @throws TransformException if an unexpected error occurred during application of a linearizer.
      */
-    final MathTransform createLocalizationGrid(final Axis other) throws IOException, FactoryException, DataStoreException {
-        if (getDimension() != 2 || other.getDimension() != 2) {
+    final GridCacheValue createLocalizationGrid(final Axis other)
+            throws IOException, FactoryException, TransformException, DataStoreException
+    {
+        if (getNumDimensions() != 2 || other.getNumDimensions() != 2) {
             return null;
         }
-        final int xd =  this.sourceDimensions[0];
-        final int yd =  this.sourceDimensions[1];
-        final int xo = other.sourceDimensions[0];
-        final int yo = other.sourceDimensions[1];
+        final int xd =  this.gridDimensionIndices[0];
+        final int yd =  this.gridDimensionIndices[1];
+        final int xo = other.gridDimensionIndices[0];
+        final int yo = other.gridDimensionIndices[1];
         if ((xo != xd | yo != yd) & (xo != yd | yo != xd)) {
             return null;
         }
         /*
          * Found two axes for the same set of dimensions, which implies that they have the same
          * shape (width and height) unless the two axes ignored a different amount of NaN values.
-         * Negative width and height means that their actual values overflow the 'int' capacity,
+         * Negative width and height means that their actual values overflow the `int` capacity,
          * which we can not process here.
          */
         final int ri = (xd <= yd) ? 0 : 1;          // Take in account that mainDimensionFirst(…) may have reordered values.
         final int ro = (xo <= yo) ? 0 : 1;
         final int width  = getSize(ri ^ 1);         // Fastest varying is right-most dimension (when in netCDF order).
         final int height = getSize(ri    );         // Slowest varying is left-most dimension (when in netCDF order).
-        if (other.sourceSizes[ro ^ 1] != width ||
-            other.sourceSizes[ro    ] != height)
+        if (other.gridSizes[ro ^ 1] != width ||
+            other.gridSizes[ro    ] != height)
         {
             warning(null, Errors.Keys.MismatchedGridGeometry_2, getName(), other.getName());
             return null;
@@ -737,7 +807,7 @@ public final class Axis extends NamedElement {
          */
         final Decoder decoder = coordinates.decoder;
         final GridCacheKey keyLocal = new GridCacheKey(width, height, this, other);
-        MathTransform tr = keyLocal.cached(decoder);
+        GridCacheValue tr = keyLocal.cached(decoder);
         if (tr != null) {
             return tr;
         }
@@ -750,7 +820,7 @@ public final class Axis extends NamedElement {
         final Vector vy = other.read();
         final Set<Linearizer> linearizers = decoder.convention().linearizers(decoder);
         final GridCacheKey.Global keyGlobal = new GridCacheKey.Global(keyLocal, vx, vy, linearizers);
-        final Cache.Handler<MathTransform> handler = keyGlobal.lock();
+        final Cache.Handler<GridCacheValue> handler = keyGlobal.lock();
         try {
             tr = handler.peek();
             if (tr == null) {
@@ -779,18 +849,19 @@ public final class Axis extends NamedElement {
                  */
                 final MathTransformFactory factory = decoder.getMathTransformFactory();
                 if (!linearizers.isEmpty()) {
-                    Linearizer.applyTo(linearizers, factory, grid, this, other);
+                    // Current version does not need the factory, but future version may use it.
+                    Linearizer.setCandidatesOnGrid(new Axis[] {this, other}, linearizers, grid);
                 }
                 /*
                  * There is usually a one-to-one relationship between localization grid cells and image pixels.
                  * Consequently an accuracy set to a fraction of cell should be enough.
                  *
-                 * TODO: take in account the case where Variable.Adjustment.dataToGridIndices() returns a value
-                 * smaller than 1. For now we set the desired precision to a value 10 times smaller in order to
-                 * take in account the case where dataToGridIndices() returns 0.1.
+                 * TODO: take in account the case where GridAdjustment.dataToGridIndices() returns a value
+                 * smaller than 1. For now we set the desired precision to a value 10 times smaller in order
+                 * to take in account the case where dataToGridIndices() returns 0.1.
                  */
                 grid.setDesiredPrecision(0.001);
-                tr = grid.create(factory);
+                tr = new GridCacheValue(linearizers, grid, factory);
                 tr = keyLocal.cache(decoder, tr);
             }
         } finally {
@@ -827,7 +898,9 @@ public final class Axis extends NamedElement {
         final TransferFunction tr = coordinates.getTransferFunction();
         if (TransferFunctionType.LINEAR.equals(tr.getType())) {
             Vector data = coordinates.read();
-            data = data.subList(0, getSizeProduct(0));                  // Trim trailing NaN values.
+            if (gridSizes != null) {
+                data = data.subList(0, getSizeProduct(0));              // Trim trailing NaN values.
+            }
             data = data.transform(tr.getScale(), tr.getOffset());       // Apply scale and offset attributes, if any.
             return data;
         } else {
@@ -846,8 +919,8 @@ public final class Axis extends NamedElement {
         if (other instanceof Axis) {
             final Axis that = (Axis) other;
             return that.abbreviation == abbreviation && that.direction == direction
-                    && Arrays.equals(that.sourceDimensions, sourceDimensions)
-                    && Arrays.equals(that.sourceSizes, sourceSizes)
+                    && Arrays.equals(that.gridDimensionIndices, gridDimensionIndices)
+                    && Arrays.equals(that.gridSizes, gridSizes)
                     && coordinates.equals(that.coordinates);
         }
         return false;
@@ -860,6 +933,6 @@ public final class Axis extends NamedElement {
      */
     @Override
     public int hashCode() {
-        return abbreviation + Arrays.hashCode(sourceDimensions) + Arrays.hashCode(sourceSizes);
+        return abbreviation + Arrays.hashCode(gridDimensionIndices) + Arrays.hashCode(gridSizes);
     }
 }

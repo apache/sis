@@ -375,7 +375,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
         int level =  0;
         int last  = -1;
         final StringBuilder buffer = new StringBuilder(text);
-search: for (int i=0; i<buffer.length(); i++) {                 // Length of 'buffer' will vary.
+search: for (int i=0; i<buffer.length(); i++) {                 // Length of `buffer` will vary.
             switch (buffer.charAt(i)) {
                 /*
                  * Left and right braces take us up or down a level.  Quotes will only be doubled
@@ -502,7 +502,7 @@ search: for (int i=0; i<buffer.length(); i++) {                 // Length of 'bu
              * to allow us to compare the buffer with the file content.
              *
              * We stop reading the file for now. We will continue reading the file after the
-             * 'for' loop below. Instead, we now write the constructor followed by keys values.
+             * `for` loop below. Instead, we now write the constructor followed by keys values.
              */
             int startLineToCompare = buffer.length();
             final Map.Entry<?,?>[] entries = allocatedIDs.entrySet().toArray(new Map.Entry<?,?>[allocatedIDs.size()]);
@@ -563,10 +563,10 @@ search: for (int i=0; i<buffer.length(); i++) {                 // Length of 'bu
                     if (endOfLine >= 0) {
                         if (buffer.substring(startLineToCompare, endOfLine).equals(line)) {
                             startLineToCompare = endOfLine + lineSeparator.length();
-                            continue;                   // Content is equals, do not set the 'modified' flag.
+                            continue;                   // Content is equals, do not set the `modified` flag.
                         }
                     } else if (brackets == 0) {
-                        break;              // Content finished in same time, do not set the 'modified' flag.
+                        break;              // Content finished at the same time, do not set the `modified` flag.
                     }
                     modified = true;
                 }

@@ -99,7 +99,7 @@ public final strictfp class DefaultDerivedCRSTest extends TestCase {
 
     /**
      * Creates a dummy derived CRS defined by a longitude rotation from Paris to Greenwich prime meridian,
-     * and swapping the axis order. The result is equivalent to {@link HardCodedCRS#WGS84_φλ},
+     * and swapping the axis order. The result is equivalent to {@link HardCodedCRS#WGS84_LATITUDE_FIRST},
      * which of course makes the returned {@code DerivedCRS} totally useless.
      * Its purpose is only to perform easy tests.
      */

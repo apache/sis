@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
+import java.time.Instant;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -27,17 +28,20 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.referencing.AnnotatedMatrix;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ExtentSelector;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -122,7 +126,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.1
  *
  * @see DefaultEllipsoid
  * @see DefaultPrimeMeridian
@@ -375,7 +379,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * 1053 – <cite>Time-dependent Position Vector transformation</cite>.
      *
      * <p>If this datum and the given {@code targetDatum} do not use the same {@linkplain #getPrimeMeridian() prime meridian},
-     * then it is caller's responsibility to to apply longitude rotation before to use the matrix returned by this method.
+     * then it is caller's responsibility to apply longitude rotation before to use the matrix returned by this method.
      * The target prime meridian should be Greenwich (see {@linkplain #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian)
      * constructor javadoc}), in which case the datum shift should be applied in a geocentric coordinate system having
      * Greenwich as the prime meridian.</p>
@@ -384,7 +388,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * in EPSG dataset version 8.9, all datum shifts that can be represented by this method use Greenwich as the
      * prime meridian, both in source and target datum.</div>
      *
-     * <h4>Search criterion</h4>
+     * <h4>Search criteria</h4>
      * If the given {@code areaOfInterest} is non-null and contains at least one geographic bounding box, then this
      * method ignores any Bursa-Wolf parameters having a {@linkplain BursaWolfParameters#getDomainOfValidity() domain
      * of validity} that does not intersect the given geographic extent.
@@ -439,23 +443,54 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 Logging.unexpectedException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
                         DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
             }
+            /*
+             * No direct tranformation found. Search for a path through an intermediate datum.
+             * First, search if there is some BursaWolfParameters for the same target in both
+             * `source` and `target` datum. If such an intermediate is found, ask for path:
+             *
+             *    source   →   [common datum]   →   target
+             *
+             * A consequence of such indirect path is that it may connect unrelated datums
+             * if [common datum] is a world datum such as WGS84. We do not have a solution
+             * for preventing that.
+             */
+            if (bursaWolf != null) {
+                GeographicBoundingBox bbox = selector.getAreaOfInterest();
+                Instant[]  timeOfInterest  = selector.getTimeOfInterest();
+                boolean useAOI = true;
+                do {    // Executed at most 3 times with `bbox` cleared, then `timeOfInterest` cleared.
+                    for (final BursaWolfParameters toPivot : bursaWolf) {
+                        if (selector.setExtentOfInterest(toPivot.getDomainOfValidity(), bbox, timeOfInterest)) {
+                            candidate = ((DefaultGeodeticDatum) targetDatum).select(toPivot.getTargetDatum(), selector);
+                            if (candidate != null) {
+                                final Matrix step1 = createTransformation(toPivot,   areaOfInterest);
+                                final Matrix step2 = createTransformation(candidate, areaOfInterest);
+                                /*
+                                 * MatrixSIS.multiply(MatrixSIS) is equivalent to AffineTransform.concatenate(…):
+                                 * First transform by the supplied transform and then transform the result by the
+                                 * original transform.
+                                 */
+                                try {
+                                    Matrix m = MatrixSIS.castOrCopy(step2).inverse().multiply(step1);
+                                    return AnnotatedMatrix.indirect(m, useAOI);
+                                } catch (NoninvertibleMatrixException e) {
+                                    Logging.unexpectedException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                                            DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
+                                }
+                            }
+                        }
+                    }
+                    useAOI = false;
+                } while (bbox != (bbox = null) || timeOfInterest != (timeOfInterest = null));
+                // Clear `bbox` first, and if it was already cleared `timeOfInterest` is next.
+            }
         }
-        /*
-         * In a previous version, we were used to search for a transformation path through a common datum:
-         *
-         *     source   →   [common datum]   →   target
-         *
-         * This has been removed, because it was dangerous (many paths may be possible - we are better to rely on
-         * the EPSG database, which do define some transformation paths explicitly). Especially since our javadoc
-         * now said that associating BursaWolfParameters to GeodeticDatum is not recommended except in a few special
-         * cases, this method does not have a picture complete enough for attempting anything else than a direct path.
-         */
         return null;
     }
 
     /**
      * Invokes {@link BursaWolfParameters#getPositionVectorTransformation(Date)} for a date calculated from
-     * the temporal elements on the given extent.  This method chooses an instant located midway between the
+     * the temporal elements on the given extent. This method chooses an instant located midway between the
      * start and end time.
      */
     private static Matrix createTransformation(final BursaWolfParameters bursaWolf, final Extent areaOfInterest) {

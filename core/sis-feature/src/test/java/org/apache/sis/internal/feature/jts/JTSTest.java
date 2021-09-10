@@ -88,14 +88,9 @@ public final strictfp class JTSTest extends TestCase {
         final GeometryFactory factory = new GeometryFactory();
         final Geometry in = factory.createPoint(new Coordinate(5, 6));
         /*
-         * Test exception when transforming geometry without CRS.
+         * Test transforming geometry without CRS.
          */
-        try {
-            JTS.transform(in, CommonCRS.WGS84.geographic());
-            fail("Geometry has no CRS, transform should have failed.");
-        } catch (TransformException ex) {
-            assertNotNull(ex.getMessage());
-        }
+        assertSame(in, JTS.transform(in, CommonCRS.WGS84.geographic()));
         /*
          * Test axes inversion transform.
          */

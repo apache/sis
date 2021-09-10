@@ -233,7 +233,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
 
     /**
      * The <cite>Well Known Text</cite> parser for {@code CoordinateReferenceSystem} instances.
-     * This parser is not thread-safe, so we need to prevent two threads from using the same instance in same time.
+     * This parser is not thread-safe, so we need to prevent two threads from using the same instance at the same time.
      */
     private final AtomicReference<Parser> parser;
 
@@ -269,9 +269,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * (i.e. a null value "erase" the default property value).
      * Entries with null value after the union will be omitted.
      *
-     * <p>This method is invoked by all {@code createFoo(Map<String,?>, …)} methods.</p>
+     * <p>This method is invoked by all {@code createFoo(Map<String,?>, …)} methods. Subclasses can
+     * override this method if they want to add, remove or edit property values with more flexibility
+     * than {@linkplain #GeodeticObjectFactory(Map) constant values specified at construction time}.</p>
      *
-     * @param  properties  the user-supplied properties.
+     * @param  properties  the properties supplied in a call to a {@code createFoo(Map, …)} method.
      * @return the union of the given properties with the default properties.
      */
     protected Map<String,?> complete(final Map<String,?> properties) {
@@ -1641,6 +1643,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      */
     @Override
     public CoordinateReferenceSystem createFromWKT(final String text) throws FactoryException {
+        ArgumentChecks.ensureNonEmpty("text", text);
         Parser p = parser.getAndSet(null);
         if (p == null) try {
             Constructor<? extends Parser> c = parserConstructor;

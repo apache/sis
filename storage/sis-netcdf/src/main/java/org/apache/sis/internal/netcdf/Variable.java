@@ -16,9 +16,7 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import java.util.Set;
 import java.util.Map;
-import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -27,6 +25,7 @@ import java.util.regex.Pattern;
 import java.io.IOException;
 import java.time.Instant;
 import javax.measure.Unit;
+import javax.measure.format.ParserException;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.storage.DataStoreException;
@@ -39,9 +38,12 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CDM;                      // We use only String constants.
 import ucar.nc2.constants.CF;
@@ -63,8 +65,11 @@ public abstract class Variable extends Node {
      * those vectors can be large, sharing common instances may save a lot of memory.
      *
      * <p>All shared vectors shall be considered read-only.</p>
+     *
+     * @see #read()
+     * @see #setValues(Object)
      */
-    protected static final WeakHashSet<Vector> SHARED_VECTORS = new WeakHashSet<>(Vector.class);
+    private static final WeakHashSet<Vector> SHARED_VECTORS = new WeakHashSet<>(Vector.class);
 
     /**
      * The pattern to use for parsing temporal units of the form "days since 1970-01-01 00:00:00".
@@ -73,6 +78,21 @@ public abstract class Variable extends Node {
      * @see Decoder#numberToDate(String, Number[])
      */
     public static final Pattern TIME_UNIT_PATTERN = Pattern.compile("(.+)\\Wsince\\W(.+)", Pattern.CASE_INSENSITIVE);
+
+    /**
+     * Minimal number of dimension of a {@code char} array for considering this variable as a list of strings.
+     * This constant is defined for making easier to locate codes that check if this variable is a string list.
+     *
+     * @see #isString()
+     */
+    protected static final int STRING_DIMENSION = 2;
+
+    /**
+     * The role of this variable (axis, coverage, feature, <i>etc.</i>), or {@code null} if not yet determined.
+     *
+     * @see #getRole()
+     */
+    private VariableRole role;
 
     /**
      * The unit of measurement, parsed from {@link #getUnitsString()} when first needed.
@@ -101,11 +121,20 @@ public abstract class Variable extends Node {
     /**
      * All no-data values declared for this variable, or an empty map if none.
      * This is computed by {@link #getNodataValues()} and cached for efficiency and stability.
-     * The meaning of entries in this map is described in {@code getNodataValues()} method javadoc.
+     * The meaning of entries in this map is described in {@link #getNodataValues()} method javadoc.
      *
      * @see #getNodataValues()
      */
     private Map<Number,Object> nodataValues;
+
+    /**
+     * The {@code flag_meanings} values (used for enumeration values),
+     * or {@code null} if this variable is not an enumeration.
+     *
+     * @see #setEnumeration(Map)
+     * @see #getEnumeration()
+     */
+    private Map<Integer,String> enumeration;
 
     /**
      * The grid associated to this variable, or {@code null} if none or not yet computed.
@@ -134,12 +163,120 @@ public abstract class Variable extends Node {
     int bandDimension;
 
     /**
+     * The values of the whole variable, or {@code null} if not yet read. This vector should be assigned only
+     * for relatively small variables, or for variables that are critical to the use of other variables
+     * (for example the values in coordinate system axes).
+     *
+     * @see #read()
+     * @see #setValues(Object)
+     */
+    private transient Vector values;
+
+    /**
+     * The {@linkplain #values} vector as a list of element of any type (not restricted to {@link Number} instances).
+     * This is usually the same instance than {@link #values} because {@link Vector} implements {@code List<Number>}.
+     * This is a different instance if this variable is a two-dimensional character array, in which case this field
+     * is an instance of {@code List<String>}.
+     *
+     * The difference between {@code values} and {@code valuesAnyType} is that {@code values.get(i)} may throw
+     * {@link NumberFormatException} because it always try to return its elements as {@link Number} instances,
+     * while {@code valuesAnyType.get(i)} can return {@link String} instances.
+     *
+     * @see #readAnyType()
+     * @see #setValues(Object)
+     */
+    private transient List<?> valuesAnyType;
+
+    /**
      * Creates a new variable.
      *
      * @param decoder  the netCDF file where this variable is stored.
      */
     protected Variable(final Decoder decoder) {
         super(decoder);
+    }
+
+    /**
+     * Initializes the map of enumeration values. If the given map is non-null, then the enumerations are set
+     * to the specified map (by direct reference; the map is not cloned). Otherwise this method auto-detects
+     * if this variable is an enumeration.
+     *
+     * <p>This method is invoked by subclass constructors for completing {@code Variable} creation.
+     * It should not be invoked after creation, for keeping {@link Variable} immutable.</p>
+     *
+     * @param  enumeration  the enumeration map, or {@code null} for auto-detection.
+     *
+     * @see #getEnumeration()
+     */
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
+    protected final void setEnumeration(Map<Integer,String> enumeration) {
+        if (enumeration == null) {
+            String srcLabels, srcNumbers;           // For more accurate message in case of warning.
+            CharSequence[] labels = getAttributeAsStrings(srcLabels = AttributeNames.FLAG_NAMES, ' ');
+            if (labels == null) {
+                labels = getAttributeAsStrings(srcLabels = AttributeNames.FLAG_MEANINGS, ' ');
+                if (labels == null) return;
+            }
+            Vector numbers = getAttributeAsVector(srcNumbers = AttributeNames.FLAG_VALUES);
+            if (numbers == null) {
+                numbers = getAttributeAsVector(srcNumbers = AttributeNames.FLAG_MASKS);
+            }
+            int count = labels.length;
+            if (numbers != null) {
+                final int n = numbers.size();
+                if (n != count) {
+                    warning(Variable.class, "setEnumeration", Resources.Keys.MismatchedAttributeLength_5,
+                            getName(), srcNumbers, srcLabels, n, count);
+                    if (n < count) count = n;
+                }
+            } else {
+                numbers = Vector.createSequence(0, 1, count);
+                warning(Variable.class, "setEnumeration", Resources.Keys.MissingVariableAttribute_3,
+                        getFilename(), getName(), AttributeNames.FLAG_VALUES);
+            }
+            /*
+             * Copy (numbers, labels) entries in an HashMap with keys converted to 32-bits signed integer.
+             * If a key can not be converted, we will log a warning after all errors have been collected
+             * in order to produce only one log message. We put a limit on the amount of reported errors
+             * for avoiding to flood the logger.
+             */
+            Exception     error    = null;
+            StringBuilder invalids = null;
+            enumeration = new HashMap<>(Containers.hashMapCapacity(count));
+            for (int i=0; i<count; i++) try {
+                final CharSequence label = labels[i];
+                if (label != null) {
+                    enumeration.merge(numbers.intValue(i), label.toString(), (o,n) -> {
+                        return o.equals(n) ? o : o + " | " + n;
+                    });
+                }
+            } catch (NumberFormatException | ArithmeticException e) {
+                if (error == null) {
+                    error = e;
+                    invalids = new StringBuilder();
+                } else {
+                    final int length = invalids.length();
+                    final boolean tooManyErrors = (length > 100);                   // Arbitrary limit.
+                    if (tooManyErrors && invalids.charAt(length - 1) == '…') {
+                        continue;
+                    }
+                    error.addSuppressed(e);
+                    invalids.append(", ");
+                    if (tooManyErrors) {
+                        invalids.append('…');
+                        continue;
+                    }
+                }
+                invalids.append(numbers.stringValue(i));
+            }
+            if (invalids != null) {
+                error(Variable.class, "setEnumeration", error,
+                      Errors.Keys.CanNotConvertValue_2, invalids, numbers.getElementType());
+            }
+        }
+        if (!enumeration.isEmpty()) {
+            this.enumeration = enumeration;
+        }
     }
 
     /**
@@ -154,6 +291,8 @@ public abstract class Variable extends Node {
 
     /**
      * Returns the name of this variable. May be used as sample dimension name in a raster.
+     * The variable name should be unique in each netCDF file
+     * (by contrast, {@link #getStandardName()} is not always unique).
      *
      * @return the name of this variable.
      */
@@ -161,24 +300,23 @@ public abstract class Variable extends Node {
     public abstract String getName();
 
     /**
-     * Returns the standard name if available, or the long name other, or the ordinary name otherwise.
-     * May be used as the {@link RasterResource} label, or the label of a {@link Raster} as a whole
-     * (including all bands). Standard name is preferred to variable name when controlled vocabulary
-     * is desired, for example for more stable identifier or more consistency between similar data.
+     * Returns the standard name if available, or the unique variable name otherwise.
+     * May be used for {@link RasterResource#getIdentifier()} and {@link Raster#label}.
+     * Standard name is preferred to variable name when controlled vocabulary is desired,
+     * for example for more stable identifier or more consistency between similar data.
+     *
+     * <p>This method does not check the {@code "long_name"} attribute because the long
+     * name is more like a sentence (e.g. <cite>"model wind direction at 10 m"</cite>)
+     * while standard name and variable name are more like identifiers.
+     * For the long name, use {@link #getDescription()} instead.</p>
      *
      * @return the standard name, or a fallback if there is no standard name.
      *
      * @see RasterResource#identifier
      */
     public final String getStandardName() {
-        String name = getAttributeAsString(CF.STANDARD_NAME);
-        if (name == null) {
-            name = getAttributeAsString(CDM.LONG_NAME);
-            if (name == null) {
-                name = getName();
-            }
-        }
-        return name;
+        final String name = getAttributeAsString(CF.STANDARD_NAME);
+        return (name != null) ? name : getName();
     }
 
     /**
@@ -222,7 +360,7 @@ public abstract class Variable extends Node {
     /**
      * Sets the unit of measurement and the epoch to the same value than the given variable.
      * This method is not used in CF-compliant files; it is reserved for the handling of some
-     * particular conventions, for example HYCOM.
+     * particular conventions, for example {@link HYCOM}.
      *
      * @param  other      the variable from which to copy unit and epoch, or {@code null} if none.
      * @param  overwrite  if non-null, set to the given unit instead than the unit of {@code other}.
@@ -230,7 +368,7 @@ public abstract class Variable extends Node {
      *
      * @see #getUnit()
      */
-    public final Instant setUnit(final Variable other, Unit<?> overwrite) {
+    final Instant setUnit(final Variable other, Unit<?> overwrite) {
         if (other != null) {
             unit  = other.getUnit();        // May compute the epoch as a side effect.
             epoch = other.epoch;
@@ -253,10 +391,20 @@ public abstract class Variable extends Node {
         if (!unitParsed) {
             unitParsed = true;                          // Set first for avoiding to report errors many times.
             final String symbols = getUnitsString();
+            Exception error = null;
             if (symbols != null) try {
                 unit = parseUnit(symbols);
             } catch (Exception ex) {
-                error(Variable.class, "getUnit", ex, Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols);
+                error = ex;
+            }
+            if (unit == null) try {
+                unit = decoder.convention().getUnitFallback(this);
+            } catch (ParserException ex) {
+                if (error == null) error = ex;
+                else error.addSuppressed(ex);
+            }
+            if (error != null) {
+                error(Variable.class, "getUnit", error, Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols);
             }
         }
         return unit;
@@ -302,14 +450,39 @@ public abstract class Variable extends Node {
 
     /**
      * Returns whether this variable is used as a coordinate system axis, a coverage or something else.
-     * This is a shortcut for {@link Convention#roleOf(Variable)}, except that {@code this} can not be null.
+     * The role is determined by {@linkplain Convention#roleOf conventions}, except {@link VariableRole#BOUNDS}
+     * which is determined by this method (because it depends on other variables).
      *
      * @return role of this variable.
      *
      * @see Convention#roleOf(Variable)
      */
     public final VariableRole getRole() {
-        return decoder.convention().roleOf(this);
+        if (role == null) {
+            final String name = getName();
+            for (final Variable variable : decoder.getVariables()) {
+                if (name.equalsIgnoreCase(variable.getAttributeAsString(CF.BOUNDS))) {
+                    role = VariableRole.BOUNDS;
+                    return role;
+                }
+            }
+            role = decoder.convention().roleOf(this);
+        }
+        return role;
+    }
+
+    /**
+     * Returns {@code true} if this variable should be considered as a list of strings.
+     *
+     * <div class="note"><b>Maintenance note:</b>
+     * the implementation of this method is inlined in some places, when the code already
+     * has the {@link DataType} value at hand. If this implementation is modified, search
+     * for {@link #STRING_DIMENSION} usages.</div>
+     *
+     * @see #STRING_DIMENSION
+     */
+    final boolean isString() {
+        return getDataType() == DataType.CHAR && getNumDimensions() >= STRING_DIMENSION;
     }
 
     /**
@@ -336,155 +509,11 @@ public abstract class Variable extends Node {
     protected abstract boolean isCoordinateSystemAxis();
 
     /**
-     * Contains information computed together with {@link Variable#getGrid(Adjustment)} but are still specific to
-     * the enclosing variable. Those information are kept in a class separated from {@link Grid} because the same
-     * {@code Grid} instance may apply to many variables while {@code Adjustment} may contain amendments that are
-     * specific to a particular {@link Variable} instance.
+     * Returns the value of {@code "_CoordinateAxisType"} attribute.
      *
-     * <p>An instance of this class is created by {@link #getGridGeometry()} and updated by {@link #getGrid(Adjustment)}.
-     * Subclasses of {@link Variable} do not need to know the details of this class; they just need to pass it verbatim
-     * to their parent class.</p>
+     * @return Value of {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
      */
-    protected static final class Adjustment {
-        /**
-         * Factors by which to multiply a grid index in order to get the corresponding data index, or {@code null} if none.
-         * This is usually null, meaning that there is an exact match between grid indices and data indices. This array may
-         * be non-null if the localization grid has shorter dimensions than the dimensions of the variable, as documented
-         * in {@link Convention#nameOfDimension(Variable, int)} javadoc.
-         *
-         * <p>This array may be created by {@link #getGrid(Adjustment)} and is consumed by {@link #getGridGeometry()}.
-         * Some values in this array may be {@link Double#NaN} if the {@code "resampling_interval"} attribute was not found.
-         * This array may be longer than necessary.</p>
-         *
-         * @see #dataToGridIndices()
-         */
-        private double[] gridToDataIndices;
-
-        /**
-         * Maps grid dimensions to variable dimensions when those dimensions are not the same. This map should always be empty,
-         * except in the case described in {@link #mapLabelToGridDimensions mapLabelToGridDimensions(…)} method. If non-empty,
-         * then the keys are dimensions in the {@link Grid} and values are corresponding dimensions in the {@link Variable}.
-         */
-        final Map<Dimension,Dimension> gridToVariable;
-
-        /**
-         * Only {@link Variable#getGridGeometry()} should instantiate this class.
-         */
-        private Adjustment() {
-            gridToVariable = new HashMap<>();
-        }
-
-        /**
-         * Builds a map of "dimension labels" to the actual {@link Dimension} instances of the grid.
-         * The dimension labels are not the dimension names, but some other convention-dependent identifiers.
-         * The mechanism is documented in {@link Convention#nameOfDimension(Variable, int)}.
-         * For example given a file with the following netCDF variables:
-         *
-         * {@preformat text
-         *     float Latitude(grid_y, grid_x)
-         *       dim0 = "Line grids"
-         *       dim1 = "Pixel grids"
-         *       resampling_interval = 10
-         *     float Longitude(grid_y, grid_x)
-         *       dim0 = "Line grids"
-         *       dim1 = "Pixel grids"
-         *       resampling_interval = 10
-         *     ushort SST(data_y, data_x)
-         *       dim0 = "Line grids"
-         *       dim1 = "Pixel grids"
-         * }
-         *
-         * this method will add the following entries in the {@code toGridDimensions} map, provided that
-         * the dimensions are not already keys in that map:
-         *
-         * {@preformat text
-         *     "Line grids"   →  Dimension[grid_x]
-         *     "Pixel grids"  →  Dimension[grid_y]
-         * }
-         *
-         * @param  variable          the variable for which a "label to grid dimensions" mapping is desired.
-         * @param  axes              all axes in the netCDF file (not only the variable axes).
-         * @param  toGridDimensions  in input, the dimensions to accept. In output, "label → grid dimension" entries.
-         * @param  convention        convention for getting dimension labels.
-         * @return {@code true} if the {@code Variable.getGrid(…)} caller should abort.
-         *
-         * @see Convention#nameOfDimension(Variable, int)
-         */
-        boolean mapLabelToGridDimensions(final Variable variable, final List<Variable> axes,
-                final Map<Object,Dimension> toGridDimensions, final Convention convention)
-        {
-            final Set<Dimension> requestedByConvention = new HashSet<>();                       // Only in case of ambiguities.
-            final String[] namesOfAxisVariables = convention.namesOfAxisVariables(variable);    // Only in case of ambiguities.
-            for (final Variable axis : axes) {
-                final boolean isRequested = ArraysExt.containsIgnoreCase(namesOfAxisVariables, axis.getName());
-                final List<Dimension> candidates = axis.getGridDimensions();
-                for (int j=candidates.size(); --j >= 0;) {
-                    final Dimension dim = candidates.get(j);
-                    if (toGridDimensions.containsKey(dim)) {
-                        /*
-                         * Found a dimension that has not already be taken by the 'dimensions' array.
-                         * If this dimension has a name defined by an attribute like "Dim0" or "Dim1",
-                         * make this dimension available for consideration by 'dimensions[i] = …' later.
-                         */
-                        final String name = convention.nameOfDimension(axis, j);
-                        if (name != null) {
-                            if (gridToDataIndices == null) {
-                                gridToDataIndices = new double[axes.size()];    // Conservatively use longest possible length.
-                            }
-                            gridToDataIndices[j] = convention.gridToDataIndices(axis);
-                            final boolean overwrite = isRequested && requestedByConvention.add(dim);
-                            final Dimension previous = toGridDimensions.put(name, dim);
-                            if (previous != null && !previous.equals(dim)) {
-                                /*
-                                 * The same name maps to two different dimensions. Given the ambiguity, we should give up.
-                                 * However we make an exception if only one dimension is part of a variable that has been
-                                 * explicitly requested. We identify this disambiguation in the following ways:
-                                 *
-                                 *   isRequested = true   →  ok if overwrite = true  →  keep the newly added dimension.
-                                 *   isRequested = false  →  if was previously in requestedByConvention, restore previous.
-                                 */
-                                if (!overwrite) {
-                                    if (!isRequested && requestedByConvention.contains(dim)) {
-                                        toGridDimensions.put(name, previous);
-                                    } else {
-                                        // Variable.getGridGeometry() is (indirectly) the caller of this method.
-                                        variable.error(Variable.class, "getGridGeometry", null, Errors.Keys.DuplicatedIdentifier_1, name);
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        /**
-         * Returns the factors by which to multiply a data index in order to get the corresponding grid index,
-         * or {@code null} if none. This array may be non-null if the localization grid has shorter dimensions
-         * than the ones of the variable (see {@link #mapLabelToGridDimensions mapLabelToGridDimensions(…)}).
-         * Caller needs to verify that the returned array, if non-null, is long enough.
-         */
-        double[] dataToGridIndices() {
-            double[] dataToGridIndices = null;
-            if (gridToDataIndices != null) {
-                for (int i=gridToDataIndices.length; --i >= 0;) {
-                    final double s = gridToDataIndices[i];
-                    if (s > 0 && s != Double.POSITIVE_INFINITY) {
-                        if (dataToGridIndices == null) {
-                            dataToGridIndices = new double[i + 1];
-                        }
-                        dataToGridIndices[i] = 1 / s;
-                    } else {
-                        dataToGridIndices = null;
-                        // May return a shorter array.
-                    }
-                }
-            }
-            return dataToGridIndices;
-        }
-    }
+    protected abstract String getAxisType();
 
     /**
      * Returns a builder for the grid geometry of this variable, or {@code null} if this variable is not a data cube.
@@ -531,7 +560,7 @@ public abstract class Variable extends Node {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    protected Grid getGrid(final Adjustment adjustment) throws IOException, DataStoreException {
+    protected Grid getGrid(final GridAdjustment adjustment) throws IOException, DataStoreException {
         final Convention convention = decoder.convention();
         /*
          * Collect all axis dimensions, in no particular order. We use this map for determining
@@ -582,7 +611,7 @@ public abstract class Variable extends Node {
                     if (isIncomplete) {
                         isIncomplete = false;                                           // Execute this block only once.
                         if (adjustment.mapLabelToGridDimensions(this, axes, domain, convention)) {
-                            return null;                               // Warning message already emitted by Adjustment.
+                            return null;                           // Warning message already emitted by GridAdjustment.
                         }
                     }
                     /*
@@ -607,7 +636,7 @@ public abstract class Variable extends Node {
         /*
          * At this point we finished collecting all dimensions to use in the grid. Search a grid containing
          * those dimensions in the same order (the order is enforced by Grid.forDimensions(…) method call).
-         * If we find a grid meting all criterion, we return it immediately. Otherwise select a fallback in
+         * If we find a grid meting all criteria, we return it immediately. Otherwise select a fallback in
          * the following precedence order:
          *
          *   1) grid having all axes requested by the customized convention (usually there is none).
@@ -655,7 +684,7 @@ public abstract class Variable extends Node {
         if (!gridDetermined) {
             gridDetermined = true;                      // Set first so we don't try twice in case of failure.
             final GridMapping gridMapping = GridMapping.forVariable(this);
-            final Adjustment adjustment = new Adjustment();
+            final GridAdjustment adjustment = new GridAdjustment();
             final Grid info = getGrid(adjustment);
             if (info != null) {
                 /*
@@ -708,35 +737,37 @@ public abstract class Variable extends Node {
                  * needs to be applied.
                  */
                 GridGeometry grid = info.getGridGeometry(decoder);
-                if (grid.isDefined(GridGeometry.EXTENT)) {
-                    GridExtent extent = grid.getExtent();
-                    final long[] sizes = new long[extent.getDimension()];
-                    boolean needsResize = false;
-                    for (int i=sizes.length; --i >= 0;) {
-                        final int d = (sizes.length - 1) - i;               // Convert "natural order" index into netCDF index.
-                        sizes[i] = dimensions.get(d).length();
-                        if (!needsResize) {
-                            needsResize = (sizes[i] != extent.getSize(i));
+                if (grid != null) {
+                    if (grid.isDefined(GridGeometry.EXTENT)) {
+                        GridExtent extent = grid.getExtent();
+                        final long[] sizes = new long[extent.getDimension()];
+                        boolean needsResize = false;
+                        for (int i=sizes.length; --i >= 0;) {
+                            final int d = (sizes.length - 1) - i;               // Convert "natural order" index into netCDF index.
+                            sizes[i] = dimensions.get(d).length();
+                            if (!needsResize) {
+                                needsResize = (sizes[i] != extent.getSize(i));
+                            }
+                        }
+                        if (needsResize) {
+                            final double[] dataToGridIndices = adjustment.dataToGridIndices();
+                            if (dataToGridIndices == null || dataToGridIndices.length < sizes.length) {
+                                warning(Variable.class, "getGridGeometry", Resources.Keys.ResamplingIntervalNotFound_2, getFilename(), getName());
+                                return null;
+                            }
+                            extent = extent.resize(sizes);
+                            grid = GridAdjustment.scale(grid, extent, info.getAnchor(), dataToGridIndices);
                         }
                     }
-                    if (needsResize) {
-                        final double[] dataToGridIndices = adjustment.dataToGridIndices();
-                        if (dataToGridIndices == null || dataToGridIndices.length < sizes.length) {
-                            warning(Variable.class, "getGridGeometry", Resources.Keys.ResamplingIntervalNotFound_2, getFilename(), getName());
-                            return null;
-                        }
-                        extent = extent.resize(sizes);
-                        grid = grid.derive().resize(extent, dataToGridIndices).build();
+                    /*
+                     * At this point we finished to build a grid geometry from the information provided by axes.
+                     * If there is grid mapping attributes (e.g. "EPSG_code", "ESRI_pe_string", "GeoTransform",
+                     * "spatial_ref", etc.), substitute some parts of the grid geometry by the parts built from
+                     * those attributes.
+                     */
+                    if (gridMapping != null) {
+                        grid = gridMapping.adaptGridCRS(this, grid, info.getAnchor());
                     }
-                }
-                /*
-                 * At this point we finished to build a grid geometry from the information provided by axes.
-                 * If there is grid mapping attributes (e.g. "EPSG_code", "ESRI_pe_string", "GeoTransform",
-                 * "spatial_ref", etc.), substitute some parts of the grid geometry by the parts built from
-                 * those attributes.
-                 */
-                if (gridMapping != null) {
-                    grid = gridMapping.adaptGridCRS(this, grid, info.getAnchor());
                 }
                 gridGeometry = grid;
             } else if (gridMapping != null) {
@@ -748,7 +779,7 @@ public abstract class Variable extends Node {
 
     /**
      * Returns the number of sample values between two bands.
-     * This method is meaningful only if {@link #bandDimension} ≧ 0.
+     * This method is meaningful only if {@link #bandDimension} ≥ 0.
      */
     final long getBandStride() throws IOException, DataStoreException {
         long length = 1;
@@ -760,6 +791,14 @@ public abstract class Variable extends Node {
     }
 
     /**
+     * Returns the number of grid dimensions. This is the size of the {@link #getGridDimensions()}
+     * list but may be cheaper than a call to {@code getGridDimensions().size()}.
+     *
+     * @return number of grid dimensions.
+     */
+    public abstract int getNumDimensions();
+
+    /**
      * Returns the dimensions of this variable in the order they are declared in the netCDF file.
      * The dimensions are those of the grid, not the dimensions of the coordinate system.
      * In ISO 19123 terminology, {@link Dimension#length()} on each dimension give the upper corner
@@ -769,10 +808,10 @@ public abstract class Variable extends Node {
      * this information is used for completing ISO 19115 metadata, providing a default implementation of
      * {@link Convention#roleOf(Variable)} method or for building string representation of this variable
      * among others. Those tasks are mostly for information purpose, except if {@code Variable} subclass
-     * failed to create a grid and we must rely on {@link #getGrid(Adjustment)} default implementation.
+     * failed to create a grid and we must rely on {@link #getGrid(GridAdjustment)} default implementation.
      * For actual georeferencing, use {@link #getGridGeometry()} instead.</div>
      *
-     * If {@link #getGrid(Adjustment)} returns a non-null value, then the list returned by this method should
+     * If {@link #getGrid(GridAdjustment)} returns a non-null value, then the list returned by this method should
      * contain all dimensions returned by {@link Grid#getDimensions()}. It may contain more dimension however.
      * Those additional dimensions can be considered as bands. Furthermore the dimensions of the {@code Grid}
      * may have a different {@linkplain Dimension#length() length} than the dimensions returned by this method.
@@ -781,6 +820,7 @@ public abstract class Variable extends Node {
      *
      * @return all dimensions of this variable, in netCDF order (reverse of "natural" order).
      *
+     * @see #getNumDimensions()
      * @see Grid#getDimensions()
      */
     public abstract List<Dimension> getGridDimensions();
@@ -848,6 +888,20 @@ public abstract class Variable extends Node {
     }
 
     /**
+     * Returns enumeration values (keys) and their meanings (values), or {@code null} if this
+     * variable is not an enumeration. This method returns a direct reference to internal map
+     * (no clone, no unmodifiable wrapper); <strong>Do not modify the returned map.</strong>
+     *
+     * @return the ordinals and values associated to ordinals, or {@code null} if none.
+     *
+     * @see #setEnumeration(Map)
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final Map<Integer,String> getEnumeration() {
+        return enumeration;
+    }
+
+    /**
      * Returns all no-data values declared for this variable, or an empty map if none.
      * The map keys are the no-data values (pad sample values or missing sample values).
      * The map values can be either {@link String} or {@link org.opengis.util.InternationalString} values
@@ -885,7 +939,17 @@ public abstract class Variable extends Node {
     }
 
     /**
-     * Reads all the data for this variable and returns them as an array of a Java primitive type.
+     * Returns whether values in this variable are cached by a system other than Apache SIS.
+     * For example if data are read using UCAR library, that library provides its own cache.
+     *
+     * @return whether values are cached by a library other than Apache SIS.
+     */
+    protected boolean isExternallyCached() {
+        return false;
+    }
+
+    /**
+     * Reads all the data for this variable and returns them as a vector of numerical values.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * Example:
      *
@@ -909,16 +973,41 @@ public abstract class Variable extends Node {
      *
      * If {@link #hasRealValues()} returns {@code true}, then this method shall
      * {@linkplain #replaceNaN(Object) replace fill values and missing values by NaN values}.
-     * This method should cache the returned vector since this method may be invoked often.
+     * This method caches the returned vector since this method may be invoked often.
      * Because of caching, this method should not be invoked for large data array.
      * Callers shall not modify the returned vector.
      *
-     * @return the data as an array of a Java primitive type.
+     * @return the data as a vector wrapping a Java array.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public abstract Vector read() throws IOException, DataStoreException;
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public final Vector read() throws IOException, DataStoreException {
+        if (values == null) {
+            setValues(readFully());
+        }
+        return values;
+    }
+
+    /**
+     * Reads all the data for this variable and returns them as a list of any object.
+     * The difference between {@code read()} and {@code readAnyType()} is that {@code vector.get(i)} may throw
+     * {@link NumberFormatException} because it always try to return its elements as {@link Number} instances,
+     * while {@code list.get(i)} can return {@link String} instances.
+     *
+     * @return the data as a list of numbers or strings.
+     * @throws IOException if an error occurred while reading the data.
+     * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public final List<?> readAnyType() throws IOException, DataStoreException {
+        if (valuesAnyType == null) {
+            setValues(readFully());
+        }
+        return valuesAnyType;
+    }
 
     /**
      * Reads a subsampled sub-area of the variable.
@@ -936,13 +1025,129 @@ public abstract class Variable extends Node {
      * method shall {@linkplain #replaceNaN(Object) replace fill/missing values by NaN values}.
      *
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
-     * @param  subsampling  subsampling along each dimension. 1 means no subsampling.
-     * @return the data as an array of a Java primitive type.
+     * @param  subsampling  subsampling along each dimension, or {@code null} if none.
+     * @return the data as a vector wrapping a Java array.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public abstract Vector read(GridExtent area, int[] subsampling) throws IOException, DataStoreException;
+
+    /**
+     * Reads a subsampled sub-area of the variable and returns them as a list of any object.
+     * Elements in the returned list may be {@link Number} or {@link String} instances.
+     *
+     * @param  area         indices of cell values to read along each dimension, in "natural" order.
+     * @param  subsampling  subsampling along each dimension, or {@code null} if none.
+     * @return the data as a list of {@link Number} or {@link String} instances.
+     * @throws IOException if an error occurred while reading the data.
+     * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     */
+    public abstract List<?> readAnyType(GridExtent area, int[] subsampling) throws IOException, DataStoreException;
+
+    /**
+     * Reads all the data for this variable and returns them as an array of a Java primitive type.
+     * This is the implementation of {@link #read()} method, invoked when the value is not cached.
+     *
+     * @return the data as an array of a Java primitive type.
+     * @throws IOException if an error occurred while reading the data.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    protected abstract Object readFully() throws IOException, DataStoreException;
+
+    /**
+     * Sets the values in this variable. The values are normally read from the netCDF file by the {@link #read()} method,
+     * but this {@code setValues(Object)} method may also be invoked if the caller wants to overwrite those values.
+     *
+     * @param  array  the values as an array of primitive type (for example {@code float[]}.
+     * @throws ArithmeticException if the dimensions of this variable are too large.
+     */
+    final void setValues(final Object array) {
+        final DataType dataType = getDataType();
+        if (dataType == DataType.CHAR) {
+            int n = getNumDimensions();
+            if (n >= STRING_DIMENSION) {
+                final List<Dimension> dimensions = getGridDimensions();
+                final int length = Math.toIntExact(dimensions.get(--n).length());
+                long count = dimensions.get(--n).length();
+                while (n > 0) {
+                    count = Math.multiplyExact(count, dimensions.get(--n).length());
+                }
+                final String[] strings = createStringArray(array, Math.toIntExact(count), length);
+                /*
+                 * Following method calls take the array reference without cloning it.
+                 * Consequently creating those two objects now (even if we may not use them) is reasonably cheap.
+                 */
+                values        = Vector.create(strings, false);
+                valuesAnyType = UnmodifiableArrayList.wrap(strings);
+                return;
+            }
+        }
+        Vector data = createDecimalVector(array, dataType.isUnsigned);
+        /*
+         * Do not invoke Vector.compress(…) if data are externally cached. Compressing vectors is useful only when
+         * original array is discarded. But the UCAR library has its own cache mechanism which may keep references
+         * to the original arrays. Consequently compressing vectors may result in data being duplicated.
+         */
+        if (!isExternallyCached()) {
+            /*
+             * This method is usually invoked with vector of increasing or decreasing values. Set a tolerance threshold to
+             * the precision of greatest (in magnitude) number, provided that this precision is not larger than increment.
+             * If values are not sorted in increasing or decreasing order, then the tolerance computed below may be smaller
+             * than optimal value. This is okay because it will cause more conservative compression
+             * (i.e. it does not increase the risk of data loss).
+             */
+            double tolerance = 0;
+            if (Numbers.isFloat(data.getElementType())) {
+                final int n = data.size() - 1;
+                if (n >= 0) {
+                    double first = data.doubleValue(0);
+                    double last  = data.doubleValue(n);
+                    double inc   = Math.abs((last - first) / n);
+                    if (!Double.isNaN(inc)) {
+                        double ulp = Math.ulp(Math.max(Math.abs(first), Math.abs(last)));
+                        tolerance = Math.min(inc, ulp);
+                    }
+                }
+            }
+            data = data.compress(tolerance);
+        }
+        values = SHARED_VECTORS.unique(data);
+        valuesAnyType = values;
+    }
+
+    /**
+     * Creates an array of character strings from a "two-dimensional" array of characters stored in a flat array.
+     * For each element, leading and trailing spaces and control codes are trimmed.
+     * The array does not contain null element but may contain empty strings.
+     *
+     * <p>The implementation of this method is the same code duplicated in subclasses,
+     * except that one subclass (the SIS implementation) expects a {@code byte[]} array
+     * and the other subclass (the wrapper around UCAR library) expects a {@code char[]} array.</p>
+     *
+     * @param  chars   the "two-dimensional" array stored in a flat {@code byte[]} or {@code char[]} array.
+     * @param  count   number of string elements (size of first dimension).
+     * @param  length  number of characters in each element (size of second dimension).
+     * @return array of character strings.
+     */
+    protected abstract String[] createStringArray(Object chars, int count, int length);
+
+    /**
+     * Creates a list of character strings from a "two-dimensional" array of characters stored in a flat array.
+     *
+     * @param  chars  the "two-dimensional" array stored in a flat {@code byte[]} or {@code char[]} array.
+     * @param  area   the {@code area} argument given to the {@code read(…)} method that obtained the array.
+     * @return list of character strings.
+     */
+    protected final List<String> createStringList(final Object chars, final GridExtent area) {
+        final int length = Math.toIntExact(area.getSize(0));
+        long count = area.getSize(1);
+        for (int i = area.getDimension(); --i >= 2;) {          // As a safety, but should never enter in this loop.
+            count = Math.multiplyExact(count, area.getSize(i));
+        }
+        return UnmodifiableArrayList.wrap(createStringArray(chars, Math.toIntExact(count), length));
+    }
 
     /**
      * Wraps the given data in a {@link Vector} with the assumption that accuracy in base 10 matters.
@@ -1007,20 +1212,20 @@ public abstract class Variable extends Node {
      * @param  gridToCRS  the matrix in which to set scale and offset coefficient.
      * @param  srcDim     the source dimension, which is a dimension of the grid. Identifies the matrix column of scale factor.
      * @param  tgtDim     the target dimension, which is a dimension of the CRS.  Identifies the matrix row of scale factor.
-     * @param  values     the vector to use for computing scale and offset.
+     * @param  data       the vector to use for computing scale and offset.
      * @return whether this method has successfully set the scale and offset coefficients.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, final Vector values)
+    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, final Vector data)
             throws IOException, DataStoreException
     {
-        final int n = values.size() - 1;
+        final int n = data.size() - 1;
         if (n >= 0) {
-            final double first = values.doubleValue(0);
+            final double first = data.doubleValue(0);
             Number increment;
             if (n >= 1) {
-                final double last = values.doubleValue(n);
+                final double last = data.doubleValue(n);
                 double error;
                 if (getDataType() == DataType.FLOAT) {
                     error = Math.max(Math.ulp((float) first), Math.ulp((float) last));
@@ -1028,7 +1233,7 @@ public abstract class Variable extends Node {
                     error = Math.max(Math.ulp(first), Math.ulp(last));
                 }
                 error = Math.max(Math.ulp(last - first), error) / n;
-                increment = values.increment(error);                        // May return null.
+                increment = data.increment(error);                          // May return null.
             } else {
                 increment = Double.NaN;
             }

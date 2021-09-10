@@ -187,6 +187,7 @@ public final class CRS extends Static {
      *   <tr><td>EPSG:5714</td> <td>{@link CommonCRS.Vertical#MEAN_SEA_LEVEL MEAN_SEA_LEVEL}</td> <td>Vertical</td> <td>Mean Sea Level height</td></tr>
      * </table></blockquote>
      *
+     * <h4>URI forms</h4>
      * This method accepts also the URN and URL syntaxes.
      * For example the following codes are considered equivalent to {@code "EPSG:4326"}:
      * <ul>
@@ -216,10 +217,12 @@ public final class CRS extends Static {
      * {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian coordinate system} for creating a new
      * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected coordinate reference system}.</p>
      *
-     * Note that the {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)}
-     * method can be seen as a converse of this method.
+     * <div class="note"><b>Note:</b>
+     * The {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)} method can be seen
+     * as a converse of this method: from a CRS object, it tries to find a URN that describes it.
      * More codes may also be supported depending on which extension modules are available.
-     * See for example the {@linkplain org.apache.sis.storage.gdal bindings to Proj.4 library}.
+     * See for example the {@linkplain org.apache.sis.storage.gdal bindings to PROJ library}.
+     * </div>
      *
      * @param  code  the authority code.
      * @return the Coordinate Reference System for the given authority code.
@@ -228,7 +231,7 @@ public final class CRS extends Static {
      *
      * @see #getAuthorityFactory(String)
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory
-     * @see <a href="http://epsg-registry.org/">EPSG Geodetic Registry</a>
+     * @see <a href="https://epsg.org/">EPSG Geodetic Registry</a>
      *
      * @category factory
      */
@@ -413,9 +416,9 @@ public final class CRS extends Static {
             final CRSAuthorityFactory factory, final Filter warningFilter) throws FactoryException
     {
         if (crs != null) {
-            final DefinitionVerifier verification = DefinitionVerifier.withAuthority(crs, factory, true);
+            final DefinitionVerifier verification = DefinitionVerifier.withAuthority(crs, factory, true, null);
             if (verification != null) {
-                crs = verification.authoritative;
+                crs = verification.recommendation;
                 if (warningFilter != null) {
                     final LogRecord record = verification.warning(false);
                     if (record != null) {
@@ -522,7 +525,7 @@ public final class CRS extends Static {
          *   - Otherwise (i.e. if the region of interest is likely to be wider than the projected CRS
          *     domain of validity), then the geographic CRS will be returned.
          */
-        final double roiArea  = Extents.area(regionOfInterest);   // NaN if 'regionOfInterest' is null.
+        final double roiArea  = Extents.area(regionOfInterest);   // NaN if `regionOfInterest` is null.
         double maxInsideArea  = 0;
         double minOutsideArea = Double.POSITIVE_INFINITY;
         boolean tryDerivedCRS = false;
@@ -605,9 +608,15 @@ public final class CRS extends Static {
      * </ul>
      *
      * If the source and target CRS are equivalent, then this method returns an operation backed by an
-     * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform#isIdentity() identity}
-     * transform. If there is no known operation between the given pair of CRS, then this method throws an
+     * {@linkplain org.opengis.referencing.operation.MathTransform#isIdentity() identity} transform.
+     * If there is no known operation between the given pair of CRS, then this method throws an
      * {@link OperationNotFoundException}.
+     *
+     * <p>Note that <code>CRS.findOperation(<var>B</var>, <var>A</var>, <var>aoi</var>)</code> is not necessarily
+     * the exact converse of <code>CRS.findOperation(<var>A</var>, <var>B</var>, <var>aoi</var>)</code>.
+     * Some deviations may exist for example because of different paths explored in the geodetic database.
+     * For the inverse of an existing {@link CoordinateOperation}, using
+     * {@link org.opengis.referencing.operation.MathTransform#inverse()} is preferable.</p>
      *
      * @param  sourceCRS       the CRS of source coordinates.
      * @param  targetCRS       the CRS of target coordinates.
@@ -906,16 +915,10 @@ public final class CRS extends Static {
      * @see org.apache.sis.referencing.operation.transform.MathTransforms#compound(MathTransform...)
      */
     public static CoordinateReferenceSystem compound(final CoordinateReferenceSystem... components) throws FactoryException {
-        ArgumentChecks.ensureNonNull("components", components);
-        switch (components.length) {
-            case 0: {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "components"));
-            }
-            case 1: {
-                final CoordinateReferenceSystem crs = components[0];
-                if (crs != null) return crs;
-                break;
-            }
+        ArgumentChecks.ensureNonEmpty("components", components);
+        if (components.length == 1) {
+            final CoordinateReferenceSystem crs = components[0];
+            if (crs != null) return crs;
         }
         return new EllipsoidalHeightCombiner().createCompoundCRS(components);
     }
@@ -955,7 +958,7 @@ public final class CRS extends Static {
                 throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, d));
             }
             if (d >= Long.SIZE) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, d));
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, d+1));
             }
             selected |= (1L << d);
         }
@@ -1001,7 +1004,7 @@ public final class CRS extends Static {
                     final int verticalDimension = Long.numberOfTrailingZeros((isVertical ? intersect : ~intersect) >>> previous);
                     final CoordinateSystemAxis verticalAxis = crs.getCoordinateSystem().getAxis(verticalDimension);
                     if (AxisDirections.isVertical(verticalAxis.getDirection())) try {
-                        addTo.add(new EllipsoidalHeightSeparator((GeodeticDatum) datum).separate((SingleCRS) crs, isVertical));
+                        addTo.add(new EllipsoidalHeightSeparator((GeodeticDatum) datum, isVertical).separate((SingleCRS) crs));
                         selected &= ~current;
                     } catch (IllegalArgumentException | ClassCastException e) {
                         throw new FactoryException(Resources.format(Resources.Keys.CanNotSeparateCRS_1, crs.getName()));
@@ -1090,6 +1093,8 @@ public final class CRS extends Static {
      * @return the first horizontal CRS, or {@code null} if none.
      *
      * @category information
+     *
+     * @see org.apache.sis.geometry.GeneralEnvelope#horizontal()
      */
     public static SingleCRS getHorizontalComponent(final CoordinateReferenceSystem crs) {
         switch (horizontalCode(crs)) {

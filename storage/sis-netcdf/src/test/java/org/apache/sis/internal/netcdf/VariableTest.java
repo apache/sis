@@ -39,7 +39,7 @@ import static org.opengis.test.Assert.*;
  * {@link #createDecoder(TestData)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -52,18 +52,9 @@ public strictfp class VariableTest extends TestCase {
     private static final int NUM_BASIC_PROPERTY_COLUMNS = 5;
 
     /**
-     * Whether the {@code "runtime"} variable in {@link TestData#NETCDF_4D_PROJECTED} is considered an axis or not.
-     * The UCAR library considers it as an axis because it has an {@code "_CoordinateAxisType"} attribute.
-     * Apache SIS does not consider it as an axis because that variable does not match any dimension and is not used
-     * in any other variable.
-     */
-    protected boolean isRuntimeAnAxis;
-
-    /**
      * Creates a new test.
      */
     public VariableTest() {
-        isRuntimeAnAxis = true;
     }
 
     /**
@@ -109,7 +100,7 @@ public strictfp class VariableTest extends TestCase {
             "y0",             "projection_y_coordinate",       DataType.FLOAT,  1, VariableRole.AXIS,
             "z0",             "Flight levels in 100s of feet", DataType.FLOAT,  1, VariableRole.AXIS,
             "time",           "Data time",                     DataType.DOUBLE, 1, VariableRole.AXIS,
-            "runtime",        "Data generation time",          DataType.DOUBLE, 1, isRuntimeAnAxis ? VariableRole.AXIS : VariableRole.OTHER,
+            "runtime",        "Data generation time",          DataType.DOUBLE, 1, VariableRole.AXIS,
             "CIP",            "Current Icing Product",         DataType.FLOAT,  4, VariableRole.COVERAGE
         }, getVariablesCIP(selectDataset(TestData.NETCDF_4D_PROJECTED)));
     }
@@ -310,11 +301,26 @@ public strictfp class VariableTest extends TestCase {
         final Variable variable = selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getVariables()[2];
         assertEquals("lon", variable.getName());
         final Vector data = variable.read();
+        assertSame(data, variable.readAnyType());
         assertEquals("lon", Float.class, data.getElementType());
         final int length = data.size();
         assertEquals("length", 73, length);
         for (int i=0; i<length; i++) {
             assertEquals("Longitude value", -180 + 5*i, data.floatValue(i), 0f);
         }
+    }
+
+    /**
+     * Tests {@link Variable#readAnyType()} on strings.
+     *
+     * @throws IOException if an error occurred while reading the netCDF file.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    @Test
+    public void testReadStrings() throws IOException, DataStoreException {
+        final Variable variable = selectDataset(TestData.MOVING_FEATURES).findVariable("features");
+        assertEquals("features", variable.getName());
+        final List<?> identifiers = variable.readAnyType();
+        assertArrayEquals(new String[] {"a4078a16", "1e146c16", "f50ff004", "", ""}, identifiers.toArray());
     }
 }

@@ -30,11 +30,11 @@ import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.util.Strings;
 
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
 
 
@@ -120,7 +120,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      */
     @Override
     public InternationalString createInternationalString(final Map<Locale,String> strings) {
-        ensureNonNull("strings", strings);
+        ArgumentChecks.ensureNonNull("strings", strings);
         switch (strings.size()) {
             case 0:  throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyDictionary));
             case 1:  return new SimpleInternationalString(strings.values().iterator().next());
@@ -180,7 +180,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      */
     @Override
     public NameSpace createNameSpace(final GenericName name, final Map<String,?> properties) {
-        ensureNonNull("name", name);
+        ArgumentChecks.ensureNonNull("name", name);
         String separator = getString(properties, SEPARATOR_KEY);
         if (separator == null) {
             separator = DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
@@ -271,12 +271,11 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      */
     @Override
     public GenericName createGenericName(final NameSpace scope, final CharSequence... parsedNames) {
-        ensureNonNull("parsedNames", parsedNames);
-        switch (parsedNames.length) {
-            default: return pool.unique(new DefaultScopedName(scope, Arrays.asList(parsedNames)));
-            case 1:  return createLocalName(scope, parsedNames[0]); // User may override.
-            case 0:  throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "parsedNames"));
+        ArgumentChecks.ensureNonEmpty("parsedNames", parsedNames);
+        if (parsedNames.length == 1) {
+            return createLocalName(scope, parsedNames[0]);              // User may override.
         }
+        return pool.unique(new DefaultScopedName(scope, Arrays.asList(parsedNames)));
     }
 
     /**

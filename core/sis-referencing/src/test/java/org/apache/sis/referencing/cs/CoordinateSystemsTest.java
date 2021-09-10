@@ -46,7 +46,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link CoordinateSystems} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -157,6 +157,19 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
         assertEquals(isElevation, inverse instanceof ElevationAngle);
         assertEquals(+expected, (forward != null) ? forward.degrees() : Double.NaN, STRICT);
         assertEquals(-expected, (inverse != null) ? inverse.degrees() : Double.NaN, STRICT);
+    }
+
+    /**
+     * Tests {@link CoordinateSystems#hasAllTargetTypes(CoordinateSystem, CoordinateSystem)}.
+     */
+    @Test
+    public void testHasAllTargetTypes() {
+        final DefaultCompoundCS cs = new DefaultCompoundCS(HardCodedCS.GEODETIC_2D, HardCodedCS.GRAVITY_RELATED_HEIGHT);
+        assertTrue (CoordinateSystems.hasAllTargetTypes(cs, HardCodedCS.GRAVITY_RELATED_HEIGHT));
+        assertFalse(CoordinateSystems.hasAllTargetTypes(cs, HardCodedCS.DAYS));
+        assertTrue (CoordinateSystems.hasAllTargetTypes(cs, HardCodedCS.GEODETIC_2D));
+        assertFalse(CoordinateSystems.hasAllTargetTypes(cs, HardCodedCS.CARTESIAN_2D));
+        assertTrue (CoordinateSystems.hasAllTargetTypes(cs, cs));
     }
 
     /**

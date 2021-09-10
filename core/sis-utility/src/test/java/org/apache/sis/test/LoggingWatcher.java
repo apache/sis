@@ -125,6 +125,9 @@ public final strictfp class LoggingWatcher extends TestWatcher implements Filter
     /**
      * Invoked (indirectly) when a tested method has emitted a log message.
      * This method adds the logging message to the {@link #messages} list.
+     *
+     * @param  record  the intercepted log record.
+     * @return {@code true} if verbose mode, or {@code false} is quiet mode.
      */
     @Override
     public final boolean isLoggable(final LogRecord record) {
@@ -161,6 +164,7 @@ public final strictfp class LoggingWatcher extends TestWatcher implements Filter
      * Each call of this method advances to the next log message.
      *
      * @param  keywords  the keywords that are expected to exist in the next log message.
+     *         May be an empty array for requesting only the existence of a log with any message.
      */
     public void assertNextLogContains(final String... keywords) {
         if (messages.isEmpty()) {
@@ -169,7 +173,7 @@ public final strictfp class LoggingWatcher extends TestWatcher implements Filter
         final String message = messages.remove();
         for (final String word : keywords) {
             if (!message.contains(word)) {
-                fail("Expected the logging message to contains the “"+ word + "” word but got:\n" + message);
+                fail("Expected the logging message to contains the “" + word + "” word but got:\n" + message);
             }
         }
     }

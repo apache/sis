@@ -36,7 +36,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.CharSequences;
@@ -105,7 +104,7 @@ public final class NADCON extends AbstractProvider {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         LATITUDE = builder
@@ -153,7 +152,7 @@ public final class NADCON extends AbstractProvider {
             throws ParameterNotFoundException, FactoryException
     {
         final Parameters pg  = Parameters.castOrWrap(values);
-        return InterpolatedTransform.createGeodeticTransformation(factory,
+        return DatumShiftGridFile.createGeodeticTransformation(NADCON.class, factory,
                 getOrLoad(pg.getMandatoryValue(LATITUDE), pg.getMandatoryValue(LONGITUDE)));
     }
 
@@ -184,7 +183,7 @@ public final class NADCON extends AbstractProvider {
                         final ByteBuffer buffer = ByteBuffer.allocate(4096).order(ByteOrder.LITTLE_ENDIAN);
                         final FloatBuffer fb = buffer.asFloatBuffer();
                         try (ReadableByteChannel in = Files.newByteChannel(rlat)) {
-                            DatumShiftGridLoader.log(NADCON.class, CharSequences.commonPrefix(
+                            DatumShiftGridLoader.startLoading(NADCON.class, CharSequences.commonPrefix(
                                     latitudeShifts.toString(), longitudeShifts.toString()).toString() + '…');
                             loader = new Loader(in, buffer, file);
                             loader.readGrid(fb, null, longitudeShifts);

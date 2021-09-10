@@ -1,0 +1,81 @@
+#
+# Test file for org.apache.sis.io.wkt.ReferencingFactory.
+# See "doc-files/ESRI.txt" for file syntax.
+#
+
+#
+# Alias for WGS84 geographic CRS.
+#
+SET WGS84_BASE =
+ BaseGeodCRS["GCS_WGS_1984",
+  Datum["D_WGS_1984",
+   Ellipsoid["WGS_1984", 6378137, 298.257223563]],
+  AngleUnit["Degree", 0.0174532925199433]]
+
+SET ELLIPSOIDAL_CS =
+ CS[ellipsoidal, 2],
+  Axis["Latitude", north],
+  Axis["Longitude", east],
+  AngleUnit["Degree", 0.0174532925199433]
+
+
+#
+# Derived from https://github.com/Esri/projection-engine-db-doc
+# with base CRS replaced by alias and parameter values omitted
+# when they have the default value.
+#
+ProjectedCRS["North_Pole_Stereographic",
+ $WGS84_BASE,
+ Conversion["Stereographic North Pole",
+  Method["Polar Stereographic (variant A)"],
+  Parameter["Latitude of natural origin", 90]],
+ CS[Cartesian, 2],
+  Axis["Easting (E)", east],
+  Axis["Northing (N)", north],
+  Unit["metre", 1],
+ Id["ESRI", 102018]]
+
+ProjectedCRS["South_Pole_Stereographic",
+ $WGS84_BASE,
+ Conversion["Stereographic South Pole",
+  Method["Polar Stereographic (variant A)"],
+  Parameter["Latitude of natural origin", -90]],
+ CS[Cartesian, 2],
+  Axis["Easting (E)", east],
+  Axis["Northing (N)", north],
+  Unit["metre", 1],
+ Id["ESRI", 102021]]
+
+
+#
+# Dummy CRS using the same code than ESRI::102021 but
+# different code space and versions. Used for testing
+# resolution of code collisions.
+#
+GeodCRS["Anguilla 1957",
+ Datum["Anguilla 1957",
+  Ellipsoid["Clarke 1880", 6378249.145, 293.465]],
+ $ELLIPSOIDAL_CS,
+ Id["TEST", 102021]]
+
+GeodCRS["Anguilla 1957 (bis)",
+ Datum["Anguilla 1957",
+  Ellipsoid["Clarke 1880", 6378249.145, 293.465]],
+ $ELLIPSOIDAL_CS,
+ Id["TEST", 102021, "v2"]]
+
+
+#
+# Intentionally malformed CRS for testing error indices reported in `ParseException`.
+# The erroneous element should be on the first line for avoiding platform-dependency
+# caused by various line separators ("\n" versus "\r\n").
+#
+SET BAD_DATUM = Datum["Erroneous", Ellipsoid["Missing axis length"]]
+
+GeodCRS["Error index 69 (on Ellipsoid)", Datum["Erroneous", Ellipsoid["Missing axis length"]],
+ $ELLIPSOIDAL_CS,
+ Id["TEST", "E1"]]
+
+GeodCRS["Error index 42 (on $BAD_DATUM)", $BAD_DATUM,
+ $ELLIPSOIDAL_CS,
+ Id["TEST", "E2"]]

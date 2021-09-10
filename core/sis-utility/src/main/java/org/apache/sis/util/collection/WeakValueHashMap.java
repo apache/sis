@@ -23,12 +23,10 @@ import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Arrays;
-import java.lang.reflect.Array;
 import java.lang.ref.WeakReference;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Errors;
 
@@ -253,20 +251,13 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      *
      * @since 0.4
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})    // Generic array creation.
     public WeakValueHashMap(final Class<K> keyType, final boolean identity) {
         this.keyType   = keyType;
         comparisonMode = identity ? IDENTITY :
                 (keyType.isArray() || keyType.equals(Object.class)) ? DEEP_EQUALS : EQUALS;
         lastTimeNormalCapacity = System.nanoTime();
-        /*
-         * Workaround for the "generic array creation" compiler error.
-         * Otherwise we would use the commented-out line instead.
-         */
-        @SuppressWarnings("unchecked")
-        @Workaround(library="JDK", version="1.7")
-        final Entry[] table = (Entry[]) Array.newInstance(Entry.class, MIN_CAPACITY);
-//      table = new Entry[size];
-        this.table = table;
+        table = new WeakValueHashMap.Entry[MIN_CAPACITY];
     }
 
     /**

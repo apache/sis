@@ -27,8 +27,8 @@ import static org.junit.Assert.*;
 /**
  * Tests the {@link NumberRange} class.
  *
- * @author  Martin Desruisseaux (IRD)
- * @version 1.0
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -53,16 +53,19 @@ public final strictfp class NumberRangeTest extends TestCase {
 
     /**
      * Tests the endpoint values of a range of integers.
+     * Also tests median and span.
      */
     @Test
     public void testIntegerEndpoints() {
         final NumberRange<Integer> range = NumberRange.create(10, true, 20, true);
-        assertEquals(10, range.getMinDouble(     ), 0);
-        assertEquals(10, range.getMinDouble(true ), 0);
-        assertEquals( 9, range.getMinDouble(false), 0);
-        assertEquals(20, range.getMaxDouble(     ), 0);
-        assertEquals(20, range.getMaxDouble(true ), 0);
-        assertEquals(21, range.getMaxDouble(false), 0);
+        assertEquals(10, range.getMinDouble(     ), STRICT);
+        assertEquals(10, range.getMinDouble(true ), STRICT);
+        assertEquals( 9, range.getMinDouble(false), STRICT);
+        assertEquals(20, range.getMaxDouble(     ), STRICT);
+        assertEquals(20, range.getMaxDouble(true ), STRICT);
+        assertEquals(21, range.getMaxDouble(false), STRICT);
+        assertEquals(15, range.getMedian(),         STRICT);
+        assertEquals(10, range.getSpan(),           STRICT);
     }
 
     /**

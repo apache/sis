@@ -27,7 +27,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -52,7 +51,6 @@ import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
@@ -64,7 +62,6 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -76,7 +73,7 @@ import org.apache.sis.util.Utilities;
  * Implements the referencing services needed by the {@code "sis-metadata"} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -200,7 +197,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             if (Double.isNaN(southBoundLatitude)) southBoundLatitude = Latitude.MIN_VALUE;
             if (Double.isNaN(northBoundLatitude)) northBoundLatitude = Latitude.MAX_VALUE;
             if (Double.isNaN(eastBoundLongitude) || Double.isNaN(westBoundLongitude)) {
-                // Conservatively set the two bounds because may be spanning the anti-meridian.
+                // Conservatively set the two bounds because may be crossing the anti-meridian.
                 eastBoundLongitude = Longitude.MIN_VALUE;
                 westBoundLongitude = Longitude.MAX_VALUE;
             }
@@ -236,26 +233,6 @@ public final class ServicesForMetadata extends ReferencingServices {
         target.setMinimumValue(envelope.getMinimum(dim));
         target.setMaximumValue(envelope.getMaximum(dim));
         target.setVerticalCRS(verticalCRS);
-    }
-
-    /**
-     * Implementation of the public {@code setBounds} methods for the temporal extent.
-     *
-     * @param  envelope     the source envelope.
-     * @param  target       the target temporal extent.
-     * @param  crs          the envelope CRS (mandatory, can not be {@code null}).
-     * @param  temporalCRS  the temporal component of the given CRS (mandatory).
-     * @throws UnsupportedOperationException if no implementation of {@code TemporalFactory} has been found
-     *         on the classpath.
-     */
-    private static void setTemporalExtent(final Envelope envelope, final DefaultTemporalExtent target,
-            final CoordinateReferenceSystem crs, final TemporalCRS temporalCRS)
-    {
-        final int dim = AxisDirections.indexOfColinear(crs.getCoordinateSystem(), temporalCRS.getCoordinateSystem());
-        assert dim >= 0 : crs;      // Should not fail since 'temporalCRS' has been extracted from 'crs' by the caller.
-        final DefaultTemporalCRS converter = DefaultTemporalCRS.castOrCopy(temporalCRS);
-        target.setBounds(TemporalUtilities.toDate(converter.toInstant(envelope.getMinimum(dim))),
-                         TemporalUtilities.toDate(converter.toInstant(envelope.getMaximum(dim))));
     }
 
     /**
@@ -318,11 +295,11 @@ public final class ServicesForMetadata extends ReferencingServices {
     @Override
     public void setBounds(final Envelope envelope, final DefaultTemporalExtent target) throws TransformException {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
-        final TemporalCRS temporalCRS = CRS.getTemporalComponent(crs);
-        if (temporalCRS == null) {                          // Mandatory for the conversion from numbers to dates.
+        final TemporalAccessor accessor = TemporalAccessor.of(crs, 0);
+        if (accessor == null) {                     // Mandatory for the conversion from numbers to dates.
             throw new TransformException(dimensionNotFound(Resources.Keys.MissingTemporalDimension_1, crs));
         }
-        setTemporalExtent(envelope, target, crs, temporalCRS);
+        accessor.setTemporalExtent(envelope, target);
     }
 
     /**
@@ -339,8 +316,8 @@ public final class ServicesForMetadata extends ReferencingServices {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         final SingleCRS horizontalCRS = CRS.getHorizontalComponent(crs);
         final VerticalCRS verticalCRS = CRS.getVerticalComponent(crs, true);
-        final TemporalCRS temporalCRS = CRS.getTemporalComponent(crs);
-        if (horizontalCRS == null && verticalCRS == null && temporalCRS == null) {
+        final TemporalAccessor accessor = TemporalAccessor.of(crs, 0);
+        if (horizontalCRS == null && verticalCRS == null && accessor == null) {
             throw new TransformException(dimensionNotFound(Resources.Keys.MissingSpatioTemporalDimension_1, crs));
         }
         /*
@@ -387,8 +364,8 @@ public final class ServicesForMetadata extends ReferencingServices {
         } else {
             target.setVerticalExtent(null);
         }
-        if (temporalCRS != null) {
-            setTemporalExtent(envelope, target, crs, temporalCRS);
+        if (accessor != null) {
+            accessor.setTemporalExtent(envelope, target);
         } else {
             target.setExtent(null);
         }
@@ -408,8 +385,8 @@ public final class ServicesForMetadata extends ReferencingServices {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         final SingleCRS horizontalCRS = CRS.getHorizontalComponent(crs);
         final VerticalCRS verticalCRS = CRS.getVerticalComponent(crs, true);
-        final TemporalCRS temporalCRS = CRS.getTemporalComponent(crs);
-        if (horizontalCRS == null && verticalCRS == null && temporalCRS == null) {
+        final TemporalAccessor accessor = TemporalAccessor.of(crs, 0);
+        if (horizontalCRS == null && verticalCRS == null && accessor == null) {
             throw new TransformException(dimensionNotFound(Resources.Keys.MissingSpatioTemporalDimension_1, crs));
         }
         if (horizontalCRS != null) {
@@ -420,9 +397,9 @@ public final class ServicesForMetadata extends ReferencingServices {
             setVerticalExtent(envelope, extent, crs, verticalCRS);
             target.getVerticalElements().add(extent);
         }
-        if (temporalCRS != null) {
+        if (accessor != null) {
             final DefaultTemporalExtent extent = new DefaultTemporalExtent();
-            setTemporalExtent(envelope, extent, crs, temporalCRS);
+            accessor.setTemporalExtent(envelope, extent);
             target.getTemporalElements().add(extent);
         }
     }

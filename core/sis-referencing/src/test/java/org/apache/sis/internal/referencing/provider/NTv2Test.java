@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.nio.channels.WritableByteChannel;
@@ -33,16 +34,22 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.measure.Units;
+import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
+import static org.junit.Assume.assumeTrue;
 import static org.opengis.test.Assert.*;
+import static org.apache.sis.internal.referencing.provider.DatumShiftGridLoader.DEGREES_TO_SECONDS;
 
 
 /**
  * Tests the {@link NTv2} grid loader.
+ * It will also indirectly tests {@link DatumShiftGridGroup} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
@@ -50,12 +57,20 @@ import static org.opengis.test.Assert.*;
  * @since 0.7
  * @module
  */
+@DependsOn(DatumShiftGridFileTest.class)
 public final strictfp class NTv2Test extends DatumShiftTestCase {
     /**
      * Name of the file containing a small extract of the "{@code NTF_R93.gsb}" file.
      * The amount of data in this test file is less than 0.14% of the original file.
      */
     public static final String TEST_FILE = "NTF_R93-extract.gsb";
+
+    /**
+     * Name of the file to load for testing the multi-grids support.
+     * This file should be present in the {@code $SIS_DATA/DatumChanges} directory.
+     * The test will be skipped if this file is absent.
+     */
+    private static final String MULTIGRID_TEST_FILE = "NTv2_0.gsb";
 
     /**
      * Best accuracy found in the "{@code NTF_R93.gsb}" file.
@@ -87,11 +102,10 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
      * explicitly if they can provide a path to the {@code "NTF_R93.gsb"} file.
      *
      * @param  file  path to the official {@code "NTF_R93.gsb"} file.
-     * @throws IOException if an error occurred while loading the grid.
-     * @throws FactoryException if an error occurred while computing the grid.
+     * @throws FactoryException if an error occurred while loading or computing the grid.
      * @throws TransformException if an error occurred while computing the envelope or testing the point.
      */
-    public static void testRGF93(final Path file) throws IOException, FactoryException, TransformException {
+    public static void testRGF93(final Path file) throws FactoryException, TransformException {
         testRGF93(file, -19800, 36000, 147600, 187200);
     }
 
@@ -104,25 +118,25 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
      * @param  ymax  value of the {@code "N_LAT"} record.
      */
     private static void testRGF93(final Path file, final double xmin, final double xmax,
-            final double ymin, final double ymax) throws IOException, FactoryException, TransformException
+            final double ymin, final double ymax) throws FactoryException, TransformException
     {
         final double cellSize = 360;
-        final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(file);
+        final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
         assertInstanceOf("Should not be compressed.", DatumShiftGridFile.Float.class, grid);
         assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());
         assertEquals("translationUnit", Units.ARC_SECOND, grid.getTranslationUnit());
-        assertEquals("translationDimensions", 2, grid.getTranslationDimensions());
-        assertTrue  ("isCellValueRatio", grid.isCellValueRatio());
+        assertEquals("translationDimensions", 2,          grid.getTranslationDimensions());
+        assertTrue  ("isCellValueRatio",                  grid.isCellValueRatio());
         assertEquals("cellPrecision", (ACCURACY / 10) / cellSize, grid.getCellPrecision(), 0.5E-6 / cellSize);
         /*
          * Verify the envelope and the conversion between geographic coordinates and grid indices.
          * The cells are expected to have the same size (360″ or 0.1°) in longitudes and latitudes.
          */
         final Envelope envelope = grid.getDomainOfValidity();
-        assertEquals("xmin", xmin - cellSize/2, envelope.getMinimum(0), STRICT);
-        assertEquals("xmax", xmax + cellSize/2, envelope.getMaximum(0), STRICT);
-        assertEquals("ymin", ymin - cellSize/2, envelope.getMinimum(1), STRICT);
-        assertEquals("ymax", ymax + cellSize/2, envelope.getMaximum(1), STRICT);
+        assertEquals("xmin", xmin, envelope.getMinimum(0), STRICT);
+        assertEquals("xmax", xmax, envelope.getMaximum(0), STRICT);
+        assertEquals("ymin", ymin, envelope.getMinimum(1), STRICT);
+        assertEquals("ymax", ymax, envelope.getMaximum(1), STRICT);
         assertMatrixEquals("coordinateToGrid",
                 new Matrix3(-cellSize,  0,  xmax,
                             0,  +cellSize,  ymin,
@@ -142,8 +156,8 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
         final double[] indices  = new double[position.length];
         final double[] vector   = new double[2];
         for (int i=0; i<expected.length; i++) {
-            position[i] *= DatumShiftGridLoader.DEGREES_TO_SECONDS;
-            expected[i] *= DatumShiftGridLoader.DEGREES_TO_SECONDS;
+            position[i] *= DEGREES_TO_SECONDS;
+            expected[i] *= DEGREES_TO_SECONDS;
             expected[i] -= position[i];  // We will test the interpolated shifts rather than final coordinates.
         }
         grid.getCoordinateToGrid().transform(position, 0, indices, 0, 1);
@@ -151,12 +165,81 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
         vector[0] *= -cellSize;   // Was positive toward west.
         vector[1] *= +cellSize;
         assertArrayEquals("interpolateInCell", expected, vector,
-                FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DatumShiftGridLoader.DEGREES_TO_SECONDS);
+                FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
 
         // Same test than above, but let DatumShiftGrid do the conversions for us.
         assertArrayEquals("interpolateAt", expected, grid.interpolateAt(position),
-                FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DatumShiftGridLoader.DEGREES_TO_SECONDS);
-        assertSame("Grid should be cached.", grid, NTv2.getOrLoad(file));
+                FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
+        assertSame("Grid should be cached.", grid, NTv2.getOrLoad(NTv2.class, file, 2));
+    }
+
+    /**
+     * Tests using a file containing many grids. This tests depends on the {@value #MULTIGRID_TEST_FILE}
+     * to be present in the {@code $SIS_DATA/DatumChanges} directory. This test is executed only if the
+     * {@link #RUN_EXTENSIVE_TESTS} flag is set.
+     *
+     * @throws FactoryException if an error occurred while loading or computing the grid.
+     * @throws TransformException if an error occurred while computing the envelope or testing the point.
+     */
+    @Test
+    public void testMultiGrids() throws FactoryException, TransformException {
+        assumeTrue(RUN_EXTENSIVE_TESTS);
+        final Path file = DataDirectory.DATUM_CHANGES.resolve(Paths.get(MULTIGRID_TEST_FILE));
+        assumeTrue(Files.exists(file));
+        final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
+        assertInstanceOf("Should contain many grids.", DatumShiftGridGroup.class, grid);
+        assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());
+        assertEquals("translationUnit", Units.ARC_SECOND, grid.getTranslationUnit());
+        assertEquals("translationDimensions", 2,          grid.getTranslationDimensions());
+        assertTrue  ("isCellValueRatio",                  grid.isCellValueRatio());
+        /*
+         * Area of use declared in EPSG database for coordinate operation EPSG::1693:
+         *
+         *     40.04°N  to  83.17°N    and    141.01°W  to  47.74°W.
+         *
+         * In the assertions below, the `cellSize` value has been verified in the NTv2
+         * file header but the envelope bounds have been determined empirically.
+         */
+        final double cellSize = 300;                                    // Number of arc-seconds in a cell.
+        final Envelope envelope = grid.getDomainOfValidity();
+        assertEquals("xmin", -142.25 * DEGREES_TO_SECONDS, envelope.getMinimum(0), 1E-10);
+        assertEquals("xmax",  -44.00 * DEGREES_TO_SECONDS, envelope.getMaximum(0), 1E-10);
+        assertEquals("ymin",   40.00 * DEGREES_TO_SECONDS, envelope.getMinimum(1), 1E-10);
+        assertEquals("ymax",   84.00 * DEGREES_TO_SECONDS, envelope.getMaximum(1), 1E-10);
+        /*
+         * Test a point. This point is located on the 3th grid in the NTv2 file.
+         * Consequently if the NTv2 implementation just pickups the first grid,
+         * then this test would fail with an error around 100 metres.
+         */
+        final double[] position = {-134.998106062 * DEGREES_TO_SECONDS, 61.000285047 * DEGREES_TO_SECONDS};
+        final double[] expected = {-135.0         * DEGREES_TO_SECONDS, 61.0         * DEGREES_TO_SECONDS};
+        final double[] indices  = new double[position.length];
+        grid.getCoordinateToGrid().transform(position, 0, indices, 0, 1);
+        final int gridX = Math.toIntExact(Math.round(indices[0]));
+        final int gridY = Math.toIntExact(Math.round(indices[1]));
+        assertEquals("gridX", 1092, gridX);                                 // Value determined empirically.
+        assertEquals("gridY",  252, gridY);
+        /*
+         * First check the value computed by `getCellValue(…)`. This method is only a fallback and
+         * should not be invoked in normal usage, so a direct invocation is the only way to test it.
+         */
+        final double[] result = new double[] {
+            position[0] - grid.getCellValue(0, gridX, gridY) * cellSize,    // Positive translation is toward west.
+            position[1] + grid.getCellValue(1, gridX, gridY) * cellSize
+        };
+        assertArrayEquals("getCellValue", expected, result, 0.001);
+        /*
+         * Check `interpolateInCell(…)`, which is the method invoked by `InterpolatedTransform`
+         * when `SpecializableTransform` has not been able to find the most appropriate grid.
+         */
+        grid.interpolateInCell(indices[0], indices[1], result);
+        result[0] = position[0] - result[0] * cellSize;                     // Positive translation is toward west.
+        result[1] = position[1] + result[1] * cellSize;
+        assertArrayEquals("interpolateInCell", expected, result, Formulas.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
+        /*
+         * Verify that the caching mechanism works for DatumShiftGridGroup too.
+         */
+        assertSame("Grid should be cached.", grid, NTv2.getOrLoad(NTv2.class, file, 2));
     }
 
 

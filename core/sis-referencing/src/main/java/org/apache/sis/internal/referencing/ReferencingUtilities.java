@@ -37,6 +37,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
@@ -61,7 +62,7 @@ import static java.util.Collections.singletonMap;
  * <p><strong>Do not rely on this API!</strong> It may change in incompatible way in any future release.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -128,6 +129,20 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
+     * Returns the unit used for all axes in the given coordinate reference system.
+     * If not all axes use the same unit, then this method returns {@code null}.
+     *
+     * <p>This method is used either when the CRS is expected to contain exactly one axis,
+     * or for operations that support only one units for all axes.</p>
+     *
+     * @param  crs  the coordinate reference system for which to get the unit, or {@code null}.
+     * @return the unit for all axis in the given coordinate system, or {@code null}.
+     */
+    public static Unit<?> getUnit(final CoordinateReferenceSystem crs) {
+        return (crs != null) ? getUnit(crs.getCoordinateSystem()) : null;
+    }
+
+    /**
      * Returns the number of dimensions of the given CRS, or 0 if {@code null}.
      *
      * @param  crs  the CRS from which to get the number of dimensions, or {@code null}.
@@ -145,19 +160,50 @@ public final class ReferencingUtilities extends Static {
 
     /**
      * Returns the GeoAPI interface implemented by the given object, or the implementation class
-     * if the interface is unknown.
+     * if the interface is unknown. This method can be used when the base type (CRS, CS, Datum…)
+     * is unknown, for example when preparing an error message. If the base type is known, then
+     * the method expecting a {@code baseType} argument should be preferred.
      *
-     * @param  object  the object for which to get the GeoAPI interface, or {@code null}.
+     * @param  object    the object for which to get the GeoAPI interface, or {@code null}.
      * @return GeoAPI interface or implementation class of the given object, or {@code null} if the given object is null.
      */
-    public static Class<?> getInterface(final IdentifiedObject object) {
-        if (object == null) {
-            return null;
-        } else if (object instanceof AbstractIdentifiedObject) {
-             return ((AbstractIdentifiedObject) object).getInterface();
+    @SuppressWarnings("unchecked")
+    public static Class<?> getInterface(final Object object) {
+        if (object instanceof AbstractIdentifiedObject) {
+            return ((AbstractIdentifiedObject) object).getInterface();
         } else {
-             return object.getClass();
+            return getInterface(IdentifiedObject.class, (Class) Classes.getClass(object));
         }
+    }
+
+    /**
+     * Returns the GeoAPI interface implemented by the given object, or the implementation class
+     * if the interface is unknown.
+     *
+     * @param  <T>       compile-time value of {@code baseType}.
+     * @param  baseType  parent interface of the desired type.
+     * @param  object    the object for which to get the GeoAPI interface, or {@code null}.
+     * @return GeoAPI interface or implementation class of the given object, or {@code null} if the given object is null.
+     */
+    public static <T extends IdentifiedObject> Class<? extends T> getInterface(final Class<T> baseType, final T object) {
+        if (object instanceof AbstractIdentifiedObject) {
+            return ((AbstractIdentifiedObject) object).getInterface().asSubclass(baseType);
+        } else {
+            return getInterface(baseType, Classes.getClass(object));
+        }
+    }
+
+    /**
+     * Returns the GeoAPI interface implemented by the given class, or the class itself if the interface is unknown.
+     *
+     * @param  <T>       compile-time value of {@code baseType}.
+     * @param  baseType  parent interface of the desired type.
+     * @param  type      type of object for which to get the GeoAPI interface, or {@code null}.
+     * @return GeoAPI interface or implementation class, or {@code null} if the given type is null.
+     */
+    public static <T extends IdentifiedObject> Class<? extends T> getInterface(final Class<T> baseType, final Class<? extends T> type) {
+        final Class<? extends T>[] types = Classes.getLeafInterfaces(type, baseType);
+        return (types.length != 0) ? types[0] : type;
     }
 
     /**
@@ -283,8 +329,8 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Derives a geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis in the specified order and in decimal degrees.
-     * If no such CRS can be obtained or created, returns {@code null}.
+     * Derives a geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis in the specified
+     * order and in decimal degrees. If no such CRS can be obtained or created, returns {@code null}.
      *
      * <p>This method does not set the prime meridian to Greenwich.
      * Meridian rotation, if needed, shall be performed by the caller.</p>
@@ -348,6 +394,20 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns {@code true} if the given coordinate system has at least 2 dimensions and
+     * the 2 first axis have (North, East) directions. This method is used for assertions.
+     *
+     * @param  cs  the coordinate system to verify.
+     * @return whether the coordinate system starts with (North, East) direction.
+     */
+    public static boolean startsWithNorthEast(final CoordinateSystem cs) {
+        final int dimension = cs.getDimension();
+        return (dimension >= 2)
+                && AxisDirection.NORTH.equals(cs.getAxis(0).getDirection())
+                && AxisDirection.EAST .equals(cs.getAxis(1).getDirection());
     }
 
     /**

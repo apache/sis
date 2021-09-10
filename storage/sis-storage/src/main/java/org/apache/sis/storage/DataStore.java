@@ -29,6 +29,8 @@ import org.opengis.metadata.identification.Identification;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.Strings;
@@ -63,7 +65,7 @@ import org.apache.sis.storage.event.StoreListeners;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see DataStores#open(Object)
  *
@@ -148,21 +150,49 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      *
      * @since 0.8
+     *
+     * @deprecated Replaced by {@link #DataStore(DataStore, DataStoreProvider, StorageConnector, boolean)}.
      */
+    @Deprecated
     protected DataStore(final DataStore parent, final StorageConnector connector) throws DataStoreException {
+        this(parent, (parent != null) ? parent.provider : null, connector, false);
+    }
+
+    /**
+     * Creates a new instance as a child of another data store instance.
+     * Events will be sent not only to {@linkplain #addListener registered listeners} of this {@code DataStore},
+     * but also to listeners of the {@code parent} data store. Each listener will be notified only once, even if
+     * the same listener is registered in the two places.
+     *
+     * @param  parent     the parent that contains this new {@code DataStore} component, or {@code null} if none.
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @param  hidden     {@code true} if this store will not be directly accessible from the parent.
+     *                    It is the case if this store is an {@link Aggregate} and the parent store will
+     *                    expose only some components of the aggregate instead of the aggregate itself.
+     * @throws DataStoreException if an error occurred while creating the data store for the given storage.
+     *
+     * @since 1.1
+     */
+    protected DataStore(final DataStore parent, final DataStoreProvider provider, final StorageConnector connector,
+                        final boolean hidden) throws DataStoreException
+    {
         ArgumentChecks.ensureNonNull("connector", connector);
+        this.provider = provider;
+        name = connector.getStorageName();
         final StoreListeners forwardTo;
         if (parent != null) {
+            locale = parent.locale;
+            if (hidden) {
+                listeners = parent.listeners;
+                return;
+            }
             forwardTo = parent.listeners;
-            provider  = parent.provider;
-            locale    = parent.locale;
         } else {
-            forwardTo = null;
-            provider  = null;
             locale    = Locale.getDefault(Locale.Category.DISPLAY);
+            forwardTo = null;
         }
         listeners = new StoreListeners(forwardTo, this);
-        name = connector.getStorageName();
     }
 
     /**
@@ -351,12 +381,38 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * file format and more.
      *
      * @return information about resources in the data store. Should not be {@code null}.
-     * @throws DataStoreException if an error occurred while reading the data.
+     * @throws DataStoreException if an error occurred while reading the metadata.
      *
      * @see #getIdentifier()
+     * @see org.apache.sis.metadata.iso.DefaultMetadata#deepCopy(Metadata)
      */
     @Override
     public abstract Metadata getMetadata() throws DataStoreException;
+
+    /**
+     * Returns implementation-specific metadata. The structure of those metadata varies for each file format.
+     * The {@linkplain #getMetadata() standard metadata} should be preferred since they allow abstraction of
+     * format details, but those native metadata are sometime useful when an information is not provided by
+     * the standard metadata.
+     *
+     * <p>The tree table should contain at least the following columns:</p>
+     * <ul>
+     *   <li>{@link TableColumn#NAME}  — a name for the metadata property, e.g. "Title".</li>
+     *   <li>{@link TableColumn#VALUE} — the property value typically as a string, number or date.</li>
+     * </ul>
+     *
+     * The {@link TableColumn#NAME} of the root node should be a format name such as "NetCDF" or "GeoTIFF".
+     * That name should be short since it may be used in widget as a designation of implementation-specific
+     * details.
+     *
+     * @return resources information structured in an implementation-specific way.
+     * @throws DataStoreException if an error occurred while reading the metadata.
+     *
+     * @since 1.1
+     */
+    public Optional<TreeTable> getNativeMetadata() throws DataStoreException {
+        return Optional.empty();
+    }
 
     /**
      * Searches for a resource identified by the given identifier. The given identifier should be the string
@@ -489,6 +545,13 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
 
     /**
      * Closes this data store and releases any underlying resources.
+     *
+     * <h4>Note for implementers</h4>
+     * Data stores having resources to release should <em>not</em> override the {@link Object#equals(Object)}
+     * and {@link #hashCode()} methods, since comparisons other than identity comparisons may confuse some
+     * cache mechanisms (e.g. they may think that a data store has already been closed).
+     * Conversely data stores for which {@code addListener(…)}, {@code removeListener(…)} and {@code close()}
+     * methods perform no operation can override {@code equals(…)} and {@code hashCode()} if desired.
      *
      * @throws DataStoreException if an error occurred while closing this data store.
      */

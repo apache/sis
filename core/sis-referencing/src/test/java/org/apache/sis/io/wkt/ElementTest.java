@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * Tests the {@link Element} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -49,16 +49,10 @@ public final strictfp class ElementTest extends TestCase {
             throw new UnsupportedOperationException();
         }
 
-        @Override Object parseObject(Element element) throws ParseException {
+        @Override Object buildFromTree(Element element) throws ParseException {
             throw new UnsupportedOperationException();
         }
     };
-
-    /**
-     * The map of shared values to gives to the {@link Element} constructor.
-     * This is usually null, except for the test of WKT fragments.
-     */
-    private Map<Object,Object> sharedValues;
 
     /**
      * Parses the given text and ensures that {@link ParsePosition} index is set at to the end of string.
@@ -67,7 +61,7 @@ public final strictfp class ElementTest extends TestCase {
         final ParsePosition position = new ParsePosition(0);
         final Element element;
         try {
-            element = new Element(parser, text, position, sharedValues);
+            element = new Element(parser, text, position);
         } catch (ParseException e) {
             assertEquals("index should be unchanged.", 0, position.getIndex());
             assertTrue("Error index should be set.", position.getErrorIndex() > 0);
@@ -296,27 +290,14 @@ public final strictfp class ElementTest extends TestCase {
     @Test
     @DependsOnMethod({"testPullString", "testPullElement"})
     public void testFragments() throws ParseException {
-        sharedValues = new HashMap<>();
-        Element frag = parse("Frag[“A”,“B”,“A”]");
-        parser.fragments.put("MyFrag", frag);
-        try {
-            frag.pullString("A");
-            fail("Element shall be unmodifiable.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-        }
-        /*
-         * Parse a normal value. Since this is not a fragment,
-         * we should be able to pull a copy of the components.
-         */
-        sharedValues = null;
+        parser.fragments.put("MyFrag", new StoredTree(parse("Frag[“A”,“B”,“A”]"), new HashMap<>()));
         final Element element = parse("Foo[“C”,$MyFrag,“D”]");
         assertEquals("C", element.pullString("C"));
         assertEquals("D", element.pullString("D"));
-        frag = element.pullElement(AbstractParser.MANDATORY, "Frag");
+        Element frag = element.pullElement(AbstractParser.MANDATORY, "Frag");
         final String a = frag.pullString("A");
         assertEquals("A", a);
         assertEquals("B", frag.pullString("B"));
-        assertSame(a, frag.pullString("A"));    // 'sharedValues' should have allowed to share the same instance.
+        assertEquals(a, frag.pullString("A"));
     }
 }

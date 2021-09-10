@@ -16,13 +16,15 @@
  */
 package org.apache.sis.cql;
 
+import java.time.Instant;
 import java.text.ParseException;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
-import org.opengis.filter.expression.Expression;
+import org.opengis.filter.Expression;
+import org.opengis.feature.Feature;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -33,22 +35,22 @@ import static org.junit.Assert.*;
  * Test writing in CQL expressions.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public final strictfp class ExpressionWritingTest extends CQLTestCase {
     @Test
-    public void testPropertyName1() throws CQLException {
-        final Expression exp = FF.property("geom");
+    public void testValueReference1() throws CQLException {
+        final Expression<Feature,?> exp = FF.property("geom");
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("geom", cql);
     }
 
     @Test
-    public void testPropertyName2() throws CQLException {
-        final Expression exp = FF.property("the geom");
+    public void testValueReference2() throws CQLException {
+        final Expression<Feature,?> exp = FF.property("the geom");
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("\"the geom\"", cql);
@@ -56,7 +58,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
 
     @Test
     public void testInteger() throws CQLException {
-        final Expression exp = FF.literal(15);
+        final Expression<Feature,?> exp = FF.literal(15);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("15", cql);
@@ -64,7 +66,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
 
     @Test
     public void testNegativeInteger() throws CQLException {
-        final Expression exp = FF.literal(-15);
+        final Expression<Feature,?> exp = FF.literal(-15);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("-15", cql);
@@ -72,7 +74,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
 
     @Test
     public void testDecimal1() throws CQLException {
-        final Expression exp = FF.literal(3.14);
+        final Expression<Feature,?> exp = FF.literal(3.14);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("3.14", cql);
@@ -80,16 +82,16 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
 
     @Test
     public void testDecimal2() throws CQLException {
-        final Expression exp = FF.literal(9.0E-21);
+        final Expression<Feature,?> exp = FF.literal(9.0E-21);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("9.0E-21", cql);
     }
 
-    @Ignore
     @Test
+    @Ignore("Unsupported temporal field: Year")
     public void testDate() throws CQLException, ParseException{
-        final Expression exp = FF.literal(parseDate("2012-03-21T05:42:36Z"));
+        final Expression<Feature,?> exp = FF.literal(Instant.parse("2012-03-21T05:42:36Z"));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("2012-03-21T05:42:36Z", cql);
@@ -98,7 +100,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
 
     @Test
     public void testNegativeDecimal() throws CQLException {
-        final Expression exp = FF.literal(-3.14);
+        final Expression<Feature,?> exp = FF.literal(-3.14);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("-3.14", cql);
@@ -106,7 +108,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
 
     @Test
     public void testText() throws CQLException {
-        final Expression exp = FF.literal("hello world");
+        final Expression<Feature,?> exp = FF.literal("hello world");
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("'hello world'", cql);
@@ -114,7 +116,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
 
     @Test
     public void testAdd() throws CQLException {
-        final Expression exp = FF.add(FF.literal(3),FF.literal(2));
+        final Expression<Feature,?> exp = FF.add(FF.literal(3),FF.literal(2));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("3 + 2", cql);
@@ -122,7 +124,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
 
     @Test
     public void testSubtract() throws CQLException {
-        final Expression exp = FF.subtract(FF.literal(3),FF.literal(2));
+        final Expression<Feature,?> exp = FF.subtract(FF.literal(3),FF.literal(2));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("3 - 2", cql);
@@ -130,7 +132,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
 
     @Test
     public void testMultiply() throws CQLException {
-        final Expression exp = FF.multiply(FF.literal(3),FF.literal(2));
+        final Expression<Feature,?> exp = FF.multiply(FF.literal(3),FF.literal(2));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("3 * 2", cql);
@@ -138,25 +140,25 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
 
     @Test
     public void testDivide() throws CQLException {
-        final Expression exp = FF.divide(FF.literal(3),FF.literal(2));
+        final Expression<Feature,?> exp = FF.divide(FF.literal(3),FF.literal(2));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("3 / 2", cql);
     }
 
-    @Ignore
     @Test
+    @Ignore("Function `max` not yet supported.")
     public void testFunction1() throws CQLException {
-        final Expression exp = FF.function("max",FF.property("att"), FF.literal(15));
+        final Expression<Feature,?> exp = FF.function("max", FF.property("att"), FF.literal(15));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("max(att , 15)", cql);
     }
 
-    @Ignore
     @Test
+    @Ignore("Function `min` not yet supported.")
     public void testFunction2() throws CQLException {
-        final Expression exp = FF.function("min",FF.property("att"), FF.function("cos",FF.literal(3.14d)));
+        final Expression<Feature,?> exp = FF.function("min",FF.property("att"), FF.function("cos", FF.literal(3.14d)));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("min(att , cos(3.14))", cql);
@@ -164,7 +166,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
 
     @Test
     public void testCombine1() throws CQLException {
-        final Expression exp =
+        final Expression<Feature,?> exp =
                 FF.divide(
                     FF.add(
                         FF.multiply(FF.literal(3), FF.literal(1)),
@@ -178,7 +180,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
 
     @Test
     public void testCombine2() throws CQLException {
-        final Expression exp =
+        final Expression<Feature,?> exp =
                 FF.add(
                         FF.multiply(FF.literal(3), FF.literal(1)),
                         FF.divide(FF.literal(2), FF.literal(4))
@@ -189,14 +191,14 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
 
     }
 
-    @Ignore
     @Test
+    @Ignore("Function `max` not yet supported.")
     public void testCombine3() throws CQLException {
-        final Expression exp =
+        final Expression<Feature,?> exp =
                 FF.add(
                         FF.multiply(
                             FF.literal(3),
-                            FF.function("max", FF.property("val"),FF.literal(15))
+                            FF.function("max", FF.property("val"), FF.literal(15)).toValueType(Number.class)
                         ),
                         FF.divide(FF.literal(2), FF.literal(4))
                         );
@@ -208,7 +210,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
     @Test
     public void testPoint() throws CQLException {
         final Geometry geom = GF.createPoint(new Coordinate(15, 30));
-        final Expression exp = FF.literal(geom);
+        final Expression<Feature,?> exp = FF.literal(geom);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("POINT (15 30)", cql);
@@ -221,7 +223,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
                     new Coordinate(15, 30),
                     new Coordinate(45, 60)
                 });
-        final Expression exp = FF.literal(geom);
+        final Expression<Feature,?> exp = FF.literal(geom);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("MULTIPOINT ((15 30), (45 60))", cql);
@@ -235,7 +237,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
                     new Coordinate(30, 40),
                     new Coordinate(50, 60)
                 });
-        final Expression exp = FF.literal(geom);
+        final Expression<Feature,?> exp = FF.literal(geom);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("LINESTRING (10 20, 30 40, 50 60)", cql);
@@ -259,7 +261,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
                         })
                     }
                 );
-        final Expression exp = FF.literal(geom);
+        final Expression<Feature,?> exp = FF.literal(geom);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("MULTILINESTRING ((10 20, 30 40, 50 60), (70 80, 90 100, 110 120))", cql);
@@ -285,7 +287,7 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
                         })
                     }
                 );
-        final Expression exp = FF.literal(geom);
+        final Expression<Feature,?> exp = FF.literal(geom);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("POLYGON ((10 20, 30 40, 50 60, 10 20), (70 80, 90 100, 110 120, 70 80))", cql);
@@ -330,10 +332,9 @@ public final strictfp class ExpressionWritingTest extends CQLTestCase {
                     }
                 );
         final Geometry geom = GF.createMultiPolygon(new Polygon[]{geom1,geom2});
-        final Expression exp = FF.literal(geom);
+        final Expression<Feature,?> exp = FF.literal(geom);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("MULTIPOLYGON (((10 20, 30 40, 50 60, 10 20), (70 80, 90 100, 110 120, 70 80)), ((11 21, 31 41, 51 61, 11 21), (71 81, 91 101, 111 121, 71 81)))", cql);
     }
-
 }

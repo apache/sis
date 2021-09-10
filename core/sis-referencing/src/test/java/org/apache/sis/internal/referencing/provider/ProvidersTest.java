@@ -93,6 +93,8 @@ public final strictfp class ProvidersTest extends TestCase {
             AlbersEqualArea.class,
             TransverseMercator.class,
             TransverseMercatorSouth.class,
+            CassiniSoldner.class,
+            HyperbolicCassiniSoldner.class,
             PolarStereographicA.class,
             PolarStereographicB.class,
             PolarStereographicC.class,
@@ -104,16 +106,20 @@ public final strictfp class ProvidersTest extends TestCase {
             ObliqueMercatorTwoPoints.class,
             ObliqueMercatorTwoPointsCenter.class,
             Orthographic.class,
+            ModifiedAzimuthalEquidistant.class,
+            AzimuthalEquidistantSpherical.class,
             ZonedTransverseMercator.class,
             SatelliteTracking.class,
             Sinusoidal.class,
             Polyconic.class,
             Mollweide.class,
             NTv2.class,
+            NTv1.class,
             NADCON.class,
             FranceGeocentricInterpolation.class,
             MolodenskyInterpolation.class,
-            Interpolation1D.class
+            Interpolation1D.class,
+            Wraparound.class
         };
     }
 

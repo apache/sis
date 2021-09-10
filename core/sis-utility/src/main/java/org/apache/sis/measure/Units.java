@@ -74,7 +74,7 @@ import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
  * </table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -824,7 +824,7 @@ public final class Units extends Static {
 
     /**
      * The SI derived unit for electric charge (C).
-     * One coulomb is the charge transfered by a current of one ampere during one second.
+     * One coulomb is the charge transferred by a current of one ampere during one second.
      * The unlocalized name is “coulomb”.
      *
      * <div class="note">
@@ -1302,6 +1302,7 @@ public final class Units extends Static {
         UnitRegistry.alias(HECTARE,   "hm²");
         UnitRegistry.alias(LITRE,       "l");
         UnitRegistry.alias(LITRE,       "ℓ");
+        UnitRegistry.alias(PSU,       "PSU");
         UnitRegistry.alias(UNITY, SystemUnit.ONE);
 
         initialized = true;

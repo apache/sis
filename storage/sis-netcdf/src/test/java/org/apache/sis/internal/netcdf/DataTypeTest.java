@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf;
 
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.util.Numbers;
 
 import static org.junit.Assert.*;
 
@@ -26,7 +27,7 @@ import static org.junit.Assert.*;
  * Tests {@link DataType} enumeration values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -81,5 +82,44 @@ public final strictfp class DataTypeTest extends TestCase {
         assertSame(  "signed",   signed, unsigned.unsigned(false));
         assertSame("unsigned", unsigned, unsigned.unsigned(true));
         assertSame("unsigned", unsigned,   signed.unsigned(true));
+    }
+
+    /**
+     * Tests {@link DataType#isInteger}.
+     */
+    @Test
+    public void testIsNumber() {
+        assertTrue (DataType.BYTE  .isInteger);
+        assertTrue (DataType.UBYTE .isInteger);
+        assertTrue (DataType.SHORT .isInteger);
+        assertTrue (DataType.USHORT.isInteger);
+        assertTrue (DataType.INT   .isInteger);
+        assertTrue (DataType.UINT  .isInteger);
+        assertTrue (DataType.INT64 .isInteger);
+        assertTrue (DataType.UINT64.isInteger);
+        assertFalse(DataType.FLOAT .isInteger);
+        assertFalse(DataType.DOUBLE.isInteger);
+        assertFalse(DataType.CHAR  .isInteger);
+        assertFalse(DataType.STRING.isInteger);
+    }
+
+    /**
+     * Verifies the {@link DataType#classe} values.
+     */
+    @Test
+    public void testClasses() {
+        for (final DataType type : DataType.values()) {
+            final String name = type.name();
+            final int code = Numbers.getEnumConstant(type.getClass(false));
+            if (type.isInteger) {
+                if (!type.isUnsigned) {
+                    assertEquals(name, type.number, code);
+                } else if (type != DataType.UINT64) {
+                    assertTrue(name, code > type.number);
+                }
+            } else {
+                assertEquals(name, (type == DataType.CHAR) ? Numbers.CHARACTER : type.number, code);
+            }
+        }
     }
 }

@@ -23,6 +23,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
+import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.internal.feature.Resources;
 
 
@@ -51,17 +52,17 @@ import org.apache.sis.internal.feature.Resources;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-public abstract class WritablePixelIterator extends PixelIterator implements Closeable {
+public class WritablePixelIterator extends PixelIterator implements Closeable {
     /**
      * The image where pixels will be written, or {@code null} if the image is read-only.
      * The destination image may or may not be the same instance than the source {@link #image}.
      * However the sample model, the minimal X and Y values and the tile grid must be the same.
      */
-    final WritableRenderedImage destination;
+    private final WritableRenderedImage destination;
 
     /**
      * The current tile where pixels will be written, or {@code null} if no write operation is under way.
@@ -70,7 +71,7 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
      * @see WritableRenderedImage#getWritableTile(int, int)
      * @see WritableRenderedImage#releaseWritableTile(int, int)
      */
-    WritableRaster destRaster;
+    private WritableRaster destRaster;
 
     /**
      * Creates an iterator for the given region in the given raster.
@@ -80,11 +81,12 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
      * @param  subArea  the raster region where to perform the iteration, or {@code null}
      *                  for iterating over all the raster domain.
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
+     * @param  order    {@code null} or {@link SequenceType#LINEAR}. Other values may be added in future versions.
      */
     WritablePixelIterator(final Raster input, final WritableRaster output,
-                          final Rectangle subArea, final Dimension window)
+                          final Rectangle subArea, final Dimension window, final SequenceType order)
     {
-        super(input, subArea, window);
+        super(input, subArea, window, order);
         destRaster  = output;
         destination = null;
         if (output != null) {
@@ -104,11 +106,12 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
      * @param  subArea  the image region where to perform the iteration, or {@code null}
      *                  for iterating over all the image domain.
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
+     * @param  order    {@code null} or {@link SequenceType#LINEAR}. Other values may be added in future versions.
      */
     WritablePixelIterator(final RenderedImage input, final WritableRenderedImage output,
-                          final Rectangle subArea, final Dimension window)
+                          final Rectangle subArea, final Dimension window, final SequenceType order)
     {
-        super(input, subArea, window);
+        super(input, subArea, window, order);
         destRaster  = null;
         destination = output;
         if (output != null) {
@@ -167,7 +170,9 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
      * @see WritableRaster#setSample(int, int, int, int)
      * @see #getSample(int)
      */
-    public abstract void setSample(int band, int value);
+    public void setSample(final int band, final int value) {
+        destRaster.setSample(x, y, band, value);
+    }
 
     /**
      * Writes a sample value in the specified band of current pixel.
@@ -181,7 +186,9 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
      * @see WritableRaster#setSample(int, int, int, float)
      * @see #getSampleFloat(int)
      */
-    public abstract void setSample(int band, float value);
+    public void setSample(final int band, final float value) {
+        destRaster.setSample(x, y, band, value);
+    }
 
     /**
      * Writes a sample value in the specified band of current pixel.
@@ -195,7 +202,9 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
      * @see WritableRaster#setSample(int, int, int, double)
      * @see #getSampleDouble(int)
      */
-    public abstract void setSample(int band, double value);
+    public void setSample(final int band, final double value) {
+        destRaster.setSample(x, y, band, value);
+    }
 
     /**
      * Sets the sample values of current pixel for all bands.
@@ -208,7 +217,9 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
      * @see WritableRaster#setPixel(int, int, int[])
      * @see #getPixel(int[])
      */
-    public abstract void setPixel​(int[] values);
+    public void setPixel​(final int[] values) {
+        destRaster.setPixel(x, y, values);
+    }
 
     /**
      * Sets the sample values of current pixel for all bands.
@@ -221,7 +232,9 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
      * @see WritableRaster#setPixel(int, int, float[])
      * @see #getPixel(float[])
      */
-    public abstract void setPixel​(float[] values);
+    public void setPixel​(final float[] values) {
+        destRaster.setPixel(x, y, values);
+    }
 
     /**
      * Sets the sample values of current pixel for all bands.
@@ -234,12 +247,67 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
      * @see WritableRaster#setPixel(int, int, double[])
      * @see #getPixel(double[])
      */
-    public abstract void setPixel​(double[] values);
+    public void setPixel​(final double[] values) {
+        destRaster.setPixel(x, y, values);
+    }
+
+    /**
+     * Sets the data elements (not necessarily band values) of current pixel.
+     * The {@code Object} argument is a relatively opaque format (it may be {@code int[]}, {@code byte[]}, <i>etc.</i>).
+     * It should be the value provided by a call to {@link #getDataElements(Object)} on an image using
+     * a compatible sample model.
+     *
+     * @param  values  the new the data elements.
+     *
+     * @see WritableRaster#setDataElements​(int, int, Object)
+     * @see #getDataElements(Object)
+     *
+     * @since 1.1
+     */
+    public void setDataElements(final Object values) {
+        destRaster.setDataElements(x, y, values);
+    }
+
+    /**
+     * The current raster destination raster, or {@code null} if none.
+     */
+    final WritableRaster destination() {
+        return destRaster;
+    }
+
+    /**
+     * Invoked by {@link #fetchTile()} when iteration switch to a new tile.
+     *
+     * @return if the new writable tile can also be used for reading, that tile. Otherwise {@code null}.
+     */
+    @Override
+    final Raster fetchWritableTile() {
+        if (destination != null) {
+            destRaster = destination.getWritableTile(tileX, tileY);
+            if (destination == image) return destRaster;
+        }
+        return super.fetchWritableTile();
+    }
+
+    /**
+     * Releases the tiles acquired by this iterator, if any.
+     * This method does nothing if the iterator is read-only.
+     */
+    @Override
+    void releaseTile() {
+        super.releaseTile();
+        if (destination != null && destRaster != null) {
+            destRaster = null;
+            destination.releaseWritableTile(tileX, tileY);
+        }
+    }
 
     /**
      * Releases any resources hold by this iterator.
-     * Invoking this method may flush some tiles content to disk.
+     * If some pixel values have been written, the changes are committed.
      */
     @Override
-    public abstract void close();
+    public void close() {
+        releaseTile();
+    }
 }

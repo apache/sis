@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Hashtable;
 import java.util.Arrays;
 import java.nio.Buffer;
 import java.awt.Point;
@@ -26,19 +27,36 @@ import java.awt.image.SampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import java.awt.image.ImagingOpException;
 import java.awt.image.RasterFormatException;
+import java.awt.image.Raster;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.MismatchedCoverageRangeException;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.internal.coverage.ColorModelFactory;
-import org.apache.sis.internal.coverage.RasterFactory;
+import org.apache.sis.internal.coverage.j2d.Colorizer;
+import org.apache.sis.internal.coverage.j2d.DeferredProperty;
+import org.apache.sis.internal.coverage.j2d.RasterFactory;
+import org.apache.sis.internal.coverage.j2d.TiledImage;
+import org.apache.sis.internal.coverage.j2d.WritableTiledImage;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.Vector;
+
+import static java.lang.Math.addExact;
+import static java.lang.Math.subtractExact;
+import static java.lang.Math.multiplyExact;
+import static java.lang.Math.incrementExact;
+import static java.lang.Math.toIntExact;
+import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
 
 
 /**
@@ -62,10 +80,10 @@ import org.apache.sis.math.Vector;
  *     class MyResource extends GridCoverage {
  *         &#64;Override
  *         public RenderedImage render(GridExtent sliceExtent) {
+ *             ImageRenderer renderer = new ImageRenderer(this, sliceExtent);
  *             try {
- *                 ImageRenderer renderer = new ImageRenderer(this, sliceExtent);
  *                 renderer.setData(data);
- *                 return renderer.image();
+ *                 return renderer.createImage();
  *             } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
  *                 throw new CannotEvaluateException("Can not create an image.", e);
  *             }
@@ -79,7 +97,7 @@ import org.apache.sis.math.Vector;
  * Support for tiled images will be added in a future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see GridCoverage#render(GridExtent)
  *
@@ -87,6 +105,40 @@ import org.apache.sis.math.Vector;
  * @module
  */
 public class ImageRenderer {
+    /**
+     * The grid geometry of the {@link GridCoverage} specified at construction time.
+     * Never {@code null}.
+     */
+    private final GridGeometry geometry;
+
+    /**
+     * The requested slice, or {@code null} if unspecified.
+     * If unspecified, then the extent to use is the full coverage grid extent.
+     */
+    private final GridExtent sliceExtent;
+
+    /**
+     * The dimensions to select in the grid coverage for producing an image. This is an array of length
+     * {@value GridCoverage2D#BIDIMENSIONAL} obtained by {@link GridExtent#getSubspaceDimensions(int)}.
+     */
+    private final int[] gridDimensions;
+
+    /**
+     * The result of {@link #getImageGeometry(int)} if the specified number of dimension 2.
+     * This is cached for avoiding to recompute this geometry if asked many times.
+     *
+     * @see #getImageGeometry(int)
+     */
+    private GridGeometry imageGeometry;
+
+    /**
+     * Offset to add to {@link #buffer} offset for reaching the first sample value for the slice to render.
+     * This is zero for a two-dimensional image, but may be greater for cube having more dimensions.
+     * Despite the "Z" letter in the field name, this field actually combines the offset for <em>all</em>
+     * dimensions other than X and Y.
+     */
+    private final long offsetZ;
+
     /**
      * Location of the first image pixel relative to the grid coverage extent. The (0,0) offset means that the first pixel
      * in the {@code sliceExtent} (specified at construction time) is the first pixel in the whole {@link GridCoverage}.
@@ -206,30 +258,49 @@ public class ImageRenderer {
     private DataBuffer buffer;
 
     /**
+     * The properties to give to the image, or {@code null} if none.
+     *
+     * @see #addProperty(String, Object)
+     */
+    @SuppressWarnings("UseOfObsoleteCollectionType")
+    private Hashtable<String,Object> properties;
+
+    /**
+     * The factory to use for {@link org.opengis.referencing.operation.MathTransform} creations,
+     * or {@code null} for a default factory.
+     *
+     * <p>For now this is fixed to {@code null}. But it may become a non-static, non-final field
+     * in a future version if we want to make this property configurable.</p>
+     */
+    private static final MathTransformFactory mtFactory = null;
+
+    /**
      * Creates a new image renderer for the given slice extent.
      *
-     * @param  coverage     the grid coverage for which to build an image.
-     * @param  sliceExtent  the grid geometry from which to create an image, or {@code null} for the {@code coverage} extent.
+     * @param  coverage     the source coverage for which to build an image.
+     * @param  sliceExtent  the domain from which to create an image, or {@code null} for the {@code coverage} extent.
      * @throws SubspaceNotSpecifiedException if this method can not infer a two-dimensional slice from {@code sliceExtent}.
-     * @throws DisjointExtentException if the given extent does not intersect this grid coverage.
+     * @throws DisjointExtentException if the given extent does not intersect the given coverage.
      * @throws ArithmeticException if a stride calculation overflows the 32 bits integer capacity.
      */
     public ImageRenderer(final GridCoverage coverage, GridExtent sliceExtent) {
         ArgumentChecks.ensureNonNull("coverage", coverage);
         bands = CollectionsExt.toArray(coverage.getSampleDimensions(), SampleDimension.class);
-        final GridExtent source = coverage.getGridGeometry().getExtent();
+        geometry = coverage.getGridGeometry();
+        final GridExtent source = geometry.getExtent();
+        final int dimension = source.getDimension();
+        this.sliceExtent = sliceExtent;
         if (sliceExtent != null) {
-            final int dimension = sliceExtent.getDimension();
-            if (source.getDimension() != dimension) {
+            if (sliceExtent.getDimension() != dimension) {
                 throw new MismatchedDimensionException(Errors.format(
-                        Errors.Keys.MismatchedDimension_3, "target", source.getDimension(), dimension));
+                        Errors.Keys.MismatchedDimension_3, "sliceExtent", dimension, sliceExtent.getDimension()));
             }
         } else {
             sliceExtent = source;
         }
-        final int[] dimensions = sliceExtent.getSubspaceDimensions(2);
-        final int  xd   = dimensions[0];
-        final int  yd   = dimensions[1];
+        gridDimensions  = sliceExtent.getSubspaceDimensions(GridCoverage2D.BIDIMENSIONAL);
+        final int  xd   = gridDimensions[0];
+        final int  yd   = gridDimensions[1];
         final long xcov = source.getLow(xd);
         final long ycov = source.getLow(yd);
         final long xreq = sliceExtent.getLow(xd);
@@ -240,29 +311,42 @@ public class ImageRenderer {
         final long ymax = Math.min(sliceExtent.getHigh(yd), source.getHigh(yd));
         if (xmax < xmin || ymax < ymin) {                                           // max are inclusive.
             final int d = (xmax < xmin) ? xd : yd;
-            throw new DisjointExtentException(source.getAxisIdentification(d, d),
-                    source.getLow(d), source.getHigh(d), sliceExtent.getLow(d), sliceExtent.getHigh(d));
+            throw new DisjointExtentException(source, sliceExtent, d);
         }
-        width   = Math.incrementExact(Math.toIntExact(xmax - xmin));
-        height  = Math.incrementExact(Math.toIntExact(ymax - ymin));
-        imageX  = Math.toIntExact(Math.subtractExact(xreq, xmin));
-        imageY  = Math.toIntExact(Math.subtractExact(yreq, ymin));
-        offsetX = Math.subtractExact(xmin, xcov);
-        offsetY = Math.subtractExact(ymin, ycov);
+        width   = incrementExact(toIntExact(xmax - xmin));
+        height  = incrementExact(toIntExact(ymax - ymin));
+        imageX  = toIntExact(subtractExact(xmin, xreq));
+        imageY  = toIntExact(subtractExact(ymin, yreq));
+        offsetX = subtractExact(xmin, xcov);
+        offsetY = subtractExact(ymin, ycov);
         /*
-         * At this point, the RenderedImage properties have been computed on the assumption
-         * that the returned image will be a single tile. Now compute SampleModel properties.
+         * At this point, the RenderedImage properties have been computed as if the image was a single tile.
+         * Now compute `SampleModel` properties (the strides). Current version still assumes a single tile,
+         * but it could be changed in the future if we want to add tiling support. The following loop also
+         * computes a "global" offset to add for reachining the beginning of the slice if we are rendering
+         * a slice in a three-dimensional (or more) cube.
          */
-        long pixelStride  = 1;
-        for (int i=0; i<xd; i++) {
-            pixelStride = Math.multiplyExact(pixelStride, source.getSize(i));
+        long stride         = 1;
+        long pixelStride    = 0;
+        long scanlineStride = 0;
+        long offsetZ        = 0;
+        for (int i=0; i<dimension; i++) {
+            if (i == xd) {
+                pixelStride = stride;
+            } else if (i == yd) {
+                scanlineStride = stride;
+            } else {
+                final long min = source.getLow(i);
+                final long c = sliceExtent.getLow(i);
+                if (c > min) {
+                    offsetZ = addExact(offsetZ, multiplyExact(stride, c - min));
+                }
+            }
+            stride = multiplyExact(stride, source.getSize(i));
         }
-        long scanlineStride = pixelStride;
-        for (int i=xd; i<yd; i++) {
-            scanlineStride = Math.multiplyExact(scanlineStride, source.getSize(i));
-        }
-        this.pixelStride    = Math.toIntExact(pixelStride);
-        this.scanlineStride = Math.toIntExact(scanlineStride);
+        this.pixelStride    = toIntExact(pixelStride);
+        this.scanlineStride = toIntExact(scanlineStride);
+        this.offsetZ        = offsetZ;
     }
 
     /**
@@ -290,12 +374,122 @@ public class ImageRenderer {
     }
 
     /**
-     * Returns the location of the image upper-left corner together with the image size.
+     * Returns the location of the image upper-left corner together with the image size. The image coordinate system
+     * is relative to the {@code sliceExtent} specified at construction time: the (0,0) pixel coordinates correspond
+     * to the {@code sliceExtent} {@linkplain GridExtent#getLow(int) low coordinates}. Consequently the rectangle
+     * {@linkplain Rectangle#x <var>x</var>} and {@linkplain Rectangle#y <var>y</var>} coordinates are (0,0) if
+     * the image is located exactly in the area requested by {@code sliceExtent}, or is shifted as below otherwise:
+     *
+     * <blockquote>( <var>x</var>, <var>y</var> ) =
+     * (grid coordinates of actually provided region) − (grid coordinates of requested region)</blockquote>
      *
      * @return the rendered image location and size (never null).
      */
     public final Rectangle getBounds() {
         return new Rectangle(imageX, imageY, width, height);
+    }
+
+    /**
+     * Computes the conversion from pixel coordinates to CRS, together with the geospatial envelope of the image.
+     * The {@link GridGeometry} returned by this method is derived from the {@linkplain GridCoverage#getGridGeometry()
+     * coverage grid geometry} with the following changes:
+     *
+     * <ul>
+     *   <li>The {@linkplain GridGeometry#getDimension() number of grid dimensions} is always 2.</li>
+     *   <li>The number of {@linkplain GridGeometry#getCoordinateReferenceSystem() CRS} dimensions
+     *       is specified by {@code dimCRS} (usually 2).</li>
+     *   <li>The {@linkplain GridGeometry#getEnvelope() envelope} may be a sub-region of the coverage envelope.</li>
+     *   <li>The {@linkplain GridGeometry#getExtent() grid extent} is the {@linkplain #getBounds() image bounds}.</li>
+     *   <li>The {@linkplain GridGeometry#getGridToCRS grid to CRS} transform is derived from the coverage transform
+     *       with a translation for mapping the {@code sliceExtent} {@linkplain GridExtent#getLow(int) low coordinates}
+     *       to (0,0) pixel coordinates.</li>
+     * </ul>
+     *
+     * @param  dimCRS  desired number of dimensions in the CRS. This is usually 2.
+     * @return conversion from pixel coordinates to CRS of the given number of dimensions,
+     *         together with image bounds and geospatial envelope if possible.
+     *
+     * @see org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY
+     *
+     * @since 1.1
+     */
+    public GridGeometry getImageGeometry(final int dimCRS) {
+        GridGeometry ig = imageGeometry;
+        if (ig == null || dimCRS != GridCoverage2D.BIDIMENSIONAL) {
+            if (isSameGeometry(dimCRS)) {
+                ig = geometry;
+            } else try {
+                ig = new SliceGeometry(geometry, sliceExtent, gridDimensions, mtFactory)
+                        .reduce(new GridExtent(imageX, imageY, width, height), dimCRS);
+            } catch (FactoryException e) {
+                throw SliceGeometry.canNotCompute(e);
+            }
+            if (dimCRS == GridCoverage2D.BIDIMENSIONAL) {
+                imageGeometry = ig;
+            }
+        }
+        return ig;
+    }
+
+    /**
+     * Returns the value associated to the given property. By default the only property is
+     * {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY}, but more properties can
+     * be added by calls to {@link #addProperty(String, Object)}.
+     *
+     * @param  key  the property for which to get a value.
+     * @return value associated to the given property, or {@code null} if none.
+     *
+     * @since 1.1
+     */
+    public Object getProperty(final String key) {
+        if (GRID_GEOMETRY_KEY.equals(key)) {
+            return getImageGeometry(GridCoverage2D.BIDIMENSIONAL);
+        }
+        return (properties != null) ? properties.get(key) : null;
+    }
+
+    /**
+     * Adds a value associated to a property. This method can be invoked only once for each {@code key}.
+     * Those properties will be given to the image created by the {@link #createImage()} method.
+     *
+     * @param  key    key of the property to set.
+     * @param  value  value to associate to the given key.
+     * @throws IllegalArgumentException if a value is already associated to the given key.
+     *
+     * @since 1.1
+     */
+    @SuppressWarnings("UseOfObsoleteCollectionType")
+    public void addProperty(final String key, final Object value) {
+        ArgumentChecks.ensureNonNull("key",   key);
+        ArgumentChecks.ensureNonNull("value", value);
+        if (!GRID_GEOMETRY_KEY.equals(key)) {
+            if (properties == null) {
+                properties = new Hashtable<>();
+            }
+            if (properties.putIfAbsent(key, value) == null) {
+                return;
+            }
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
+    }
+
+    /**
+     * Returns {@code true} if a {@link #getImageGeometry(int)} request for the given number of CRS dimensions
+     * can return {@link #geometry} directly. This common case avoids the need for more costly computation with
+     * {@link SliceGeometry}.
+     */
+    private boolean isSameGeometry(final int dimCRS) {
+        final int tgtDim = geometry.getTargetDimension();
+        ArgumentChecks.ensureBetween("dimCRS", GridCoverage2D.BIDIMENSIONAL, tgtDim, dimCRS);
+        if (tgtDim == dimCRS && geometry.getDimension() == gridDimensions.length) {
+            final GridExtent extent = geometry.extent;
+            if (sliceExtent == null) {
+                return extent == null || extent.startsAtZero();
+            } else if (sliceExtent.equals(extent, ComparisonMode.IGNORE_METADATA)) {
+                return sliceExtent.startsAtZero();
+            }
+        }
+        return false;
     }
 
     /**
@@ -324,32 +518,41 @@ public class ImageRenderer {
      * buffer position} and ends at that position + {@linkplain Buffer#remaining() remaining}.
      *
      * <p>The data type must be specified in order to distinguish between the signed and unsigned types.
-     * {@link DataBuffer#TYPE_BYTE} and {@link DataBuffer#TYPE_USHORT} are unsigned, all other supported
-     * types are signed.</p>
+     * {@link DataType#BYTE} and {@link DataType#USHORT} are unsigned, all other supported types are signed.</p>
      *
      * <p><b>Implementation note:</b> the Java2D buffer is set by a call to {@link #setData(DataBuffer)},
      * which can be overridden by subclasses if desired.</p>
      *
-     * @param  dataType  type of data as one of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_SHORT TYPE_SHORT}
-     *         {@link DataBuffer#TYPE_USHORT TYPE_USHORT}, {@link DataBuffer#TYPE_INT TYPE_INT},
-     *         {@link DataBuffer#TYPE_FLOAT TYPE_FLOAT} or {@link DataBuffer#TYPE_DOUBLE TYPE_DOUBLE} constants.
+     * @param  dataType  type of data.
      * @param  data  the buffers wrapping arrays of primitive type.
      * @throws NullArgumentException if {@code data} is null or one of {@code data} element is null.
-     * @throws IllegalArgumentException if {@code dataType} is not a supported value.
      * @throws MismatchedCoverageRangeException if the number of specified buffers is not equal to the number of bands.
      * @throws UnsupportedOperationException if a buffer is not backed by an accessible array or is read-only.
      * @throws ArrayStoreException if a buffer type is incompatible with {@code dataType}.
      * @throws RasterFormatException if buffers do not have the same amount of remaining values.
      * @throws ArithmeticException if a buffer position overflows the 32 bits integer capacity.
+     *
+     * @since 1.1
      */
-    public void setData(final int dataType, final Buffer... data) {
+    public void setData(final DataType dataType, final Buffer... data) {
+        ArgumentChecks.ensureNonNull("dataType", dataType);
         ArgumentChecks.ensureNonNull("data", data);
         ensureExpectedBandCount(data.length, true);
-        final DataBuffer banks = RasterFactory.wrap(dataType, data);
-        if (banks == null) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownDataType_1, dataType));
-        }
-        setData(banks);
+        setData(RasterFactory.wrap(dataType, data));
+    }
+
+    /**
+     * @deprecated Replaced by {@link #setData(DataType, Buffer...)}.
+     *
+     * @param  dataType  type of data as one of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_SHORT TYPE_SHORT}
+     *         {@link DataBuffer#TYPE_USHORT TYPE_USHORT}, {@link DataBuffer#TYPE_INT TYPE_INT},
+     *         {@link DataBuffer#TYPE_FLOAT TYPE_FLOAT} or {@link DataBuffer#TYPE_DOUBLE TYPE_DOUBLE} constants.
+     * @param  data  the buffers wrapping arrays of primitive type.
+     * @throws RasterFormatException if {@code dataType} is not a supported value.
+     */
+    @Deprecated
+    public void setData(final int dataType, final Buffer... data) {
+        setData(DataType.forDataBufferType(dataType), data);
     }
 
     /**
@@ -358,7 +561,7 @@ public class ImageRenderer {
      * the same {@linkplain Vector#size() size}.
      * This method wraps the underlying arrays of a primitive type into a Java2D buffer; data are not copied.
      *
-     * <p><b>Implementation note:</b> the NIO buffers are set by a call to {@link #setData(int, Buffer...)},
+     * <p><b>Implementation note:</b> the NIO buffers are set by a call to {@link #setData(DataType, Buffer...)},
      * which can be overridden by subclasses if desired.</p>
      *
      * @param  data  the vectors wrapping arrays of primitive type.
@@ -372,16 +575,15 @@ public class ImageRenderer {
         ArgumentChecks.ensureNonNull("data", data);
         ensureExpectedBandCount(data.length, true);
         final Buffer[] buffers = new Buffer[data.length];
-        int dataType = DataBuffer.TYPE_UNDEFINED;
+        DataType dataType = null;
         for (int i=0; i<data.length; i++) {
             final Vector v = data[i];
             ArgumentChecks.ensureNonNullElement("data", i, v);
-            final int t = RasterFactory.getType(v.getElementType(), v.isUnsigned());
-            if (dataType != t) {
-                if (i != 0) {
-                    throw new RasterFormatException(Resources.format(Resources.Keys.MismatchedDataType));
-                }
+            final DataType t = DataType.forPrimitiveType(v.getElementType(), v.isUnsigned());
+            if (dataType == null) {
                 dataType = t;
+            } else if (dataType != t) {
+                throw new RasterFormatException(Resources.format(Resources.Keys.MismatchedDataType));
             }
             buffers[i] = v.buffer().orElseThrow(UnsupportedOperationException::new);
         }
@@ -415,15 +617,26 @@ public class ImageRenderer {
     }
 
     /**
+     * @deprecated Renamed {@link #createRaster()}.
+     */
+    @Deprecated
+    public WritableRaster raster() {
+        return (WritableRaster) createRaster();
+    }
+
+    /**
      * Creates a raster with the data specified by the last call to a {@code setData(…)} method.
      * The raster upper-left corner is located at the position given by {@link #getBounds()}.
+     * The returned raster is often an instance of {@link WritableRaster}, but read-only rasters are also allowed.
      *
-     * @return the raster.
+     * @return the raster, usually (but not necessarily) an instance of {@link WritableRaster}.
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
-     * @throws RasterFormatException if a call to a {@link WritableRaster} factory method failed.
+     * @throws RasterFormatException if a call to a {@link Raster} factory method failed.
      * @throws ArithmeticException if a property of the raster to construct exceeds the capacity of 32 bits integers.
+     *
+     * @since 1.1
      */
-    public WritableRaster raster() {
+    public Raster createRaster() {
         if (buffer == null) {
             throw new IllegalStateException(Resources.format(Resources.Keys.UnspecifiedRasterData));
         }
@@ -431,27 +644,24 @@ public class ImageRenderer {
         if (bandOffsets == null) {
             strideFactor = isInterleaved ? getNumBands() : 1;
         }
-        final int ls = Math.multiplyExact(scanlineStride, strideFactor);    // Real scanline stride.
-        final int ps = pixelStride * strideFactor;                          // Can not fail if above operation did not fail.
+        final int ls = multiplyExact(scanlineStride, strideFactor);     // Real scanline stride.
+        final int ps = pixelStride * strideFactor;                      // Can not fail if above operation did not fail.
         /*
          * Number of data elements from the first element of the bank to the first sample of the band.
          * This is usually 0 for all bands, unless the upper-left corner (minX, minY) is not (0,0).
          */
         final int[] offsets = new int[getNumBands()];
-        Arrays.fill(offsets, Math.toIntExact(Math.addExact(
-                Math.multiplyExact(offsetX, ps),
-                Math.multiplyExact(offsetY, ls))));
+        Arrays.fill(offsets, toIntExact(addExact(addExact(
+                multiplyExact(offsetX, ps),
+                multiplyExact(offsetY, ls)),
+                              offsetZ)));
         /*
          * Add the offset specified by the user (if any), or the default offset. The default is 0, 1, 2…
          * for interleaved sample model (all bands in one bank) and 0, 0, 0… for banded sample model.
          */
-        if (bandOffsets != null) {
+        if (bandOffsets != null || isInterleaved) {
             for (int i=0; i<offsets.length; i++) {
-                offsets[i] = Math.addExact(offsets[i], bandOffsets[i]);
-            }
-        } else if (isInterleaved) {
-            for (int i=1; i<offsets.length; i++) {
-                offsets[i] = Math.addExact(offsets[i], i);
+                offsets[i] = addExact(offsets[i], (bandOffsets != null) ? bandOffsets[i] : i);
             }
         }
         final Point location = new Point(imageX, imageY);
@@ -459,17 +669,125 @@ public class ImageRenderer {
     }
 
     /**
+     * @deprecated Renamed {@link #createImage()}.
+     */
+    @Deprecated
+    public RenderedImage image() {
+        return createImage();
+    }
+
+    /**
      * Creates an image with the data specified by the last call to a {@code setData(…)} method.
      * The image upper-left corner is located at the position given by {@link #getBounds()}.
+     * The two-dimensional {@linkplain #getImageGeometry(int) image geometry} is stored as
+     * a property associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
+     *
+     * <p>The default implementation returns an instance of {@link java.awt.image.WritableRenderedImage}
+     * if the {@link #createRaster()} return value is an instance of {@link WritableRaster}, or a read-only
+     * {@link RenderedImage} otherwise.</p>
      *
      * @return the image.
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
-     * @throws RasterFormatException if a call to a {@link WritableRaster} factory method failed.
+     * @throws RasterFormatException if a call to a {@link Raster} factory method failed.
      * @throws ArithmeticException if a property of the image to construct exceeds the capacity of 32 bits integers.
+     *
+     * @since 1.1
      */
-    public RenderedImage image() {
-        WritableRaster raster = raster();
-        ColorModel colors = ColorModelFactory.createColorModel(bands, visibleBand, buffer.getDataType(), ColorModelFactory.GRAYSCALE);
-        return new BufferedImage(colors, raster, false, null);
+    @SuppressWarnings("UseOfObsoleteCollectionType")
+    public RenderedImage createImage() {
+        final Raster raster = createRaster();
+        final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
+        final ColorModel colors;
+        if (colorizer.initialize(bands[visibleBand]) || colorizer.initialize(raster.getSampleModel(), visibleBand)) {
+            colors = colorizer.createColorModel(buffer.getDataType(), bands.length, visibleBand);
+        } else {
+            colors = Colorizer.NULL_COLOR_MODEL;
+        }
+        SliceGeometry supplier = null;
+        if (imageGeometry == null) {
+            if (isSameGeometry(GridCoverage2D.BIDIMENSIONAL)) {
+                imageGeometry = geometry;
+            } else {
+                supplier = new SliceGeometry(geometry, sliceExtent, gridDimensions, mtFactory);
+            }
+        }
+        final WritableRaster wr = (raster instanceof WritableRaster) ? (WritableRaster) raster : null;
+        if (wr != null && colors != null && (imageX | imageY) == 0) {
+            return new Untiled(colors, wr, properties, imageGeometry, supplier);
+        }
+        if (properties == null) {
+            properties = new Hashtable<>();
+        }
+        properties.putIfAbsent(GRID_GEOMETRY_KEY, (supplier != null) ? new DeferredProperty(supplier) : imageGeometry);
+        if (wr != null) {
+            return new WritableTiledImage(properties, colors, width, height, 0, 0, wr);
+        } else {
+            return new TiledImage(properties, colors, width, height, 0, 0, raster);
+        }
+    }
+
+    /**
+     * A {@link BufferedImage} which will compute the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY}
+     * property when first needed. We use this class even when the property value is known in advance because it
+     * has the desired side-effect of not letting {@link #getSubimage(int, int, int, int)} inherit that property.
+     * The use of a {@link BufferedImage} subclass is desired because Java2D rendering pipeline has optimizations
+     * in the form {@code if (image instanceof BufferedImage)}.
+     */
+    private static final class Untiled extends BufferedImage {
+        /**
+         * The value associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key,
+         * or {@code null} if not yet computed.
+         */
+        private GridGeometry geometry;
+
+        /**
+         * The object to use for computing {@link #geometry}, or {@code null} if not needed.
+         * This field is cleared after {@link #geometry} has been computed.
+         */
+        private SliceGeometry supplier;
+
+        /**
+         * Creates a new buffered image wrapping the given raster.
+         */
+        @SuppressWarnings("UseOfObsoleteCollectionType")
+        Untiled(final ColorModel colors, final WritableRaster raster, final Hashtable<?,?> properties,
+                final GridGeometry geometry, final SliceGeometry supplier)
+        {
+            super(colors, raster, false, properties);
+            this.geometry = geometry;
+            this.supplier = supplier;
+        }
+
+        /**
+         * Returns the names of properties that this image can provide.
+         */
+        @Override
+        public String[] getPropertyNames() {
+            return ArraysExt.concatenate(super.getPropertyNames(), new String[] {GRID_GEOMETRY_KEY});
+        }
+
+        /**
+         * Returns the property associated to the given key.
+         * If the key is {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY},
+         * then the {@link GridGeometry} will be computed when first needed.
+         *
+         * @throws ImagingOpException if the property value can not be computed.
+         */
+        @Override
+        public Object getProperty(final String key) {
+            if (!GRID_GEOMETRY_KEY.equals(key)) {
+                return super.getProperty(key);
+            }
+            synchronized (this) {
+                if (geometry == null) {
+                    final SliceGeometry s = supplier;
+                    if (s != null) {
+                        supplier = null;                // Let GC do its work.
+                        geometry = s.apply(this);
+                    }
+                }
+            }
+            return geometry;
+        }
     }
 }

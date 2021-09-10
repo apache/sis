@@ -162,7 +162,7 @@ final class Store extends URIDataStore {
                 if (object instanceof ReferenceSystem) {
                     final ReferenceSystem rs = (ReferenceSystem) object;
                     builder.addReferenceSystem(rs);
-                    name = IdentifiedObjects.getName(rs, null);
+                    name = IdentifiedObjects.getDisplayName(rs, getLocale());
                     count++;
                     builder.addIdentifier(IdentifiedObjects.getIdentifier(rs, null), MetadataBuilder.Scope.RESOURCE);
                 }

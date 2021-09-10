@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-netcdf} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -35,13 +35,15 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.netcdf.VariableTest.class,
     org.apache.sis.internal.netcdf.AxisTest.class,
     org.apache.sis.internal.netcdf.GridTest.class,
-    org.apache.sis.internal.netcdf.SatelliteGroundTrackTest.class,
     org.apache.sis.internal.netcdf.impl.ChannelDecoderTest.class,
     org.apache.sis.internal.netcdf.impl.VariableInfoTest.class,
     org.apache.sis.internal.netcdf.impl.GridInfoTest.class,
+    org.apache.sis.internal.netcdf.FeatureSetTest.class,
+    org.apache.sis.internal.netcdf.impl.FeatureSetTest.class,
     org.apache.sis.storage.netcdf.MetadataReaderTest.class,
     org.apache.sis.storage.netcdf.NetcdfStoreProviderTest.class,
-    org.apache.sis.storage.netcdf.NetcdfStoreTest.class
+    org.apache.sis.storage.netcdf.NetcdfStoreTest.class,
+    org.apache.sis.storage.netcdf.SelfConsistencyTest.class
 })
 public final strictfp class NetcdfTestSuite extends TestSuite {
     /**

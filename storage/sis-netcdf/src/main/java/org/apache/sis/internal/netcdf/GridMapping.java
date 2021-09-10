@@ -19,11 +19,13 @@ package org.apache.sis.internal.netcdf;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.text.ParseException;
 import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.IdentifiedObject;
@@ -64,6 +66,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.measure.Units;
@@ -77,10 +80,9 @@ import ucar.nc2.constants.CF;
  * which creates Coordinate Reference Systems by inspecting coordinate system axes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
- * @see <a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/StandardCoordinateTransforms.html">UCAR projections</a>
  *
  * @since 1.0
  * @module
@@ -184,6 +186,8 @@ final class GridMapping {
      * be something else (the data variable itself, or a group, <i>etc.</i>). That node, together with the attributes to
      * be parsed, depends on the {@link Convention} instance.
      *
+     * @param  node  the dummy variable on which attributes are defined for projection parameters.
+     *
      * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
      */
     private static GridMapping parseProjectionParameters(final Node node) {
@@ -204,12 +208,36 @@ final class GridMapping {
             final CoordinateOperationFactory opFactory = node.decoder.getCoordinateOperationFactory();
             final OperationMethod method = opFactory.getOperationMethod((String) definition.remove(CF.GRID_MAPPING_NAME));
             final ParameterValueGroup parameters = method.getParameters().createValue();
-            for (final Map.Entry<String,Object> entry : definition.entrySet()) {
+            for (final Iterator<Map.Entry<String,Object>> it = definition.entrySet().iterator(); it.hasNext();) {
+                final Map.Entry<String,Object> entry = it.next();
                 final String name  = entry.getKey();
                 final Object value = entry.getValue();
-                if (value instanceof Number || value instanceof double[] || value instanceof float[]) try {
-                    parameters.parameter(name).setValue(value);
-                } catch (IllegalArgumentException ex) {
+                try {
+                    if (value instanceof Number || value instanceof double[] || value instanceof float[]) {
+                        it.remove();
+                        parameters.parameter(name).setValue(value);
+                    } else if (value instanceof String && !name.endsWith(Convention.NAME_SUFFIX)) {
+                        /*
+                         * In principle we should ignore non-numeric parameters. But in practice, some badly encoded
+                         * netCDF files store parameters as strings instead than numbers. If the parameter name is
+                         * known to the projection method, try to parse the character string.
+                         */
+                        final ParameterValue<?> parameter;
+                        try {
+                            parameter = parameters.parameter(name);
+                        } catch (IllegalArgumentException e) {
+                            continue;
+                        }
+                        final Class<?> type = parameter.getDescriptor().getValueClass();
+                        if (Numbers.isNumber(type)) {
+                            it.remove();
+                            parameter.setValue(Double.parseDouble((String) value));
+                        } else if (Numbers.isNumber(type.getComponentType())) {
+                            it.remove();
+                            parameter.setValue(parseDoubles((String) value), null);
+                        }
+                    }
+                } catch (IllegalArgumentException ex) {                     // Includes NumberFormatException.
                     warning(node, ex, Resources.Keys.CanNotSetProjectionParameter_5, node.decoder.getFilename(),
                             node.getName(), name, value, ex.getLocalizedMessage());
                 }
@@ -236,6 +264,14 @@ final class GridMapping {
                 crs = p;
             }
             /*
+             * Report all projection parameters that have not been used. If the map is not rendered
+             * at expected location, it may be because we have ignored some important parameters.
+             */
+            if (!definition.isEmpty()) {
+                warning(node, null, Resources.Keys.UnknownProjectionParameters_2,
+                        node.decoder.getFilename(), String.join(", ", definition.keySet()));
+            }
+            /*
              * Build the "grid to CRS" if present. This is not defined by CF-convention,
              * but may be present in some non-CF conventions.
              */
@@ -250,6 +286,9 @@ final class GridMapping {
     /**
      * Creates the geographic CRS from axis length specified in the given map projection parameters.
      * The returned CRS will always have (latitude, longitude) axes in that order and in degrees.
+     *
+     * @param  parameters  parameters from which to get ellipsoid axis lengths. Will not be modified.
+     * @param  definition  map from which to get element names. Elements used will be removed.
      */
     private static GeographicCRS createBaseCRS(final Decoder decoder, final ParameterValueGroup parameters,
             final Map<String,Object> definition, final Object greenwichLongitude) throws FactoryException
@@ -369,7 +408,7 @@ final class GridMapping {
             }
             if (gtr != null) {
                 message = Resources.Keys.CanNotCreateGridGeometry_3;
-                final double[] c = CharSequences.parseDoubles(gtr, ' ');
+                final double[] c = parseDoubles(gtr);
                 if (c.length == 6) {
                     gridToCRS = new AffineTransform2D(c[1], c[4], c[2], c[5], c[0], c[3]);         // X_DIMENSION, Y_DIMENSION
                 } else {
@@ -382,6 +421,15 @@ final class GridMapping {
             canNotCreate(mapping, message, e);
         }
         return new GridMapping(crs, gridToCRS, false);
+    }
+
+    /**
+     * Parses a comma-separated or space-separated array of numbers.
+     *
+     * @throws NumberFormatException if at least one number can not be parsed.
+     */
+    private static double[] parseDoubles(final String values) {
+        return CharSequences.parseDoubles(values.replace(',', ' '), ' ');
     }
 
     /**

@@ -81,7 +81,7 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
      * Input coordinates are in radians.
      */
     private SphericalToCartesian() {
-        super("Spherical to Cartesian", 3);
+        super("Spherical to Cartesian", null, 3);
         context.normalizeGeographicInputs(0);                   // Convert (θ,Ω) from degrees to radians.
     }
 
@@ -167,7 +167,7 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
     }
 
     /*
-     * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
+     * NOTE: we do not bother to override the methods expecting a `float` array because those methods should
      *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
      *       conversion between float and double will be handled by those LinearTransforms.  If nevertheless
      *       this SphericalToCartesian is at the beginning or the end of a transformation chain,

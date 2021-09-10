@@ -61,7 +61,7 @@ abstract class Pooled {
      * The keys of entries that can be stored in the {@link #schemas} map.
      * Those keys are documented in {@link XML#SCHEMAS}.
      */
-    private static final String[] SCHEMA_KEYS = {"cat", "gmd"};
+    private static final String[] SCHEMA_KEYS = {"cat", "gmd", "gmi", "gml"};
 
     /**
      * {@code true} if the JAXB implementation is the one bundled in JDK 6, or {@code false}
@@ -324,7 +324,7 @@ abstract class Pooled {
                             if (schema != null) {
                                 if (!(schema instanceof String)) {
                                     throw new PropertyException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2,
-                                            Strings.bracket(name, key), value.getClass()));
+                                            Strings.bracket(name, key), schema.getClass()));
                                 }
                                 copy.put(key, (String) schema);
                             }
@@ -351,7 +351,9 @@ abstract class Pooled {
                     return;
                 }
                 case XML.LENIENT_UNMARSHAL: {
-                    if ((value instanceof CharSequence) ? Boolean.parseBoolean(value.toString()) : (Boolean) value) {
+                    if (value != null && ((value instanceof CharSequence) ?
+                            Boolean.parseBoolean(value.toString()) : (Boolean) value))
+                    {
                         bitMasks |= Context.LENIENT_UNMARSHAL;
                     } else {
                         bitMasks &= ~Context.LENIENT_UNMARSHAL;

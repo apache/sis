@@ -20,7 +20,6 @@ import java.net.URL;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
-import javax.annotation.Generated;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
@@ -33,7 +32,7 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * by all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -48,7 +47,6 @@ public final class Resources extends IndexedResourceBundle {
      * @since   0.8
      * @module
      */
-    @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
     public static final class Keys extends KeyConstants {
         /**
          * The unique instance of key constants handler.
@@ -71,6 +69,12 @@ public final class Resources extends IndexedResourceBundle {
          * The azimuth and distance have not been specified.
          */
         public static final short AzimuthAndDistanceNotSet = 87;
+
+        /**
+         * Can not associate “{0}” transform to the given coordinate systems because of mismatched
+         * dimensions: {1}
+         */
+        public static final short CanNotAssociateToCS_2 = 95;
 
         /**
          * Can not create objects of type ‘{0}’ from combined URI.
@@ -123,6 +127,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotParseCombinedReference_2 = 78;
 
         /**
+         * Can not read Well-Known Text at line {0}. Caused by: {1}
+         */
+        public static final short CanNotParseWKT_2 = 96;
+
+        /**
          * Can not separate the “{0}” coordinate reference system into sub-components.
          */
         public static final short CanNotSeparateCRS_1 = 84;
@@ -154,7 +163,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotTransformGeometry = 86;
 
         /**
-         * Can not use the {0} geodetic parameters: {1}
+         * Can not use the {0} geodetic parameters. Caused by: {1}
          */
         public static final short CanNotUseGeodeticParameters_2 = 9;
 
@@ -178,6 +187,11 @@ public final class Resources extends IndexedResourceBundle {
          * Coordinate conversion of transformation from system “{0}” to “{1}” has not been found.
          */
         public static final short CoordinateOperationNotFound_2 = 13;
+
+        /**
+         * Datum shift files are searched in the “{0}” directory.
+         */
+        public static final short DatumChangesDirectory_1 = 92;
 
         /**
          * Origin of temporal datum shall be a date.
@@ -211,6 +225,16 @@ public final class Resources extends IndexedResourceBundle {
          * for objects creation.
          */
         public static final short FallbackDefaultFactoryVersion_2 = 17;
+
+        /**
+         * Can not find {0} file named “{1}”.
+         */
+        public static final short FileNotFound_2 = 90;
+
+        /**
+         * Can not parse “{1}” as a file in the {0} format.
+         */
+        public static final short FileNotReadable_2 = 91;
 
         /**
          * {0} geodetic dataset version {1} on “{2}” version {3}.
@@ -290,6 +314,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short LoadingDatumShiftFile_1 = 32;
 
         /**
+         * Misaligned datum shift grid in “{0}”.
+         */
+        public static final short MisalignedDatumShiftGrid_1 = 94;
+
+        /**
          * The “{1}” parameter could have been omitted. But it has been given a value of {2} which does
          * not match the definition of the “{0}” ellipsoid.
          */
@@ -311,15 +340,14 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MismatchedPrimeMeridian_2 = 36;
 
         /**
-         * The transform has {2} {0,choice,0#source|1#target} dimension{2,choice,1#|2#s}, while {1} was
-         * expected.
-         */
-        public static final short MismatchedTransformDimension_3 = 37;
-
-        /**
          * Despite its name, this parameter is effectively “{0}”.
          */
         public static final short MisnamedParameter_1 = 38;
+
+        /**
+         * Missing or empty “ID[…]” element for “{0}”.
+         */
+        public static final short MissingAuthorityCode_1 = 37;
 
         /**
          * No authority was specified for code “{0}”. The expected syntax is “AUTHORITY:CODE”.
@@ -468,6 +496,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ParameterNotFound_2 = 61;
 
         /**
+         * Points are not on a regular grid.
+         */
+        public static final short PointsAreNotOnRegularGrid = 99;
+
+        /**
          * Recursive call while creating an object of type ‘{0}’ for code “{1}”.
          */
         public static final short RecursiveCreateCallForCode_2 = 62;
@@ -483,6 +516,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short StartOrEndPointNotSet_1 = 88;
 
         /**
+         * Syntax error for Well-Known Text alias at line {0}.
+         */
+        public static final short SyntaxErrorForAlias_1 = 97;
+
+        /**
          * Combined URI contains unexpected components.
          */
         public static final short UnexpectedComponentInURI = 80;
@@ -491,6 +529,11 @@ public final class Resources extends IndexedResourceBundle {
          * Unexpected dimension for a coordinate system of type ‘{0}’.
          */
         public static final short UnexpectedDimensionForCS_1 = 64;
+
+        /**
+         * Unexpected text “{1}” at line {0}. WKT for new object should start with a non-indented line.
+         */
+        public static final short UnexpectedTextAtLine_2 = 98;
 
         /**
          * Parameter “{0}” does not expect unit.
@@ -521,6 +564,11 @@ public final class Resources extends IndexedResourceBundle {
          * Parameter values have not been specified.
          */
         public static final short UnspecifiedParameterValues = 70;
+
+        /**
+         * Using datum shift grid from “{0}” to “{1}” created on {2} (updated on {3}).
+         */
+        public static final short UsingDatumShiftGrid_4 = 93;
     }
 
     /**

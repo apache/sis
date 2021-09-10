@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.SphericalCS;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
@@ -36,12 +37,14 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+
 
 /**
  * Tests the {@link CoordinateSystemTransform} static factory method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -61,6 +64,11 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     private static MathTransformFactory factory;
 
     /**
+     * The operation method used.
+     */
+    private static ThreadLocal<OperationMethod> lastMethod;
+
+    /**
      * Creates the {@link MathTransformFactory} to be used for the tests.
      * We do not use the system-wide factory in order to have better tests isolation.
      */
@@ -69,6 +77,7 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
         factory = new DefaultMathTransformFactory();
         spherical = (SphericalCS) DefaultGeocentricCRS.castOrCopy(CommonCRS.WGS84.spherical())
                             .forConvention(AxesConvention.RIGHT_HANDED).getCoordinateSystem();
+        lastMethod = new ThreadLocal<>();
     }
 
     /**
@@ -76,8 +85,9 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
      */
     @AfterClass
     public static void disposeFactory() {
-        spherical = null;
-        factory = null;
+        spherical  = null;
+        factory    = null;
+        lastMethod = null;
     }
 
     /**
@@ -105,7 +115,25 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     }
 
     /**
-     * Tests {@link CoordinateSystemTransform#create(MathTransformFactory, CoordinateSystem, CoordinateSystem)}.
+     * Invokes {@link CoordinateSystemTransform#create CoordinateSystemTransform.create(…)}
+     * and stores the result in {@link #transform}.
+     */
+    private void createTransform(final CoordinateSystem source, final CoordinateSystem target) throws FactoryException {
+        lastMethod.remove();
+        transform = CoordinateSystemTransform.create(factory, source, target, lastMethod);
+    }
+
+    /**
+     * Verifies that {@link #lastMethod} has the expected value.
+     */
+    private static void assertMethodEquals(final String expected) {
+        final OperationMethod method = lastMethod.get();
+        assertNotNull("lastMethod", method);
+        assertEquals(expected, method.getName().getCode());
+    }
+
+    /**
+     * Tests {@link CoordinateSystemTransform#create CoordinateSystemTransform.create(…)}
      * for a conversion between two spherical coordinate systems.
      *
      * @throws FactoryException if an error occurred while creating the transform.
@@ -113,7 +141,7 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
      */
     @Test
     public void testSphericalToSpherical() throws FactoryException, TransformException {
-        transform = CoordinateSystemTransform.create(factory, HardCodedCS.SPHERICAL, spherical);
+        createTransform(HardCodedCS.SPHERICAL, spherical);
         tolerance = 0;
         final double[][] data = SphericalToCartesianTest.testData();
         final double[] source = data[0];
@@ -123,10 +151,11 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
             ArraysExt.swap(source, i, i+1);
         }
         verifyTransform(source, target);
+        assertNull(lastMethod.get());           // Null for now, but a method may be provided in a future version.
     }
 
     /**
-     * Tests {@link CoordinateSystemTransform#create(MathTransformFactory, CoordinateSystem, CoordinateSystem)}.
+     * Tests {@link CoordinateSystemTransform#create CoordinateSystemTransform.create(…)}
      * for a conversion from spherical to Cartesian coordinates.
      *
      * @throws FactoryException if an error occurred while creating the transform.
@@ -135,13 +164,14 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     @Test
     public void testSphericalToCartesian() throws FactoryException, TransformException {
         tolerance = 1E-9;
-        transform = CoordinateSystemTransform.create(factory, HardCodedCS.SPHERICAL, toCentimetres(HardCodedCS.GEOCENTRIC));
+        createTransform(HardCodedCS.SPHERICAL, toCentimetres(HardCodedCS.GEOCENTRIC));
         final double[][] data = sphericalTestData();
         verifyTransform(data[0], data[1]);
+        assertMethodEquals("Spherical to Cartesian");
     }
 
     /**
-     * Tests {@link CoordinateSystemTransform#create(MathTransformFactory, CoordinateSystem, CoordinateSystem)}.
+     * Tests {@link CoordinateSystemTransform#create CoordinateSystemTransform.create(…)}
      * for a conversion from Cartesian to spherical coordinates.
      *
      * @throws FactoryException if an error occurred while creating the transform.
@@ -150,9 +180,10 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     @Test
     public void testCartesianToSpherical() throws FactoryException, TransformException {
         tolerance = 1E-9;
-        transform = CoordinateSystemTransform.create(factory, toCentimetres(HardCodedCS.GEOCENTRIC), HardCodedCS.SPHERICAL);
+        createTransform(toCentimetres(HardCodedCS.GEOCENTRIC), HardCodedCS.SPHERICAL);
         final double[][] data = sphericalTestData();
         verifyTransform(data[1], data[0]);
+        assertMethodEquals("Cartesian to spherical");
     }
 
     /**
@@ -174,7 +205,7 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     }
 
     /**
-     * Tests {@link CoordinateSystemTransform#create(MathTransformFactory, CoordinateSystem, CoordinateSystem)}.
+     * Tests {@link CoordinateSystemTransform#create CoordinateSystemTransform.create(…)}
      * for a conversion from cylindrical to Cartesian coordinates.
      *
      * @throws FactoryException if an error occurred while creating the transform.
@@ -183,13 +214,14 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     @Test
     public void testCylindricalToCartesian() throws FactoryException, TransformException {
         tolerance = 1E-9;
-        transform = CoordinateSystemTransform.create(factory, HardCodedCS.CYLINDRICAL, toCentimetres(HardCodedCS.CARTESIAN_3D));
+        createTransform(HardCodedCS.CYLINDRICAL, toCentimetres(HardCodedCS.CARTESIAN_3D));
         final double[][] data = polarTestData(true);
         verifyTransform(data[0], data[1]);
+        assertMethodEquals("Cylindrical to Cartesian");
     }
 
     /**
-     * Tests {@link CoordinateSystemTransform#create(MathTransformFactory, CoordinateSystem, CoordinateSystem)}.
+     * Tests {@link CoordinateSystemTransform#create CoordinateSystemTransform.create(…)}
      * for a conversion from Cartesian to cylindrical coordinates.
      *
      * @throws FactoryException if an error occurred while creating the transform.
@@ -198,13 +230,14 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     @Test
     public void testCartesianToCylindrical() throws FactoryException, TransformException {
         tolerance = 1E-9;
-        transform = CoordinateSystemTransform.create(factory, toCentimetres(HardCodedCS.CARTESIAN_3D), HardCodedCS.CYLINDRICAL);
+        createTransform(toCentimetres(HardCodedCS.CARTESIAN_3D), HardCodedCS.CYLINDRICAL);
         final double[][] data = polarTestData(true);
         verifyTransform(data[1], data[0]);
+        assertMethodEquals("Cartesian to cylindrical");
     }
 
     /**
-     * Tests {@link CoordinateSystemTransform#create(MathTransformFactory, CoordinateSystem, CoordinateSystem)}.
+     * Tests {@link CoordinateSystemTransform#create CoordinateSystemTransform.create(…)}
      * for a conversion from polar to Cartesian coordinates.
      *
      * @throws FactoryException if an error occurred while creating the transform.
@@ -213,13 +246,14 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     @Test
     public void testPolarToCartesian() throws FactoryException, TransformException {
         tolerance = 1E-9;
-        transform = CoordinateSystemTransform.create(factory, HardCodedCS.POLAR, toCentimetres(HardCodedCS.CARTESIAN_2D));
+        createTransform(HardCodedCS.POLAR, toCentimetres(HardCodedCS.CARTESIAN_2D));
         final double[][] data = polarTestData(false);
         verifyTransform(data[0], data[1]);
+        assertMethodEquals("Polar to Cartesian");
     }
 
     /**
-     * Tests {@link CoordinateSystemTransform#create(MathTransformFactory, CoordinateSystem, CoordinateSystem)}.
+     * Tests {@link CoordinateSystemTransform#create CoordinateSystemTransform.create(…)}
      * for a conversion from Cartesian to polar coordinates.
      *
      * @throws FactoryException if an error occurred while creating the transform.
@@ -228,8 +262,9 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     @Test
     public void testCartesianToPolar() throws FactoryException, TransformException {
         tolerance = 1E-9;
-        transform = CoordinateSystemTransform.create(factory, toCentimetres(HardCodedCS.CARTESIAN_2D), HardCodedCS.POLAR);
+        createTransform(toCentimetres(HardCodedCS.CARTESIAN_2D), HardCodedCS.POLAR);
         final double[][] data = polarTestData(false);
         verifyTransform(data[1], data[0]);
+        assertMethodEquals("Cartesian to polar");
     }
 }

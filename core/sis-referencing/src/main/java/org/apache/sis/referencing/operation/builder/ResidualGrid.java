@@ -22,6 +22,7 @@ import javax.measure.quantity.Dimensionless;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
@@ -42,7 +43,7 @@ import org.apache.sis.measure.Units;
  * The residuals after an affine approximation has been created for a set of matching control point pairs.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -50,7 +51,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 5207799661806374259L;
+    private static final long serialVersionUID = -3668228260650927123L;
 
     /**
      * Number of source dimensions of the residual grid.
@@ -95,18 +96,18 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
             MatrixSIS m = ((ContextualParameters) parameters).getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
             m.setMatrix(denormalization);
         }
-        final int[] size = getGridSize();
-        parameters.parameter(Constants.NUM_ROW).setValue(size[1]);
-        parameters.parameter(Constants.NUM_COL).setValue(size[0]);
+        parameters.parameter(Constants.NUM_ROW).setValue(getGridSize(1));
+        parameters.parameter(Constants.NUM_COL).setValue(getGridSize(0));
         parameters.parameter("grid_x").setValue(new Data(0, denormalization));
         parameters.parameter("grid_y").setValue(new Data(1, denormalization));
     }
 
     /**
-     * Number of grid cells along the <var>x</var> axis.
-     * This is <code>{@linkplain #getGridSize()}[0]</code> as a field for performance reasons.
+     * Number of cells between the start of adjacent rows in the grid. This is usually {@code getGridSize(0)},
+     * stored as a field for performance reasons. Value could be greater than {@code getGridSize(0)} if there
+     * is some elements to ignore at the end of each row.
      */
-    private final int nx;
+    private final int scanlineStride;
 
     /**
      * The residual data, as translations to apply on the result of affine transform.
@@ -133,21 +134,72 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     private final double accuracy;
 
     /**
+     * If grid coordinates in some target dimensions are cyclic, the period in number of cells.
+     * For each scalar value in the {@link LocalizationGridBuilder#periods} array (in units of
+     * target CRS), the corresponding period in number of cells is a vector. For example a 360°
+     * shift in longitude does not necessarily correspond to an horizontal or vertical offset
+     * in grid indices; it may be a combination of both if the grid is inclined.
+     *
+     * <p>We should have as many vectors as non-zero values in {@link LocalizationGridBuilder#periods}.
+     * Each {@code periodVector} (in cell units) should be computed from a {@code periods} vector with
+     * exactly one non-zero value (in CRS units) for allowing shifts in different CRS dimensions to be
+     * applied independently. Consequently this field should actually be of type {@code double[][]}.
+     * But current version uses only one vector for avoiding the complexity of searching how to combine
+     * multiple vectors. It is okay for the usual case where only one CRS axis has wraparound range,
+     * but may need to be revisited in the future.</p>
+     *
+     * <p>This array is {@code null} if no period has been specified, or if a period has been specified
+     * but we can not convert it from CRS units to a constant number of cells.</p>
+     *
+     * @see LocalizationGridBuilder#periods
+     * @see #replaceOutsideGridCoordinates(double[])
+     */
+    private final double[] periodVector;
+
+    /**
      * Creates a new residual grid.
      *
      * @param sourceToGrid  conversion from the "real world" source coordinates to grid indices including fractional parts.
      * @param gridToTarget  conversion from grid coordinates to the final "real world" coordinates.
      * @param residuals     the residual data, as translations to apply on the result of affine transform.
      * @param precision     desired precision of inverse transformations in unit of grid cells.
+     * @param periods       if grid coordinates in some dimensions are cyclic, their periods in units of target CRS.
+     * @param linearizer    the linearizer that have been applied, or {@code null} if none.
      */
     ResidualGrid(final LinearTransform sourceToGrid, final LinearTransform gridToTarget,
-            final int nx, final int ny, final float[] residuals, final double precision)
+            final int nx, final int ny, final float[] residuals, final double precision,
+            final double[] periods, final ProjectedTransformTry linearizer)
+            throws TransformException
     {
         super(Units.UNITY, sourceToGrid, new int[] {nx, ny}, true, Units.UNITY);
-        this.gridToTarget = gridToTarget;
-        this.offsets      = residuals;
-        this.accuracy     = precision;
-        this.nx           = nx;
+        this.gridToTarget   = gridToTarget;
+        this.offsets        = residuals;
+        this.accuracy       = precision;
+        this.scanlineStride = nx;
+        if (periods != null && linearizer == null && gridToTarget.isAffine()) {
+            /*
+             * We require the transform to be affine because it makes the Jacobian independent of
+             * coordinate values. It allows us to replace a period in target CRS units by periods
+             * in grid units without having to take the coordinate values in account.
+             */
+            final MatrixSIS m = MatrixSIS.castOrCopy(gridToTarget.inverse().derivative(null));
+            periodVector = m.multiply(periods);
+            /*
+             * Above code is not really right. We should verify that `periods` contains exactly
+             * one non-zero element, and if not the case execute above code in a loop with one
+             * non-zero element by iteration, creating one independent vector each time.
+             * We don't do that for now because `replaceOutsideGridCoordinates(…)` is not yet
+             * capable to search the best combination of many vectors.
+             *
+             * With current implementation, if the `periods` array contains more than 1 non-zero value,
+             * then `replaceOutsideGridCoordinates(…)` always shift all wraparound dimensions together.
+             * For example if the first dimension has a period of 360° and the second dimension has a
+             * period of 12 months, then `replaceOutsideGridCoordinates(…)` will only shift by 360°
+             * AND 12 months together, never 360° only or 12 months only.
+             */
+        } else {
+            periodVector = null;
+        }
     }
 
     /**
@@ -192,7 +244,48 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      */
     @Override
     public double getCellValue(int dim, int gridX, int gridY) {
-        return offsets[(gridX + gridY*nx) * SOURCE_DIMENSION + dim];
+        return offsets[(gridX + gridY*scanlineStride) * SOURCE_DIMENSION + dim];
+    }
+
+    /**
+     * Invoked when a {@code gridX} or {@code gridY} coordinate is outside the range of valid grid coordinates.
+     * If the coordinate outside the range is a longitude value and if we handle those values as cyclic, brings
+     * that coordinate inside the range.
+     */
+    @Override
+    protected void replaceOutsideGridCoordinates(final double[] gridCoordinates) {
+        if (periodVector != null) {
+            /*
+             * We will try to shift the point by an integral multiple of `periodVector`.
+             * Test along each dimension which range of multiples could bring the point
+             * inside the grid, and take the range intersection in all dimensions.
+             */
+            double min = Double.NEGATIVE_INFINITY;
+            double max = Double.POSITIVE_INFINITY;
+            for (int i=0; i<gridCoordinates.length; i++) {
+                final double period = periodVector[i];
+                double toLower = gridCoordinates[i];                // If we subtract a shift ≤ toLower, then coordinate ≥ lower bound (which is 0).
+                double toUpper = toLower - (getGridSize(i) - 1);    // If we subtract a shift ≥ toUpper, then coordinate ≤ upper bound (which is gridSize−1).
+                toLower = Math.floor(toLower / period);             // Convert to integral number of periods, reverse may be ≤ original value.
+                toUpper = Math.ceil (toUpper / period);             // Convert to integral number of periods, reverse may be ≥ original value.
+                if (toLower < max) max = toLower;                   // Must shift by no more than this value otherwise coordinate < lower bound.
+                if (toUpper > min) min = toUpper;                   // Must shift by no less than this value otherwise coordinate > upper bound.
+            }
+            if (min <= max) {
+                /*
+                 * If at least one multiple exists, take the multiple closest to zero
+                 * (i.e. apply the smallest displacement). Note that the range should
+                 * not include zero, otherwise this point would be inside the grid and
+                 * this method should not have been invoked.
+                 */
+                final double n = (min >= 0) ? min : max;
+                if (Double.isFinite(n)) {
+                    for (int i=0; i<gridCoordinates.length; i++) {
+                        gridCoordinates[i] -= periodVector[i] * n;
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -206,7 +299,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * Geocentric interpolations add the translation to coordinates converted to geocentric coordinates.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.0
+     * @version 1.1
      * @since   1.0
      * @module
      */
@@ -221,16 +314,19 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
             c2 = denormalization.getElement(dim, 2);
         }
 
-        @SuppressWarnings("CloneInNonCloneableClass")
+        @SuppressWarnings({"CloneInNonCloneableClass", "CloneDoesntCallSuperClone"})
         @Override public Matrix  clone()                            {return this;}
         @Override public boolean isIdentity()                       {return false;}
-        @Override public int     getNumCol()                        {return nx;}
-        @Override public int     getNumRow()                        {return getGridSize()[1];}
+        @Override public int     getNumCol()                        {return getGridSize(0);}
+        @Override public int     getNumRow()                        {return getGridSize(1);}
         @Override public Number  apply     (int[] p)                {return getElement(p[1], p[0]);}
         @Override public void    setElement(int y, int x, double v) {throw new UnsupportedOperationException();}
 
         /** Computes the matrix element in the given row and column. */
         @Override public double  getElement(final int y, final int x) {
+            if ((x | y) < 0 || x >= scanlineStride) {
+                throw new IndexOutOfBoundsException();
+            }
             return c0 * (x + getCellValue(0, x, y)) +                // TODO: use Math.fma with JDK9.
                    c1 * (y + getCellValue(1, x, y)) +
                    c2;
@@ -241,10 +337,9 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
          * in the table formatted for {@link ParameterDescriptorGroup} string representation.
          */
         @Override public String toString() {
-            final int[] size = getGridSize();
             return new StringBuilder(80).append('[')
                     .append(getElement(0, 0)).append(", …, ")
-                    .append(getElement(size[1] - 1, size[0] - 1))
+                    .append(getElement(getGridSize(1) - 1, getGridSize(0) - 1))
                     .append(']').toString();
         }
 

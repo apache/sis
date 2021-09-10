@@ -19,6 +19,9 @@ package org.apache.sis.measure;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.LocalDate;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
@@ -39,7 +42,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * Tests parsing and formatting done by the {@link RangeFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -299,6 +302,52 @@ public final strictfp class RangeFormatTest extends TestCase {
         pos.setBeginIndex(it.getIndex());
         it.setIndex(it.getRunLimit(DateFormat.Field.YEAR));
         pos.setEndIndex(it.getIndex());
+    }
+
+    /**
+     * Tests formatting a range of {@link LocalDate} objects.
+     */
+    @Test
+    public void testFormatLocalDate() {
+        format = new RangeFormat(Locale.CANADA, LocalDate.class);
+        final Range<LocalDate> range = new Range<>(LocalDate.class,
+                LocalDate.parse("2019-12-23"), true,
+                LocalDate.parse("2020-05-31"), true);
+        /*
+         * Expected output is "[2019-12-23 … 2020-05-31]" but be robust
+         * to small variation in output format (years may be on 2 digits).
+         */
+        final String result = format.format(range);
+        assertTrue(result, result.matches("\\[(20)?19-12-23 … (20)?20-05-31\\]"));
+    }
+
+    /**
+     * Tests formatting a range of {@link LocalTime} objects.
+     */
+    @Test
+    public void testFormatLocalTime() {
+        format = new RangeFormat(Locale.FRANCE, LocalTime.class);
+        final Range<LocalTime> range = new Range<>(LocalTime.class,
+                LocalTime.parse("06:00:00"), true,
+                LocalTime.parse("18:00:00"), true);
+
+        assertEquals("[06:00 … 18:00]", format.format(range));
+    }
+
+    /**
+     * Tests formatting a range of {@link Instant} objects.
+     *
+     * @see RangeTest#testFormatInstantTo()
+     */
+    @Test
+    public void testFormatInstant() {
+        format = new RangeFormat(Locale.FRANCE, Instant.class);
+        ((DateFormat) format.elementFormat).setTimeZone(TimeZone.getTimeZone("Europe/Paris"));
+        final Range<Instant> range = new Range<>(Instant.class,
+                Instant.parse("2019-12-23T06:00:00Z"), true,
+                Instant.parse("2020-05-31T18:00:00Z"), true);
+
+        assertEquals("[23/12/2019 07:00 … 31/05/2020 20:00]", format.format(range));
     }
 
     /**

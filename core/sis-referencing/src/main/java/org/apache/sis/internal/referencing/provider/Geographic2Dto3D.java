@@ -100,6 +100,14 @@ public final class Geographic2Dto3D extends GeographicRedimension {
     }
 
     /**
+     * Returns the inverse of this operation.
+     */
+    @Override
+    public AbstractProvider inverse() {
+        return Geographic3Dto2D.getMethod(Geographic3Dto2D.PARAMETERS);
+    }
+
+    /**
      * Returns the transform.
      *
      * @param  factory  the factory for creating affine transforms.

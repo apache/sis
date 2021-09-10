@@ -23,10 +23,13 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.text.NumberFormat;
 import javax.measure.Unit;
+import javax.measure.UnitConverter;
 import javax.measure.quantity.Length;
 
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -36,13 +39,20 @@ import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
+import org.apache.sis.measure.Quantities;
 import org.apache.sis.geometry.CoordinateFormat;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.PositionTransformer;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.internal.referencing.j2d.Bezier;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -51,6 +61,8 @@ import org.apache.sis.io.TableAppender;
 
 import static java.lang.Math.*;
 import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEquidistant.LATITUDE_OF_ORIGIN;
+import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEquidistant.LONGITUDE_OF_ORIGIN;
 
 
 /**
@@ -72,7 +84,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  *   </li>
  * </ul>
  *
- * <h2>Algorithms and accuracy</h2>
+ * <h2>Algorithms</h2>
  * {@code GeodeticCalculator} uses two set of formulas, depending if the figure of the Earth
  * {@linkplain Ellipsoid#isSphere() is a sphere} or an ellipsoid.
  * Publications relevant to this class are:
@@ -92,7 +104,9 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  *       for the reference implementation.</li>
  * </ul>
  *
+ * <h2>Accuracy</h2>
  * {@code GeodeticCalculator} aims for a positional accuracy of one centimetre.
+ * The accuracy is often better (about one millimetre), but not everywhere.
  * Azimuthal accuracy corresponds to an error of one centimetre at a distance of one kilometer,
  * except for nearly antipodal points (less than 1° of longitude and latitude from antipode)
  * and points close to the poles where the azimuthal errors are larger.
@@ -112,7 +126,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  * then a distinct instance of {@code GeodeticCalculator} needs to be created for each thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -265,7 +279,8 @@ public class GeodeticCalculator {
     GeodeticCalculator(final CoordinateReferenceSystem crs, final Ellipsoid ellipsoid) {
         final GeographicCRS geographic = ReferencingUtilities.toNormalizedGeographicCRS(crs, true, true);
         if (geographic == null) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1, ReferencingUtilities.getInterface(crs)));
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1,
+                    ReferencingUtilities.getInterface(CoordinateReferenceSystem.class, crs)));
         }
         this.ellipsoid = ellipsoid;
         semiMajorAxis  = ellipsoid.getSemiMajorAxis();
@@ -289,7 +304,8 @@ public class GeodeticCalculator {
         ArgumentChecks.ensureNonNull("crs", crs);
         final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(crs);
         if (ellipsoid == null) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1, ReferencingUtilities.getInterface(crs)));
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1,
+                    ReferencingUtilities.getInterface(CoordinateReferenceSystem.class, crs)));
         }
         if (ellipsoid.isSphere()) {
             return new GeodeticCalculator(crs, ellipsoid);
@@ -360,7 +376,7 @@ public class GeodeticCalculator {
      */
     private String transformError(final boolean toCRS) {
         return Resources.format(Resources.Keys.CanNotConvertCoordinates_2,
-                toCRS ? 1 : 0, IdentifiedObjects.getName(getPositionCRS(), null));
+                toCRS ? 1 : 0, IdentifiedObjects.getDisplayName(getPositionCRS(), null));
     }
 
     /**
@@ -1071,6 +1087,130 @@ public class GeodeticCalculator {
     }
 
     /**
+     * The factory for map projections created by {@link #createProjectionAroundStart()}, fetched when first needed.
+     * {@link DefaultMathTransformFactory#caching(boolean) Caching is disabled} on this factory because profiling
+     * shows that {@link DefaultMathTransformFactory#unique(MathTransform)} consumes a lot of time when projections
+     * are created frequently. Since each projection is specific to current {@linkplain #getStartPoint() start point},
+     * they are unlikely to be shared anyway.
+     *
+     * @see #createProjectionAroundStart()
+     */
+    private DefaultMathTransformFactory projectionFactory;
+
+    /**
+     * The provider of "Azimuthal Equidistant (Spherical)" or "Modified Azimuthal Equidistant" projection.
+     * Usually it is not necessary to keep a reference to the provider because {@link #projectionFactory}
+     * finds them automatically. However by keeping a reference to it, we save the search phase.
+     *
+     * @see #createProjectionAroundStart()
+     */
+    private MapProjection projectionProvider;
+
+    /**
+     * Parameters of the projection created by {@link #createProjectionAroundStart()}, saved for reuse when
+     * new projection is requested. Only the "Latitude of natural origin" and "Longitude of natural origin"
+     * parameter values will change for different projections.
+     *
+     * @see #createProjectionAroundStart()
+     */
+    private Parameters projectionParameters;
+
+    /**
+     * Conversion from {@linkplain #getPositionCRS() position CRS} to projection base CRS.
+     * Computed when first needed. This transform does not change after creation.
+     */
+    private MathTransform toProjectionBase;
+
+    /**
+     * The operation method to use for creating a map projection. In the spherical case this is
+     * "Azimuthal Equidistant (Spherical)". In the ellipsoidal case it become "Modified Azimuthal Equidistant".
+     */
+    String getProjectionMethod() {
+        return "Azimuthal Equidistant (Spherical)";
+    }
+
+    /**
+     * Creates an <cite>Azimuthal Equidistant</cite> projection centered on current starting point. On input,
+     * the {@code MathTransform} expects coordinates expressed in the {@linkplain #getPositionCRS() position CRS}.
+     * On output, the {@code MathTransform} produces coordinates in a {@link org.opengis.referencing.crs.ProjectedCRS}
+     * having the following characteristics:
+     *
+     * <ul>
+     *   <li>Coordinate system is a two-dimensional {@link org.opengis.referencing.cs.CartesianCS}
+     *       with (Easting, Northing) axis order and directions.</li>
+     *   <li>Unit of measurement is the same as {@linkplain #getPositionCRS() position CRS}
+     *       if those units are linear, or {@link Units#METRE} otherwise.
+     *   <li>Projection of the {@linkplain #getStartPoint() start point} results in (0,0).</li>
+     *   <li>Distances relative to (0,0) are approximately exact for distances less than 800 km.</li>
+     *   <li>Azimuths from (0,0) to other points are approximately exact for points located at less than 800 km.</li>
+     * </ul>
+     *
+     * Given above characteristics, the following calculations are satisfying approximations when using
+     * (<var>x</var>, <var>y</var>) coordinates in the output space for <var>D</var> &lt; 800 km:
+     *
+     * <blockquote>
+     * <var>D</var> = √(<var>x</var>² + <var>y</var>²)  — distance from projection center.<br>
+     * <var>θ</var> = atan2(<var>y</var>, <var>x</var>) — arithmetic angle from projection center to (<var>x</var>, <var>y</var>).<br>
+     * <var>x</var> = <var>D</var>⋅cos <var>θ</var><br>
+     * <var>y</var> = <var>D</var>⋅sin <var>θ</var>     — end point for a distance and angle from start point.<br>
+     * </blockquote>
+     *
+     * The following calculations are <strong>not</strong> exacts, because distances and azimuths are approximately
+     * exacts only when measured from (0,0) coordinates:
+     *
+     * <blockquote>
+     * <var>D</var> = √[(<var>x₂</var> − <var>x₁</var>)² + (<var>y₂</var> − <var>y₁</var>)²]
+     *          — distances between points other then projection center are not valid.<br>
+     * <var>θ</var> = atan2(<var>y₂</var> − <var>y₁</var>, <var>x₂</var> − <var>x₁</var>)
+     *          — azimuths between points other then projection center are not valid.<br>
+     * <i>etc.</i>
+     * </blockquote>
+     *
+     * This method can be invoked repetitively for doing calculations around different points.
+     * All returned {@link MathTransform} instances are immutable;
+     * changing {@code GeodeticCalculator} state does not affect those transforms.
+     *
+     * @return transform from {@linkplain #getPositionCRS() position CRS} to <cite>Azimuthal Equidistant</cite>
+     *         projected CRS centered on current {@linkplain #getStartPoint() start point}.
+     * @throws IllegalStateException if the start point has not been set.
+     * @throws GeodeticException if the projection can not be computed.
+     *
+     * @see #moveToEndPoint()
+     * @see org.apache.sis.referencing.operation.projection.AzimuthalEquidistant
+     *
+     * @since 1.1
+     */
+    public MathTransform createProjectionAroundStart() {
+        if (isInvalid(START_POINT)) {
+            throw new IllegalStateException(Resources.format(Resources.Keys.StartOrEndPointNotSet_1, 0));
+        }
+        try {
+            if (projectionParameters == null) {
+                final CoordinateReferenceSystem positionCRS, baseCRS;
+                final Unit<?>       crsUnit;
+                final UnitConverter toLinearUnit;
+
+                positionCRS           = getPositionCRS();
+                baseCRS               = ReferencingUtilities.toNormalizedGeographicCRS(positionCRS, false, false);
+                crsUnit               = ReferencingUtilities.getUnit(positionCRS);
+                toLinearUnit          = ellipsoid.getAxisUnit().getConverterTo(Units.isLinear(crsUnit) ? crsUnit.asType(Length.class) : Units.METRE);
+                toProjectionBase      = CRS.findOperation(positionCRS, baseCRS, null).getMathTransform();
+                projectionFactory     = CoordinateOperations.factoryMT().caching(false);
+                projectionProvider    = (MapProjection) projectionFactory.getOperationMethod(getProjectionMethod());
+                projectionParameters  = Parameters.castOrWrap(projectionProvider.getParameters().createValue());
+                projectionParameters.parameter(Constants.SEMI_MAJOR).setValue(toLinearUnit.convert(ellipsoid.getSemiMajorAxis()));
+                projectionParameters.parameter(Constants.SEMI_MINOR).setValue(toLinearUnit.convert(ellipsoid.getSemiMinorAxis()));
+            }
+            projectionParameters.getOrCreate(LATITUDE_OF_ORIGIN) .setValue(φ1, Units.RADIAN);
+            projectionParameters.getOrCreate(LONGITUDE_OF_ORIGIN).setValue(λ1, Units.RADIAN);
+            return MathTransforms.concatenate(toProjectionBase,
+                    projectionProvider.createMathTransform(projectionFactory, projectionParameters));
+        } catch (FactoryException e) {
+            throw new GeodeticException(e.getMessage(), e);
+        }
+    }
+
+    /**
      * Returns a string representation of start point, end point, azimuths and distance.
      * The text representation is implementation-specific and may change in any future version.
      * Current implementation is like below:
@@ -1109,7 +1249,7 @@ public class GeodeticCalculator {
                 final CoordinateFormat pointFormat = new CoordinateFormat(locale, null);
                 pointFormat.setSeparator("\t");      // For distributing coordinate values on different columns.
                 pointFormat.setDefaultCRS(crs);
-                pointFormat.setPrecision(Formulas.LINEAR_TOLERANCE, Units.METRE);
+                pointFormat.setGroundPrecision(Quantities.create(Formulas.LINEAR_TOLERANCE, Units.METRE));
                 final TableAppender table = new TableAppender(buffer, " │ ");
                 table.setCellAlignment(TableAppender.ALIGN_CENTER);
                 table.appendHorizontalSeparator();

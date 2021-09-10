@@ -101,7 +101,7 @@ public class Polyconic extends MeridianArcBased {
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, (byte) 0);
+        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
     }
 
     /**
@@ -227,6 +227,7 @@ public class Polyconic extends MeridianArcBased {
         final double y = srcPts[srcOff+1];
         double φ = y;                           // A = (M₀ + (N-FE)/a)      — Snyder 18-18 with M₀=0, FE=0 and a=1.
         final double B = y*y + x*x;             // B = A² + ((E-FE)²/a²)    — Snyder 18-19 with FE=0 and a=1.
+        final double ome = 1 - eccentricitySquared;
         int i = MAXIMUM_ITERATIONS;
         double dφ;
         do {
@@ -239,7 +240,7 @@ public class Polyconic extends MeridianArcBased {
             final double rν    = sqrt(1 - eccentricitySquared * sinφ2);
             final double C     = rν * sinφ/cosφ;
             final double M     = distance(φ, sinφ, cosφ);
-            final double Mp    = (1 - eccentricitySquared) + sinφ2*(ci2 + sinφ2*(ci4 + sinφ2*ci6));     // Derived from Snyder 18-17
+            final double Mp    = ome + sinφ2*(ci2 + sinφ2*(ci4 + sinφ2*ci6));     // Derived from Snyder 18-17
             final double M2B   = M*M + B;
             final double sin2φ = sin(2*φ);
             /*

@@ -43,8 +43,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @version 0.8
  *
  * @see DefinitionURI
- * @see <a href="http://www.opengeospatial.org/ogcna">http://www.opengeospatial.org/ogcna</a>
- * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
+ * @see <a href="https://www.ogc.org/ogcna">https://www.ogc.org/ogcna</a>
+ * @see <a href="https://portal.ogc.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
  *
  * @since 0.5
  * @module

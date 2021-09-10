@@ -36,16 +36,16 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link DefaultRecordType} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.1
  * @since   0.5
  * @module
  */
 @DependsOn(TypeNamesTest.class)
 public final strictfp class DefaultRecordTypeTest extends TestCase {
-    /** Value of {@link DefaultRecordType#getContainer()}.   */ private DefaultRecordSchema container;
-    /** Value of {@link DefaultRecordType#getTypeName()}.    */ private DefaultTypeName     recordTypeName;
-    /** Value of {@link DefaultRecordType#getMembers()}.     */ private DefaultMemberName   memberName;
-    /** Value of {@link DefaultRecordType#getMemberTypes()}. */ private DefaultTypeName     memberTypeName;
+    /** Value of {@link DefaultRecordType#getContainer()}.  */ private DefaultRecordSchema container;
+    /** Value of {@link DefaultRecordType#getTypeName()}.   */ private DefaultTypeName     recordTypeName;
+    /** Value of {@link DefaultRecordType#getMembers()}.    */ private DefaultMemberName   fieldName;
+    /** Value of {@link DefaultRecordType#getFieldTypes()}. */ private DefaultTypeName     fieldTypeName;
 
     /**
      * Initializes the private fields.
@@ -53,23 +53,23 @@ public final strictfp class DefaultRecordTypeTest extends TestCase {
      */
     private void init() {
         final DefaultNameSpace recordNamespace;
-        final DefaultNameSpace memberNamespace;
+        final DefaultNameSpace fieldNamespace;
 
         recordNamespace = new DefaultNameSpace (null, "MyNameSpace", ":", ":");
         recordTypeName  = new DefaultTypeName  (recordNamespace, "MyRecordType");
-        memberNamespace = new DefaultNameSpace (recordNamespace, "MyRecordType", ":", ":");
-        memberTypeName  = new DefaultTypeName  (new DefaultNameSpace(null, "gco", ":", ":"), "Integer");
-        memberName      = new DefaultMemberName(memberNamespace, "aMember", memberTypeName);
+        fieldNamespace  = new DefaultNameSpace (recordNamespace, "MyRecordType", ":", ":");
+        fieldTypeName   = new DefaultTypeName  (new DefaultNameSpace(null, "gco", ":", ":"), "Integer");
+        fieldName       = new DefaultMemberName(fieldNamespace, "aMember", fieldTypeName);
         container       = new SerializableRecordSchema("MyNameSpace");
-        assertEquals("MyNameSpace:MyRecordType:aMember", memberName.toFullyQualifiedName().toString());
+        assertEquals("MyNameSpace:MyRecordType:aMember", fieldName.toFullyQualifiedName().toString());
     }
 
     /**
      * Creates a new record type from the current values of private fields.
      */
     private DefaultRecordType create() throws IllegalArgumentException {
-        final Type memberType = new SimpleAttributeType<>(memberTypeName, Integer.class);
-        return new DefaultRecordType(recordTypeName, container, Collections.singletonMap(memberName, memberType));
+        final Type fieldType = new SimpleAttributeType<>(fieldTypeName, Integer.class);
+        return new DefaultRecordType(recordTypeName, container, Collections.singletonMap(fieldName, fieldType));
     }
 
     /**
@@ -84,13 +84,13 @@ public final strictfp class DefaultRecordTypeTest extends TestCase {
         assertEquals("baseValueClass", Integer.TYPE, type.baseValueClass());
 
         // Public properties
-        assertSame("container",   container,      type.getContainer());
-        assertSame("typeName",    recordTypeName, type.getTypeName());
-        assertSame("members",     memberName,     getSingleton(type.getMembers()));
-        assertSame("memberTypes", memberName,     getSingleton(type.getMemberTypes().keySet()));
-        assertSame("memberTypes", memberTypeName, getSingleton(type.getMemberTypes().values()).getTypeName());
-        assertSame("locate",      memberTypeName, type.locate(memberName));
-        assertNull("locate",                      type.locate(new DefaultMemberName(null, "otherMember", memberTypeName)));
+        assertSame("container",  container,      type.getContainer());
+        assertSame("typeName",   recordTypeName, type.getTypeName());
+        assertSame("fields",     fieldName,      getSingleton(type.getMembers()));
+        assertSame("fieldTypes", fieldName,      getSingleton(type.getFieldTypes().keySet()));
+        assertSame("fieldTypes", fieldTypeName,  getSingleton(type.getFieldTypes().values()).getTypeName());
+        assertSame("locate",     fieldTypeName,  type.locate(fieldName));
+        assertNull("locate",                     type.locate(new DefaultMemberName(null, "otherMember", fieldTypeName)));
     }
 
     /**
@@ -102,7 +102,7 @@ public final strictfp class DefaultRecordTypeTest extends TestCase {
     public void testArgumentChecks() {
         init();
         final DefaultTypeName  correctRecordName      = recordTypeName;
-        final NameSpace        correctMemberNamespace = memberName.scope();
+        final NameSpace        correctMemberNamespace = fieldName.scope();
         final DefaultNameSpace wrongNamespace         = new DefaultNameSpace(null, "WrongNameSpace", ":", ":");
         /*
          * RecordType namespace validation.
@@ -122,7 +122,7 @@ public final strictfp class DefaultRecordTypeTest extends TestCase {
          * Constructor shall require "MyNameSpace:MyRecordType:aMember".
          */
         recordTypeName = correctRecordName;
-        memberName = new DefaultMemberName(wrongNamespace, "aMember", memberTypeName);
+        fieldName = new DefaultMemberName(wrongNamespace, "aMember", fieldTypeName);
         try {
             create();
             fail("Should have detected namespace mismatch.");
@@ -134,8 +134,8 @@ public final strictfp class DefaultRecordTypeTest extends TestCase {
         /*
          * MemberName type validation.
          */
-        final DefaultTypeName otherType = new DefaultTypeName(memberTypeName.scope(), "Real");
-        memberName = new DefaultMemberName(correctMemberNamespace, "aMember", otherType);
+        final DefaultTypeName otherType = new DefaultTypeName(fieldTypeName.scope(), "Real");
+        fieldName = new DefaultMemberName(correctMemberNamespace, "aMember", otherType);
         try {
             create();
             fail("Should have detected type mismatch.");

@@ -37,6 +37,7 @@ import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.math.Vector;
 
@@ -46,7 +47,7 @@ import org.apache.sis.math.Vector;
  * The coordinate reference system part is built by {@link CRSBuilder}.
  *
  * <h2>Pixel center versus pixel corner</h2>
- * The policy about whether the conversion map pixel corner or pixel center if GeoTIFF files does not seem
+ * The policy about whether the conversion maps pixel corner or pixel center in GeoTIFF files does not seem
  * totally clear. But the practice at least with GDAL seems to consider the following as equivalent:
  *
  * {@preformat text
@@ -181,6 +182,7 @@ final class GridGeometryBuilder {
 
     /**
      * The grid geometry to be created by {@link #build(long, long)}.
+     * It has 2 or 3 dimensions, depending on whether the CRS declares a vertical axis or not.
      */
     public GridGeometry gridGeometry;
 
@@ -294,7 +296,7 @@ final class GridGeometryBuilder {
                 if (e instanceof NoSuchAuthorityCodeException) {
                     key = Resources.Keys.UnknownCRS_1;
                 }
-                reader.owner.warning(reader.resources().getString(key, reader.owner.getDisplayName()), e);
+                reader.store.warning(reader.resources().getString(key, reader.store.getDisplayName()), e);
             } catch (IllegalArgumentException | NoSuchElementException | ClassCastException e) {
                 if (!helper.alreadyReported) {
                     canNotCreate(e);
@@ -303,7 +305,7 @@ final class GridGeometryBuilder {
         }
         /*
          * If the CRS is non-null, then it is either two- or three-dimensional.
-         * The 'affine' matrix may be for a greater number of dimensions, so it
+         * The `affine` matrix may be for a greater number of dimensions, so it
          * may need to be reduced.
          */
         int n = (crs != null) ? crs.getCoordinateSystem().getDimension() : 2;
@@ -334,7 +336,7 @@ final class GridGeometryBuilder {
                 envelope = new GeneralEnvelope(crs);
                 envelope.setToNaN();
             }
-            gridGeometry = new GridGeometry(extent, envelope);
+            gridGeometry = new GridGeometry(extent, envelope, GridOrientation.HOMOTHETY);
             canNotCreate(e);
             /*
              * Note: we catch TransformExceptions because they may be caused by erroneous data in the GeoTIFF file,
@@ -360,6 +362,13 @@ final class GridGeometryBuilder {
      *
      * This method invokes {@link MetadataBuilder#newGridRepresentation(MetadataBuilder.GridType)}
      * with the appropriate {@code GEORECTIFIED} or {@code GEOREFERENCEABLE} type.
+     * Storage locations are:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/*}</li>
+     *   <li>{@code metadata/identificationInfo/spatialRepresentationType}</li>
+     *   <li>{@code metadata/referenceSystemInfo}</li>
+     * </ul>
      *
      * @param  metadata  the helper class where to write metadata values.
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
@@ -391,6 +400,6 @@ final class GridGeometryBuilder {
      * Logs a warning telling that we can not create a grid geometry for the given reason.
      */
     private void canNotCreate(final Exception e) {
-        reader.owner.warning(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, reader.input.filename), e);
+        reader.store.warning(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, reader.input.filename), e);
     }
 }

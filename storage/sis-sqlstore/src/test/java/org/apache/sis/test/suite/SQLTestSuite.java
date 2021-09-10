@@ -25,6 +25,9 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-sqlstore} module, in rough dependency order.
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.sql.feature.EWKBTest.class,
+    org.apache.sis.internal.sql.feature.SelectionClauseWriterTest.class,
+    org.apache.sis.internal.sql.postgis.PostgresTest.class,
     org.apache.sis.storage.sql.SQLStoreTest.class
 })
 public final strictfp class SQLTestSuite extends TestSuite {
@@ -34,7 +37,6 @@ public final strictfp class SQLTestSuite extends TestSuite {
      */
     @BeforeClass
     public static void verifyTestList() {
-        assertNoMissingTest(SQLTestSuite.class);
         verifyTestList(SQLTestSuite.class);
     }
 }

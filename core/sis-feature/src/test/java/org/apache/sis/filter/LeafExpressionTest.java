@@ -16,17 +16,17 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.HashMap;
-import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.expression.Literal;
-import org.opengis.filter.expression.PropertyName;
-import org.apache.sis.util.iso.Names;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.filter.Literal;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.ValueReference;
 
 
 /**
@@ -41,83 +41,81 @@ public final strictfp class LeafExpressionTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final FilterFactory2 factory = new DefaultFilterFactory();
+    private final FilterFactory<Feature,Object,?> factory;
 
     /**
-     * Test creation of "PropertyName".
+     * Creates a new test case.
      */
-    @Test
-    public void testPropertyConstructor() {
-        assertNotNull(factory.property(Names.parseGenericName(null, null, "type")));
-        assertNotNull(factory.property("type"));
+    public LeafExpressionTest() {
+        factory = DefaultFilterFactory.forFeatures();
     }
 
     /**
-     * Test creation of "Literal".
+     * Tests creation and serialization of "ValueReference".
      */
     @Test
-    public void testLiteralConstructor() {
-        assertNotNull(factory.literal(true));
-        assertNotNull(factory.literal("a text string"));
-        assertNotNull(factory.literal('x'));
-        assertNotNull(factory.literal(122));
-        assertNotNull(factory.literal(45.56d));
+    public void testReferenceSerialization() {
+        final ValueReference<Feature, String> filter = factory.property("some_property", String.class);
+        assertEquals("some_property", filter.getXPath());
+        assertSerializedEquals(filter);
     }
 
     /**
-     * Tests evaluation of "PropertyName".
+     * Tests creation and serialization of "Literal".
      */
     @Test
-    public void testPropertyEvaluate() {
-        final Map<String,String> candidate = new HashMap<>();
+    public void testLiteralSerialization() {
+        final Literal<?,?> f1 = factory.literal(true);
+        final Literal<?,?> f2 = factory.literal("a text string");
+        final Literal<?,?> f3 = factory.literal('x');
+        final Literal<?,?> f4 = factory.literal(122);
+        final Literal<?,?> f5 = factory.literal(45.56);
 
-        final PropertyName prop = factory.property("type");
-        assertEquals("type", prop.getPropertyName());
+        assertEquals(Boolean.TRUE,    f1.getValue());
+        assertEquals("a text string", f2.getValue());
+        assertEquals('x',             f3.getValue());
+        assertEquals(122,             f4.getValue());
+        assertEquals(45.56,           f5.getValue());
 
-        assertNull(prop.evaluate(candidate));
-        assertNull(prop.evaluate(null));
+        assertSerializedEquals(f1);
+        assertSerializedEquals(f2);
+        assertSerializedEquals(f3);
+        assertSerializedEquals(f4);
+        assertSerializedEquals(f5);
+    }
 
-        candidate.put("type", "road");
-        assertEquals("road", prop.evaluate(candidate));
-        assertEquals("road", prop.evaluate(candidate, String.class));
+    /**
+     * Tests evaluation of "ValueReference", including with type conversion.
+     */
+    @Test
+    public void testReferenceEvaluation() {
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
+        ftb.addAttribute(String.class).setName("some_property");
+        final Feature f = ftb.setName("Test").build().newInstance();
 
-        candidate.put("type", "45.1");
-        assertEquals("45.1", prop.evaluate(candidate));
-        assertEquals("45.1", prop.evaluate(candidate, Object.class));
-        assertEquals("45.1", prop.evaluate(candidate, String.class));
-        assertEquals( 45.1,  prop.evaluate(candidate, Double.class), STRICT);
+        ValueReference<Feature,?> ref = factory.property("some_property");
+        assertNull(ref.apply(f));
+        assertNull(ref.apply(null));
+
+        f.setPropertyValue("some_property", "road");
+        assertEquals("road", ref.apply(f));
+
+        ref = factory.property("some_property", String.class);
+        assertEquals("road", ref.apply(f));
+
+        f.setPropertyValue("some_property", "45.1");
+        assertEquals("45.1", ref.apply(f));
+
+        ref = factory.property("some_property", Double.class);
+        assertEquals(45.1, ref.apply(f));
     }
 
     /**
      * Tests evaluation of "Literal".
      */
     @Test
-    public void testLiteralEvaluate() {
-        final Literal literal = factory.literal(12.45);
-        assertEquals(12.45,   literal.getValue());
-        assertEquals(12.45,   literal.evaluate(null));
-        assertEquals(12.45,   literal.evaluate(null, Double.class), STRICT);
-        assertEquals("12.45", literal.evaluate(null, String.class));
-        assertNull  (         literal.evaluate(null, Date.class));
-    }
-
-    /**
-     * Tests serialization of "PropertyName".
-     */
-    @Test
-    public void testPropertySerialize() {
-        assertSerializedEquals(factory.property("type"));
-    }
-
-    /**
-     * Tests serialization of "Literal".
-     */
-    @Test
-    public void testLiteralSerialize() {
-        assertSerializedEquals(factory.literal(true));
-        assertSerializedEquals(factory.literal("a text string"));
-        assertSerializedEquals(factory.literal('x'));
-        assertSerializedEquals(factory.literal(122));
-        assertSerializedEquals(factory.literal(45.56d));
+    public void testLiteralEvaluation() {
+        final Literal<Feature,?> literal = factory.literal(12.45);
+        assertEquals(12.45, literal.apply(null));
     }
 }

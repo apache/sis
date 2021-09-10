@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -44,6 +45,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.referencing.NilReferencingObject;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.measure.Units;
@@ -81,7 +83,7 @@ import static java.lang.Float.parseFloat;
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -156,7 +158,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * is {@link #FILE}. All other parameters have been taken from {@link Molodensky} since geocentric interpolations
      * can be though as a Molodensky operations with non-constant (ΔX, ΔY, ΔZ) geocentric translation terms.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         FILE = builder
@@ -217,11 +219,11 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
     /**
      * The inverse of {@code FranceGeocentricInterpolation} is a different operation.
      *
-     * @return {@code false}.
+     * @return {@code null}.
      */
     @Override
-    public final boolean isInvertible() {
-        return false;
+    public AbstractProvider inverse() {
+        return null;
     }
 
     /**
@@ -340,7 +342,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
                 grid = handler.peek();
                 if (grid == null) {
                     try (BufferedReader in = Files.newBufferedReader(resolved)) {
-                        DatumShiftGridLoader.log(FranceGeocentricInterpolation.class, file);
+                        DatumShiftGridLoader.startLoading(FranceGeocentricInterpolation.class, file);
                         final DatumShiftGridFile.Float<Angle,Length> g = load(in, file);
                         grid = DatumShiftGridCompressed.compress(g, averages, scale);
                     } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
@@ -426,6 +428,10 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
                             grid = new DatumShiftGridFile.Float<>(3,
                                     Units.DEGREE, Units.METRE, false,
                                     x0, y0, Δx, Δy, nx, ny, PARAMETERS, file);
+                            grid.accuracy = Double.NaN;
+                            for (final float[] data : grid.offsets) {
+                                Arrays.fill(data, Float.NaN);
+                            }
                         }
                         break;
                     }
@@ -444,7 +450,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
             }
         }
         if (grid == null) {
-            throw new FactoryException(Errors.format(Errors.Keys.CanNotParseFile_2, HEADER, file));
+            throw new FactoryException(Resources.format(Resources.Keys.FileNotFound_2, HEADER, file));
         }
         /*
          * Loads the data with the sign of all offsets reversed. Data columns are

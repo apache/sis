@@ -25,7 +25,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.ImageRenderer;
-import org.apache.sis.internal.coverage.BufferedGridCoverage;
+import org.apache.sis.coverage.grid.BufferedGridCoverage;
 
 
 /**
@@ -40,7 +40,7 @@ import org.apache.sis.internal.coverage.BufferedGridCoverage;
  * but it is {@link ImageRenderer} responsibility to perform this substitution as an optimization.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -79,13 +79,13 @@ final class Raster extends BufferedGridCoverage {
      */
     @Override
     public RenderedImage render(final GridExtent target) {
+        final ImageRenderer renderer = new ImageRenderer(this, target);
         try {
-            final ImageRenderer renderer = new ImageRenderer(this, target);
             renderer.setData(data);
             if (bandOffsets != null) {
                 renderer.setInterleavedPixelOffsets(pixelStride, bandOffsets);
             }
-            return renderer.image();
+            return renderer.createImage();
         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
             throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotRender_2, label, e), e);
         }

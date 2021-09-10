@@ -33,7 +33,10 @@ import org.opengis.util.FactoryException;
  * @version 0.8
  * @since   0.8
  * @module
+ *
+ * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
  */
+@Deprecated
 @XmlTransient
 final class MapProjection3D extends AbstractProvider {
     /**
@@ -43,7 +46,10 @@ final class MapProjection3D extends AbstractProvider {
 
     /**
      * The two-dimensional counterpart of this three-dimensional map projection.
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
+    @Deprecated
     private final MapProjection redimensioned;
 
     /**
@@ -57,8 +63,11 @@ final class MapProjection3D extends AbstractProvider {
     /**
      * Returns this operation method with the specified number of dimensions.
      * The number of dimensions can be only 2 or 3, and must be the same for source and target CRS.
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
     @Override
+    @Deprecated
     public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         if (sourceDimensions == 2 && targetDimensions == 2) {
             return redimensioned;

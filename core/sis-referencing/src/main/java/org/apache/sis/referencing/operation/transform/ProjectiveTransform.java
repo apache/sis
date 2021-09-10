@@ -34,7 +34,7 @@ import org.apache.sis.util.ArgumentChecks;
  * lines in the source is preserved in the output.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.1
  *
  * @see java.awt.geom.AffineTransform
  *
@@ -113,14 +113,15 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
          */
         boolean isScale       = true;                       // ScaleTransform accepts non-square matrix.
         boolean isTranslation = (numRow == numCol);         // TranslationTransform is restricted to square matrix.
+        final int lastColumn  = numCol - 1;
         for (int i=0; i<n; i++) {
-            if (elt[i] != 0) {
-                final int col  = (i % numCol);
-                isScale       &= (i / numCol) == col;
-                isTranslation &= (col == numCol - 1);
-                if (!(isScale | isTranslation)) {
-                    return this;
-                }
+            final double v = elt[i];
+            final int row  = (i / numCol);
+            final int col  = (i % numCol);
+            isScale       &= (col == row)        || (v == 0);
+            isTranslation &= (col == lastColumn) || (v == (col == row ? 1 : 0));
+            if (!(isScale | isTranslation)) {
+                return this;
             }
         }
         if (isTranslation) {
@@ -263,7 +264,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
         while (--numPts >= 0) {
             int mix = 0;
             for (int j=0; j<numRow; j++) {
-                double sum = elt[mix + srcDim];
+                double sum = elt[mix + srcDim];         // Initialize to translation term.
                 for (int i=0; i<srcDim; i++) {
                     final double e = elt[mix++];
                     if (e != 0) {
@@ -282,7 +283,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
             }
             final double w = buffer[dstDim];
             for (int j=0; j<dstDim; j++) {
-                // 'w' is equal to 1 if the transform is affine.
+                // `w` is equal to 1 if the transform is affine.
                 dstPts[dstOff + j] = buffer[j] / w;
             }
             srcOff += srcInc;
@@ -309,8 +310,8 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     @Override
     public final void transform(float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
         final int srcDim, dstDim;
-        int srcInc = srcDim = numCol-1;
-        int dstInc = dstDim = numRow-1;
+        int srcInc = srcDim = numCol - 1;
+        int dstInc = dstDim = numRow - 1;
         if (srcPts == dstPts) {
             switch (IterationStrategy.suggest(srcOff, srcDim, dstOff, dstDim, numPts)) {
                 case ASCENDING: {
@@ -337,7 +338,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                 double sum = elt[mix + srcDim];
                 for (int i=0; i<srcDim; i++) {
                     final double e = elt[mix++];
-                    if (e != 0) { // See comment in transform(double[], ...)
+                    if (e != 0) {                                   // See comment in transform(double[], ...)
                         sum += srcPts[srcOff + i] * e;
                     }
                 }
@@ -364,8 +365,8 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      */
     @Override
     public final void transform(final double[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
-        final int srcDim = numCol-1;
-        final int dstDim = numRow-1;
+        final int srcDim = numCol - 1;
+        final int dstDim = numRow - 1;
         final double[] buffer = new double[numRow];
         while (--numPts >= 0) {
             int mix = 0;
@@ -424,20 +425,38 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     }
 
     /**
-     * Gets the derivative of this transform at a point.
-     * For a matrix transform, the derivative is the same everywhere.
+     * Gets the derivative of this transform at a point. For an affine transform,
+     * the derivative is the same everywhere and the given point is ignored.
+     * For a perspective transform, the given point is used.
      *
-     * @param  point  ignored (can be {@code null}).
+     * @param  point  the coordinate point where to evaluate the derivative.
      */
     @Override
     public final Matrix derivative(final DirectPosition point) {
         final int srcDim = numCol - 1;
         final int dstDim = numRow - 1;
+        /*
+         * In the `transform(…)` method, all coordinate values are divided by a `w` coefficient
+         * which depends on the position. We need to reproduce that division here. Note that `w`
+         * coefficient is different than 1 only if the transform is non-affine.
+         */
+        int mix = dstDim * numCol;
+        double w = elt[mix + srcDim];                   // `w` is equal to 1 if the transform is affine.
+        for (int i=0; i<srcDim; i++) {
+            final double e = elt[mix++];
+            if (e != 0) {                               // For avoiding NullPointerException if affine.
+                w += point.getOrdinate(i) * e;
+            }
+        }
+        /*
+         * In the usual affine case (w=1), the derivative is a copy of this matrix
+         * with last row and last column omitted.
+         */
+        mix = 0;
         final MatrixSIS matrix = Matrices.createZero(dstDim, srcDim);
-        int mix = 0;
         for (int j=0; j<dstDim; j++) {
             for (int i=0; i<srcDim; i++) {
-                matrix.setElement(j, i, elt[mix++]);
+                matrix.setElement(j, i, elt[mix++] / w);
             }
             mix++;                                      // Skip translation column.
         }

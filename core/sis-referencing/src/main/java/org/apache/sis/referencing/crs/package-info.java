@@ -73,7 +73,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.4
  * @module
  */

@@ -43,7 +43,7 @@ import static org.apache.sis.internal.referencing.AxisDirections.COUNTER_CLOCKWI
  * {@code sis-referencing} module because those tests use {@link HardCodedAxes} constants.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -418,6 +418,42 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         assertEquals(-1, AxisDirections.indexOfColinear(
                 HardCodedCS.GEODETIC_3D,
                 HardCodedCS.DAYS));
+    }
+
+    /**
+     * Tests {@link AxisDirections#indicesOfColinear(CoordinateSystem, CoordinateSystem)}.
+     *
+     * @since 1.1
+     */
+    @Test
+    public void testIndicesOfColinear() {
+        assertArrayEquals(new int[] {0, 1}, AxisDirections.indicesOfColinear(
+                HardCodedCS.GEODETIC_3D,
+                HardCodedCS.GEODETIC_2D));
+
+        assertArrayEquals(new int[] {1, 0}, AxisDirections.indicesOfColinear(
+                HardCodedCS.GEODETIC_φλ,
+                HardCodedCS.GEODETIC_2D));
+
+        assertArrayEquals(new int[] {1, 0}, AxisDirections.indicesOfColinear(
+                HardCodedCS.GEODETIC_3D,
+                HardCodedCS.GEODETIC_φλ));
+
+        assertArrayEquals(new int[] {2}, AxisDirections.indicesOfColinear(
+                HardCodedCS.GEODETIC_3D,
+                HardCodedCS.ELLIPSOIDAL_HEIGHT));
+
+        assertArrayEquals(new int[] {2}, AxisDirections.indicesOfColinear(
+                HardCodedCS.GEODETIC_3D,
+                HardCodedCS.DEPTH));
+
+        assertArrayEquals(null, AxisDirections.indicesOfColinear(
+                HardCodedCS.GEODETIC_3D,
+                HardCodedCS.DAYS));
+
+        assertArrayEquals(null, AxisDirections.indicesOfColinear(
+                HardCodedCS.GEODETIC_2D,
+                HardCodedCS.GEODETIC_3D));
     }
 
     /**

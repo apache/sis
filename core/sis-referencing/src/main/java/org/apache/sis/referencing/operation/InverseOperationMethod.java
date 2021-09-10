@@ -24,6 +24,8 @@ import javax.measure.Unit;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.util.InternationalString;
+import org.opengis.util.FactoryException;
+import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -44,7 +46,7 @@ import org.apache.sis.util.Deprecable;
  * for the inverse, or when the inverse operation can not be represented by inverting the sign of parameters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -69,41 +71,45 @@ final class InverseOperationMethod extends DefaultOperationMethod {
     }
 
     /**
-     * Returns {@code true} if the given method flags itself as invertible.
-     */
-    private static boolean isInvertible(final OperationMethod method) {
-        return method instanceof AbstractProvider && ((AbstractProvider) method).isInvertible();
-    }
-
-    /**
      * Returns or create the inverse of the given operation method. If the same operation method can be used
      * for the inverse operation either with the exact same parameter values or with the sign of some values
      * reversed, then the given method is returned as-is. Otherwise a synthetic method is created.
      */
-    static OperationMethod create(final OperationMethod method) {
+    static OperationMethod create(OperationMethod method, final DefaultCoordinateOperationFactory factorySIS)
+            throws FactoryException
+    {
         if (method instanceof InverseOperationMethod) {
             return ((InverseOperationMethod) method).inverse;
         }
-        if (!isInvertible(method)) {
-            boolean useSameParameters = false;
-            for (final GeneralParameterDescriptor descriptor : method.getParameters().descriptors()) {
-                useSameParameters = (descriptor.getRemarks() instanceof SignReversalComment);
-                if (!useSameParameters) break;
-            }
-            if (!useSameParameters) {
-                Identifier name = method.getName();
-                name = new ImmutableIdentifier(null, null, "Inverse of " + name.getCode());
-                final Map<String,Object> properties = new HashMap<>(6);
-                properties.put(NAME_KEY,    name);
-                properties.put(FORMULA_KEY, method.getFormula());
-                properties.put(REMARKS_KEY, method.getRemarks());
-                if (method instanceof Deprecable) {
-                    properties.put(DEPRECATED_KEY, ((Deprecable) method).isDeprecated());
-                }
-                return new InverseOperationMethod(properties, method);
+        if (!(method instanceof AbstractProvider)) try {
+            method = factorySIS.getOperationMethod(method.getName().getCode());
+        } catch (NoSuchIdentifierException e) {
+            CoordinateOperationRegistry.recoverableException("inverse", e);
+        }
+        if (method instanceof AbstractProvider) {
+            final AbstractProvider inverse = ((AbstractProvider) method).inverse();
+            if (inverse != null) {
+                return inverse;
             }
         }
-        return method;
+        boolean useSameParameters = false;
+        for (final GeneralParameterDescriptor descriptor : method.getParameters().descriptors()) {
+            useSameParameters = (descriptor.getRemarks() instanceof SignReversalComment);
+            if (!useSameParameters) break;
+        }
+        if (useSameParameters) {
+            return method;
+        }
+        Identifier name = method.getName();
+        name = new ImmutableIdentifier(null, null, "Inverse of " + name.getCode());
+        final Map<String,Object> properties = new HashMap<>(6);
+        properties.put(NAME_KEY,    name);
+        properties.put(FORMULA_KEY, method.getFormula());
+        properties.put(REMARKS_KEY, method.getRemarks());
+        if (method instanceof Deprecable) {
+            properties.put(DEPRECATED_KEY, ((Deprecable) method).isDeprecated());
+        }
+        return new InverseOperationMethod(properties, method);
     }
 
     /**

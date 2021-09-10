@@ -34,7 +34,8 @@
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.1
  * @since   1.0
  * @module
  */

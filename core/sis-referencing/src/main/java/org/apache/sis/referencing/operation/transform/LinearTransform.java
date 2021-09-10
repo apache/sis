@@ -67,7 +67,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  * @see org.apache.sis.referencing.operation.transform.MathTransforms#linear(Matrix)
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
  * @see java.awt.geom.AffineTransform
- * @see <a href="http://mathworld.wolfram.com/AffineTransformation.html">Affine transformation on MathWorld</a>
+ * @see <a href="https://mathworld.wolfram.com/AffineTransformation.html">Affine transformation on MathWorld</a>
  *
  * @since 0.4
  * @module
@@ -75,7 +75,8 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 public interface LinearTransform extends MathTransform {
     /**
      * Returns {@code true} if this transform is affine.
-     * An affine transform preserves parallelism.
+     * An affine transform preserves parallelism and has the same
+     * {@linkplain AbstractMathTransform#derivative derivative} at every locations.
      *
      * @return {@code true} if this transform is affine.
      *

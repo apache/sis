@@ -1,0 +1,13 @@
+#
+# Test file for org.apache.sis.io.wkt.ReferencingFactory.
+# See "doc-files/ESRI.txt" for file syntax.
+#
+
+GeodCRS["Anguilla 1957",
+ Datum["Anguilla 1957",
+  Ellipsoid["Clarke 1880", 6378249.145, 293.465]],
+ CS[ellipsoidal, 2],
+  Axis["Latitude", north],
+  Axis["Longitude", east],
+  Unit["Degree", 0.0174532925199433],
+  # Intentionally missing closing bracket.

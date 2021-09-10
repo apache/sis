@@ -139,7 +139,7 @@ public final class IO extends Static {
      * or the localized <cite>"Unavailable content"</cite> string otherwise.
      */
     static String toString(final Appendable out) {
-        final CharSequence content = IO.content(out);
+        final CharSequence content = content(out);
         if (content != null) {
             return content.toString();
         }

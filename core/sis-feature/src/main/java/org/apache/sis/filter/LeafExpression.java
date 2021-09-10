@@ -16,29 +16,24 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.feature.FeatureExpression;
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
-import org.opengis.feature.IdentifiedType;
-import org.opengis.feature.Operation;
-import org.opengis.feature.PropertyNotFoundException;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.expression.ExpressionVisitor;
+import org.opengis.filter.Expression;
 
 
 /**
@@ -48,10 +43,14 @@ import org.opengis.filter.expression.ExpressionVisitor;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
+ * @param  <V>  the type of value computed by the expression.
+ *
+ * @since 1.1
  * @module
  */
-abstract class LeafExpression extends Node implements Expression, FeatureExpression {
+abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V> {
     /**
      * For cross-version compatibility.
      */
@@ -64,115 +63,12 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
     }
 
     /**
-     * Evaluates the expression for producing a result of the given type.
-     * If this method can not produce a value of the given type, then it returns {@code null}.
-     * This implementation evaluates the expression {@linkplain #evaluate(Object) in the default way},
-     * then tries to convert the result to the target type.
-     *
-     * @param  feature  to feature to evaluate with this expression.
-     * @param  target   the desired type for the expression result.
-     * @return the result, or {@code null} if it can not be of the specified type.
+     * Returns the expression used as parameters for this function,
+     * which is an empty list.
      */
     @Override
-    public final <T> T evaluate(final Object feature, final Class<T> target) {
-        ArgumentChecks.ensureNonNull("target", target);
-        final Object value = evaluate(feature);
-        try {
-            return ObjectConverters.convert(value, target);
-        } catch (UnconvertibleObjectException e) {
-            warning(e);
-            return null;                    // As per method contract.
-        }
-    }
-
-
-
-
-    /**
-     * Expression whose value is computed by retrieving the value indicated by the provided name.
-     * A property name does not store any value; it acts as an indirection to a property value of
-     * the evaluated feature.
-     */
-    static final class Property extends LeafExpression implements org.opengis.filter.expression.PropertyName {
-        /** For cross-version compatibility. */
-        private static final long serialVersionUID = 3417789380239058201L;
-
-        /** Name of the property from which to retrieve the value. */
-        private final String name;
-
-        /** Creates a new expression retrieving values from a property of the given name. */
-        Property(final String name) {
-            ArgumentChecks.ensureNonNull("name", name);
-            this.name = name;
-        }
-
-        /** Identification of this expression. */
-        @Override protected String getName() {
-            return "PropertyName";
-        }
-
-        /** For {@link #toString()}, {@link #hashCode()} and {@link #equals(Object)} implementations. */
-        @Override protected Collection<?> getChildren() {
-            return Collections.singleton(name);
-        }
-
-        /** Returns the name of the property whose value will be returned by the {@link #evaluate(Object)} method. */
-        @Override public String getPropertyName() {
-            return name;
-        }
-
-        /**
-         * Returns the value of the property of the given name.
-         * The {@code candidate} object can be any of the following type:
-         *
-         * <ul>
-         *   <li>A {@link Feature}, in which case {@link Feature#getPropertyValue(String)} will be invoked.</li>
-         *   <li>A {@link Map}, in which case {@link Map#get(Object)} will be invoked.</li>
-         * </ul>
-         *
-         * If no value is found for the given feature, then this method returns {@code null}.
-         */
-        @Override
-        public Object evaluate(final Object candidate) {
-            if (candidate instanceof Feature) try {
-                return ((Feature) candidate).getPropertyValue(name);
-            } catch (PropertyNotFoundException ex) {
-                warning(ex);
-                // Null will be returned below.
-            } else if (candidate instanceof Map<?,?>) {
-                return ((Map<?,?>) candidate).get(name);
-            }
-            return null;
-        }
-
-        /**
-         * Provides the expected type of values produced by this expression when a feature of the given type is evaluated.
-         *
-         * @param  valueType  the type of features to be evaluated by the given expression.
-         * @param  addTo      where to add the type of properties evaluated by the given expression.
-         * @return builder of the added property, or {@code null} if this method can not add a property.
-         * @throws IllegalArgumentException if this method can not determine the property type for the given feature type.
-         */
-        @Override
-        public PropertyTypeBuilder expectedType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
-            PropertyType type = valueType.getProperty(name);        // May throw IllegalArgumentException.
-            while (type instanceof Operation) {
-                final IdentifiedType result = ((Operation) type).getResult();
-                if (result != type && result instanceof PropertyType) {
-                    type = (PropertyType) result;
-                } else if (result instanceof FeatureType) {
-                    return addTo.addAssociation((FeatureType) result).setName(name);
-                } else {
-                    return null;
-                }
-            }
-            return addTo.addProperty(type);
-        }
-
-        /** Implementation of the visitor pattern. */
-        @Override public Object accept(final ExpressionVisitor visitor, final Object extraData) {
-            return visitor.visit(this, extraData);
-        }
+    public final List<Expression<? super R, ?>> getParameters() {
+        return Collections.emptyList();
     }
 
 
@@ -180,24 +76,18 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
 
     /**
      * A constant, literal value that can be used in expressions.
-     * The {@link #evaluate(Object)} method ignores the argument and always returns {@link #getValue()}.
+     * The {@link #apply(Object)} method ignores the argument and always returns {@link #getValue()}.
      */
-    static final class Literal extends LeafExpression implements org.opengis.filter.expression.Literal {
+    static class Literal<R,V> extends LeafExpression<R,V> implements org.opengis.filter.Literal<R,V> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -8383113218490957822L;
 
         /** The constant value to be returned by {@link #getValue()}. */
-        private final Object value;
+        protected final V value;
 
         /** Creates a new literal holding the given constant value. */
-        Literal(final Object value) {
-            ArgumentChecks.ensureNonNull("value", value);
-            this.value = value;
-        }
-
-        /** Identification of this expression. */
-        @Override protected String getName() {
-            return "Literal";
+        Literal(final V value) {
+            this.value = value;     // Null is accepted.
         }
 
         /** For {@link #toString()}, {@link #hashCode()} and {@link #equals(Object)} implementations. */
@@ -206,17 +96,39 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
         }
 
         /** Returns the constant value held by this object. */
-        @Override public Object getValue() {
+        @Override public V getValue() {
             return value;
         }
 
+        /** Returns the type of values computed by this expression. */
+        @Override public Class<?> getValueClass() {
+            return (value != null) ? value.getClass() : Object.class;
+        }
+
         /** Expression evaluation, which just returns the constant value. */
-        @Override public Object evaluate(Object ignored) {
+        @Override public V apply(Object ignored) {
             return value;
         }
 
         /**
-         * Provides the type of values returned by {@link #evaluate(Object)}
+         * Returns an expression that provides values as instances of the specified class.
+         *
+         * @throws ClassCastException if values can not be provided as instances of the specified class.
+         */
+        @Override
+        @SuppressWarnings("unchecked")
+        public <N> Expression<R,N> toValueType(final Class<N> type) {
+            try {
+                final N c = ObjectConverters.convert(value, type);
+                return (c != value) ? new Literal<>(c) : (Literal<R,N>) this;
+            } catch (UnconvertibleObjectException e) {
+                throw (ClassCastException) new ClassCastException(Errors.format(
+                        Errors.Keys.CanNotConvertValue_2, getFunctionName(), type)).initCause(e);
+            }
+        }
+
+        /**
+         * Provides the type of values returned by {@link #apply(Object)}
          * wrapped in an {@link AttributeType} named "Literal".
          *
          * @param  addTo  where to add the type of properties evaluated by the given expression.
@@ -224,7 +136,7 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
          */
         @Override
         public PropertyTypeBuilder expectedType(FeatureType ignored, final FeatureTypeBuilder addTo) {
-            final Class<?> valueType = value.getClass();
+            final Class<?> valueType = getValueClass();
             AttributeType<?> propertyType = TYPES.get(valueType);
             if (propertyType == null) {
                 final Class<?> standardType = Classes.getStandardType(valueType);
@@ -247,13 +159,63 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
          * Invoked when a new attribute type need to be created for the given standard type.
          * The given standard type should be a GeoAPI interface, not the implementation class.
          */
-        private static <T> AttributeType<T> newType(final Class<T> standardType) {
+        private static <R> AttributeType<R> newType(final Class<R> standardType) {
             return createType(standardType, Names.createLocalName(null, null, "Literal"));
         }
+    }
 
-        /** Implementation of the visitor pattern. */
-        @Override public Object accept(final ExpressionVisitor visitor, final Object extraData) {
-            return visitor.visit(this, extraData);
+
+
+
+    /**
+     * A literal value which is the result of transforming another literal.
+     */
+    static final class Transformed<R,V> extends Literal<R,V> implements Optimization.OnExpression<R,V> {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = -5120203649333919221L;
+
+        /** The original expression. */
+        final Expression<R,?> original;
+
+        /** Creates a new literal holding the given constant value. */
+        Transformed(final V value, final Expression<R,?> original) {
+            super(value);
+            this.original = original;
+        }
+
+        /**
+         * Returns the same literal without the reference to the original expression.
+         * Since this {@code Transformed} instance will not longer be unwrapped,
+         * the transformed value will become visible to users.
+         */
+        @Override
+        public Expression<? super R, ? extends V> optimize(final Optimization optimization) {
+            return Optimization.literal(getValue());
+        }
+
+        /**
+         * Converts the transformed value if possible, or the original value as a fallback.
+         *
+         * @throws ClassCastException if values can not be provided as instances of the specified class.
+         */
+        @Override
+        @SuppressWarnings("unchecked")
+        public <N> Expression<R,N> toValueType(final Class<N> type) {
+            // Same implementation than `super.toValueType(type)` except for exception handling.
+            try {
+                final N c = ObjectConverters.convert(value, type);
+                return (c != value) ? new Literal<>(c) : (Literal<R,N>) this;
+            } catch (UnconvertibleObjectException e) {
+                try {
+                    return original.toValueType(type);
+                } catch (RuntimeException bis) {
+                    final ClassCastException c = new ClassCastException(Errors.format(
+                            Errors.Keys.CanNotConvertValue_2, getFunctionName(), type));
+                    c.initCause(e);
+                    c.addSuppressed(bis);
+                    throw c;
+                }
+            }
         }
     }
 }

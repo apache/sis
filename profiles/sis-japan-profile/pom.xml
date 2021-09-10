@@ -52,7 +52,7 @@
       <id>desruisseaux</id>
       <email>desruisseaux@apache.org</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
@@ -97,8 +97,14 @@
     </dependency>
     <dependency>
       <groupId>edu.ucar</groupId>
-      <artifactId>cdm</artifactId>
+      <artifactId>cdm-core</artifactId>
       <scope>compile</scope>
+      <optional>false</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>          <!-- For UCAR library. -->
+      <artifactId>slf4j-jdk14</artifactId>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 

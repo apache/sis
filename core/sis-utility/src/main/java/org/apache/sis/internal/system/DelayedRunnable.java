@@ -24,10 +24,10 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * A task to be submitted to {@link DelayedExecutor} for later execution.
  *
- * <h2>Future evolution</h2>
- * This interface may be removed in a future SIS version if we choose to use a library-wide executor
- * instead of {@code DelayedExecutor}. See <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a>
- * for more information.
+ * <div class="note"><b>Design note:</b>
+ * we considered removing this interface in favor a library-wide executor instead of {@code DelayedExecutor}.
+ * But benchmarks suggested that this lightweight approach for the specific needs of SIS is preferable.
+ * See <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a> for more information.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

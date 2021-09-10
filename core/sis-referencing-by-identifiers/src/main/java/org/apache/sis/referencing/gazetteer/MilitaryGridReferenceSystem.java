@@ -49,6 +49,7 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
@@ -72,6 +73,7 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 
 // Branch-dependent imports
+import org.apache.sis.internal.jdk9.JDK9;
 import org.opengis.metadata.citation.Party;
 import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.gazetteer.LocationType;
@@ -695,7 +697,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                  * Convert area of interest (AOI) from an envelope to a Rectangle2D for use with
                  * Envelope2D.intersect(Rectangle2D) during IteratorOneZone.advance(…) execution.
                  * We need to use the constructor expecting the two corners in order to preserve
-                 * envelope spanning the anti-meridian.
+                 * envelope crossing the anti-meridian.
                  */
                 final IntervalRectangle aoi = new IntervalRectangle(areaOfInterest.getLowerCorner(),
                                                                     areaOfInterest.getUpperCorner());
@@ -807,6 +809,9 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             /**
              * Guess the number of elements to be returned. The value returned by this method is very rough,
              * and likely greater than the real amount of elements that will actually be returned.
+             *
+             * <p><b>Note:</b> returned value should be the number of <em>remaining</em> elements, but
+             * current implementation does not compute how many elements we have already traversed.</p>
              */
             @Override
             public long estimateSize() {
@@ -962,7 +967,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Temporary rectangle for computation purpose. Needs to be an implementation from the
-         * {@link org.apache.sis.geometry} in order to support AOI spanning the anti-meridian.
+         * {@link org.apache.sis.geometry} in order to support AOI crossing the anti-meridian.
          */
         private final Envelope2D cell = new Envelope2D();
 
@@ -1090,7 +1095,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                 yEnd  = y    - step;
             }
             yStart    = gridY;
-            gridToAOI = (MathTransform2D) op.getMathTransform().inverse();
+            gridToAOI = MathTransforms.bidimensional(op.getMathTransform().inverse());
             /*
              * To be strict, we should also test that the region of interest does not intersect both the upper half
              * and lower half of Universal Polar Stereographic (UPS) projection domain. We do not check that because
@@ -1141,10 +1146,13 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * Returns an estimation of the number of cells in the area covered by this iterator. The returned value
          * may be greater than the real amount since we do not take in account the fact that the number of cells
          * in a row become lower as we approach poles.
+         *
+         * <p><b>Note:</b> returned value should be the number of <em>remaining</em> elements, but
+         * current implementation does not compute how many elements we have already traversed.</p>
          */
         @Override
         public long estimateSize() {
-            return (xEnd - (long) gridX) * Math.abs(yEnd - (long) yStart) / (step * (long) step);
+            return (xEnd - (long) gridX) * Math.abs(yEnd - (long) yStart) / JDK9.multiplyFull(step, step);
         }
 
         /**

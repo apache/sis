@@ -29,7 +29,7 @@ import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;
 import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.internal.storage.query.SimpleQuery;
+import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
@@ -44,8 +44,8 @@ import org.opengis.feature.Operation;
 import org.opengis.feature.PropertyType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
-import org.opengis.filter.PropertyIsEqualTo;
-import org.opengis.filter.expression.Expression;
+import org.opengis.filter.Expression;
+import org.opengis.filter.BinaryComparisonOperator;
 import org.apache.sis.filter.DefaultFilterFactory;
 
 
@@ -70,7 +70,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -175,15 +175,15 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
 
     /**
      * The join condition in the form <var>property from left feature</var> = <var>property from right feature</var>.
-     * This condition specifies also if the comparison is {@linkplain PropertyIsEqualTo#isMatchingCase() case sensitive}
-     * and {@linkplain PropertyIsEqualTo#getMatchAction() how to compare multi-values}.
+     * This condition specifies also if the comparison is {@linkplain BinaryComparisonOperator#isMatchingCase() case
+     * sensitive} and {@linkplain BinaryComparisonOperator#getMatchAction() how to compare multi-values}.
      */
-    public final PropertyIsEqualTo condition;
+    public final BinaryComparisonOperator<? super Feature> condition;
 
     /**
      * The factory to use for creating {@code Query} expressions for retrieving subsets of feature sets.
      */
-    private final FilterFactory factory;
+    private final FilterFactory<Feature,?,?> factory;
 
     /**
      * Creates a new feature set joining the two given sets. The {@code featureInfo} map defines the name,
@@ -210,7 +210,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
     public JoinFeatureSet(final StoreListeners parent,
                           final FeatureSet left,  String leftAlias,
                           final FeatureSet right, String rightAlias,
-                          final Type joinType, final PropertyIsEqualTo condition,
+                          final Type joinType, final BinaryComparisonOperator<? super Feature> condition,
                           Map<String,?> featureInfo)
             throws DataStoreException
     {
@@ -228,7 +228,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
         this.swapSides   = joinType.swapSides;
         this.isOuterJoin = joinType.isOuterJoin;
         this.condition   = condition;
-        this.factory     = new DefaultFilterFactory();       // TODO: replace by some static instance?
+        this.factory     = DefaultFilterFactory.forFeatures();
         /*
          * We could build the FeatureType only when first needed, but the type is required by the iterators.
          * Since we are going to need the type for any use of this JoinFeatureSet, better to create it now.
@@ -466,25 +466,27 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
          * The filtering condition is determined by the current {@link #mainFeature}.
          */
         private void createFilteredIterator() {
-            Expression expression1 = condition.getExpression1();
-            Expression expression2 = condition.getExpression2();
-            FeatureSet filteredSet = right;
+            final Expression<? super Feature, ?> expression1, expression2;
+            final FeatureSet filteredSet;
             if (swapSides) {
-                filteredSet  = left;
-                Expression t = expression2;
-                expression2  = expression1;
-                expression1  = t;
+                expression1 = condition.getOperand2();
+                expression2 = condition.getOperand1();
+                filteredSet = left;
+            } else {
+                expression1 = condition.getOperand1();
+                expression2 = condition.getOperand2();
+                filteredSet = right;
             }
-            final Object mainValue = expression1.evaluate(mainFeature);
-            final Filter filter;
+            final Object mainValue = expression1.apply(mainFeature);
+            final Filter<? super Feature> filter;
             if (mainValue != null) {
                 filter = factory.equal(expression2, factory.literal(mainValue),
                             condition.isMatchingCase(), condition.getMatchAction());
             } else {
                 filter = factory.isNull(expression2);
             }
-            final SimpleQuery query = new SimpleQuery();
-            query.setFilter(filter);
+            final FeatureQuery query = new FeatureQuery();
+            query.setSelection(filter);
             try {
                 filteredStream = filteredSet.subset(query).features(false);
             } catch (DataStoreException e) {

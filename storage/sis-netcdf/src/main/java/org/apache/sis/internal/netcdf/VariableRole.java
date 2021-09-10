@@ -21,7 +21,7 @@ package org.apache.sis.internal.netcdf;
  * Specifies whether a variable is used as a coordinate system axis, a coverage or other purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -35,6 +35,17 @@ public enum VariableRole {
      * The variable is a grid coverage.
      */
     COVERAGE,
+
+    /**
+     * The variable is a property of a feature.
+     */
+    FEATURE,
+
+    /**
+     * Values of the variable are bounds of values of another variable.
+     * For example it may be the bounds of coordinate values specified by an axis.
+     */
+    BOUNDS,
 
     /**
      * Unidentified kind of variable.

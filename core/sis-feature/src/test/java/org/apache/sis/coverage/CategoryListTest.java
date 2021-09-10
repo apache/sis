@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  * Tests {@link CategoryList}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -82,7 +82,7 @@ public final strictfp class CategoryListTest extends TestCase {
             new Category("Again",   NumberRange.create(10, true, 10, true), null, null, toNaN)       // Range overlaps.
         };
         try {
-            assertNotConverted(CategoryList.create(categories.clone()));
+            assertNotConverted(CategoryList.create(categories.clone(), null));
             fail("Should not have accepted range overlap.");
         } catch (IllegalArgumentException exception) {
             // This is the expected exception.
@@ -92,7 +92,7 @@ public final strictfp class CategoryListTest extends TestCase {
         }
         // Removes the wrong category. Now, construction should succeed.
         categories = Arrays.copyOf(categories, categories.length - 1);
-        assertNotConverted(CategoryList.create(categories));
+        assertNotConverted(CategoryList.create(categories, null));
         assertSorted(Arrays.asList(categories));
     }
 
@@ -182,7 +182,7 @@ public final strictfp class CategoryListTest extends TestCase {
      */
     @Test
     public void testRanges() {
-        final CategoryList list = CategoryList.create(categories());
+        final CategoryList list = CategoryList.create(categories(), null);
         assertSorted(list);
         assertTrue  ("isMinIncluded",           list.range.isMinIncluded());
         assertFalse ("isMaxIncluded",           list.range.isMaxIncluded());
@@ -205,7 +205,7 @@ public final strictfp class CategoryListTest extends TestCase {
     @DependsOnMethod("testBinarySearch")
     public void testSearch() {
         final Category[] categories = categories();
-        final CategoryList list = CategoryList.create(categories.clone());
+        final CategoryList list = CategoryList.create(categories.clone(), null);
         assertTrue("containsAll", list.containsAll(Arrays.asList(categories)));
         /*
          * Checks category searches for values that are insides the range of a category.
@@ -253,7 +253,7 @@ public final strictfp class CategoryListTest extends TestCase {
     @DependsOnMethod("testSearch")
     public void testTransform() throws TransformException {
         final Random random = TestUtilities.createRandomNumberGenerator();
-        final CategoryList list = CategoryList.create(categories());
+        final CategoryList list = CategoryList.create(categories(), null);
         /*
          * Checks conversions. We verified in 'testSearch()' that correct categories are found for those values.
          */
@@ -287,16 +287,18 @@ public final strictfp class CategoryListTest extends TestCase {
         /*
          * Tests the transform using overlapping array.
          */
-        System.arraycopy(input, 0, output1, 3, input.length-3);
-        list.transform (output1, 3, output1, 0, input.length-3);
-        System.arraycopy(output0, input.length-3, output1, input.length-3, 3);
+        final int n = 3;
+        final int r = input.length - n;
+        System.arraycopy(input,   0, output1, n, r);
+        list.transform  (output1, n, output1, 0, r);
+        System.arraycopy(output0, r, output1, r, n);
         compare(output0, output1);
         /*
          * Implementation will do the following transform in reverse direction.
          */
-        System.arraycopy(input, 3, output1, 0, input.length-3);
-        list.transform (output1, 0, output1, 3, input.length-3);
-        System.arraycopy(output0, 0, output1, 0, 3);
+        System.arraycopy(input,   n, output1, 0, r);
+        list.transform  (output1, 0, output1, n, r);
+        System.arraycopy(output0, 0, output1, 0, n);
         compare(output0, output1);
         /*
          * Test inverse transfom.
@@ -309,6 +311,80 @@ public final strictfp class CategoryListTest extends TestCase {
                 // They would usually not be equal.
                 assertEquals("inverse", expected, output0[i], CategoryTest.EPS);
             }
+        }
+    }
+
+    /**
+     * Creates a category list for testing inverse transform with the given background value.
+     *
+     * @param  background  a value not used by {@link #categories()}, or {@code null}.
+     * @return the list of categories for testing "units to sample" conversions.
+     * @throws TransformException if an error occurred while transforming a value.
+     */
+    private static CategoryList createInverseTransform(final Number background) throws TransformException {
+        final CategoryList list = CategoryList.create(categories(), background).converse;
+        assertEquals( 10, list.transform(   6), CategoryTest.EPS);
+        assertEquals( 50, list.transform(  10), CategoryTest.EPS);
+        assertEquals(100, list.transform( -97), CategoryTest.EPS);
+        assertEquals(110, list.transform(-107), CategoryTest.EPS);
+        assertEquals(  0, list.transform(Double.NaN),                  CategoryTest.EPS);
+        assertEquals(  7, list.transform(MathFunctions.toNanFloat(7)), CategoryTest.EPS);
+        assertEquals(  3, list.transform(MathFunctions.toNanFloat(3)), CategoryTest.EPS);
+        return list;
+    }
+
+    /**
+     * Tests the {@link CategoryList#transform(double)} method from units to sample values.
+     * This test includes {@link Double#NaN} values that are not among declared values.
+     *
+     * @throws TransformException if an error occurred while transforming a value.
+     */
+    @Test
+    @DependsOnMethod("testTransform")
+    public void testInverseTransform() throws TransformException {
+        final int background = 2;   // Value not used by `categories()`.
+        final CategoryList list = createInverseTransform(background);
+        /*
+         * Below is a NaN value which is not in the list of qualitative categories.
+         * Trying to convert this value would result in an exception, but in this
+         * test we specified a background value that `CategoryList` can use as fallback.
+         */
+        assertEquals(background, list.transform(MathFunctions.toNanFloat(background)), CategoryTest.EPS);
+        assertEquals(background, list.transform(MathFunctions.toNanFloat(4)),          CategoryTest.EPS);
+        /*
+         * Same values in arrays.
+         */
+        final int dummyCount = 3;
+        final double[] values = {
+            -20, -10,  -1,                          // 3 dummy values for introducing an offset in the array.
+              6,  10, -97,                          // First values to be transformed (from above test).
+            MathFunctions.toNanFloat(background),
+            MathFunctions.toNanFloat(4), -107, Double.NaN,
+            MathFunctions.toNanFloat(7),
+            MathFunctions.toNanFloat(3)
+        };
+        final double[] result = new double[values.length - dummyCount];
+        list.transform(values, dummyCount, result, 0, result.length);
+        assertArrayEquals(new double[] {
+            10, 50, 100, background, background, 110, 0, 7, 3
+        }, result, CategoryTest.EPS);
+    }
+
+    /**
+     * Same tests than {@link #testInverseTransform()} but without background value that the code
+     *
+     * @throws TransformException if an error occurred while transforming a value.
+     */
+    @Test
+    @DependsOnMethod("testInverseTransform")
+    public void testInverseTransformFailure() throws TransformException {
+        final CategoryList list = createInverseTransform(null);
+        try {
+            list.transform(MathFunctions.toNanFloat(4));
+            fail("Expected TransformException");
+        } catch (TransformException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("NaN #4"));
         }
     }
 
@@ -340,7 +416,7 @@ public final strictfp class CategoryListTest extends TestCase {
         for (int i=0; i<categories.length; i++) {
             categories[i] = categories[i].converse;
         }
-        final CategoryList list = CategoryList.create(categories);
+        final CategoryList list = CategoryList.create(categories, null);
         assertSorted(list);
         for (int i=list.size(); --i >= 0;) {
             final Category category = list.get(i);

@@ -35,13 +35,26 @@ import static org.opengis.test.Assert.*;
  * Tests {@link SampleDimension}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
 public final strictfp class SampleDimensionTest extends TestCase {
     /**
      * Tests a sample dimension having only qualitative categories.
+     * Expected value:
+     *
+     * {@preformat text
+     * ┌────────┬─────────┐
+     * │ Values │  Name   │
+     * ╞════════╧═════════╡
+     * │ Some data        │
+     * ├────────┬─────────┤
+     * │     1  │ Clouds  │
+     * │     2  │ Lands   │
+     * │   255  │ Missing │
+     * └────────┴─────────┘
+     * }
      */
     @Test
     public void testQualitative() {
@@ -61,7 +74,57 @@ public final strictfp class SampleDimensionTest extends TestCase {
     }
 
     /**
+     * Tests {@link SampleDimension.Builder#mapQualitative(CharSequence, Number, float)}.
+     * Expected result (not that "Values" column differ from NaN numbers, which is the
+     * purpose of this test).
+     *
+     * {@preformat text
+     * ┌───────────┬───────────────┬─────────────┐
+     * │  Values   │   Measures    │    Name     │
+     * ╞═══════════╧═══════════════╧═════════════╡
+     * │ Temperature                             │
+     * ├───────────┬───────────────┬─────────────┤
+     * │        1  │ NaN #1        │ Clouds      │
+     * │        3  │ NaN #2        │ No data     │
+     * │ [5 … 254] │ [-2.0 … 35.0] │ Temperature │
+     * │      255  │ NaN #4        │ Lands       │
+     * └───────────┴───────────────┴─────────────┘
+     * }
+     */
+    @Test
+    public void testMapQualitative() {
+        final SampleDimension dimension = new SampleDimension.Builder()
+                .addQualitative("Clouds",  1)
+                .mapQualitative("Lands", 255, MathFunctions.toNanFloat(4))
+                .mapQualitative("No data", 3, MathFunctions.toNanFloat(2))
+                .addQuantitative("Temperature", NumberRange.create( 5, true, 254, true),
+                                                NumberRange.create(-2, true,  35, true))
+                .build();
+
+        assertArrayEquals("nodataValues", new Integer[] {1, 3, 255}, dimension.getNoDataValues().toArray());
+        final Object[] padValues = dimension.forConvertedValues(true).getNoDataValues().toArray();
+        for (int i=0; i<padValues.length; i++) {
+            padValues[i] = MathFunctions.toNanOrdinal(((Float) padValues[i]));
+        }
+        assertArrayEquals("nodataValues", new Integer[] {1, 2, 4}, padValues);
+    }
+
+    /**
      * Tests a sample dimension having one quantitative category and a few "no data" values.
+     * Expected value:
+     *
+     * {@preformat text
+     * ┌────────────┬──────────────────┬─────────────┐
+     * │   Values   │     Measures     │    Name     │
+     * ╞════════════╧══════════════════╧═════════════╡
+     * │ Temperature                                 │
+     * ├────────────┬──────────────────┬─────────────┤
+     * │         0  │ NaN #0           │ Fill value  │
+     * │         1  │ NaN #1           │ Clouds      │
+     * │ [10 … 200) │ [6.00 … 25.00)°C │ Temperature │
+     * │       255  │ NaN #255         │ Lands       │
+     * └────────────┴──────────────────┴─────────────┘
+     * }
      */
     @Test
     public void testQuantitativeWithMissingValues() {

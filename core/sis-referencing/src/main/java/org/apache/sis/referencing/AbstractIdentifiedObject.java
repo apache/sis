@@ -907,7 +907,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         if ((flags & FormattableFlags.ALTERNATE) != 0) {
             value = IdentifiedObjects.getIdentifierOrName(this);
         } else {
-            value = IdentifiedObjects.getName(this, null);
+            value = IdentifiedObjects.getDisplayName(this, formatter.locale());
         }
         Strings.formatTo(formatter, flags, width, precision, value);
     }

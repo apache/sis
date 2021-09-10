@@ -52,6 +52,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -380,8 +381,9 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     expected += interpDim;
                 }
                 if (crs != null && actual != expected) {
-                    throw new IllegalArgumentException(Resources.forProperties(properties).getString(
-                            Resources.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
+                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                            Errors.Keys.MismatchedTransformDimension_4, super.getName().getCode(),
+                            isTarget, expected, actual));
                 }
             }
         }

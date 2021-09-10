@@ -20,49 +20,67 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.nio.charset.Charset;
+import java.awt.Color;
+import java.awt.image.ColorModel;
+import java.awt.image.SampleModel;
+import java.awt.image.SinglePixelPackedSampleModel;
+import java.awt.image.RasterFormatException;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.internal.geotiff.Predictor;
+import org.apache.sis.internal.geotiff.Compression;
 import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.coverage.j2d.SampleModelFactory;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.image.DataType;
 
 
 /**
  * An Image File Directory (FID) in a TIFF image.
+ *
+ * <h2>Thread-safety</h2>
+ * Public methods should be synchronized because they can be invoked directly by users.
+ * Package-private methods are not synchronized; synchronization is caller's responsibility.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a>
  *
  * @since 0.8
  * @module
  */
-final class ImageFileDirectory extends AbstractGridResource {
+final class ImageFileDirectory extends DataCube {
     /**
      * Possible value for the {@link #tileTagFamily} field. That field tells whether image tiling
      * was specified using the {@code Tile*} family of TIFF tags or the {@code Strip*} family.
@@ -77,24 +95,33 @@ final class ImageFileDirectory extends AbstractGridResource {
     private static final byte SIGNED = 1, UNSIGNED = 0, FLOAT = 3;
 
     /**
-     * The GeoTIFF reader which contain this {@code ImageFileDirectory}.
-     * Used for fetching information like the input channel and where to report warnings.
+     * Index of this Image File Directory.
      */
-    private final Reader reader;
+    private final int index;
 
     /**
      * The identifier as a sequence number in the namespace of the {@link GeoTiffStore}.
-     * The first image has the sequence number "1".
+     * The first image has the sequence number "1". This is computed when first needed.
      *
      * @see #getIdentifier()
      */
-    private final GenericName identifier;
+    private GenericName identifier;
+
+    /**
+     * Builder for the metadata. This field is reset to {@code null} when not needed anymore.
+     */
+    private MetadataBuilder metadata;
 
     /**
      * {@code true} if this {@code ImageFileDirectory} has not yet read all deferred entries.
      * When this flag is {@code true}, the {@code ImageFileDirectory} is not yet ready for use.
      */
     boolean hasDeferredEntries;
+
+    /**
+     * {@code true} if {@link #validateMandatoryTags()} has already been invoked.
+     */
+    private boolean isValidated;
 
     /**
      * The size of the image described by this FID, or -1 if the information has not been found.
@@ -132,6 +159,9 @@ final class ImageFileDirectory extends AbstractGridResource {
      * height of tiles having the same width than the image. While the TIFF specification handles
      * "tiles" and "strips" separately, Apache SIS handles strips as a special kind of tiles where
      * only {@code tileHeight} is specified and {@code tileWidth} defaults to {@link #imageWidth}.
+     *
+     * @see #getTileSize()
+     * @see #getNumTiles()
      */
     private int tileWidth = -1, tileHeight = -1;
 
@@ -140,7 +170,7 @@ final class ImageFileDirectory extends AbstractGridResource {
      * The offset is specified with respect to the beginning of the TIFF file.
      * Each tile has a location independent of the locations of other tiles
      *
-     * <p>Offsets are ordered left-to-right and top-to-bottom. if {@link #isPlanar} is {@code true}
+     * <p>Offsets are ordered left-to-right and top-to-bottom. If {@link #isPlanar} is {@code true}
      * (i.e. components are stored in separate “component planes”), then the offsets for the first
      * component plane are stored first, followed by all the offsets for the second component plane,
      * and so on.</p>
@@ -166,7 +196,7 @@ final class ImageFileDirectory extends AbstractGridResource {
     /**
      * Whether the tiling was specified using the {@code Tile*} family of TIFF tags or the {@code Strip*}
      * family of tags. Value can be {@link #TILE}, {@link #STRIP} or 0 if unspecified. This field is used
-     * for error detection since Each TIFF file shall use exactly one family of tags.
+     * for error detection since each TIFF file shall use exactly one family of tags.
      */
     private byte tileTagFamily;
 
@@ -195,7 +225,7 @@ final class ImageFileDirectory extends AbstractGridResource {
      *
      * Value 1 is mapped to {@code false} and 2 is mapped to {@code true}.
      */
-    private boolean reverseBitsOrder;
+    private boolean isBitOrderReversed;
 
     /**
      * Number of bits per component.
@@ -210,6 +240,8 @@ final class ImageFileDirectory extends AbstractGridResource {
      * The {@code samplesPerPixel} value is usually 1 for bilevel, grayscale and palette-color images,
      * and 3 for RGB images. If this value is higher, then the {@code ExtraSamples} TIFF tag should
      * give an indication of the meaning of the additional channels.
+     *
+     * @see #getNumBands()
      */
     private short samplesPerPixel;
 
@@ -249,7 +281,7 @@ final class ImageFileDirectory extends AbstractGridResource {
     /**
      * The color space of the image data, or -1 if unspecified.
      *
-     * <table>
+     * <table class="sis">
      *   <caption>Color space codes</caption>
      *   <tr><th>Value</th> <th>Label</th>        <th>Description</th></tr>
      *   <tr><td>0</td> <td>WhiteIsZero</td>      <td>For bilevel and grayscale images. 0 is imaged as white.</td></tr>
@@ -319,10 +351,32 @@ final class ImageFileDirectory extends AbstractGridResource {
     private Unit<Length> resolutionUnit = Units.INCH;
 
     /**
-     * The compression method, or {@code null} if unknown. If the compression method is unknown
+     * The "no data" or background pixel value, or NaN if undefined.
+     *
+     * @see #getFillValue()
+     */
+    private double noData = Double.NaN;
+
+    /**
+     * The compression method, or {@code null} if unspecified. If the compression method is unknown
      * or unsupported we can not read the image, but we still can read the metadata.
+     *
+     * @see #getCompression()
      */
     private Compression compression;
+
+    /**
+     * Mathematical operator that is applied to the image data before an encoding scheme is applied.
+     * This is used mostly with LZW compression. Current values are:
+     *
+     * <ul>
+     *   <li>1: No prediction scheme used before coding.</li>
+     *   <li>2: Horizontal differencing.</li>
+     * </ul>
+     *
+     * @see #getPredictor()
+     */
+    private Predictor predictor;
 
     /**
      * A helper class for building Coordinate Reference System and complete related metadata.
@@ -340,13 +394,6 @@ final class ImageFileDirectory extends AbstractGridResource {
     private GridGeometryBuilder referencing;
 
     /**
-     * The sample dimensions, or {@code null} if not yet created.
-     *
-     * @see #getSampleDimensions()
-     */
-    private List<SampleDimension> sampleDimensions;
-
-    /**
      * Returns {@link #referencing}, created when first needed. We delay its creation since
      * this object is not needed for ordinary TIFF files (i.e. without the GeoTIFF extension).
      */
@@ -358,15 +405,37 @@ final class ImageFileDirectory extends AbstractGridResource {
     }
 
     /**
+     * The sample dimensions, or {@code null} if not yet created.
+     *
+     * @see #getSampleDimensions()
+     */
+    private List<SampleDimension> sampleDimensions;
+
+    /**
+     * The image sample model, created when first needed. The raster size is the tile size.
+     * Sample models with different size and number of bands can be derived from this model.
+     *
+     * @see #getSampleModel()
+     */
+    private SampleModel sampleModel;
+
+    /**
+     * The image color model, created when first needed.
+     *
+     * @see #getColorModel()
+     */
+    private ColorModel colorModel;
+
+    /**
      * Creates a new image file directory.
      *
      * @param reader  information about the input stream to read, the metadata and the character encoding.
      * @param index   the image index as a sequence number starting with 0 for the first image.
      */
     ImageFileDirectory(final Reader reader, final int index) {
-        super(reader.owner.listeners());
-        this.reader = reader;
-        identifier = reader.nameFactory.createLocalName(reader.owner.identifier, String.valueOf(index + 1));
+        super(reader);
+        this.index = index;
+        metadata = new MetadataBuilder();
     }
 
     /**
@@ -379,15 +448,21 @@ final class ImageFileDirectory extends AbstractGridResource {
     /**
      * Shortcut for a frequently requested information.
      */
-    private String filename() {
-        return input().filename;
+    private Charset encoding() {
+        return reader.store.encoding;
     }
 
     /**
-     * Shortcut for a frequently requested information.
+     * Returns the identifier, creating it when first needed.
+     * This method must be invoked in a synchronized block.
      */
-    private Charset encoding() {
-        return reader.owner.encoding;
+    private GenericName identifier() throws DataStoreException {
+        if (identifier == null) {
+            final GenericName name = reader.nameFactory.createLocalName(reader.store.namespace(), String.valueOf(index + 1));
+            identifier = reader.store.customizer.customize(index, name);
+            if (identifier == null) identifier = name;
+        }
+        return identifier;
     }
 
     /**
@@ -397,8 +472,10 @@ final class ImageFileDirectory extends AbstractGridResource {
      * @see #getMetadata()
      */
     @Override
-    public Optional<GenericName> getIdentifier() {
-        return Optional.of(identifier);
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
+        synchronized (getSynchronizationLock()) {
+            return Optional.of(identifier());
+        }
     }
 
     /**
@@ -532,7 +609,19 @@ final class ImageFileDirectory extends AbstractGridResource {
             case Tags.Compression: {
                 final long value = type.readLong(input(), count);
                 compression = Compression.valueOf(value);
-                if (compression == null) {
+                if (compression == Compression.UNKNOWN) {
+                    return value;                           // Cause a warning to be reported by the caller.
+                }
+                break;
+            }
+            /*
+             * Mathematical operator that is applied to the image data before an encoding scheme is applied.
+             * 1=none, 2=horizontal differencing. More values may be added in the future.
+             */
+            case Tags.Predictor: {
+                final int value = type.readInt(input(), count);
+                predictor = Predictor.valueOf(value);
+                if (predictor == Predictor.UNKNOWN) {
                     return value;                           // Cause a warning to be reported by the caller.
                 }
                 break;
@@ -544,8 +633,8 @@ final class ImageFileDirectory extends AbstractGridResource {
             case Tags.FillOrder: {
                 final int value = type.readInt(input(), count);
                 switch (value) {
-                    case 1: reverseBitsOrder = false; break;
-                    case 2: reverseBitsOrder = true;  break;
+                    case 1: isBitOrderReversed = false; break;
+                    case 2: isBitOrderReversed = true;  break;
                     default: return value;                  // Cause a warning to be reported by the caller.
                 }
                 break;
@@ -573,9 +662,9 @@ final class ImageFileDirectory extends AbstractGridResource {
             case Tags.BitsPerSample: {
                 final Vector values = type.readVector(input(), count);
                 /*
-                 * The current implementation requires that all 'bitsPerSample' elements have the same value.
+                 * The current implementation requires that all `bitsPerSample` elements have the same value.
                  * This restriction may be revisited in future Apache SIS versions.
-                 * Note: 'count' is never zero when this method is invoked, so we do not need to check bounds.
+                 * Note: `count` is never zero when this method is invoked, so we do not need to check bounds.
                  */
                 bitsPerSample = values.shortValue(0);
                 final int length = values.size();
@@ -619,7 +708,7 @@ final class ImageFileDirectory extends AbstractGridResource {
              * 1 = BlackIsZero. For bilevel and grayscale images: 0 is imaged as black.
              * 2 = RGB. RGB value of (0,0,0) represents black, and (65535,65535,65535) represents white.
              * 3 = Palette color. The value of the component is used as an index into the RGB values of the ColorMap.
-             * 4 = Transparency Mask the defines an irregularly shaped region of another image in the same TIFF file.
+             * 4 = Transparency Mask. Defines an irregularly shaped region of another image in the same TIFF file.
              */
             case Tags.PhotometricInterpretation: {
                 final short value = type.readShort(input(), count);
@@ -706,7 +795,7 @@ final class ImageFileDirectory extends AbstractGridResource {
                 break;
             }
             /*
-             * Stores all of the 'double' valued GeoKeys, referenced by the GeoKeyDirectory.
+             * Stores all of the `double` valued GeoKeys, referenced by the GeoKeyDirectory.
              */
             case Tags.GeoDoubleParams: {
                 referencing().numericParameters = type.readVector(input(), count);
@@ -777,65 +866,117 @@ final class ImageFileDirectory extends AbstractGridResource {
             ////                                                                                        ////
             ////    Metadata for discovery purposes, conditions of use, etc.                            ////
             ////    Those metadata are not "critical" information for reading the image.                ////
-            ////    Should not write anything under 'metadata/contentInfo' node.                        ////
+            ////    Should not write anything under `metadata/contentInfo` node.                        ////
             ////                                                                                        ////
             ////////////////////////////////////////////////////////////////////////////////////////////////
 
             /*
+             * The name of the document from which this image was scanned.
+             *
+             * Destination: metadata/identificationInfo/citation/series/name
+             */
+            case Tags.DocumentName: {
+                for (final String value : type.readString(input(), count, encoding())) {
+                    metadata.addSeries(value);
+                }
+                break;
+            }
+            /*
+             * The name of the page from which this image was scanned.
+             *
+             * Destination: metadata/identificationInfo/citation/series/page
+             */
+            case Tags.PageName: {
+                for (final String value : type.readString(input(), count, encoding())) {
+                    metadata.addPage(value);
+                }
+                break;
+            }
+            /*
+             * The page number of the page from which this image was scanned.
+             * Should be a vector of length 2 containing the page number and
+             * the total number of pages (with 0 meaning unavailable).
+             *
+             * Destination: metadata/identificationInfo/citation/series/page
+             */
+            case Tags.PageNumber: {
+                final Vector v = type.readVector(input(), count);
+                int p = 0, n = 0;
+                switch (v.size()) {
+                    default: n = v.intValue(1);     // Fall through
+                    case 1:  p = v.intValue(0);
+                    case 0:  break;
+                }
+                metadata.addPage(p, n);
+                break;
+            }
+            /*
              * A string that describes the subject of the image.
              * For example, a user may wish to attach a comment such as "1988 company picnic" to an image.
+             *
+             * Destination: metadata/identificationInfo/citation/title
              */
             case Tags.ImageDescription: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addTitle(value);
+                    metadata.addTitle(value);
                 }
                 break;
             }
             /*
              * Person who created the image. Some older TIFF files used this tag for storing
              * Copyright information, but Apache SIS does not support this legacy practice.
+             *
+             * Destination: metadata/identificationInfo/citation/party/name
              */
             case Tags.Artist: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addAuthor(value);
+                    metadata.addAuthor(value);
                 }
                 break;
             }
             /*
              * Copyright notice of the person or organization that claims the copyright to the image.
              * Example: “Copyright, John Smith, 1992. All rights reserved.”
+             *
+             * Destination: metadata/identificationInfo/resourceConstraint
              */
             case Tags.Copyright: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.parseLegalNotice(value);
+                    metadata.parseLegalNotice(value);
                 }
                 break;
             }
             /*
              * Date and time of image creation. The format is: "YYYY:MM:DD HH:MM:SS" with 24-hour clock.
+             *
+             * Destination: metadata/identificationInfo/citation/date
              */
             case Tags.DateTime: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addCitationDate(reader.getDateFormat().parse(value),
+                    metadata.addCitationDate(reader.getDateFormat().parse(value),
                             DateType.CREATION, MetadataBuilder.Scope.RESOURCE);
                 }
                 break;
             }
             /*
              * The computer and/or operating system in use at the time of image creation.
+             *
+             * Destination: metadata/resourceLineage/processStep/processingInformation/procedureDescription
              */
             case Tags.HostComputer: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addHostComputer(value);
+                    metadata.addHostComputer(value);
                 }
                 break;
             }
             /*
              * Name and version number of the software package(s) used to create the image.
+             *
+             * Destination: metadata/resourceLineage/processStep/processingInformation/softwareReference/title
              */
             case Tags.Software: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addSoftwareReference(value);
+                    metadata.addSoftwareReference(value);
                 }
                 break;
             }
@@ -851,10 +992,12 @@ final class ImageFileDirectory extends AbstractGridResource {
             /*
              * The model name or number of the scanner, video digitizer, or other type of equipment used to
              * generate the image.
+             *
+             * Destination: metadata/acquisitionInformation/platform/instrument/identifier
              */
             case Tags.Model: {
                 for (final String value : type.readString(input(), count, encoding())) {
-                    reader.metadata.addInstrument(null, value);
+                    metadata.addInstrument(null, value);
                 }
                 break;
             }
@@ -877,7 +1020,7 @@ final class ImageFileDirectory extends AbstractGridResource {
              *   3 = Centimeter.
              */
             case Tags.ResolutionUnit: {
-                final short unit = type.readShort(input(), count);
+                final int unit = type.readInt(input(), count);
                 switch (unit) {
                     case 1:  resolutionUnit = null;             break;
                     case 2:  resolutionUnit = Units.INCH;       break;
@@ -939,6 +1082,17 @@ final class ImageFileDirectory extends AbstractGridResource {
                 warning(Level.FINE, Resources.Keys.IgnoredTag_1, Tags.name(tag));
                 break;
             }
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+            ////                                                                                        ////
+            ////    Extensions defined by GDAL.                                                         ////
+            ////                                                                                        ////
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+
+            case Tags.GDAL_NODATA: {
+                noData = type.readDouble(input(), count);
+                break;
+            }
         }
         return null;
     }
@@ -973,7 +1127,7 @@ final class ImageFileDirectory extends AbstractGridResource {
                 i = s;
                 final Vector t = a; a = b; b = t;
             }
-            while (--i >= 0) {                      // At this point, 'b' shall be the longest vector.
+            while (--i >= 0) {                      // At this point, `b` shall be the longest vector.
                 final double va = a.doubleValue(i);
                 final double vb = b.doubleValue(i);
                 if (Double.isNaN(vb) || (max ? va > vb : va < vb)) {
@@ -986,13 +1140,13 @@ final class ImageFileDirectory extends AbstractGridResource {
 
     /**
      * Multiplies the given value by the number of bytes in one pixel,
-     * or return -1 if the result is not an integer.
+     * or return 0 if the result is not an integer.
      *
      * @throws ArithmeticException if the result overflows.
      */
     private long pixelToByteCount(long value) {
         value = Math.multiplyExact(value, samplesPerPixel * (int) bitsPerSample);
-        return (value % Byte.SIZE == 0) ? value / Byte.SIZE : -1;
+        return (value % Byte.SIZE == 0) ? value / Byte.SIZE : 0;
     }
 
     /**
@@ -1012,7 +1166,7 @@ final class ImageFileDirectory extends AbstractGridResource {
             do if (++i == n) {
                 // At this point, we verified that all vector values are equal.
                 final long length = pixelToByteCount(knownSize);
-                if (count % length != 0) break;
+                if (length == 0 || (count % length) != 0) break;
                 return Math.toIntExact(count / length);
             } while (tileByteCounts.longValue(i) == n);
         }
@@ -1034,6 +1188,7 @@ final class ImageFileDirectory extends AbstractGridResource {
      * @throws DataStoreContentException if a mandatory tag is missing and can not be inferred.
      */
     final void validateMandatoryTags() throws DataStoreContentException {
+        if (isValidated) return;
         if (imageWidth  < 0) throw missingTag(Tags.ImageWidth);
         if (imageHeight < 0) throw missingTag(Tags.ImageLength);
         final short offsetsTag, byteCountsTag;
@@ -1060,11 +1215,11 @@ final class ImageFileDirectory extends AbstractGridResource {
         }
         if (samplesPerPixel == 0) {
             samplesPerPixel = 1;
-            missingTag(Tags.SamplesPerPixel, 1, false);
+            missingTag(Tags.SamplesPerPixel, 1, false, false);
         }
         if (bitsPerSample == 0) {
             bitsPerSample = 1;
-            missingTag(Tags.BitsPerSample, 1, false);
+            missingTag(Tags.BitsPerSample, 1, false, false);
         }
         if (colorMap != null) {
             ensureSameLength(Tags.ColorMap, Tags.BitsPerSample, colorMap.size(),  3 * (1 << bitsPerSample));
@@ -1091,8 +1246,8 @@ final class ImageFileDirectory extends AbstractGridResource {
         /*
          * All of tile width, height and length information should be provided. But if only one of them is missing,
          * we can compute it provided that the file does not use any compression method. If there is a compression,
-         * then we set a bit for preventing the 'switch' block to perform a calculation but we let the code performs
-         * the other checks in order to get an exception to be thrown with a good message.
+         * then we set a bit for preventing the `switch` block to perform a calculation but we let the code performs
+         * the other checks in order to get an exception thrown with a better message.
          */
         int missing = !isPlanar && compression.equals(Compression.NONE) ? 0 : 0b1000;
         if (tileWidth      < 0)     missing |= 0b0001;
@@ -1105,20 +1260,23 @@ final class ImageFileDirectory extends AbstractGridResource {
             }
             case 0b0001: {          // Compute missing tile width.
                 tileWidth = computeTileSize(tileHeight);
-                missingTag(Tags.TileWidth, tileWidth, true);
+                missingTag(Tags.TileWidth, tileWidth, true, true);
                 break;
             }
             case 0b0010: {          // Compute missing tile height.
                 tileHeight = computeTileSize(tileWidth);
-                missingTag(Tags.TileLength, tileHeight, true);
+                missingTag(Tags.TileLength, tileHeight, true, true);
                 break;
             }
-            case 0b0100: {          // Compute missing tile byte count.
+            case 0b0100: {          // Compute missing tile byte count in uncompressed case.
                 final long tileByteCount = pixelToByteCount(Math.multiplyExact(tileWidth, tileHeight));
+                if (tileByteCount == 0) {
+                    throw missingTag(byteCountsTag);
+                }
                 final long[] tileByteCountArray = new long[tileOffsets.size()];
                 Arrays.fill(tileByteCountArray, tileByteCount);
                 tileByteCounts = Vector.create(tileByteCountArray, true);
-                missingTag(byteCountsTag, tileByteCount, true);
+                missingTag(byteCountsTag, tileByteCount, true, true);
                 break;
             }
             default: {
@@ -1133,13 +1291,10 @@ final class ImageFileDirectory extends AbstractGridResource {
         }
         /*
          * Report an error if the tile offset and tile byte count vectors do not have the same length.
-         * Then ensure that the number of tiles is equal to the expected number. The formula below is the
-         * one documented in the TIFF specification and reproduced in tileWidth & tileHeight fields javadoc.
+         * Then ensure that the number of tiles is equal to the expected number.
          */
         ensureSameLength(offsetsTag, byteCountsTag, tileOffsets.size(), tileByteCounts.size());
-        long expectedCount = Math.multiplyExact(
-                Math.addExact(imageWidth,  tileWidth  - 1) / tileWidth,
-                Math.addExact(imageHeight, tileHeight - 1) / tileHeight);
+        long expectedCount = getNumTiles();
         if (isPlanar) {
             expectedCount = Math.multiplyExact(expectedCount, samplesPerPixel);
         }
@@ -1155,35 +1310,49 @@ final class ImageFileDirectory extends AbstractGridResource {
         if (referencing != null && !referencing.validateMandatoryTags()) {
             throw missingTag(Tags.ModelTiePoints);
         }
+        isValidated = true;
     }
 
     /**
-     * Completes the metadata with the information stored in the field of this IFD.
+     * Builds the metadata with the information stored in the fields of this IFD.
      * This method is invoked only if the user requested the ISO 19115 metadata.
-     * This method creates a new {@code "metadata/contentInfo"} node for this image.
-     * Information not under the {@code "metadata/contentInfo"} node will be merged
-     * with the current content of the given {@code MetadataBuilder}.
      *
-     * @param   metadata  where to write metadata information. Caller should have already invoked
-     *                    {@link MetadataBuilder#setFormat(String)} before {@code completeMetadata(…)} calls.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
-    final void completeMetadata(final MetadataBuilder metadata, final Locale locale)
-            throws DataStoreContentException, FactoryException
-    {
-        metadata.newCoverage(false);
-        if (compression != null) {
-            metadata.addCompression(compression.name().toLowerCase(locale));
+    @Override
+    protected Metadata createMetadata() throws DataStoreException {
+        metadata.addTitle(identifier().toString());
+        /*
+         * Add information about the file format.
+         *
+         * Destination: metadata/identificationInfo/resourceFormat
+         */
+        if (reader.store.hidden) {
+            reader.store.setFormatInfo(metadata);       // Should be before `addCompression(…)`.
         }
-        for (int band = 0; band < samplesPerPixel;) {
-            metadata.newSampleDimension();
+        if (compression != null) {
+            metadata.addCompression(CharSequences.upperCaseToSentence(compression.name()));
+        }
+        /*
+         * Add information about sample dimensions.
+         *
+         * Destination: metadata/contentInfo/attributeGroup/attribute
+         */
+        metadata.newCoverage(reader.store.customizer.isElectromagneticMeasurement(index));
+        final List<SampleDimension> sampleDimensions = getSampleDimensions();
+        for (int band = 0; band < samplesPerPixel; band++) {
+            metadata.addNewBand(sampleDimensions.get(band));
             metadata.setBitPerSample(bitsPerSample);
-            if (isMinSpecified) metadata.addMinimumSampleValue(minValues.doubleValue(Math.min(band, minValues.size()-1)));
-            if (isMaxSpecified) metadata.addMaximumSampleValue(maxValues.doubleValue(Math.min(band, maxValues.size()-1)));
-            metadata.setBandIdentifier(++band);
+            if (!metadata.hasSampleValueRange()) {
+                if (isMinSpecified) metadata.addMinimumSampleValue(minValues.doubleValue(Math.min(band, minValues.size()-1)));
+                if (isMaxSpecified) metadata.addMaximumSampleValue(maxValues.doubleValue(Math.min(band, maxValues.size()-1)));
+            }
         }
         /*
          * Add the resolution into the metadata. Our current ISO 19115 implementation restricts
          * the resolution unit to metres, but it may be relaxed in a future SIS version.
+         *
+         * Destination: metadata/identificationInfo/spatialResolution/distance
          */
         if (!Double.isNaN(resolution) && resolutionUnit != null) {
             metadata.addResolution(resolutionUnit.getConverterTo(Units.METRE).convert(resolution));
@@ -1195,6 +1364,8 @@ final class ImageFileDirectory extends AbstractGridResource {
          *   -1 means that Threshholding is 1 or unspecified.
          *   -2 means that Threshholding is 2 but the matrix size has not yet been specified.
          *   -3 means that Threshholding is 3 (randomized process such as error diffusion).
+         *
+         * Destination: metadata/resourceLineage/processStep/description
          */
         switch (Math.min(cellWidth, cellHeight)) {
             case -1: {
@@ -1214,82 +1385,305 @@ final class ImageFileDirectory extends AbstractGridResource {
             }
         }
         /*
-         * Add Coordinate Reference System built from GeoTIFF tags.  Note that the CRS may not exist,
-         * in which case the CRS builder returns null. This is safe since all MetadataBuilder methods
-         * ignore null values (a design choice because this pattern come very often).
+         * Add Coordinate Reference System built from GeoTIFF tags.
+         * Note that the CRS may not exist.
+         *
+         * Destination: metadata/spatialRepresentationInfo and others.
          */
         if (referencing != null) {
-            getGridGeometry();                  // For calculation of gridGeometry if not already done.
-            referencing.completeMetadata(metadata);
+            final GridGeometry gridGeometry = getGridGeometry();
+            if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) try {
+                metadata.addExtent(gridGeometry.getEnvelope());
+            } catch (TransformException e) {
+                warning(e);
+            }
+            referencing.completeMetadata(metadata);         // Must be after `getGridGeometry()`.
         }
-    }
-
-    @Override
-    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
-        super.createMetadata(metadata);
         /*
-         * TODO:
-         *   - Modify ImageFileDirectory.completeMetadata(…) with the addition of a boolean telling that
-         *     that we invoke this method for a single image instead than the whole image. Use that flag
-         *     for skipping MetadataBuilder calls writing in metadata/identificationInfo/resourceFormat.
-         *   - Invoke ImageFileDirectory.completeMetadata(…) if not already done and cache in a field.
-         *   - Add a metadata utility method taking two Metadata in argument, search for properties that
-         *     are equal and replace them by the same instance.
-         *   - Invoke that method from here if GeoTiffStore already has a metadata, or conversely from
-         *     GeoTiffStore if ImageResource already has a metadata.
+         * End of metadata construction from TIFF tags.
          */
+        final DefaultMetadata md = metadata.build(false);
+        final Metadata c = reader.store.customizer.customize(index, md);
+        md.transitionTo(DefaultMetadata.State.FINAL);
+        metadata = null;
+        return (c != null) ? c : md;
     }
 
     /**
      * Returns an object containing the image size, the CRS and the conversion from pixel indices to CRS coordinates.
+     * The grid geometry has 2 or 3 dimensions, depending on whether the CRS declares a vertical axis or not.
+     *
+     * <h4>Thread-safety</h4>
+     * This method is thread-safe because it can be invoked directly by user.
+     *
+     * @see #getTileSize()
      */
     @Override
     public GridGeometry getGridGeometry() throws DataStoreContentException {
-        if (referencing != null) {
-            GridGeometry gridGeometry = referencing.gridGeometry;
-            if (gridGeometry == null) try {
-                gridGeometry = referencing.build(imageWidth, imageHeight);
-            } catch (FactoryException e) {
-                throw new DataStoreContentException(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, filename()), e);
+        synchronized (getSynchronizationLock()) {
+            if (referencing != null) {
+                GridGeometry gridGeometry = referencing.gridGeometry;
+                if (gridGeometry == null) try {
+                    gridGeometry = referencing.build(imageWidth, imageHeight);
+                } catch (FactoryException e) {
+                    throw new DataStoreContentException(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, filename()), e);
+                }
+                return gridGeometry;
+            } else {
+                return new GridGeometry(new GridExtent(imageWidth, imageHeight), null, null);
             }
-            return gridGeometry;
-        } else {
-            return new GridGeometry(new GridExtent(imageWidth, imageHeight), null);
         }
     }
 
     /**
      * Returns the ranges of sample values together with the conversion from samples to real values.
+     *
+     * <h4>Thread-safety</h4>
+     * This method is thread-safe because it can be invoked directly by user.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<SampleDimension> getSampleDimensions() throws DataStoreContentException {
-        if (sampleDimensions == null) {
-            final SampleDimension[] dimensions = new SampleDimension[samplesPerPixel];
-            final SampleDimension.Builder builder = new SampleDimension.Builder();
-            final InternationalString name = Vocabulary.formatInternational(Vocabulary.Keys.Value);
-            for (int band = 0; band < samplesPerPixel;) {
-                builder.addQualitative(name, minValues.get(Math.min(band, minValues.size()-1)),
-                                             maxValues.get(Math.min(band, maxValues.size()-1)));
-                dimensions[band] = builder.setName(++band).build();
-                builder.clear();
+        synchronized (getSynchronizationLock()) {
+            if (sampleDimensions == null) {
+                final SampleDimension[] dimensions = new SampleDimension[samplesPerPixel];
+                final SampleDimension.Builder builder = new SampleDimension.Builder();
+                for (int band = 0; band < samplesPerPixel;) {
+                    NumberRange<?> sampleRange = null;
+                    if (minValues != null && maxValues != null) {
+                        sampleRange = NumberRange.createBestFit(
+                                minValues.get(Math.min(band, minValues.size()-1)), true,
+                                maxValues.get(Math.min(band, maxValues.size()-1)), true);
+                    }
+                    dimensions[band] = reader.store.customizer.customize(
+                            index, band, sampleRange, builder.setName(++band));
+                    builder.clear();
+                }
+                sampleDimensions = UnmodifiableArrayList.wrap(dimensions);
             }
-            sampleDimensions = UnmodifiableArrayList.wrap(dimensions);
+            return sampleDimensions;        // Safe because unmodifiable.
         }
-        return sampleDimensions;        // Safe because unmodifiable.
     }
 
     /**
-     * Loads a subset of the grid coverage represented by this resource.
+     * Returns the Java2D sample model describing pixel type and layout.
+     * The raster size is the tile size and the number of bands is {@link #samplesPerPixel}.
+     * A sample model of different size or number of bands can be derived after construction
+     * by call to one of {@code SampleModel.create…} methods.
      *
-     * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   0-based index of sample dimensions to read, or an empty sequence for reading all ranges.
-     * @return the grid coverage for the specified domain and range.
-     * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     * @throws DataStoreContentException if the data type is not supported.
+     *
+     * @see SampleModel#createCompatibleSampleModel(int, int)
+     * @see SampleModel#createSubsetSampleModel(int[])
+     * @see #getColorModel()
+     * @see #getTileSize()
      */
     @Override
-    public GridCoverage read(final GridGeometry domain, final int... range) throws DataStoreException {
-        throw new DataStoreException("Not yet implemented.");   // TODO
+    protected SampleModel getSampleModel() throws DataStoreContentException {
+        if (sampleModel == null) try {
+            sampleModel = new SampleModelFactory(getDataType(), tileWidth, tileHeight, samplesPerPixel, bitsPerSample, isPlanar).build();
+        } catch (IllegalArgumentException | RasterFormatException e) {
+            throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, getDataType()), e);
+        }
+        return sampleModel;
+    }
+
+    /**
+     * Returns the number of components per pixel.
+     */
+    @Override
+    protected int getNumBands() {
+        return samplesPerPixel;
+    }
+
+    /**
+     * Returns the size of tiles. This is also the size of the image sample model.
+     * The number of dimensions is always 2 for {@code ImageFileDirectory}.
+     *
+     * @see #getSampleModel()
+     */
+    @Override
+    protected int[] getTileSize() {
+        return new int[] {tileWidth, tileHeight};
+    }
+
+    /**
+     * Returns the total number of tiles. The formulas used in this method are derived from the formulas
+     * documented in the TIFF specification and reproduced in {@link #tileWidth} and {@link #tileHeight}
+     * fields javadoc.
+     */
+    @Override
+    final long getNumTiles() {
+        return Math.multiplyExact(
+                Numerics.ceilDiv(imageWidth,  tileWidth),
+                Numerics.ceilDiv(imageHeight, tileHeight));
+    }
+
+    /**
+     * Returns the type of raster data. The enumeration values are restricted to types compatible with Java2D,
+     * at the cost of using more bits than {@link #bitsPerSample} if there is no exact match.
+     *
+     * @throws DataStoreContentException if the type is not recognized.
+     */
+    private DataType getDataType() throws DataStoreContentException {
+        final String format;
+        switch (sampleFormat) {
+            case SIGNED: {
+                if (bitsPerSample <  Byte   .SIZE) return DataType.BYTE;
+                if (bitsPerSample <= Short  .SIZE) return DataType.SHORT;
+                if (bitsPerSample <= Integer.SIZE) return DataType.INT;
+                format = "int";
+                break;
+            }
+            case UNSIGNED: {
+                if (bitsPerSample <= Byte   .SIZE) return DataType.BYTE;
+                if (bitsPerSample <= Short  .SIZE) return DataType.USHORT;
+                if (bitsPerSample <= Integer.SIZE) return DataType.INT;
+                format = "unsigned";
+                break;
+            }
+            case FLOAT: {
+                if (bitsPerSample == Float  .SIZE) return DataType.FLOAT;
+                if (bitsPerSample == Double .SIZE) return DataType.DOUBLE;
+                format = "float";
+                break;
+            }
+            default: {
+                format = "?";
+                break;
+            }
+        }
+        throw new DataStoreContentException(Errors.format(
+                Errors.Keys.UnsupportedType_1, format + ' ' + bitsPerSample + " bits"));
+    }
+
+    /**
+     * Returns the Java2D color model.
+     *
+     * @throws DataStoreContentException if the data type is not supported.
+     *
+     * @see #getSampleModel()
+     */
+    @Override
+    protected ColorModel getColorModel() throws DataStoreContentException {
+        if (colorModel == null) {
+            final SampleModel sm  = getSampleModel();
+            final int dataType    = sm.getDataType();
+            final int visibleBand = 0;      // May be configurable in a future version.
+            short missing = 0;              // Non-zero if there is a warning about missing information.
+            switch (photometricInterpretation) {
+                default: {                  // For any unrecognized code, fallback on grayscale with 0 as black.
+                    unsupportedTagValue(Tags.PhotometricInterpretation, photometricInterpretation);
+                    break;
+                }
+                case -1: {
+                    missing = Tags.PhotometricInterpretation;
+                    break;
+                }
+                case  0:                   // WhiteIsZero: 0 is imaged as white.
+                case  1: {                 // BlackIsZero: 0 is imaged as black.
+                    final Color[] colors = {Color.BLACK, Color.WHITE};
+                    if (photometricInterpretation == 0) {
+                        ArraysExt.swap(colors, 0, 1);
+                    }
+                    double min = 0;
+                    double max = Numerics.bitmask(bitsPerSample) - 1;
+                    if (minValues != null) min = Math.max(minValues.doubleValue(visibleBand), min);
+                    if (maxValues != null) max = Math.min(maxValues.doubleValue(visibleBand), max);
+                    colorModel = ColorModelFactory.createColorScale(dataType, samplesPerPixel, visibleBand, min, max, colors);
+                    break;
+                }
+                case 2: {                   // RGB: (0,0,0) is black and (255,255,255) is white.
+                    final int numBands = sm.getNumBands();
+                    if (numBands < 3 || numBands > 4) {
+                        throw new DataStoreContentException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "numBands", numBands));
+                    }
+                    final boolean hasAlpha = (numBands >= 4);
+                    final boolean packed = sm instanceof SinglePixelPackedSampleModel;
+                    colorModel = ColorModelFactory.createRGB(bitsPerSample, packed, hasAlpha);
+                    break;
+                }
+                case  3: {                  // PaletteColor
+                    if (colorMap == null) {
+                        missing = Tags.ColorMap;
+                        break;
+                    }
+                    int gi = colorMap.size() / 3;
+                    int bi = gi * 2;
+                    final int[] ARGB = new int[gi];
+                    for (int i=0; i < ARGB.length; i++) {
+                        ARGB[i] = 0xFF000000
+                                | ((colorMap.intValue(i   ) & 0xFF00) << Byte.SIZE)
+                                | ((colorMap.intValue(gi++) & 0xFF00))
+                                | ((colorMap.intValue(bi++) & 0xFF00) >>> Byte.SIZE);
+                    }
+                    colorModel = ColorModelFactory.createIndexColorModel(samplesPerPixel, visibleBand, ARGB,
+                                             true, Double.isFinite(noData) ? (int) Math.round(noData) : -1);
+                    break;
+                }
+            }
+            if (missing != 0) {
+                missingTag(missing, "GrayScale", false, true);
+            }
+        }
+        return colorModel;
+    }
+
+    /**
+     * Returns the value to use for filling empty spaces in the raster, or {@code null} if none,
+     * not different than zero or not valid for the target data type.
+     */
+    @Override
+    protected Number getFillValue() {
+        if (Double.isFinite(noData) && noData != 0) {
+            final long min, max;
+            switch (sampleFormat) {
+                case UNSIGNED: max = 1L << (bitsPerSample    ); min =    0; break;
+                case SIGNED:   max = 1L << (bitsPerSample - 1); min = ~max; break;
+                default: return noData;
+            }
+            final long value = Math.round(noData);
+            if (value >= min && value <= max && value != 0) {
+                return Numbers.narrowestNumber(value);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the stream position or the length in bytes of compressed tile arrays in the GeoTIFF file.
+     * Values in the returned vector are {@code long} primitive type.
+     *
+     * @return stream position (relative to file beginning) and length of compressed tile arrays, in bytes.
+     */
+    @Override
+    Vector[] getTileArrayInfo() {
+        return new Vector[] {tileOffsets, tileByteCounts};
+    }
+
+    /**
+     * Returns {@code true} if {@link Integer#reverseBytes(int)} should be invoked on each byte read.
+     * This mode is very rare and should apply only to uncompressed image or CCITT 1D/2D compressions.
+     */
+    @Override
+    boolean isBitOrderReversed() {
+        return isBitOrderReversed;
+    }
+
+    /**
+     * Returns the compression method, or {@code null} if unspecified.
+     */
+    @Override
+    Compression getCompression() {
+        return compression;
+    }
+
+    /**
+     * Returns the mathematical operator that is applied to the image data before an encoding scheme is applied.
+     */
+    @Override
+    Predictor getPredictor() {
+        return (predictor != null) ? predictor : Predictor.NONE;
     }
 
     /**
@@ -1301,7 +1695,7 @@ final class ImageFileDirectory extends AbstractGridResource {
      */
     private void warning(final Level level, final short key, final Object... parameters) {
         final LogRecord r = reader.resources().getLogRecord(level, key, parameters);
-        reader.owner.warning(r);
+        reader.store.warning(r);
     }
 
     /**
@@ -1319,11 +1713,22 @@ final class ImageFileDirectory extends AbstractGridResource {
      * @param  missing   the numerical value of the missing tag.
      * @param  value     the default value or the computed value.
      * @param  computed  whether the default value has been computed.
+     * @param  warning   whether the problem should be reported as a warning.
      */
-    private void missingTag(final short missing, final long value, final boolean computed) {
-        warning(computed ? Level.WARNING : Level.FINE,
+    private void missingTag(final short missing, final Object value, final boolean computed, final boolean warning) {
+        warning(warning ? Level.WARNING : Level.FINE,
                 computed ? Resources.Keys.ComputedValueForAttribute_2 : Resources.Keys.DefaultValueForAttribute_2,
                 Tags.name(missing), value);
+    }
+
+    /**
+     * Reports a warning for an unsupported TIFF tag value.
+     *
+     * @param  tag    the numerical value of the tag.
+     * @param  value  the unsupported value.
+     */
+    private void unsupportedTagValue(final short tag, final Object value) {
+        warning(Level.WARNING, Resources.Keys.UnsupportedTagValue_2, Tags.name(tag), value);
     }
 
     /**

@@ -18,20 +18,19 @@ package org.apache.sis.filter;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import org.apache.sis.util.Numbers;
-import org.apache.sis.util.ArgumentChecks;
+import org.opengis.util.ScopedName;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.filter.FunctionNames;
+import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Fraction;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
-import org.opengis.filter.expression.BinaryExpression;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.expression.ExpressionVisitor;
+import org.opengis.filter.Expression;
 
 
 /**
@@ -41,10 +40,15 @@ import org.opengis.filter.expression.ExpressionVisitor;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
+ *
+ * @since 1.1
  * @module
  */
-abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpression, FeatureExpression {
+abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
+        implements FeatureExpression<R,Number>, Optimization.OnExpression<R,Number>
+{
     /**
      * For cross-version compatibility.
      */
@@ -53,7 +57,9 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
     /**
      * Creates a new arithmetic function.
      */
-    ArithmeticFunction(final Expression expression1, final Expression expression2) {
+    ArithmeticFunction(final Expression<? super R, ? extends Number> expression1,
+                       final Expression<? super R, ? extends Number> expression2)
+    {
         super(expression1, expression2);
     }
 
@@ -74,6 +80,14 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
     protected abstract AttributeType<Number> expectedType();
 
     /**
+     * Returns the type of values computed by this expression.
+     */
+    @Override
+    public final Class<?> getValueClass() {
+        return Number.class;
+    }
+
+    /**
      * Provides the type of results computed by this expression. That type depends only
      * on the {@code ArithmeticFunction} subclass and is given by {@link #expectedType()}.
      */
@@ -83,71 +97,70 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
     }
 
     /**
-     * Evaluates this expression based on the content of the given object. This method delegates to
-     * {@link #applyAsDouble(double, double)}, {@link #applyAsLong(long, long)} or similar methods
-     * depending on the value types.
-     *
-     * @throws ArithmeticException if the operation overflows the capacity of the type used.
+     * Evaluates the expression for producing a result of numeric type.
+     * This method delegates to one of the {@code applyAs(…)} methods.
+     * If no {@code applyAs(…)} implementations can return null values,
+     * this this method never return {@code null}.
      */
     @Override
-    public final Object evaluate(final Object feature) {
-        return evaluate(feature, Number.class);
-    }
-
-    /**
-     * Evaluates the expression for producing a result of the given type. This method delegates to
-     * {@link #applyAsDouble(double, double)}, {@link #applyAsLong(long, long)} or similar methods
-     * depending on the value types. If this method can not produce a value of the given type,
-     * then it returns {@code null}.
-     *
-     * @param  feature  to feature to evaluate with this expression.
-     * @param  target   the desired type for the expression result.
-     * @return the result, or {@code null} if it can not be of the specified type.
-     * @throws ClassCastException if an expression returned the value in an expected type.
-     * @throws ArithmeticException if the operation overflows the capacity of the type used.
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public final <T> T evaluate(final Object feature, final Class<T> target) {
-        ArgumentChecks.ensureNonNull("target", target);
-        if (Number.class.isAssignableFrom(target)) try {
-            final Number left = (Number) expression1.evaluate(feature, target);
-            if (left != null) {
-                final Number right = (Number) expression2.evaluate(feature, target);
-                if (right != null) {
-                    final Number result = apply(left, right);
-                    final Number casted = Numbers.cast(result, (Class<? extends Number>) target);
-                    if (Numerics.equals(result.doubleValue(), casted.doubleValue())) {
-                        return (T) casted;
-                    }
-                }
+    public final Number apply(final R feature) {
+        final Number left  = expression1.apply(feature);
+        if (left != null) {
+            final Number right = expression2.apply(feature);
+            if (right != null) {
+                return apply(left, right);
             }
-        } catch (ArithmeticException e) {
-            warning(e);
         }
         return null;
     }
 
+    /**
+     * Returns {@code this} if this expression provides values of the specified type,
+     * or otherwise returns an expression doing conversions on-the-fly.
+     *
+     * @throws ClassCastException if the specified type is not a supported target type.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <N> Expression<R,N> toValueType(final Class<N> type) {
+        if (type.isAssignableFrom(Number.class)) {
+            return (Expression<R,N>) this;
+        } else try {
+            return new ConvertFunction<>(this, Number.class, type);
+        } catch (UnconvertibleObjectException e) {
+            throw (ClassCastException) new ClassCastException(Errors.format(
+                    Errors.Keys.CanNotConvertValue_2, getFunctionName(), type)).initCause(e);
+        }
+    }
 
     /**
      * The "Add" (+) expression.
      */
-    static final class Add extends ArithmeticFunction implements org.opengis.filter.expression.Add {
+    static final class Add<R> extends ArithmeticFunction<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 5445433312445869201L;
 
-        /** Description of results of the {@value #NAME} expression. */
-        private static final AttributeType<Number> TYPE = createNumericType(NAME);
+        /** Description of results of the {@code "Add"} expression. */
+        private static final AttributeType<Number> TYPE = createNumericType(FunctionNames.Add);
         @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
-        /** Creates a new expression for the {@value #NAME} operation. */
-        Add(Expression expression1, Expression expression2) {
+        /** Creates a new expression for the {@code "Add"} operation. */
+        Add(final Expression<? super R, ? extends Number> expression1,
+            final Expression<? super R, ? extends Number> expression2)
+        {
             super(expression1, expression2);
         }
 
-        /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
-        @Override protected char   symbol()  {return '+';}
+        /** Creates a new expression of the same type but different parameters. */
+        @Override public Expression<R,Number> recreate(final Expression<? super R, ?>[] effective) {
+            return new Add<>(effective[0].toValueType(Number.class),
+                             effective[1].toValueType(Number.class));
+        }
+
+        /** Identification of the {@code "Add"} operation. */
+        private static final ScopedName NAME = createName(FunctionNames.Add);
+        @Override public ScopedName getFunctionName() {return NAME;}
+        @Override protected char symbol() {return '+';}
 
         /** Applies this expression to the given operands. */
         @Override protected Number applyAsDouble  (double     left, double     right) {return left + right;}
@@ -155,33 +168,37 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         @Override protected Number applyAsDecimal (BigDecimal left, BigDecimal right) {return left.add(right);}
         @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {return left.add(right);}
         @Override protected Number applyAsLong    (long       left, long       right) {return Math.addExact(left, right);}
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The "Sub" (−) expression.
+     * The "Subtract" (−) expression.
      */
-    static final class Subtract extends ArithmeticFunction implements org.opengis.filter.expression.Subtract {
+    static final class Subtract<R> extends ArithmeticFunction<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 3048878022726271508L;
 
-        /** Description of results of the {@value #NAME} expression. */
-        private static final AttributeType<Number> TYPE = createNumericType(NAME);
+        /** Description of results of the {@code "Subtract"} expression. */
+        private static final AttributeType<Number> TYPE = createNumericType(FunctionNames.Subtract);
         @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
-        /** Creates a new expression for the {@value #NAME} operation. */
-        Subtract(Expression expression1, Expression expression2) {
+        /** Creates a new expression for the {@code "Subtract"} operation. */
+        Subtract(final Expression<? super R, ? extends Number> expression1,
+                 final Expression<? super R, ? extends Number> expression2)
+        {
             super(expression1, expression2);
         }
 
-        /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
-        @Override protected char   symbol()  {return '−';}
+        /** Creates a new expression of the same type but different parameters. */
+        @Override public Expression<R,Number> recreate(final Expression<? super R, ?>[] effective) {
+            return new Subtract<>(effective[0].toValueType(Number.class),
+                                  effective[1].toValueType(Number.class));
+        }
+
+        /** Identification of the {@code "Subtract"} operation. */
+        private static final ScopedName NAME = createName(FunctionNames.Subtract);
+        @Override public ScopedName getFunctionName() {return NAME;}
+        @Override protected char symbol() {return '−';}
 
         /** Applies this expression to the given operands. */
         @Override protected Number applyAsDouble  (double     left, double     right) {return left - right;}
@@ -189,33 +206,37 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         @Override protected Number applyAsDecimal (BigDecimal left, BigDecimal right) {return left.subtract(right);}
         @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {return left.subtract(right);}
         @Override protected Number applyAsLong    (long       left, long       right) {return Math.subtractExact(left, right);}
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The "Mul" (×) expression.
+     * The "Multiply" (×) expression.
      */
-    static final class Multiply extends ArithmeticFunction implements org.opengis.filter.expression.Multiply {
+    static final class Multiply<R> extends ArithmeticFunction<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -1300022614832645625L;
 
-        /** Description of results of the {@value #NAME} expression. */
-        private static final AttributeType<Number> TYPE = createNumericType(NAME);
+        /** Description of results of the {@code "Multiply"} expression. */
+        private static final AttributeType<Number> TYPE = createNumericType(FunctionNames.Multiply);
         @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
-        /** Creates a new expression for the {@value #NAME} operation. */
-        Multiply(Expression expression1, Expression expression2) {
+        /** Creates a new expression for the {@code "Multiply"} operation. */
+        Multiply(final Expression<? super R, ? extends Number> expression1,
+                 final Expression<? super R, ? extends Number> expression2)
+        {
             super(expression1, expression2);
         }
 
-        /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
-        @Override protected char   symbol()  {return '×';}
+        /** Creates a new expression of the same type but different parameters. */
+        @Override public Expression<R,Number> recreate(final Expression<? super R, ?>[] effective) {
+            return new Multiply<>(effective[0].toValueType(Number.class),
+                                  effective[1].toValueType(Number.class));
+        }
+
+        /** Identification of the {@code "Multiply"} operation. */
+        private static final ScopedName NAME = createName(FunctionNames.Multiply);
+        @Override public ScopedName getFunctionName() {return NAME;}
+        @Override protected char symbol() {return '×';}
 
         /** Applies this expression to the given operands. */
         @Override protected Number applyAsDouble  (double     left, double     right) {return left * right;}
@@ -223,35 +244,39 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         @Override protected Number applyAsDecimal (BigDecimal left, BigDecimal right) {return left.multiply(right);}
         @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {return left.multiply(right);}
         @Override protected Number applyAsLong    (long       left, long       right) {return Math.multiplyExact(left, right);}
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
-        }
     }
 
 
     /**
-     * The "Div" (÷) expression.
+     * The "Divide" (÷) expression.
      */
-    static final class Divide extends ArithmeticFunction implements org.opengis.filter.expression.Divide {
+    static final class Divide<R> extends ArithmeticFunction<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -7709291845568648891L;
 
-        /** Description of results of the {@value #NAME} expression. */
-        private static final AttributeType<Number> TYPE = createNumericType(NAME);
+        /** Description of results of the {@code "Divide"} expression. */
+        private static final AttributeType<Number> TYPE = createNumericType(FunctionNames.Divide);
         @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
-        /** Creates a new expression for the {@value #NAME} operation. */
-        Divide(Expression expression1, Expression expression2) {
+        /** Creates a new expression for the {@code "Divide"} operation. */
+        Divide(final Expression<? super R, ? extends Number> expression1,
+               final Expression<? super R, ? extends Number> expression2)
+        {
             super(expression1, expression2);
         }
 
-        /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
-        @Override protected char   symbol()  {return '÷';}
+        /** Creates a new expression of the same type but different parameters. */
+        @Override public Expression<R,Number> recreate(final Expression<? super R, ?>[] effective) {
+            return new Divide<>(effective[0].toValueType(Number.class),
+                                effective[1].toValueType(Number.class));
+        }
 
-        /** Applies this expression to the given operands. */
+        /** Identification of the {@code "Divide"} operation. */
+        private static final ScopedName NAME = createName(FunctionNames.Divide);
+        @Override public ScopedName getFunctionName() {return NAME;}
+        @Override protected char symbol() {return '÷';}
+
+        /** Divides the given integers, changing the type if the result is not an integer. */
         @Override protected Number applyAsDouble  (double     left, double     right) {return left / right;}
         @Override protected Number applyAsFraction(Fraction   left, Fraction   right) {return left.divide(right);}
         @Override protected Number applyAsDecimal (BigDecimal left, BigDecimal right) {return left.divide(right);}
@@ -260,22 +285,19 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
             if (BigInteger.ZERO.equals(r[1])) {
                 return r[0];
             } else {
-                return left.doubleValue() / right.doubleValue();
+                return new Fraction(r[1].intValueExact(), right.intValueExact()).add(
+                       new Fraction(r[0].intValueExact(), 1));
             }
         }
 
-        /** Divides the given integers, changing the type to a floating point type if the result is not an integer. */
+        /** Divides the given integers, changing the type if the result is not an integer. */
         @Override protected Number applyAsLong(final long left, final long right) {
+            final long r = left / right;
             if (left % right == 0) {
-                return left / right;
+                return r;
             } else {
-                return left / (double) right;
+                return new Fraction(Math.toIntExact(left), Math.toIntExact(right));
             }
-        }
-
-        /** Implementation of the visitor pattern (not used by Apache SIS). */
-        @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
         }
     }
 }

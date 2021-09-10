@@ -19,23 +19,17 @@ package org.apache.sis.internal.netcdf.impl;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.SortedMap;
-import javax.measure.Unit;
-import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.internal.netcdf.Axis;
+import org.apache.sis.internal.netcdf.AxisType;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.Resources;
-import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
 import ucar.nc2.constants.CF;
 
@@ -53,40 +47,6 @@ import ucar.nc2.constants.CF;
  * @module
  */
 final class GridInfo extends Grid {
-    /**
-     * Mapping from values of the {@code "_CoordinateAxisType"} attribute or axis name to the abbreviation.
-     * Keys are lower cases and values are controlled vocabulary documented in {@link Axis#abbreviation}.
-     *
-     * <div class="note">"GeoX" and "GeoY" stands for projected coordinates, not geocentric coordinates
-     * (<a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/CoordinateAttributes.html#AxisTypes">source</a>).
-     * </div>
-     *
-     * @see #getAxisType(String)
-     */
-    private static final Map<String,Character> AXIS_TYPES = new HashMap<>(26);
-    static {
-        addAxisTypes('λ', "longitude", "lon", "long");
-        addAxisTypes('φ', "latitude",  "lat");
-        addAxisTypes('H', "pressure", "height", "altitude", "barometric_altitude", "elevation", "elev", "geoz");
-        addAxisTypes('D', "depth", "depth_below_geoid");
-        addAxisTypes('E', "geox", "projection_x_coordinate");
-        addAxisTypes('N', "geoy", "projection_y_coordinate");
-        addAxisTypes('t', "t", "time", "runtime");
-        addAxisTypes('x', "x");
-        addAxisTypes('y', "y");
-        addAxisTypes('z', "z");
-    }
-
-    /**
-     * Adds a sequence of axis types or variable names for the given abbreviation.
-     */
-    private static void addAxisTypes(final char abbreviation, final String... names) {
-        final Character c = abbreviation;
-        for (final String name : names) {
-            AXIS_TYPES.put(name, c);
-        }
-    }
-
     /**
      * Describes the input values expected by the function converting grid indices to geodetic coordinates.
      * They are the dimensions of the grid (<strong>not</strong> the dimensions of the CRS).
@@ -149,21 +109,6 @@ final class GridInfo extends Grid {
     @Override
     public String getName() {
         return listNames(range, range.length, " ");
-    }
-
-    /**
-     * Returns the axis type for an axis of the given name, or 0 if unknown.
-     * If non-zero, then the returned code is one of the controlled vocabulary
-     * documented in {@link Axis#abbreviation}.
-     */
-    private static char getAxisType(final String name) {
-        if (name != null) {
-            final Character abbreviation = AXIS_TYPES.get(name.toLowerCase(Locale.US));
-            if (abbreviation != null) {
-                return abbreviation;
-            }
-        }
-        return 0;
     }
 
     /**
@@ -255,56 +200,6 @@ next:       for (final String name : axisNames) {
             final int targetDim = entry.getValue();
             final VariableInfo axis = entry.getKey();
             /*
-             * In Apache SIS implementation, the abbreviation determines the axis type. If a "_coordinateaxistype" attribute
-             * exists, il will have precedence over all other heuristic rules in this method because it is the most specific
-             * information about axis type. Otherwise the "standard_name" attribute is our first fallback since valid values
-             * are standardized to "longitude" and "latitude" among others.
-             */
-            char abbreviation = getAxisType(axis.getAxisType());
-            if (abbreviation == 0) {
-                abbreviation = getAxisType(axis.getAttributeAsString(CF.STANDARD_NAME));
-                /*
-                 * If the abbreviation is still unknown, look at the "long_name", "description" or "title" attribute. Those
-                 * attributes are not standardized, so they are less reliable than "standard_name". But they are still more
-                 * reliable that the variable name since the long name may be "Longitude" or "Latitude" while the variable
-                 * name is only "x" or "y".
-                 */
-                if (abbreviation == 0) {
-                    abbreviation = getAxisType(axis.getDescription());
-                    if (abbreviation == 0) {
-                        /*
-                         * Actually the "degree_east" and "degree_north" units of measurement are the most reliable way to
-                         * identify geographic system, but we nevertheless check them almost last because the direction is
-                         * already verified by Axis constructor. By checking the variable attributes first, we give a chance
-                         * to Axis constructor to report a warning if there is an inconsistency.
-                         */
-                        if (Units.isAngular(axis.getUnit())) {
-                            final AxisDirection direction = AxisDirections.absolute(Axis.direction(axis.getUnitsString()));
-                            if (AxisDirection.EAST.equals(direction)) {
-                                abbreviation = 'λ';
-                            } else if (AxisDirection.NORTH.equals(direction)) {
-                                abbreviation = 'φ';
-                            }
-                        }
-                        /*
-                         * We test the variable name last because that name is more at risk of being an uninformative "x" or "y" name.
-                         * If even the variable name is not sufficient, we use some easy to recognize units.
-                         */
-                        if (abbreviation == 0) {
-                            abbreviation = getAxisType(axis.getName());
-                            if (abbreviation == 0) {
-                                final Unit<?> unit = axis.getUnit();
-                                if (Units.isTemporal(unit)) {
-                                    abbreviation = 't';
-                                } else if (Units.isPressure(unit)) {
-                                    abbreviation = 'z';
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            /*
              * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing
              * the coordinate values along the current axis. There is exactly 1 such grid dimension in
              * straightforward netCDF files. However some more complex files may have 2 dimensions.
@@ -317,12 +212,12 @@ next:       for (final String name : axisNames) {
                 for (int sourceDim = 0; sourceDim < domain.length; sourceDim++) {
                     if (domain[sourceDim] == dimension) {
                         indices[i] = sourceDim;
-                        sizes[i++] = dimension.length;
+                        sizes[i++] = dimension.length;              // Handled as unsigned intengers.
                         break;
                     }
                 }
             }
-            axes[targetDim] = new Axis(abbreviation, axis.getAttributeAsString(CF.POSITIVE),
+            axes[targetDim] = new Axis(AxisType.abbreviation(axis), axis.getAttributeAsString(CF.POSITIVE),
                                        ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), axis);
         }
         return axes;

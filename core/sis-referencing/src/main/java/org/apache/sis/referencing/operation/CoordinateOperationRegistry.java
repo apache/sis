@@ -23,6 +23,7 @@ import java.util.ListIterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -48,7 +49,6 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -72,7 +72,6 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.Containers;
@@ -102,7 +101,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * then {@link CoordinateOperationFinder} will use its own fallback.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -111,6 +110,11 @@ class CoordinateOperationRegistry {
      * The identifier for an identity operation.
      */
     static final Identifier IDENTITY = createIdentifier(Vocabulary.Keys.Identity);
+
+    /**
+     * The identifier for an operation setting some coordinates to constant values.
+     */
+    static final Identifier CONSTANTS = createIdentifier(Vocabulary.Keys.Constants);
 
     /**
      * The identifier for conversion using an affine transform for axis swapping and/or unit conversions.
@@ -154,6 +158,17 @@ class CoordinateOperationRegistry {
     /**
      * The object to use for finding authority codes, or {@code null} if none.
      * An instance is fetched at construction time from the {@link #registry} if possible.
+     *
+     * <div class="note"><b>Design note:</b>
+     * using a provider defined by the {@link #registry} instead than {@code MultiAuthoritiesFactory} may cause
+     * the finder to perform extensive searches because it does not recognize the authority code of a given CRS.
+     * For example if {@link #registry} is for EPSG and a given CRS is "CRS:84", then {@code codeFinder} would
+     * not recognize the given CRS and would search for a match in the EPSG database. This is desired because
+     * we need to have the two CRSs defined by the same authority (if possible) in order to find a predefined
+     * operation, even if an equivalent definition was provided by another authority.</div>
+     *
+     * @see #authorityCodes
+     * @see #findCode(CoordinateReferenceSystem)
      */
     private final IdentifiedObjectFinder codeFinder;
 
@@ -206,6 +221,15 @@ class CoordinateOperationRegistry {
     private Predicate<CoordinateOperation> filter;
 
     /**
+     * Authority codes found for CRS. This is a cache for {@link #findCode(CoordinateReferenceSystem)}.
+     * This map may be non-empty only if {@link #codeFinder} is non-null.
+     *
+     * @see #codeFinder
+     * @see #findCode(CoordinateReferenceSystem)
+     */
+    private final Map<CoordinateReferenceSystem, List<String>> authorityCodes;
+
+    /**
      * Creates a new instance for the given factory and context.
      *
      * @param  registry  the factory to use for creating operations as defined by authority.
@@ -222,6 +246,7 @@ class CoordinateOperationRegistry {
         this.factory  = factory;
         factorySIS    = (factory instanceof DefaultCoordinateOperationFactory)
                         ? (DefaultCoordinateOperationFactory) factory : CoordinateOperations.factory();
+        Map<CoordinateReferenceSystem, List<String>> authorityCodes = Collections.emptyMap();
         IdentifiedObjectFinder codeFinder = null;
         if (registry != null) {
             if (registry instanceof GeodeticAuthorityFactory) {
@@ -229,14 +254,14 @@ class CoordinateOperationRegistry {
             } else try {
                 codeFinder = IdentifiedObjects.newFinder(Citations.toCodeSpace(registry.getAuthority()));
             } catch (NoSuchAuthorityFactoryException e) {
-                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
-                        CoordinateOperationRegistry.class, "<init>", e);
+                recoverableException("<init>", e);
             }
             if (codeFinder != null) {
-                codeFinder.setIgnoringAxes(true);
+                authorityCodes = new IdentityHashMap<>(5);          // Rarely more than 4 entries.
             }
         }
-        this.codeFinder = codeFinder;
+        this.codeFinder     = codeFinder;
+        this.authorityCodes = authorityCodes;
         if (context != null) {
             areaOfInterest  = context.getAreaOfInterest();
             desiredAccuracy = context.getDesiredAccuracy();
@@ -253,7 +278,6 @@ class CoordinateOperationRegistry {
         if (codeFinder != null) {
             codeFinder.setIgnoringAxes(false);
             final IdentifiedObject candidate = codeFinder.findSingleton(object);
-            codeFinder.setIgnoringAxes(true);
             if (Utilities.equalsIgnoreMetadata(object, candidate)) {
                 return type.cast(candidate);
             }
@@ -266,23 +290,96 @@ class CoordinateOperationRegistry {
      * This method does not trust the code given by the user in its CRS - we verify it.
      * This method may return codes even if the axis order does not match;
      * it will be caller's responsibility to make necessary adjustments.
+     *
+     * @return authority codes for the given CRS, or an empty list if none.
+     *         <b>Do not modify</b> since this list is cached.
      */
     private List<String> findCode(final CoordinateReferenceSystem crs) throws FactoryException {
-        final List<String> codes = new ArrayList<>();
-        if (codeFinder != null) {
-            for (final IdentifiedObject candidate : codeFinder.find(crs)) {
-                final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, registry.getAuthority());
-                if (identifier != null) {
-                    final String code = identifier.getCode();
-                    if (Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATE)) {
-                        codes.add(0, code);     // If axis order match, give precedence to that CRS.
-                    } else {
-                        codes.add(code);
+        List<String> codes = authorityCodes.get(crs);
+        if (codes == null) {
+            codes = new ArrayList<>();
+            if (codeFinder != null) {
+                codeFinder.setIgnoringAxes(true);
+                for (final IdentifiedObject candidate : codeFinder.find(crs)) {
+                    final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, registry.getAuthority());
+                    if (identifier != null) {
+                        final String code = identifier.getCode();
+                        if (Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATE)) {
+                            codes.add(0, code);     // If axis order match, give precedence to that CRS.
+                        } else {
+                            codes.add(code);
+                        }
                     }
                 }
+                authorityCodes.put(crs, codes);
             }
         }
         return codes;
+    }
+
+    /**
+     * Strategies for decomposing a three-dimensional CRS into components that may be present in EPSG database.
+     * The database may have no entries for a coordinate operation between a pair of 3D CRS with (x,y,z) axes,
+     * while entries for the horizontal components (2D CRS with (x,y) axes) may exist. This class enumerates
+     * which decompositions to apply on the 3D CRS before searching in EPSG database. Those decompositions will
+     * be applied in the order they are enumerated.
+     */
+    private enum Decomposition {
+        /**
+         * Search for a coordinate operation with the CRS as specified, without any reduction.
+         * It should be the first strategy to try before anything else.
+         */
+        NONE(false, false),
+
+        /**
+         * If the target CRS is three-dimensional, make it two-dimensional and search again in database.
+         * The source CRS is left as-is; it may be two- or three-dimensional.
+         * This strategy avoid the last of source coordinates since they may be used in calculation.
+         */
+        HORIZONTAL_TARGET(false, true),
+
+        /**
+         * Make both source and target CRS two-dimensional and search again in the database.
+         * This strategy should not be applied before {@link #HORIZONTAL_TARGET} because we
+         * want to use the <var>z</var> coordinate value to be used if possible.
+         */
+        HORIZONTAL(true, true),
+
+        /**
+         * If the source CRS is three-dimensional, make it two-dimensional and search again in database.
+         * The target CRS is left as-is; it may be two- or three-dimensional. This strategy is rarely
+         * applicable because it would cause the <var>z</var> coordinate value to appear from nowhere,
+         * but we nevertheless test it as a matter of principle.
+         */
+        HORIZONTAL_SOURCE(true, false);
+
+        /**
+         * Whether to extract the horizontal component of the source or target CRS.
+         */
+        final boolean source, target;
+
+        /**
+         * Creates a new decomposition strategy.
+         */
+        private Decomposition(final boolean source, final boolean target) {
+            this.source = source;
+            this.target = target;
+        }
+
+        /**
+         * Returns the horizontal component to search in the database, or {@code null} if no search should be done.
+         * This method returns {@code null} if the horizontal component is not different then the given CRS,
+         * in which case searching that CRS in the database would be redundant with previous searches.
+         * It also returns {@code null} if the CRS is a compound CRS, in which case the the separation
+         * in single CRS should be done by the {@link CoordinateOperationFinder} subclass.
+         */
+        static SingleCRS horizontal(final CoordinateReferenceSystem crs) {
+            if (crs instanceof SingleCRS) {
+                final SingleCRS sep = CRS.getHorizontalComponent(crs);
+                if (sep != crs) return sep;             // May be null.
+            }
+            return null;
+        }
     }
 
     /**
@@ -308,27 +405,32 @@ class CoordinateOperationRegistry {
                                                       final CoordinateReferenceSystem targetCRS)
             throws FactoryException
     {
-        CoordinateReferenceSystem source = sourceCRS;
-        CoordinateReferenceSystem target = targetCRS;
-        for (int combine=0; ;combine++) {
+        SingleCRS source2D = null;
+        SingleCRS target2D = null;
+        boolean sourceCached = false;
+        boolean targetCached = false;
+        for (final Decomposition decompose : Decomposition.values()) {
             /*
              * First, try directly the provided (sourceCRS, targetCRS) pair. If that pair does not work,
              * try to use different combinations of user-provided CRS and two-dimensional components of
              * those CRS. The code below assumes that the user-provided CRS are three-dimensional, but
-             * actually it works for other kind of CRS too without testing twice the same combinations.
+             * actually it works for two-dimensional CRS too without testing twice the same combinations.
              */
-            switch (combine) {
-                case 0:  break;                                                         // 3D → 3D
-                case 1:  target = CRS.getHorizontalComponent(targetCRS);                // 3D → 2D
-                         if (target == targetCRS) continue;
-                         break;
-                case 2:  source = CRS.getHorizontalComponent(sourceCRS);                // 2D → 2D
-                         if (source == sourceCRS) continue;
-                         break;
-                case 3:  if (source == sourceCRS || target == targetCRS) continue;
-                         target = targetCRS;                                            // 2D → 3D
-                         break;
-                default: return Collections.emptyList();
+            CoordinateReferenceSystem source = sourceCRS;
+            CoordinateReferenceSystem target = targetCRS;
+            if (decompose.source) {
+                if (!sourceCached) {
+                    sourceCached = true;
+                    source2D = Decomposition.horizontal(sourceCRS);
+                }
+                source = source2D;
+            }
+            if (decompose.target) {
+                if (!targetCached) {
+                    targetCached = true;
+                    target2D = Decomposition.horizontal(targetCRS);
+                }
+                target = target2D;
             }
             if (source != null && target != null) try {
                 final List<CoordinateOperation> operations = search(source, target);
@@ -337,11 +439,10 @@ class CoordinateOperationRegistry {
                      * Found an operation. If we had to extract the horizontal part of some 3D CRS, then we
                      * need to modify the coordinate operation in order to match the new number of dimensions.
                      */
-                    if (combine != 0) {
+                    if (decompose != Decomposition.NONE) {
                         for (int i=operations.size(); --i >= 0;) {
                             CoordinateOperation operation = operations.get(i);
-                            operation = propagateVertical(sourceCRS, source != sourceCRS,
-                                                          targetCRS, target != targetCRS, operation);
+                            operation = propagateVertical(sourceCRS, targetCRS, operation, decompose);
                             if (operation != null) {
                                 operation = complete(operation, sourceCRS, targetCRS);
                                 operations.set(i, operation);
@@ -363,6 +464,7 @@ class CoordinateOperationRegistry {
                 throw new FactoryException(message, e);
             }
         }
+        return Collections.emptyList();
     }
 
     /**
@@ -416,7 +518,7 @@ class CoordinateOperationRegistry {
                         final boolean inverse = Containers.isNullOrEmpty(authoritatives);
                         if (inverse) {
                             /*
-                             * No operation from 'source' to 'target' available. But maybe there is an inverse operation.
+                             * No operation from `source` to `target` available. But maybe there is an inverse operation.
                              * This is typically the case when the user wants to convert from a projected to a geographic CRS.
                              * The EPSG database usually contains transformation paths for geographic to projected CRS only.
                              */
@@ -570,7 +672,7 @@ class CoordinateOperationRegistry {
         final CoordinateReferenceSystem sourceCRS = op.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = op.getTargetCRS();
         final MathTransform transform = op.getMathTransform().inverse();
-        final OperationMethod method = InverseOperationMethod.create(op.getMethod());
+        final OperationMethod method = InverseOperationMethod.create(op.getMethod(), factorySIS);
         final Map<String,Object> properties = properties(INVERSE_OPERATION);
         InverseOperationMethod.properties(op, properties);
         /*
@@ -596,7 +698,7 @@ class CoordinateOperationRegistry {
      * @param  operation  the operation to invert, or {@code null}.
      * @return the inverse of {@code operation}, or {@code null} if none.
      * @throws NoninvertibleTransformException if the operation is not invertible.
-     * @throws FactoryException if the operation creation failed for an other reason.
+     * @throws FactoryException if the operation creation failed for another reason.
      */
     private CoordinateOperation inverse(final CoordinateOperation operation)
             throws NoninvertibleTransformException, FactoryException
@@ -772,20 +874,15 @@ class CoordinateOperationRegistry {
          * Determine whether the operation to create is a Conversion or a Transformation
          * (could also be a Conversion subtype like Projection, but this is less important).
          * We want the GeoAPI interface, not the implementation class.
-         * The most reliable way is to ask to the 'AbstractOperation.getInterface()' method,
+         * The most reliable way is to ask to the `AbstractOperation.getInterface()` method,
          * but this is SIS-specific. The fallback uses reflection.
          */
-        final Class<? extends IdentifiedObject> type;
-        if (operation instanceof AbstractIdentifiedObject) {
-             type = ((AbstractIdentifiedObject) operation).getInterface();
-        } else {
-             type = Classes.getLeafInterfaces(operation.getClass(), CoordinateOperation.class)[0];
-        }
-        properties.put(CoordinateOperations.OPERATION_TYPE_KEY, type);
+        properties.put(CoordinateOperations.OPERATION_TYPE_KEY,
+                ReferencingUtilities.getInterface(CoordinateOperation.class, operation));
         /*
          * Reuse the same operation method, but we may need to change its number of dimension.
          * The capability to resize an OperationMethod is specific to Apache SIS, so we must
-         * be prepared to see the 'redimension' call fails. In such case, we will try to get
+         * be prepared to see the `redimension` call fails. In such case, we will try to get
          * the SIS implementation of the operation method and try again.
          */
         if (SubTypes.isSingleOperation(operation)) {
@@ -862,19 +959,21 @@ class CoordinateOperationRegistry {
      * <cite>best effort</cite> basis. In any cases, the {@link #complete} method should be invoked
      * after this one in order to ensure that the source and target CRS are the expected ones.</p>
      *
-     * @param  sourceCRS the potentially three-dimensional source CRS
-     * @param  source3D  {@code true} for adding ellipsoidal height in source coordinates.
-     * @param  targetCRS the potentially three-dimensional target CRS
-     * @param  target3D  {@code true} for adding ellipsoidal height in target coordinates.
-     * @param  operation the original (typically two-dimensional) coordinate operation.
+     * @param  sourceCRS  the potentially three-dimensional source CRS
+     * @param  targetCRS  the potentially three-dimensional target CRS
+     * @param  operation  the original (typically two-dimensional) coordinate operation.
+     * @param  decompose  the decomposition which has been applied.
+     *         If {@code decompose.source} is {@code true}, ellipsoidal height will be added to source coordinates.
+     *         If {@code decompose.target} is {@code true}, ellipsoidal height will be added to target coordinates.
      * @return a coordinate operation with the source and/or target coordinates made 3D,
      *         or {@code null} if this method does not know how to create the operation.
      * @throws IllegalArgumentException if the operation method can not have the desired number of dimensions.
      * @throws FactoryException if an error occurred while creating the coordinate operation.
      */
-    private CoordinateOperation propagateVertical(final CoordinateReferenceSystem sourceCRS, final boolean source3D,
-                                                  final CoordinateReferenceSystem targetCRS, final boolean target3D,
-                                                  final CoordinateOperation operation)
+    private CoordinateOperation propagateVertical(final CoordinateReferenceSystem sourceCRS,
+                                                  final CoordinateReferenceSystem targetCRS,
+                                                  final CoordinateOperation operation,
+                                                  final Decomposition decompose)
             throws IllegalArgumentException, FactoryException
     {
         final List<CoordinateOperation> operations = new ArrayList<>();
@@ -883,8 +982,8 @@ class CoordinateOperationRegistry {
         } else {
             operations.add(operation);
         }
-        if ((source3D && !propagateVertical(sourceCRS, targetCRS, operations.listIterator(), true)) ||
-            (target3D && !propagateVertical(sourceCRS, targetCRS, operations.listIterator(operations.size()), false)))
+        if ((decompose.source && !propagateVertical(sourceCRS, targetCRS, operations.listIterator(), true)) ||
+            (decompose.target && !propagateVertical(sourceCRS, targetCRS, operations.listIterator(operations.size()), false)))
         {
             return null;
         }
@@ -1189,5 +1288,18 @@ class CoordinateOperationRegistry {
             record.setThrown(exception);
         }
         Logging.log(CoordinateOperationFinder.class, "createOperations", record);
+    }
+
+    /**
+     * Logs an ignorable exception. This method pretends that the logging come from
+     * {@link CoordinateOperationFinder} since this is the public API which use this
+     * {@code CoordinateOperationRegistry} class.
+     *
+     * @param  method     the method name where the error occurred.
+     * @param  exception  the exception which occurred, or {@code null} if a {@code record} is specified instead.
+     */
+    static void recoverableException(final String method, final Exception exception) {
+        Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                CoordinateOperationFinder.class, method, exception);
     }
 }

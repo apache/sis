@@ -186,7 +186,7 @@ public final class DataScriptFormatter extends ScriptRunner {
         try (LineNumberReader in = new LineNumberReader(new InputStreamReader(Files.newInputStream(inputFile), StandardCharsets.UTF_8))) {
             out.write("---\n" +
                       "---    Copyright International Association of Oil and Gas Producers (IOGP)\n" +
-                      "---    See  http://www.epsg.org/TermsOfUse.aspx  (a copy is in ./LICENSE.txt).\n" +
+                      "---    See  https://epsg.org/terms-of-use.html  (a copy is in ./LICENSE.txt).\n" +
                       "---\n" +
                       "---    This file has been reformatted (without any change in the data) for the needs of Apache SIS project.\n" +
                       "---    See org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter.\n" +

@@ -37,8 +37,9 @@
  *       {@link org.apache.sis.util.LenientComparable} interface, for comparing objects in various ways.</li>
  * </ul>
  *
- * @author Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   0.3
  * @module
  */

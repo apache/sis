@@ -365,7 +365,7 @@ public abstract class LoggerAdapter extends Logger {
          * The filter should always be null since we overrode the 'setFilter' method as a no-op.
          * But we check it anyway as matter of principle just in case some subclass overrides the
          * 'getFilter()' method. This is the only method where we can do this check cheaply. Note
-         * that this is NOT the check for logging level; Filters are for user-specified criterions.
+         * that this is NOT the check for logging level; Filters are for user-specified criteria.
          */
         final Filter filter = getFilter();
         if (filter != null && !filter.isLoggable(record)) {

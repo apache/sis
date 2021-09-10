@@ -830,8 +830,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             int afterVersion = code.indexOf(Constants.DEFAULT_SEPARATOR, ++afterAuthority);
             start = CharSequences.skipLeadingWhitespaces(code, afterAuthority, afterVersion);
             end = CharSequences.skipTrailingWhitespaces(code, start, afterVersion);
-            version = (start < end && !code.regionMatches(start, DefinitionURI.NO_VERSION, 0,
-                    DefinitionURI.NO_VERSION.length())) ? code.substring(start, end) : null;
+            version = (start < end && !code.startsWith(DefinitionURI.NO_VERSION, start)) ? code.substring(start, end) : null;
             if (version != null && !Character.isUnicodeIdentifierPart(version.codePointAt(0))) {
                 throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.InvalidVersionIdentifier_1, version), authority, code);
             }
@@ -1508,7 +1507,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         }
         /*
          * No coordinate operation because of mismatched factories. This is not illegal (the result is an empty set)
-         * but it is worth to notify the user because this case has some chances to be an user error.
+         * but it is worth to notify the user because this case has some chances to be a user error.
          */
         final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
                 Resources.Keys.MismatchedOperationFactories_2, sourceCRS, targetCRS);

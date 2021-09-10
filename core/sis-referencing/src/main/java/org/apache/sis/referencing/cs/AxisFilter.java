@@ -29,7 +29,7 @@ import javax.measure.Unit;
  *
  * <div class="note"><b>Terminology note</b>
  * the word <cite>“filter”</cite> is understood here as <cite>“a computer program or subroutine to process a stream,
- * producing another stream”</cite> (<a href="http://en.wikipedia.org/wiki/Filter_%28software%29">Wikipedia</a>).
+ * producing another stream”</cite> (<a href="https://en.wikipedia.org/wiki/Filter_%28software%29">Wikipedia</a>).
  * </div>
  *
  * <p>Note that filtering one or more axes may result in a change of coordinate system type.

@@ -26,7 +26,7 @@ import org.apache.sis.util.Numbers;
  * A vector which is the concatenation of two other vectors.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -88,6 +88,14 @@ final class ConcatenatedVector extends Vector implements Serializable {
     @Override
     public int size() {
         return limit + second.size();
+    }
+
+    /**
+     * Returns {@code true} if this vector is empty or contains only {@code NaN} values.
+     */
+    @Override
+    public boolean isEmptyOrNaN() {
+        return first.isEmptyOrNaN() && second.isEmptyOrNaN();
     }
 
     /**
@@ -242,6 +250,19 @@ final class ConcatenatedVector extends Vector implements Serializable {
         final Number old = v.set(index, value);
         modCount++;
         return old;
+    }
+
+    /**
+     * Sets a range of elements to the given number.
+     */
+    @Override
+    public void fill(final int fromIndex, final int toIndex, final Number value) {
+        if (fromIndex < limit) {
+            first.fill(fromIndex, Math.min(toIndex, limit), value);
+        }
+        if ((toIndex > limit)) {
+            second.fill(Math.max(0, fromIndex - limit), toIndex - limit, value);
+        }
     }
 
     /**

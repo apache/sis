@@ -101,7 +101,7 @@ import org.apache.sis.util.Utilities;
  * <p>Calls to {@code values().clear()} restore this {@code DefaultParameterValueGroup} to its initial state.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see DefaultParameterDescriptorGroup
  * @see DefaultParameterValue
@@ -180,8 +180,10 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     @Override
     @XmlElement(name = "group")
     public ParameterDescriptorGroup getDescriptor() {
-        // The descriptor is not allowed to be null, but this situation
-        // may exist temporarily during XML unmarshalling.
+        /*
+         * The descriptor is not allowed to be null, but this situation
+         * may exist temporarily during XML unmarshalling.
+         */
         return (values != null) ? values.descriptor : null;
     }
 
@@ -207,6 +209,41 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<GeneralParameterValue> values() {
         return values;                                          // Intentionally modifiable.
+    }
+
+    /**
+     * Returns the parameter identified by the given descriptor.
+     * If the identified parameter is optional and not yet created, then it will be created now.
+     */
+    @Override
+    public <T> ParameterValue<T> getOrCreate(final ParameterDescriptor<T> parameter) throws ParameterNotFoundException {
+        final ParameterValueList values = this.values;          // Protect against accidental changes.
+        final int n = values.size();
+        for (int i=0; i<n; i++) {
+            if (values.descriptor(i) == parameter) {
+                return cast((ParameterValue<?>) values.get(i), parameter.getValueClass());
+            }
+        }
+        return super.getOrCreate(parameter);
+    }
+
+    /**
+     * Returns the parameter value for the specified operation parameter, overridden for performance reasons.
+     * This implementation first compares descriptor references. If this quick search finds no result, then
+     * the more costly search implemented in parent class is used as a fallback. The quick search implemented
+     * here is should cover at least the cases of all {@link org.apache.sis.referencing.operation.projection}
+     * class initializations.
+     */
+    @Override
+    final ParameterValue<?> getParameter(final ParameterDescriptor<?> parameter) throws ParameterNotFoundException {
+        final ParameterValueList values = this.values;          // Protect against accidental changes.
+        final int n = values.size();
+        for (int i=0; i<n; i++) {
+            if (values.descriptor(i) == parameter) {
+                return (ParameterValue<?>) values.get(i);
+            }
+        }
+        return super.getParameter(parameter);
     }
 
     /**
@@ -265,7 +302,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
             /*
              * Create the optional parameter and add it to our internal list. Note that this is
              * not the only place were a ParameterValue may be created,  so do not extract just
-             * this call to 'createValue()' in a user-overrideable method.
+             * this call to `createValue()` in a user-overrideable method.
              */
             value = ((ParameterDescriptor<?>) descriptor).createValue();
             values.addUnchecked(value);
@@ -275,7 +312,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
 
     /**
      * Returns the value in this group for the specified name if it exists, or {@code null} if none.
-     * This method does not create any new {@code ParameterValue} instance.
+     * This method avoid creating new {@code ParameterValue} instance when no value exists for the
+     * given parameter name.
      *
      * @see #isKnownImplementation()
      */
@@ -283,9 +321,9 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
         final ParameterValueList values = this.values;          // Protect against accidental changes.
         /*
-         * Search for an exact match. By invoking 'descriptor(i)' instead of 'get(i)', we avoid the
+         * Search for an exact match. By invoking `descriptor(i)` instead of `get(i)`, we avoid the
          * creation of mandatory ParameterValue which was deferred. If we find a matching name, the
-         * ParameterValue will be lazily created (if not already done) by the call to 'get(i)'.
+         * ParameterValue will be lazily created (if not already done) by the call to `get(i)`.
          */
         int index     = -1;
         int ambiguity = -1;
@@ -303,7 +341,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
             }
         }
         if (ambiguity < 0) {
-            return (index >= 0) ? (ParameterValue<?>) values.get(index) : null;     // May lazily create a ParameterValue.
+            // May lazily create a ParameterValue, but it is because a value conceptually exist.
+            return (index >= 0) ? (ParameterValue<?>) values.get(index) : null;
         }
         final GeneralParameterDescriptor d1 = values.descriptor(index);
         final GeneralParameterDescriptor d2 = values.descriptor(ambiguity);
@@ -332,7 +371,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     @Override
     public List<ParameterValueGroup> groups(final String name) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("name", name);
-        final ParameterValueList values = this.values; // Protect against accidental changes.
+        final ParameterValueList values = this.values;                  // Protect against accidental changes.
         final List<ParameterValueGroup> groups = new ArrayList<>(4);
         final int size = values.size();
         for (int i=0; i<size; i++) {
@@ -379,7 +418,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     public ParameterValueGroup addGroup(final String name)
             throws ParameterNotFoundException, InvalidParameterCardinalityException
     {
-        final ParameterValueList values = this.values; // Protect against accidental changes.
+        final ParameterValueList values = this.values;                  // Protect against accidental changes.
         final ParameterDescriptorGroup descriptor = values.descriptor;
         final GeneralParameterDescriptor child = descriptor.descriptor(name);
         if (!(child instanceof ParameterDescriptorGroup)) {
@@ -445,7 +484,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
                     continue scan;
                 }
             }
-            return false;   // A parameter from 'actual' has not been found in 'expected'.
+            return false;               // A parameter from `actual` has not been found in `expected`.
         }
         return values.isEmpty();
     }
@@ -552,7 +591,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
     private void setValues(final GeneralParameterValue[] parameters) {
         ParameterValueList addTo = values;
         if (addTo == null) {
-            // Should never happen, unless the XML document is invalid and does not have a 'group' element.
+            // Should never happen, unless the XML document is invalid and does not have a `group` element.
             addTo = new ParameterValueList(new DefaultParameterDescriptorGroup());
         }
         /*

@@ -26,7 +26,7 @@ import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
-import org.apache.sis.internal.xml.Schemas;
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.test.mock.MetadataMock;
 import org.apache.sis.test.DependsOnMethod;
@@ -45,11 +45,11 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * The locale is marshalled as a character string. This format was used directly by ISO 19139:2007
  * but only indirectly by ISO 19115-3 (the newer version wraps the language in {@code PT_Locale}).
  *
- * <p>This class also test indirectly the {@link org.apache.sis.xml} capability to map the legacy
+ * <p>This class also tests indirectly the {@link org.apache.sis.xml} capability to map the legacy
  * {@code "http://www.isotc211.org/2005/gmd"} namespace to {@code "http://standards.iso.org/…"}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -68,7 +68,7 @@ public final strictfp class LanguageCodeTest extends TestCase {
      * XML fragment using the {@code <gmd:LanguageCode>} construct with attributes.
      */
     private static final String LANGUAGE_CODE = "<gmd:LanguageCode" +
-            " codeList=\"" + Schemas.METADATA_ROOT_LEGACY + Schemas.CODELISTS_PATH_LEGACY + "#LanguageCode\"" +
+            " codeList=\"" + CodeListUID.METADATA_ROOT_LEGACY + CodeListUID.CODELISTS_PATH_LEGACY + "#LanguageCode\"" +
             " codeListValue=\"jpn\">Japanese</gmd:LanguageCode>";
 
     /**

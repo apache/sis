@@ -64,12 +64,7 @@ table.sis tr td {
 /*
  * Optionally add a line or column separator.
  */
-table.sis tr th.hsep {
-  border-top-width: 1px;
-  border-top-style: solid;
-  border-top-color: darkgray;
-}
-
+table.sis tr th.hsep,
 table.sis tr td.hsep {
   border-top-width: 1px;
   border-top-style: solid;

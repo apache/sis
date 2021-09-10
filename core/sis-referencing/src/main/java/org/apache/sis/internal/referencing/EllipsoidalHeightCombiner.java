@@ -142,9 +142,9 @@ public final class EllipsoidalHeightCombiner {
                     axes[axisPosition %= 3] = vertical.getCoordinateSystem().getAxis(0);
                     final Map<String,?> csProps  = IdentifiedObjects.getProperties(cs, CoordinateSystem.IDENTIFIERS_KEY);
                     final Map<String,?> crsProps = (components.length == 2) ? properties
-                                                   : IdentifiedObjects.getProperties(crs, CoordinateReferenceSystem.IDENTIFIERS_KEY);
+                                                 : IdentifiedObjects.getProperties(crs, CoordinateReferenceSystem.IDENTIFIERS_KEY);
                     if (crs instanceof GeodeticCRS) {
-                        cs = factories.getCSFactory().createEllipsoidalCS(csProps, axes[0], axes[1], axes[2]);
+                        cs  = factories.getCSFactory() .createEllipsoidalCS(csProps, axes[0], axes[1], axes[2]);
                         crs = factories.getCRSFactory().createGeographicCRS(crsProps, ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
                     } else {
                         final ProjectedCRS proj = (ProjectedCRS) crs;
@@ -162,7 +162,7 @@ public final class EllipsoidalHeightCombiner {
                         fromBase = factories.getCoordinateOperationFactory().createDefiningConversion(
                                     IdentifiedObjects.getProperties(fromBase),
                                     fromBase.getMethod(), fromBase.getParameterValues());
-                        cs = factories.getCSFactory().createCartesianCS(csProps, axes[0], axes[1], axes[2]);
+                        cs  = factories.getCSFactory() .createCartesianCS(csProps, axes[0], axes[1], axes[2]);
                         crs = factories.getCRSFactory().createProjectedCRS(crsProps, base, fromBase, (CartesianCS) cs);
                     }
                     /*

@@ -20,10 +20,9 @@ import java.util.Date;
 import java.util.Map;
 import java.util.List;
 import java.util.LinkedList;
-import java.util.ListIterator;
 import java.util.Iterator;
+import java.util.Collections;
 import java.util.Locale;
-import java.io.Serializable;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -34,7 +33,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
 
@@ -49,20 +47,22 @@ import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
  *
  * Each {@code Element} object can contain an arbitrary amount of other elements.
  * The result is a tree, which can be seen with {@link #toString()} for debugging purpose.
- * Elements can be pulled in a <cite>first in, first out</cite> order.
+ * Elements can be pulled by their name and other children (numbers, dates, strings)
+ * can be pulled in a <cite>first in, first out</cite> order.
+ *
+ * <h2>Sharing repetitive information</h2>
+ * {@link Element} instances are mutable because {@link AbstractParser} needs to remove elements from
+ * the {@link #children} list as they are processed. If that parsing does not happen immediately,
+ * then {@code Element} content needs to be copied in a different structure ({@link StoredTree})
+ * which is immutable and designed for reducing redundancies.
  *
  * @author  Rémi Ève (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.1
  * @since   0.6
  * @module
  */
-final class Element implements Serializable {
-    /**
-     * Indirectly for {@link WKTFormat} serialization compatibility.
-     */
-    private static final long serialVersionUID = 2366817541632131955L;
-
+final class Element {
     /**
      * Kind of value expected in the element. Value 0 means "not yet determined".
      */
@@ -78,97 +78,134 @@ final class Element implements Serializable {
     };
 
     /**
-     * The position where this element starts in the string to be parsed.
+     * Index of the character where this element starts in the WKT string to parse.
+     *
+     * @see #offsetAfterKeyword()
      */
     final int offset;
 
     /**
      * Index of the keyword in the array given to the {@link #pullElement(int, String...)} method.
+     * This is a workaround for the lack of multiple return values in Java.
      *
      * @see #getKeywordIndex()
      */
     private byte keywordIndex;
 
     /**
-     * Keyword of this entity. For example: {@code "PrimeMeridian"}.
+     * Keyword of the WKT element, for example {@code "PrimeMeridian"}. Never {@code null}.
      */
     public final String keyword;
 
     /**
-     * An ordered sequence of {@link String}s, {@link Number}s and other {@link Element}s.
-     * May be {@code null} if the keyword was not followed by a pair of brackets (e.g. "north").
-     *
-     * <p>Access to this list should be done using the iterator, not by random access.</p>
+     * {@code true} if the keyword was not followed by a pair of brackets (e.g. "north").
+     * If {@code true}, then {@link #children} shall be an empty list.
      */
-    private final List<Object> list;
+    private final boolean isEnumeration;
+
+    /**
+     * {@code true} if this element has been reconstituted from {@link WKTFormat#fragments}.
+     * In such case, all {@link #offset} values are identical.
+     */
+    final boolean isFragment;
+
+    /**
+     * Whether this element is the root of a tree of WKT elements.
+     * This field is not used by this {@link Element} class.
+     * It is provided for {@link WKTDictionary} convenience.
+     */
+    boolean isRoot;
+
+    /**
+     * An ordered sequence of {@link String}s, {@link Number}s and other {@link Element}s.
+     * Access to this collection should be done using the iterator, not by random access.
+     * Parsing will remove elements (in any order) from this list as they are consumed.
+     *
+     * @see #getChildren()
+     */
+    private final List<Object> children;
 
     /**
      * The locale to be used for formatting an error message if the parsing fails, or {@code null} for
      * the system default. This is <strong>not</strong> the locale for parting number or date values.
+     *
+     * <div class="note"><b>Design note:</b>
+     * the same reference is duplicated in every {@code Element} instances. We nevertheless copy it
+     * as a convenience for avoiding to make this argument appears in the {@code pullFoo(…)} methods.</div>
      */
-    private final Locale locale;
+    private final Locale errorLocale;
 
     /**
-     * Constructs a root element.
+     * Constructs a root element as a modifiable wrapper around the given element.
+     * This wrapper is a convenience for branching on different codes depending on
+     * the keyword value. For example:
      *
-     * @param name       an arbitrary name for the root element.
-     * @param singleton  the only children for this root.
+     * {@preformat java
+     *    Element wrapper = new Element(an_element_with_unknown_keyword);
+     *    Element e = wrapper.pullElement(…, "ProjectedCRS");
+     *    if (e != null) {
+     *        // Do something specific to projected CRS.
+     *        return;
+     *    }
+     *    e = wrapper.pullElement(…, "GeographicCRS");
+     *    if (e != null) {
+     *        // Do something specific to Geographic CRS.
+     *        return;
+     *    }
+     *    // etc.
+     * }
+     *
+     * @param  singleton  the only child for this root.
+     *
+     * @see #pullElement(int, String...)
      */
-    Element(final String name, final Element singleton) {
-        keyword = name;
-        offset  = singleton.offset;
-        locale  = singleton.locale;
-        list    = new LinkedList<>();                           // Needs to be a modifiable list.
-        list.add(singleton);
+    Element(Element singleton) {
+        keyword       = "<root>";               // Ignored (any arbitrary name is okay)
+        offset        = singleton.offset;
+        errorLocale   = singleton.errorLocale;
+        isEnumeration = false;
+        isFragment    = false;
+        children      = new LinkedList<>();     // Needs to be a modifiable collection.
+        children.add(singleton);
+        singleton.isRoot = true;
     }
 
     /**
-     * Creates a modifiable copy of the given element.
+     * Creates a new node for the given keyword and list of children. This is used by {@link StoredTree}
+     * for recreating a tree of {@link Element}s from a previously saved snapshot.
+     *
+     * @param  keyword   keyword of the WKT element, e.g. {@code "PrimeMeridian"}. Shall not be {@code null}.
+     * @param  children  children of this element, or {@code null} if this element is an enumeration.
+     * @param  offset    index of the character where this element started in the WKT string.
+     *         If negative, actual offset is {@code ~offset} and {@link #isFragment} is set to {@code true}.
      */
-    Element(final Element toCopy) {
-        keyword = toCopy.keyword;
-        offset  = toCopy.offset;
-        locale  = toCopy.locale;
-        list    = new LinkedList<>(toCopy.list);                // Needs to be a modifiable list.
-        final ListIterator<Object> it = list.listIterator();
-        while (it.hasNext()) {
-            final Object value = it.next();
-            if (value instanceof Element) {
-                final Element fragment = (Element) value;
-                if (fragment.list != null) {
-                    it.set(new Element(fragment));
-                }
-            }
-        }
+    // Children intentionally forced to LinkedList type for consistency with next constructor.
+    Element(final String keyword, final LinkedList<Object> children, final int offset, final Locale errorLocale) {
+        this.keyword       = keyword;
+        this.isEnumeration = (children == null);
+        this.children      = isEnumeration ? Collections.emptyList() : children;
+        this.isFragment    = (offset < 0);
+        this.offset        = isFragment ? ~offset : offset;
+        this.errorLocale   = errorLocale;
     }
 
     /**
-     * Constructs a new {@code Element}.
-     * The {@code sharedValues} argument have two meanings:
+     * Constructs a new {@code Element} by parsing the given WKT string starting at the given position.
      *
-     * <ul class="verbose">
-     *   <li>If {@code null}, then the caller is parsing a WKT string. The {@code Element}
-     *     must be mutable because its content will be emptied as the parsing progress.</li>
-     *
-     *   <li>If non-null, then the caller is storing a WKT fragment. We create the elements but the caller will
-     *     not parse them immediately. The {@code Element} should be immutable because the fragment will potentially
-     *     be reused many time. Since the fragment may be stored for a long time, the {@code sharedValues} map will
-     *     be used for sharing unique instance of each value if possible.</li>
-     * </ul>
-     *
-     * @param text          the text to parse.
-     * @param position      on input, the position where to start parsing from.
-     *                      On output, the first character after the separator.
-     * @param sharedValues  if parsing a fragment, a map with the values found in other elements. Otherwise {@code null}.
+     * @param  parser    information about symbols (such as brackets) and formats to use.
+     * @param  text      the Well-Known Text (WKT) to parse.
+     * @param  position  on input, the position where to start parsing from.
+     *                   On output, the first character after the separator.
+     * @throws ParseException if quotes, brackets or parenthesis are not balanced, or a date/number
+     *         can not be parsed, or a referenced WKT fragment (e.g. {@code "$FOO"}) can not be found.
      */
-    Element(final AbstractParser parser, final String text, final ParsePosition position,
-            final Map<Object,Object> sharedValues) throws ParseException
-    {
+    Element(final AbstractParser parser, final String text, final ParsePosition position) throws ParseException {
+        isFragment  = false;
+        errorLocale = parser.errorLocale;
         /*
          * Find the first keyword in the specified string. If a keyword is found, then
          * the position is set to the index of the first character after the keyword.
          */
-        locale = parser.errorLocale;
         offset = position.getIndex();
         final int length = text.length();
         int lower = skipLeadingWhitespaces(text, offset, length);
@@ -200,7 +237,8 @@ final class Element implements Serializable {
                                 openingBracket = text.codePointAt(lower))) < 0)
         {
             position.setIndex(lower);
-            list = null;
+            children = Collections.emptyList();
+            isEnumeration = true;
             return;
         }
         lower = skipLeadingWhitespaces(text, lower + Character.charCount(openingBracket), length);
@@ -213,49 +251,54 @@ final class Element implements Serializable {
          *   - Otherwise, if the first character is a unicode identifier start, then the element is parsed as a chid Element.
          *   - Otherwise, if the first character is a quote, then the value is taken as a String.
          *   - Otherwise, the element is parsed as a number or as a date, depending of 'isTemporal' boolean value.
+         *
+         * A `LinkedList` implementation is suitable: we will always use iterators (never random access)
+         * and the parser will delete elements at any point during iteration.
          */
-        final List<Object> list = new LinkedList<>();
+        children = new LinkedList<>();
+        isEnumeration = false;
         final String separator = parser.symbols.trimmedSeparator();
         while (lower < length) {
             final int firstChar = text.codePointAt(lower);
             if (firstChar == Symbols.FRAGMENT_VALUE) {
                 /*
+                 * ══════════ ALIAS ════════════════════════════════════════════════════════════════════════════════
                  * WKTFormat allows to substitute strings like "$FOO" by a WKT fragment. This is something similar
                  * to environment variables in Unix. If we find the "$" character, get the identifier behind "$"
                  * and insert the corresponding WKT fragment here.
                  */
                 final int upper = AbstractParser.endOfFragmentName(text, ++lower);
-                final String id = text.substring(lower, upper);
-                Element fragment = parser.fragments.get(id);
+                final String id = text.substring(lower--, upper);
+                StoredTree fragment = parser.fragments.get(id);
                 if (fragment == null) {
                     position.setIndex(offset);
                     position.setErrorIndex(lower);
-                    throw new UnparsableObjectException(locale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
+                    throw new UnparsableObjectException(errorLocale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
                 }
-                if (fragment.list != null) {
-                    fragment = new Element(fragment);
-                }
-                list.add(fragment);
+                fragment.toElements(parser, children, ~lower);                  // Set offset to '$' in "$FOO".
                 lower = upper;
             } else if (Character.isUnicodeIdentifierStart(firstChar)) {
                 /*
+                 * ══════════ ELEMENT or BOOLEAN ═══════════════════════════════════════════════════════════════════
                  * If the character is the beginning of a Unicode identifier, add as a child element
                  * except for the boolean "true" and "false" values which are handled in a special way.
                  */
                 if (lower != (lower = regionMatches(text, lower, "true"))) {
-                    list.add(Boolean.TRUE);
+                    children.add(Boolean.TRUE);
                 } else if (lower != (lower = regionMatches(text, lower, "false"))) {
-                    list.add(Boolean.FALSE);
+                    children.add(Boolean.FALSE);
                 } else {
                     position.setIndex(lower);
-                    list.add(new Element(parser, text, position, sharedValues));
+                    children.add(new Element(parser, text, position));
                     lower = position.getIndex();
                 }
             } else {
-                Object value;
+                // ══════════ PRIMITIVES (STRING, NUMBER, DATE, etc.) ══════════════════════════════════════════════
+                final Object value;
                 final int closingQuote = parser.symbols.matchingQuote(firstChar);
                 if (closingQuote >= 0) {
                     /*
+                     * ══════════ STRING ═══════════════════════════════════════════════════════════════════════════
                      * Try to parse the next element as a quoted string. We will take it as a string if the first non-blank
                      * character is a quote.  Note that a double quote means that the quote should be included as-is in the
                      * parsed text.
@@ -281,19 +324,20 @@ final class Element implements Serializable {
                             }
                             ((StringBuilder) content).appendCodePoint(closingQuote).append(text, lower, upper);
                         }
-                        lower = upper + n;  // After the closing quote.
+                        lower = upper + n;                          // After the closing quote.
                     } while (lower < text.length() && text.codePointAt(lower) == closingQuote);
                     /*
-                     * Leading and trailing spaces should be ignored according ISO 19162 §B.4.
+                     * Leading and trailing spaces should be ignored according ISO 19162 annex.
                      * Note that the specification suggests also to replace consecutive white
                      * spaces by a single space, but we don't do that yet.
                      */
                     value = CharSequences.trimWhitespaces(content).toString();
                 } else {
                     /*
+                     * ══════════ NUMBER or DATE ═══════════════════════════════════════════════════════════════════
                      * Try to parse the next element as a date or a number. We attempt such parsing when
                      * the first non-blank character is not the beginning of an unicode identifier.
-                     * Otherwise we assume that the next element is the keyword of a child 'Element'.
+                     * Otherwise we assume that the next element is the keyword of a child `Element`.
                      */
                     position.setIndex(lower);
                     if (valueType == 0) {
@@ -310,35 +354,21 @@ final class Element implements Serializable {
                     }
                     lower = position.getIndex();
                 }
-                /*
-                 * Store the value, using shared instances if this Element may be stored for a long time.
-                 */
-                if (sharedValues != null) {
-                    final Object e = sharedValues.putIfAbsent(value, value);
-                    if (e != null) {
-                        value = e;
-                    }
-                }
-                list.add(value);
+                children.add(value);
             }
             /*
              * At this point we finished to parse the component. If we find a separator (usually a coma),
              * search for another element. Otherwise verify that the closing bracket is present.
              */
             lower = skipLeadingWhitespaces(text, lower, length);
-            if (text.regionMatches(lower, separator, 0, separator.length())) {
+            if (text.startsWith(separator, lower)) {
                 lower = skipLeadingWhitespaces(text, lower + separator.length(), length);
             } else {
                 if (lower >= length) break;
                 final int c = text.codePointAt(lower);
                 if (c == closingBracket) {
                     position.setIndex(lower + Character.charCount(c));
-                    if (sharedValues != null) {
-                        this.list = UnmodifiableArrayList.wrap(list.toArray());
-                    } else {
-                        this.list = list;
-                    }
-                    return;
+                    return;                         // End of parsing does not need to be end of string.
                 }
                 position.setErrorIndex(lower);
                 throw unparsableString(text, position);
@@ -375,19 +405,19 @@ final class Element implements Serializable {
      * <code>"Error in &lt;{@link #keyword}&gt;"</code> will be prepend to the message.
      * The error index will be the starting index of this {@code Element}.
      *
-     * @param  cause  the cause of the failure, or {@code null} if none.
+     * @param  cause   the cause of the failure, or {@code null} if none.
      * @return the exception to be thrown.
      */
     final ParseException parseFailed(final Exception cause) {
-        return new UnparsableObjectException(locale, Errors.Keys.ErrorIn_2,
-                new String[] {keyword, Exceptions.getLocalizedMessage(cause, locale)}, offset).initCause(cause);
+        return new UnparsableObjectException(errorLocale, Errors.Keys.ErrorIn_2,
+                new String[] {keyword, Exceptions.getLocalizedMessage(cause, errorLocale)}, offset).initCause(cause);
     }
 
     /**
      * Returns a {@link ParseException} with a "Unparsable string" message.
      * The error message is built from the specified string starting at the specified position.
-     * Properties {@link ParsePosition#getIndex()} and {@link ParsePosition#getErrorIndex()}
-     * must be accurate before this method is invoked.
+     * The {@link ParsePosition#getErrorIndex()} property must be accurate before this method is invoked.
+     * The {@link ParsePosition#getIndex()} property will be set by this method.
      *
      * @param  text      the unparsable string.
      * @param  position  the position in the string.
@@ -398,7 +428,7 @@ final class Element implements Serializable {
         final CharSequence[] arguments;
         final int errorIndex = Math.max(offset, position.getErrorIndex());
         final int length = text.length();
-        if (errorIndex == length) {
+        if (errorIndex >= length) {
             errorKey  = Errors.Keys.UnexpectedEndOfString_1;
             arguments = new String[] {keyword};
         } else {
@@ -406,21 +436,21 @@ final class Element implements Serializable {
             arguments = new CharSequence[] {keyword, CharSequences.token(text, errorIndex)};
         }
         position.setIndex(offset);
-        return new UnparsableObjectException(locale, errorKey, arguments, errorIndex);
+        return new UnparsableObjectException(errorLocale, errorKey, arguments, errorIndex);
     }
 
     /**
      * Returns an exception saying that a character is missing.
      *
-     * @param c           the missing character.
-     * @param errorIndex  the error position.
-     * @param position    the position to update with the error index.
+     * @param  c           the missing character.
+     * @param  errorIndex  the error position.
+     * @param  position    the position to update with the error index.
      */
     private ParseException missingCharacter(final int c, final int errorIndex, final ParsePosition position) {
         position.setIndex(offset);
         position.setErrorIndex(errorIndex);
         final StringBuilder buffer = new StringBuilder(2).appendCodePoint(c);
-        return new UnparsableObjectException(locale, Errors.Keys.MissingCharacterInElement_2,
+        return new UnparsableObjectException(errorLocale, Errors.Keys.MissingCharacterInElement_2,
                 new CharSequence[] {keyword, buffer}, errorIndex);
     }
 
@@ -430,12 +460,8 @@ final class Element implements Serializable {
      * @param key  the name of the missing sub-element.
      */
     final ParseException missingComponent(final String key) {
-        int error = offset;
-        if (keyword != null) {
-            error += keyword.length();
-        }
-        return new UnparsableObjectException(locale, Errors.Keys.MissingComponentInElement_2,
-                new String[] {keyword, key}, error);
+        return new UnparsableObjectException(errorLocale, Errors.Keys.MissingComponentInElement_2,
+                    new String[] {keyword, key}, offsetAfterKeyword());
     }
 
     /**
@@ -446,7 +472,7 @@ final class Element implements Serializable {
      */
     final ParseException missingOrUnknownComponent(final String expected) {
         String name = null;
-        for (final Object child : list) {
+        for (final Object child : children) {
             if (child instanceof Element) {
                 name = ((Element) child).keyword;
                 if (name != null) {
@@ -463,7 +489,7 @@ final class Element implements Serializable {
             res  = Errors.Keys.MissingComponentInElement_2;
             args = new String[] {keyword, expected};
         }
-        return new UnparsableObjectException(locale, res, args, offset);
+        return new UnparsableObjectException(errorLocale, res, args, offset);
     }
 
     /**
@@ -487,7 +513,15 @@ final class Element implements Serializable {
             key   = Errors.Keys.IllegalCoordinateSystem_1;
             value = cs.getName().getCode();
         }
-        return new UnparsableObjectException(locale, key, new String[] {value}, offset);
+        return new UnparsableObjectException(errorLocale, key, new String[] {value}, offset);
+    }
+
+    /**
+     * Returns index of the character after the keyword in the WKT string to parse.
+     */
+    private int offsetAfterKeyword() {
+        if (isFragment) return offset;
+        return offset + keyword.length();
     }
 
 
@@ -495,7 +529,7 @@ final class Element implements Serializable {
 
     //////////////////////////////////////////////////////////////////////////////////////
     ////////                                                                      ////////
-    ////////    Pull elements from the tree                                       ////////
+    ////////    Peek or pull elements from the tree                               ////////
     ////////                                                                      ////////
     //////////////////////////////////////////////////////////////////////////////////////
 
@@ -505,7 +539,7 @@ final class Element implements Serializable {
      * @return the next value, or {@code null} if none.
      */
     public Object peekValue() {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (!(object instanceof Element)) {
@@ -516,14 +550,14 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link Date} from the list and returns it.
+     * Removes the next {@link Date} from the children and returns it.
      *
      * @param  key  the parameter name. Used for formatting an error message if no date is found.
-     * @return the next {@link Date} on the list.
+     * @return the next {@link Date} among the children.
      * @throws ParseException if no more date is available.
      */
     public Date pullDate(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Date) {
@@ -535,14 +569,14 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link Number} from the list and returns it.
+     * Removes the next {@link Number} from the children and returns it.
      *
      * @param  key  the parameter name. Used for formatting an error message if no number is found.
-     * @return the next {@link Number} on the list as a {@code double}.
+     * @return the next {@link Number} among the children as a {@code double}.
      * @throws ParseException if no more number is available.
      */
     public double pullDouble(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Number) {
@@ -554,21 +588,21 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link Number} from the list and returns it as an integer.
+     * Removes the next {@link Number} from the children and returns it as an integer.
      *
      * @param  key  the parameter name. Used for formatting an error message if no number is found.
-     * @return the next {@link Number} on the list as an {@code int}.
+     * @return the next {@link Number} among the children as an {@code int}.
      * @throws ParseException if no more number is available, or the number is not an integer.
      */
     public int pullInteger(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Number) {
                 iterator.remove();
                 final Number number = (Number) object;
                 if (number instanceof Float || number instanceof Double) {
-                    throw new UnparsableObjectException(locale, Errors.Keys.UnparsableStringForClass_2,
+                    throw new UnparsableObjectException(errorLocale, Errors.Keys.UnparsableStringForClass_2,
                             new Object[] {Integer.class, number}, offset);
                 }
                 return number.intValue();
@@ -578,14 +612,14 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link Boolean} from the list and returns it.
+     * Removes the next {@link Boolean} from the children and returns it.
      *
      * @param  key  the parameter name. Used for formatting an error message if no boolean is found.
-     * @return the next {@link Boolean} on the list as a {@code boolean}.
+     * @return the next {@link Boolean} among the children as a {@code boolean}.
      * @throws ParseException if no more boolean is available.
      */
     public boolean pullBoolean(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Boolean) {
@@ -597,14 +631,14 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link String} from the list and returns it.
+     * Removes the next {@link String} from the children and returns it.
      *
      * @param  key  the parameter name. Used for formatting an error message if no number is found.
-     * @return the next {@link String} on the list.
+     * @return the next {@link String} among the children.
      * @throws ParseException if no more string is available.
      */
     public String pullString(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof String) {
@@ -616,14 +650,14 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link Object} from the list and returns it.
+     * Removes the next {@link Object} from the children and returns it.
      *
      * @param  key  the parameter name. Used for formatting an error message if no number is found.
-     * @return the next {@link Object} on the list (never {@code null}).
+     * @return the next {@link Object} among the children (never {@code null}).
      * @throws ParseException if no more object is available.
      */
     public Object pullObject(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object != null && !(object instanceof Element)) {
@@ -635,7 +669,7 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next {@link Element} of the given name from the list and returns it.
+     * Removes the next {@link Element} of the given name from the children and returns it.
      * If the element was mandatory but is missing, then the first entry in the given {@code keys}
      * array will be taken as the name of the missing element to report in the exception message.
      *
@@ -649,16 +683,16 @@ final class Element implements Serializable {
      *
      * @param  mode  {@link AbstractParser#FIRST}, {@link AbstractParser#OPTIONAL} or {@link AbstractParser#MANDATORY}.
      * @param  keys  the element names (e.g. {@code "PrimeMeridian"}).
-     * @return the next {@link Element} of the given names found on the list, or {@code null} if none.
+     * @return the next {@link Element} of the given names found among the children, or {@code null} if none.
      * @throws ParseException if {@code mode} is {@code MANDATORY} and no element of the given names was found.
      */
     public Element pullElement(final int mode, final String... keys) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Element) {
                 final Element element = (Element) object;
-                if (element.list != null) {
+                if (!element.isEnumeration) {
                     for (int i=0; i<keys.length; i++) {
                         if (element.keyword.equalsIgnoreCase(keys[i])) {
                             element.keywordIndex = (byte) i;
@@ -683,16 +717,16 @@ final class Element implements Serializable {
      * The key is used only for only for formatting an error message.
      *
      * @param  key  the parameter name. Used only for formatting an error message.
-     * @return the next {@link Element} in the list, with no bracket.
+     * @return the next {@link Element} among the children, with no bracket.
      * @throws ParseException if no more void element is available.
      */
     public Element pullVoidElement(final String key) throws ParseException {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Element) {
                 final Element element = (Element) object;
-                if (element.list == null) {
+                if (element.isEnumeration) {
                     iterator.remove();
                     return element;
                 }
@@ -702,14 +736,14 @@ final class Element implements Serializable {
     }
 
     /**
-     * Removes the next object of the given type from the list and returns it, if presents.
+     * Removes the next object of the given type from the children and returns it, if presents.
      *
      * @param  type  the object type.
-     * @return the next object on the list, or {@code null} if none.
+     * @return the next object among the children, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     public <T> T pullOptional(final Class<T> type) {
-        final Iterator<Object> iterator = list.iterator();
+        final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (type.isInstance(object) && !(object instanceof Element)) {
@@ -721,26 +755,35 @@ final class Element implements Serializable {
     }
 
     /**
+     * Returns a copy of children list, or {@code null} if this {@code Element} is an enumeration.
+     * This method is used only for creating a snapshot of this {@code Element} in {@link StoredTree}.
+     * The returned array may contain nested {@link Element} instances.
+     */
+    final Object[] getChildren() {
+        return isEnumeration ? null : children.toArray();
+    }
+
+    /**
      * Returns {@code true} if this element does not contains any remaining child.
      *
      * @return {@code true} if there is no child remaining.
      */
     public boolean isEmpty() {
-        return list.isEmpty();
+        return children.isEmpty();
     }
 
     /**
      * Returns the index of the keyword in the array given to the {@link #pullElement(int, String...)} method.
      */
     final int getKeywordIndex() {
-        return keywordIndex;
+        return Byte.toUnsignedInt(keywordIndex);
     }
 
     /**
      * Closes this element. This method verifies that there is no unprocessed value (dates,
      * numbers, booleans or strings), but ignores inner elements as required by ISO 19162.
      *
-     * This method add the keywords of ignored elements in the {@code ignoredElements} map as below:
+     * This method adds the keywords of ignored elements in the {@code ignoredElements} map as below:
      * <ul>
      *   <li><b>Keys</b>: keyword of ignored elements. Note that a key may be null.</li>
      *   <li><b>Values</b>: keywords of all elements containing an element identified by the above-cited key.
@@ -748,17 +791,15 @@ final class Element implements Serializable {
      * </ul>
      *
      * @param  ignoredElements  the collection where to declare ignored elements.
-     * @throws ParseException if the list still contains some unprocessed values.
+     * @throws ParseException if the children list still contains some unprocessed values.
      */
     final void close(final Map<String, List<String>> ignoredElements) throws ParseException {
-        if (list != null) {
-            for (final Object value : list) {
-                if (value instanceof Element) {
-                    CollectionsExt.addToMultiValuesMap(ignoredElements, ((Element) value).keyword, keyword);
-                } else {
-                    throw new UnparsableObjectException(locale, Errors.Keys.UnexpectedValueInElement_2,
-                            new Object[] {keyword, value}, offset + keyword.length());
-                }
+        for (final Object value : children) {
+            if (value instanceof Element) {
+                CollectionsExt.addToMultiValuesMap(ignoredElements, ((Element) value).keyword, keyword);
+            } else {
+                throw new UnparsableObjectException(errorLocale, Errors.Keys.UnexpectedValueInElement_2,
+                        new Object[] {keyword, value}, offsetAfterKeyword());
             }
         }
     }
@@ -783,11 +824,11 @@ final class Element implements Serializable {
     @Debug
     private void format(final StringBuilder buffer, int margin, final String lineSeparator) {
         buffer.append(CharSequences.spaces(margin)).append(keyword);
-        if (list != null) {
+        if (!isEnumeration) {
             buffer.append('[');
             margin += 4;
             boolean addSeparator = false;
-            for (final Object value : list) {
+            for (final Object value : children) {
                 if (value instanceof Element) {
                     if (addSeparator) buffer.append(',');
                     buffer.append(lineSeparator);

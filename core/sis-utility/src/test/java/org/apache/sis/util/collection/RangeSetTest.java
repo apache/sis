@@ -59,7 +59,7 @@ public final strictfp class RangeSetTest extends TestCase {
     /**
      * Asserts that the two given values are equals to the expected one.
      * This method is used for testing {@link RangeSet#first()} and {@link RangeSet#last()}
-     * in same time than the values from the iterator.
+     * at the same time than the values from the iterator.
      */
     private static void assertEqual(final Range<?> expected,
             final Range<?> fromIterator, final Range<?> fromGetter)

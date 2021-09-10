@@ -16,6 +16,9 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.IdentityHashMap;
+import java.util.ConcurrentModificationException;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.InvocationTargetException;
@@ -28,7 +31,7 @@ import org.apache.sis.util.resources.Errors;
  * for the lack of public {@code clone()} method in the {@link Cloneable} interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -54,10 +57,17 @@ public final class Cloner {
     private final boolean isCloneRequired;
 
     /**
+     * Results of cloning instances previously meet during this {@code Cloner} lifetime.
+     * This is used for preserving reference graph, and also as a safety against infinite recursivity.
+     * Keys must be compared using identity comparison, not {@link Object#equals(Object)}.
+     */
+    private final IdentityHashMap<Object,Object> cloneResults;
+
+    /**
      * Creates a new {@code Cloner} instance which requires public {@code clone()} method to be present.
      */
     public Cloner() {
-        isCloneRequired = true;
+        this(true);
     }
 
     /**
@@ -68,6 +78,32 @@ public final class Cloner {
      */
     public Cloner(final boolean isCloneRequired) {
         this.isCloneRequired = isCloneRequired;
+        cloneResults = new IdentityHashMap<>();
+    }
+
+    /**
+     * Clones the given array, then clone all array elements recursively.
+     *
+     * @param  array          the array to clone.
+     * @param  componentType  value of {@code array.getClass().getComponentType()}.
+     * @return the cloned array, potentially with recursively cloned elements.
+     * @throws CloneNotSupportedException if an array element can not be cloned.
+     */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
+    private Object cloneArray(final Object array, final Class<?> componentType) throws CloneNotSupportedException {
+        final int length = Array.getLength(array);
+        final Object copy = Array.newInstance(componentType, length);
+        if (cloneResults.put(array, copy) != null) {                    // Must be done before to clone recursively.
+            throw new ConcurrentModificationException();                // Should never happen unless we have a bug.
+        }
+        if (componentType.isPrimitive()) {
+            System.arraycopy(array, 0, copy, 0, length);
+        } else {
+            for (int i=0; i<length; i++) {
+                Array.set(copy, i, clone(Array.get(array, i)));
+            }
+        }
+        return copy;
     }
 
     /**
@@ -88,14 +124,23 @@ public final class Cloner {
         if (object == null) {
             return null;
         }
-        SecurityException security = null;
+        Object result = cloneResults.get(object);
+        if (result != null) {
+            return result;
+        }
         final Class<?> valueType = object.getClass();
+        final Class<?> componentType = valueType.getComponentType();
+        if (componentType != null) {
+            return cloneArray(object, componentType);
+        }
+        SecurityException security = null;
+        result = object;
         try {
             if (valueType != type) {
                 method = valueType.getMethod("clone", (Class<?>[]) null);
                 type = valueType;                                           // Set only if the above line succeed.
                 /*
-                 * If the class implementing the 'clone()' method is not public, we may not be able to access that
+                 * If the class implementing the `clone()` method is not public, we may not be able to access that
                  * method even if it is public. Try to make the method accessible. If we fail for security reason,
                  * we will still attempt to clone (maybe a parent class is public), but we remember the exception
                  * in order to report it in case of failure.
@@ -108,11 +153,11 @@ public final class Cloner {
                 }
             }
             /*
-             * 'method' may be null if a previous call to this clone(Object) method threw NoSuchMethodException
-             * (see the first 'catch' block below). In this context, 'null' means "no public clone() method".
+             * `method` may be null if a previous call to this clone(Object) method threw NoSuchMethodException
+             * (see the first `catch` block below). In this context, `null` means "no public clone() method".
              */
             if (method != null) {
-                return method.invoke(object, (Object[]) null);
+                result = method.invoke(object, (Object[]) null);
             }
         } catch (NoSuchMethodException e) {
             if (isCloneRequired) {
@@ -131,7 +176,11 @@ public final class Cloner {
         } catch (SecurityException e) {
             throw fail(e, valueType);
         }
-        return object;
+        if (cloneResults.put(object, result) != null) {
+            // Should never happen unless we have a bug.
+            throw new ConcurrentModificationException();
+        }
+        return result;
     }
 
     /**
@@ -177,9 +226,20 @@ public final class Cloner {
      *
      * @since 0.6
      */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     public static Object cloneIfPublic(final Object object) throws CloneNotSupportedException {
         if (object != null) {
             final Class<?> type = object.getClass();
+            final Class<?> componentType = type.getComponentType();
+            if (componentType != null) {
+                if (componentType.isPrimitive()) {
+                    final int length = Array.getLength(object);
+                    final Object copy = Array.newInstance(componentType, length);
+                    System.arraycopy(object, 0, copy, 0, length);
+                    return copy;
+                }
+                return new Cloner().cloneArray(object, componentType);
+            }
             try {
                 final Method m = type.getMethod("clone", (Class[]) null);
                 if (Modifier.isPublic(m.getModifiers())) {

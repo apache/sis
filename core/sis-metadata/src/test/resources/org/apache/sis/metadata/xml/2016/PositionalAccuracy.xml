@@ -25,8 +25,8 @@
     xmlns:lan="http://standards.iso.org/iso/19115/-3/lan/1.0"
     xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0"
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation = "http://standards.iso.org/iso/19157/-2/mdq/1.0 http://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd
-                          http://standards.iso.org/iso/19115/-3/lan/1.0 http://standards.iso.org/iso/19115/-3/lan/1.0/lan.xsd">
+    xsi:schemaLocation = "http://standards.iso.org/iso/19157/-2/mdq/1.0 https://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd
+                          http://standards.iso.org/iso/19115/-3/lan/1.0 https://standards.iso.org/iso/19115/-3/lan/1.0/lan.xsd">
 
   <!--
     The <measure> element below is the main purpose of MetadataMarshallingTest.testPositionalAccuracy().
@@ -67,7 +67,7 @@
                 <gco:DateTime>2009-08-12T19:40:17.653+02:00</gco:DateTime>
               </cit:date>
               <cit:dateType>
-                <cit:CI_DateTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">Creation</cit:CI_DateTypeCode>
+                <cit:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">Creation</cit:CI_DateTypeCode>
               </cit:dateType>
             </cit:CI_Date>
           </cit:date>

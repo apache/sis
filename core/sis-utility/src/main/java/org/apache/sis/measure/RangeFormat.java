@@ -31,6 +31,10 @@ import java.text.AttributedCharacterIterator;
 import java.text.FieldPosition;
 import java.text.ParseException;
 import java.text.ParsePosition;
+import java.time.format.FormatStyle;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.Temporal;
+import java.time.Instant;
 import java.security.AccessController;
 import javax.measure.Unit;
 import org.apache.sis.util.Numbers;
@@ -39,13 +43,14 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.internal.util.LocalizedParseException;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.FinalFieldSetter;
 import org.apache.sis.internal.util.Numerics;
 
 
 /**
  * Parses and formats {@link Range} instances according the given locale.
- * This class complies to the format described in the <a href="http://en.wikipedia.org/wiki/ISO_31-11">ISO 31-11</a>
+ * This class complies to the format described in the <a href="https://en.wikipedia.org/wiki/ISO_31-11">ISO 31-11</a>
  * standard, except that the minimal and maximal values are separated by the "{@code …}" character
  * instead than coma. More specifically, the format is defined as below:
  *
@@ -94,10 +99,10 @@ import org.apache.sis.internal.util.Numerics;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see Range#toString()
- * @see <a href="http://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
+ * @see <a href="https://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
  *
  * @since 0.3
  * @module
@@ -331,7 +336,7 @@ public class RangeFormat extends Format implements Localized {
      * using the given locale and timezone.
      *
      * @param locale    the locale for parsing and formatting range components.
-     * @param timezone  the timezone for the date to be formatted.
+     * @param timezone  the timezone for the dates to be formatted.
      */
     public RangeFormat(final Locale locale, final TimeZone timezone) {
         this(locale, Date.class);
@@ -358,8 +363,13 @@ public class RangeFormat extends Format implements Localized {
         } else if (Number.class.isAssignableFrom(elementType)) {
             elementFormat = NumberFormat.getNumberInstance(locale);
             unitFormat    = new UnitFormat(locale);
-        } else if (Date.class.isAssignableFrom(elementType)) {
+        } else if (Date.class.isAssignableFrom(elementType) || elementType == Instant.class) {
             elementFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
+            unitFormat    = null;
+        } else if (Temporal.class.isAssignableFrom(elementType)) {
+            final FormatStyle dateStyle = StandardDateFormat.hasDateFields(elementType) ? FormatStyle.SHORT : null;
+            final FormatStyle timeStyle = StandardDateFormat.hasTimeFields(elementType) ? FormatStyle.SHORT : null;
+            elementFormat = new DateTimeFormatterBuilder().appendLocalized(dateStyle, timeStyle).toFormatter(locale).toFormat();
             unitFormat    = null;
         } else {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, elementType));
@@ -528,7 +538,8 @@ public class RangeFormat extends Format implements Localized {
 
     /**
      * Casts the given object to a {@code Range}, or throws an {@code IllegalArgumentException}
-     * if the given object is not a {@code Range} instance.
+     * if the given object is not a {@code Range} instance. This is used for validating argument
+     * of {@link Object} type in formatting methods.
      */
     private static Range<?> cast(final Object range) throws IllegalArgumentException {
         if (range instanceof Range<?>) {
@@ -610,8 +621,8 @@ public class RangeFormat extends Format implements Localized {
         for (; field <= UNIT_FIELD; field++) {
             final Object value;
             switch (field) {
-                case MIN_VALUE_FIELD: value = minValue; break;
-                case MAX_VALUE_FIELD: value = maxValue; break;
+                case MIN_VALUE_FIELD: value = toFormattable(minValue); break;
+                case MAX_VALUE_FIELD: value = toFormattable(maxValue); break;
                 case UNIT_FIELD:      value = range.unit(); break;
                 default: throw new AssertionError(field);
             }
@@ -896,7 +907,7 @@ public class RangeFormat extends Format implements Localized {
                     if (c == minusSign || c == '−') {
                         index += Character.charCount(c);
                     }
-                    if (!source.regionMatches(index, infinity, 0, infinity.length())) {
+                    if (!source.startsWith(infinity, index)) {
                         return null;
                     }
                     pos.setIndex(index += infinity.length());
@@ -918,7 +929,7 @@ public class RangeFormat extends Format implements Localized {
                     if (!Character.isWhitespace(c)) break;
                 }
                 final String separator = this.separator;
-                if (source.regionMatches(index, separator, 0, separator.length())) {
+                if (source.startsWith(separator, index)) {
                     index += separator.length();
                     for (;; index += Character.charCount(c)) {
                         if (index >= length) {
@@ -935,7 +946,7 @@ public class RangeFormat extends Format implements Localized {
                     pos.setIndex(index);
                     value = elementFormat.parseObject(source, pos);
                     if (value == null) {
-                        if (!source.regionMatches(index, infinity, 0, infinity.length())) {
+                        if (!source.startsWith(infinity, index)) {
                             return null;
                         }
                         pos.setIndex(index += infinity.length());
@@ -1016,7 +1027,8 @@ public class RangeFormat extends Format implements Localized {
     }
 
     /**
-     * Converts the given value to the a {@link #elementType} type.
+     * Converts the given value to an instance of the {@link #elementType} type.
+     * This method is partially the converse of {@link #toFormattable(Object)}.
      */
     @SuppressWarnings("unchecked")
     private Object convert(final Object value) throws UnconvertibleObjectException {
@@ -1026,8 +1038,22 @@ public class RangeFormat extends Format implements Localized {
         if (value instanceof Number && Number.class.isAssignableFrom(elementType)) {
             return Numbers.cast((Number) value, (Class<? extends Number>) elementType);
         }
+        if (value instanceof Date && elementType == Instant.class) {
+            return ((Date) value).toInstant();
+        }
         throw new UnconvertibleObjectException(Errors.format(
                 Errors.Keys.IllegalClass_2, elementType, value.getClass()));
+    }
+
+    /**
+     * Converts the given object to a type that {@code format(…)} method can process.
+     * This method is partially the converse of {@link #convert(Object)}.
+     */
+    private Object toFormattable(final Object value) {
+        if (value instanceof Instant && elementType == Instant.class) {
+            return Date.from((Instant) value);
+        }
+        return value;
     }
 
     /**

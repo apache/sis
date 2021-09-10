@@ -33,7 +33,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  * do not want to expose publicly those arbitrary values (or at least not in a too direct way).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -42,6 +42,12 @@ public final class Formulas extends Static {
      * Default tolerance threshold for comparing coordinate values in a projected CRS,
      * assuming that the unit of measurement is metre. This constant determines also
      * (indirectly) the minimum accuracy of iterative methods in map projections.
+     *
+     * <h4>Maintenance</h4>
+     * If this value is modified, then all usages of this constant should be verified.
+     * Some usages may need to be compensated. For example {@code GeodesicsOnEllipsoid}
+     * uses a millimetric precision by dividing the tolerance by 10 or more. We way want
+     * to keep the same precision there even if {@code LINEAR_TOLERANCE} was made smaller.
      *
      * @see #ANGULAR_TOLERANCE
      * @see org.apache.sis.internal.util.Numerics#COMPARISON_THRESHOLD
@@ -80,7 +86,7 @@ public final class Formulas extends Static {
      * From Wikipedia, <cite>"In astronomy, a Julian year (symbol: <b>a</b>) is a unit of measurement of time
      * defined as exactly 365.25 days of 86,400 SI seconds each."</cite>.
      *
-     * @see <a href="http://en.wikipedia.org/wiki/Julian_year_%28astronomy%29">Wikipedia: Julian year (astronomy)</a>
+     * @see <a href="https://en.wikipedia.org/wiki/Julian_year_%28astronomy%29">Wikipedia: Julian year (astronomy)</a>
      */
     public static final long JULIAN_YEAR_LENGTH = 31557600000L;
 
@@ -158,6 +164,25 @@ public final class Formulas extends Static {
         } else {
             return a;
         }
+    }
+
+    /**
+     * Returns the radius of the conformal sphere at a given latitude.
+     * The radius of conformal sphere is computed as below:
+     *
+     * <blockquote>Rc = √(1 – ℯ²) / (1 – ℯ²sin²φ)  where  ℯ² = 1 - (b/a)²</blockquote>
+     *
+     * This is a function of latitude and therefore not constant.
+     *
+     * @param  ellipsoid  the ellipsoid for which to compute the radius of conformal sphere.
+     * @param  φ          the latitude in radians where to compute the radius of conformal sphere.
+     * @return radius of the conformal sphere at latitude φ.
+     */
+    public static double radiusOfConformalSphere(final Ellipsoid ellipsoid, final double φ) {
+        final double sinφ = Math.sin(φ);
+        final double a = ellipsoid.getSemiMajorAxis();
+        final double r = ellipsoid.getSemiMinorAxis() / a;
+        return a * (r / (1 - (1 - r*r) * (sinφ*sinφ)));
     }
 
     /**

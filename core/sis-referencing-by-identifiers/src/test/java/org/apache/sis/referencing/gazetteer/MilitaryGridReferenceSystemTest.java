@@ -697,7 +697,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
-     * Tests iteration spanning the anti-meridian.
+     * Tests iteration crossing the anti-meridian.
      *
      * <div class="note"><b>Tip:</b> in case of test failure, see {@link LocationViewer} as a debugging tool.</div>
      *

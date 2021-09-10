@@ -35,7 +35,7 @@ import org.apache.sis.internal.metadata.sql.SQLUtilities;
 /**
  * Converts the SQL statements from MS-Access dialect to standard SQL. The {@link #apply(String)} method
  * is invoked when a new {@link java.sql.PreparedStatement} is about to be created from a SQL string.
- * Since the <a href="http://www.epsg.org">EPSG dataset</a> is available primarily in MS-Access format,
+ * Since the <a href="https://epsg.org/">EPSG dataset</a> is available primarily in MS-Access format,
  * the original SQL statements are formatted using a dialect specific to that particular database software.
  * If the actual EPSG dataset to query is hosted on another database product, then the SQL query needs to be
  * adapted to the target database dialect before to be executed.

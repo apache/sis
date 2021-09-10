@@ -30,7 +30,7 @@ import org.apache.sis.util.CharSequences;
  * Most of those methods are for {@link Object#toString()} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -51,6 +51,61 @@ public final class Strings extends Static {
      * Do not allow instantiation of this class.
      */
     private Strings() {
+    }
+
+    /**
+     * Returns whether the given strings are equal, ignoring case.
+     * This method accepts null arguments.
+     *
+     * @param  a  first string.
+     * @param  b  another string to be compared with {@code a}.
+     * @return whether the given strings are equal, ignoring case.
+     *
+     * @see java.util.Objects#equals(Object, Object)
+     * @see String#equalsIgnoreCase(String)
+     */
+    public static boolean equalsIgnoreCase(final String a, final String b) {
+        return (a == b) || (a != null && a.equalsIgnoreCase(b));
+    }
+
+    /**
+     * Returns the given text is non-null, or the empty string otherwise.
+     *
+     * @param  text  text or null.
+     * @return given text or empty string (never null).
+     */
+    public static String orEmpty(final String text) {
+        return (text != null) ? text : "";
+    }
+
+    /**
+     * Trims the leading and trailing spaces of the given string.
+     * If the string is null, empty or contains only spaces, then this method returns {@code null}.
+     *
+     * <p>Note that this method strips white spaces too, including no-break spaces.
+     * In some cases this is not wanted, for example if the text is a programmatic identifier
+     * (maybe the developer really wanted no-break spaces). To preserve no-break spaces, the
+     * following can be used instead:</p>
+     *
+     * {@preformat java
+     *     if (text != null && !(text = text.trim()).isEmpty()) {
+     *         // Use text here.
+     *     }
+     * }
+     *
+     * @param  text  the text to trim, or {@code null}.
+     * @return the trimmed text, or {@code null} if the given text was null or blank.
+     *
+     * @since 1.1
+     */
+    public static String trimOrNull(String text) {
+        if (text != null) {
+            text = CharSequences.trimWhitespaces(text.trim());
+            if (text.isEmpty()) {
+                return null;
+            }
+        }
+        return text;
     }
 
     /**
@@ -166,9 +221,11 @@ public final class Strings extends Static {
      *
      * @param  text     the text to filter.
      * @param  filter   the filter to apply.
+     * @param  all      {@code true} for making all the string in upper-cases,
+     *                  or {@code false} for changing only the first character.
      * @return the filtered text.
      */
-    public static String toUpperCase(final String text, final Characters.Filter filter) {
+    public static String toUpperCase(final String text, final Characters.Filter filter, final boolean all) {
         final int length = text.length();
         int c, i = 0;
         while (true) {
@@ -176,7 +233,8 @@ public final class Strings extends Static {
                 return text;
             }
             c = text.codePointAt(i);
-            if (!filter.contains(c) || Character.toUpperCase(c) != c) {
+            if (!filter.contains(c)) break;
+            if ((i == 0 | all) && Character.toUpperCase(c) != c) {
                 break;
             }
             i += Character.charCount(c);
@@ -189,7 +247,7 @@ public final class Strings extends Static {
         while (i < length) {
             c = text.codePointAt(i);
             if (filter.contains(c)) {
-                buffer.appendCodePoint(Character.toUpperCase(c));
+                buffer.appendCodePoint((i == 0 | all) ? Character.toUpperCase(c) : c);
             }
             i += Character.charCount(c);
         }
@@ -296,7 +354,7 @@ public final class Strings extends Static {
             for (int i=0,n=0; i<length; i += n) {
                 if (--precision < 0) {
                     /*
-                     * Found the amount of characters to keep. The 'n' variable can be
+                     * Found the amount of characters to keep. The `n` variable can be
                      * zero only if precision == 0, in which case the string is empty.
                      */
                     if (n == 0) {

@@ -19,7 +19,6 @@ package org.apache.sis.internal.storage;
 import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import javax.annotation.Generated;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
@@ -47,7 +46,6 @@ public final class Resources extends IndexedResourceBundle {
      * @since   0.3
      * @module
      */
-    @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
     public static final class Keys extends KeyConstants {
         /**
          * The unique instance of key constants handler.
@@ -82,6 +80,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotGetCommonMetadata_2 = 39;
 
         /**
+         * Can not intersect “{0}” data with specified query.
+         */
+        public static final short CanNotIntersectDataWithQuery_1 = 57;
+
+        /**
          * Can not read the Coordinate Reference System (CRS) Well Known Text (WKT) in “{0}”.
          */
         public static final short CanNotReadCRS_WKT_1 = 37;
@@ -110,6 +113,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not remove resource “{1}” from aggregate “{0}”.
          */
         public static final short CanNotRemoveResource_2 = 49;
+
+        /**
+         * Can not render an image for the “{0}” coverage.
+         */
+        public static final short CanNotRenderImage_1 = 61;
 
         /**
          * Can not save resources of type ‘{1}’ in a “{0}” store.
@@ -239,9 +247,19 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InconsistentNameComponents_2 = 10;
 
         /**
+         * Invalid or unsupported “{1}” expression at index {0}.
+         */
+        public static final short InvalidExpression_2 = 60;
+
+        /**
          * Sample dimension index {1} is invalid. Expected an index from 0 to {0} inclusive.
          */
         public static final short InvalidSampleDimensionIndex_2 = 52;
+
+        /**
+         * Loaded grid coverage between {1} – {2} and {3} – {4} from file “{0}” in {5} seconds.
+         */
+        public static final short LoadedGridCoverage_6 = 59;
 
         /**
          * Resource “{0}” does not have an identifier.
@@ -332,6 +350,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not open {0} data store without “{1}” parameter.
          */
         public static final short UndefinedParameter_2 = 27;
+
+        /**
+         * The “{0}” feature at {1} has a {3} coordinate values, while we expected a multiple of {2}.
+         */
+        public static final short UnexpectedNumberOfCoordinates_4 = 58;
 
         /**
          * Format of “{0}” is not recognized.

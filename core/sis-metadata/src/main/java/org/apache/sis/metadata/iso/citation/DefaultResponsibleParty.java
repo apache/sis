@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso.citation;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Function;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -55,7 +56,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -186,27 +187,38 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
 
     /**
      * Sets the name of the first party of the given type.
-     *
-     * @return {@code true} if the name has been set, or {@code false} otherwise.
+     * If no existing party is found, generate a new party using the given creator.
      */
-    private boolean setName(final Class<? extends Party> type, final boolean position, final InternationalString name) {
-        checkWritePermission(valueIfDefined(super.getParties()));
-        final Iterator<Party> it = getParties().iterator();
-        while (it.hasNext()) {
-            final Party party = it.next();
-            if (party instanceof AbstractParty && type.isInstance(party)) {
-                if (position) {
-                    ((DefaultIndividual) party).setPositionName(name);
-                } else {
-                    ((AbstractParty) party).setName(name);
+    private void setName(final Class<? extends Party> type, final boolean position, final InternationalString name,
+                         final Function<InternationalString,Party> creator)
+    {
+        final Collection<Party> parties = getParties();
+        checkWritePermission(valueIfDefined(parties));
+        if (parties != null) {                                  // May be null on unmarshalling.
+            final Iterator<Party> it = parties.iterator();
+            while (it.hasNext()) {
+                final Party party = it.next();
+                if (party instanceof AbstractParty && type.isInstance(party)) {
+                    if (position) {
+                        ((DefaultIndividual) party).setPositionName(name);
+                    } else {
+                        ((AbstractParty) party).setName(name);
+                    }
+                    if (((AbstractParty) party).isEmpty()) {
+                        it.remove();
+                    }
+                    return;
                 }
-                if (((AbstractParty) party).isEmpty()) {
-                    it.remove();
-                }
-                return true;
             }
         }
-        return name == null;                    // If no party and name is null, there is nothing to set.
+        if (name != null) {                             // If no party and name is null, there is nothing to set.
+            final Party party = creator.apply(name);
+            if (parties != null) {                      // May be null on unmarshalling.
+                parties.add(party);
+            } else {
+                setParties(Collections.singletonList(party));
+            }
+        }
     }
 
     /**
@@ -245,9 +257,14 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Deprecated
     public void setIndividualName(final String newValue) {
-        if (!setName(Individual.class, false, Types.toInternationalString(newValue))) {
-            getParties().add(new DefaultIndividual(newValue, null, null));
-        }
+        setName(Individual.class, false, Types.toInternationalString(newValue), DefaultResponsibleParty::individual);
+    }
+
+    /**
+     * Generates a new individual from the given name.
+     */
+    private static Party individual(final InternationalString name) {
+        return new DefaultIndividual(name, null, null);
     }
 
     /**
@@ -284,9 +301,14 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Deprecated
     public void setOrganisationName(final InternationalString newValue) {
-        if (!setName(Organisation.class, false, Types.toInternationalString(newValue))) {
-            getParties().add(new DefaultOrganisation(newValue, null, null, null));
-        }
+        setName(Organisation.class, false, newValue, DefaultResponsibleParty::organisation);
+    }
+
+    /**
+     * Generates a new organization from the given name.
+     */
+    private static Party organisation(final InternationalString name) {
+        return new DefaultOrganisation(name, null, null, null);
     }
 
     /**
@@ -324,9 +346,14 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Deprecated
     public void setPositionName(final InternationalString newValue) {
-        if (!setName(DefaultIndividual.class, true, newValue)) {
-            getParties().add(new DefaultIndividual(null, newValue, null));
-        }
+        setName(DefaultIndividual.class, true, newValue, DefaultResponsibleParty::position);
+    }
+
+    /**
+     * Generates a new position from the given name.
+     */
+    private static Party position(final InternationalString name) {
+        return new DefaultIndividual(null, name, null);
     }
 
     /**
@@ -372,16 +399,19 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Deprecated
     public void setContactInfo(final Contact newValue) {
-        checkWritePermission(valueIfDefined(super.getParties()));
-        final Iterator<Party> it = getParties().iterator();
-        while (it.hasNext()) {
-            final Party party = it.next();
-            if (party instanceof AbstractParty) {
-                ((AbstractParty) party).setContactInfo(newValue != null ? Collections.singleton(newValue) : null);
-                if (((AbstractParty) party).isEmpty()) {
-                    it.remove();
+        final Collection<Party> parties = getParties();
+        checkWritePermission(valueIfDefined(parties));
+        if (parties != null) {                                  // May be null on unmarshalling.
+            final Iterator<Party> it = parties.iterator();
+            while (it.hasNext()) {
+                final Party party = it.next();
+                if (party instanceof AbstractParty) {
+                    ((AbstractParty) party).setContactInfo(newValue != null ? Collections.singleton(newValue) : null);
+                    if (((AbstractParty) party).isEmpty()) {
+                        it.remove();
+                    }
+                    return;
                 }
-                return;
             }
         }
         /*
@@ -389,7 +419,12 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
          * it should be an individual or an organization. Arbitrarily choose an individual for now.
          */
         if (newValue != null) {
-            getParties().add(new DefaultIndividual(null, null, newValue));
+            final Party party = new DefaultIndividual(null, null, newValue);
+            if (parties != null) {
+                parties.add(party);
+            } else {
+                setParties(Collections.singletonList(party));
+            }
         }
     }
 

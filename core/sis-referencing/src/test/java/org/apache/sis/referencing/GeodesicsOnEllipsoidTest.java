@@ -42,16 +42,17 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  *
  * @author  Matthieu Bastianelli (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
 @DependsOn(GeodeticCalculatorTest.class)
 public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
     /**
-     * The instance to be tested.
+     * The {@link GeodesicsOnEllipsoid} instance to be tested.
+     * A specialized type is used for tracking locale variables.
      */
-    private GeodesicsOnEllipsoid testedEarth;
+    private Calculator testedEarth;
 
     /**
      * Values of local variables in {@link GeodesicsOnEllipsoid} methods. If values for the same key are added
@@ -80,7 +81,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
      */
     @Override
     GeodeticCalculator create(final boolean normalized) {
-        testedEarth = new Calculator(normalized ? HardCodedCRS.WGS84 : HardCodedCRS.WGS84_φλ);
+        testedEarth = new Calculator(normalized ? HardCodedCRS.WGS84 : HardCodedCRS.WGS84_LATITUDE_FIRST);
         return testedEarth;
     }
 
@@ -92,10 +93,12 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
     private void createTracked() {
         localVariables = new HashMap<>();
         testedEarth = new Calculator(HardCodedCRS.WGS84) {
+            /** Replaces a computed value by the value given in Karney table. */
             @Override double computedToGiven(final double α1) {
                 return (abs(TRUNCATED_α1 - toDegrees(α1)) < 1E-3) ? toRadians(TRUNCATED_α1) : α1;
             }
 
+            /** Invoked when {@link GeodesicsOnEllipsoid} computed an intermediate value. */
             @Override void store(final String name, final double value) {
                 super.store(name, value);
                 if (verifyConsistency) {
@@ -119,6 +122,15 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
      * by {@link MathFunctions#polynomialRoots(double...)}.
      */
     private static class Calculator extends GeodesicsOnEllipsoid {
+        /**
+         * {@code true} if iteration stopped before to reach the desired accuracy because of limitation
+         * in {@code double} precision. This field must be reset to {@code false} before any new point.
+         *
+         * @see #relaxIfConfirmed(KnownProblem)
+         * @see #clear()
+         */
+        private boolean iterationReachedPrecisionLimit;
+
         /** Values needed for computation of μ. */
         private double x, y;
 
@@ -129,7 +141,9 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
 
         /** Invoked when {@link GeodesicsOnEllipsoid} computed an intermediate value. */
         @Override void store(final String name, final double value) {
-            if (name.length() == 1) {
+            if (name.equals("dα₁ ≪ α₁")) {
+                iterationReachedPrecisionLimit = true;
+            } else if (name.length() == 1) {
                 switch (name.charAt(0)) {
                     case 'x': x = value; break;
                     case 'y': y = value; break;
@@ -151,6 +165,21 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
                 }
             }
         }
+    }
+
+    /**
+     * Clears the tested {@link GeodeticCalculator} before to test a new point.
+     * This is invoked by parent class between two tests using the same calculator.
+     * The intent is to make sure that data from previous test are not mixed with current test.
+     */
+    @Override
+    void clear() {
+        if (localVariables != null) {
+            localVariables.clear();
+        }
+        testedEarth.x = Double.NaN;
+        testedEarth.y = Double.NaN;
+        testedEarth.iterationReachedPrecisionLimit = false;
     }
 
     /**
@@ -347,6 +376,24 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
     }
 
     /**
+     * Tests computing a shorter distance than {@link #testComputeShortDistance()}.
+     * This is based on the empirical observation that for distances short enough,
+     * the {@literal α₁ -= dα₁} calculation leaves α₁ unchanged when {@literal dα₁ ≪ α₁}.
+     * {@link GeodesicsOnEllipsoid} shall detect this situation and stop iteration.
+     * This tests verify that {@link GeodeticException} is not thrown.
+     *
+     * @throws GeodeticException if the {@literal dα₁ ≪ α₁} check did not worked.
+     */
+    @Test
+    @DependsOnMethod("testComputeShortDistance")
+    public void testComputeShorterDistance() throws GeodeticException {
+        final GeodeticCalculator c = create(false);
+        c.setStartGeographicPoint(-0.000014, -29.841548);
+        c.setEndGeographicPoint  (-0.000014, -29.841319);
+        assertEquals(25.49, c.getGeodesicDistance(), 0.01);
+    }
+
+    /**
      * Result of Karney table 4, used as input in Karney table 5. We need to truncated that intermediate result
      * to the same number of digits than Karney in order to get the numbers published in table 5 and 6.
      * This value is used in {@link #testComputeNearlyAntipodal()} only.
@@ -379,7 +426,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
         testedEarth.setEndGeographicPoint(29.9, 179.8);
         /*
          * The following method invocation causes calculation of all intermediate values.
-         * Values β₁ and β₂ are keep constant during all iterations.
+         * Values β₁ and β₂ are kept constant during all iterations.
          * Other values are given in Karney table 4.
          */
         final double distance = testedEarth.getGeodesicDistance();
@@ -475,24 +522,24 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
     }
 
     /**
-     * Tells whether failure to compute geodesic for the given data should cause the test case to fail.
-     * This is invoked by {@link #compareAgainstDataset()}.
-     *
-     * @param  expected  a row from the {@code $SIS_DATA/Tests/GeodTest.dat} file.
-     * @return whether the JUnit test should fail.
+     * Returns a value {@literal > 1} if iteration stopped before to reach the desired accuracy because of limitation
+     * in {@code double} precision. This problem may happen in the {@link GeodesicsOnEllipsoid#computeDistance()}
+     * method when {@literal dα₁ ≪ α₁}. If locale variable storage is enabled, this situation is flagged by the
+     * {@code "dα₁ ≪ α₁"} key. Otherwise we conservatively assume that this situation occurred.
      */
     @Override
-    boolean isFailure(final double[] expected) {
-        final double φ1 = expected[COLUMN_φ1];
-        final double φ2 = expected[COLUMN_φ2];
-        final double Δλ = expected[COLUMN_λ2] - expected[COLUMN_λ1];
-        if (Δλ > 90 && max(abs(φ1), abs(φ2)) < 2E-4) {
-            return false;                           // Ignore equatorial case.
+    double relaxIfConfirmed(final KnownProblem potentialProblem) {
+        if (potentialProblem == KnownProblem.ITERATION_REACHED_PRECISION_LIMIT) {
+            if (GeodesicsOnEllipsoid.STORE_LOCAL_VARIABLES) {
+                if (testedEarth.iterationReachedPrecisionLimit) {
+                    return 2;
+                }
+            } else {
+                // No information about whether the problem really occurred.
+                return 2;
+            }
         }
-        if (Δλ > 179 && abs(φ1 + φ2) < 0.002) {
-            return false;                           // Ignore antipodal case.
-        }
-        return super.isFailure(expected);
+        return super.relaxIfConfirmed(potentialProblem);
     }
 
     /**
@@ -536,7 +583,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
         final double distance = testedEarth.getRhumblineLength();
         assertValueEquals("Δλ", 0,  55+57.0 / 60,         1E-11, true);
         assertValueEquals("ΔΨ", 0,   -38.12 / (10800/PI), 1E-5, false);
-        assertValueEquals("C",  0,  90.6505,              1E-4, true);
+//      assertValueEquals("C",  0,  90.6505,              1E-4, true);
         assertEquals("azimuth",  90.65049570, testedEarth.getConstantAzimuth(), 1E-8);
         assertEquals("distance", 2028.9 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE);   // From Bennett (1996)
         assertEquals("distance", 3757550.656, distance, Formulas.LINEAR_TOLERANCE);         // From Karney's online calculator.

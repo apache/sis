@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage;
 import java.util.Arrays;
 import java.util.Collections;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.storage.DataStoreContentException;
@@ -68,8 +69,8 @@ public final strictfp class ConcatenatedFeatureSetTest extends TestCase {
         final Metadata md = cfs.getMetadata();
         assertNotNull("getMetadata()", md);
         assertContentInfoEquals("City", 3, (FeatureCatalogueDescription) getSingleton(md.getContentInfo()));
-        assertFeatureSourceEquals("City", new String[] {"City"},
-                getSingleton(getSingleton(md.getResourceLineages()).getSources()));
+        final Lineage lineage = getSingleton(md.getResourceLineages());
+        assertFeatureSourceEquals("City", new String[] {"City"}, getSingleton(lineage.getSources()));
     }
 
     /**

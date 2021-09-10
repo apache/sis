@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.storage.DataStoreException;
@@ -36,8 +37,8 @@ import static org.junit.Assert.*;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.FilterFactory;
-import org.opengis.filter.PropertyIsEqualTo;
-import org.apache.sis.filter.DefaultFilterFactory;
+import org.opengis.filter.BinaryComparisonOperator;
+import org.opengis.filter.MatchAction;
 
 
 /**
@@ -45,7 +46,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -119,8 +120,11 @@ public final strictfp class JoinFeatureSetTest extends TestCase {
      * Creates a new join feature set of the given type using the {@link #featureSet1} and {@link #featureSet2}.
      */
     private FeatureSet create(final JoinFeatureSet.Type type) throws DataStoreException {
-        final FilterFactory factory = new DefaultFilterFactory();
-        final PropertyIsEqualTo condition = factory.equals(factory.property("att2"), factory.property("att3"));
+        final FilterFactory<Feature, Object, ?> factory = DefaultFilterFactory.forFeatures();
+        final BinaryComparisonOperator<Feature> condition = factory.equal(
+                factory.property("att2", String.class),
+                factory.property("att3", String.class),
+                true, MatchAction.ANY);
         final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put("name", "JoinSet"));
         assertNull(properties.put("identifierDelimiter", " "));

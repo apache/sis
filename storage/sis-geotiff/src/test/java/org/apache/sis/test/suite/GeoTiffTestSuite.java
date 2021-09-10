@@ -25,15 +25,18 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-geotiff} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.geotiff.CompressionTest.class,
+    org.apache.sis.internal.storage.inflater.InflaterTest.class,
+    org.apache.sis.internal.storage.inflater.CCITTRLETest.class,
     org.apache.sis.storage.geotiff.TypeTest.class,
-    org.apache.sis.storage.geotiff.CompressionTest.class,
     org.apache.sis.storage.geotiff.GeoKeysTest.class,
-    org.apache.sis.storage.geotiff.CRSBuilderTest.class
+    org.apache.sis.storage.geotiff.CRSBuilderTest.class,
+    org.apache.sis.storage.geotiff.SelfConsistencyTest.class
 })
 public final strictfp class GeoTiffTestSuite extends TestSuite {
     /**

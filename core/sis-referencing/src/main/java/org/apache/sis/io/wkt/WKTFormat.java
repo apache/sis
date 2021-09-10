@@ -23,6 +23,12 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.TreeMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.function.Function;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -32,6 +38,7 @@ import java.text.ParseException;
 import javax.measure.Unit;
 import org.opengis.util.Factory;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CSFactory;
@@ -44,14 +51,17 @@ import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
+import org.apache.sis.referencing.ImmutableIdentifier;
 
 
 /**
  * Parser and formatter for <cite>Well Known Text</cite> (WKT) strings.
- * This format handles a pair of {@link Parser} and {@link Formatter},
+ * This format handles a pair of {@link org.apache.sis.io.wkt.Parser} and {@link Formatter},
  * used by the {@code parse(…)} and {@code format(…)} methods respectively.
  * {@code WKTFormat} objects allow the following configuration:
  *
@@ -107,7 +117,7 @@ import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
@@ -132,16 +142,21 @@ public class WKTFormat extends CompoundFormat<Object> {
     public static final int SINGLE_LINE = -1;
 
     /**
-     * The symbols to use for this formatter.
+     * The {@linkplain Symbols#immutable() immutable} set of symbols to use for this formatter.
      * The same object is also referenced in the {@linkplain #parser} and {@linkplain #formatter}.
      * It appears here for serialization purpose.
+     *
+     * @see #setSymbols(Symbols)
      */
     private Symbols symbols;
 
     /**
-     * The colors to use for this formatter, or {@code null} for no syntax coloring.
+     * The {@linkplain Colors#immutable() immutable} set of colors to use for this formatter,
+     * or {@code null} for no syntax coloring. The default value is {@code null}.
      * The same object is also referenced in the {@linkplain #formatter}.
      * It appears here for serialization purpose.
+     *
+     * @see #setColors(Colors)
      */
     private Colors colors;
 
@@ -194,12 +209,39 @@ public class WKTFormat extends CompoundFormat<Object> {
     private int listSizeLimit;
 
     /**
+     * Identifier to assign to parsed {@link IdentifiedObject} if the WKT does not contain an
+     * explicit {@code ID[…]} or {@code AUTHORITY[…]} element. The main use case is for implementing
+     * a {@link org.opengis.referencing.crs.CRSAuthorityFactory} backed by definitions in WKT format.
+     *
+     * <p>This field is transient because this is not yet a public API. The {@code transient}
+     * keyword may be removed in a future version if we commit to this API.</p>
+     *
+     * @see #setDefaultIdentifier(Identifier)
+     */
+    private transient Identifier defaultIdentifier;
+
+    /**
      * WKT fragments that can be inserted in longer WKT strings, or {@code null} if none. Keys are short identifiers
      * and values are WKT subtrees to substitute to the identifiers when they are found in a WKT to parse.
+     * The same map instance may be shared by different {@linkplain #clone() clones} as long as they are not modified.
      *
-     * @see #fragments()
+     * @see #fragments(boolean)
      */
-    private Map<String,Element> fragments;
+    private Map<String,StoredTree> fragments;
+
+    /**
+     * {@code true} if the {@link #fragments} map is shared by two or more {@code WKTFormat} instances.
+     * In such case, the map shall not be modified; instead it must be copied before any modification.
+     *
+     * <h4>Use case</h4>
+     * This flag allows to clone the {@link #fragments} map only when first needed. In use cases where
+     * {@code WKTFormat} is cloned for multi-threading purposes without change in its configuration,
+     * this flag avoids completely the need to clone the {@link #fragments} map.
+     *
+     * @see #clone()
+     * @see #fragments(boolean)
+     */
+    private transient boolean isCloned;
 
     /**
      * Temporary map used by {@link #addFragment(String, String)} for reusing existing instances when possible.
@@ -258,11 +300,22 @@ public class WKTFormat extends CompoundFormat<Object> {
 
     /**
      * Returns the {@link #fragments} map, creating it when first needed.
+     * Caller shall not modify the returned map, unless the {@code modifiable} parameter is {@code true}.
+     *
+     * @param  modifiable  whether the caller intents to modify the map.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private Map<String,Element> fragments() {
+    private Map<String,StoredTree> fragments(final boolean modifiable) {
         if (fragments == null) {
+            if (!modifiable) {
+                // Most common cases: invoked before to parse a WKT and no fragments specified.
+                return Collections.emptyMap();
+            }
             fragments = new TreeMap<>();
+            isCloned  = false;
+        } else if (isCloned & modifiable) {
+            fragments = new TreeMap<>(fragments);
+            isCloned  = false;
         }
         return fragments;
     }
@@ -301,7 +354,21 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Returns the symbols used for parsing and formatting WKT.
+     * Returns the locale to use for error messages. Other {@link CompoundFormat} classes use the system default.
+     * But this class uses a compromise: not exactly the locale used for {@link InternationalString} because that
+     * locale is often fixed to English, and not exactly the system default neither because this "error locale"
+     * is also used for warnings. The compromise implemented in this method may change in any future version.
+     *
+     * @see #errors()
+     */
+    final Locale getErrorLocale() {
+        final Locale locale = getLocale(Locale.Category.DISPLAY);
+        return (locale != null && locale != Locale.ROOT) ? locale : Locale.getDefault(Locale.Category.DISPLAY);
+    }
+
+    /**
+     * Returns the symbols used for parsing and formatting WKT. This method returns an unmodifiable instance.
+     * Modifications, if desired, should be applied on a {@linkplain Symbols#clone() clone} of the returned object.
      *
      * @return the current set of symbols used for parsing and formatting WKT.
      */
@@ -412,6 +479,8 @@ public class WKTFormat extends CompoundFormat<Object> {
 
     /**
      * Returns the colors to use for syntax coloring, or {@code null} if none.
+     * This method returns an unmodifiable instance. Modifications, if desired,
+     * should be applied on a {@linkplain Colors#clone() clone} of the returned object.
      * By default there is no syntax coloring.
      *
      * @return the colors for syntax coloring, or {@code null} if none.
@@ -589,6 +658,24 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
+     * Sets the identifier to assign to parsed {@link IdentifiedObject} if the WKT does not contain an
+     * explicit {@code ID[…]} or {@code AUTHORITY[…]} element. The main use case is for implementing
+     * a {@link org.opengis.referencing.crs.CRSAuthorityFactory} backed by definitions in WKT format.
+     *
+     * <p>Note that this identifier apply to all objects to be created, which is generally not desirable.
+     * Callers should invoke {@code setDefaultIdentifier(null)} in a {@code finally} block.</p>
+     *
+     * <p>This is not a publicly committed API. If we want to make this functionality public in a future
+     * version, we should investigate if we should make it applicable to a wider range of properties and
+     * how to handle the fact that the a given identifier should be used for only one object.</p>
+     *
+     * @param  identifier  the default identifier, or {@code null} if none.
+     */
+    final void setDefaultIdentifier(final Identifier identifier) {
+        defaultIdentifier = identifier;
+    }
+
+    /**
      * Verifies if the given type is a valid key for the {@link #factories} map.
      */
     private void ensureValidFactoryType(final Class<?> type) throws IllegalArgumentException {
@@ -599,8 +686,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             type != MathTransformFactory.class  &&
             type != CoordinateOperationFactory.class)
         {
-            throw new IllegalArgumentException(Errors.getResources(getLocale())
-                    .getString(Errors.Keys.IllegalArgumentValue_2, "type", type));
+            throw new IllegalArgumentException(errors().getString(Errors.Keys.IllegalArgumentValue_2, "type", type));
         }
     }
 
@@ -677,7 +763,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @return the name of all fragments known to this {@code WKTFormat}.
      */
     public Set<String> getFragmentNames() {
-        return fragments().keySet();
+        return fragments(true).keySet();
     }
 
     /**
@@ -701,33 +787,97 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * For removing a fragment, use <code>{@linkplain #getFragmentNames()}.remove(name)</code>.
      *
-     * @param  name  the name to assign to the WKT fragment. Identifiers are case-sensitive.
+     * @param  name  the name to assign to the WKT fragment (case-sensitive). Must be a valid Unicode identifier.
      * @param  wkt   the Well Know Text (WKT) fragment represented by the given identifier.
-     * @throws IllegalArgumentException if the name is invalid or if a fragment is already present for that name.
+     * @throws IllegalArgumentException if the given name is not a valid Unicode identifier
+     *         or if a fragment is already associated to that name.
      * @throws ParseException if an error occurred while parsing the given WKT.
      */
     public void addFragment(final String name, final String wkt) throws IllegalArgumentException, ParseException {
         ArgumentChecks.ensureNonEmpty("wkt", wkt);
         ArgumentChecks.ensureNonEmpty("name", name);
-        short error = Errors.Keys.NotAUnicodeIdentifier_1;
-        if (CharSequences.isUnicodeIdentifier(name)) {
-            if (sharedValues == null) {
-                sharedValues = new HashMap<>();
-            }
-            final ParsePosition pos = new ParsePosition(0);
-            final Element element = new Element(parser(), wkt, pos, sharedValues);
-            final int index = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length());
-            if (index < wkt.length()) {
-                throw new UnparsableObjectException(getLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
-                        new Object[] {name + " = " + element.keyword + "[…]", CharSequences.token(wkt, index)}, index);
-            }
-            // 'fragments' map has been created by 'parser()'.
-            if (fragments.putIfAbsent(name, element) == null) {
-                return;
-            }
-            error = Errors.Keys.ElementAlreadyPresent_1;
+        if (!CharSequences.isUnicodeIdentifier(name)) {
+            throw new IllegalArgumentException(errors().getString(Errors.Keys.NotAUnicodeIdentifier_1, name));
         }
-        throw new IllegalArgumentException(Errors.getResources(getLocale()).getString(error, name));
+        final ParsePosition pos = new ParsePosition(0);
+        final StoredTree definition = textToTree(wkt, pos, name);
+        final int length = wkt.length();
+        final int index = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), length);
+        if (index < length) {
+            throw new UnparsableObjectException(getErrorLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
+                    new Object[] {name + " = " + definition.keyword() + "[…]", CharSequences.token(wkt, index)}, index);
+        }
+        addFragment(name, definition);
+        logWarnings(WKTFormat.class, "addFragment");
+    }
+
+    /**
+     * Adds a fragment of Well Know Text (WKT).
+     * Caller must have verified that {@code name} is a valid Unicode identifier.
+     *
+     * @param  name        the Unicode identifier to assign to the WKT fragment.
+     * @param  definition  root of the WKT fragment to add.
+     * @throws IllegalArgumentException if a fragment is already associated to the given name.
+     */
+    final void addFragment(final String name, final StoredTree definition) {
+        if (fragments(true).putIfAbsent(name, definition) != null) {
+            throw new IllegalArgumentException(errors().getString(Errors.Keys.ElementAlreadyPresent_1, name));
+        }
+    }
+
+    /**
+     * Parses a Well Know Text (WKT) for a fragment or an entire object definition.
+     * This method should be invoked only for WKT trees to be stored for a long time.
+     * It should not be invoked for immediate {@link IdentifiedObject} parsing.
+     *
+     * <p>If {@code aliasKey} is non-null, this method may return a multi-roots tree.
+     * See {@link StoredTree#root} for a discussion. Note that in both cases (single
+     * root or multi-roots), we may have some unparsed characters at the end of the string.</p>
+     *
+     * @param  wkt       the Well Know Text (WKT) fragment to parse.
+     * @param  pos       index of the first character to parse (on input) or after last parsed character (on output).
+     * @param  aliasKey  key of the alias, or {@code null} if this method is not invoked
+     *                   for defining a {@linkplain #addFragment(String, String) fragment}.
+     * @return root of the tree of elements.
+     */
+    final StoredTree textToTree(final String wkt, final ParsePosition pos, final String aliasKey) throws ParseException {
+        final AbstractParser parser  = parser(true);
+        final List<Element>  results = new ArrayList<>(4);
+        warnings = null;            // Do not invoke `clear()` because we do not want to clear `sharedValues` map.
+        try {
+            for (;;) {
+                results.add(parser.textToTree(wkt, pos));
+                if (aliasKey == null) break;
+                /*
+                 * If we find a separator (usually a coma), search for another element. Contrarily to equivalent
+                 * loop in `Element(AbstractParser, …)` constructor, we do not parse number or dates because we
+                 * do not have a way as reliable as above-cited constructor to differentiate the kind of value.
+                 */
+                final int p = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length());
+                final String separator = parser.symbols.trimmedSeparator();
+                if (!wkt.startsWith(separator, p)) break;
+                pos.setIndex(p + separator.length());
+            }
+        } finally {
+            // Invoked as a matter of principle, but no warning is expected at this stage.
+            warnings = parser.getAndClearWarnings(results.isEmpty() ? null : results.get(0));
+        }
+        if (sharedValues == null) {
+            sharedValues = new HashMap<>();
+        }
+        if (results.size() == 1) {
+            return new StoredTree(results.get(0), sharedValues);      // Standard case.
+        } else {
+            return new StoredTree(results, sharedValues);             // Anonymous wrapper around multi-roots.
+        }
+    }
+
+    /**
+     * Clears warnings and cache of shared values.
+     */
+    final void clear() {
+        warnings = null;
+        sharedValues = null;
     }
 
     /**
@@ -737,49 +887,83 @@ public class WKTFormat extends CompoundFormat<Object> {
      * In case of error, {@link ParseException#getErrorOffset()} gives the position of the first illegal character.
      *
      * @param  wkt  the character sequence for the object to parse.
-     * @param  pos  the position where to start the parsing.
+     * @param  pos  index of the first character to parse (on input) or after last parsed character (on output).
      * @return the parsed object (never {@code null}).
      * @throws ParseException if an error occurred while parsing the WKT.
      */
     @Override
     public Object parse(final CharSequence wkt, final ParsePosition pos) throws ParseException {
-        warnings = null;
-        sharedValues = null;
+        clear();
         ArgumentChecks.ensureNonEmpty("wkt", wkt);
         ArgumentChecks.ensureNonNull ("pos", pos);
-        final AbstractParser parser = parser();
-        Object object = null;
+        final AbstractParser parser = parser(false);
+        Object result = null;
         try {
-            return object = parser.parseObject(wkt.toString(), pos);
+            result = parser.createFromWKT(wkt.toString(), pos);
         } finally {
-            warnings = parser.getAndClearWarnings(object);
+            warnings = parser.getAndClearWarnings(result);
         }
+        return result;
+    }
+
+    /**
+     * Parses a tree of {@link Element}s to produce a geodetic object. The {@code tree} argument
+     * should be a value returned by {@link #textToTree(String, ParsePosition, String)}.
+     * This method is for {@link WKTDictionary#createObject(String)} usage.
+     *
+     * @param  tree  the tree of WKT elements.
+     * @return the parsed object (never {@code null}).
+     * @throws ParseException if the tree can not be parsed.
+     */
+    final Object buildFromTree(StoredTree tree) throws ParseException {
+        clear();
+        final AbstractParser parser = parser(false);
+        parser.ignoredElements.clear();
+        final SingletonElement singleton = new SingletonElement();
+        tree.toElements(parser, singleton, 0);
+        final Element root = new Element(singleton.value);
+        Object result = null;
+        try {
+            result = parser.buildFromTree(root);
+            root.close(parser.ignoredElements);
+        } finally {
+            warnings = parser.getAndClearWarnings(result);
+        }
+        return result;
     }
 
     /**
      * Returns the parser, created when first needed.
+     *
+     * @param  modifiable  whether the caller intents to modify the {@link #fragments} map.
      */
-    private AbstractParser parser() {
+    private AbstractParser parser(final boolean modifiable) {
         AbstractParser parser = this.parser;
-        if (parser == null) {
-            this.parser = parser = new Parser(symbols, fragments(),
+        /*
+         * `parser` is always null on a fresh clone. However the `fragments`
+         * map may need to be cloned if the caller intents to modify it.
+         */
+        if (parser == null || (isCloned & modifiable)) {
+            this.parser = parser = new Parser(symbols, fragments(modifiable),
                     (NumberFormat) getFormat(Number.class),
                     (DateFormat)   getFormat(Date.class),
                     (UnitFormat)   getFormat(Unit.class),
                     convention,
                     (transliterator != null) ? transliterator : Transliterator.DEFAULT,
-                    getLocale(),
+                    getErrorLocale(),
                     factories());
         }
         return parser;
     }
 
     /**
-     * The parser created by {@link #parser()}, identical to {@link GeodeticObjectParser} except for
-     * the source of logging messages which is the enclosing {@code WKTParser} instead than a factory.
+     * The parser created by {@link #parser(boolean)}, identical to {@link GeodeticObjectParser} except
+     * for the source of logging messages which is the enclosing {@code WKTParser} instead than a factory.
+     * Also provides a mechanism for adding default identifier to root {@link IdentifiedObject}.
      */
-    private static final class Parser extends GeodeticObjectParser {
-        Parser(final Symbols symbols, final Map<String,Element> fragments,
+    private final class Parser extends GeodeticObjectParser implements Function<Object,Object> {
+        /** Creates a new parser. */
+        Parser(final Symbols symbols, final Map<String,StoredTree> fragments,
                 final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
                 final Convention convention, final Transliterator transliterator, final Locale errorLocale,
                 final ReferencingFactoryContainer factories)
@@ -787,8 +971,19 @@ public class WKTFormat extends CompoundFormat<Object> {
             super(symbols, fragments, numberFormat, dateFormat, unitFormat, convention, transliterator, errorLocale, factories);
         }
 
+        /** Returns the source class and method to declare in log records. */
         @Override String getPublicFacade() {return WKTFormat.class.getName();}
         @Override String getFacadeMethod() {return "parse";}
+
+        /** Invoked when an identifier need to be supplied to root {@link IdentifiedObject}. */
+        @Override public Object apply(Object key) {return new ImmutableIdentifier(defaultIdentifier);}
+
+        /** Invoked when a root {@link IdentifiedObject} is about to be created. */
+        @Override void completeRoot(final Map<String,Object> properties) {
+            if (defaultIdentifier != null) {
+                properties.computeIfAbsent(IdentifiedObject.IDENTIFIERS_KEY, this);
+            }
+        }
     }
 
     /**
@@ -810,7 +1005,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     @Override
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
-        warnings = null;
+        clear();
         ArgumentChecks.ensureNonNull("object",     object);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
         /*
@@ -830,7 +1025,7 @@ public class WKTFormat extends CompoundFormat<Object> {
          */
         Formatter formatter = this.formatter;
         if (formatter == null) {
-            formatter = new Formatter(getLocale(), symbols,
+            formatter = new Formatter(getLocale(), getErrorLocale(), symbols,
                     (NumberFormat) getFormat(Number.class),
                     (DateFormat)   getFormat(Date.class),
                     (UnitFormat)   getFormat(Unit.class));
@@ -856,7 +1051,7 @@ public class WKTFormat extends CompoundFormat<Object> {
                 warnings.setRoot(object);
             }
             if (!valid) {
-                throw new ClassCastException(Errors.getResources(getLocale()).getString(
+                throw new ClassCastException(errors().getString(
                         Errors.Keys.IllegalArgumentClass_2, "object", object.getClass()));
             }
             if (buffer != toAppendTo) {
@@ -899,24 +1094,52 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @since 0.6
      */
     public Warnings getWarnings() {
-        final Warnings w = warnings;
-        if (w != null) {
-            w.publish();
+        if (warnings != null) {
+            warnings.publish();
         }
-        return w;
+        return warnings;
     }
 
     /**
-     * Returns a clone of this format.
+     * If a warning occurred, logs it.
+     *
+     * @param  classe  the class to report as the source of the logging message.
+     * @param  method  the method to report as the source of the logging message.
+     */
+    final void logWarnings(final Class<?> classe, final String method) {
+        if (warnings != null) {
+            /*
+             * We can avoid the call to `Warnings.publish()` because we know that we are not keeping a
+             * reference for long, so we do not need to copy the `AbstractParser.ignoredElements` map.
+             */
+            final LogRecord record = new LogRecord(Level.WARNING, warnings.toString());
+            record.setLoggerName(Loggers.WKT);
+            Logging.log(classe, method, record);
+        }
+    }
+
+    /**
+     * Convenience methods for resources for error message in the locale given by {@link #getLocale()}.
+     */
+    final Errors errors() {
+        return Errors.getResources(getErrorLocale());
+    }
+
+    /**
+     * Returns a clone of this format. The clone has the same configuration (including any added
+     * {@linkplain #addFragment fragments}), except the {@linkplain #getWarnings() warnings}.
      *
      * @return a clone of this format.
      */
     @Override
     public WKTFormat clone() {
         final WKTFormat clone = (WKTFormat) super.clone();
-        clone.formatter = null;                                 // Do not share the formatter.
+        clone.clear();
+        clone.factories = null;                             // Not thread-safe; clone needs its own.
+        clone.formatter = null;                             // Do not share the formatter.
         clone.parser    = null;
-        clone.warnings  = null;
+        clone.isCloned  = isCloned = true;
+        // Symbols and Colors do not need to be cloned because they are flagged as immutable.
         return clone;
     }
 }

@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * Tests the {@link Angle}, {@link Longitude} and {@link Latitude} classes.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 0.4
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -96,13 +96,13 @@ public final strictfp class AngleTest extends TestCase {
      */
     @Test
     public void testClamp() {
-        assertEquals( 45, Latitude.clamp( 45), 0);
-        assertEquals(-45, Latitude.clamp(-45), 0);
-        assertEquals( 90, Latitude.clamp( 95), 0);
-        assertEquals(-90, Latitude.clamp(-95), 0);
-        assertEquals(NaN, Latitude.clamp(NaN), 0);
-        assertEquals( 90, Latitude.clamp(Double.POSITIVE_INFINITY), 0);
-        assertEquals(-90, Latitude.clamp(Double.NEGATIVE_INFINITY), 0);
+        assertEquals( 45, Latitude.clamp( 45), STRICT);
+        assertEquals(-45, Latitude.clamp(-45), STRICT);
+        assertEquals( 90, Latitude.clamp( 95), STRICT);
+        assertEquals(-90, Latitude.clamp(-95), STRICT);
+        assertEquals(NaN, Latitude.clamp(NaN), STRICT);
+        assertEquals( 90, Latitude.clamp(Double.POSITIVE_INFINITY), STRICT);
+        assertEquals(-90, Latitude.clamp(Double.NEGATIVE_INFINITY), STRICT);
         assertEquals(doubleToLongBits(+0.0), doubleToLongBits(Latitude.clamp(+0.0)));
         assertEquals(doubleToLongBits(-0.0), doubleToLongBits(Latitude.clamp(-0.0)));       // Sign shall be preserved.
     }
@@ -112,16 +112,33 @@ public final strictfp class AngleTest extends TestCase {
      */
     @Test
     public void testNormalize() {
-        assertEquals( 120, Longitude.normalize( 120), 0);
-        assertEquals(-120, Longitude.normalize(-120), 0);
-        assertEquals(-160, Longitude.normalize( 200), 0);
-        assertEquals( 160, Longitude.normalize(-200), 0);
-        assertEquals(-180, Longitude.normalize(-180), 0);
-        assertEquals(-180, Longitude.normalize( 180), 0);                            // Upper value shall be exclusive.
-        assertEquals(NaN,  Longitude.normalize( NaN), 0);
-        assertEquals(NaN,  Longitude.normalize(Double.POSITIVE_INFINITY), 0);
-        assertEquals(NaN,  Longitude.normalize(Double.NEGATIVE_INFINITY), 0);
+        assertEquals(  20, Longitude.normalize(  20), STRICT);
+        assertEquals( -20, Longitude.normalize( -20), STRICT);
+        assertEquals(  20, Longitude.normalize( 380), STRICT);
+        assertEquals( -20, Longitude.normalize( 340), STRICT);
+        assertEquals( 120, Longitude.normalize( 120), STRICT);
+        assertEquals(-120, Longitude.normalize(-120), STRICT);
+        assertEquals(-160, Longitude.normalize( 200), STRICT);
+        assertEquals( 160, Longitude.normalize(-200), STRICT);
+        assertEquals(-180, Longitude.normalize(-180), STRICT);
+        assertEquals(-180, Longitude.normalize( 180), STRICT);                      // Upper value shall be exclusive.
+        assertEquals(NaN,  Longitude.normalize( NaN), STRICT);
+        assertEquals(NaN,  Longitude.normalize(Double.POSITIVE_INFINITY), STRICT);
+        assertEquals(NaN,  Longitude.normalize(Double.NEGATIVE_INFINITY), STRICT);
         assertEquals(doubleToLongBits(+0.0), doubleToLongBits(Longitude.normalize(+0.0)));
         assertEquals(doubleToLongBits(-0.0), doubleToLongBits(Longitude.normalize(-0.0)));  // Sign shall be preserved.
+    }
+
+    /**
+     * Tests {@link Longitude#isWraparound(double, double)}.
+     */
+    @Test
+    public void testIsWraparound() {
+        assertFalse(Longitude.isWraparound( 20,  40));
+        assertTrue (Longitude.isWraparound( 40,  20));
+        assertFalse(Longitude.isWraparound( 0d,  0d));
+        assertFalse(Longitude.isWraparound(-0d,  0d));
+        assertFalse(Longitude.isWraparound(-0d, -0d));
+        assertTrue (Longitude.isWraparound(+0d, -0d));
     }
 }

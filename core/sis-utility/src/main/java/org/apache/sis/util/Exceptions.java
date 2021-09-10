@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.io.UncheckedIOException;
 import java.nio.file.DirectoryIteratorException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ExecutionException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -33,7 +34,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * Static methods working with {@link Exception} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -231,6 +232,7 @@ public final class Exceptions extends Static {
      *
      * <ul>
      *   <li>It is an instance of {@link InvocationTargetException} (could be wrapping anything).</li>
+     *   <li>It is an instance of {@link ExecutionException} (could be wrapping anything).</li>
      *   <li>It is an instance of {@link BackingStoreException} (typically wrapping a checked exception).</li>
      *   <li>It is an instance of {@link UncheckedIOException} (wrapping a {@link java.io.IOException}).</li>
      *   <li>It is an instance of {@link DirectoryIteratorException} (wrapping a {@link java.io.IOException}).</li>
@@ -242,8 +244,8 @@ public final class Exceptions extends Static {
      * {@link java.security.PrivilegedActionException} is also a wrapper exception, but is not included in above list
      * because it is used in very specific contexts.</div>
      *
-     * This method uses only the exception class as criterion;
-     * it does not verify if the exception messages are the same.
+     * This method uses only the exception class and the absence of {@linkplain Exception#getSuppressed() suppressed
+     * exceptions} as criterion; it does not verify if the exception messages are the same.
      *
      * @param  exception  the exception to unwrap (may be {@code null}.
      * @return the unwrapped exception (may be the given argument itself).
@@ -252,16 +254,21 @@ public final class Exceptions extends Static {
      */
     public static Exception unwrap(Exception exception) {
         if (exception != null) {
-            while (exception instanceof InvocationTargetException ||
+            while (exception.getSuppressed().length == 0 &&
+                  (exception instanceof InvocationTargetException ||
+                   exception instanceof ExecutionException ||
                    exception instanceof BackingStoreException ||
                    exception instanceof UncheckedIOException ||
-                   exception instanceof DirectoryIteratorException)
+                   exception instanceof DirectoryIteratorException))
             {
                 final Throwable cause = exception.getCause();
                 if (!(cause instanceof Exception)) break;
                 exception = (Exception) cause;
             }
-            for (Throwable cause; exception.getClass().isInstance(cause = exception.getCause());) {
+            Throwable cause;
+            while (exception.getSuppressed().length == 0 &&
+                   exception.getClass().isInstance(cause = exception.getCause()))
+            {
                 exception = (Exception) cause;      // Should never fail because of isInstance(…) check.
             }
         }

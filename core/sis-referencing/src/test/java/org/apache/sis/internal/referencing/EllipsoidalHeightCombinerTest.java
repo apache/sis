@@ -99,7 +99,7 @@ public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
          * Non-standard feature: accept (VerticalCRS + GeodeticCRS) order.
          * The test below use the reverse order for all axes compared to the previous test.
          */
-        compound = services.createCompoundCRS(properties, temporal, vertical, HardCodedCRS.WGS84_φλ);
+        compound = services.createCompoundCRS(properties, temporal, vertical, HardCodedCRS.WGS84_LATITUDE_FIRST);
         final Object[] components = CRS.getSingleComponents(compound).toArray();
         assertEquals(2, components.length);
         assertEqualsIgnoreMetadata(temporal, components[0]);

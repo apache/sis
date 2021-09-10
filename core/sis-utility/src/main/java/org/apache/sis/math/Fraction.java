@@ -21,6 +21,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -160,7 +161,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
                  * The factor is:
                  *                      factor = Bⁿ
                  *
-                 * where n is the greatest integer such as factor ≦ toMaximalSignificand.
+                 * where n is the greatest integer such as factor ≤ toMaximalSignificand.
                  */
                 final double logMaxFactor = Math.log(toMaximalSignificand);
                 for (int i=1; i<MathFunctions.PRIMES_LENGTH_16_BITS; i++) {
@@ -216,7 +217,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * However it should never happen. Even in the worst scenario:</p>
      *
      * {@prefomat java
-     *     long n = Integer.MIN_VALUE * (long) Integer.MAX_VALUE;
+     *     long n = Math.multiplyFull(Integer.MIN_VALUE, Integer.MAX_VALUE);
      *     n += n;
      * }
      *
@@ -319,8 +320,8 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @throws ArithmeticException if the result overflows.
      */
     public Fraction multiply(final Fraction other) {
-        return simplify(this, numerator   * (long) other.numerator,
-                              denominator * (long) other.denominator);
+        return simplify(this, JDK9.multiplyFull(numerator,   other.numerator),
+                              JDK9.multiplyFull(denominator, other.denominator));
     }
 
     /**
@@ -331,8 +332,8 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @throws ArithmeticException if the result overflows.
      */
     public Fraction divide(final Fraction other) {
-        return simplify(this, numerator   * (long) other.denominator,
-                              denominator * (long) other.numerator);
+        return simplify(this, JDK9.multiplyFull(numerator,   other.denominator),
+                              JDK9.multiplyFull(denominator, other.numerator));
     }
 
     /**
@@ -506,7 +507,8 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      */
     @Override
     public int compareTo(final Fraction other) {
-        return Long.signum(numerator * (long) other.denominator - other.numerator * (long) denominator);
+        return Long.signum(JDK9.multiplyFull(numerator, other.denominator)
+                         - JDK9.multiplyFull(other.numerator, denominator));
     }
 
     /**

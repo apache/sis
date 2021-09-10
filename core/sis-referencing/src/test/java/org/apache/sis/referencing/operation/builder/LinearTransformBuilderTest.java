@@ -24,7 +24,10 @@ import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.geometry.DirectPosition1D;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.test.DependsOnMethod;
@@ -39,7 +42,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link LinearTransformBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -410,6 +413,41 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
     }
 
     /**
+     * Tests {@link LinearTransformBuilder#setControlPoints(MathTransform)}.
+     * This test uses the Mercator projection as a source of non-linear transform
+     * and verify that we can get a linear approximation from it for a small region.
+     *
+     * @throws TransformException if an error occurred during map projection.
+     * @throws FactoryException if the transform can not be created.
+     */
+    @Test
+    public void testSetPointsFromTransform() throws TransformException, FactoryException {
+        final LinearTransformBuilder builder = new LinearTransformBuilder(3, 5);
+        builder.setControlPoints(HardCodedConversions.mercator().getConversionFromBase().getMathTransform());
+        assertPointEquals(builder, 0, 0,      0,      0);
+        assertPointEquals(builder, 1, 0, 111319,      0);
+        assertPointEquals(builder, 2, 0, 222639,      0);
+        assertPointEquals(builder, 2, 1, 222639, 110580);
+        assertPointEquals(builder, 2, 2, 222639, 221194);
+        assertPointEquals(builder, 1, 3, 111319, 331877);
+        assertPointEquals(builder, 1, 4, 111319, 442662);
+        final Matrix m = builder.create(null).getMatrix();
+        assertMatrixEquals("linear",
+                new Matrix3(111319, 0,   0,
+                            0, 110662, -62,
+                            0, 0, 1), m, 0.5);
+    }
+
+    /**
+     * Asserts that the builder contains the expected target coordinates for a given source grid coordinates.
+     */
+    private static void assertPointEquals(final LinearTransformBuilder builder,
+            final int gridX, final int gridY, final int expectedX, final int expectedY)
+    {
+        assertArrayEquals(new double[] {expectedX, expectedY}, builder.getControlPoint(new int[] {gridX,gridY}), 0.5);
+    }
+
+    /**
      * Tests the effect of {@link LinearTransformBuilder#addLinearizers(Map, int...)}.
      *
      * @throws FactoryException if the transform can not be created.
@@ -433,9 +471,11 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         final NonLinearTransform tr = new NonLinearTransform();
         builder.addLinearizers(Collections.singletonMap("x² y³", tr));
         builder.addLinearizers(Collections.singletonMap("x³ y²", tr), 1, 0);
+        builder.addLinearizers(Collections.singletonMap("identity", MathTransforms.identity(2)));
         final Matrix m = builder.create(null).getMatrix();
-        assertEquals("linearizer", "x³ y²", builder.linearizerID());
+        assertEquals("linearizer", "x³ y²", builder.linearizer().get().getKey());
         assertNotSame("linearizer", tr, builder.linearizer().get());    // Not same because axes should have been swapped.
+        assertArrayEquals("correlations", new double[] {1, 1}, builder.correlation(), 1E-15);
         assertMatrixEquals("linear",
                 new Matrix3(2, 0, 3,
                             0, 1, 1,

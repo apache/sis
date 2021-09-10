@@ -39,7 +39,7 @@ import static java.lang.Double.doubleToLongBits;
  * Static methods working with {@link Number} objects, and a few primitive types by extension.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.math.MathFunctions
  *
@@ -181,6 +181,43 @@ public final class Numbers extends Static {
     }
 
     /**
+     * Returns {@code true} if the given {@code type} is a floating point or an integer type.
+     * This method returns {@code true} if either {@link #isFloat(Class)} or {@link #isInteger(Class)}
+     * returns {@code true} for the given argument.
+     *
+     * @param  type  the primitive type or wrapper class to test (can be {@code null}).
+     * @return {@code true} if {@code type} is a floating point or an integer type.
+     *
+     * @see #isFloat(Class)
+     * @see #isInteger(Class)
+     *
+     * @since 1.1
+     */
+    public static boolean isNumber(final Class<?> type) {
+        final Numbers mapping = MAPPING.get(type);
+        return (mapping != null) && (mapping.isInteger | mapping.isFloat);
+    }
+
+    /**
+     * Returns {@code true} if the given number is null or NaN.
+     * Current implementation recognizes {@link Float} and {@link Double} types.
+     *
+     * @param  value  the number to test (may be {@code null}).
+     * @return {@code true} if the given number is null or NaN.
+     *
+     * @see Float#isNaN()
+     * @see Double#isNaN()
+     *
+     * @since 1.1
+     */
+    public static boolean isNaN(final Number value) {
+        if (value == null) return true;
+        if (value instanceof Double) return ((Double) value).isNaN();
+        if (value instanceof Float)  return ((Float)  value).isNaN();
+        return false;
+    }
+
+    /**
      * Returns the number of bits used by primitive of the specified type.
      * The given type must be a primitive type or its wrapper class.
      *
@@ -205,28 +242,32 @@ public final class Numbers extends Static {
      * Changes a primitive class to its wrapper (for example {@code int} to {@link Integer}).
      * If the specified class is not a primitive type, then it is returned unchanged.
      *
+     * @param  <N>   the primitive and wrapper type (both have the same parametric declaration).
      * @param  type  the primitive type (can be {@code null}).
      * @return the type as a wrapper.
      *
      * @see #wrapperToPrimitive(Class)
      */
-    public static Class<?> primitiveToWrapper(final Class<?> type) {
+    @SuppressWarnings("unchecked")
+    public static <N> Class<N> primitiveToWrapper(final Class<N> type) {
         final Numbers mapping = MAPPING.get(type);
-        return (mapping != null) ? mapping.wrapper : type;
+        return (mapping != null) ? (Class<N>) mapping.wrapper : type;
     }
 
     /**
      * Changes a wrapper class to its primitive (for example {@link Integer} to {@code int}).
      * If the specified class is not a wrapper type, then it is returned unchanged.
      *
+     * @param  <N>   the primitive and wrapper type (both have the same parametric declaration).
      * @param  type  the wrapper type (can be {@code null}).
      * @return the type as a primitive.
      *
      * @see #primitiveToWrapper(Class)
      */
-    public static Class<?> wrapperToPrimitive(final Class<?> type) {
+    @SuppressWarnings("unchecked")
+    public static <N> Class<N> wrapperToPrimitive(final Class<N> type) {
         final Numbers mapping = MAPPING.get(type);
-        return (mapping != null) ? mapping.primitive : type;
+        return (mapping != null) ? (Class<N>) mapping.primitive : type;
     }
 
     /**
@@ -514,7 +555,8 @@ public final class Numbers extends Static {
      * @param  type    the destination type.
      * @return the number casted to the given type, or {@code null} if the given value was null.
      * @throws IllegalArgumentException if the given type is not supported by this {@code Numbers} class,
-     *         or the type is {@link #FRACTION} and the given number can not be converted to that type.
+     *         or the number can not be converted to the specified type (e.g. {@link Double#NaN} can not
+     *         be converted to {@link BigDecimal}).
      */
     @SuppressWarnings("unchecked")
     public static <N extends Number> N cast(final Number number, final Class<N> type) throws IllegalArgumentException {

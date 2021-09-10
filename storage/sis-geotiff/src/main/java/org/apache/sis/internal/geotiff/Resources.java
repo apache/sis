@@ -19,7 +19,6 @@ package org.apache.sis.internal.geotiff;
 import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import javax.annotation.Generated;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
@@ -47,7 +46,6 @@ public final class Resources extends IndexedResourceBundle {
      * @since   0.8
      * @module
      */
-    @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
     public static final class Keys extends KeyConstants {
         /**
          * The unique instance of key constants handler.
@@ -80,6 +78,11 @@ public final class Resources extends IndexedResourceBundle {
          * element found in “{1}” are {2}.
          */
         public static final short ConstantValueRequired_3 = 3;
+
+        /**
+         * Unexpected data for “{1}” compression in the “{0}” file.
+         */
+        public static final short CorruptedCompression_2 = 31;
 
         /**
          * No value specified for the “{0}” TIFF tag. The {1} default value will be used.
@@ -171,9 +174,19 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnexpectedTileCount_3 = 18;
 
         /**
+         * Tile has an unexpected length: {1} bytes while {0} were expected.
+         */
+        public static final short UnexpectedTileLength_2 = 28;
+
+        /**
          * TIFF file “{0}” uses an unknown coordinate reference system.
          */
         public static final short UnknownCRS_1 = 22;
+
+        /**
+         * Compression method “{0}” is unsupported.
+         */
+        public static final short UnsupportedCompressionMethod_1 = 27;
 
         /**
          * Coordinate system kind {0} is unsupported.
@@ -191,9 +204,19 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnsupportedGeoKeyStorage_1 = 21;
 
         /**
+         * Differencing predictor “{0}” is unsupported.
+         */
+        public static final short UnsupportedPredictor_1 = 30;
+
+        /**
          * TIFF file “{0}” uses an unsupported map projection.
          */
         public static final short UnsupportedProjectionMethod_1 = 23;
+
+        /**
+         * Unsupported value “{1}” for TIFF tag “{0}”.
+         */
+        public static final short UnsupportedTagValue_2 = 29;
     }
 
     /**

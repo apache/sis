@@ -104,7 +104,7 @@ public final class Locales extends Static {
      */
     private static final short[] ISO3, ISO2;
     static {
-        final Short CONFLICT = 0;                           // Sentinal value for conflicts (paranoiac safety).
+        final Short CONFLICT = 0;                           // Sentinel value for conflicts (paranoiac safety).
         final Map<Short,Short> map = new TreeMap<>();
         for (final Locale locale : POOL.values()) {
             short type = LANGUAGE;                          // 0 for language, or leftmost bit set for country.

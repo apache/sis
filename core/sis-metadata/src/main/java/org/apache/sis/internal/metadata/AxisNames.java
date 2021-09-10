@@ -25,9 +25,10 @@ import org.apache.sis.internal.system.Modules;
 
 /**
  * Constants for axis names specified by ISO 19111 and ISO 19162.
+ * Contains also some extensions used in astronomy.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -53,13 +54,26 @@ public final class AxisNames {
     public static final String GEODETIC_LATITUDE = "Geodetic latitude";
 
     /**
+     * The <cite>"planetodetic longitude"</cite> name used in astronomy.
+     */
+    public static final String PLANETODETIC_LONGITUDE = "Planetodetic longitude";
+
+    /**
+     * The <cite>"planetodetic latitude"</cite> name used in astronomy.
+     */
+    public static final String PLANETODETIC_LATITUDE = "Planetodetic latitude";
+
+    /**
      * The ISO 19111 <cite>"spherical longitude"</cite> name, also called <cite>"azimuthal angle"</cite>.
      * Abbreviation used by SIS is "θ" (theta) for consistency with ISO 19111 and ISO 19162
      * <cite>Axis name and abbreviation</cite> section, but some other conventions use φ or Ω instead.
      * Direction in the EPSG database is "East", but "counterClockwise" may also be used.
      *
-     * @see <a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
-     * @see <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">Spherical coordinate system on MathWorld</a>
+     * <p>Axis name <cite>"Geocentric longitude"</cite> can also be used.
+     * In astronomy, <cite>"Planetocentric longitude"</cite> is sometime used.</p>
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
+     * @see <a href="https://mathworld.wolfram.com/SphericalCoordinates.html">Spherical coordinate system on MathWorld</a>
      */
     public static final String SPHERICAL_LONGITUDE = "Spherical longitude";
 
@@ -69,6 +83,9 @@ public final class AxisNames {
      * <cite>Axis name and abbreviation</cite> section, but some other conventions use θ, Ω or Ψ instead.
      * Direction in the EPSG database is "North", but the "Up" direction may also be used with a similar
      * axis named "elevation".
+     *
+     * <p>Axis name <cite>"Geocentric latitude"</cite> can also be used.
+     * In astronomy, <cite>"Planetocentric latitude"</cite> is sometime used.</p>
      */
     public static final String SPHERICAL_LATITUDE = "Spherical latitude";
 

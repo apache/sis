@@ -48,7 +48,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Lambert_conformal_conic_projection">Lambert Conformal Conic projection on Wikipedia</a></li>
- *   <li><a href="http://mathworld.wolfram.com/LambertConformalConicProjection.html">Lambert Conformal Conic projection on MathWorld</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/LambertConformalConicProjection.html">Lambert Conformal Conic projection on MathWorld</a></li>
  * </ul>
  *
  * <h2>Description</h2>
@@ -60,7 +60,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -68,7 +68,7 @@ public class LambertConicConformal extends ConformalProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 2067358524298002016L;
+    private static final long serialVersionUID = -8971522854919443706L;
 
     /**
      * Codes for variants of Lambert Conical Conformal projection. Those variants modify the way the projections are
@@ -95,7 +95,7 @@ public class LambertConicConformal extends ConformalProjection {
         if (identMatch(method, "(?i).*\\bWest\\b.*",     LambertConformalWest    .IDENTIFIER)) return WEST;
         if (identMatch(method, "(?i).*\\b2SP\\b.*",      LambertConformal2SP     .IDENTIFIER)) return SP2;
         if (identMatch(method, "(?i).*\\b1SP\\b.*",      LambertConformal1SP     .IDENTIFIER)) return SP1;
-        return 0; // Unidentified case, to be considered as 2SP.
+        return STANDARD_VARIANT;                         // Unidentified case, to be considered as 2SP.
     }
 
     /**
@@ -139,6 +139,15 @@ public class LambertConicConformal extends ConformalProjection {
      * </ul>
      */
     final double n;
+
+    /**
+     * A bound of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
+     * Some (not all) θ values need to be shifted inside that range before to use them
+     * in trigonometric functions.
+     *
+     * @see Initializer#boundOfScaledLongitude(DoubleDouble)
+     */
+    final double θ_bound;
 
     /**
      * Creates a Lambert projection from the given parameters.
@@ -193,6 +202,7 @@ public class LambertConicConformal extends ConformalProjection {
                 scaleFactor = LambertConformalMichigan.SCALE_FACTOR;    // Ellipsoid scaling factor (EPSG:1038)
                 // Fallthrough
             }
+            case STANDARD_VARIANT:
             case BELGIUM:
             case SP2: {
                 roles.put(eastingDirection,               LambertConformal2SP.EASTING_AT_FALSE_ORIGIN);
@@ -339,6 +349,7 @@ public class LambertConicConformal extends ConformalProjection {
         normalize  .convertAfter(1, sφ, null);
         denormalize.convertBefore(0, F, null); F.negate();
         denormalize.convertBefore(1, F, rF);
+        θ_bound = initializer.boundOfScaledLongitude(sλ);
     }
 
     /**
@@ -346,7 +357,8 @@ public class LambertConicConformal extends ConformalProjection {
      */
     LambertConicConformal(final LambertConicConformal other) {
         super(other);
-        n = other.n;
+        n       = other.n;
+        θ_bound = other.θ_bound;
     }
 
     /**
@@ -406,8 +418,8 @@ public class LambertConicConformal extends ConformalProjection {
          * the first non-linear one moved to the "normalize" affine transform, and the linear operations
          * applied after the last non-linear one moved to the "denormalize" affine transform.
          */
-        final double θ    = srcPts[srcOff  ];     // θ = λ⋅n  (ignoring longitude of origin)
-        final double φ    = srcPts[srcOff+1];     // Sign may be reversed
+        final double θ    = wraparoundScaledLongitude(srcPts[srcOff], θ_bound);     // θ = Δλ⋅n
+        final double φ    = srcPts[srcOff + 1];                         // Sign may be reversed
         final double absφ = abs(φ);
         final double sinθ = sin(θ);
         final double cosθ = cos(θ);
@@ -461,8 +473,8 @@ public class LambertConicConformal extends ConformalProjection {
          * applied before the first non-linear one moved to the inverse of the "denormalize" transform, and the
          * linear operations applied after the last non-linear one moved to the inverse of the "normalize" transform.
          */
-        dstPts[dstOff  ] = atan2(x, y);                 // Really (x,y), not (y,x)
-        dstPts[dstOff+1] = -φ(pow(hypot(x, y), 1/n));   // Equivalent to φ(pow(hypot(x,y), -1/n)) but more accurate for n>0.
+        dstPts[dstOff  ] = atan2(x, y);                     // Really (x,y), not (y,x)
+        dstPts[dstOff+1] = -φ(pow(fastHypot(x, y), 1/n));   // Equivalent to φ(pow(hypot(x,y), -1/n)) but more accurate for n>0.
     }
 
 
@@ -490,7 +502,7 @@ public class LambertConicConformal extends ConformalProjection {
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @author  André Gosselin (MPO)
      * @author  Rueben Schulz (UBC)
-     * @version 0.6
+     * @version 1.1
      * @since   0.6
      * @module
      */
@@ -498,7 +510,7 @@ public class LambertConicConformal extends ConformalProjection {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = -7005092237343502956L;
+        private static final long serialVersionUID = -8077690516096472987L;
 
         /**
          * Constructs a new map projection from the parameters of the given projection.
@@ -517,8 +529,8 @@ public class LambertConicConformal extends ConformalProjection {
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate)
         {
-            final double θ    = srcPts[srcOff  ];       // θ = λ⋅n
-            final double φ    = srcPts[srcOff+1];       // Sign may be reversed
+            final double θ    = wraparoundScaledLongitude(srcPts[srcOff], θ_bound);     // θ = Δλ⋅n
+            final double φ    = srcPts[srcOff + 1];                         // Sign may be reversed
             final double absφ = abs(φ);
             final double sinθ = sin(θ);
             final double cosθ = cos(θ);

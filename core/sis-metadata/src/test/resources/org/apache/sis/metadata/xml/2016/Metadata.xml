@@ -38,16 +38,16 @@
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xlink = "http://www.w3.org/1999/xlink"
     xsi:schemaLocation =
-        "http://standards.iso.org/iso/19115/-3/mdb/1.0 http://standards.iso.org/iso/19115/-3/mdb/1.0/mdb.xsd
-         http://standards.iso.org/iso/19115/-3/mrs/1.0 http://standards.iso.org/iso/19115/-3/mrs/1.0/mrs.xsd
-         http://standards.iso.org/iso/19115/-3/msr/1.0 http://standards.iso.org/iso/19115/-3/msr/1.0/msr.xsd
-         http://standards.iso.org/iso/19115/-3/mrc/1.0 http://standards.iso.org/iso/19115/-3/mrc/1.0/mrc.xsd
-         http://standards.iso.org/iso/19115/-3/mrd/1.0 http://standards.iso.org/iso/19115/-3/mrd/1.0/mrd.xsd
-         http://standards.iso.org/iso/19115/-3/mco/1.0 http://standards.iso.org/iso/19115/-3/mco/1.0/mco.xsd
-         http://standards.iso.org/iso/19115/-3/mmi/1.0 http://standards.iso.org/iso/19115/-3/mmi/1.0/mmi.xsd
-         http://standards.iso.org/iso/19115/-3/mex/1.0 http://standards.iso.org/iso/19115/-3/mex/1.0/mex.xsd
-         http://standards.iso.org/iso/19115/-3/gcx/1.0 http://standards.iso.org/iso/19115/-3/gcx/1.0/gcx.xsd
-         http://standards.iso.org/iso/19115/-3/srv/2.0 http://standards.iso.org/iso/19115/-3/srv/2.0/srv.xsd">
+        "http://standards.iso.org/iso/19115/-3/mdb/1.0 https://standards.iso.org/iso/19115/-3/mdb/1.0/mdb.xsd
+         http://standards.iso.org/iso/19115/-3/mrs/1.0 https://standards.iso.org/iso/19115/-3/mrs/1.0/mrs.xsd
+         http://standards.iso.org/iso/19115/-3/msr/1.0 https://standards.iso.org/iso/19115/-3/msr/1.0/msr.xsd
+         http://standards.iso.org/iso/19115/-3/mrc/1.0 https://standards.iso.org/iso/19115/-3/mrc/1.0/mrc.xsd
+         http://standards.iso.org/iso/19115/-3/mrd/1.0 https://standards.iso.org/iso/19115/-3/mrd/1.0/mrd.xsd
+         http://standards.iso.org/iso/19115/-3/mco/1.0 https://standards.iso.org/iso/19115/-3/mco/1.0/mco.xsd
+         http://standards.iso.org/iso/19115/-3/mmi/1.0 https://standards.iso.org/iso/19115/-3/mmi/1.0/mmi.xsd
+         http://standards.iso.org/iso/19115/-3/mex/1.0 https://standards.iso.org/iso/19115/-3/mex/1.0/mex.xsd
+         http://standards.iso.org/iso/19115/-3/gcx/1.0 https://standards.iso.org/iso/19115/-3/gcx/1.0/gcx.xsd
+         http://standards.iso.org/iso/19115/-3/srv/2.0 https://standards.iso.org/iso/19115/-3/srv/2.0/srv.xsd">
 
   <!--
     WARNING: this file is not yet compliant with ISO schema.
@@ -264,7 +264,7 @@
             <gco:Integer>7777</gco:Integer>
           </msr:dimensionSize>
           <msr:resolution>
-            <gco:Measure uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">10.0</gco:Measure>
+            <gco:Measure uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">10.0</gco:Measure>
           </msr:resolution>
         </msr:MD_Dimension>
       </msr:axisDimensionProperties>
@@ -277,7 +277,7 @@
             <gco:Integer>2233</gco:Integer>
           </msr:dimensionSize>
           <msr:resolution>
-            <gco:Measure uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">5.0</gco:Measure>
+            <gco:Measure uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">5.0</gco:Measure>
           </msr:resolution>
         </msr:MD_Dimension>
       </msr:axisDimensionProperties>
@@ -440,7 +440,7 @@
       <mri:spatialResolution>
         <mri:MD_Resolution>
           <mri:distance>
-            <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">56777.0</gco:Distance>
+            <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">56777.0</gco:Distance>
           </mri:distance>
         </mri:MD_Resolution>
       </mri:spatialResolution>
@@ -719,7 +719,7 @@
           <mri:spatialResolution>
             <mri:MD_Resolution>
               <mri:distance>
-                <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">56777.0</gco:Distance>
+                <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">56777.0</gco:Distance>
               </mri:distance>
             </mri:MD_Resolution>
           </mri:spatialResolution>

@@ -43,8 +43,10 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
@@ -364,8 +366,8 @@ public class FeatureFormat extends TabularFormat<Object> {
             }
             final InternationalString definition = featureType.getDefinition();
             if (definition != null) {
-                String text = definition.toString(displayLocale);
-                if (text != null && !(text = text.trim()).isEmpty()) {
+                final String text = Strings.trimOrNull(definition.toString(displayLocale));
+                if (text != null) {
                     toAppendTo.append(getLineSeparator()).append(text);
                 }
             }
@@ -721,8 +723,8 @@ format:                     for (final AttributeType<?> ct : ((AttributeType<?>)
             text = toString(((IdentifiedType) value).getName());
         } else if (value instanceof IdentifiedObject) {
             text = IdentifiedObjects.getIdentifierOrName((IdentifiedObject) value);
-        } else if ((text = Geometries.toString(value)) == null) {
-            text = value.toString();
+        } else {
+            text = Geometries.wrap(value).map(GeometryWrapper::toString).orElseGet(value::toString);
         }
         final int remaining = MAXIMAL_VALUE_LENGTH - length;
         if (remaining >= text.length()) {

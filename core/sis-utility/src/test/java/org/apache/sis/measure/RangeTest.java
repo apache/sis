@@ -17,6 +17,7 @@
 package org.apache.sis.measure;
 
 import java.util.Locale;
+import java.time.Instant;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -28,7 +29,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Range} class.
  *
  * @author  Joe White
- * @version 0.3
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -320,6 +322,24 @@ public final strictfp class RangeTest extends TestCase {
         assertEquals("[10 … 20)   ", String.format(Locale.CANADA, "%-12s", range));
         assertEquals("   [10 … 20)", String.format(Locale.CANADA, "%12s", range));
         assertEquals("[10 … 20[   ", String.format(Locale.CANADA, "%#-12s", range));
+    }
+
+    /**
+     * Tests the {@link Range#formatTo(Formatter, int, int, int)} method with a range of instants.
+     *
+     * @see RangeFormatTest#testFormatInstant()
+     */
+    @Test
+    public void testFormatInstantTo() {
+        final Range<Instant> range = new Range<>(Instant.class,
+                Instant.parse("2019-12-23T06:00:00Z"), true,
+                Instant.parse("2020-05-14T18:00:00Z"), true);
+        /*
+         * The result depends on time zone and we have no API for forcing the time zone to some specific
+         * value in a call to 'Range.formatTo(Formatter, …)`. So we verify only the year and the month.
+         */
+        final String result = String.format(Locale.CANADA, "%s", range);
+        assertTrue(result, result.matches("\\[2019-12-.+ … 2020-05-.+\\]"));
     }
 
     /**

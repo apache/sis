@@ -1,0 +1,92 @@
+#
+# Example file for org.apache.sis.io.wkt.ReferencingFactory.
+# This file provides Coordinate Reference System definitions
+# in Well-Known Text (WKT) format. One or many files can be
+# used for extending the set of CRS with custom definitions.
+#
+# Each Coordinate Reference System (or other geodetic object)
+# is defined by a string in WKT format. The key associated to
+# each object is given by the ID[…] or AUTHORITY[…] element,
+# which is typically the last element of a WKT string and is
+# mandatory for definitions in this file.
+#
+# WKT strings can span many lines. All lines after the first
+# line or a CRS definition shall be indented with at least
+# one white space. Non-indented lines start new definitions.
+#
+# All lines starting with the # character are comment lines.
+#
+# ---- Aliases for WKT fragments ---------------------------
+# Files with more than one WKT definition tend to repeat the
+# same WKT fragments many times, e.g. the same BaseGeogCRS[…]
+# element may be repeated in every ProjectedCRS definitions.
+# Redundant fragments can be replaced by aliases for making
+# the file more compact, easier to read, faster to parse and
+# with smaller memory footprint.
+#
+# Each line starting with "SET <identifier>=<WKT>" defines
+# an alias for a fragment of WKT string.  The WKT can span
+# many lines as described above.  Aliases are local to the
+# file where they are defined.  Aliases can be expanded in
+# other WKT strings by "$<identifier>".
+#
+
+
+#
+# Alias for WGS84 geographic CRS and Cartesian CS.
+# Can be inserted in projected CRS with "$WGS84"
+# and "$CARTESIAN_CS".
+#
+SET WGS84_BASE =
+ BaseGeodCRS["WGS 1984",
+  Datum["World Geodetic System 1984",
+   Ellipsoid["WGS 1984", 6378137, 298.257223563]],
+  AngleUnit["Degree", 0.0174532925199433]]
+
+SET CARTESIAN_CS =
+ CS[Cartesian, 2],
+  Axis["Easting (E)", east],
+  Axis["Northing (N)", north],
+  Unit["metre", 1]
+
+
+#
+# Derived from https://github.com/Esri/projection-engine-db-doc
+# with the following modifications:
+#
+#  - Rewrite in WKT 2 format.
+#  - Replace some duplicated elements by aliases.
+#  - Omit parameters having default value.
+#  - Replace ESRI names by EPSG names.
+#
+ProjectedCRS["North Pole Azimuthal Equidistant",
+ $WGS84_BASE,
+ Conversion["North Pole Azimuthal Equidistant",
+  Method["Azimuthal Equidistant (Spherical)"],
+  Parameter["Latitude of natural origin", 90]],
+ $CARTESIAN_CS,
+ Id["ESRI", 102016]]
+
+ProjectedCRS["North Pole Stereographic",
+ $WGS84_BASE,
+ Conversion["North Pole Stereographic",
+  Method["Polar Stereographic (variant A)"],
+  Parameter["Latitude of natural origin", 90]],
+ $CARTESIAN_CS,
+ Id["ESRI", 102018]]
+
+ProjectedCRS["South Pole Azimuthal Equidistant",
+ $WGS84_BASE,
+ Conversion["South Pole Azimuthal Equidistant",
+  Method["Azimuthal Equidistant (Spherical)"],
+  Parameter["Latitude of natural origin", -90]],
+ $CARTESIAN_CS,
+ Id["ESRI", 102019]]
+
+ProjectedCRS["South Pole Stereographic",
+ $WGS84_BASE,
+ Conversion["South Pole Stereographic",
+  Method["Polar Stereographic (variant A)"],
+  Parameter["Latitude of natural origin", -90]],
+ $CARTESIAN_CS,
+ Id["ESRI", 102021]]

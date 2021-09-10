@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.Quantity;
+import javax.measure.UnitConverter;
 import org.opengis.geometry.Envelope;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
@@ -87,9 +88,9 @@ import org.apache.sis.measure.Units;
  *
  *   <li><b>Localization grid of raster data</b><br>
  *   Some remote sensing raster data are provided with a <cite>localization grid</cite> giving pixel coordinates
- *   (e.g. latitude and longitude). This can been seen as a change from {@linkplain DefaultImageDatum image datum}
- *   to {@linkplain DefaultGeodeticDatum geodetic datum}. The coordinate transformation process can sometime be
- *   performed by a mathematical conversion (for example an affine transform) applied as a
+ *   (e.g. latitude and longitude). This can been seen as a change from {@linkplain DefaultEngineeringDatum
+ *   image datum} to {@linkplain DefaultGeodeticDatum geodetic datum}. The coordinate transformation process
+ *   can sometime be performed by a mathematical conversion (for example an affine transform) applied as a
  *   {@linkplain org.apache.sis.referencing.operation.builder.LinearTransformBuilder first approximation},
  *   followed by small corrections for the residual part.
  *   {@code DatumShiftGrid} can describe the small corrections part.
@@ -117,6 +118,23 @@ import org.apache.sis.measure.Units;
  * in more than two dimensions. See the above <cite>datum shift by geocentric translations</cite> use case for
  * an example.
  *
+ * <h2>Longitude wraparound</h2>
+ * Some grids are defined over an area beyond the [−180° … +180°] range of longitudes.
+ * For example NADCON grid for Alaska is defined in a [−194° … −127.875°] range,
+ * in which case a longitude of 170° needs to be replaced by −190° before it can be processed by the grid.
+ * The default {@code DatumShiftGrid} class does not apply longitude wraparound automatically
+ * (it does not even know which axis, if any, is longitude),
+ * but subclasses can add this support by overriding the {@link #replaceOutsideGridCoordinates(double[])} method.
+ *
+ * <h2>Sub-grids</h2>
+ * Some datum shift grid files provide a grid valid on a wide region, refined with denser sub-grids in smaller regions.
+ * For each point to transform, the {@link org.opengis.referencing.operation.MathTransform} should search and use the
+ * densest sub-grid containing the point. This functionality is not supported directly by {@code DatumShiftGrid},
+ * but can be achieved by organizing many transforms in a tree. The first step is to create an instance of
+ * {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform} for each {@code DatumShiftGrid}.
+ * Then, those transforms with their domain of validity can be given to
+ * {@link org.apache.sis.referencing.operation.transform.MathTransforms#specialize MathTransforms.specialize(…)}.
+ *
  * <h2>Serialization</h2>
  * Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
  * Serialization support is appropriate for short term storage or RMI between applications running the
@@ -124,7 +142,7 @@ import org.apache.sis.measure.Units;
  * NTv2 should be preferred.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
  * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
@@ -195,6 +213,9 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     /**
      * Number of grid cells along each dimension. This is usually an array of length {@value #INTERPOLATED_DIMENSIONS}
      * containing the number of grid cells along the <var>x</var> and <var>y</var> axes.
+     *
+     * @see #getGridSize()
+     * @see #getGridSize(int)
      */
     private final int[] gridSize;
 
@@ -265,12 +286,31 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     }
 
     /**
-     * Returns the domain of validity of input coordinates that can be specified to the
-     * {@link #interpolateAt interpolateAt(…)} method. Coordinates outside that domain of
-     * validity will still be accepted, but the extrapolated results may be very wrong.
+     * Returns the number of cells in the specified dimension.
+     * Invoking this method is equivalent to {@code getGridSize()[dimension]}.
      *
-     * <p>The unit of measurement for the coordinate values in the returned envelope is
-     * given by {@link #getCoordinateUnit()}. The envelope CRS is undefined.</p>
+     * @param  dimension  the dimension for which to get the grid size.
+     * @return the number of grid cells in the specified dimension.
+     * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     *
+     * @since 1.1
+     */
+    public int getGridSize(final int dimension) {
+        return gridSize[dimension];
+    }
+
+    /**
+     * Returns the domain of validity of input coordinates that can be specified to the
+     * {@link #interpolateAt interpolateAt(…)} method. Coordinates outside that domain
+     * will still be accepted, but results may be extrapolations far from reality.
+     * This method does not take in account longitude wraparound
+     * (i.e. the returned envelope may cross the ±180° meridian).
+     *
+     * <p>The envelope coordinates are computed at cell centers; the envelope does not contain
+     * the margin of 0.5 cell between cell center and cell border at the edges of the envelope.
+     * The unit of measurement for the coordinate values in the returned envelope is given by
+     * {@link #getCoordinateUnit()}. The envelope CRS is not set, but its value is implicitly
+     * the CRS of grid input coordinates.</p>
      *
      * @return the domain covered by this grid.
      * @throws TransformException if an error occurred while computing the envelope.
@@ -278,9 +318,44 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     public Envelope getDomainOfValidity() throws TransformException {
         final GeneralEnvelope env = new GeneralEnvelope(gridSize.length);
         for (int i=0; i<gridSize.length; i++) {
-            env.setRange(i, -0.5, gridSize[i] - 0.5);
+            /*
+             * Note: a previous version was using the following code in an attempt to encompass
+             * fully all cells (keeping in mind that the `coordinatetoGrid` maps cell centers):
+             *
+             *    env.setRange(i, -0.5, gridSize[i] - 0.5);
+             *
+             * However it was causing spurious overlaps when two grids are side-by-side
+             * (no overlapping) but one grid has larger cells than the other other grid.
+             * The 0.5 cell expansion caused the grid with larger cells to overlap the
+             * grid with smaller cells. This case happens with NTv2 datum shift grid.
+             */
+            env.setRange(i, 0, gridSize[i] - 1);
         }
         return Envelopes.transform(getCoordinateToGrid().inverse(), env);
+    }
+
+    /**
+     * Returns the domain of validity converted to the specified unit of measurement.
+     * A common use case for this method is for converting the domain of a NADCON or
+     * NTv2 datum shift grid file, which are expressed in {@link Units#ARC_SECOND},
+     * to {@link Units#DEGREE}.
+     *
+     * @param  unit  the desired unit of measurement.
+     * @return the domain covered by this grid, converted to the given unit of measurement.
+     * @throws TransformException if an error occurred while computing the envelope.
+     *
+     * @since 1.1
+     */
+    public Envelope getDomainOfValidity(final Unit<C> unit) throws TransformException {
+        final UnitConverter uc = getCoordinateUnit().getConverterTo(unit);
+        if (uc.isIdentity()) {
+            return getDomainOfValidity();
+        }
+        final GeneralEnvelope domain = GeneralEnvelope.castOrCopy(getDomainOfValidity());
+        for (int i=domain.getDimension(); --i >= 0;) {
+            domain.setRange(i, uc.convert(domain.getLower(i)), uc.convert(domain.getUpper(i)));
+        }
+        return domain;
     }
 
     /**
@@ -445,24 +520,32 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * @see #isCellInGrid(double, double)
      */
     public void interpolateInCell(double gridX, double gridY, final double[] vector) {
-        boolean skipX = false;
-        boolean skipY = false;                          // Whether to skip derivative calculation for X or Y.
-        if (gridX < 0) {gridX = 0; skipX = true;}
-        if (gridY < 0) {gridY = 0; skipY = true;}
-        int ix = (int) gridX;  gridX -= ix;
-        int iy = (int) gridY;  gridY -= iy;
-        int n;
-        if (ix > (n = gridSize[0] - 2)) {
-            skipX |= (ix != n+1 || gridX != 0);         // Keep value 'false' if gridX == gridSize[0] - 1.
-            ix     = n;
-            gridX  = 1;
+        final int xmax = gridSize[0] - 2;
+        final int ymax = gridSize[1] - 2;
+        int ix = (int) gridX;                               // Really want rounding toward zero (not floor).
+        int iy = (int) gridY;
+        if (ix < 0 || ix > xmax || iy < 0 || iy > ymax) {
+            final double[] gridCoordinates = {gridX, gridY};
+            replaceOutsideGridCoordinates(gridCoordinates);
+            gridX = gridCoordinates[0];
+            gridY = gridCoordinates[1];
+            ix = Math.max(0, Math.min(xmax, (int) gridX));
+            iy = Math.max(0, Math.min(ymax, (int) gridY));
         }
-        if (iy > (n = gridSize[1] - 2)) {
-            skipY |= (iy != n+1 || gridY != 0);         // Keep value 'false' if gridY == gridSize[1] - 1.
-            iy     = n;
-            gridY  = 1;
-        }
-        n = getTranslationDimensions();
+        gridX -= ix;                                        // If was negative, will continue to be negative.
+        gridY -= iy;
+        /*
+         * The `skipX` and `skipY` flags tell us whether a coordinate is outside the grid,
+         * in which case we will need to skip derivative calculation for component outside.
+         * More specifically, the Jacobian in dimensions outside the grid must be identity.
+         * Note that we want the `false` value if gridX == (gridSize[0] - 1) == (xmax + 1)
+         * if which case we have gridX = 1 (in all other cases, gridX < 1). Same for y.
+         */
+        boolean skipX = (gridX < 0); if (skipX) gridX = 0;
+        boolean skipY = (gridY < 0); if (skipY) gridY = 0;
+        if (gridX > 1)  {gridX = 1; skipX = true;}
+        if (gridY > 1)  {gridY = 1; skipY = true;}
+        final int n = getTranslationDimensions();
         boolean derivative = (vector.length >= n + INTERPOLATED_DIMENSIONS * INTERPOLATED_DIMENSIONS);
         for (int dim = 0; dim < n; dim++) {
             double dx, dy;
@@ -539,8 +622,18 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * @see #interpolateInCell(double, double, double[])
      */
     public Matrix derivativeInCell(double gridX, double gridY) {
-        final int ix = Math.max(0, Math.min(gridSize[0] - 2, (int) gridX));
-        final int iy = Math.max(0, Math.min(gridSize[1] - 2, (int) gridY));
+        final int xmax = gridSize[0] - 2;
+        final int ymax = gridSize[1] - 2;
+        int ix = (int) gridX;
+        int iy = (int) gridY;
+        if (ix < 0 || ix > xmax || iy < 0 || iy > ymax) {
+            final double[] gridCoordinates = {gridX, gridY};
+            replaceOutsideGridCoordinates(gridCoordinates);
+            gridX = gridCoordinates[0];
+            gridY = gridCoordinates[1];
+            ix = Math.max(0, Math.min(xmax, (int) gridX));
+            iy = Math.max(0, Math.min(ymax, (int) gridY));
+        }
         gridX -= ix;
         gridY -= iy;
         final boolean skipX = (gridX < 0 || gridX > 1);
@@ -668,8 +761,60 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @since 1.0
      */
-    public boolean isCellInGrid(final double gridX, final double gridY) {
-        return gridX >= 0 && gridY >= 0 && gridX <= gridSize[0] - 1 && gridY <= gridSize[1] - 1;
+    public boolean isCellInGrid(double gridX, double gridY) {
+        final double xmax = gridSize[0] - 1;
+        final double ymax = gridSize[1] - 1;
+        if (gridX >= 0 && gridX <= xmax && gridY >= 0 && gridY <= ymax) {
+            return true;
+        }
+        final double[] gridCoordinates = {gridX, gridY};
+        replaceOutsideGridCoordinates(gridCoordinates);
+        gridX = gridCoordinates[0];
+        gridY = gridCoordinates[1];
+        return (gridX >= 0 && gridX <= xmax && gridY >= 0 && gridY <= ymax);
+    }
+
+    /**
+     * Invoked when a {@code gridX} or {@code gridY} coordinate is outside the range of valid grid coordinates.
+     * This method can replace the invalid coordinate by a valid one. The main purpose is to handle datum shift
+     * grids crossing the anti-meridian. For example NADCON grid for Alaska is defined in a [−194° … −127.875°]
+     * longitude range, so a longitude of 170° needs to be converted to a longitude of −190° before it can be
+     * processed by that grid.
+     *
+     * <p>The default implementation does nothing. Subclasses need to override this method if they want to handle
+     * longitude wraparounds. Note that the coordinate values are grid indices, not longitude or latitude values.
+     * So the period to add or remove is the number of cells that the grid would have if it was spanning 360° of
+     * longitude.</p>
+     *
+     * <div class="note"><b>Example:</b>
+     * if longitude values are mapped to {@code gridX} coordinates (in dimension 0), and if a shift of 360° in
+     * longitude values is equivalent to a shift of {@code periodX} cells in the grid, then this method can be
+     * implemented as below:
+     *
+     * {@preformat java
+     *     private final double periodX = ...;      // Number of grid cells in 360° of longitude.
+     *
+     *     &#64;Override
+     *     protected void replaceOutsideGridCoordinates(double[] gridCoordinates) {
+     *         gridCoordinates[0] = Math.IEEEremainder(gridCoordinates[0], periodX);
+     *     }
+     * }</div>
+     *
+     * This method receives all grid coordinates in the {@code gridCoordinates} argument and can modify any
+     * of them, possibly many at once. The reason is because a shift of 360° of longitude (for example) may
+     * correspond to an offset in both {@code gridX} and {@code gridY} indices if the grid is inclined.
+     * The {@code gridCoordinates} array length is the number of grid dimensions,
+     * typically {@value #INTERPOLATED_DIMENSIONS}.
+     *
+     * @param  gridCoordinates  on input, the cell indices of the point which is outside the grid.
+     *         On output, the cell indices of an equivalent point inside the grid if possible.
+     *         Coordinate values are modified in-place.
+     *
+     * @see Math#IEEEremainder(double, double)
+     *
+     * @since 1.1
+     */
+    protected void replaceOutsideGridCoordinates(double[] gridCoordinates) {
     }
 
     /**
@@ -726,22 +871,26 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     public abstract void getParameterValues(Parameters parameters);
 
     /**
-     * Returns a string representation of this {@code DatumShiftGrid}. The default implementation
-     * formats the {@linkplain #getParameterValues(Parameters) parameter values}.
+     * Returns a string representation of this {@code DatumShiftGrid} for debugging purposes.
      *
-     * @return a string representation of the grid parameters.
+     * @return a string representation of this datum shift grid.
      *
      * @since 1.0
      */
     @Override
     public String toString() {
-        final ParameterDescriptorGroup d = getParameterDescriptors();
-        if (d != null) {
-            final Parameters p = Parameters.castOrWrap(d.createValue());
-            getParameterValues(p);
-            return p.toString();
+        final StringBuffer buffer = new StringBuffer("DatumShift[");
+        for (int i=0; i<gridSize.length; i++) {
+            if (i != 0) buffer.append(" × ");
+            buffer.append(gridSize[i]);
         }
-        return super.toString();
+        String s = String.valueOf(coordinateUnit);  if (s.isEmpty()) s = "1";
+        String t = String.valueOf(translationUnit); if (t.isEmpty()) t = "1";
+        buffer.append(" cells; units = ").append(s).append(" → ").append(t);
+        if (isCellValueRatio) {
+            buffer.append("∕cellSize");
+        }
+        return buffer.append(']').toString();
     }
 
     /**

@@ -41,7 +41,7 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Stereographic_projection">Stereographic projection or Wikipedia</a></li>
- *   <li><a href="http://mathworld.wolfram.com/StereographicProjection.html">Stereographic projection or MathWorld</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/StereographicProjection.html">Stereographic projection or MathWorld</a></li>
  * </ul>
  *
  * <h2>Description</h2>
@@ -61,7 +61,7 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -69,7 +69,7 @@ public class ObliqueStereographic extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -1454098847621943639L;
+    private static final long serialVersionUID = -1725537881127730658L;
 
     /**
      * Conformal latitude of origin (χ₀), together with its sine and cosine.
@@ -90,7 +90,16 @@ public class ObliqueStereographic extends NormalizedProjection {
      * More precisely <var>g</var> and <var>h</var> are used to compute intermediate parameters <var>i</var>
      * and <var>j</var>, which are themselves used to compute conformal latitude and longitude.
      */
-    final double g, h;
+    private final double g, h;
+
+    /**
+     * A bound of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
+     * Some (not all) θ values need to be shifted inside that range before to use them
+     * in trigonometric functions.
+     *
+     * @see Initializer#boundOfScaledLongitude(DoubleDouble)
+     */
+    private final double θ_bound;
 
     /**
      * Creates an Oblique Stereographic projection from the given parameters.
@@ -118,7 +127,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         roles.put(ParameterRole.SCALE_FACTOR,     SCALE_FACTOR);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, (byte) 0);
+        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
     }
 
     /**
@@ -173,6 +182,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double R2 = 2 * initializer.radiusOfConformalSphere(sinφ0);
         denormalize.convertBefore(0, R2, null);
         denormalize.convertBefore(1, R2, null);
+        θ_bound = initializer.boundOfScaledLongitude(n);
     }
 
     /**
@@ -180,13 +190,14 @@ public class ObliqueStereographic extends NormalizedProjection {
      */
     ObliqueStereographic(final ObliqueStereographic other) {
         super(other);
-        χ0    = other.χ0;
-        sinχ0 = other.sinχ0;
-        cosχ0 = other.cosχ0;
-        c     = other.c;
-        n     = other.n;
-        g     = other.g;
-        h     = other.h;
+        χ0      = other.χ0;
+        sinχ0   = other.sinχ0;
+        cosχ0   = other.cosχ0;
+        c       = other.c;
+        n       = other.n;
+        g       = other.g;
+        h       = other.h;
+        θ_bound = other.θ_bound;
     }
 
     /**
@@ -256,8 +267,9 @@ public class ObliqueStereographic extends NormalizedProjection {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double Λ     = srcPts[srcOff  ];      // Λ = λ⋅n  (see below), ignoring longitude of origin.
-        final double φ     = srcPts[srcOff+1];
+        // Λ = λ⋅n  (see below), ignoring longitude of origin.
+        final double Λ     = wraparoundScaledLongitude(srcPts[srcOff], θ_bound);
+        final double φ     = srcPts[srcOff + 1];
         final double sinφ  = sin(φ);
         final double ℯsinφ = eccentricity * sinφ;
         final double Sa    = (1 +  sinφ) / (1 -  sinφ);
@@ -358,11 +370,11 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double ψ = log((1 + sinχ) / ((1 - sinχ)*c)) / (2*n);
         double φ = 2*atan(exp(ψ)) - PI/2;                               // First approximation
         final double he = eccentricity/2;
-        final double me = 1 - eccentricitySquared;
+        final double ome = 1 - eccentricitySquared;
         for (int it=0; it<MAXIMUM_ITERATIONS; it++) {
             final double ℯsinφ = eccentricity * sin(φ);
             final double ψi = log(tan(φ/2 + PI/4) * pow((1 - ℯsinφ) / (1 + ℯsinφ), he));
-            final double Δφ = (ψ - ψi) * cos(φ) * (1 - ℯsinφ*ℯsinφ) / me;
+            final double Δφ = (ψ - ψi) * cos(φ) * (1 - ℯsinφ*ℯsinφ) / ome;
             φ += Δφ;
             if (!(abs(Δφ) > ITERATION_TOLERANCE)) {     // Use '!' for accepting NaN.
                 dstPts[dstOff  ] = λ;
@@ -407,6 +419,7 @@ public class ObliqueStereographic extends NormalizedProjection {
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate)
         {
+            // No need to enforce [−n⋅π … n⋅π] range here because n=1.
             final double λ = srcPts[srcOff  ];
             final double φ = srcPts[srcOff+1];
             /*
@@ -446,19 +459,18 @@ public class ObliqueStereographic extends NormalizedProjection {
         {
             final double x = srcPts[srcOff  ];
             final double y = srcPts[srcOff+1];
-            final double ρ = hypot(x, y);
+            final double ρ = fastHypot(x, y);
             final double λ, φ;
-            if (abs(ρ) < ANGULAR_TOLERANCE) {
-                φ = χ0;
+            if (ρ == 0) {         // Exact comparison is okay here. Values > 0 (even tiny) work with complete formula.
                 λ = 0.0;
+                φ = χ0;
             } else {
                 final double c    = 2*atan(ρ);
                 final double cosc = cos(c);
                 final double sinc = sin(c);
-                final double ct   = ρ * cosχ0*cosc - y*sinχ0*sinc;
-                final double t    = x * sinc;
-                φ = asin(cosc*sinχ0 + y*sinc*cosχ0 / ρ);
-                λ = atan2(t, ct);
+                λ = atan2(x * sinc,
+                          cosc*cosχ0*ρ - y*sinc*sinχ0  );
+                φ = asin( cosc*sinχ0   + y*sinc*cosχ0/ρ);
             }
             dstPts[dstOff]   = λ;
             dstPts[dstOff+1] = φ;

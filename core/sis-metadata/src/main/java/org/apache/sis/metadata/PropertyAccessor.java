@@ -676,7 +676,7 @@ class PropertyAccessor {
     /**
      * Returns a remark or warning to format with the value at the given index, or {@code null} if none.
      * This is provided when the value may look surprising, for example the longitude values in a geographic
-     * bounding box spanning the anti-meridian.
+     * bounding box crossing the anti-meridian.
      */
     CharSequence remarks(int index, Object metadata) {
         return null;

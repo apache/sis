@@ -178,6 +178,6 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
      * Date.toInstant() method throws UnsupportedOperationException), but java.sql.Timestamp is.
      *
      * If conversion to/from java.time.Instant is added, see if some code can be shared with
-     * org.apache.sis.filter.ComparisonFunction.
+     * org.apache.sis.filter.ComparisonFilter.
      */
 }

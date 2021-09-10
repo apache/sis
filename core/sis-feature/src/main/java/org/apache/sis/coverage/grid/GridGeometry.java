@@ -16,8 +16,6 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.Locale;
 import java.util.Optional;
 import java.time.Instant;
@@ -47,14 +45,15 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.TemporalAccessor;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.feature.Resources;
@@ -63,12 +62,17 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.io.TableAppender;
@@ -95,22 +99,37 @@ import org.apache.sis.xml.NilReason;
  *   <li>An {@linkplain #isConversionLinear indication of whether conversion for some axes is linear or not}.</li>
  * </ul>
  *
- * The first three properties should be mandatory, but are allowed to be temporarily absent during
- * grid coverage construction. Temporarily absent properties are allowed because they may be inferred
- * from a wider context. For example a grid geometry know nothing about {@link RenderedImage},
- * but {@code GridCoverage2D} does and may use that information for providing a missing grid extent.
+ * The first three properties should be mandatory,
+ * but are allowed to be temporarily absent during grid coverage construction.
+ * Temporarily absent properties are allowed because they may be inferred from a wider context.
+ * For example a {@code GridGeometry} knows nothing about {@link RenderedImage},
+ * but {@code GridCoverage2D} has this information and may use it for providing a missing grid extent.
  * By default, any request for an undefined property will throw an {@link IncompleteGridGeometryException}.
  * In order to check if a property is defined, use {@link #isDefined(int)}.
  *
- * <p>{@code GridGeometry} instances are immutable and thread-safe.
- * The same instance can be shared by different {@link GridCoverage} instances.</p>
+ * <h2>Non-linear referencing</h2>
+ * A key property is the {@linkplain #getGridToCRS(PixelInCell) "grid to CRS"} conversion,
+ * which defines how to map pixel coordinates to "real world" coordinates such as latitudes and longitudes.
+ * This relationship is often linear (an affine transform), but {@linkplain #isConversionLinear not necessarily};
+ * {@code GridGeometry} accepts non-linear conversions as well. Non-linear conversions may occur with images
+ * using {@linkplain org.apache.sis.referencing.operation.builder.LocalizationGridBuilder localization grids},
+ * but non-linear conversions should not be used for expressing map projections (projections should be specified
+ * in the {@linkplain #getCoordinateReferenceSystem() Coordinate Reference System} (CRS) instead).
+ *
+ * <p>Some applications can not handle non-linear "grid to CRS" conversions.
+ * For example encoding an image in a GeoTIFF file is much simpler if the "grid to CRS" conversion is linear.
+ * The {@link DomainLinearizer} class can be used for replacing non-linear conversions by linear approximations.</p>
+ *
+ * <h2>Multi-threading</h2>
+ * {@code GridGeometry} instances are immutable and thread-safe.
+ * The same instance can be shared by different {@link GridCoverage} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-public class GridGeometry implements Serializable {
+public class GridGeometry implements LenientComparable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -214,12 +233,13 @@ public class GridGeometry implements Serializable {
      * @serial This field is serialized because it may be a value specified explicitly at construction time,
      *         in which case it can be more accurate than a computed value.
      */
-    private final MathTransform cornerToCRS;
+    final MathTransform cornerToCRS;
 
     /**
      * An <em>estimation</em> of the grid resolution, in units of the CRS axes.
      * Computed from {@link #gridToCRS}, eventually together with {@link #extent}.
-     * May be {@code null} if unknown.
+     * May be {@code null} if unknown. If non-null, the array length is equals to
+     * the number of CRS dimensions.
      *
      * @see #RESOLUTION
      * @see #getResolution(boolean)
@@ -235,7 +255,7 @@ public class GridGeometry implements Serializable {
      *
      * @see #isConversionLinear(int...)
      */
-    private final long nonLinears;
+    final long nonLinears;
 
     /**
      * The geographic bounding box as an unmodifiable metadata instance, or {@code null} if not yet computed.
@@ -295,16 +315,20 @@ public class GridGeometry implements Serializable {
      * This constructor is used for creating a grid geometry over a subregion (for example with the grid extent
      * computed by {@link GridDerivation#subgrid(Envelope, double...)}) or grid geometry for a subsampled raster.
      *
-     * <p>If {@code toOther} is non-null, it should be a transform from the given {@code extent} coordinates to the
-     * {@code other} grid coordinates. That transform should be merely a {@linkplain MathTransforms#scale(double...)
-     * scale} and {@linkplain MathTransforms#translation(double...) translation} even if more complex transforms are
-     * accepted. The {@link #cornerToCRS} transform of the new grid geometry will be set to the following concatenation:</p>
+     * <h4>Conversion between old and new grid geometry</h4>
+     * If {@code toOther} is non-null, it defines the conversion from grid coordinates of given {@code extent} to grid
+     * coordinates of {@code other}. That transform should be a {@linkplain MathTransforms#scale(double...) scale} and
+     * a {@linkplain MathTransforms#translation(double...) translation} only, but more complex transforms are accepted.
+     * The {@link #cornerToCRS} transform of the new grid geometry will be set to the following concatenation:
      *
      * <blockquote>{@code this.cornerToCRS} = {@code toOther} → {@code other.cornerToCRS}</blockquote>
      *
-     * The new {@linkplain #getEnvelope() grid geometry envelope} will be {@linkplain GeneralEnvelope#intersect(Envelope)
-     * clipped} to the envelope of the other grid geometry. This is for preventing the envelope to become larger under the
-     * effect of subsampling (because {@link GridExtent#subsample(int[]) each cell become larger}).
+     * The new {@linkplain #getEnvelope() grid geometry envelope} will be computed from the new extent and transform,
+     * then {@linkplain GeneralEnvelope#intersect(Envelope) clipped} to the envelope of the other grid geometry.
+     * This clip is for preventing the envelope to become larger under the effect of subsampling because
+     * {@linkplain GridExtent#subsample(int[]) each cell become larger}. The clip is not applied when {@code toOther}
+     * is {@code null} because in such case, we presume that the grid extent has been changed for another reason than
+     * subsampling (e.g. application of a margin, in which case we want the envelope to be expanded).
      *
      * @param  other    the other grid geometry to copy.
      * @param  extent   the new extent for the grid geometry to construct, or {@code null} if none.
@@ -330,16 +354,28 @@ public class GridGeometry implements Serializable {
              * the same pixel. We adjust `toOther` instead than invoking `PixelTranslation.translate(cornerToCRS, …)`
              * because we do not know which of `cornerToCRS` or `gridToCRS` has less NaN values.
              */
-            final MathTransform centerShift = MathTransforms.concatenate(
-                    MathTransforms.uniformTranslation(dimension, +0.5), toOther,
-                    MathTransforms.uniformTranslation(dimension, -0.5));
-            cornerToCRS = MathTransforms.concatenate(toOther, other.cornerToCRS);
-            gridToCRS   = MathTransforms.concatenate(centerShift, other.gridToCRS);
-            resolution  = resolution(gridToCRS, extent);
-            nonLinears  = findNonLinearTargets(gridToCRS);
+            if (other.gridToCRS != null) {
+                final MathTransform centerShift = MathTransforms.concatenate(
+                        MathTransforms.uniformTranslation(dimension, +0.5), toOther,
+                        MathTransforms.uniformTranslation(dimension, -0.5));
+                cornerToCRS = MathTransforms.concatenate(toOther, other.cornerToCRS);
+                gridToCRS   = MathTransforms.concatenate(centerShift, other.gridToCRS);
+                resolution  = resolution(gridToCRS, extent);
+                nonLinears  = findNonLinearTargets(gridToCRS);
+            } else {
+                cornerToCRS = null;
+                gridToCRS   = null;
+                resolution  = resolution(toOther, extent);      // Save resolution even if `gridToCRS` is null.
+                nonLinears  = findNonLinearTargets(toOther);
+            }
         }
+        /*
+         * Recompute the envelope and clip only if a sub-sampling may have been applied (toOther != null).
+         * The reason for clipping is because subsampling may cause cells to appear larger.
+         */
         ImmutableEnvelope envelope = other.envelope;            // We will share the same instance if possible.
-        ImmutableEnvelope computed = computeEnvelope(gridToCRS, getCoordinateReferenceSystem(envelope), envelope);
+        ImmutableEnvelope computed = computeEnvelope(gridToCRS, getCoordinateReferenceSystem(envelope),
+                                                     toOther == null ? null : envelope);       // Clip.
         if (computed == null || !computed.equals(envelope)) {
             envelope = computed;
         }
@@ -352,7 +388,7 @@ public class GridGeometry implements Serializable {
     /*
      * Do not provide convenience constructor without PixelInCell or PixelOrientation argument.
      * Experience shows that 0.5 pixel offsets in image georeferencing is a recurrent problem.
-     * We really want to force developers to think about whether their 'gridToCRS' transform
+     * We really want to force developers to think about whether their `gridToCRS` transform
      * locates pixel corner or pixel center.
      */
 
@@ -401,8 +437,8 @@ public class GridGeometry implements Serializable {
             this.extent      = extent;
             this.gridToCRS   = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CENTER);
             this.cornerToCRS = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CORNER);
-            this.envelope    = computeEnvelope(gridToCRS, crs, null);   // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
-            this.resolution  = resolution(gridToCRS, extent);           // 'gridToCRS' or 'cornerToCRS' does not matter here.
+            this.envelope    = computeEnvelope(gridToCRS, crs, null);   // `gridToCRS` specified by the user, not `this.gridToCRS`.
+            this.resolution  = resolution(gridToCRS, extent);           // `gridToCRS` or `cornerToCRS` does not matter here.
             this.nonLinears  = findNonLinearTargets(gridToCRS);
         } catch (TransformException e) {
             throw new IllegalGridGeometryException(e, "gridToCRS");
@@ -489,19 +525,19 @@ public class GridGeometry implements Serializable {
             GeneralEnvelope env;
             try {
                 env = Envelopes.transform(cornerToCRS.inverse(), envelope);
-                extent = new GridExtent(env, rounding, null, null, null);
-                env = extent.toCRS(cornerToCRS, gridToCRS, envelope);     // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
+                extent = new GridExtent(env, rounding, GridClippingMode.STRICT, null, null, null, null);
+                env = extent.toCRS(cornerToCRS, gridToCRS, envelope);     // `gridToCRS` specified by the user, not `this.gridToCRS`.
             } catch (TransformException e) {
                 throw new IllegalGridGeometryException(e, "gridToCRS");
             }
             env.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
             this.envelope = new ImmutableEnvelope(env);
             if (scales == null) try {
-                // 'gridToCRS' can not be null if 'cornerToCRS' is non-null.
+                // `gridToCRS` can not be null if `cornerToCRS` is non-null.
                 scales = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest()));
                 numToIgnore = 0;
             } catch (TransformException e) {
-                recoverableException(e);
+                recoverableException("<init>", e);
             }
         } else {
             this.extent   = null;
@@ -532,10 +568,11 @@ public class GridGeometry implements Serializable {
      * Invoked when a recoverable exception occurred. Those exceptions must be minor enough
      * that they can be silently ignored in most cases.
      *
+     * @param  caller     the method where exception occurred.
      * @param  exception  the exception that occurred.
      */
-    static void recoverableException(final Exception exception) {
-        Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridGeometry.class, "<init>", exception);
+    static void recoverableException(final String caller, final TransformException exception) {
+        Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridGeometry.class, caller, exception);
     }
 
     /**
@@ -554,114 +591,155 @@ public class GridGeometry implements Serializable {
      * @param  extent    the valid extent of grid coordinates, or {@code null} if unknown.
      * @param  envelope  the envelope together with CRS of the "real world" coordinates, or {@code null} if unknown.
      * @throws NullPointerException if {@code extent} and {@code envelope} arguments are both null.
+     *
+     * @deprecated Replaced by {@link #GridGeometry(GridExtent, Envelope, GridOrientation)}.
      */
+    @Deprecated
     public GridGeometry(final GridExtent extent, final Envelope envelope) {
-        this.extent = extent;
-        nonLinears  = 0;
+        this(extent, envelope, GridOrientation.HOMOTHETY);
+    }
+
+    /**
+     * Creates an axis-aligned grid geometry with an extent and an envelope.
+     * This constructor can be used when the <cite>grid to CRS</cite> transform is unknown.
+     * If only the coordinate reference system is known, then the envelope coordinates can be
+     * {@linkplain GeneralEnvelope#isAllNaN() all NaN}.
+     *
+     * <p>The main purpose of this constructor is to create "desired" grid geometries, for example for use in
+     * {@linkplain org.apache.sis.storage.GridCoverageResource#read(GridGeometry, int...) read} or
+     * {@linkplain org.apache.sis.coverage.grid.GridCoverageProcessor#resample resample} operations.
+     * For grid geometries describing preexisting data, it is safer and more flexible to use one of
+     * the constructors expecting a {@link MathTransform} argument.</p>
+     *
+     * <h4>Dimension order</h4>
+     * The given envelope shall always declare dimensions in same order than the given extent.
+     * This constructor may reorder axes if {@code orientation} is (for example) {@link GridOrientation#DISPLAY},
+     * but in such case this constructor will derive itself an envelope and a CRS with reordered axes.
+     *
+     * @param  extent       the valid extent of grid coordinates, or {@code null} if unknown.
+     * @param  envelope     the envelope together with CRS of the "real world" coordinates, or {@code null} if unknown.
+     * @param  orientation  high-level description of desired characteristics of the {@code gridToCRS} transform.
+     *                      Ignored (can be null) if {@code envelope} is null.
+     * @throws NullPointerException if {@code extent} and {@code envelope} arguments are both null,
+     *         or if {@code envelope} is non-null but {@code orientation} is null.
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Axis-aligned_object">Axis-aligned object on Wikipedia</a>
+     *
+     * @since 1.1
+     */
+    public GridGeometry(GridExtent extent, final Envelope envelope, final GridOrientation orientation) {
+        nonLinears = 0;
+        /*
+         * Potentially change axis order and orientation according the given `GridOrientation` (which may be null).
+         * Current code assumes that units of measurement are unchanged, which should be true for CRSs built using
+         * AxisConvention.DISPLAY_ORIENTED.
+         */
+        long flip = 0;                      // Bitmask specifying whether to reverse axis in each dimension.
+        ImmutableEnvelope target = null;    // May have different axis order than the specified `envelope` CRS.
+        int[] sourceDimensions = null;      // Indices in source envelope of axes colinear with the target envelope.
+        if (envelope != null) {
+            ArgumentChecks.ensureNonNull("orientation", orientation);
+            if (orientation.crsVariant != null) {
+                final AbstractCRS sourceCRS = AbstractCRS.castOrCopy(envelope.getCoordinateReferenceSystem());
+                if (sourceCRS != null) {
+                    final AbstractCRS targetCRS = sourceCRS.forConvention(orientation.crsVariant);
+                    if (targetCRS != sourceCRS) {
+                        final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
+                        final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
+                        sourceDimensions = AxisDirections.indicesOfColinear(sourceCS, targetCS);
+                        if (sourceDimensions != null) {
+                            final double[] lowerCorner = new double[sourceDimensions.length];
+                            final double[] upperCorner = new double[sourceDimensions.length];
+                            for (int i=0; i < sourceDimensions.length; i++) {
+                                final int s = sourceDimensions[i];
+                                lowerCorner[i] = envelope.getMinimum(s);
+                                upperCorner[i] = envelope.getMaximum(s);
+                                if (sourceCS.getAxis(s).getDirection() != targetCS.getAxis(i).getDirection()) {
+                                    flip |= Numerics.bitmask(i);
+                                }
+                            }
+                            target = new ImmutableEnvelope(lowerCorner, upperCorner, targetCRS);
+                        }
+                    }
+                }
+            }
+        }
+        if (target == null) {
+            target = ImmutableEnvelope.castOrCopy(envelope);
+        }
         /*
          * If the envelope contains no useful information, then the grid extent is mandatory.
          * We do that for forcing grid geometries to contain at least one information.
          */
         boolean nilEnvelope = true;
-        final ImmutableEnvelope env = ImmutableEnvelope.castOrCopy(envelope);
-        if (env == null || ((nilEnvelope = env.isAllNaN()) && env.getCoordinateReferenceSystem() == null)) {
+        if (target == null || ((nilEnvelope = target.isAllNaN()) && target.getCoordinateReferenceSystem() == null)) {
+            if (target != null && nilEnvelope) {
+                throw new NullArgumentException(Errors.format(Errors.Keys.UnspecifiedCRS));
+            }
             ArgumentChecks.ensureNonNull("extent", extent);
             this.envelope = null;
         } else {
-            this.envelope = env;
-            if (extent != null && !nilEnvelope) {
-                /*
-                 * If we have both the extent and an envelope with at least one non-NaN coordinates,
-                 * create the `cornerToCRS` transform. The `gridToCRS` calculation uses the knowledge
-                 * that all scale factors are on diagonal with no sign reversal, which allows simpler
-                 * calculation than full matrix multiplication. Use double-double arithmetic everywhere.
-                 */
-                final MatrixSIS affine = extent.cornerToCRS(env);
-                cornerToCRS = MathTransforms.linear(affine);
-                final int srcDim = cornerToCRS.getSourceDimensions();       // Translation column in matrix.
-                final int tgtDim = cornerToCRS.getTargetDimensions();       // Number of matrix rows before last row.
-                resolution = new double[tgtDim];
-                for (int j=0; j<tgtDim; j++) {
-                    final DoubleDouble scale  = (DoubleDouble) affine.getNumber(j, j);
-                    final DoubleDouble offset = (DoubleDouble) affine.getNumber(j, srcDim);
-                    resolution[j] = scale.doubleValue();
-                    scale.multiply(0.5);
-                    offset.add(scale);
-                    affine.setNumber(j, srcDim, offset);
+            this.envelope = target;
+            if (extent != null) {
+                // A non-null `sourceDimensions` implies non-null `orientation`.
+                if (sourceDimensions != null && orientation.canReorderGridAxis) {
+                    if (!ArraysExt.isRange(0, sourceDimensions)) {
+                        extent = extent.reorder(sourceDimensions);
+                    }
+                    sourceDimensions = null;
                 }
-                gridToCRS = MathTransforms.linear(affine);
-                return;
+                if (!nilEnvelope) {
+                    /*
+                     * If we have both the extent and an envelope with at least one non-NaN coordinates,
+                     * create the `cornerToCRS` transform. The `gridToCRS` calculation uses the knowledge
+                     * that all scale factors are on diagonal, which allows simpler calculation than full
+                     * matrix multiplication. Use double-double arithmetic everywhere.
+                     */
+                    @SuppressWarnings("null")           // `!nilEnvelope` implies non-null `orientation`.
+                    final MatrixSIS affine = extent.cornerToCRS(target, orientation.flippedAxes ^ flip, sourceDimensions);
+                    cornerToCRS = MathTransforms.linear(affine);
+                    final int srcDim = cornerToCRS.getSourceDimensions();       // Translation column in matrix.
+                    final int tgtDim = cornerToCRS.getTargetDimensions();       // Number of matrix rows before last row.
+                    resolution = new double[tgtDim];
+                    for (int j=0; j<tgtDim; j++) {
+                        final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
+                        final DoubleDouble scale  = (DoubleDouble) affine.getNumber(j, i);
+                        final DoubleDouble offset = (DoubleDouble) affine.getNumber(j, srcDim);
+                        resolution[j] = Math.abs(scale.doubleValue());
+                        scale.multiply(0.5);
+                        offset.add(scale);
+                        affine.setNumber(j, srcDim, offset);
+                    }
+                    gridToCRS = MathTransforms.linear(affine);
+                    this.extent = extent;
+                    return;
+                }
             }
         }
+        this.extent = extent;
         gridToCRS   = null;
         cornerToCRS = null;
         resolution  = null;
     }
 
     /**
-     * Creates a new grid geometry over the specified dimensions of the given grid geometry.
-     *
-     * @param  other       the grid geometry to copy.
-     * @param  dimensions  the dimensions to select, in strictly increasing order (this may not be verified).
-     * @throws FactoryException if an error occurred while separating the "grid to CRS" transform.
-     *
-     * @see #reduce(int...)
+     * Creates a new grid geometry from the given components.
+     * This constructor performs no verification (unless assertions are enabled).
      */
-    private GridGeometry(final GridGeometry other, int[] dimensions) throws FactoryException {
-        extent = (other.extent != null) ? other.extent.reduce(dimensions) : null;
-        final int n = dimensions.length;
-        if (other.gridToCRS != null) {
-            final int[] sources = dimensions;
-            TransformSeparator sep = new TransformSeparator(other.gridToCRS);
-            sep.addSourceDimensions(sources);
-            gridToCRS  = sep.separate();
-            dimensions = sep.getTargetDimensions();
-            assert dimensions.length == n : Arrays.toString(dimensions);
-            if (!ArraysExt.isSorted(dimensions, true)) {
-                throw new IllegalGridGeometryException(Resources.format(Resources.Keys.IllegalGridGeometryComponent_1, "dimensions"));
-            }
-            /*
-             * We redo a separation for 'cornerToCRS' instead than applying a translation of the 'gridToCRS'
-             * computed above because we don't know which of 'gridToCRS' and 'cornerToCRS' has less NaN values.
-             */
-            sep = new TransformSeparator(other.cornerToCRS);
-            sep.addSourceDimensions(sources);
-            sep.addTargetDimensions(dimensions);
-            cornerToCRS = sep.separate();
-            assert Arrays.equals(sep.getSourceDimensions(), dimensions) : Arrays.toString(dimensions);
-        } else {
-            gridToCRS   = null;
-            cornerToCRS = null;
+    GridGeometry(final GridExtent extent, final MathTransform gridToCRS, final MathTransform cornerToCRS,
+                 final ImmutableEnvelope envelope, final double[] resolution, final long nonLinears)
+    {
+        this.extent      = extent;
+        this.gridToCRS   = gridToCRS;
+        this.cornerToCRS = cornerToCRS;
+        this.envelope    = envelope;
+        this.resolution  = resolution;
+        this.nonLinears  = nonLinears;
+        if (gridToCRS != null) {
+            assert (extent     == null) || gridToCRS.getSourceDimensions() == extent.getDimension();
+            assert (envelope   == null) || gridToCRS.getTargetDimensions() == envelope.getDimension();
+            assert (resolution == null) || gridToCRS.getTargetDimensions() == resolution.length;
         }
-        final ImmutableEnvelope env = other.envelope;
-        if (env != null) {
-            CoordinateReferenceSystem crs = env.getCoordinateReferenceSystem();
-            crs = org.apache.sis.referencing.CRS.reduce(crs, dimensions);
-            final double[] min = new double[n];
-            final double[] max = new double[n];
-            for (int i=0; i<n; i++) {
-                final int j = dimensions[i];
-                min[i] = env.getLower(j);
-                max[i] = env.getUpper(j);
-            }
-            envelope = new ImmutableEnvelope(min, max, crs);
-        } else {
-            envelope = null;
-        }
-        long     nonLinears = 0;
-        double[] resolution = other.resolution;
-        if (resolution != null) {
-            resolution = new double[n];
-        }
-        for (int i=0; i<n; i++) {
-            final int j = dimensions[i];
-            if (resolution != null) {
-                resolution[i] = other.resolution[j];
-            }
-            nonLinears |= ((other.nonLinears >>> j) & 1L) << i;
-        }
-        this.resolution = resolution;
-        this.nonLinears = nonLinears;
     }
 
     /**
@@ -680,13 +758,16 @@ public class GridGeometry implements Serializable {
             return extent.getDimension();       // Most reliable source since that method is final.
         } else if (gridToCRS != null) {
             return gridToCRS.getSourceDimensions();
-        } else {
+        } else if (envelope != null) {
             /*
              * Last resort only since we have no guarantee that the envelope dimension is the same
              * than the grid dimension (see above javadoc). The envelope should never be null at
-             * this point since the constructor verified that at least one argument was non-null.
+             * this point since the constructor verified that at least one argument was non-null,
+             * except if this method is invoked on UNDEFINED.
              */
             return envelope.getDimension();
+        } else {
+            throw incomplete(EXTENT, Resources.Keys.UnspecifiedGridExtent);
         }
     }
 
@@ -694,7 +775,7 @@ public class GridGeometry implements Serializable {
      * Returns the number of dimensions of the <em>CRS</em>. This is typically the same than the
      * number of {@linkplain #getDimension() grid dimensions}, but not necessarily.
      */
-    private int getTargetDimension() {
+    final int getTargetDimension() {
         if (envelope != null) {
             return envelope.getDimension();     // Most reliable source since that class is final.
         } else if (gridToCRS != null) {
@@ -776,7 +857,7 @@ public class GridGeometry implements Serializable {
     }
 
     /*
-     * Do not provide a convenience 'getGridToCRS()' method without PixelInCell or PixelOrientation argument.
+     * Do not provide a convenience `getGridToCRS()` method without PixelInCell or PixelOrientation argument.
      * Experience shows that 0.5 pixel offset in image localization is a recurrent problem. We really want to
      * force developers to think about whether they want a gridToCRS transform locating pixel corner or center.
      */
@@ -829,9 +910,9 @@ public class GridGeometry implements Serializable {
      * contains an horizontal component such as a geographic or projected CRS.
      *
      * <div class="note"><b>API note:</b>
-     * this method does not throw {@link IncompleteGridGeometryException} because the geographic extent may be absent
-     * even with a complete grid geometry. This is because grid geometries are not required to have an spatial component
-     * on Earth surface; a raster could be a vertical profile for example.</div>
+     * this method does not throw {@link IncompleteGridGeometryException} because the geographic extent
+     * may be absent even with a complete grid geometry. Grid geometries are not required to have a
+     * spatial component on Earth surface; a raster could be a vertical profile for example.</div>
      *
      * @return the geographic bounding box in "real world" coordinates.
      */
@@ -843,7 +924,7 @@ public class GridGeometry implements Serializable {
      * Returns the {@link #geographicBBox} value or {@code null} if none.
      * This method computes the box when first needed.
      */
-    private GeographicBoundingBox geographicBBox() {
+    final GeographicBoundingBox geographicBBox() {
         GeographicBoundingBox bbox = geographicBBox;
         if (bbox == null) {
             if (getCoordinateReferenceSystem(envelope) != null && !envelope.isAllNaN()) {
@@ -885,7 +966,7 @@ public class GridGeometry implements Serializable {
         Instant[] times = timeRange;
         if (times == null) {
             final TemporalAccessor t = TemporalAccessor.of(getCoordinateReferenceSystem(envelope), 0);
-            times = (t != null) ? t.getTimeRange(envelope) : new Instant[0];
+            times = (t != null) ? t.getTimeBounds(envelope) : TemporalAccessor.EMPTY;
             timeRange = times;
         }
         return times;
@@ -951,7 +1032,7 @@ public class GridGeometry implements Serializable {
         } else if (domain != null && gridToCRS != null) try {
             return resolution(gridToCRS.derivative(new DirectPositionView.Double(domain.getPointOfInterest())), 0);
         } catch (TransformException e) {
-            recoverableException(e);
+            recoverableException("resolution", e);
         }
         return null;
     }
@@ -993,7 +1074,7 @@ public class GridGeometry implements Serializable {
         long mask = 0;
         for (final int d : targets) {
             ArgumentChecks.ensureValidIndex(dimension, d);
-            if (d < Long.SIZE) mask |= (1L << d);
+            mask |= Numerics.bitmask(d);
         }
         return (nonLinears & mask) == 0;
     }
@@ -1091,7 +1172,7 @@ public class GridGeometry implements Serializable {
                 if (dimension > Long.SIZE) {
                     throw excessiveDimension(gridToCRS);
                 }
-                return (dimension >= Long.SIZE) ? -1 : (1L << dimension) - 1;
+                return Numerics.bitmask(dimension) - 1;
             }
         }
         return nonLinearDimensions;
@@ -1100,7 +1181,7 @@ public class GridGeometry implements Serializable {
     /**
      * Invoked when the number of non-linear dimensions exceeds the {@code GridGeometry} capacity.
      */
-    private static ArithmeticException excessiveDimension(final MathTransform gridToCRS) {
+    static ArithmeticException excessiveDimension(final MathTransform gridToCRS) {
         return new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, gridToCRS.getTargetDimensions()));
     }
 
@@ -1166,6 +1247,24 @@ public class GridGeometry implements Serializable {
     }
 
     /**
+     * Returns {@code true} if this grid geometry contains only a grid extent and no other information.
+     * Note: if {@link #gridToCRS} is {@code null}, then {@link #cornerToCRS} and {@link #resolution}
+     * should be null as well.
+     */
+    final boolean isExtentOnly() {
+        return gridToCRS == null && envelope == null && extent != null;
+    }
+
+    /**
+     * Returns {@code true} if this grid geometry contains only an envelope and no other information.
+     * Note: if {@link #gridToCRS} is {@code null}, then {@link #cornerToCRS} and {@link #resolution}
+     * should be null as well.
+     */
+    final boolean isEnvelopeOnly() {
+        return gridToCRS == null && extent == null && envelope != null;
+    }
+
+    /**
      * Returns an object that can be used for creating a new grid geometry derived from this grid geometry.
      * {@code GridDerivation} does not change the state of this {@code GridGeometry} but instead creates
      * new instances as needed. Examples of modifications include clipping to a sub-area or applying a sub-sampling.
@@ -1193,8 +1292,54 @@ public class GridGeometry implements Serializable {
     }
 
     /**
-     * Returns a grid geometry that encompass only some dimensions of the grid geometry.
-     * The specified dimensions will be copied into a new grid geometry.
+     * Returns a grid geometry translated by the given amount of cells compared to this grid.
+     * The returned grid has the same {@linkplain GridExtent#getSize(int) size} than this grid,
+     * i.e. both low and high grid coordinates are displaced by the same amount of cells.
+     * The "grid to CRS" transforms are adjusted accordingly in order to map to the same
+     * "real world" coordinates.
+     *
+     * <h4>Number of arguments</h4>
+     * The {@code translation} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing values default to 0 (i.e. no translation in unspecified dimensions).
+     * If the array is longer, extraneous values are ignored.
+     *
+     * @param  translation  translation to apply on each grid axis in order.
+     * @return a grid geometry whose coordinates (both low and high ones) and
+     *         the "grid to CRS" transforms have been translated by given amounts.
+     *         If the given translation is a no-op (no value or only 0 ones), then this grid is returned as is.
+     * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
+     *
+     * @see GridExtent#translate(long...)
+     *
+     * @since 1.1
+     */
+    public GridGeometry translate(final long... translation) {
+        ArgumentChecks.ensureNonNull("translation", translation);
+        GridExtent te = extent;
+        if (te != null) {
+            te = te.translate(translation);
+            if (te == extent) return this;
+        }
+        MathTransform t1 = gridToCRS;
+        MathTransform t2 = cornerToCRS;
+        if (t1 != null || t2 != null) {
+            boolean isZero = true;
+            final double[] vector = new double[getDimension()];
+            for (int i=Math.min(vector.length, translation.length); --i >= 0;) {
+                isZero &= (translation[i] == 0);
+                vector[i] = Math.negateExact(translation[i]);
+            }
+            if (isZero) return this;
+            final MathTransform t = MathTransforms.translation(vector);
+            t1 = MathTransforms.concatenate(t, t1);
+            t2 = MathTransforms.concatenate(t, t2);
+        }
+        return new GridGeometry(te, t1, t2, envelope, resolution, nonLinears);
+    }
+
+    /**
+     * Returns a grid geometry that encompass only some dimensions of this grid geometry.
+     * The specified dimensions will be copied into a new grid geometry if necessary.
      * The selection is applied on {@linkplain #getExtent() grid extent} dimensions;
      * they are not necessarily the same than the {@linkplain #getEnvelope() envelope} dimensions.
      * The given dimensions must be in strictly ascending order without duplicated values.
@@ -1214,11 +1359,44 @@ public class GridGeometry implements Serializable {
     public GridGeometry reduce(int... dimensions) {
         dimensions = GridExtent.verifyDimensions(dimensions, getDimension());
         if (dimensions != null) try {
-            return new GridGeometry(this, dimensions);
+            return new SliceGeometry(this, null, dimensions, null).reduce(null, -1);
         } catch (FactoryException e) {
-            throw new IllegalGridGeometryException(e, "dimensions");
+            throw new BackingStoreException(e);
         }
         return this;
+    }
+
+    /**
+     * Creates a transform from cell coordinates in this grid to cell coordinates in the given grid.
+     * The returned transform handles change of Coordinate Reference System and wraparound axes
+     * (e.g. longitude axis crossing the ±180° meridian) if applicable.
+     *
+     * <p><b>Note:</b> the transform created by this method may be non-invertible.</p>
+     *
+     * @param  target  the grid which will be the target of returned transform.
+     * @param  anchor  {@linkplain PixelInCell#CELL_CENTER Cell center} for OGC conventions or
+     *                 {@linkplain PixelInCell#CELL_CORNER cell corner} for Java2D/JAI conventions.
+     * @return transform from cell coordinates in this grid to cell coordinates in the given grid.
+     * @throws TransformException if the math transform can not be created.
+     *
+     * @since 1.1
+     */
+    public MathTransform createTransformTo(final GridGeometry target, final PixelInCell anchor) throws TransformException {
+        ArgumentChecks.ensureNonNull("target", target);
+        ArgumentChecks.ensureNonNull("anchor", anchor);
+        /*
+         * Inverse `source` and `target` because `CoordinateOperationFinder.inverse(…)` does an
+         * effort for using `WraparoundTransform` only if needed (contrarily to `gridToCRS(…)`).
+         */
+        final CoordinateOperationFinder finder = new CoordinateOperationFinder(target, this);
+        finder.setAnchor(anchor);
+        final MathTransform tr;
+        try {
+            tr = finder.inverse();
+        } catch (FactoryException e) {
+            throw new TransformException(e);
+        }
+        return MathTransforms.concatenate(getGridToCRS(anchor), tr);
     }
 
     /**
@@ -1240,28 +1418,85 @@ public class GridGeometry implements Serializable {
 
     /**
      * Compares the specified object with this grid geometry for equality.
+     * This method delegates to {@code equals(object, ComparisonMode.STRICT)}.
      *
      * @param  object  the object to compare with.
      * @return {@code true} if the given object is equals to this grid geometry.
      */
     @Override
     public boolean equals(final Object object) {
-        if (object != null && object.getClass() == getClass()) {
+        return equals(object, ComparisonMode.STRICT);
+    }
+
+    /**
+     * Compares the specified object with this grid geometry for equality.
+     * If the mode is {@link ComparisonMode#IGNORE_METADATA} or more flexible,
+     * then the {@linkplain GridExtent#getAxisType(int) axis types} are ignored.
+     *
+     * @param  object  the object to compare with this grid geometry for equality.
+     * @param  mode    the strictness level of the comparison.
+     * @return {@code true} if the given object is equal to this grid geometry.
+     *
+     * @since 1.1
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            return true;
+        }
+        if (object instanceof GridGeometry) {
             final GridGeometry that = (GridGeometry) object;
-            return Objects.equals(this.extent,    that.extent)    &&
-                   Objects.equals(this.gridToCRS, that.gridToCRS) &&
-                   Objects.equals(this.envelope,  that.envelope);
+            if ((mode != ComparisonMode.STRICT || getClass().equals(object.getClass()))
+                    && Utilities.deepEquals(extent,    that.extent,    mode)
+                    && Utilities.deepEquals(gridToCRS, that.gridToCRS, mode))
+            {
+                final ImmutableEnvelope othenv = that.envelope;
+                if (!mode.isApproximate()) {
+                    return Utilities.deepEquals(envelope, othenv, mode);
+                }
+                if ((envelope == null) == (othenv == null) &&
+                        Utilities.deepEquals(getCoordinateReferenceSystem(envelope),
+                                             getCoordinateReferenceSystem(othenv), mode))
+                {
+                    return equalsApproximately(othenv);
+                }
+            }
         }
         return false;
     }
 
     /**
-     * Returns the default set of flags to use for {@link #toString()} implementations.
-     * Current implementation returns all flags, but future implementation may omit some
-     * flags if experience suggests that they are too verbose in practice.
+     * Returns whether the given envelope is equal to this grid geometry envelope with a tolerance threshold
+     * computed from grid resolution. If this grid geometry has no envelope, then this method arbitrarily
+     * returns {@code true} (this unusual behavior is required by {@link #equals(Object, ComparisonMode)}).
      */
-    static int defaultFlags() {
-        return EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION | GEOGRAPHIC_EXTENT | TEMPORAL_EXTENT;
+    final boolean equalsApproximately(final ImmutableEnvelope othenv) {
+        if (envelope != null) {
+            for (int i=envelope.getDimension(); --i >= 0;) {
+                // Arbitrary threshold of ½ pixel.
+                final double ε = (resolution != null) ? resolution[i] * 0.5 : 0;
+                if (!MathFunctions.epsilonEqual(envelope.getLower(i), othenv.getLower(i), ε) ||
+                    !MathFunctions.epsilonEqual(envelope.getUpper(i), othenv.getUpper(i), ε))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns the default set of flags to use for {@link #toString()} implementations.
+     * Current implementation returns all core properties, augmented with only derived
+     * properties that are defined.
+     */
+    final int defaultFlags() {
+        int flags = EXTENT | GRID_TO_CRS | CRS;
+        if (null != envelope)         flags |= ENVELOPE;
+        if (null != resolution)       flags |= RESOLUTION;
+        if (null != geographicBBox()) flags |= GEOGRAPHIC_EXTENT;
+        if (timeRange().length != 0)  flags |= TEMPORAL_EXTENT;
+        return flags;
     }
 
     /**
@@ -1278,8 +1513,8 @@ public class GridGeometry implements Serializable {
 
     /**
      * Returns a tree representation of some elements of this grid geometry.
-     * The tree representation is for debugging purpose only and may change
-     * in any future SIS version.
+     * The tree representation is for debugging or logging purposes
+     * and may change in any future SIS version.
      *
      * @param  locale   the locale to use for textual labels.
      * @param  bitmask  combination of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS},
@@ -1390,8 +1625,8 @@ public class GridGeometry implements Serializable {
             }
             /*
              * Example: Geographic extent
-             *  ├─Upper bound:  90°00′00″N  180°00′00″E  2019-05-02T00:00:00Z
-             *  └─Lower bound:  80°00′00″S  180°00′00″W  2019-05-01T21:00:00Z
+             *  ├─Lower bound:  80°00′00″S  180°00′00″W  2019-05-01T21:00:00Z
+             *  └─Upper bound:  90°00′00″N  180°00′00″E  2019-05-02T00:00:00Z
              *
              * The angle and date/time patterns are fixed for now, with a precision equivalent to about 30 metres.
              * The angles are rounded toward up and down for making sure that the box encloses fully the coverage.
@@ -1401,33 +1636,43 @@ public class GridGeometry implements Serializable {
             {
                 final TableAppender table = new TableAppender(buffer, "  ");
                 final AngleFormat nf = new AngleFormat("DD°MM′SS″", locale);
-                final GeographicBoundingBox bbox = geographicBBox();
-                final Instant[] times = timeRange();
-                vocabulary.appendLabel(Vocabulary.Keys.UpperBound, table);
-                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
-                if (bbox != null) {
-                    nf.setRoundingMode(RoundingMode.CEILING);
-                    table.nextColumn(); table.append(nf.format(new  Latitude(bbox.getNorthBoundLatitude())));
-                    table.nextColumn(); table.append(nf.format(new Longitude(bbox.getEastBoundLongitude())));
-                }
-                if (times.length >= 2) {
-                    table.nextColumn();
-                    table.append(times[1].toString());
-                }
-                table.nextLine();
-                table.setCellAlignment(TableAppender.ALIGN_LEFT);
+                final GeographicBoundingBox bbox = ((bitmask & GEOGRAPHIC_EXTENT) != 0) ? geographicBBox() : null;
+                double westBoundLongitude = Double.NaN;
+                double eastBoundLongitude = Double.NaN;
+                final Instant[] times = ((bitmask & TEMPORAL_EXTENT) != 0) ? timeRange() : TemporalAccessor.EMPTY;
                 vocabulary.appendLabel(Vocabulary.Keys.LowerBound, table);
                 table.setCellAlignment(TableAppender.ALIGN_RIGHT);
                 if (bbox != null) {
                     nf.setRoundingMode(RoundingMode.FLOOR);
-                    table.nextColumn(); table.append(nf.format(new  Latitude(bbox.getSouthBoundLatitude())));
-                    table.nextColumn(); table.append(nf.format(new Longitude(bbox.getWestBoundLongitude())));
+                    westBoundLongitude = bbox.getWestBoundLongitude();
+                    table.nextColumn(); table.append(nf.format(new Latitude(bbox.getSouthBoundLatitude())));
+                    table.nextColumn(); table.append(nf.format(new Longitude(westBoundLongitude)));
                 }
                 if (times.length >= 1) {
                     table.nextColumn();
                     table.append(times[0].toString());
                 }
+                table.nextLine();
+                table.setCellAlignment(TableAppender.ALIGN_LEFT);
+                vocabulary.appendLabel(Vocabulary.Keys.UpperBound, table);
+                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                if (bbox != null) {
+                    nf.setRoundingMode(RoundingMode.CEILING);
+                    eastBoundLongitude = bbox.getEastBoundLongitude();
+                    table.nextColumn(); table.append(nf.format(new Latitude(bbox.getNorthBoundLatitude())));
+                    table.nextColumn(); table.append(nf.format(new Longitude(eastBoundLongitude)));
+                }
+                if (times.length >= 2) {
+                    table.nextColumn();
+                    table.append(times[1].toString());
+                }
                 table.flush();
+                if (Longitude.isWraparound(westBoundLongitude, eastBoundLongitude)) {
+                    vocabulary.appendLabel(Vocabulary.Keys.Note, buffer);
+                    buffer.append(' ')
+                          .append(org.apache.sis.internal.metadata.Resources.forLocale(locale).getString(
+                                  org.apache.sis.internal.metadata.Resources.Keys.BoxCrossesAntiMeridian));
+                }
                 writeNodes();
             }
             /*
@@ -1497,7 +1742,7 @@ public class GridGeometry implements Serializable {
                 if (id != null) {
                     buffer.append(IdentifiedObjects.toString(id)).append(" — ");
                 }
-                buffer.append(crs.getName());
+                buffer.append(crs.getName().getCode());
                 writeNode();
             }
             /*

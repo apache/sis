@@ -63,6 +63,8 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
      * Creates a new aggregated feature set.
      *
      * @param  parent  listeners of the parent resource, or {@code null} if none.
+     *         This is usually the listeners of the {@link org.apache.sis.storage.DataStore}
+     *         that created this resource.
      */
     protected AggregatedFeatureSet(final StoreListeners parent) {
         super(parent);

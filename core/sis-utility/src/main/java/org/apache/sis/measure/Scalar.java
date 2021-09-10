@@ -22,6 +22,7 @@ import javax.measure.Quantity;
 import javax.measure.UnitConverter;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -31,7 +32,7 @@ import org.apache.sis.util.StringBuilders;
  * Instances of this class are unmodifiable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @param <Q>  the concrete subtype.
  *
@@ -155,7 +156,7 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
      */
     @Override
     public final int intValue() {
-        return (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, longValue()));
+        return Numerics.clamp(longValue());
     }
 
     /**
@@ -343,7 +344,7 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
         StringBuilders.trimFractionalPart(buffer);
         final String symbol = getUnit().toString();
         if (symbol != null && !symbol.isEmpty()) {
-            buffer.append(' ').append(symbol);
+            buffer.append(QuantityFormat.SEPARATOR).append(symbol);
         }
         return buffer.toString();
     }

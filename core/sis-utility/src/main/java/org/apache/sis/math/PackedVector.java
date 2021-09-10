@@ -26,7 +26,7 @@ import org.apache.sis.util.resources.Errors;
  * This offers a compressed storage using only the minimal amount of bits per value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -148,6 +148,14 @@ final class PackedVector extends ArrayVector<Long> {
     }
 
     /**
+     * Long values are not guaranteed to be convertible to single-precision floating point type.
+     */
+    @Override
+    public boolean isSinglePrecision() {
+        return false;
+    }
+
+    /**
      * Returns the number of elements in this vector.
      */
     @Override
@@ -196,7 +204,7 @@ final class PackedVector extends ArrayVector<Long> {
     }
 
     /**
-     * Sets the value at the given index at returns the previous value.
+     * Sets the value at the given index and returns the previous value.
      */
     @Override
     public Number set(final int index, final Number value) {
@@ -215,5 +223,18 @@ final class PackedVector extends ArrayVector<Long> {
             }
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotStoreInVector_1, value));
+    }
+
+    /**
+     * Optimization of {@code equals(…)} method for the case where the other object
+     * is another {@code PackedVector}.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other instanceof PackedVector) {
+            final PackedVector d = (PackedVector) other;
+            return d.increment == increment && d.offset == offset && d.data.equals(data);
+        }
+        return super.equals(other);
     }
 }

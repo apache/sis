@@ -364,7 +364,7 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame(METRE,  valueOf("EPSG:9001"));
         assertSame(DEGREE, valueOf(" epsg : 9102"));
         assertSame(DEGREE, valueOf("urn:ogc:def:uom:EPSG::9102"));
-        assertSame(METRE,  valueOf("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+        assertSame(METRE,  valueOf("http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
         assertSame(METRE,  valueOf("gmxUom.xml#m"));
 
         assertSame(TROPICAL_YEAR,                   valueOfEPSG(1029));

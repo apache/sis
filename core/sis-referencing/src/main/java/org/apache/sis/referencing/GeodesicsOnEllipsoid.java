@@ -87,17 +87,22 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     static final boolean STORE_LOCAL_VARIABLES = false;
 
     /**
-     * Accuracy threshold iterative computations, in radians.
-     * We take a finer accuracy than default SIS configuration in order to met the accuracy of numbers
-     * published in Karney (2013). If this value is modified, the effect can be verified by executing
-     * the {@code GeodesicsOnEllipsoidTest} methods that compare computed values against Karney's tables.
-     * Remember to update {@link GeodeticCalculator} class javadoc if this value is changed.
+     * Accuracy threshold for iterative computations, in radians.
+     * This accuracy must be at least {@value Formulas#ANGULAR_TOLERANCE} degrees (converted to radians) for
+     * conformance with the accuracy reported in {@link GeodeticCalculator} class javadoc. Actually we take
+     * a finer accuracy than above value in order to met the accuracy of numbers published in Karney (2013),
+     * but this extra accuracy is not guaranteed because it is hard to achieve in all cases.
      *
      * <p><b>Note:</b> when the iteration loop detects that it reached this requested accuracy, the loop
      * completes the iteration step which was in progress. Consequently the final accuracy is one iteration
      * better than the accuracy computed from this value.</p>
+     *
+     * <h4>Maintenance</h4>
+     * If this value is modified, the effect can be verified by executing the {@code GeodesicsOnEllipsoidTest}
+     * methods that compare computed values against Karney's tables. The {@link GeodeticCalculator} javadoc may
+     * need to be edited accordingly.
      */
-    static final double ITERATION_TOLERANCE = Formulas.ANGULAR_TOLERANCE * (PI/180) / 20;
+    static final double ITERATION_TOLERANCE = (Formulas.ANGULAR_TOLERANCE / 20) * (PI/180);
 
     /**
      * Difference between ending point and antipode of starting point for considering them as nearly antipodal.
@@ -563,10 +568,10 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         /*
          * The algorithm in this method requires the following canonical configuration:
          *
-         *   Negative latitude of starting point:         φ₁ ≦ 0
-         *   Ending point latitude smaller in magnitude:  φ₁ ≦ φ₂ ≦ -φ₁
-         *   Positive longitude difference:               0 ≦ ∆λ ≦ π
-         *   (Consequence of above):                      0 ≦ α₀ ≦ π/2
+         *   Negative latitude of starting point:         φ₁ ≤ 0
+         *   Ending point latitude smaller in magnitude:  φ₁ ≤ φ₂ ≤ -φ₁
+         *   Positive longitude difference:               0 ≤ ∆λ ≤ π
+         *   (Consequence of above):                      0 ≤ α₀ ≤ π/2
          *
          * If the given points do not met above conditions, then we need to swap start and end points or to
          * swap coordinate signs. We apply those changes on local variables only, not on the class fields.
@@ -601,7 +606,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
          *   3) Equatorial case: φ₁ = φ₂ = 0 but restricted to ∆λ ≤ (1-f)⋅π.
          *   4) Meridional case: ∆λ = 0 or ∆λ = π (handled by general case in this method).
          */
-        if (φ1 > -LATITUDE_THRESHOLD) {                         // Sufficient test because φ₁ ≦ 0 and |φ₂| ≦ φ₁
+        if (φ1 > -LATITUDE_THRESHOLD) {                         // Sufficient test because φ₁ ≤ 0 and |φ₂| ≤ φ₁
             /*
              * Points on equator but not nearly anti-podal. The geodesic is an arc on equator and the azimuths
              * are α₁ = α₂ = ±90°. We need this special case because when φ = 0, the general case get sinβ = 0
@@ -641,7 +646,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             final double β2 = atan2(sinβ2, cosβ2);
             final double Δ1  = (1 - axisRatio) * PI * cosβ1;                // Differ from Karney by a⋅cosβ₁ factor.
             final double y  = (β2 + β1) / (Δ1*cosβ1);
-            final double x  = (PI - Δλ) / Δ1;                               // Opposite sign of Karney. We have x ≧ 0.
+            final double x  = (PI - Δλ) / Δ1;                               // Opposite sign of Karney. We have x ≥ 0.
             final double x2 = x*x;
             final double y2 = y*y;
             if (STORE_LOCAL_VARIABLES) {                        // For comparing values with Karney table 4.
@@ -649,7 +654,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                 store("y",  y);
             }
             if (y2 < 1E-12) {                                   // Empirical threshold. See μ(…) for more information.
-                α1 = (x2 > 1) ? PI/2 : atan(x / sqrt(1 - x2));  // (Karney 57) with opposite sign of x. Result in α₁ ≧ 0.
+                α1 = (x2 > 1) ? PI/2 : atan(x / sqrt(1 - x2));  // (Karney 57) with opposite sign of x. Result in α₁ ≥ 0.
             } else {
                 final double μ = μ(x2, y2);
                 α1 = atan2(x*μ, (y*(1+μ)));                     // (Karney 56) with opposite sign of x.
@@ -680,7 +685,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             }
         }
         /*
-         * Stores locale variables for comparison against Karney tables 4, 5 and 6. Values β₁ and β₂ are keep
+         * Stores locale variables for comparison against Karney tables 4, 5 and 6. Values β₁ and β₂ are kept
          * constant during all this method. Value α₁ is a first estimation and will be updated during iteration.
          * Not that because Karney separate calculation of α₁ and remaining calculation in two separated tables,
          * we need to truncate α₁ to the same number of digits than Karney in order to get the same numbers in
@@ -757,7 +762,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
              * Special case for α₁ = π/2 and β₂ = ±β₁ (Karney's equation 47). We replace the β₂ = ±β₁
              * condition by |β₂| - |β₁| ≈ 0. Assuming tan(θ) ≈ θ for small angles we take the tangent
              * of above difference and use tan(β₂ - β₁) = (tanβ₂ - tanβ₁)/(1 + tanβ₂⋅tanβ₁) identity.
-             * Note that tanβ₁ ≦ 0 and |tanβ₂| ≦ |tanβ₁| in this method.
+             * Note that tanβ₁ ≤ 0 and |tanβ₂| ≤ |tanβ₁| in this method.
              */
             final double dΔλ_dα1;
             if (abs(mcosα1) < LATITUDE_THRESHOLD && (-tanβ1 - abs(tanβ2)) < (1 + abs(tanβ1*tanβ2)) * LATITUDE_THRESHOLD) {
@@ -786,7 +791,20 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                 }
             }
             final double dα1 = Δλ_error / dΔλ_dα1;                  // Opposite sign of Karney δα₁ term.
-            α1 -= dα1;
+            /*
+             * We need to compute α₁ -= dα₁ then iterate again. But sometime the subtraction has no effect
+             * because dα₁ ≪ α₁ and iteration continues with unchanged α₁ value until no convergence error.
+             * If we detect this situation, assume that we have the best accuracy that we can get.
+             *
+             * Note: we tried Kahan summation algorithm but it didn't solved the problem.
+             * No convergence were still happening, but in more indirect ways (after a cycle in iterations).
+             */
+            if (α1 == (α1 -= dα1)) {
+                moreRefinements = 0;
+                if (STORE_LOCAL_VARIABLES) {
+                    store("dα₁ ≪ α₁", dα1);                         // Flag for `iterationReachedPrecisionLimit` in tests.
+                }
+            }
             if (STORE_LOCAL_VARIABLES) {                            // For comparing values against Karney table 5 and 6.
                 final double I1_σ2;
                 I1_σ1 = sphericalToEllipsoidalAngle(σ1, false);     // Required for computation of s₁ in `snapshot()`.
@@ -992,5 +1010,14 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         final double sinθ = 2*sinφ*cosφ;                        // sin(2φ)
         final double cosθ = (cosφ + sinφ) * (cosφ - sinφ);      // cos(2φ)  =  cos²φ - sin²φ
         return R0*φ + sinθ*(R2 + cosθ*(R4 + cosθ*R6));
+    }
+
+    /**
+     * The operation method to use for creating a map projection. For the ellipsoidal case we use EPSG::9832.
+     * According EPSG documentation the precision is acceptable withing 800 km of projection natural origin.
+     */
+    @Override
+    final String getProjectionMethod() {
+        return "Modified Azimuthal Equidistant";
     }
 }

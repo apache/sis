@@ -45,7 +45,7 @@ import static org.apache.sis.test.Assert.*;
  * <p>This class uses <a href="http://math.nist.gov/javanumerics/jama">JAMA</a> as the reference implementation.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -378,16 +378,29 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final double[] elements = createRandomPositiveValues(numRow * numCol);
         final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
         validate(matrix);
-        matrix.normalizeColumns();
+        final double[] expected = new double[numCol];
         for (int i=0; i<numCol; i++) {
-            double m = 0;
-            for (int j=0; j<numRow; j++) {
-                final double e = matrix.getElement(j, i);
-                m += e*e;
-            }
-            m = StrictMath.sqrt(m);
-            assertEquals(1, m, 1E-12);
+            expected[i] = magnitude(matrix, i, numRow);
         }
+        assertArrayEquals(expected, matrix.normalizeColumns().getElements(), 1E-12);
+        /*
+         * Array elements after normalization shall be unit vectors.
+         */
+        for (int i=0; i<numCol; i++) {
+            assertEquals(1, magnitude(matrix, i, numRow), 1E-12);
+        }
+    }
+
+    /**
+     * Computes the magnitude of vector in column <var>i</var>.
+     */
+    private static double magnitude(final MatrixSIS matrix, final int i, final int numRow) {
+        double sum = 0;
+        for (int j=0; j<numRow; j++) {
+            final double e = matrix.getElement(j, i);
+            sum += e*e;
+        }
+        return StrictMath.sqrt(sum);
     }
 
     /**

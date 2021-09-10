@@ -47,9 +47,8 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Node;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.NamedElement;
-import org.apache.sis.internal.netcdf.DiscreteSampling;
-import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -60,10 +59,12 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
-import ucar.nc2.constants.CF;
 
 
 /**
@@ -73,7 +74,7 @@ import ucar.nc2.constants.CF;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a>
  *
@@ -166,6 +167,7 @@ public final class ChannelDecoder extends Decoder {
      * its effect is local to that variable.
      *
      * @see #NAME_ENCODING
+     * @see #getEncoding()
      * @see #readValues(DataType, int)
      */
     private Charset encoding;
@@ -178,7 +180,11 @@ public final class ChannelDecoder extends Decoder {
     final VariableInfo[] variables;
 
     /**
-     * Same as {@link #variables}, but as a map for faster search.
+     * Contains all {@link #variables}, but as a map for faster lookup by name. The same {@link VariableInfo}
+     * instance may be repeated in two entries if the original variable name contains upper case letters.
+     * In such case, the value is repeated and associated to a key in all lower case key letters.
+     *
+     * @see #findVariable(String)
      */
     private final Map<String,VariableInfo> variableMap;
 
@@ -190,6 +196,15 @@ public final class ChannelDecoder extends Decoder {
      * @see #findAttribute(String)
      */
     private final Map<String,Object> attributeMap;
+
+    /**
+     * Names of attributes. This is {@code attributeMap.keySet()} unless some attributes have a name
+     * containing upper case letters. In such case a separated set is created for avoiding duplicated
+     * names (the name with upper case letters + the name in all lower case letters).
+     *
+     * @see #getAttributeNames()
+     */
+    private final Set<String> attributeNames;
 
     /**
      * All dimensions in the netCDF files.
@@ -256,9 +271,9 @@ public final class ChannelDecoder extends Decoder {
          * Read the dimension, attribute and variable declarations. We expect exactly 3 lists,
          * where any of them can be flagged as absent by a long (64 bits) 0.
          */
-        DimensionInfo[]    dimensions = null;
-        VariableInfo[]     variables  = null;
-        Map<String,Object> attributes = Collections.emptyMap();
+        DimensionInfo[] dimensions = null;
+        VariableInfo[]  variables  = null;
+        List<Map.Entry<String,Object>> attributes = Collections.emptyList();
         for (int i=0; i<3; i++) {
             final long tn = input.readLong();                   // Combination of tag and nelems
             if (tn != 0) {
@@ -277,7 +292,8 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
         }
-        this.attributeMap = attributes;
+        attributeMap = CollectionsExt.toCaseInsensitiveNameMap(attributes, NAME_LOCALE);
+        attributeNames = attributeNames(attributes, attributeMap);
         if (variables != null) {
             this.variables   = variables;
             this.variableMap = toCaseInsensitiveNameMap(variables);
@@ -341,15 +357,6 @@ public final class ChannelDecoder extends Decoder {
      */
     final Errors errors() {
         return Errors.getResources(listeners.getLocale());
-    }
-
-    /**
-     * Returns the netCDF-specific resource bundle for the locale given by {@link StoreListeners#getLocale()}.
-     *
-     * @return the localized error resource bundle.
-     */
-    final Resources resources() {
-        return Resources.forLocale(listeners.getLocale());
     }
 
     /**
@@ -549,7 +556,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  nelems  the number of attributes to read.
      */
-    private Map<String,Object> readAttributes(int nelems) throws IOException, DataStoreException {
+    private List<Map.Entry<String,Object>> readAttributes(int nelems) throws IOException, DataStoreException {
         final List<Map.Entry<String,Object>> attributes = new ArrayList<>(nelems);
         while (--nelems >= 0) {
             final String name = readName();
@@ -563,7 +570,7 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
         }
-        return CollectionsExt.toCaseInsensitiveNameMap(attributes, NAME_LOCALE);
+        return attributes;
     }
 
     /**
@@ -610,7 +617,7 @@ public final class ChannelDecoder extends Decoder {
              * Following block is almost a copy-and-paste of similar block in the contructor,
              * but with less cases in the "switch" statements.
              */
-            Map<String,Object> attributes = Collections.emptyMap();
+            List<Map.Entry<String,Object>> attributes = Collections.emptyList();
             final long tn = input.readLong();
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);
@@ -620,14 +627,15 @@ public final class ChannelDecoder extends Decoder {
                     // More cases may be added later if they appear to exist.
                     case ATTRIBUTE: {
                         final Charset globalEncoding = encoding;
-                        attributes = readAttributes(na);
+                        attributes = readAttributes(na);            // May change the encoding.
                         encoding = globalEncoding;
                         break;
                     }
                     default: throw malformedHeader();
                 }
             }
-            variables[j] = new VariableInfo(this, input, name, varDims, attributes,
+            final Map<String,Object> map = CollectionsExt.toCaseInsensitiveNameMap(attributes, NAME_LOCALE);
+            variables[j] = new VariableInfo(this, input, name, varDims, map, attributeNames(attributes, map),
                     DataType.valueOf(input.readInt()), input.readInt(), readOffset());
         }
         /*
@@ -641,15 +649,21 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Checks and potentially modifies the content of this dataset for conventions other than CF-conventions.
-     * This method should be invoked after construction for handling the particularities of some datasets
-     * (HYCOM, …).
+     * Returns the keys of {@code attributeMap} without the duplicated values caused by the change of name case.
+     * For example if an attribute {@code "Foo"} exists and a {@code "foo"} key has been generated for enabling
+     * case-insensitive search, only the {@code "Foo"} name is added in the returned set.
      *
-     * @throws IOException if an error occurred while reading the channel.
-     * @throws DataStoreContentException if an error occurred while interpreting the netCDF file content.
+     * @param  attributes    the attributes returned by {@link #readAttributes(int)}.
+     * @param  attributeMap  the map created by {@link CollectionsExt#toCaseInsensitiveNameMap(Collection, Locale)}.
+     * @return {@code attributes.keySet()} without duplicated keys.
      */
-    public final void applyOtherConventions() throws IOException, DataStoreContentException {
-        HYCOM.convert(this, variables);
+    private static Set<String> attributeNames(final List<Map.Entry<String,Object>> attributes, final Map<String,?> attributeMap) {
+        if (attributes.size() >= attributeMap.size()) {
+            return Collections.unmodifiableSet(attributeMap.keySet());
+        }
+        final Set<String> attributeNames = new LinkedHashSet<>(Containers.hashMapCapacity(attributes.size()));
+        attributes.forEach((e) -> attributeNames.add(e.getKey()));
+        return attributeNames;
     }
 
 
@@ -712,7 +726,8 @@ public final class ChannelDecoder extends Decoder {
      * @param  dimName  the name of the dimension to search.
      * @return dimension of the given name, or {@code null} if none.
      */
-    final DimensionInfo findDimension(final String dimName) {
+    @Override
+    protected Dimension findDimension(final String dimName) {
         DimensionInfo dim = dimensionMap.get(dimName);          // Give precedence to exact match before to ignore case.
         if (dim == null) {
             final String lower = dimName.toLowerCase(ChannelDecoder.NAME_LOCALE);
@@ -729,7 +744,7 @@ public final class ChannelDecoder extends Decoder {
      * @param  name  the name of the variable to search, or {@code null}.
      * @return the variable of the given name, or {@code null} if none.
      */
-    final VariableInfo findVariable(final String name) {
+    private VariableInfo findVariableInfo(final String name) {
         VariableInfo v = variableMap.get(name);
         if (v == null && name != null) {
             final String lower = name.toLowerCase(NAME_LOCALE);
@@ -742,6 +757,17 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
+     * Returns the netCDF variable of the given name, or {@code null} if none.
+     *
+     * @param  name  the name of the variable to search, or {@code null}.
+     * @return the variable of the given name, or {@code null} if none.
+     */
+    @Override
+    protected Variable findVariable(final String name) {
+        return findVariableInfo(name);
+    }
+
+    /**
      * Returns the variable of the given name. Note that groups do not exist in netCDF 3.
      *
      * @param  name  the name of the variable to search, or {@code null}.
@@ -749,7 +775,7 @@ public final class ChannelDecoder extends Decoder {
      */
     @Override
     protected Node findNode(final String name) {
-        return findVariable(name);
+        return findVariableInfo(name);
     }
 
     /**
@@ -796,12 +822,13 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * Returns the names of all global attributes found in the file.
+     * The returned set is unmodifiable.
      *
      * @return names of all global attributes in the file.
      */
     @Override
     public Collection<String> getAttributeNames() {
-        return Collections.unmodifiableSet(attributeMap.keySet());
+        return Collections.unmodifiableSet(attributeNames);
     }
 
     /**
@@ -880,6 +907,16 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
+     * Returns the encoding for attribute or variable data.
+     * This is <strong>not</strong> the encoding of netCDF names.
+     *
+     * @return encoding of data (not the encoding of netCDF names).
+     */
+    final Charset getEncoding() {
+        return encoding;
+    }
+
+    /**
      * Returns all variables found in the netCDF file.
      * This method returns a direct reference to an internal array - do not modify.
      *
@@ -892,24 +929,6 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * If this decoder can handle the file content as features, returns handlers for them.
-     *
-     * @return {@inheritDoc}
-     * @throws IOException if an I/O operation was necessary but failed.
-     * @throws DataStoreException if a logical error occurred.
-     */
-    @Override
-    public DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException {
-        if ("trajectory".equalsIgnoreCase(stringValue(CF.FEATURE_TYPE))) try {
-            return FeaturesInfo.create(this);
-        } catch (IllegalArgumentException | ArithmeticException e) {
-            // Illegal argument is not a problem with content, but rather with configuration.
-            throw new DataStoreException(e.getLocalizedMessage(), e);
-        }
-        return new FeaturesInfo[0];
-    }
-
-    /**
      * Adds to the given set all variables of the given names. This operation is performed when the set of axes is
      * specified by a {@code "coordinates"} attribute associated to a data variable, or by customized conventions
      * specified by {@link org.apache.sis.internal.netcdf.Convention#namesOfAxisVariables(Variable)}.
@@ -917,14 +936,14 @@ public final class ChannelDecoder extends Decoder {
      * @param  names       names of variables containing axis data, or {@code null} if none.
      * @param  axes        where to add named variables.
      * @param  dimensions  where to report all dimensions used by added axes.
-     * @return whether {@code names} was non-null.
+     * @return whether {@code names} was non-null and non-empty.
      */
     private boolean listAxes(final CharSequence[] names, final Set<VariableInfo> axes, final Set<DimensionInfo> dimensions) {
-        if (names == null) {
+        if (names == null || names.length == 0) {
             return false;
         }
         for (final CharSequence name : names) {
-            final VariableInfo axis = findVariable(name.toString());
+            final VariableInfo axis = findVariableInfo(name.toString());
             if (axis == null) {
                 dimensions.clear();
                 axes.clear();
@@ -983,7 +1002,7 @@ nextVar:    for (final VariableInfo variable : variables) {
                 /*
                  * The axes can be inferred in two ways: if the variable contains a "coordinates" attribute,
                  * that attribute lists explicitly the variables to use as axes. Otherwise we have to infer
-                 * the axes from the variable dimensions, using the 'dimToVars' map computed at the beginning
+                 * the axes from the variable dimensions, using the `dimToAxes` map computed at the beginning
                  * of this method. If and only if we can find all axes, we create the GridGeometryInfo.
                  * This is a "all or nothing" operation.
                  */
@@ -1033,6 +1052,22 @@ nextVar:    for (final VariableInfo variable : variables) {
     @Override
     public void close() throws IOException {
         input.channel.close();
+    }
+
+    /**
+     * Adds netCDF attributes to the given node, including variables attributes.
+     * Variables attributes are shown fist, and global attributes are last.
+     *
+     * @param  root  the node where to add netCDF attributes.
+     */
+    @Override
+    public void addAttributesTo(final TreeTable.Node root) {
+        for (final VariableInfo variable : variables) {
+            final TreeTable.Node node = root.newChild();
+            node.setValue(TableColumn.NAME, variable.getName());
+            variable.addAttributesTo(node);
+        }
+        VariableInfo.addAttributesTo(root, attributeNames, attributeMap);
     }
 
     /**

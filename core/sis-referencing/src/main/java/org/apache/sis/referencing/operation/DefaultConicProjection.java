@@ -36,7 +36,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
  * @version 0.6
  *
  * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
- * @see <a href="http://mathworld.wolfram.com/ConicProjection.html">Conic projection on MathWorld</a>
+ * @see <a href="https://mathworld.wolfram.com/ConicProjection.html">Conic projection on MathWorld</a>
  *
  * @since 0.6
  * @module

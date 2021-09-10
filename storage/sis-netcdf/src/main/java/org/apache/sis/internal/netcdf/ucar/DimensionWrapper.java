@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
+import java.util.Collection;
 import java.util.stream.Collectors;
 import ucar.nc2.Dimension;
 
@@ -28,7 +29,7 @@ import ucar.nc2.Dimension;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -36,7 +37,7 @@ final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
     /**
      * Wraps all given dimensions.
      */
-    static List<org.apache.sis.internal.netcdf.Dimension> wrap(final List<Dimension> dimensions) {
+    static List<org.apache.sis.internal.netcdf.Dimension> wrap(final Collection<Dimension> dimensions) {
         return dimensions.stream().map(DimensionWrapper::new).collect(Collectors.toList());
     }
 
@@ -59,7 +60,7 @@ final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
     /**
      * Wraps the given netCDF dimension object.
      */
-    private DimensionWrapper(final Dimension netcdf) {
+    DimensionWrapper(final Dimension netcdf) {
         this.netcdf = netcdf;
     }
 

@@ -23,7 +23,8 @@ import java.util.Iterator;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.awt.image.DataBuffer;
+import javax.measure.Unit;
+import javax.measure.format.ParserException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.operation.MathTransform;
@@ -95,7 +96,7 @@ public class Convention {
      * @see #validRange(Variable)
      */
     private static final String[] RANGE_ATTRIBUTES = {
-        "valid_range",      // Expected "reasonable" range for variable.
+        CDM.VALID_RANGE,    // Expected "reasonable" range for variable.
         "actual_range",     // Actual data range for variable.
         "valid_min",        // Fallback if "valid_range" is not specified.
         "valid_max"
@@ -106,9 +107,21 @@ public class Convention {
      * map returned by {@link #nodataValues(Variable)}. The main bit is bit #0, which identifies the background value.
      */
     private static final String[] NODATA_ATTRIBUTES = {
-        CDM.FILL_VALUE,
-        CDM.MISSING_VALUE
+        CDM.FILL_VALUE,         // Must be at index i=0 in order to get (1 << i) == PAD_VALUE_MASK.
+        CDM.MISSING_VALUE       // Must be at index i=1 in order to get (1 << i) == MISSING_VALUE_MASK.
     };
+
+    /**
+     * Mask for pad values in the bits returned by {@link #nodataValues(Variable)}.
+     * The difference with {@link #MISSING_VALUE_MASK} is that pad values may be used as background
+     * values in regions outside the domain of validity, for example after a image reprojection.
+     */
+    protected static final int FILL_VALUE_MASK = 1;
+
+    /**
+     * Mask for missing values in the bits returned by {@link #nodataValues(Variable)}.
+     */
+    protected static final int MISSING_VALUE_MASK = 2;
 
     /**
      * For subclass constructors.
@@ -208,6 +221,9 @@ public class Convention {
      *       to confuse them with images.</li>
      * </ul>
      *
+     * <p>The default implementation returns {@link VariableRole#FEATURE} if the given variable may be values
+     * for one feature property of a feature set. This detection is based on the number of dimensions.</p>
+     *
      * @param  variable  the variable for which to get the role.
      * @return role of the given variable.
      */
@@ -215,16 +231,26 @@ public class Convention {
         if (variable.isCoordinateSystemAxis()) {
             return VariableRole.AXIS;
         }
-        int numVectors = 0;                                     // Number of dimension having more than 1 value.
-        for (final Dimension dimension : variable.getGridDimensions()) {
-            if (dimension.length() >= Grid.MIN_SPAN) {
-                numVectors++;
+        final int n = variable.getNumDimensions();
+        if (n == 1) {
+            if (variable.getAxisType() == null && variable.getAttributeValue(CF.AXIS) == null) {
+                return VariableRole.FEATURE;
             }
-        }
-        if (numVectors >= Grid.MIN_DIMENSION) {
+        } else if (n != 0) {
             final DataType dataType = variable.getDataType();
-            if (dataType.rasterDataType != DataBuffer.TYPE_UNDEFINED) {
-                return VariableRole.COVERAGE;
+            int numVectors = 0;                 // Number of dimension having more than 1 value.
+            for (final Dimension dimension : variable.getGridDimensions()) {
+                if (dimension.length() >= Grid.MIN_SPAN) {
+                    numVectors++;
+                }
+            }
+            if (numVectors >= Grid.MIN_DIMENSION) {
+                if (dataType.rasterDataType != null) {
+                    return VariableRole.COVERAGE;
+                }
+            }
+            if (n == Variable.STRING_DIMENSION && dataType == DataType.CHAR) {
+                return VariableRole.FEATURE;
             }
         }
         return VariableRole.OTHER;
@@ -330,10 +356,18 @@ public class Convention {
      * one resulting in best {@linkplain org.apache.sis.math.Plane#fit linear regression correlation coefficients}
      * will be selected.
      *
+     * <p>If the returned set is non-empty, exactly one of the linearizers will be applied. If not applying any
+     * linearizer is an acceptable solution, then an identity linearizer should be explicitly returned.</p>
+     *
+     * <p>The returned set shall not contain two linearizers of the same {@linkplain Linearizer#type type}
+     * because the types (not the full linearizers) are used in keys for caching localization grids.</p>
+     *
      * <p>Default implementation returns an empty set.</p>
      *
      * @param  decoder  the netCDF file for which to get linearizer candidates.
      * @return enumeration of two-dimensional non-linear transforms to try on the localization grid.
+     *
+     * @see #defaultHorizontalCRS(boolean)
      */
     public Set<Linearizer> linearizers(final Decoder decoder) {
         return Collections.emptySet();
@@ -366,6 +400,11 @@ public class Convention {
      * version if this constant become defined in {@link ucar.nc2.constants}.
      */
     protected static final String LONGITUDE_OF_PRIME_MERIDIAN = "longitude_of_prime_meridian";
+
+    /**
+     * Suffix of all attribute names used for CRS component names.
+     */
+    static final String NAME_SUFFIX = "_name";
 
     /**
      * The {@value} attribute name from CF-convention, defined here because not yet provided in {@link CF}.
@@ -466,7 +505,7 @@ public class Convention {
                     continue;
                 }
                 default: {
-                    if (ln.endsWith("_name")) {
+                    if (ln.endsWith(NAME_SUFFIX)) {
                         value = node.getAttributeAsString(name);
                         if (value == null) continue;
                     }
@@ -537,7 +576,6 @@ public class Convention {
     // │                                       COVERAGE RANGE                                       │
     // └────────────────────────────────────────────────────────────────────────────────────────────┘
 
-
     /**
      * Returns the range of valid values, or {@code null} if unknown.
      * The default implementation takes the range of values from the following properties, in precedence order:
@@ -550,7 +588,7 @@ public class Convention {
      * </ol>
      *
      * Whether the returned range is a range of packed values or a range of real values is ambiguous.
-     * An heuristic rule is documented in UCAR {@link ucar.nc2.dataset.EnhanceScaleMissing} interface.
+     * An heuristic rule is documented in {@link ucar.nc2.dataset.EnhanceScaleMissingUnsigned} interface.
      * If both types of range are available, then this method should return the range of packed value.
      * Otherwise if this method returns the range of real values, then that range shall be an instance
      * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
@@ -595,7 +633,7 @@ public class Convention {
              */
             if (minimum != null && maximum != null) {
                 /*
-                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
+                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissingUnsigned):
                  * if the type of the range is equal to the type of the scale, and the type of the
                  * data is not wider, then assume that the minimum and maximum are real values.
                  */
@@ -655,8 +693,8 @@ public class Convention {
      * the role of the pad/missing sample value:
      *
      * <ul>
-     *   <li>If bit 0 is set, then the value is a pad value. Those values can be used for background.</li>
-     *   <li>If bit 1 is set, then the value is a missing value.</li>
+     *   <li>If bit 0 is set (mask {@value #FILL_VALUE_MASK}), then the value is a pad value. Those values can be used for background.</li>
+     *   <li>If bit 1 is set (mask {@value #MISSING_VALUE_MASK}), then the value is a missing value.</li>
      * </ul>
      *
      * Pad values should be first in the map, followed by missing values.
@@ -714,5 +752,18 @@ public class Convention {
         if (!Double.isNaN(scale))  tr.setScale (scale);
         if (!Double.isNaN(offset)) tr.setOffset(offset);
         return tr;
+    }
+
+    /**
+     * Returns the unit of measurement to use as a fallback if it can not be determined in a standard way.
+     * Default implementation returns {@code null}. Subclasses can override if the unit can be determined
+     * in a way specific to this convention.
+     *
+     * @param  data  the variable for which to get the unit of measurement.
+     * @return the unit of measurement, or {@code null} if none or unknown.
+     * @throws ParserException if the unit symbol can not be parsed.
+     */
+    public Unit<?> getUnitFallback(final Variable data) throws ParserException {
+        return null;
     }
 }

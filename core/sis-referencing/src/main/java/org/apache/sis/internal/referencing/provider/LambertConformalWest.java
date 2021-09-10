@@ -88,7 +88,7 @@ public final class LambertConformalWest extends AbstractLambert {
                         LambertConformal1SP.LATITUDE_OF_ORIGIN,
                         LambertConformal1SP.LONGITUDE_OF_ORIGIN,
                         LambertConformal1SP.SCALE_FACTOR,
-                                            FALSE_WESTING,
+                                            FALSE_WESTING,      // Same as `FALSE_EASTING` with only an additional comment.
                         LambertConformal1SP.FALSE_NORTHING);
     }
 
