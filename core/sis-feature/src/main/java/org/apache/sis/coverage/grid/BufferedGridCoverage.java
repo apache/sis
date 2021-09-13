@@ -282,10 +282,8 @@ public class BufferedGridCoverage extends GridCoverage {
                         if (isNullIfOutside()) {
                             return null;
                         }
-                        final PointOutsideCoverageException ex = new PointOutsideCoverageException(
+                        throw new PointOutsideCoverageException(
                                 gc.pointOutsideCoverage(getCoverage().gridGeometry.extent), point);
-                        ex.setOffendingLocation(point);
-                        throw ex;
                     }
                     /*
                      * Following should never overflow, otherwise BufferedGridCoverage

@@ -18,7 +18,7 @@
 
 /**
  * Symbology and map representations, together with a rendering engine for display.
- * The {@linkplain org.apache.sis.portrayal.MapItem map item} is the root node of a map.
+ * This package is currently in early draft stage.
  *
  * <h2>Synchronization</h2>
  * Unless otherwise specified, classes in this package are not thread-safe.

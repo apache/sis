@@ -63,17 +63,16 @@ import org.apache.sis.coverage.grid.GridExtent;
 
 /**
  * Common abstraction for implementations that manage the display and user manipulation
- * of {@link MapLayer} instances. This base class makes no assumption about the geometry
- * of the display device (e.g. flat video monitor using Cartesian coordinate system, or
- * planetarium dome using spherical coordinate system).
+ * of spatial graphic elements. This base class makes no assumption about the geometry
+ * of the display device (e.g. flat video monitor using Cartesian coordinate system,
+ * or planetarium dome using spherical coordinate system).
  *
- * <p>A newly constructed {@code Canvas} is initially empty. To make something appears, at least one
- * {@link MapLayer} must be added. The visual content depends on the {@link MapLayer} data and associated style.
- * The contents are usually symbols, features or images, but some implementations can also manage non-geographic
- * elements like a map scale.</p>
+ * <p>This {@code Canvas} base class does not draw anything by itself.
+ * Subclasses are responsible for drawing graphic elements.
+ * The visual contents are usually geographic located symbols, features or images,
+ * but some implementations can also manage non-geographic elements like a map scale.</p>
  *
- * <p>In addition to the set of {@link MapLayer}s to display,
- * a {@code Canvas} manages four fundamental properties:</p>
+ * <p>A {@code Canvas} manages four fundamental properties:</p>
  * <ul>
  *   <li>The coordinate reference system to use for displaying data.</li>
  *   <li>The location of data to display in all dimensions, including the dimensions
@@ -92,7 +91,7 @@ import org.apache.sis.coverage.grid.GridExtent;
  * <ol class="verbose">
  *   <li>The <cite>data CRS</cite> is specific to the data to be displayed.
  *       It may be anything convertible to the <cite>objective CRS</cite>.
- *       Different {@link MapItem} instances may use different data CRS,
+ *       Different graphic elements may use different data CRS,
  *       potentially with a different number of dimensions.</li>
  *   <li>The {@linkplain #getObjectiveCRS objective CRS} is the common CRS in which all data
  *       are converted before to be displayed. If the objective CRS involves a map projection,

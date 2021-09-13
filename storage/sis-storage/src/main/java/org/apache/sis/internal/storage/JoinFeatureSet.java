@@ -204,7 +204,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
      * @param  rightAlias   name of the associations to the {@code right} features, or {@code null} for a default name.
      * @param  joinType     whether values on both sides are required (inner join), or only one side (outer join).
      * @param  condition    join condition as <var>property from left feature</var> = <var>property from right feature</var>.
-     * @param  featureInfo  information about the {@link FeatureType} of this
+     * @param  featureInfo  information about the {@link FeatureType} of this feature set.
      * @throws DataStoreException if an error occurred while creating the feature set.
      */
     public JoinFeatureSet(final StoreListeners parent,

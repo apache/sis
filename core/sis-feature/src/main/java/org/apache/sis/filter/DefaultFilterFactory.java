@@ -180,6 +180,18 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
 
         /**
          * Creates a new predicate to identify an identifiable resource within a filter expression.
+         * The predicate uses no versioning and no time range.
+         *
+         * @param  identifier  identifier of the resource that shall be selected by the predicate.
+         * @return the predicate.
+         */
+        @Override
+        public ResourceId<Feature> resourceId(final String identifier) {
+            return new IdentifierFilter<>(identifier);
+        }
+
+        /**
+         * Creates a new predicate to identify an identifiable resource within a filter expression.
          * If {@code startTime} and {@code endTime} are non-null, the filter will select all versions
          * of a resource between the specified dates.
          *
@@ -527,8 +539,6 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @return a filter for the "Equals" operation between the two geometries.
      *
      * @see SpatialOperatorName#EQUALS
-     *
-     * @todo Rename {@code equal}.
      */
     @Override
     public BinarySpatialOperator<R> equals(final Expression<? super R, ? extends G> geometry1,
@@ -645,8 +655,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see SpatialOperatorName#OVERLAPS
      */
     @Override
-    public BinarySpatialOperator<R>  overlaps(final Expression<? super R, ? extends G> geometry1,
-                                              final Expression<? super R, ? extends G> geometry2)
+    public BinarySpatialOperator<R> overlaps(final Expression<? super R, ? extends G> geometry1,
+                                             final Expression<? super R, ? extends G> geometry2)
     {
         return new BinarySpatialFilter<>(SpatialOperatorName.OVERLAPS, library, geometry1, geometry2);
     }

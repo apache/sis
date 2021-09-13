@@ -19,8 +19,6 @@ package org.apache.sis.internal.sql.postgis;
 import org.apache.sis.internal.sql.feature.SelectionClauseWriter;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
-import org.opengis.filter.SpatialOperator;
 import org.opengis.filter.SpatialOperatorName;
 
 
@@ -45,7 +43,7 @@ final class ExtendedClauseWriter extends SelectionClauseWriter {
     private ExtendedClauseWriter() {
         super(DEFAULT);
         setFilterHandler(SpatialOperatorName.BBOX, (f,sql) -> {
-            writeBinaryOperator(sql, (SpatialOperator<Feature>) f, " && ");
+            writeBinaryOperator(sql, f, " && ");
         });
     }
 

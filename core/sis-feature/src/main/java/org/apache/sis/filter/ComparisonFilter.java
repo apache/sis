@@ -103,8 +103,8 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
      * @param  matchAction     specifies how the comparisons shall be evaluated for a collection of values.
      */
     ComparisonFilter(final Expression<? super R, ?> expression1,
-                       final Expression<? super R, ?> expression2,
-                       final boolean isMatchingCase, final MatchAction matchAction)
+                     final Expression<? super R, ?> expression2,
+                     final boolean isMatchingCase, final MatchAction matchAction)
     {
         super(expression1, expression2);
         this.isMatchingCase = isMatchingCase;

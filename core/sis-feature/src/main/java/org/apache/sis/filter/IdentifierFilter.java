@@ -36,7 +36,7 @@ import org.opengis.filter.ResourceId;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  *
- * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
+ * @param  <R>  the type of resources used as inputs.
  *
  * @since 1.1
  * @module
