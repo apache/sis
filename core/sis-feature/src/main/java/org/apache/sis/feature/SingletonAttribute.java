@@ -46,7 +46,7 @@ import java.util.Objects;
  * @since 0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")     // Nothing to add compared to subclass.
+@SuppressWarnings("CloneableImplementsClone")       // Nothing to add compared to subclass.
 final class SingletonAttribute<V> extends AbstractAttribute<V> implements Cloneable {
     /**
      * For cross-version compatibility.

@@ -56,7 +56,7 @@ import org.apache.sis.util.Static;
  * GeoAPI factory interfaces instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see MathTransformFactory
  *
@@ -467,7 +467,7 @@ public final class MathTransforms extends Static {
     public static MathTransform2D concatenate(MathTransform2D tr1, MathTransform2D tr2)
             throws MismatchedDimensionException
     {
-        return (MathTransform2D) concatenate((MathTransform) tr1, (MathTransform) tr2);
+        return bidimensional(concatenate((MathTransform) tr1, (MathTransform) tr2));
     }
 
     /**
@@ -523,7 +523,27 @@ public final class MathTransforms extends Static {
     public static MathTransform2D concatenate(MathTransform2D tr1, MathTransform2D tr2, MathTransform2D tr3)
             throws MismatchedDimensionException
     {
-        return (MathTransform2D) concatenate((MathTransform) tr1, (MathTransform) tr2, (MathTransform) tr3);
+        return bidimensional(concatenate((MathTransform) tr1, (MathTransform) tr2, (MathTransform) tr3));
+    }
+
+    /**
+     * Returns the given transform as a {@link MathTransform2D} instance.
+     * If the given transform is {@code null} or already implements the {@link MathTransform2D} interface,
+     * then it is returned as-is. Otherwise the given transform is wrapped in an adapter.
+     *
+     * @param  transform  the transform to have as {@link MathTransform2D} instance, or {@code null}.
+     * @return the given transform as a {@link MathTransform2D}, or {@code null} if the argument was null.
+     * @throws MismatchedDimensionException if the number of source and target dimensions is not 2.
+     *
+     * @since 1.1
+     */
+    public static MathTransform2D bidimensional(final MathTransform transform) {
+        if (transform == null || transform instanceof MathTransform2D) {
+            return (MathTransform2D) transform;
+        } else {
+            ArgumentChecks.ensureDimensionsMatch("transform", 2, 2, transform);
+            return new TransformAdapter2D(transform);
+        }
     }
 
     /**
@@ -550,8 +570,9 @@ public final class MathTransforms extends Static {
      *
      * <ul>
      *   <li>If {@code transform} is {@code null}, returns an empty list.</li>
-     *   <li>Otherwise if {@code transform} is the result of a call to a {@code concatenate(…)} method,
-     *       returns all components. All nested concatenated transforms (if any) will be flattened.</li>
+     *   <li>Otherwise if {@code transform} is the result of calls to {@code concatenate(…)} methods, returns
+     *       all steps making the transformation chain. Nested concatenated transforms (if any) are flattened.
+     *       Note that some steps may have have been merged together, resulting in a shorter list.</li>
      *   <li>Otherwise returns the given transform in a list of size 1.</li>
      * </ul>
      *
@@ -670,8 +691,12 @@ public final class MathTransforms extends Static {
      * @param  dstPts     the array into which the transformed coordinate is returned.
      * @param  dstOff     the offset to the location of the transformed point that is stored in the destination array.
      * @return the matrix of the transform derivative at the given source position.
-     * @throws TransformException if the point can't be transformed or if a problem occurred
-     *         while calculating the derivative.
+     * @throws TransformException if the point can not be transformed
+     *         or if a problem occurred while calculating the derivative.
+     *
+     * @see #tangent(MathTransform, DirectPosition)
+     * @see MathTransform#derivative(DirectPosition)
+     * @see Matrices#createAffine(Matrix, DirectPosition)
      */
     public static Matrix derivativeAndTransform(final MathTransform transform,
                                                 final double[] srcPts, final int srcOff,
@@ -688,5 +713,49 @@ public final class MathTransforms extends Static {
             transform.transform(srcPts, srcOff, dstPts, dstOff, 1);
         }
         return derivative;
+    }
+
+    /**
+     * Computes a linear approximation of the given math transform at the given position.
+     * If the given transform is already an instance of {@link LinearTransform}, then it is returned as-is.
+     * Otherwise an affine transform is created from the {@linkplain MathTransform#derivative(DirectPosition)
+     * transform derivative} and the tangent point coordinates. The returned transform has the same number of
+     * source and target dimensions than the given transform.
+     *
+     * <p>If the given transform is a one dimensional curve, then this method computes the tangent at the given
+     * position. The same computation is generalized to any number of dimensions (computes a tangent plane if the
+     * given transform is two-dimensional, <i>etc.</i>).</p>
+     *
+     * @param  toApproximate  the non-linear transform to approximate by a linear transform.
+     * @param  tangentPoint   the point where to compute a linear approximation.
+     * @return linear approximation of the given math transform at the given position.
+     * @throws TransformException if the point can not be transformed
+     *         or if a problem occurred while calculating the derivative.
+     *
+     * @since 1.1
+     */
+    public static LinearTransform tangent(final MathTransform toApproximate, final DirectPosition tangentPoint)
+            throws TransformException
+    {
+        ArgumentChecks.ensureNonNull("toApproximate", toApproximate);
+        if (toApproximate instanceof LinearTransform) {
+            return (LinearTransform) toApproximate;
+        }
+        final int srcDim = toApproximate.getSourceDimensions();
+        ArgumentChecks.ensureDimensionMatches("tangentPoint", srcDim, tangentPoint);
+        final int tgtDim = toApproximate.getTargetDimensions();
+        final double[] coordinates = new double[Math.max(srcDim, tgtDim)];
+        for (int i=0; i<srcDim; i++) {
+            coordinates[i] = tangentPoint.getOrdinate(i);
+        }
+        final Matrix derivative = derivativeAndTransform(toApproximate, coordinates, 0, coordinates, 0);
+        final MatrixSIS m = Matrices.createAffine(derivative, new DirectPositionView.Double(coordinates, 0, tgtDim));
+        for (int i=0; i<srcDim; i++) {
+            m.convertBefore(i, null, -tangentPoint.getOrdinate(i));
+        }
+        final LinearTransform tangent = linear(m);
+        assert tangent.getSourceDimensions() == srcDim;
+        assert tangent.getTargetDimensions() == tgtDim;
+        return tangent;
     }
 }

@@ -87,12 +87,11 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      * @param names  the names to gives to the new scoped name.
      */
     static AbstractName create(final UnmodifiableArrayList<? extends DefaultLocalName> names) {
-        ArgumentChecks.ensureNonNull("names", names);
-        switch (names.size()) {
-            default: return new DefaultScopedName(names);
-            case 1:  return names.get(0);
-            case 0:  throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "names"));
+        ArgumentChecks.ensureNonEmpty("names", names);
+        if (names.size() == 1) {
+            return names.get(0);
         }
+        return new DefaultScopedName(names);
     }
 
     /**

@@ -83,8 +83,8 @@ final class TableInfo {
                                 "derived",            "temporal",            "parametric"},             // See comment below
                 "SHOW_CRS"),
                 /*
-                 * Above declaration could omit Derived, Temporal and Parametric cases since they are not defined
-                 * by the EPSG registry (at least as of version 8.9). In particular we are not sure if EPSG would
+                 * Above declaration could omit Derived, Temporal and Parametric cases because they are not defined
+                 * by the EPSG repository (at least as of version 8.9). In particular we are not sure if EPSG would
                  * chose to use "time" or "temporal". However omitting those types slow down a lot the search for
                  * CRS matching an existing one (even if it still work).
                  */

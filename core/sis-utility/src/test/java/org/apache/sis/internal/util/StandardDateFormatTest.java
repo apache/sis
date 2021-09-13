@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * Tests the {@link StandardDateFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -60,6 +60,7 @@ public final strictfp class StandardDateFormatTest extends TestCase {
         assertSame  ("2005-09-22",                toISO("2005-09-22"));
         assertEquals("2005-09-22T04:30:15",       toISO("  2005-09-22   04 : 30 : 15 "));
         assertEquals("1992-10-8T15:15:42.5-6:00", toISO("1992-10-8 15:15:42.5 -6:00"));
+        assertEquals("1960-01-01T00:00:00Z",      toISO("1960-01-01 00:00:00 Z"));
     }
 
     /**
@@ -129,6 +130,7 @@ public final strictfp class StandardDateFormatTest extends TestCase {
         assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseInstantUTC("2016-06-27T16:48"));
         assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseInstantUTC("2016-06-27 16:48"));
         assertEquals(Instant.ofEpochMilli(day),                                    StandardDateFormat.parseInstantUTC("2016-06-27"));
+        assertEquals(Instant.ofEpochMilli(day + 2000),                             StandardDateFormat.parseInstantUTC("2016-06-27 00:00:02 UTC"));
     }
 
     /**

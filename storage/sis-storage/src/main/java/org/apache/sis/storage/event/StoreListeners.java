@@ -29,8 +29,9 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.StoreResource;
+import org.apache.sis.internal.storage.StoreUtilities;
+import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
@@ -52,8 +53,9 @@ import org.apache.sis.storage.Resource;
  * When a warning is emitted, the default behavior is:
  *
  * <ul>
- *   <li>Notify all listeners registered for {@link WarningEvent} type
- *       in this {@code StoreListeners} and in the parent managers.</li>
+ *   <li>Notify all listeners that are registered for a given {@link WarningEvent} type in this {@code StoreListeners}
+ *       and in the parent resource or data store. Each listener will be notified only once, even if the same listener
+ *       is registered in two or more places.</li>
  *   <li>If previous step found no listener registered for {@code WarningEvent},
  *       then log the warning in the first logger found in following choices:
  *     <ol>
@@ -78,12 +80,14 @@ import org.apache.sis.storage.Resource;
 public class StoreListeners implements Localized {
     /**
      * Parent manager to notify in addition to this manager.
+     * This is used when a data store is created for reading components of a larger data store.
      */
     private final StoreListeners parent;
 
     /**
      * The declared source of events. This is not necessarily the real source,
      * but this is the source that the implementer wants to declare as public API.
+     * Never {@code null} but may be {@code this}.
      */
     private final Resource source;
 
@@ -203,7 +207,11 @@ public class StoreListeners implements Localized {
 
     /**
      * Creates a new instance with the given parent and initially no listener.
-     * The parent is typically the listeners of the {@link DataStore} that created a resource.
+     * The parent is typically the {@linkplain DataStore#listeners listeners}
+     * of the {@link DataStore} that created a resource.
+     * When an event is {@linkplain #fire fired}, listeners registered in the parent
+     * will be notified as well as listeners registered in this {@code StoreListeners}.
+     * Each listener will be notified only once even if it has been registered in two places.
      *
      * @param parent  the manager to notify in addition to this manager, or {@code null} if none.
      * @param source  the source of events. Can not be null.
@@ -214,7 +222,7 @@ public class StoreListeners implements Localized {
          * This is used as a convenience by AbstractResource internal class. We need this hack
          * because subclasses can not reference `this` before super-class constructor completed.
          */
-        if (source == null && this instanceof Resource) {
+        if (source == null && this instanceof AbstractResource) {
             source = (Resource) this;
         } else {
             ArgumentChecks.ensureNonNull("source", source);
@@ -226,7 +234,7 @@ public class StoreListeners implements Localized {
     /**
      * Returns the source of events. This value is specified at construction time.
      *
-     * @return the source of events.
+     * @return the source of events. Never {@code null} but may be {@code this}.
      */
     public Resource getSource() {
         return source;
@@ -315,8 +323,12 @@ public class StoreListeners implements Localized {
      * </ul>
      *
      * @return the logger where to send the warnings when there is no other destination.
+     *
+     * @see DataStoreProvider#getLogger()
+     *
+     * @since 1.1
      */
-    private Logger getLogger() {
+    public Logger getLogger() {
         Resource src = source;
         final DataStore ds = getDataStore(this);
         if (ds != null) {
@@ -423,7 +435,7 @@ public class StoreListeners implements Localized {
                 }
             }
         } catch (ClassNotFoundException | SecurityException e) {
-            Logging.ignorableException(Logging.getLogger(Modules.STORAGE), StoreListeners.class, "warning", e);
+            Logging.ignorableException(StoreUtilities.LOGGER, StoreListeners.class, "warning", e);
         }
         warning(record);
     }

@@ -21,7 +21,8 @@
 <gco:Multiplicity
     xmlns:gco          = "http://standards.iso.org/iso/19115/-3/gco/1.0"
     xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/gco/1.0  http://standards.iso.org/iso/19115/-3/gco/1.0/gco.xsd">
+    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/gco/1.0
+                          https://standards.iso.org/iso/19115/-3/gco/1.0/gco.xsd">
 
   <!--
     We provide this file for completion and comparison purposes, but the tests do not use it

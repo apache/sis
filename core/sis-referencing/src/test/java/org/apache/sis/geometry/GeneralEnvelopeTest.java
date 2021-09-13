@@ -16,19 +16,23 @@
  */
 package org.apache.sis.geometry;
 
+import java.time.Instant;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.apache.sis.measure.Range;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
 import static org.opengis.test.Validators.*;
 import static org.apache.sis.test.ReferencingAssert.*;
-import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
+import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
+import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84_LATITUDE_FIRST;
 
 
 /**
@@ -39,7 +43,7 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -98,7 +102,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
             final double xLower, final double ymin, final double xUpper, final double ymax)
     {
         final double xmin, xmax;
-        if (MathFunctions.isNegative(xUpper - xLower)) {                // Check for anti-meridian spanning.
+        if (MathFunctions.isNegative(xUpper - xLower)) {                // Check for anti-meridian crossing.
             xmin = -180;
             xmax = +180;
         } else {
@@ -484,7 +488,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link GeneralEnvelope#simplify()}.
+     * Tests the {@link GeneralEnvelope#simplify()} method.
      */
     @Test
     public void testSimplify() {
@@ -493,16 +497,30 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         assertFalse(e.simplify());
         assertEnvelopeEquals(e, -100, -10, +100, +10);
 
-        // Anti-meridian spanning: should substitute [-180 … 180]°
+        // Anti-meridian crossing: should substitute [-180 … 180]°
         e = create(30, -10, -60, 10);
         assertTrue(e.simplify());
         assertEnvelopeEquals(e, -180, -10, 180, 10);
 
-        // Anti-meridian spanning using positive and negative zero.
+        // Anti-meridian crossing using positive and negative zero.
         e = create(0.0, -10, -0.0, 10);
         assertTrue(e.simplify());
         assertEnvelopeEquals(e, -180, -10, 180, 10);
         verifyInvariants(e);
+    }
+
+    /**
+     * Tests the {@link GeneralEnvelope#wraparound(WraparoundMethod)} method.
+     */
+    @Test
+    public void tesWraparound() {
+        GeneralEnvelope e = create(30, -10, -60, 10);
+        assertTrue(e.wraparound(WraparoundMethod.CONTIGUOUS));
+        assertEnvelopeEquals(e, 30, -10, 300, 10);
+
+        e = create(30, -10, -15, 10);
+        assertTrue(e.wraparound(WraparoundMethod.CONTIGUOUS));
+        assertEnvelopeEquals(e, -330, -10, -15, 10);
     }
 
     /**
@@ -626,6 +644,40 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(new double[] {4, 5}, new double[] {8, 7});
         envelope.translate(2, -4);
         assertEnvelopeEquals(envelope, 6, 1, 10, 3);
+    }
+
+    /**
+     * Tests {@link GeneralEnvelope#horizontal()}.
+     *
+     * @since 1.1
+     */
+    @Test
+    public void testHorizontal() {
+        GeneralEnvelope envelope = new GeneralEnvelope(new double[] {4, 12, 5, -8}, new double[] {8, 19, 7, -3});
+        envelope.setCoordinateReferenceSystem(HardCodedCRS.GEOID_4D_MIXED_ORDER);
+        envelope = envelope.horizontal();
+        assertEnvelopeEquals(envelope, 5, -8, 7, -3);
+        assertSame(WGS84_LATITUDE_FIRST, envelope.getCoordinateReferenceSystem());
+    }
+
+    /**
+     * Tests {@link GeneralEnvelope#getTimeRange()} and {@link GeneralEnvelope#setTimeRange(Instant, Instant)}.
+     * The temporal coordinates in this test are days elapsed since November 17, 1858 at 00:00 UTC.
+     */
+    @Test
+    public void testTimeRange() {
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_WITH_TIME);
+        envelope.setRange(0, -20, 25);
+        envelope.setRange(1, -30, 12);
+        envelope.setRange(2, 58840, 59000.75);
+        final Range<Instant> range = envelope.getTimeRange().get();
+        assertEquals(Instant.parse("2019-12-23T00:00:00Z"), range.getMinValue());
+        assertEquals(Instant.parse("2020-05-31T18:00:00Z"), range.getMaxValue());
+
+        envelope.setTimeRange(Instant.parse("2015-04-10T06:00:00Z"),
+                              Instant.parse("2018-12-29T12:00:00Z"));
+        assertArrayEquals(new double[] {-20, -30, 57122.25}, envelope.getLowerCorner().getCoordinate(), STRICT);
+        assertArrayEquals(new double[] { 25,  12, 58481.50}, envelope.getUpperCorner().getCoordinate(), STRICT);
     }
 
     /**

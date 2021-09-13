@@ -18,16 +18,21 @@ package org.apache.sis.image;
 
 
 /**
+ * Specifies the order in which attribute value records are assigned to grid points.
  * Placeholder for {@code org.opengis.coverage.grid.SequenceType}.
+ *
+ * <div class="note"><b>Upcoming API change:</b>
+ * this class may move to GeoAPI in a future version. If that move happens,
+ * the {@code org.apache.sis.image} package name would become {@code org.opengis.coverage}.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- *
- * @see <a href="http://docs.opengeospatial.org/is/09-026r2/09-026r2.html">OGC® Filter Encoding 2.0 Encoding Standard</a>
- *
- * @since 1.1
+ * @since   1.1
  * @module
  */
-enum SequenceType {
+public enum SequenceType {
+    /**
+     * Iterate consecutive grid points along complete grid lines.
+     */
     LINEAR
 }

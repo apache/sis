@@ -58,7 +58,7 @@ import org.apache.sis.math.DecimalFunctions;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  *
- * @see <a href="http://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
+ * @see <a href="https://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
  *
  * @since 0.4
  * @module

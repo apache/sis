@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -54,11 +53,16 @@ import org.apache.sis.util.Debug;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
 final class Relation extends TableReference {
+    /**
+     * An empty array used when there is no relations.
+     */
+    static final Relation[] EMPTY = new Relation[0];
+
     /**
      * Whether another table is <em>using</em> or is <em>used by</em> the table containing the {@link Relation}.
      */
@@ -137,20 +141,22 @@ final class Relation extends TableReference {
 //  private final Table owner;
 
     /**
-     * The columns of the other table that constitute a primary or foreigner key. Keys are the columns of the
-     * other table and values are columns of the table containing this {@code Relation}.
+     * The columns of the other table that constitute a primary or foreigner key. Keys are the columns
+     * of the other table and values are columns of the table containing this {@code Relation}.
      */
     private final Map<String,String> columns;
 
     /**
      * The other table identified by {@link #catalog}, {@link #schema} and {@link #table} names.
      * This is set during {@link Table} construction and should not be modified after that point.
+     *
+     * @see #getSearchTable()
      */
     private Table searchTable;
 
     /**
      * The name of the feature property where the association to {@link #searchTable} table will be stored.
-     * Shall be set exactly once.
+     * If the foreigner key uses exactly one column, then this is the name of that column.
      */
     String propertyName;
 
@@ -180,8 +186,14 @@ final class Relation extends TableReference {
      * <p>After construction, the {@code ResultSet} will be positioned on the first row of the next relation,
      * or be closed if the last row has been reached. This constructor always moves the given result set by at
      * least one row, unless an exception occurs.</p>
+     *
+     * @param  analyzer  the object which is analyzing the database schema for inferring feature types.
+     * @param  dir       whether another table is using or is used by the table containing this relation.
+     * @param  reflect   metadata about foreigner keys, with cursor already on the first row.
      */
-    Relation(final Analyzer analyzer, final Direction dir, final ResultSet reflect) throws SQLException, DataStoreContentException {
+    Relation(final Analyzer analyzer, final Direction dir, final ResultSet reflect)
+            throws SQLException, DataStoreContentException
+    {
         super(analyzer.getUniqueString(reflect, dir.catalog),
               analyzer.getUniqueString(reflect, dir.schema),
               analyzer.getUniqueString(reflect, dir.table),
@@ -191,7 +203,7 @@ final class Relation extends TableReference {
         do {
             final String column = analyzer.getUniqueString(reflect, dir.column);
             if (m.put(column, analyzer.getUniqueString(reflect, dir.containerColumn)) != null) {
-                throw new DataStoreContentException(Resources.forLocale(analyzer.locale)
+                throw new DataStoreContentException(analyzer.resources()
                         .getString(Resources.Keys.DuplicatedColumn_1, column));
             }
             if (!reflect.next()) {
@@ -203,6 +215,24 @@ final class Relation extends TableReference {
                  Objects.equals(catalog, reflect.getString(dir.catalog)));
 
         columns = CollectionsExt.compact(m);
+        /*
+         * If the foreigner key uses exactly one column, we can use the name of that column.
+         * Otherwise we do not know which column has the most appropriate name (often there is none),
+         * so we fallback on name of the foreigner key constraint if it exists.
+         */
+        final Collection<String> names;
+        switch (dir) {
+            case IMPORT: names = columns.values(); break;
+            case EXPORT: names = columns.keySet(); break;
+            default:     throw new AssertionError(dir);
+        }
+        propertyName = CollectionsExt.singletonOrNull(names);
+        if (propertyName == null) {
+            propertyName = freeText;                        // Name of foreigner key constraint.
+            if (propertyName == null) {
+                propertyName = table;                       // Table name in last resort.
+            }
+        }
     }
 
     /**
@@ -224,16 +254,25 @@ final class Relation extends TableReference {
     }
 
     /**
+     * Returns the name of the feature property where the association to the search table will be stored.
+     * If the foreigner key uses exactly one column, then this is the name of that column.
+     */
+    final String getPropertyName() {
+        return propertyName;
+    }
+
+    /**
      * Invoked after construction for setting the table identified by {@link #catalog}, {@link #schema}
      * and {@link #table} names. Shall be invoked exactly once.
      *
-     * @param  search       the other table containing the primary key ({@link Direction#IMPORT})
-     *                      or the foreigner key ({@link Direction#EXPORT}) of this relation.
-     * @param  primaryKeys  the primary key columns of the relation. May be the primary key columns of this table
-     *                      or the primary key columns of the other table, depending on {@link Direction}.
-     * @param  direction    {@code this.direction} (see comment in field declarations).
+     * @param  analyzer    the object which is analyzing the database schema for inferring feature types.
+     * @param  search      the other table containing the primary key ({@link Direction#IMPORT})
+     *                     or the foreigner key ({@link Direction#EXPORT}) of this relation.
+     * @param  primaryKey  the primary key columns of the relation. May be the primary key columns of this table
+     *                     or the primary key columns of the other table, depending on {@link Direction}.
+     * @param  direction   {@code this.direction} (see comment in field declarations).
      */
-    final void setSearchTable(final Analyzer analyzer, final Table search, final String[] primaryKeys,
+    final void setSearchTable(final Analyzer analyzer, final Table search, final PrimaryKey primaryKey,
                               final Direction direction) throws DataStoreException
     {
         /*
@@ -255,7 +294,8 @@ final class Relation extends TableReference {
             case EXPORT: referenced = columns.values(); break;
             default: throw new AssertionError(direction);
         }
-        useFullKey = referenced.containsAll(Arrays.asList(primaryKeys));
+        final List<String> pkColumns = primaryKey.getColumns();
+        useFullKey = referenced.containsAll(pkColumns);
         if (useFullKey && columns.size() >= 2) {
             /*
              * Sort the columns in the order expected by the primary key.  This is required because we need
@@ -265,7 +305,7 @@ final class Relation extends TableReference {
              */
             final Map<String,String> copy = new HashMap<>(columns);
             columns.clear();
-            for (String key : primaryKeys) {
+            for (String key : pkColumns) {
                 String value = key;
                 switch (direction) {
                     case IMPORT: {                                      // Primary keys are 'columns' keys.
@@ -290,9 +330,8 @@ final class Relation extends TableReference {
                 }
             }
             if (!copy.isEmpty()) {
-                throw new DataStoreContentException(Resources.forLocale(analyzer.locale)
-                            .getString(Resources.Keys.MalformedForeignerKey_2, freeText,
-                                       CollectionsExt.first(copy.keySet())));
+                throw new DataStoreContentException(analyzer.resources()
+                        .getString(Resources.Keys.MalformedForeignerKey_2, freeText, CollectionsExt.first(copy.keySet())));
             }
         }
     }

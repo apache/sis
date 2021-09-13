@@ -416,7 +416,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *   <li>Optionally followed by a {@code TemporalCRS}.</li>
      * </ul>
      *
-     * This method verifies the above criterion with the following flexibilities:
+     * This method verifies the above criteria with the following flexibilities:
      *
      * <ul>
      *   <li>Accepts three-dimensional {@code GeodeticCRS} followed by a {@code TemporalCRS}.</li>

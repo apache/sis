@@ -16,8 +16,10 @@
  */
 package org.apache.sis.geometry;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Collections;
+import org.apache.sis.measure.Range;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
@@ -45,7 +47,7 @@ import static org.opengis.test.Validators.validate;
  * This class inherits the test methods defined in {@link TransformTestCase}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -70,7 +72,7 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
      * This transformation can not handle poles.
      *
      * <p>This method wraps the math transform into an opaque object for hiding the fact that the given
-     * transform implement the {@link MathTransform2D} interface. The intent is to disable optimization
+     * transform implements the {@link MathTransform2D} interface. The intent is to disable optimization
      * paths (if any), in order to test the generic path.</p>
      */
     @Override
@@ -284,5 +286,20 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
         env = Envelopes.compound(element0, element1);
         assertEnvelopeEquals(expected, env);
         assertNull("crs.components", env.getCoordinateReferenceSystem());
+    }
+
+    /**
+     * Tests {@link Envelopes#toTimeRange(Envelope)}.
+     *
+     * @see GeneralEnvelopeTest#testTimeRange()
+     */
+    @Test
+    public void testToTimeRange() {
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_WITH_TIME);
+        envelope.setToNaN();
+        envelope.setRange(2, 58840, 59000.75);
+        final Range<Instant> range = Envelopes.toTimeRange(envelope).get();
+        assertEquals(Instant.parse("2019-12-23T00:00:00Z"), range.getMinValue());
+        assertEquals(Instant.parse("2020-05-31T18:00:00Z"), range.getMaxValue());
     }
 }

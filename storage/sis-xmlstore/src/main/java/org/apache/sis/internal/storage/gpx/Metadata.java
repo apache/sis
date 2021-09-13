@@ -54,7 +54,6 @@ import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.opengis.metadata.citation.ResponsibleParty;
 
 
@@ -83,7 +82,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -258,11 +257,8 @@ public final class Metadata extends SimpleMetadata {
             /*
              * identificationInfo.extent.geographicElement   →   bounds
              */
-            if (bounds == null && id instanceof AbstractIdentification) {
-                for (final Extent e : ((AbstractIdentification) id).getExtents()) {
-                    bounds = Bounds.castOrCopy(Extents.getGeographicBoundingBox(e));
-                    if (bounds != null) break;
-                }
+            if (bounds == null) {
+                bounds = Bounds.castOrCopy(Extents.getGeographicBoundingBox(md));
             }
         }
     }

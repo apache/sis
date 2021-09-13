@@ -44,7 +44,7 @@ import static org.apache.sis.test.TestUtilities.date;
  * for reading netCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -102,6 +102,7 @@ public final strictfp class MetadataReaderTest extends TestCase {
         final ContentVerifier verifier = new ContentVerifier();
         verifier.addPropertyToIgnore(Metadata.class, "metadataStandard");
         verifier.addPropertyToIgnore(Metadata.class, "referenceSystemInfo");
+        verifier.addPropertyToIgnore(Metadata.class, "alternateTitle");
         verifier.addMetadataToVerify(actual);
         verifier.assertMetadataEquals(
             // Hard-coded

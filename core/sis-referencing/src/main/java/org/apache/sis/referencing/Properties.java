@@ -27,8 +27,10 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.apache.sis.internal.util.AbstractMap;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.util.Deprecable;
 
 
@@ -40,8 +42,8 @@ import org.apache.sis.util.Deprecable;
  * <p>This map is read-only. Whether it is serializable, immutable or thread-safe depends if the
  * underlying {@code IdentifiedObject} instance is itself serializable, immutable or thread-safe.</p>
  *
- * @author  Martin Desruisseaux (IRD)
- * @version 0.7
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -49,23 +51,24 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 6391635771714311314L;
+    private static final long serialVersionUID = 836068852472172370L;
 
     /**
      * The keys to search for. The index of each element in this array must matches the index searched by
      * {@link #getAt(int)}. In other words, this array performs the reverse mapping of {@link #INDICES}.
      */
     private static final String[] KEYS = {
-        /*[0]*/ IdentifiedObject        .NAME_KEY,
-        /*[1]*/ IdentifiedObject        .IDENTIFIERS_KEY,
-        /*[2]*/ IdentifiedObject        .ALIAS_KEY,
-        /*[3]*/ IdentifiedObject        .REMARKS_KEY,
-        /*[4]*/ CoordinateOperation     .SCOPE_KEY,                     // same in Datum and ReferenceSystem
-        /*[5]*/ CoordinateOperation     .DOMAIN_OF_VALIDITY_KEY,        // same in Datum and ReferenceSystem
-        /*[6]*/ CoordinateOperation     .OPERATION_VERSION_KEY,
-        /*[7]*/ CoordinateOperation     .COORDINATE_OPERATION_ACCURACY_KEY,
-        /*[8]*/ OperationMethod         .FORMULA_KEY,
-        /*[9]*/ AbstractIdentifiedObject.DEPRECATED_KEY
+        /*[ 0]*/ IdentifiedObject        .NAME_KEY,
+        /*[ 1]*/ IdentifiedObject        .IDENTIFIERS_KEY,
+        /*[ 2]*/ IdentifiedObject        .ALIAS_KEY,
+        /*[ 3]*/ IdentifiedObject        .REMARKS_KEY,
+        /*[ 4]*/ CoordinateOperation     .SCOPE_KEY,                    // same in Datum and ReferenceSystem
+        /*[ 5]*/ CoordinateOperation     .DOMAIN_OF_VALIDITY_KEY,       // same in Datum and ReferenceSystem
+        /*[ 6]*/ CoordinateOperation     .OPERATION_VERSION_KEY,
+        /*[ 7]*/ CoordinateOperation     .COORDINATE_OPERATION_ACCURACY_KEY,
+        /*[ 8]*/ OperationMethod         .FORMULA_KEY,
+        /*[ 9]*/ CoordinateOperations    .PARAMETERS_KEY,
+        /*[10]*/ AbstractIdentifiedObject.DEPRECATED_KEY
 
         /*
          * The current implementation does not look for minimum and maximum values in ParameterDescriptor
@@ -191,7 +194,13 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                     }
                     break;
                 }
-                case 9: {   // DEPRECATED_KEY
+                case 9: {   // PARAMETERS_KEY
+                    if (object instanceof SingleOperation) {
+                        return ((SingleOperation) object).getParameterValues();
+                    }
+                    break;
+                }
+                case 10: {  // DEPRECATED_KEY
                     if (object instanceof Deprecable) {
                         return ((Deprecable) object).isDeprecated();
                     }

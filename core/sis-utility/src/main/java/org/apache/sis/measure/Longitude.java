@@ -16,9 +16,9 @@
  */
 package org.apache.sis.measure;
 
-import static org.apache.sis.measure.Angle.valueOf;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.math.MathFunctions;
 
 
 /**
@@ -35,7 +35,7 @@ import org.opengis.referencing.cs.AxisDirection;
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see Latitude
  * @see AngleFormat
@@ -151,7 +151,7 @@ public final class Longitude extends Angle {
     public static double normalize(double λ) {
         /*
          * Following should be simplified as only one branch by javac since
-         * the values used in the 'if' statement are compile-time constants.
+         * the values used in the `if` statement are compile-time constants.
          * For verifying: javap -c org.apache.sis.measure.Longitude
          */
         if (MIN_VALUE == -MAX_VALUE) {
@@ -162,5 +162,22 @@ public final class Longitude extends Angle {
             // Normally excluded from compiled file, but defined in case someone modifies MIN/MAX_VALUE.
             return λ - Math.floor((λ - MIN_VALUE) / (MAX_VALUE - MIN_VALUE)) * (MAX_VALUE - MIN_VALUE);
         }
+    }
+
+    /**
+     * Returns {@code true} if the given longitude range crosses the anti-meridian in a way expressed by
+     * <var>west</var> &gt; <var>east</var>. For the purpose of this method, +0 is considered "greater" than −0.
+     * See {@link org.apache.sis.geometry.GeneralEnvelope} for a wraparound illustration.
+     *
+     * @param  west  the west bound longitude. This is the minimum value when there is no wraparound.
+     * @param  east  the east bound longitude. This is the maximum value when there is no wraparound.
+     * @return {@code true} if <var>west</var> &gt; <var>east</var> or if the arguments are (+0, −0),
+     *         {@code false} otherwise (including when at least one argument is NaN).
+     *
+     * @since 1.1
+     */
+    public static boolean isWraparound(final double west, final double east) {
+        return (west > east) || (MathFunctions.isPositiveZero(west) &&
+                                 MathFunctions.isNegativeZero(east));
     }
 }

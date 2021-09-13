@@ -35,7 +35,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -66,6 +66,19 @@ public final strictfp class MathFunctionsTest extends TestCase {
     public void testConstants() {
         assertEquals(StrictMath.sqrt (2), SQRT_2,  STRICT);
         assertEquals(StrictMath.log10(2), LOG10_2, STRICT);
+    }
+
+    /**
+     * Tests {@link MathFunctions#average(long, long)}.
+     */
+    @Test
+    public void testAverage() {
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        for (int i=0; i<100; i++) {
+            final long x = random.nextInt(200000) - 100000;
+            final long y = random.nextInt(200000) - 100000;
+            assertEquals((x + y) * 0.5, average(x, y), STRICT);
+        }
     }
 
     /**

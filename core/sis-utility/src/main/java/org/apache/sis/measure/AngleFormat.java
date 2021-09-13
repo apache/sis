@@ -117,7 +117,7 @@ import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
  * </div>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see Angle
  * @see Latitude
@@ -790,6 +790,21 @@ public class AngleFormat extends Format implements Localized {
     }
 
     /**
+     * Returns the precision of angles formatted by current pattern, in decimal degrees.
+     * For example if the angle pattern is "D°MM′", then this method returns 1/60.
+     *
+     * @return precision in decimal degrees of angles formatted by current pattern.
+     *
+     * @since 1.1
+     */
+    public double getPrecision() {
+        double precision = pow10(-fractionFieldWidth);
+             if (secondsFieldWidth != 0) precision /= 3600;
+        else if (minutesFieldWidth != 0) precision /=   60;
+        return precision;
+    }
+
+    /**
      * Adjusts the number of fraction digits, and optionally the visible fields, for the given precision.
      * If the {@code allowFieldChanges} argument is {@code false}, then this method adjusts only the
      * {@linkplain #setMinimumFractionDigits(int) minimum} and {@linkplain #setMinimumFractionDigits(int)
@@ -801,17 +816,18 @@ public class AngleFormat extends Format implements Localized {
      * <table class="sis">
      *   <caption>Selected fields for given precision</caption>
      *   <tr><th>Precision</th> <th>Fields</th></tr>
-     *   <tr><td>≧ 1°</td>      <td>D°</td></tr>
-     *   <tr><td>≧ ⅒°</td>      <td>D.d°</td></tr>
-     *   <tr><td>≧ 1′</td>      <td>D°MM′</td></tr>
-     *   <tr><td>≧ ⅒′</td>      <td>D°MM.m′</td></tr>
-     *   <tr><td>≧ 1″</td>      <td>D°MM′SS″</td></tr>
-     *   <tr><td>≧ ⅒″</td>      <td>D°MM′SS.s″</td></tr>
+     *   <tr><td>≥ 1°</td>      <td>D°</td></tr>
+     *   <tr><td>≥ ⅒°</td>      <td>D.d°</td></tr>
+     *   <tr><td>≥ 1′</td>      <td>D°MM′</td></tr>
+     *   <tr><td>≥ ⅒′</td>      <td>D°MM.m′</td></tr>
+     *   <tr><td>≥ 1″</td>      <td>D°MM′SS″</td></tr>
+     *   <tr><td>≥ ⅒″</td>      <td>D°MM′SS.s″</td></tr>
      *   <tr><td>other</td>     <td>D°MM′SS.ss…″</td></tr>
      * </table>
      *
      * @param  resolution  the desired angle resolution, in decimal degrees.
      * @param  allowFieldChanges  whether this method is allowed to change the set of fields (degrees, minutes or seconds).
+     * @throws IllegalArgumentException if the given resolution is NaN or infinite.
      *
      * @since 1.0
      */
@@ -884,7 +900,7 @@ public class AngleFormat extends Format implements Localized {
         if (!useDecimalSeparator) {
             throw new IllegalStateException(Errors.format(Errors.Keys.RequireDecimalSeparator));
         }
-        maximumTotalWidth = 0; // Means "no restriction".
+        maximumTotalWidth     = 0;                          // Means "no restriction".
         minimumFractionDigits = toByte(count);
         if (minimumFractionDigits > fractionFieldWidth) {
             fractionFieldWidth = minimumFractionDigits;
@@ -917,7 +933,7 @@ public class AngleFormat extends Format implements Localized {
         if (!useDecimalSeparator) {
             throw new IllegalStateException(Errors.format(Errors.Keys.RequireDecimalSeparator));
         }
-        maximumTotalWidth = 0; // Means "no restriction".
+        maximumTotalWidth  = 0;                             // Means "no restriction".
         fractionFieldWidth = toByte(count);
         if (fractionFieldWidth < minimumFractionDigits) {
             minimumFractionDigits = fractionFieldWidth;
@@ -1515,7 +1531,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                 /* ------------------------------------------
                  * STRING ANALYSIS FOLLOWING PRESUMED DEGREES
                  * ------------------------------------------
-                 * Found the seconds suffix instead then the degrees suffix. Move 'degrees'
+                 * Found the seconds suffix instead than the degrees suffix. Move 'degrees'
                  * value to 'seconds' and stop parsing, since seconds are the last field.
                  */
                 case SECONDS_FIELD: {
@@ -1569,7 +1585,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                         /* ------------------------------------------
                          * STRING ANALYSIS FOLLOWING PRESUMED MINUTES
                          * ------------------------------------------
-                         * Found the seconds suffix instead then the minutes suffix. Move 'minutes'
+                         * Found the seconds suffix instead than the minutes suffix. Move 'minutes'
                          * value to 'seconds' and stop parsing, since seconds are the last field.
                          */
                         case SECONDS_FIELD: {

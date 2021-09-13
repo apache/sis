@@ -30,7 +30,7 @@ import org.apache.sis.test.DependsOn;
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -40,7 +40,6 @@ public final strictfp class VariableInfoTest extends VariableTest {
      * Creates a new test.
      */
     public VariableInfoTest() {
-        isRuntimeAnAxis = false;
     }
 
     /**

@@ -162,7 +162,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
      * Sets a new number of occurrence of feature instances for this feature types.
      *
      * @param  newValue  the new number of occurrence.
-     * @throws IllegalArgumentException if the given value is negative.
+     * @throws IllegalArgumentException if the given value is zero or negative.
      */
     public void setFeatureInstanceCount(final Integer newValue) {
         checkWritePermission(featureInstanceCount);

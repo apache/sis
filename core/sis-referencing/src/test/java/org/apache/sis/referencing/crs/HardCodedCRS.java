@@ -22,6 +22,7 @@ import java.util.Collections;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
+import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
@@ -33,9 +34,14 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 
 /**
  * Collection of coordinate reference systems for testing purpose.
+ * This class defines geographic, vertical, temporal and engineering CRS, but no projected CRS.
+ * For projected CRS, see {@link org.apache.sis.referencing.operation.HardCodedConversions}.
+ * Except specified otherwise, all geographic CRS have (longitude, latitude) axis order.
+ * This is the opposite of traditional axis order, but it matches the order used internally
+ * by Apache SIS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -48,7 +54,7 @@ public final strictfp class HardCodedCRS {
      *
      * <p>This CRS is equivalent to {@code EPSG:4326}.</p>
      */
-    public static final DefaultGeographicCRS WGS84_φλ = new DefaultGeographicCRS(
+    public static final DefaultGeographicCRS WGS84_LATITUDE_FIRST = new DefaultGeographicCRS(
             properties("WGS 84 (φ,λ)", "4326"), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_φλ);
 
     /**
@@ -74,6 +80,41 @@ public final strictfp class HardCodedCRS {
      */
     public static final DefaultGeographicCRS WGS84_3D = new DefaultGeographicCRS(
             properties("WGS 84 (3D)", null), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_3D);
+
+    /**
+     * A four-dimensional geographic coordinate reference system using the WGS84 datum.
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>, <var>height</var>, <var>time</var>)
+     * with the 3 first dimensions specified by {@link #WGS84_3D} and the fourth dimension specified
+     * by {@link #TIME}.
+     *
+     * @see #WGS84_4D_TIME_FIRST
+     */
+    public static final DefaultCompoundCRS WGS84_4D;
+
+    /**
+     * A (λ,φ,t) CRS where <var>t</var> is the {@link #TIME}.
+     *
+     * @since 1.1
+     */
+    public static final DefaultCompoundCRS WGS84_WITH_TIME;
+
+    /**
+     * A (λ,φ,t) CRS where <var>t</var> is the {@link #DAY_OF_YEAR}.
+     * This CRS has two wraparound axes: <var>λ</var> and <var>t</var>.
+     *
+     * @since 1.1
+     */
+    public static final DefaultCompoundCRS WGS84_WITH_CYCLIC_TIME;
+
+    /**
+     * A four-dimensional geographic coordinate reference system with time as the first axis.
+     * This CRS uses (<var>time</var>, <var>longitude</var>, <var>latitude</var>, <var>height</var>)
+     * with the first dimension specified by {@link #TIME} and the 3 last dimensions specified by {@link #WGS84_3D}.
+     * Such axis order is unusual but we use it as a way to verify that SIS is robust to arbitrary axis order.
+     *
+     * @since 1.1
+     */
+    public static final DefaultCompoundCRS WGS84_4D_TIME_FIRST;
 
     /**
      * A two-dimensional geographic coordinate reference system using the Paris prime meridian.
@@ -141,6 +182,21 @@ public final strictfp class HardCodedCRS {
             HardCodedDatum.JGD2000, HardCodedCS.GEODETIC_3D);
 
     /**
+     * A two-dimensional geographic coordinate reference system using an unknown datum based on the GRS 1980 ellipsoid.
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>) coordinates with longitude values
+     * increasing towards the East and latitude values increasing towards the North.
+     * The angular units for the prime meridian and the axes are degrees.
+     *
+     * <p>This CRS is almost identical to {@link #WGS84}.
+     * It can be used for testing tiny differences between two datum.</p>
+     *
+     * @since 1.1
+     */
+    public static final DefaultGeographicCRS GRS80 = new DefaultGeographicCRS(
+            Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, "Unknown datum based on GRS 1980 ellipsoid"),
+            GeodeticDatumMock.GRS80, HardCodedCS.GEODETIC_2D);
+
+    /**
      * A two-dimensional geographic coordinate reference system using a spherical datum.
      * This CRS uses (<var>longitude</var>, <var>latitude</var>) coordinates with longitude values
      * increasing towards the East and latitude values increasing towards the North.
@@ -155,7 +211,7 @@ public final strictfp class HardCodedCRS {
      * values increasing towards the North and longitude values increasing towards the East.
      * The angular units are decimal degrees and the prime meridian is Greenwich.
      */
-    public static final DefaultGeographicCRS SPHERE_φλ = new DefaultGeographicCRS(
+    public static final DefaultGeographicCRS SPHERE_LATITUDE_FIRST = new DefaultGeographicCRS(
             getProperties(HardCodedDatum.SPHERE), HardCodedDatum.SPHERE, HardCodedCS.GEODETIC_φλ);
 
     /**
@@ -231,6 +287,26 @@ public final strictfp class HardCodedCRS {
     public static final DefaultTemporalCRS TIME = new DefaultTemporalCRS(
             getProperties(HardCodedCS.DAYS), HardCodedDatum.MODIFIED_JULIAN, HardCodedCS.DAYS);
 
+    static {
+        // Declared here because otherwise it would be illegal forward references.
+        WGS84_4D = new DefaultCompoundCRS(properties("WGS 84 (3D) + time", null), WGS84_3D, TIME);
+        WGS84_4D_TIME_FIRST = new DefaultCompoundCRS(properties("time + WGS 84 (3D)", null), TIME, WGS84_3D);
+    }
+
+    /**
+     * A parametric CRS for day of year, without any particular year.
+     * The axis is cyclic: after day 365 we restart at day 1.
+     *
+     * @since 1.1
+     */
+    public static final DefaultParametricCRS DAY_OF_YEAR = new DefaultParametricCRS(
+            getProperties(HardCodedCS.DAY_OF_YEAR), HardCodedDatum.DAY_OF_YEAR, HardCodedCS.DAY_OF_YEAR);
+
+    static {
+        WGS84_WITH_TIME = new DefaultCompoundCRS(properties("WGS 84 + time", null), WGS84, TIME);
+        WGS84_WITH_CYCLIC_TIME = new DefaultCompoundCRS(properties("WGS 84 + day of year", null), WGS84, DAY_OF_YEAR);
+    }
+
     /**
      * A (λ,φ,H) CRS where <var>H</var> is the {@link #GRAVITY_RELATED_HEIGHT}.
      * This constant uses the "geoid" term as an approximation for the gravity related height.
@@ -244,6 +320,15 @@ public final strictfp class HardCodedCRS {
      */
     public static final DefaultCompoundCRS GEOID_4D = new DefaultCompoundCRS(
             properties("WGS 84 + height + time", null), WGS84, GRAVITY_RELATED_HEIGHT, TIME);
+
+    /**
+     * A (H,t,φ,λ) CRS where <var>H</var> is the {@link #GRAVITY_RELATED_HEIGHT}.
+     * Such axis order is unusual but we use it as a way to verify that SIS is robust to arbitrary axis order.
+     *
+     * @since 1.1
+     */
+    public static final DefaultCompoundCRS GEOID_4D_MIXED_ORDER = new DefaultCompoundCRS(
+            properties("height + time + WGS 84 (φ,λ)", null), GRAVITY_RELATED_HEIGHT, TIME, WGS84_LATITUDE_FIRST);
 
     /**
      * A (λ,φ,H,t) CRS as a nested compound CRS.

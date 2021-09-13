@@ -32,7 +32,7 @@ import org.apache.sis.util.ArraysExt;
  * {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used in such case.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-176">SIS-176</a>
  *
@@ -72,6 +72,28 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
     TranslationTransform(final double[] offsets) {
         this.offsets = offsets.clone();
         this.errors  = null;
+    }
+
+    /**
+     * Creates a transform as the inverse of the given transform.
+     */
+    private TranslationTransform(final TranslationTransform other) {
+        offsets = negate(other.offsets);
+        errors  = negate(other.errors);
+        inverse = other;
+    }
+
+    /**
+     * Returns a new array with negative values of given array (can be {@code null}).
+     */
+    private static double[] negate(double[] array) {
+        if (array != null) {
+            array = array.clone();
+            for (int i=0; i<array.length; i++) {
+                array[i] = -array[i];
+            }
+        }
+        return array;
     }
 
     /**
@@ -293,6 +315,14 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
     @Override
     public Matrix derivative(final DirectPosition point) {
         return Matrices.createIdentity(offsets.length);
+    }
+
+    /**
+     * Invoked by {@link #inverse()} the first time that the inverse transform needs to be computed.
+     */
+    @Override
+    final LinearTransform createInverse() {
+        return new TranslationTransform(this);
     }
 
     /**

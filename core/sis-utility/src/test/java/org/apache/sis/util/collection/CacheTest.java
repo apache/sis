@@ -246,7 +246,7 @@ public final strictfp class CacheTest extends TestCase {
                     }
                     if (expected == value) {                            // Identity comparison (not value comparison).
                         addCount++;
-                        yield();                                        // Gives a chance to other threads.
+                        Thread.yield();                                 // Gives a chance to other threads.
                     }
                 }
             }

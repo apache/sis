@@ -53,6 +53,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.xml.IdentifiedObject;
 
 // Branch-dependent imports
@@ -112,7 +113,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * </table>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -306,7 +307,7 @@ public class MetadataWriter extends MetadataSource {
                  * (if such parent exists). In most case, the answer is "no" and 'addTo' is equals to 'table'.
                  */
                 String addTo = table;
-                if (helper.dialect.isTableInheritanceSupported) {
+                if (helper.dialect.supportsTableInheritance) {
                     @SuppressWarnings("null")
                     final Class<?> declaring = colTables.get(column);
                     if (!interfaceType.isAssignableFrom(declaring)) {
@@ -349,7 +350,7 @@ public class MetadataWriter extends MetadataSource {
          * etc.) is associated only to Responsibility. So it make sense to use the Responsibility ID for
          * the contact info.
          */
-        identifier = nonEmpty(removeReservedChars(suggestIdentifier(metadata, asValueMap), null));
+        identifier = Strings.trimOrNull(removeReservedChars(suggestIdentifier(metadata, asValueMap), null));
         if (identifier == null) {
             identifier = parent;
             if (identifier == null) {
@@ -421,7 +422,7 @@ public class MetadataWriter extends MetadataSource {
                     if (dependency == null) {
                         dependency = add(stmt, value, done, identifier);
                         assert done.get(value) == dependency;                       // Really identity comparison.
-                        if (!helper.dialect.isIndexInheritanceSupported) {
+                        if (!helper.dialect.supportsIndexInheritance) {
                             /*
                              * In a classical object-oriented model, the foreigner key constraints declared in the
                              * parent table would take in account the records in the child table and we would have
@@ -507,7 +508,7 @@ public class MetadataWriter extends MetadataSource {
                  * However this is not yet supported as of PostgreSQL 9.6. If inheritance is not supported,
                  * then we have to repeat the constraint creation in child tables.
                  */
-                if (!helper.dialect.isIndexInheritanceSupported && !table.equals(fkey.tableName)) {
+                if (!helper.dialect.supportsIndexInheritance && !table.equals(fkey.tableName)) {
                     stmt.executeUpdate(helper.createForeignKey(schema(), table, column, target, primaryKey, !isCodeList));
                 }
             }
@@ -521,7 +522,7 @@ public class MetadataWriter extends MetadataSource {
         }
         helper.append(") VALUES (").appendValue(identifier);
         for (final Object value : asSingletons.values()) {
-            helper.append(", ").appendValue(value);
+            helper.append(", ").appendValue(toStorableValue(value));
         }
         final String sql = helper.append(')').toString();
         if (stmt.executeUpdate(sql) != 1) {
@@ -597,12 +598,12 @@ public class MetadataWriter extends MetadataSource {
                 if (standard.isMetadata(candidate)) {
                     isChildTable = Boolean.TRUE;
                     final SQLBuilder helper = helper();
-                    if (helper.dialect.isTableInheritanceSupported) {
+                    if (helper.dialect.supportsTableInheritance) {
                         final String parent = getTableName(candidate);
                         createTable(stmt, candidate, parent, getExistingColumns(parent));
                         if (inherits == null) {
                             helper.clear().append("CREATE TABLE ").appendIdentifier(schema(), table);
-                            if (!helper.dialect.isIndexInheritanceSupported) {
+                            if (!helper.dialect.supportsIndexInheritance) {
                                 /*
                                  * In a classical object-oriented model, the new child table would inherit the index from
                                  * its parent table. However this is not yet the case as of PostgreSQL 9.6. If the index is
@@ -650,7 +651,7 @@ public class MetadataWriter extends MetadataSource {
      * foreigner key constraints in the database. The value of CodeList tables are not used
      * at parsing time.
      */
-    private String addCode(final Statement stmt, final CodeList<?> code) throws SQLException, FactoryException {
+    private String addCode(final Statement stmt, final CodeList<?> code) throws SQLException {
         assert Thread.holdsLock(this);
         final String table = getTableName(code.getClass());
         final Set<String> columns = getExistingColumns(table);
@@ -659,7 +660,7 @@ public class MetadataWriter extends MetadataSource {
             columns.add(CODE_COLUMN);
         }
         final String identifier = Types.getCodeName(code);
-        final String query = helper().clear().append("SELECT ").appendIdentifier(CODE_COLUMN)
+        final String query = helper().clear().append(SQLBuilder.SELECT).appendIdentifier(CODE_COLUMN)
                 .append(" FROM ").appendIdentifier(schema(), table).append(" WHERE ")
                 .appendIdentifier(CODE_COLUMN).appendCondition(identifier).toString();
         final boolean exists;
@@ -703,10 +704,10 @@ public class MetadataWriter extends MetadataSource {
             identifiers = Collections.emptySet();
         }
         for (final Identifier id : identifiers) {
-            identifier = nonEmpty(id.getCode());
+            identifier = Strings.trimOrNull(id.getCode());
             if (identifier != null) {
                 if (id instanceof ReferenceIdentifier) {
-                    final String cs = nonEmpty(((ReferenceIdentifier) id).getCodeSpace());
+                    final String cs = Strings.trimOrNull(((ReferenceIdentifier) id).getCodeSpace());
                     if (cs != null) {
                         identifier = cs + Constants.DEFAULT_SEPARATOR + identifier;
                     }
@@ -715,14 +716,14 @@ public class MetadataWriter extends MetadataSource {
             }
         }
         if (identifier == null && metadata instanceof Citation) {
-            identifier = nonEmpty(Citations.toCodeSpace((Citation) metadata));
+            identifier = Strings.trimOrNull(Citations.toCodeSpace((Citation) metadata));
         }
         if (identifier == null) {
             final TitleProperty tp = metadata.getClass().getAnnotation(TitleProperty.class);
             if (tp != null) {
-                final Object value = asValueMap.get(nonEmpty(tp.name()));
+                final Object value = asValueMap.get(Strings.trimOrNull(tp.name()));
                 if (value != null) {
-                    identifier = nonEmpty(value.toString());
+                    identifier = Strings.trimOrNull(value.toString());
                 }
             }
         }
@@ -789,18 +790,5 @@ public class MetadataWriter extends MetadataSource {
      */
     private static boolean isReservedChar(final int c) {
         return (c == TableHierarchy.TYPE_OPEN) || (c == TableHierarchy.TYPE_CLOSE);
-    }
-
-    /**
-     * Trims leading and trailing spaces and returns the given value if non-empty, or {@code null} otherwise.
-     */
-    private static String nonEmpty(String value) {
-        if (value != null) {
-            value = value.trim();
-            if (value.isEmpty()) {
-                value = null;
-            }
-        }
-        return value;
     }
 }

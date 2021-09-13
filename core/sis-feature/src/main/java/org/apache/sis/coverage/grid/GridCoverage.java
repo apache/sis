@@ -17,14 +17,25 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.List;
-import java.util.Collection;
 import java.util.Locale;
+import java.util.Optional;
+import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.coverage.BandedCoverage;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.image.DataType;
+import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.coverage.j2d.Colorizer;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -42,17 +53,26 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-public abstract class GridCoverage {
+public abstract class GridCoverage extends BandedCoverage {
+    /**
+     * The processor to use for {@link #convert(RenderedImage, DataType, MathTransform1D[])} operations.
+     * Wrapped in a class for lazy instantiation.
+     */
+    private static final class Lazy {
+        private Lazy() {}
+        private static final ImageProcessor PROCESSOR = new ImageProcessor();
+    }
+
     /**
      * The grid extent, coordinate reference system (CRS) and conversion from cell indices to CRS.
      *
      * @see #getGridGeometry()
      */
-    private final GridGeometry gridGeometry;
+    final GridGeometry gridGeometry;
 
     /**
      * List of sample dimension (band) information for the grid coverage. Information include such things
@@ -64,31 +84,53 @@ public abstract class GridCoverage {
     private final SampleDimension[] sampleDimensions;
 
     /**
-     * Constructs a grid coverage using the specified grid geometry and sample dimensions.
+     * View over this grid coverage after conversion of sample values, or {@code null} if not yet created.
+     * May be {@code this} if we determined that there is no conversion or the conversion is identity.
      *
-     * @param grid   the grid extent, CRS and conversion from cell indices to CRS.
-     * @param bands  sample dimensions for each image band.
+     * @see #forConvertedValues(boolean)
      */
-    protected GridCoverage(final GridGeometry grid, final Collection<? extends SampleDimension> bands) {
-        ArgumentChecks.ensureNonNull("grid",  grid);
-        ArgumentChecks.ensureNonNull("bands", bands);
-        gridGeometry = grid;
-        sampleDimensions = bands.toArray(new SampleDimension[bands.size()]);
+    private transient GridCoverage packedView, convertedView;
+
+    /**
+     * Constructs a grid coverage using the specified grid geometry and sample dimensions.
+     * The grid geometry defines the "domain" (inputs) of the coverage function,
+     * and the sample dimensions define the "range" (output) of that function.
+     *
+     * @param  domain  the grid extent, CRS and conversion from cell indices to CRS.
+     * @param  ranges  sample dimensions for each image band.
+     * @throws NullPointerException if an argument is {@code null} or if the list contains a null element.
+     * @throws IllegalArgumentException if the {@code range} list is empty.
+     */
+    protected GridCoverage(final GridGeometry domain, final List<? extends SampleDimension> ranges) {
+        ArgumentChecks.ensureNonNull ("domain", domain);
+        ArgumentChecks.ensureNonEmpty("ranges", ranges);
+        gridGeometry = domain;
+        sampleDimensions = ranges.toArray(new SampleDimension[ranges.size()]);
+        ArgumentChecks.ensureNonEmpty("range", sampleDimensions);
         for (int i=0; i<sampleDimensions.length; i++) {
-            ArgumentChecks.ensureNonNullElement("bands", i, sampleDimensions[i]);
+            ArgumentChecks.ensureNonNullElement("range", i, sampleDimensions[i]);
         }
     }
 
     /**
+     * Constructs a new grid coverage with the same sample dimensions than the given source.
+     *
+     * @param  source  the source from which to copy the sample dimensions.
+     * @param  domain  the grid extent, CRS and conversion from cell indices to CRS.
+     */
+    GridCoverage(final GridCoverage source, final GridGeometry domain) {
+        gridGeometry = domain;
+        sampleDimensions = source.sampleDimensions;
+    }
+
+    /**
      * Returns the coordinate reference system to which the values in grid domain are referenced.
-     * This is the CRS used when accessing a coverage with the {@code evaluate(…)} methods.
-     * This coordinate reference system is usually different than the coordinate system of the grid.
-     * It is the target coordinate reference system of the {@link GridGeometry#getGridToCRS gridToCRS}
+     * This is the target coordinate reference system of the {@link GridGeometry#getGridToCRS gridToCRS}
      * math transform.
      *
      * <p>The default implementation delegates to {@link GridGeometry#getCoordinateReferenceSystem()}.</p>
      *
-     * @return the CRS used when accessing a coverage with the {@code evaluate(…)} methods.
+     * @return the "real world" CRS of this coverage.
      * @throws IncompleteGridGeometryException if the grid geometry has no CRS.
      */
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
@@ -118,8 +160,56 @@ public abstract class GridCoverage {
      *
      * @see org.apache.sis.storage.GridCoverageResource#getSampleDimensions()
      */
+    @Override
     public List<SampleDimension> getSampleDimensions() {
         return UnmodifiableArrayList.wrap(sampleDimensions);
+    }
+
+    /**
+     * Returns the range of values in each sample dimension, or {@code null} if none.
+     */
+    private NumberRange<?>[] getRanges() {
+        NumberRange<?>[] ranges = null;
+        for (int i=0; i<sampleDimensions.length; i++) {
+            final Optional<NumberRange<?>> r = sampleDimensions[i].getSampleRange();
+            if (r.isPresent()) {
+                if (ranges == null) {
+                    ranges = new NumberRange<?>[sampleDimensions.length];
+                }
+                ranges[i] = r.get();
+            }
+        }
+        return ranges;
+    }
+
+    /**
+     * Returns the data type identifying the primitive type used for storing sample values in each band.
+     * We assume no packed sample model (e.g. no packing of 4 byte ARGB values in a single 32-bits integer).
+     * If the sample model is packed, the value returned by this method should be as if the image has been
+     * converted to a banded sample model.
+     */
+    DataType getBandType() {
+        return DataType.DOUBLE;     // Must conservative value, should be overridden by subclasses.
+    }
+
+    /**
+     * Returns the converted or package view, or {@code null} if not yet computed.
+     * It is caller responsibility to ensure that this method is invoked in a synchronized block.
+     */
+    final GridCoverage getView(final boolean converted) {
+        return converted ? convertedView : packedView;
+    }
+
+    /**
+     * Sets the converted or package view. The given view should not be null.
+     * It is caller responsibility to ensure that this method is invoked in a synchronized block.
+     */
+    final void setView(final boolean converted, final GridCoverage view) {
+        if (converted) {
+            convertedView = view;
+        } else {
+            packedView = view;
+        }
     }
 
     /**
@@ -145,7 +235,55 @@ public abstract class GridCoverage {
      *
      * @see SampleDimension#forConvertedValues(boolean)
      */
-    public abstract GridCoverage forConvertedValues(boolean converted);
+    public synchronized GridCoverage forConvertedValues(final boolean converted) {
+        GridCoverage view = getView(converted);
+        if (view == null) try {
+            view = ConvertedGridCoverage.create(this, converted);
+            setView(converted, view);
+        } catch (NoninvertibleTransformException e) {
+            throw new CannotEvaluateException(e.getMessage(), e);
+        }
+        return view;
+    }
+
+    /**
+     * Creates a new image of the given data type which will compute values using the given converters.
+     *
+     * @param  source      the image for which to convert sample values.
+     * @param  bandType    the type of data in the bands resulting from conversion of given image.
+     * @param  converters  the transfer functions to apply on each band of the source image.
+     * @return the image which compute converted values from the given source.
+     */
+    final RenderedImage convert(final RenderedImage source, final DataType bandType, final MathTransform1D[] converters) {
+        final int visibleBand = Math.max(0, ImageUtilities.getVisibleBand(source));
+        final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
+        final ColorModel colors;
+        if (colorizer.initialize(sampleDimensions[visibleBand]) || colorizer.initialize(source.getColorModel())) {
+            colors = colorizer.createColorModel(bandType.toDataBufferType(), sampleDimensions.length, visibleBand);
+        } else {
+            colors = Colorizer.NULL_COLOR_MODEL;
+        }
+        return Lazy.PROCESSOR.convert(source, getRanges(), converters, bandType, colors);
+    }
+
+    /**
+     * Creates a new function for computing or interpolating sample values at given locations.
+     * That function accepts {@link DirectPosition} in arbitrary Coordinate Reference System;
+     * conversions to grid indices are applied as needed.
+     *
+     * <h4>Multi-threading</h4>
+     * {@code GridEvaluator}s are not thread-safe. For computing sample values concurrently,
+     * a new {@link GridEvaluator} instance should be created for each thread by invoking this
+     * method multiply times.
+     *
+     * @return a new function for computing or interpolating sample values.
+     *
+     * @since 1.1
+     */
+    @Override
+    public GridEvaluator evaluator() {
+        return new GridEvaluator(this);
+    }
 
     /**
      * Returns a two-dimensional slice of grid data as a rendered image. The given {@code sliceExtent} argument specifies
@@ -216,9 +354,10 @@ public abstract class GridCoverage {
      * @param  sliceExtent  a subspace of this grid coverage extent where all dimensions except two have a size of 1 cell.
      *         May be {@code null} if this grid coverage has only two dimensions with a size greater than 1 cell.
      * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
+     * @throws MismatchedDimensionException if the given extent does not have the same number of dimensions than this coverage.
      * @throws SubspaceNotSpecifiedException if the given argument is not sufficient for reducing the grid to a two-dimensional slice.
      * @throws DisjointExtentException if the given extent does not intersect this grid coverage.
-     * @throws RuntimeException if this method can not produce the rendered image for another reason.
+     * @throws CannotEvaluateException if this method can not produce the rendered image for another reason.
      */
     public abstract RenderedImage render(GridExtent sliceExtent);
 
@@ -236,7 +375,7 @@ public abstract class GridCoverage {
      */
     @Override
     public String toString() {
-        return toTree(Locale.getDefault(), GridGeometry.defaultFlags()).toString();
+        return toTree(Locale.getDefault(), gridGeometry.defaultFlags()).toString();
     }
 
     /**
@@ -261,9 +400,23 @@ public abstract class GridCoverage {
         TreeTable.Node branch = root.newChild();
         branch.setValue(column, vocabulary.getString(Vocabulary.Keys.CoverageDomain));
         gridGeometry.formatTo(locale, vocabulary, bitmask, branch);
+        appendDataLayout(root, vocabulary, column);
         branch = root.newChild();
         branch.setValue(column, vocabulary.getString(Vocabulary.Keys.SampleDimensions));
         branch.newChild().setValue(column, SampleDimension.toString(locale, sampleDimensions));
         return tree;
+    }
+
+    /**
+     * Appends a "data layout" branch (if it exists) to the tree representation of this coverage.
+     * That branch will be inserted between "coverage domain" and "sample dimensions" branches.
+     * The default implementation does nothing.
+     *
+     * @param  root        root of the tree where to add a branch.
+     * @param  vocabulary  localized resources for vocabulary.
+     * @param  column      the single column where to write texts.
+     */
+    @Debug
+    void appendDataLayout(TreeTable.Node root, Vocabulary vocabulary, TableColumn<CharSequence> column) {
     }
 }

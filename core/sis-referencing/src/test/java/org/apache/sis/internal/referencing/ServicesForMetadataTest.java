@@ -169,12 +169,12 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
 
     /**
      * Tests (indirectly) {@link ServicesForMetadata#setBounds(Envelope, DefaultGeographicBoundingBox, String)}
-     * from an envelope spanning the antimeridian.
+     * from an envelope crossing the antimeridian.
      *
      * @throws TransformException should never happen.
      */
     @Test
-    public void testSetGeographicBoundsSpanningAntimeridian() throws TransformException {
+    public void testSetGeographicBoundsCrossingAntimeridian() throws TransformException {
         final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox();
         final GeneralEnvelope envelope = createEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, 170, 195);

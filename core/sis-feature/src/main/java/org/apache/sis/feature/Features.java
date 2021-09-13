@@ -16,6 +16,9 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.IdentityHashMap;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
@@ -34,7 +37,8 @@ import org.apache.sis.internal.feature.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -108,6 +112,49 @@ public final class Features extends Static {
     }
 
     /**
+     * Returns the given type as an {@code AttributeType} by casting if possible, or by getting the result type
+     * of an operation. More specifically this method returns the first of the following types which apply:
+     *
+     * <ul>
+     *   <li>If the given type is an instance of {@code AttributeType}, then it is returned as-is.</li>
+     *   <li>If the given type is an instance of {@code Operation} and the {@code Operation.getResult()
+     *       result type} is an {@code AttributeType}, then that result type is returned.</li>
+     *   <li>If the given type is an instance of {@code Operation} and the {@code Operation.getResult()
+     *       result type} is another operation, then the above check is performed recursively.</li>
+     * </ul>
+     *
+     * @param  type  the data type to express as an attribute type.
+     * @return the attribute type, or empty if this method cannot find any.
+     *
+     * @since 1.1
+     */
+    public static Optional<DefaultAttributeType<?>> toAttribute(AbstractIdentifiedType type) {
+        if (!(type instanceof DefaultAttributeType<?>)) {
+            if (!(type instanceof AbstractOperation)) {
+                return Optional.empty();
+            }
+            type = ((AbstractOperation) type).getResult();
+            if (!(type instanceof DefaultAttributeType<?>)) {
+                if (!(type instanceof AbstractOperation)) {
+                    return Optional.empty();
+                }
+                /*
+                 * Operation returns another operation. This case should be rare and should never
+                 * contain a cycle. However given that the consequence of an infinite cycle here
+                 * would be thread freeze, we check as a safety.
+                 */
+                final Map<AbstractIdentifiedType,Boolean> done = new IdentityHashMap<>(4);
+                while (!((type = ((AbstractOperation) type).getResult()) instanceof DefaultAttributeType<?>)) {
+                    if (!(type instanceof AbstractOperation) || done.put(type, Boolean.TRUE) != null) {
+                        return Optional.empty();
+                    }
+                }
+            }
+        }
+        return Optional.of((DefaultAttributeType<?>) type);
+    }
+
+    /**
      * Finds a feature type common to all given types, or returns {@code null} if none is found.
      * The return value is either one of the given types, or a parent common to all types.
      * A feature <var>F</var> is considered a common parent if <code>F.{@link DefaultFeatureType#isAssignableFrom
@@ -165,6 +212,26 @@ public final class Features extends Static {
             }
         }
         return null;
+    }
+
+    /**
+     * If the given property is a link, returns the name of the referenced property.
+     * A link is an operation created by a call to {@link FeatureOperations#link(Map, PropertyType)},
+     * in which case the value returned by this method is the name of the {@code PropertyType} argument
+     * which has been given to that {@code link(…)} method.
+     *
+     * @param  property  the property to test, or {@code null} if none.
+     * @return the referenced property name if {@code property} is a link, or an empty value otherwise.
+     *
+     * @see FeatureOperations#link(Map, PropertyType)
+     *
+     * @since 1.1
+     */
+    public static Optional<String> getLinkTarget(final AbstractIdentifiedType property) {
+        if (property instanceof LinkOperation) {
+            return Optional.of(((LinkOperation) property).referentName);
+        }
+        return Optional.empty();
     }
 
     /**

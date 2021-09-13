@@ -33,7 +33,7 @@
  * and units between two coordinate systems, or filtering axes.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.4
  * @module
  */

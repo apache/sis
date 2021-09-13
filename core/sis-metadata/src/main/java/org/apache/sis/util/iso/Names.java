@@ -127,6 +127,8 @@ public final class Names extends Static {
      * @return a local or scoped name in the given namespace.
      *
      * @see DefaultNameFactory#parseGenericName(NameSpace, CharSequence)
+     *
+     * @todo Bug in current implementation: the {@code separator} argument is ignored if {@code namespace} is null.
      */
     public static GenericName parseGenericName(final CharSequence namespace, final String separator, final CharSequence scopedName) {
         ensureNonNull("localPart", scopedName);

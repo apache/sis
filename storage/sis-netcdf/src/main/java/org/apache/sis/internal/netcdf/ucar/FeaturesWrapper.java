@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.storage.event.StoreListeners;
-import ucar.nc2.ft.FeatureCollection;
+import ucar.nc2.ft.DsgFeatureCollection;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
@@ -29,27 +29,34 @@ import org.apache.sis.feature.DefaultFeatureType;
 
 /**
  * A wrapper around the UCAR {@code ucar.nc2.ft} package.
+ * Created by {@link DecoderWrapper#getDiscreteSampling(Object)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
+ *
+ * @todo we do not yet have an example of file that {@link ucar.nc2.ft.FeatureDatasetFactoryManager} can handle
+ *       (maybe we don't use that class correctly).
  */
 final class FeaturesWrapper extends DiscreteSampling {
     /**
      * The feature dataset provided by the UCAR library.
      */
-    private final FeatureCollection features;
+    private final DsgFeatureCollection features;
 
     /**
      * Creates a new discrete sampling parser.
      *
      * @param  factory    the library for geometric objects, or {@code null} for the default.
      * @param  listeners  the set of registered warning listeners for the data store.
+     * @param  lock       the lock to use in {@code synchronized(lock)} statements.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    FeaturesWrapper(final FeatureCollection features, final GeometryLibrary factory, final StoreListeners listeners) {
-        super(factory, listeners);
+    FeaturesWrapper(final DsgFeatureCollection features, final GeometryLibrary factory, final StoreListeners listeners,
+                    final Object lock)
+    {
+        super(factory, listeners, lock);
         this.features = features;
     }
 

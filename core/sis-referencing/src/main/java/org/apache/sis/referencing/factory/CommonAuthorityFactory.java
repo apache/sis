@@ -18,7 +18,6 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Collections;
@@ -31,23 +30,17 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.datum.DatumFactory;
-import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.internal.referencing.provider.TransverseMercator.Zoner;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
@@ -189,7 +182,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * switching to polar stereographic projections for high latitudes.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see CommonCRS
  *
@@ -248,13 +241,6 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     private final Map<String,Class<?>> codes;
 
     /**
-     * The "Computer display" reference system (CRS:1). Created when first needed.
-     *
-     * @see #displayCRS()
-     */
-    private CoordinateReferenceSystem displayCRS;
-
-    /**
      * The coordinate system for map projection in metres, created when first needed.
      */
     private volatile CartesianCS projectedCS;
@@ -268,7 +254,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
 
     /**
      * Returns the specification that defines the codes recognized by this factory. The definitive source for this
-     * factory is OGC <a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a> (WMS) specification,
+     * factory is OGC <a href="https://www.ogc.org/standards/wms">Web Map Service</a> (WMS) specification,
      * also available as the ISO 19128 <cite>Geographic Information — Web map server interface</cite> standard.
      *
      * <p>While the authority is WMS, the {@linkplain org.apache.sis.xml.IdentifierSpace#getName() namespace}
@@ -553,7 +539,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         }
         final CommonCRS crs;
         switch (codeValue) {
-            case Constants.CRS1:  return displayCRS();
+            case Constants.CRS1:  return CommonCRS.Engineering.GEODISPLAY.crs();
             case Constants.CRS84: crs = CommonCRS.WGS84; break;
             case Constants.CRS83: crs = CommonCRS.NAD83; break;
             case Constants.CRS27: crs = CommonCRS.NAD27; break;
@@ -687,26 +673,6 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             message = Resources.format(Resources.Keys.NoSuchAuthorityCode_3, Constants.EPSG, Unit.class, s);
         }
         throw new NoSuchAuthorityCodeException(message, Constants.EPSG, s);
-    }
-
-    /**
-     * Returns the "Computer display" reference system (CRS:1). This is rarely used.
-     */
-    private synchronized CoordinateReferenceSystem displayCRS() throws FactoryException {
-        if (displayCRS == null) {
-            final CSFactory csFactory = DefaultFactories.forBuildin(CSFactory.class);
-            final CartesianCS cs = csFactory.createCartesianCS(
-                    Collections.singletonMap(CartesianCS.NAME_KEY, "Computer display"),
-                    csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "i"), "i", AxisDirection.EAST,  Units.PIXEL),
-                    csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "j"), "j", AxisDirection.SOUTH, Units.PIXEL));
-
-            final Map<String,Object> properties = new HashMap<>(4);
-            properties.put(EngineeringDatum.NAME_KEY, cs.getName());
-            properties.put(EngineeringDatum.ANCHOR_POINT_KEY, "Origin is in upper left.");
-            displayCRS = DefaultFactories.forBuildin(CRSFactory.class).createEngineeringCRS(properties,
-                         DefaultFactories.forBuildin(DatumFactory.class).createEngineeringDatum(properties), cs);
-        }
-        return displayCRS;
     }
 
     /**

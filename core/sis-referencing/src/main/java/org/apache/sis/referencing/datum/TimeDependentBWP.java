@@ -62,7 +62,7 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
  * @since   0.4
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // Fields in this class do not need cloning.
+@SuppressWarnings("CloneableImplementsClone")                   // Fields in this class do not need cloning.
 public class TimeDependentBWP extends BursaWolfParameters {
     /**
      * Serial number for inter-operability with different versions.

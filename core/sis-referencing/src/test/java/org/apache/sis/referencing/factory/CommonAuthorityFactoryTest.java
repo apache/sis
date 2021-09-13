@@ -302,7 +302,6 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testAuto42001")
-    @Ignore("Pending implementation of Mollweide projection.")
     public void testAuto42005() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO:42005,9001,10,45");
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();

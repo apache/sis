@@ -49,7 +49,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @module
  */
 @DependsOn({
-    AbstractSingleOperationTest.class,
     org.apache.sis.referencing.crs.DefaultGeocentricCRSTest.class
 })
 public final strictfp class DefaultTransformationTest extends TestCase {

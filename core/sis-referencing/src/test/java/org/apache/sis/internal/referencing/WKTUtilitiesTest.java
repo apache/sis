@@ -32,7 +32,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.*;
  * Tests {@link WKTUtilities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -56,6 +56,18 @@ public final strictfp class WKTUtilitiesTest extends TestCase {
         assertEquals(WKTKeywords.spherical,   toType(CoordinateSystem.class, SphericalCS     .class));
         assertEquals(WKTKeywords.temporal,    toType(CoordinateSystem.class, TimeCS          .class));
         assertEquals(WKTKeywords.vertical,    toType(CoordinateSystem.class, VerticalCS      .class));
+    }
+
+    /**
+     * Tests {@link WKTUtilities#suggestFractionDigits(Vector[])}.
+     */
+    @Test
+    public void testSuggestFractionDigitsFromVectors() {
+        final int[] f = WKTUtilities.suggestFractionDigits(new Vector[] {
+            Vector.create(new double[] {10, 100,   0.1, 1000.1}),
+            Vector.create(new double[] {15, 140.1, 0.4, Double.NaN}),
+            Vector.create(new double[] {20, 400,   0.5, Double.NaN})});
+        assertArrayEquals(new int[] {0, 0, 3, 3}, f);
     }
 
     /**

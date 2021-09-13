@@ -16,11 +16,14 @@
  */
 package org.apache.sis.storage.earthobservation;
 
+import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
+import java.util.EnumMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.LineNumberReader;
@@ -44,9 +47,8 @@ import org.opengis.util.FactoryException;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
-import org.apache.sis.metadata.iso.content.DefaultBand;
+import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.referencing.CRS;
@@ -58,7 +60,6 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
@@ -95,45 +96,11 @@ import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
 final class LandsatReader extends MetadataBuilder {
-    /**
-     * Names of Landsat bands.
-     *
-     * @todo Those names and the wavelength could be moved to the {@code SpatialMetadata} database,
-     *       as described in <a href="https://issues.apache.org/jira/browse/SIS-338">SIS-338</a>.
-     *       It would make easier to enrich the metadata with more information.
-     *
-     * @see #bands
-     * @see #band(String, int)
-     */
-    private static final String[] BAND_NAMES = {
-        "Coastal Aerosol",                      //   433 nm
-        "Blue",                                 //   482 nm
-        "Green",                                //   562 nm
-        "Red",                                  //   655 nm
-        "Near-Infrared",                        //   865 nm
-        "Short Wavelength Infrared (SWIR) 1",   //  1610 nm
-        "Short Wavelength Infrared (SWIR) 2",   //  2200 nm
-        "Panchromatic",                         //   590 nm
-        "Cirrus",                               //  1375 nm
-        "Thermal Infrared Sensor (TIRS) 1",     // 10800 nm
-        "Thermal Infrared Sensor (TIRS) 2"      // 12000 nm
-    };
-
-    /**
-     * Peak response wavelength for the Landsat bands, in nanometres.
-     *
-     * @see #bands
-     * @see #band(String, int)
-     */
-    private static final short[] WAVELENGTHS = {
-        433, 482, 562, 655, 865, 1610, 2200, 590, 1375, 10800, 12000
-    };
-
     /**
      * The pattern determining if the value of {@code ORIGIN} key is of the form
      * “Image courtesy of the U.S. Geological Survey”.
@@ -141,10 +108,9 @@ final class LandsatReader extends MetadataBuilder {
     static final Pattern CREDIT = Pattern.compile("\\bcourtesy\\h+of\\h+(the)?\\b\\s*", Pattern.CASE_INSENSITIVE);
 
     /**
-     * Number of spatial dimensions. This is the number of coordinate values to be stored
-     * in the {@link #gridSizes} and {@link #corners} arrays for each tuple.
+     * Suffix of groups that describe the processing done on the data instead of the data themselves.
      */
-    static final int DIM = 2;
+    private static final String LINEAGE_SUFFIX = "_RECORD";
 
     /**
      * The {@value} suffix added to attribute names that are followed by a band number.
@@ -154,52 +120,19 @@ final class LandsatReader extends MetadataBuilder {
     private static final String BAND_SUFFIX = "_BAND";
 
     /**
-     * A bit mask of the group in which to classify a given band.
-     * There is three groups: panchromatic, reflective or thermal bands:
-     *
-     * <ul>
-     *   <li><b>Panchromatic:</b> band  8.</li>
-     *   <li><b>Reflective:</b>   bands 1, 2, 3, 4, 5, 6, 7, 9.</li>
-     *   <li><b>Thermal:</b>      bands 10, 11.</li>
-     * </ul>
-     *
-     * For a band numbered from 1 to 11 inclusive, the group is computed by
-     * (constants 2 and 3 in that formula depends on the {@link #NUM_GROUPS} value):
-     *
-     * {@preformat java
-     *   group = (BAND_GROUPS >>> 2*(band - 1)) & 3;
-     * }
-     *
-     * The result is one of the {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL} constant values
-     * divided by {@value #DIM}.
-     */
-    static final int BAND_GROUPS = 2692437;     // Value computed by LandsatReaderTest.verifyBandGroupsMask()
-
-    /**
-     * Maximum number of band groups that a metadata may contains.
-     * See {@link #BAND_GROUPS} javadoc for the list of groups.
-     */
-    private static final int NUM_GROUPS = 3;
-
-    /**
-     * Index of panchromatic, reflective or thermal groups in the {@link #gridSizes} array.
-     * The image size is each group is given by {@value #DIM} integers: the width and the height.
-     */
-    static final int PANCHROMATIC = 0*DIM,
-                     REFLECTIVE   = 1*DIM,
-                     THERMAL      = 2*DIM;
-
-    /**
-     * Index of projected and geographic coordinates in the {@link #corners} array.
-     * Each kind of coordinates are stored as 4 corners of {@value #DIM} coordinate values.
-     */
-    private static final int PROJECTED  = 0*DIM,
-                             GEOGRAPHIC = 4*DIM;
-
-    /**
      * The keyword for end of metadata file.
      */
     private static final String END = "END";
+
+    /**
+     * The store for which metadata are read.
+     */
+    private final LandsatStore store;
+
+    /**
+     * Where to send the warnings.
+     */
+    private final StoreListeners listeners;
 
     /**
      * An identifier of the file being read, or {@code null} if unknown.
@@ -210,14 +143,17 @@ final class LandsatReader extends MetadataBuilder {
     private String filename;
 
     /**
-     * Where to send the warnings.
-     */
-    private final StoreListeners listeners;
-
-    /**
      * Group in process of being parsed, or {@code null} if none.
      */
     private String group;
+
+    /**
+     * The last group where we fetched lineage (history) information.
+     * The same file may contain many lineage groups.
+     *
+     * @see #parseLineage(String, int, String)
+     */
+    private String lineageGroup;
 
     /**
      * The acquisition time, or {@code null} if not yet known. This needs to be parsed in two steps:
@@ -236,14 +172,25 @@ final class LandsatReader extends MetadataBuilder {
     private final double[] corners;
 
     /**
+     * Number of coordinates for the corners in a CRS type (geographic or projected).
+     * This is 4 corners multiplied by the number of dimensions, which is 2.
+     */
+    private static final int NUM_COORDINATES = 8;
+
+    /**
+     * Index of projected and geographic coordinates in the {@link #corners} array.
+     * Each kind of coordinates are stored as 4 corners of {@value #DIMENSION} coordinate values.
+     */
+    private static final int PROJECTED = 0, GEOGRAPHIC = NUM_COORDINATES;
+
+    /**
      * Image width and hight in pixels, as unsigned integers. Values are (<var>width</var>,<var>height</var>) tuples.
      * Tuples in this array are for {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL} bands, in that order.
      */
-    private final int[] gridSizes;
+    private final EnumMap<LandsatBandGroup,Dimension> gridSizes;
 
     /**
-     * The bands description. Any element can be null if the corresponding band is not defined.
-     * The bands can be, in this exact order:
+     * The bands descriptions. The bands can be, in this exact order:
      *
      * <ol>
      *   <li>Coastal Aerosol</li>
@@ -259,11 +206,14 @@ final class LandsatReader extends MetadataBuilder {
      *   <li>Thermal Infrared Sensor (TIRS) 2</li>
      * </ol>
      *
-     * @see #BAND_NAMES
-     * @see #WAVELENGTHS
      * @see #band(String, int)
      */
-    private final DefaultBand[] bands;
+    final EnumMap<LandsatBand,LandsatResource> bands;
+
+    /**
+     * {@link LandsatBand#values()}, fetched once for avoiding multiple array creations.
+     */
+    private final LandsatBand[] bandEnumerations;
 
     /**
      * The enumeration for the {@code "DATUM"} element, to be used for creating the Coordinate Reference System.
@@ -290,16 +240,19 @@ final class LandsatReader extends MetadataBuilder {
     /**
      * Creates a new metadata parser.
      *
+     * @param  store      the store for which metadata are read.
      * @param  filename   an identifier of the file being read, or {@code null} if unknown.
      * @param  listeners  where to sent warnings that may occur during the parsing process.
      */
-    LandsatReader(final String filename, final StoreListeners listeners) {
-        this.filename  = filename;
-        this.listeners = listeners;
-        this.factories = new ReferencingFactoryContainer();
-        this.bands     = new DefaultBand[BAND_NAMES.length];
-        this.gridSizes = new int[NUM_GROUPS * DIM];
-        this.corners   = new double[GEOGRAPHIC + (4*DIM)];      // GEOGRAPHIC is the last group of corners to store.
+    LandsatReader(final LandsatStore store, final String filename, final StoreListeners listeners) {
+        this.store       = store;
+        this.filename    = filename;
+        this.listeners   = listeners;
+        this.factories   = new ReferencingFactoryContainer();
+        this.corners     = new double[2*NUM_COORDINATES];       // 2 types of CRS: GEOGRAPHIC and PROJECTED.
+        this.gridSizes   = new EnumMap<>(LandsatBandGroup.class);
+        this.bands       = new EnumMap<>(LandsatBand.class);
+        bandEnumerations = LandsatBand.values();
         Arrays.fill(corners, Double.NaN);
     }
 
@@ -346,7 +299,7 @@ final class LandsatReader extends MetadataBuilder {
                     final char c = key.charAt(i);
                     if (c < '0' || c > '9') {
                         if (c == '_') {
-                            if (key.regionMatches(i - BAND_SUFFIX.length(), BAND_SUFFIX, 0, BAND_SUFFIX.length())) try {
+                            if (key.startsWith(BAND_SUFFIX, i - BAND_SUFFIX.length())) try {
                                 band = Integer.parseInt(key.substring(++i));
                                 key = key.substring(0, i);
                             } catch (NumberFormatException e) {
@@ -365,8 +318,17 @@ final class LandsatReader extends MetadataBuilder {
                     start = CharSequences.skipLeadingWhitespaces(line, start + 1, --end);
                     end = CharSequences.skipTrailingWhitespaces(line, start, end);
                 }
+                final String value = line.substring(start, end);
                 try {
-                    parseKeyValuePair(key, band, line.substring(start, end));
+                    if (group == null || !group.endsWith(LINEAGE_SUFFIX)) {
+                        parseKeyValuePair(key, band, value);
+                    } else {
+                        if (!group.equals(lineageGroup)) {
+                            lineageGroup = group;
+                            newLineage();
+                        }
+                        parseLineage(key, band, value);
+                    }
                 } catch (IllegalArgumentException | DateTimeException e) {
                     warning(key, reader, e);
                 }
@@ -396,19 +358,21 @@ final class LandsatReader extends MetadataBuilder {
     }
 
     /**
-     * Parses the given value and stores it at the given index in the {@link #gridSizes} array.
+     * Parses the given value and stores it in the {@link #gridSizes} map.
      *
-     * @param  index  {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL},
-     *                +1 if parsing the height instead than the width.
      * @param  value  the value to parse.
      */
-    private void parseGridSize(final int index, final String value) throws NumberFormatException {
-        gridSizes[index] = Integer.parseUnsignedInt(value);
+    private void parseGridSize(final LandsatBandGroup group, final boolean isX, final String value) throws NumberFormatException {
+        final int s = Integer.parseUnsignedInt(value);
+        final Dimension size = gridSizes.computeIfAbsent(group, (k) -> new Dimension());
+        if (isX) size.width  = s;
+        else     size.height = s;
     }
 
     /**
-     * Invoked for every key-value pairs found in the file.
-     * Leading and trailing spaces, if any, have been removed.
+     * Invoked for every key-value pairs found in the file for the main groups.
+     * A mean group is any group other than {@linkplain #parseLineage lineage}.
+     * Leading and trailing spaces, if any, have been removed from given argument.
      *
      * @param  key    the key in upper cases.
      * @param  band   the band number, or 0 if none.
@@ -418,24 +382,16 @@ final class LandsatReader extends MetadataBuilder {
      *         or if the result of the parsing was not of the expected type.
      * @throws IllegalArgumentException if the value is out of range.
      */
-    private void parseKeyValuePair(final String key, final int band, String value)
+    private void parseKeyValuePair(final String key, final int band, final String value)
             throws IllegalArgumentException, DateTimeException, DataStoreException
     {
         switch (key) {
-            case "GROUP": {
-                group = value;
-                break;
-            }
-            case "END_GROUP": {
-                group = null;
-                break;
-            }
-
-            ////
-            //// GROUP = METADATA_FILE_INFO
-            ////
-
-            /*
+            case "GROUP":     group = value; break;
+            case "END_GROUP": group = null;  break;
+            /* ┌────────────────────────────────────┐
+             * │ GROUP = METADATA_FILE_INFO     (L1)│
+             * │         PRODUCT_CONTENTS       (L2)│
+             * └────────────────────────────────────┘
              * Origin of the product.
              * Value is "Image courtesy of the U.S. Geological Survey".
              */
@@ -449,6 +405,10 @@ final class LandsatReader extends MetadataBuilder {
                 break;
             }
             /*
+             * Example: "https://doi.org/10.5066/P9OGBGM6"
+             */
+//          case "DIGITAL_OBJECT_IDENTIFIER":
+            /*
              * Product Request ID. NNNNNNNNNNNNN_UUUUU, where NNNNNNNNNNNNN = 13-digit Tracking,
              * Routing, and Metrics (TRAM) order number and UUUUU = 5-digit TRAM unit number.
              * Example: "0501403126384_00011"
@@ -458,10 +418,11 @@ final class LandsatReader extends MetadataBuilder {
                 break;
             }
             /*
-             * The unique Landsat scene identifier.
-             * Format is {@code Ls8ppprrrYYYYDDDGGGVV}.
-             * Example: "LC81230522014071LGN00".
+             * Product: the filename prefix. Example: "LC08_L2SP_197030_20210812_20210819_02_T1"
+             * Scene:   the unique Landsat scene identifier. Example: "LC81230522014071LGN00".
+             * Format:  Ls8ppprrrYYYYDDDGGGVV
              */
+            case "LANDSAT_PRODUCT_ID":
             case "LANDSAT_SCENE_ID": {
                 addTitleOrIdentifier(value, MetadataBuilder.Scope.ALL);
                 break;
@@ -488,15 +449,14 @@ final class LandsatReader extends MetadataBuilder {
              * Example: "LPGS_2.3.0".
              */
 // TODO     case "PROCESSING_SOFTWARE_VERSION":
-
-            ////
-            //// GROUP = PRODUCT_METADATA
-            ////
-
-            /*
+            /* ┌────────────────────────────────────┐
+             * │ GROUP = PRODUCT_METADATA       (L1)│
+             * │         PRODUCT_CONTENTS       (L2)│
+             * └────────────────────────────────────┘
              * The identifier to inform the user of the product type.
              * Value can be "L1T" or "L1GT".
              */
+            case "PROCESSING_LEVEL":
             case "DATA_TYPE": {
                 setProcessingLevelCode("Landsat", value);
                 break;
@@ -514,14 +474,15 @@ final class LandsatReader extends MetadataBuilder {
              * Value is "GEOTIFF".
              */
             case "OUTPUT_FORMAT": {
-                if (Constants.GEOTIFF.equalsIgnoreCase(value)) try {
-                    value = Constants.GEOTIFF;              // Because 'metadata.setFormat(…)' is case-sensitive.
-                    setFormat(value);
+                String name = value;
+                if (Constants.GEOTIFF.equalsIgnoreCase(name)) try {
+                    name = Constants.GEOTIFF;               // Because 'metadata.setFormat(…)' is case-sensitive.
+                    setFormat(name);
                     break;
                 } catch (MetadataStoreException e) {
                     warning(key, null, e);
                 }
-                addFormatName(value);
+                addFormatName(name);
                 break;
             }
             /*
@@ -600,12 +561,12 @@ final class LandsatReader extends MetadataBuilder {
              * The number of product lines and samples for the panchromatic, reflective and thermal bands.
              * Those parameters are only present if the corresponding band is present in the product.
              */
-            case "PANCHROMATIC_LINES":   parseGridSize(PANCHROMATIC + 1, value); break;
-            case "PANCHROMATIC_SAMPLES": parseGridSize(PANCHROMATIC,     value); break;
-            case "REFLECTIVE_LINES":     parseGridSize(REFLECTIVE + 1,   value); break;
-            case "REFLECTIVE_SAMPLES":   parseGridSize(REFLECTIVE,       value); break;
-            case "THERMAL_LINES":        parseGridSize(THERMAL + 1,      value); break;
-            case "THERMAL_SAMPLES":      parseGridSize(THERMAL,          value); break;
+            case "PANCHROMATIC_LINES":   parseGridSize(LandsatBandGroup.PANCHROMATIC, false, value); break;
+            case "PANCHROMATIC_SAMPLES": parseGridSize(LandsatBandGroup.PANCHROMATIC, true,  value); break;
+            case "REFLECTIVE_LINES":     parseGridSize(LandsatBandGroup.REFLECTIVE,   false, value); break;
+            case "REFLECTIVE_SAMPLES":   parseGridSize(LandsatBandGroup.REFLECTIVE,   true,  value); break;
+            case "THERMAL_LINES":        parseGridSize(LandsatBandGroup.THERMAL,      false, value); break;
+            case "THERMAL_SAMPLES":      parseGridSize(LandsatBandGroup.THERMAL,      true,  value); break;
             /*
              * The grid cell size in meters used in creating the image for the band, if part of the product.
              * This parameter is only included if the corresponding band is included in the product.
@@ -621,9 +582,19 @@ final class LandsatReader extends MetadataBuilder {
              * This parameter is only present if the band is included in the product.
              */
             case "FILE_NAME_BAND_": {
-                final DefaultBand db = band(key, band);
-                if (db != null) {
-                    db.getNames().add(new DefaultIdentifier(value));
+                band(key, band).ifPresent((b) -> b.filename = value);
+                break;
+            }
+            /*
+             * Examples: UINT8, UINT16, INT16.
+             */
+            case "DATA_TYPE_BAND_": {
+                final int s = value.lastIndexOf("INT");
+                if (s >= 0) try {
+                    final Integer n = Integer.valueOf(value.substring(s + 3));
+                    sampleDimension(key, band).ifPresent((sd) -> sd.setBitsPerValue(n));
+                } catch (NumberFormatException e) {
+                    warning(key, null, e);
                 }
                 break;
             }
@@ -637,12 +608,9 @@ final class LandsatReader extends MetadataBuilder {
                 }
                 break;
             }
-
-            ////
-            //// GROUP = IMAGE_ATTRIBUTES
-            ////
-
-            /*
+            /* ┌────────────────────────────────────┐
+             * │ GROUP = IMAGE_ATTRIBUTES           │
+             * └────────────────────────────────────┘
              * The overall cloud coverage (percent) of the WRS-2 scene as a value between 0 and 100 inclusive.
              * -1 indicates that the score was not calculated.
              */
@@ -671,21 +639,15 @@ final class LandsatReader extends MetadataBuilder {
                 setIlluminationElevationAngle(Double.parseDouble(value));
                 break;
             }
-
-            ////
-            //// GROUP = MIN_MAX_PIXEL_VALUE
-            ////
-
-            /*
+            /* ┌────────────────────────────────────┐
+             * │ GROUP = MIN_MAX_PIXEL_VALUE        │
+             * └────────────────────────────────────┘
              * Minimum achievable spectral radiance value for a band 1.
              * This parameter is only present if this band is included in the product.
              */
             case "QUANTIZE_CAL_MIN_BAND_": {
                 final Double v = parseDouble(value);        // Done first in case an exception is thrown.
-                final DefaultBand db = band(key, band);
-                if (db != null) {
-                    db.setMinValue(v);
-                }
+                sampleDimension(key, band).ifPresent((sd) -> sd.setMinValue(v));
                 break;
             }
             /*
@@ -694,39 +656,23 @@ final class LandsatReader extends MetadataBuilder {
              */
             case "QUANTIZE_CAL_MAX_BAND_": {
                 final Double v = parseDouble(value);        // Done first in case an exception is thrown.
-                final DefaultBand db = band(key, band);
-                if (db != null) {
-                    db.setMaxValue(v);
-                }
+                sampleDimension(key, band).ifPresent((sd) -> sd.setMaxValue(v));
                 break;
             }
-
-            ////
-            //// GROUP = RADIOMETRIC_RESCALING
-            ////
-
-            /*
-             * The multiplicative rescaling factor used to convert calibrated DN to Radiance units for a band.
-             * Unit is W/(m² sr um)/DN.
+            /* ┌────────────────────────────────────┐
+             * │ GROUP = RADIOMETRIC_RESCALING      │
+             * └────────────────────────────────────┘
+             * The additive or multiplicative rescaling factor used to convert calibrated
+             * DN to Radiance units for a band. Radiance unit is W/(m² sr um)/DN.
+             * Reflectance unit is dimensionless (a ratio).
              */
-            case "RADIANCE_MULT_BAND_": {
-                setTransferFunction(key, band, true, value);
-                break;
-            }
-            /*
-             * The additive rescaling factor used to convert calibrated DN to Radiance units for a band.
-             * Unit is W/(m² sr um)/DN.
-             */
-            case "RADIANCE_ADD_BAND_": {
-                setTransferFunction(key, band, false, value);
-                break;
-            }
-
-            ////
-            //// GROUP = PROJECTION_PARAMETERS
-            ////
-
-            /*
+            case "RADIANCE_MULT_BAND_":    setTransferFunction(key, band, false, true,  value); break;
+            case "REFLECTANCE_MULT_BAND_": setTransferFunction(key, band, true,  true,  value); break;
+            case "RADIANCE_ADD_BAND_":     setTransferFunction(key, band, false, false, value); break;
+            case "REFLECTANCE_ADD_BAND_":  setTransferFunction(key, band, true,  false, value); break;
+            /* ┌────────────────────────────────────┐
+             * │ GROUP = PROJECTION_PARAMETERS      │
+             * └────────────────────────────────────┘
              * The map projection used in creating the image.
              * Universal Transverse Mercator (UTM) or Polar Stereographic (PS).
              */
@@ -748,7 +694,7 @@ final class LandsatReader extends MetadataBuilder {
              * We ignore the "ELLIPSOID" attribute because it is implied by the datum.
              */
             case "DATUM": {
-                datum = CommonCRS.valueOf(Strings.toUpperCase(value, Characters.Filter.LETTERS_AND_DIGITS));
+                datum = CommonCRS.valueOf(Strings.toUpperCase(value, Characters.Filter.LETTERS_AND_DIGITS, true));
                 break;
             }
             /*
@@ -775,47 +721,71 @@ final class LandsatReader extends MetadataBuilder {
     }
 
     /**
-     * Sets a component of the linear transfer function.
-     *
-     * @param  key      the key without its band number. Used only for formatting warning messages.
-     * @param  band     index of the band to set.
-     * @param  isScale  {@code true} for setting the scale factor, or {@code false} for setting the offset.
-     * @param  value    the value to set.
+     * Invoked for every key-value pairs found in a lineage group. This method does a work similar to
+     * {@link #parseKeyValuePair(String, int, String)} except that the result is stored in a section
+     * about data history. Note that the file can contains many distinct lineage sections.
      */
-    private void setTransferFunction(final String key, final int band, final boolean isScale, final String value) {
-        final Double v = parseDouble(value);            // Done first in case an exception is thrown.
-        final DefaultBand db = band(key, band);
-        if (db != null) {
-            db.setTransferFunctionType(TransferFunctionType.LINEAR);
-            if (isScale) {
-                db.setScaleFactor(v);
-            } else {
-                db.setOffset(v);
-            }
+    private void parseLineage(final String key, final int band, String value) {
+        switch (key) {
+            case "GROUP":                       group = value;                break;
+            case "END_GROUP":                   group = null;                 break;
+            case "LANDSAT_PRODUCT_ID":          addSource(value, null, null); break;
+            case "PROCESSING_LEVEL":            addProcessing(null, value);   break;
+            case "PROCESSING_SOFTWARE_VERSION": addSoftwareReference(value);  break;
         }
     }
 
     /**
+     * Sets a component of the linear transfer function.
+     *
+     * @param  key          the key without its band number. Used only for formatting warning messages.
+     * @param  band         index of the band to set.
+     * @param  reflectance  {@code true} if the parameter is about reflectance instead of radiance.
+     * @param  isScale      {@code true} for setting the scale factor, or {@code false} for setting the offset.
+     * @param  value        the value to set.
+     */
+    private void setTransferFunction(final String key, final int band, final boolean reflectance, final boolean isScale, final String value) {
+        final Double v = parseDouble(value);            // Done first in case an exception is thrown.
+        band(key, band).ifPresent((b) -> {
+            if (b.band.group.reflectance == reflectance) {
+                final DefaultSampleDimension sd = b.sampleDimension;
+                sd.setTransferFunctionType(TransferFunctionType.LINEAR);
+                if (isScale) {
+                    sd.setScaleFactor(v);
+                } else {
+                    sd.setOffset(v);
+                }
+            }
+        });
+    }
+
+    /**
      * Returns the band at the given index, creating it if needed.
-     * If the given index is out of range, then this method logs a warning and returns {@code null}.
+     * If the given index is out of range, then this method logs a warning and returns an empty value.
      *
      * @param  key    the key without its band number. Used only for formatting warning messages.
      * @param  index  the band index.
+     * @return information about the band, or {@code null} if none.
      */
-    private DefaultBand band(final String key, int index) {
-        if (index < 1 || index > BAND_NAMES.length) {
+    private Optional<LandsatResource> band(final String key, final int index) {
+        if (index < 1 || index > bandEnumerations.length) {
             listeners.warning(errors().getString(Errors.Keys.UnexpectedValueInElement_2, key + index, index));
-            return null;
+            return Optional.empty();
         }
-        DefaultBand band = bands[--index];
-        if (band == null) {
-            band = new DefaultBand();
-            band.setDescription(new SimpleInternationalString(BAND_NAMES[index]));
-            band.setPeakResponse((double) WAVELENGTHS[index]);
-            band.setBoundUnits(Units.NANOMETRE);
-            bands[index] = band;
+        final LandsatBand band = bandEnumerations[index - 1];
+        LandsatResource data = bands.get(band);
+        if (data == null) {
+            data = new LandsatResource(store, band);
+            bands.put(band, data);
         }
-        return band;
+        return Optional.of(data);
+    }
+
+    /**
+     * Returns metadata about sample dimension at the given index.
+     */
+    private Optional<DefaultSampleDimension> sampleDimension(final String key, final int index) {
+        return band(key, index).map((band) -> band.sampleDimension);
     }
 
     /**
@@ -867,7 +837,7 @@ final class LandsatReader extends MetadataBuilder {
         double ymin = Double.POSITIVE_INFINITY;
         double xmax = Double.NEGATIVE_INFINITY;
         double ymax = Double.NEGATIVE_INFINITY;
-        for (int i = base + (4*DIM); --i >= base;) {
+        for (int i = base + NUM_COORDINATES; --i >= base;) {
             double v = corners[i];
             if (v < ymin) ymin = v;
             if (v > ymax) ymax = v;
@@ -933,15 +903,13 @@ final class LandsatReader extends MetadataBuilder {
         if (toBoundingBox(GEOGRAPHIC)) {
             addExtent(corners, GEOGRAPHIC);
         }
-        for (int i = 0; i < gridSizes.length; i += DIM) {
-            final int width  = gridSizes[i  ];
-            final int height = gridSizes[i+1];
-            if ((width | height) != 0) {
+        for (final Dimension size : gridSizes.values()) {
+            if ((size.width | size.height) != 0) {
                 newGridRepresentation(MetadataBuilder.GridType.GEORECTIFIED);
                 setAxisName(0, DimensionNameType.SAMPLE);
                 setAxisName(1, DimensionNameType.LINE);
-                setAxisSize(0, Integer.toUnsignedLong(width));
-                setAxisSize(1, Integer.toUnsignedLong(height));
+                setAxisSize(0, Integer.toUnsignedLong(size.width));
+                setAxisSize(1, Integer.toUnsignedLong(size.height));
             }
         }
         /*
@@ -951,31 +919,23 @@ final class LandsatReader extends MetadataBuilder {
          */
         setISOStandards(true);
         final DefaultMetadata result = build(false);
-        if (result != null) {
-            /*
-             * Set information about all non-null bands. The bands are categorized in three groups:
-             * PANCHROMATIC, REFLECTIVE and THERMAL. The group in which each band belong is encoded
-             * in the BAND_GROUPS bitmask.
-             */
-            final DefaultCoverageDescription content = (DefaultCoverageDescription) singletonOrNull(result.getContentInfo());
-            if (content != null) {
-                final DefaultAttributeGroup[] groups = new DefaultAttributeGroup[NUM_GROUPS];
-                for (int i=0; i < bands.length; i++) {
-                    final DefaultBand band = bands[i];
-                    if (band != null) {
-                        final int gi = (BAND_GROUPS >>> 2*i) & 3;
-                        DefaultAttributeGroup group = groups[gi];
-                        if (group == null) {
-                            group = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
-                            content.getAttributeGroups().add(group);
-                            groups[gi] = group;
-                        }
-                        group.getAttributes().add(band);
-                    }
-                }
+        /*
+         * Set information about all non-null bands. The bands are categorized in three groups:
+         * PANCHROMATIC, REFLECTIVE and THERMAL.
+         */
+        final DefaultCoverageDescription content = (DefaultCoverageDescription) singletonOrNull(result.getContentInfo());
+        if (content != null) {
+            final EnumMap<LandsatBandGroup,DefaultAttributeGroup> groups = new EnumMap<>(LandsatBandGroup.class);
+            for (final EnumMap.Entry<LandsatBand,LandsatResource> entry : bands.entrySet()) {
+                final DefaultAttributeGroup group = groups.computeIfAbsent(entry.getKey().group, (k) -> {
+                    DefaultAttributeGroup g = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
+                    content.getAttributeGroups().add(g);
+                    return g;
+                });
+                group.getAttributes().add(entry.getValue().sampleDimension);
             }
-            result.transitionTo(DefaultMetadata.State.FINAL);
         }
+        result.transitionTo(DefaultMetadata.State.FINAL);
         return result;
     }
 

@@ -18,6 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -29,7 +30,7 @@ import org.apache.sis.util.ArgumentChecks;
  * This is pending GeoAPI update.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -87,7 +88,13 @@ final class GridCoordinatesView {
      */
     @Override
     public final String toString() {
-        return "GridCoordinates".concat(Arrays.toString(getCoordinateValues()));
+        final StringBuilder buffer = new StringBuilder("GridCoordinates[");
+        final int dimension = getDimension();
+        for (int i=0; i<dimension; i++) {
+            if (i != 0) buffer.append(' ');
+            buffer.append(coordinates[i + offset]);
+        }
+        return buffer.append(']').toString();
     }
 
     /**
@@ -120,16 +127,8 @@ final class GridCoordinatesView {
          */
         if (object instanceof GridCoordinatesView) {
             final GridCoordinatesView that = (GridCoordinatesView) object;
-            final int dimension = getDimension();
-            if (dimension == that.getDimension()) {
-                // TODO: use Arrays.equals(...) with JDK9 instead.
-                for (int i=0; i<dimension; i++) {
-                    if (coordinates[offset + i] != that.coordinates[that.offset + i]) {
-                        return false;
-                    }
-                }
-                return true;
-            }
+            return JDK9.equals(this.coordinates, this.offset, this.offset + this.getDimension(),
+                               that.coordinates, that.offset, that.offset + that.getDimension());
         }
         return false;
     }

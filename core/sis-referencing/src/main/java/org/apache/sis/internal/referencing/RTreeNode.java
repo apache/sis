@@ -29,6 +29,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.geometry.MismatchedReferenceSystemException;
 
 
 /**
@@ -246,7 +247,7 @@ detach: for (RTreeNode next; node != null; node = next) {
                 if (common == null) {
                     common = crs;
                 } else if (crs != null && !Utilities.equalsIgnoreMetadata(common, crs)) {
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedCRS));
+                    throw new MismatchedReferenceSystemException(Errors.format(Errors.Keys.MismatchedCRS));
                 }
             }
         }

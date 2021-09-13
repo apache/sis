@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.awt.Rectangle;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -38,8 +39,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
@@ -52,9 +53,16 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.coverage.CannotEvaluateException;
+import org.apache.sis.coverage.PointOutsideCoverageException;
 
 
 /**
@@ -66,7 +74,7 @@ import org.apache.sis.util.iso.Types;
  * <div class="note"><b>Note:</b>
  * The inclusiveness of {@linkplain #getHigh() high} coordinates come from ISO 19123.
  * We follow this specification for all getters methods, but developers should keep in mind
- * that this is the opposite of Java2D usage where {@link java.awt.Rectangle} maximal values are exclusive.</div>
+ * that this is the opposite of Java2D usage where {@link Rectangle} maximal values are exclusive.</div>
  *
  * <p>{@code GridExtent} instances are immutable and thread-safe.
  * The same instance can be shared by different {@link GridGeometry} instances.</p>
@@ -76,11 +84,12 @@ import org.apache.sis.util.iso.Types;
  * This is pending GeoAPI update.</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   1.0
  * @module
  */
-public class GridExtent implements Serializable {
+public class GridExtent implements Serializable, LenientComparable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -91,6 +100,8 @@ public class GridExtent implements Serializable {
      * This map contains only the "positive" axis directions.
      *
      * @todo Verify if there is more directions to add as of ISO 19111:2018.
+     *
+     * @see #typeFromAxes(CoordinateReferenceSystem, int)
      */
     private static final Map<AxisDirection,DimensionNameType> AXIS_DIRECTIONS;
     static {
@@ -138,7 +149,7 @@ public class GridExtent implements Serializable {
      *
      * @throws IllegalArgumentException if the given number of dimensions is excessive.
      */
-    private static long[] allocate(final int dimension) throws IllegalArgumentException {
+    static long[] allocate(final int dimension) throws IllegalArgumentException {
         if (dimension >= Numerics.MAXIMUM_MATRIX_SIZE) {
             // Actually the real limit is Integer.MAX_VALUE / 2, but a value too high is likely to be an error.
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension));
@@ -154,7 +165,7 @@ public class GridExtent implements Serializable {
      *         greater than the corresponding coordinate value in the high part.
      */
     private void validateCoordinates() throws IllegalArgumentException {
-        final int dimension = coordinates.length >>> 1;
+        final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
             final long lower = coordinates[i];
             final long upper = coordinates[i + dimension];
@@ -222,6 +233,19 @@ public class GridExtent implements Serializable {
     }
 
     /**
+     * Creates a new grid extent for an image or matrix of the given bounds.
+     * The axis types are {@link DimensionNameType#COLUMN} and {@link DimensionNameType#ROW ROW} in that order.
+     *
+     * @param  bounds  the bounds to copy in the new grid extent.
+     *
+     * @since 1.1
+     */
+    public GridExtent(final Rectangle bounds) {
+        this(bounds.width, bounds.height);
+        translate2D(bounds.x, bounds.y);
+    }
+
+    /**
      * Creates a new grid extent for an image or matrix of the given size.
      * The {@linkplain #getLow() low} grid coordinates are zeros and the axis types are
      * {@link DimensionNameType#COLUMN} and {@link DimensionNameType#ROW ROW} in that order.
@@ -236,6 +260,30 @@ public class GridExtent implements Serializable {
         coordinates[2] = width  - 1;
         coordinates[3] = height - 1;
         types = DEFAULT_TYPES;
+    }
+
+    /**
+     * Creates a new grid extent for an image of the given size and location. This constructor
+     * is for internal usage: argument meanings differ from conventions in public constructors.
+     *
+     * @param  xmin    column index of the first cell.
+     * @param  ymin    row index of the first cell.
+     * @param  width   number of pixels in each row.
+     * @param  height  number of pixels in each column.
+     */
+    GridExtent(final int xmin, final int ymin, final int width, final int height) {
+        this(width, height);
+        translate2D(xmin, ymin);
+    }
+
+    /**
+     * Completes a {@link GridExtent} construction with a final translation.
+     * Shall be invoked for two-dimensional extents only.
+     */
+    private void translate2D(final long xmin, final long ymin) {
+        for (int i=coordinates.length; --i >= 0;) {
+            coordinates[i] += ((i & 1) == 0) ? xmin : ymin;
+        }
     }
 
     /**
@@ -293,6 +341,31 @@ public class GridExtent implements Serializable {
     }
 
     /**
+     * Infers the axis types from the given coordinate reference system.
+     * This method is the converse of {@link GridExtentCRS}.
+     *
+     * @param  crs        the coordinate reference system, or {@code null}.
+     * @param  dimension  number of name type to infer. Shall not be greater than the CRS dimension.
+     * @return axis types, or {@code null} if no axis were recognized.
+     */
+    static DimensionNameType[] typeFromAxes(final CoordinateReferenceSystem crs, final int dimension) {
+        DimensionNameType[] axisTypes = null;
+        if (crs != null) {
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            for (int i=0; i<dimension; i++) {
+                final DimensionNameType type = AXIS_DIRECTIONS.get(AxisDirections.absolute(cs.getAxis(i).getDirection()));
+                if (type != null) {
+                    if (axisTypes == null) {
+                        axisTypes = new DimensionNameType[dimension];
+                    }
+                    axisTypes[i] = type;
+                }
+            }
+        }
+        return axisTypes;
+    }
+
+    /**
      * Creates a new grid extent by rounding the given envelope to (usually) nearest integers.
      * The envelope coordinates shall be cell indices with lower values inclusive and upper values exclusive.
      * {@link Double#NaN} envelope coordinates will be set to the corresponding {@code enclosing} coordinates
@@ -306,7 +379,9 @@ public class GridExtent implements Serializable {
      *
      * @param  envelope            the envelope containing cell indices to store in a {@code GridExtent}.
      * @param  rounding            controls behavior of rounding from floating point values to integers.
+     * @param  clipping            how to clip this extent to the enclosing extent. Ignored if {@code enclosing} is null.
      * @param  margin              if non-null, expands the extent by that amount of cells on each envelope dimension.
+     * @param  chunkSize           if non-null, make the grid extent spanning an integer amount of chunks (tiles).
      * @param  enclosing           if the new grid is a sub-grid of a larger grid, that larger grid. Otherwise {@code null}.
      * @param  modifiedDimensions  if {@code enclosing} is non-null, the grid dimensions to set from the envelope.
      *                             The length of this array shall be equal to the {@code envelope} dimension.
@@ -316,14 +391,27 @@ public class GridExtent implements Serializable {
      * @see #toCRS(MathTransform, MathTransform, Envelope)
      * @see #slice(DirectPosition, int[])
      */
-    GridExtent(final AbstractEnvelope envelope, final GridRoundingMode rounding, final int[] margin,
-            final GridExtent enclosing, final int[] modifiedDimensions)
+    GridExtent(final AbstractEnvelope envelope, final GridRoundingMode rounding, final GridClippingMode clipping,
+               final int[] margin, final int[] chunkSize, final GridExtent enclosing, final int[] modifiedDimensions)
     {
         final int dimension = envelope.getDimension();
         coordinates = (enclosing != null) ? enclosing.coordinates.clone() : allocate(dimension);
+        /*
+         * Assign the `types` field before we try to compute the grid extent coordinates
+         * because if the coordinate computation fail, `getAxisIdentification(…)` uses
+         * that information for producing a more informative error message if possible.
+         */
+        if (enclosing != null && enclosing.types != null) {
+            types = enclosing.types;
+        } else {
+            types = validateAxisTypes(typeFromAxes(envelope.getCoordinateReferenceSystem(), dimension));
+        }
+        /*
+         * Now computes the grid extent coordinates.
+         */
         for (int i=0; i<dimension; i++) {
-            double min = envelope.getLower(i);
-            double max = envelope.getUpper(i);
+            double min = envelope.getLower(i);                      // Inclusive
+            double max = envelope.getUpper(i);                      // Exclusive
             final boolean isMinValid = (min >= Long.MIN_VALUE);
             final boolean isMaxValid = (max <= Long.MAX_VALUE);
             if (min > max || (enclosing == null && !(isMinValid & isMaxValid))) {
@@ -340,7 +428,7 @@ public class GridExtent implements Serializable {
             }
             if (!isMinValid) min = Long.MIN_VALUE;
             if (!isMaxValid) max = Long.MAX_VALUE;
-            long lower, upper;
+            long lower, upper;                                                  // Both inclusive (upper as well).
             switch (rounding) {
                 default: {
                     throw new AssertionError(rounding);
@@ -351,41 +439,76 @@ public class GridExtent implements Serializable {
                     if (lower != upper) upper--;                                // For making the coordinate inclusive.
                     break;
                 }
+                case CONTAINED: {
+                    final double lo = Math.ceil (min);
+                    final double hi = Math.floor(max);
+                    if (lo > hi) {
+                        lower = (long) ((lo - min > max - hi) ? hi : lo);       // Take the value closest to integer.
+                        upper = lower;
+                    } else {
+                        lower = (long) lo;
+                        upper = (long) hi;
+                        if (lower != upper) upper--;                            // For making the coordinate inclusive.
+                    }
+                    break;
+                }
                 case NEAREST: {
                     lower = Math.round(min);
                     upper = Math.round(max);
-                    if (lower != upper) upper--;                                // For making the coordinate inclusive.
-                    /*
-                     * The [lower … upper] range may be slightly larger than desired in some rounding error situations.
-                     * For example if `min` was 1.49999 and 'max' was 2.50001,  the rounding will create a [1…3] range
-                     * while there is actually only 2 pixels. We detect those rounding problems by comparing the spans
-                     * before and after rounding.  We attempt an adjustment only if the span mismatch is ±1, otherwise
-                     * the difference is assumed to be caused by overflow. On the three values that can be affected by
-                     * the adjustment (min, max and span), we change only the number which is farthest from an integer
-                     * value.
-                     */
-                    long error = (upper - lower) + 1;                           // Negative number if overflow.
-                    if (error >= 0) {
-                        final double span = envelope.getSpan(i);
-                        final long extent = Math.round(span);
-                        if (extent != 0 && Math.abs(error -= extent) == 1) {
-                            final double dmin = Math.abs(min - Math.rint(min));
-                            final double dmax = Math.abs(max - Math.rint(max));
-                            final boolean adjustMax = (dmax >= dmin);
-                            if (Math.abs(span - extent) < (adjustMax ? dmax : dmin)) {
-                                if (adjustMax) upper = Math.subtractExact(upper, error);
-                                else lower = Math.addExact(lower, error);
+                    if (lower == upper) {                                       // Equality implies (max - min) < 1.
+                        if (min - Math.floor(min) > Math.ceil(max) - max) {
+                            upper = --lower;
+                        }
+                    } else {
+                        upper--;                                                // For making the coordinate inclusive.
+                        /*
+                         * The [lower … upper] range may be slightly larger than desired in some rounding error situations.
+                         * For example if `min` was 1.49999 and `max` was 2.50001,  the rounding will create a [1…3] range
+                         * while there is actually only 2 pixels. We detect those rounding problems by comparing the spans
+                         * before and after rounding.  We attempt an adjustment only if the span mismatch is ±1, otherwise
+                         * the difference is assumed to be caused by overflow. On the three values that can be affected by
+                         * the adjustment (min, max and span), we change only the number which is farthest from an integer
+                         * value.
+                         */
+                        long delta = (upper - lower) + 1;                       // Negative number if overflow.
+                        if (delta >= 0) {
+                            final double span = envelope.getSpan(i);
+                            final long extent = Math.round(span);
+                            if (extent != 0 && Math.abs(delta -= extent) == 1) {
+                                final double dmin = Math.abs(min - Math.rint(min));
+                                final double dmax = Math.abs(max - Math.rint(max));
+                                final boolean adjustMax = (dmax >= dmin);
+                                if (Math.abs(span - extent) < (adjustMax ? dmax : dmin)) {
+                                    if (adjustMax) upper = Math.subtractExact(upper, delta);
+                                    else lower = Math.addExact(lower, delta);
+                                }
                             }
                         }
                     }
                 }
             }
             /*
+             * If caller requested to clip only the user Area Of Interest (AOI) without constraining the
+             * margin or chunk size, then we need to do clipping now instead than at the end of this loop.
+             */
+            if (enclosing != null && clipping == GridClippingMode.BORDER_EXPANSION) {
+                final int  lo = (modifiedDimensions != null) ? modifiedDimensions[i] : i;
+                final int  hi = lo + getDimension();
+                final long lv = Math.max(lower, coordinates[lo]);
+                final long hv = Math.min(upper, coordinates[hi]);
+                if (lv > hv) {
+                    throw new DisjointExtentException(getAxisIdentification(lo, i),
+                                        coordinates[lo], coordinates[hi], lv, hv);
+                }
+                lower = lv;
+                upper = hv;
+            }
+            /*
              * If the user specified a margin, add it now. The margin dimension indices follow the envelope
              * dimension indices.  Note that the resulting extent will be intersected with enclosing extent
-             * at the next step, which may cancel the margin effect.
+             * at a next step, which may cancel the margin effect.
              *
-             * Note about overflow checks: if m>0, then x < x+m unless the result overflows the 'long' capacity.
+             * Note about overflow checks: if m>0, then x < x+m unless the result overflows the `long` capacity.
              */
             if (margin != null && i < margin.length) {
                 final int m = margin[i];
@@ -402,51 +525,50 @@ public class GridExtent implements Serializable {
                 lower = upper;
             }
             /*
+             * If chunk size has been specified, snap the coordinates to a multiple of that size.
+             * The new extent will be clipped with `enclosing` (if non-null) in next step.
+             * Note: formulas used here are the same than in `forChunkSize(…)` method.
+             */
+            if (chunkSize != null && i < chunkSize.length) {
+                final int s = chunkSize[i];
+                lower = Math.subtractExact(lower, Math.floorMod(lower, s));
+                upper = Math.addExact(upper, (s-1) - Math.floorMod(upper, s));
+            }
+            /*
              * At this point the grid range has been computed (lower to upper). Compute intersection,
              * then update the coordinates accordingly. Note that if envelope coordinates were NaN,
              * they will have been replaced by `Long.MIN/MAX_VALUE`, which will usually cause the
              * assignation to be skipt below (so we keep the values inherited from `enclosing`).
              */
-            final int m = getDimension();
-            if (enclosing != null) {
+            if (enclosing != null && clipping == GridClippingMode.STRICT) {
                 final int lo = (modifiedDimensions != null) ? modifiedDimensions[i] : i;
-                final int hi = lo + m;
+                final int hi = lo + getDimension();
                 final long validMin = coordinates[lo];
                 final long validMax = coordinates[hi];
                 if (lower > validMin) coordinates[lo] = lower;
                 if (upper < validMax) coordinates[hi] = upper;
                 if (lower > validMax || upper < validMin) {
-                    throw new DisjointExtentException(enclosing.getAxisIdentification(lo, i), validMin, validMax, lower, upper);
+                    throw new DisjointExtentException(getAxisIdentification(lo, i), validMin, validMax, lower, upper);
                 }
             } else {
-                coordinates[i]   = lower;
-                coordinates[i+m] = upper;
+                coordinates[i] = lower;
+                coordinates[i + getDimension()] = upper;
             }
         }
-        /*
-         * At this point we finished to compute coordinate values.
-         * Now try to infer dimension types from the CRS axes.
-         * This is only for information purpose.
-         */
-        if (enclosing != null) {
-            types = enclosing.types;
-        } else {
-            DimensionNameType[] axisTypes = null;
-            final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
-            if (crs != null) {
-                final CoordinateSystem cs = crs.getCoordinateSystem();
-                for (int i=0; i<dimension; i++) {
-                    final DimensionNameType type = AXIS_DIRECTIONS.get(AxisDirections.absolute(cs.getAxis(i).getDirection()));
-                    if (type != null) {
-                        if (axisTypes == null) {
-                            axisTypes = new DimensionNameType[dimension];
-                        }
-                        axisTypes[i] = type;
-                    }
-                }
-            }
-            types = validateAxisTypes(axisTypes);
-        }
+    }
+
+    /**
+     * Creates a new grid extent with the same axes than the given extent, but different coordinates.
+     * This constructor does not invoke {@link #validateCoordinates()}; we presume that the caller's
+     * computation is correct.
+     *
+     * @param enclosing    the extent from which to copy axes, or {@code null} if none.
+     * @param coordinates  the coordinates. This array is not cloned.
+     */
+    GridExtent(final GridExtent enclosing, final long[] coordinates) {
+        this.coordinates = coordinates;
+        types = (enclosing != null) ? enclosing.types : null;
+        assert (types == null) || types.length == getDimension();
     }
 
     /**
@@ -474,14 +596,44 @@ public class GridExtent implements Serializable {
     }
 
     /**
+     * Returns the number of dimensions where this grid extent has a size greater than 1.
+     * This is a value between 0 and {@link #getDimension()} inclusive.
+     *
+     * @return the number of dimensions where this grid extent has a size greater than 1.
+     *
+     * @see #getSubspaceDimensions(int)
+     */
+    final int getSubDimension() {
+        int n = 0;
+        final int dimension = getDimension();
+        for (int i=0; i<dimension; i++) {
+            if (coordinates[i] != coordinates[i + dimension]) n++;
+        }
+        return n;
+    }
+
+    /**
      * Returns {@code true} if all low coordinates are zero.
      * This is a very common case since many grids start their cell numbering at zero.
      *
      * @return whether all low coordinates are zero.
+     *
+     * @see #translate(long...)
      */
     public boolean startsAtZero() {
-        for (int i = getDimension(); --i >= 0;) {
-            if (coordinates[i] != 0) {
+        return isZero(coordinates, getDimension());
+    }
+
+    /**
+     * Returns {@code true} if all values in the given vector are zero.
+     *
+     * @param  vector  the vector to verify.
+     * @param  n       number of elements to verify. All remaining elements are ignored.
+     * @return whether the <var>n</var> first elements in the given array are all zero.
+     */
+    private static boolean isZero(final long[] vector, int n) {
+        while (--n >= 0) {
+            if (vector[n] != 0) {
                 return false;
             }
         }
@@ -561,8 +713,8 @@ public class GridExtent implements Serializable {
     /**
      * Returns the number of grid coordinates as a double precision floating point value.
      * Invoking this method is equivalent to invoking {@link #getSize(int)} and converting
-     * the result from {@code long} to the {@code double} primitive type,
-     * except that this method does not overflow.
+     * the result from {@code long} to the {@code double} primitive type, except that this
+     * method does not overflow (i.e. does not throw {@link ArithmeticException}).
      *
      * @param  index     the dimension for which to obtain the size.
      * @param  minusOne  {@code true} for returning <var>size</var>−1 instead of <var>size</var>.
@@ -590,7 +742,11 @@ public class GridExtent implements Serializable {
         final int dimension = getDimension();
         final double[] center = new double[dimension];
         for (int i=0; i<dimension; i++) {
-            center[i] = ((double) coordinates[i] + (double) coordinates[i + dimension] + 1.0) * 0.5;
+            /*
+             * We want the average of (low + hi+1). However for the purpose of computing an average, it does
+             * not matter if we add 1 to `low` or `hi`. So we add 1 to `low` because it should not overflow.
+             */
+            center[i] = MathFunctions.average(Math.incrementExact(coordinates[i]), coordinates[i + dimension]);
         }
         return center;
     }
@@ -598,7 +754,7 @@ public class GridExtent implements Serializable {
     /**
      * Returns indices of all dimensions where this grid extent has a size greater than 1.
      * This method can be used for getting the grid extent of a <var>s</var>-dimensional slice
-     * in a <var>n</var>-dimensional cube where <var>s</var> ≦ <var>n</var>.
+     * in a <var>n</var>-dimensional cube where <var>s</var> ≤ <var>n</var>.
      *
      * <div class="note"><b>Example:</b>
      * suppose that we want to get a two-dimensional slice <var>(y,z)</var> in a four-dimensional data cube <var>(x,y,z,t)</var>.
@@ -629,19 +785,19 @@ public class GridExtent implements Serializable {
      * {@linkplain #getSize(int) size} greater than 1, then a {@link SubspaceNotSpecifiedException} is thrown.
      * If there is less than <var>s</var> dimensions having a size greater than 1, then the returned list of
      * dimensions is completed with some dimensions of size 1, starting with the first dimensions in this grid
-     * extent, until there is exactly <var>s</var> dimensions. This this grid extent does not have <var>s</var>
-     * dimensions, then a {@code CannotEvaluateException} is thrown.
+     * extent, until there is exactly <var>s</var> dimensions. If this grid extent does not have at least
+     * <var>s</var> dimensions, then a {@code CannotEvaluateException} is thrown.
      *
      * @param  s  number of dimensions of the sub-space.
      * @return indices of sub-space dimensions, in increasing order in an array of length <var>s</var>.
      * @throws SubspaceNotSpecifiedException if there is more than <var>s</var> dimensions having a size greater than 1.
-     * @throws RuntimeException if this grid extent does not have at least <var>s</var> dimensions.
+     * @throws CannotEvaluateException if this grid extent does not have at least <var>s</var> dimensions.
      */
     public int[] getSubspaceDimensions(final int s) {
         ArgumentChecks.ensurePositive("s", s);
         final int m = getDimension();
         if (s > m) {
-            throw new RuntimeException(Resources.format(Resources.Keys.GridEnvelopeMustBeNDimensional_1, s));
+            throw new CannotEvaluateException(Resources.format(Resources.Keys.GridEnvelopeMustBeNDimensional_1, s));
         }
         final int[] selected = new int[s];
         int count = 0;
@@ -652,19 +808,19 @@ public class GridExtent implements Serializable {
                 if (count < s) {
                     selected[count++] = i;
                 } else {
+                    long size = high - low;
+                    if (size != -1) size++;     // When interpreted as unsigned long, -1 is the maximal value.
                     throw new SubspaceNotSpecifiedException(Resources.format(Resources.Keys.NoNDimensionalSlice_3,
-                                    s, getAxisIdentification(i,i), Numerics.toUnsignedDouble(high - low)));
+                                s, getAxisIdentification(i,i), Numerics.toUnsignedDouble(size)));
                 }
             }
         }
-        final int missing = s - count;
-        if (missing != 0) {
-            System.arraycopy(selected, 0, selected, missing, count);
-            count = 0;
-            for (int i=0; ; i++) {                          // An IndexOutOfBoundsException would be a bug in our algorithm.
+        if (s != count) {
+            for (int i=0; ; i++) {
+                // An IndexOutOfBoundsException would be a bug in our algorithm.
                 if (coordinates[i] == coordinates[i+m]) {
                     selected[count++] = i;
-                    if (count == missing) break;
+                    if (count == s) break;
                 }
             }
             Arrays.sort(selected);
@@ -721,10 +877,37 @@ public class GridExtent implements Serializable {
      * The transform shall map <em>cell corner</em> to real world coordinates.
      *
      * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
+     * @return this grid extent in real world coordinates.
+     * @throws TransformException if the envelope can not be computed with the given transform.
+     *
+     * @see GridGeometry#getEnvelope()
+     * @see org.opengis.referencing.datum.PixelInCell#CELL_CORNER
+     *
+     * @since 1.1
+     */
+    public GeneralEnvelope toEnvelope(final MathTransform cornerToCRS) throws TransformException {
+        ArgumentChecks.ensureNonNull("cornerToCRS", cornerToCRS);
+        final GeneralEnvelope envelope = toCRS(cornerToCRS, cornerToCRS, null);
+        final Matrix gridToCRS = MathTransforms.getMatrix(cornerToCRS);
+        if (gridToCRS != null && Matrices.isAffine(gridToCRS)) try {
+            envelope.setCoordinateReferenceSystem(GridExtentCRS.build(gridToCRS, (types != null) ? types : DEFAULT_TYPES, null));
+        } catch (FactoryException e) {
+            throw new TransformException(e.getMessage(), e);
+        }
+        return envelope;
+    }
+
+    /**
+     * Transforms this grid extent to a "real world" envelope using the given transform.
+     * The transform shall map <em>cell corner</em> to real world coordinates.
+     * This method does not set the envelope coordinate reference system.
+     *
+     * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates, or {@code null} if none.
      * @param  gridToCRS    the transform specified by the user. May be the same as {@code cornerToCRS}.
-     *                      If different, then this is assumed to map cell centers instead than cell corners.
+     *                      If different, then this is assumed to map cell centers instead of cell corners.
      * @param  fallback     bounds to use if some values still NaN, or {@code null} if none.
      * @return this grid extent in real world coordinates.
+     * @throws TransformException if the envelope can not be computed with the given transform.
      *
      * @see #GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])
      */
@@ -734,15 +917,19 @@ public class GridExtent implements Serializable {
         final int dimension = getDimension();
         GeneralEnvelope envelope = new GeneralEnvelope(dimension);
         for (int i=0; i<dimension; i++) {
-            // The +1.0 is for making high coordinate exclusive. See GridExtent(GridExtent, int...) for a discussion.
-            envelope.setRange(i, coordinates[i], coordinates[i + dimension] + 1.0);
+            long high = coordinates[i + dimension];
+            if (high != Long.MAX_VALUE) high++;             // Make the coordinate exclusive before cast.
+            envelope.setRange(i, coordinates[i], high);     // Possible loss of precision in cast to `double` type.
+        }
+        if (cornerToCRS == null) {
+            return envelope;
         }
         envelope = Envelopes.transform(cornerToCRS, envelope);
         if (envelope.isEmpty()) try {
             /*
              * If the envelope contains some NaN values, try to replace them by constant values inferred from the math transform.
              * We must use the MathTransform specified by the user (gridToCRS), not necessarily the cornerToCRS transform, because
-             * inferring a 'cornerToCRS' by translating a 'centerToCRS' by 0.5 cell increase the amount of NaN values in the matrix.
+             * inferring a `cornerToCRS` by translating a `centerToCRS` by 0.5 cell increase the amount of NaN values in the matrix.
              * For giving a chance to TransformSeparator to perform its work, we need the minimal amount of NaN values.
              */
             final boolean isCenter = (gridToCRS != cornerToCRS);
@@ -751,7 +938,7 @@ public class GridExtent implements Serializable {
                 if (coordinates[srcDim + dimension] == 0 && coordinates[srcDim] == 0) {
                     /*
                      * At this point we found a grid dimension with [0 … 0] range. Only this specific range is processed because
-                     * it is assumed associated to NaN scale factors in the 'gridToCRS' matrix, since the resolution is computed
+                     * it is assumed associated to NaN scale factors in the `gridToCRS` matrix, since the resolution is computed
                      * by 0/0.  We require the range to be [0 … 0] instead of [n … n] because if grid indices are not zero, then
                      * we would need to know the scale factors for computing the offset.
                      */
@@ -805,13 +992,14 @@ public class GridExtent implements Serializable {
                     double upper = envelope.getUpper(tgtDim);
                     if (Double.isNaN(lower)) {lower = fallback.getMinimum(tgtDim); modified = true;}
                     if (Double.isNaN(upper)) {upper = fallback.getMaximum(tgtDim); modified = true;}
-                    if (modified && !(lower > upper)) {                // Use '!' for accepting NaN.
+                    if (modified && !(lower > upper)) {                // Use `!` for accepting NaN.
                         envelope.setRange(tgtDim, lower, upper);
                     }
                 }
             }
         } catch (FactoryException e) {
-            GridGeometry.recoverableException(e);
+            // "toEnvelope" is the closest public method that may invoke this method.
+            Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridExtent.class, "toEnvelope", e);
         }
         return envelope;
     }
@@ -883,38 +1071,86 @@ public class GridExtent implements Serializable {
     }
 
     /**
-     * Expands or shrinks this grid extent by the given amount of cells along each dimension.
+     * Returns a grid extent expanded by the given amount of cells on both sides along each dimension.
      * This method adds the given margins to the {@linkplain #getHigh(int) high coordinates}
-     * and subtracts the same margins to the {@linkplain #getLow(int) low coordinates}.
+     * and subtracts the same margins from the {@linkplain #getLow(int) low coordinates}.
+     * If a negative margin is supplied, the extent size decreases accordingly.
      *
-     * @param  margins amount of cells to add or subtract.
+     * <h4>Number of arguments</h4>
+     * The {@code margins} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing values default to 0 (i.e. sizes in unspecified dimensions are unchanged).
+     * If the array is longer, extraneous values are ignored.
+     *
+     * @param  margins  amount of cells to add or subtract on both sides for each dimension.
      * @return a grid extent expanded by the given amount, or {@code this} if there is no change.
      * @throws ArithmeticException if expanding this extent by the given margins overflows {@code long} capacity.
+     *
+     * @see GridDerivation#margin(int...)
      */
     public GridExtent expand(final long... margins) {
         ArgumentChecks.ensureNonNull("margins", margins);
         final int m = getDimension();
         final int length = Math.min(m, margins.length);
-        final GridExtent resize = new GridExtent(this);
-        final long[] c = resize.coordinates;
-        for (int i=0; i<length; i++) {
-            final long margin = margins[i];
-            c[i] = Math.subtractExact(c[i], margin);
-            c[i+m] = Math.addExact(c[i+m], margin);
+        if (isZero(margins, length)) {
+            return this;
         }
-        return Arrays.equals(c, coordinates) ? this : resize;
+        final GridExtent resized = new GridExtent(this);
+        final long[] c = resized.coordinates;
+        for (int i=0; i<length; i++) {
+            final long p = margins[i];
+            c[i] = Math.subtractExact(c[i], p);
+            c[i+m] = Math.addExact(c[i+m], p);
+        }
+        return resized;
     }
 
     /**
-     * Sets the size of this grid extent to the given values. This method modifies grid coordinates as if they were multiplied
-     * by (given size) / ({@linkplain #getSize(int) current size}), rounded toward zero and with the value farthest from zero
-     * adjusted by ±1 for having a size exactly equals to the specified value.
+     * Returns a grid extent expanded by the minimal amount of cells needed for covering an integer amount of chunks.
+     * The grid coordinates (0, 0, …) locate the corner of a chunk.
+     *
+     * <h4>Number of arguments</h4>
+     * The {@code sizes} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing values default to 1. If the array is longer, extraneous values are ignored.
+     *
+     * @param  sizes  number of cells in all tiles or chunks.
+     * @return a grid extent expanded for the given chunk size.
+     *
+     * @see GridDerivation#chunkSize(int...)
+     */
+    final GridExtent forChunkSize(final int... sizes) {
+        /*
+         * Current implementation does not validate argument because this method is not public.
+         * If we make this method public in the future, argument validation should be added.
+         */
+        final int m = getDimension();
+        final int length = Math.min(m, sizes.length);
+        final GridExtent resized = new GridExtent(this);
+        final long[] c = resized.coordinates;
+        for (int i=0; i<length; i++) {
+            final int s = sizes[i];
+            final int j = i + m;
+            c[i] = Math.subtractExact(c[i], Math.floorMod(c[i], s));
+            c[j] = Math.addExact(c[j], (s-1) - Math.floorMod(c[j], s));
+        }
+        return resized;
+    }
+
+    /**
+     * Sets the size of grid extent to the given values by moving low and high coordinates.
+     * This method modifies grid coordinates as if they were multiplied by
+     *
+     *     <var>(given size)</var> / <var>({@linkplain #getSize(int) current size})</var>,
+     *
+     * rounded toward zero and with the value farthest from zero adjusted by ±1 for having a size
+     * exactly equals to the specified value.
+     *
      * In the common case where the {@linkplain #getLow(int) low value} is zero,
      * this is equivalent to setting the {@linkplain #getHigh(int) high value} to {@code size} - 1.
      *
-     * <p>The length of the given array should be equal to {@link #getDimension()}.
-     * If the array is shorter, missing dimensions have their size unchanged.
-     * If the array is longer, extra sizes are ignored.</p>
+     * <h4>Number of arguments</h4>
+     * The {@code sizes} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, sizes in unspecified dimensions are unchanged.
+     * If the array is longer, extraneous values are ignored.
      *
      * @param  sizes  the new grid sizes for each dimension.
      * @return a grid extent having the given sizes, or {@code this} if there is no change.
@@ -951,8 +1187,8 @@ public class GridExtent implements Serializable {
     }
 
     /**
-     * Returns a grid envelope that encompass only some dimensions of this grid envelope.
-     * This method copies the specified dimensions of this grid envelope into a new grid envelope.
+     * Returns a grid extent that encompass only some dimensions of this grid extent.
+     * This method copies the specified dimensions of this grid extent into a new grid extent.
      * The given dimensions must be in strictly ascending order without duplicated values.
      * The number of dimensions of the sub grid envelope will be {@code dimensions.length}.
      *
@@ -968,11 +1204,16 @@ public class GridExtent implements Serializable {
      * @see GridGeometry#reduce(int...)
      */
     public GridExtent reduce(int... dimensions) {
+        dimensions = verifyDimensions(dimensions, getDimension());
+        return (dimensions != null) ? reorder(dimensions) : this;
+    }
+
+    /**
+     * Changes axis order or reduces the number of dimensions.
+     * It is caller responsibility to ensure that the given dimensions are valid.
+     */
+    final GridExtent reorder(final int[] dimensions) {
         final int sd = getDimension();
-        dimensions = verifyDimensions(dimensions, sd);
-        if (dimensions == null) {
-            return this;
-        }
         final int td = dimensions.length;
         DimensionNameType[] tt = null;
         if (types != null) {
@@ -1006,18 +1247,23 @@ public class GridExtent implements Serializable {
      * This method does not reduce the number of dimensions of the grid extent.
      * For dimensionality reduction, see {@link #reduce(int...)}.
      *
+     * <h4>Number of arguments</h4>
+     * The {@code periods} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing values default to 1 (i.e. samplings in unspecified dimensions are unchanged).
+     * If the array is longer, extraneous values are ignored.
+     *
      * @param  periods  the subsamplings. Length shall be equal to the number of dimension and all values shall be greater than zero.
      * @return the subsampled extent, or {@code this} is subsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
      *
-     * @see GridDerivation#subsample(int...)
+     * @see GridDerivation#subgrid(GridExtent, int...)
      */
     public GridExtent subsample(final int... periods) {
         ArgumentChecks.ensureNonNull("periods", periods);
         final int m = getDimension();
-        ArgumentChecks.ensureDimensionMatches("periods", m, periods);
+        final int length = Math.min(m, periods.length);
         final GridExtent sub = new GridExtent(this);
-        for (int i=0; i<m; i++) {
+        for (int i=0; i<length; i++) {
             final int s = periods[i];
             if (s > 1) {
                 final int j = i + m;
@@ -1038,7 +1284,7 @@ public class GridExtent implements Serializable {
     }
 
     /**
-     * Returns a slice of this given grid extent computed by a ratio between 0 and 1 inclusive.
+     * Returns a slice of this grid extent computed by a ratio between 0 and 1 inclusive.
      * This is a helper method for {@link GridDerivation#sliceByRatio(double, int...)} implementation.
      *
      * @param  slicePoint        a pre-allocated direct position to be overwritten by this method.
@@ -1068,7 +1314,7 @@ public class GridExtent implements Serializable {
      * @param  modifiedDimensions   mapping from {@code slicePoint} dimensions to this {@code GridExtent} dimensions,
      *                              or {@code null} if {@code slicePoint} contains all grid dimensions in same order.
      * @return a grid extent for the specified slice.
-     * @throws RuntimeException if the given point is outside the grid extent.
+     * @throws PointOutsideCoverageException if the given point is outside the grid extent.
      */
     final GridExtent slice(final DirectPosition slicePoint, final int[] modifiedDimensions) {
         final GridExtent slice = new GridExtent(this);
@@ -1091,7 +1337,8 @@ public class GridExtent implements Serializable {
                         if (Double.isNaN(p)) b.append("NaN");
                         else b.append(Math.round(p));
                     }
-                    throw new RuntimeException(Resources.format(Resources.Keys.GridCoordinateOutsideCoverage_4,
+                    throw new PointOutsideCoverageException(Resources.format(
+                            Resources.Keys.GridCoordinateOutsideCoverage_4,
                             getAxisIdentification(i,k), low, high, b.toString()));
                 }
             }
@@ -1102,41 +1349,107 @@ public class GridExtent implements Serializable {
     /**
      * Creates an affine transform from the coordinates of this grid to the coordinates of the given envelope.
      * This method assumes that all axes are in the same order (no axis swapping) and there is no flipping of
-     * axis direction. The transform maps cell corners.
+     * axis direction except for those specified in the {@code flips} bitmask. The transform maps cell corners.
      *
-     * <p>This method is not yet public because we have not decided what could be an API for controlling axis
-     * swapping and flipping, if desired.</p>
-     *
-     * @param  env  the target envelope. Despite this method name, the envelope CRS is ignored.
+     * @param  env               the target envelope. Despite this method name, the envelope CRS is ignored.
+     * @param  flippedAxes       bitmask of target axes to flip (0 if none).
+     * @param  sourceDimensions  source dimension for each target dimension, or {@code null} if dimensions are the same.
      * @return an affine transform from this grid extent to the given envelope, expressed as a matrix.
      */
-    final MatrixSIS cornerToCRS(final Envelope env) {
+    final MatrixSIS cornerToCRS(final Envelope env, final long flippedAxes, final int[] sourceDimensions) {
         final int          srcDim = getDimension();
         final int          tgtDim = env.getDimension();
         final MatrixSIS    affine = Matrices.create(tgtDim + 1, srcDim + 1, ExtendedPrecisionMatrix.ZERO);
         final DoubleDouble scale  = new DoubleDouble();
         final DoubleDouble offset = new DoubleDouble();
         for (int j=0; j<tgtDim; j++) {
-            if (j < srcDim) {
-                offset.set(coordinates[j]);
-                scale.set(coordinates[j + srcDim]);
+            final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
+            if (i < srcDim) {
+                final boolean flip = (flippedAxes & Numerics.bitmask(j)) != 0;
+                offset.set(coordinates[i]);
+                scale.set(coordinates[i + srcDim]);
                 scale.subtract(offset);
-                scale.add(1);
-                scale.inverseDivideGuessError(env.getSpan(j));
-                if (!offset.isZero()) {                     // Use `if` for keeping the value if scale is NaN.
+                scale.add(1);                                   // == getSize(j) but without overflow.
+                scale.inverseDivideGuessError(env.getSpan(j));  // == (envelope span) / (grid size).
+                if (flip) scale.negate();
+                if (!offset.isZero()) {                         // Use `if` for keeping the value if scale is NaN.
                     offset.multiply(scale);
                     offset.negate();
                 }
-                offset.addGuessError(env.getMinimum(j));
+                offset.addGuessError(flip ? env.getMaximum(j) : env.getMinimum(j));
                 affine.setNumber(j, srcDim, offset);
             } else {
                 scale.value = Double.NaN;
                 scale.error = Double.NaN;
             }
-            affine.setNumber(j, j, scale);
+            affine.setNumber(j, i, scale);
         }
         affine.setElement(tgtDim, srcDim, 1);
         return affine;
+    }
+
+    /**
+     * Returns an extent translated by the given amount of cells compared to this extent.
+     * The returned extent has the same {@linkplain #getSize(int) size} than this extent,
+     * i.e. both low and high grid coordinates are displaced by the same amount of cells.
+     *
+     * <div class="note"><b>Example:</b>
+     * for an extent (x: [0…10], y: [2…4], z: [0…1]) and a translation {-2, 2},
+     * the resulting extent would be (x: [-2…8], y: [4…6], z: [0…1]).</div>
+     *
+     * <h4>Number of arguments</h4>
+     * The {@code translation} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing values default to 0 (i.e. no translation in unspecified dimensions).
+     * If the array is longer, extraneous values are ignored.
+     *
+     * @param  translation  translation to apply on each axis in order.
+     * @return a grid extent whose coordinates (both low and high ones) have been translated by given amounts.
+     *         If the given translation is a no-op (no value or only 0 ones), then this extent is returned as is.
+     * @throws ArithmeticException if the translation results in coordinates that overflow 64-bits integer.
+     *
+     * @see #startsAtZero()
+     * @see GridGeometry#translate(long...)
+     *
+     * @since 1.1
+     */
+    public GridExtent translate(final long... translation) {
+        ArgumentChecks.ensureNonNull("translation", translation);
+        final int m = getDimension();
+        final int length = Math.min(m, translation.length);
+        if (!isZero(translation, length)) {
+            final GridExtent translated = new GridExtent(this);
+            final long[] c = translated.coordinates;
+            for (int i=0; i < length; i++) {
+                final int  j = i + m;
+                final long t = translation[i];
+                c[i] = Math.addExact(c[i], t);
+                c[j] = Math.addExact(c[j], t);
+            }
+            return translated;
+        }
+        return this;
+    }
+
+    /**
+     * Returns the intersection of this grid extent with to the given grid extent.
+     * The given extent shall have the same number of dimensions.
+     *
+     * <p>This method is not public because we do not yet have a policy
+     * about whether we should verify if axis {@link #types} match.</p>
+     *
+     * @param  other  the grid to intersect with.
+     * @return the intersection result. May be one of the existing instances.
+     */
+    final GridExtent intersect(final GridExtent other) {
+        final int n = coordinates.length;
+        final int m = n >>> 1;
+        final long[] clipped = new long[n];
+        int i = 0;
+        while (i < m) {clipped[i] = Math.max(coordinates[i], other.coordinates[i]); i++;}
+        while (i < n) {clipped[i] = Math.min(coordinates[i], other.coordinates[i]); i++;}
+        if (Arrays.equals(clipped,  this.coordinates)) return this;
+        if (Arrays.equals(clipped, other.coordinates)) return other;
+        return new GridExtent(this, clipped);
     }
 
     /**
@@ -1152,15 +1465,42 @@ public class GridExtent implements Serializable {
 
     /**
      * Compares the specified object with this grid envelope for equality.
+     * This method delegates to {@code equals(object, ComparisonMode.STRICT)}.
      *
      * @param  object  the object to compare with this grid envelope for equality.
      * @return {@code true} if the given object is equal to this grid envelope.
      */
     @Override
-    public boolean equals(final Object object) {
-        if (object != null && object.getClass() == GridExtent.class) {
+    public final boolean equals(final Object object) {
+        return equals(object, ComparisonMode.STRICT);
+    }
+
+    /**
+     * Compares the specified object with this grid envelope for equality.
+     * If the mode is {@link ComparisonMode#IGNORE_METADATA} or more flexible,
+     * then the {@linkplain #getAxisType(int) axis types} are ignored.
+     *
+     * @param  object  the object to compare with this grid envelope for equality.
+     * @param  mode    the strictness level of the comparison.
+     * @return {@code true} if the given object is equal to this grid envelope.
+     *
+     * @since 1.1
+     */
+    @Override
+    @SuppressWarnings("fallthrough")
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            return true;
+        }
+        if (object instanceof GridExtent) {
             final GridExtent other = (GridExtent) object;
-            return Arrays.equals(coordinates, other.coordinates) && Arrays.equals(types, other.types);
+            if (Arrays.equals(coordinates, other.coordinates)) {
+                switch (mode) {
+                    case STRICT:      if (!getClass().equals(object.getClass())) return false;  // else fallthrough
+                    case BY_CONTRACT: if (!Arrays.equals(types, other.types))    return false;  // else fallthrough
+                    default:          return true;
+                }
+            }
         }
         return false;
     }

@@ -163,7 +163,8 @@ final class Store extends URIDataStore implements Filter {
             throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, getDisplayName()), e);
         }
         if (object instanceof CoordinateReferenceSystem) try {
-            final DefinitionVerifier v = DefinitionVerifier.withAuthority((CoordinateReferenceSystem) object, null, false);
+            final DefinitionVerifier v = DefinitionVerifier.withAuthority(
+                    (CoordinateReferenceSystem) object, null, false, getLocale());
             if (v != null) {
                 log(v.warning(false));
             }

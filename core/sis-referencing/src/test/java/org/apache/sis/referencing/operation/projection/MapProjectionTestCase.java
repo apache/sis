@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Random;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
@@ -29,6 +30,7 @@ import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.datum.GeodeticDatumMock;
+import org.apache.sis.test.TestUtilities;
 
 import static java.lang.Double.isNaN;
 import static java.lang.StrictMath.*;
@@ -39,7 +41,7 @@ import static org.junit.Assert.*;
  * Base class of map projection tests.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -214,5 +216,30 @@ abstract strictfp class MapProjectionTestCase extends MathTransformTestCase {
             derivativeDeltas = new double[] {delta, delta};
         }
         verifyInDomain(domain, randomSeed);
+    }
+
+    /**
+     * Tests coordinates close to zero. Callers must set the transform and tolerance threshold before to invoke
+     * this method. This method tests (among others) the 1.4914711209038602E-154 value, which is the threshold
+     * documented in {@link NormalizedProjection#fastHypot}.
+     *
+     * @throws TransformException if an error occurred while projecting the coordinate.
+     */
+    final void verifyValuesNearZero(final double... expected) throws TransformException {
+        final double[] source = new double[2];
+        verifyTransform(source, expected);        // Test (0,0).
+        for (int i=0; i<source.length; i++) {
+            source[i] = 1E-20;                    verifyTransform(source, expected);
+            source[i] = 1E-100;                   verifyTransform(source, expected);
+            source[i] = 1.4914711209038602E-154;  verifyTransform(source, expected);
+            source[i] = 2.2227587494850775E-162;  verifyTransform(source, expected);
+            source[i] = Double.MIN_NORMAL;        verifyTransform(source, expected);
+            source[i] = Double.MIN_VALUE;         verifyTransform(source, expected);
+            source[i] = 0;
+        }
+        final Random r = TestUtilities.createRandomNumberGenerator();
+        for (int i=0; i<25; i++) {
+            source[i & 1] = Math.scalb(r.nextDouble() - 0.5, r.nextInt(800) + Double.MIN_EXPONENT);
+        }
     }
 }

@@ -28,7 +28,7 @@ import org.opengis.referencing.operation.TransformException;
  * or an empty optional if this category is a qualitative one.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -61,6 +61,18 @@ final class ConvertedCategory extends Category {
     @Override
     Category converted() {
         return this;
+    }
+
+    /**
+     * Returns a category that describes real values or sample values, depending if {@code converted} is {@code true}
+     * or {@code false} respectively.
+     *
+     * @param  converted  {@code true} for a category describing converted values,
+     *                    or {@code false} for a category describing packed values.
+     */
+    @Override
+    public Category forConvertedValues(final boolean converted) {
+        return converted ? this : converse;
     }
 
     /**

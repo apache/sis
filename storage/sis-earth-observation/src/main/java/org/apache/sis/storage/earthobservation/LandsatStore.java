@@ -16,17 +16,25 @@
  */
 package org.apache.sis.storage.earthobservation;
 
+import java.util.Map;
+import java.util.List;
+import java.util.Optional;
 import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.IOException;
-import java.nio.file.StandardOpenOption;
 import java.net.URI;
-import java.util.Optional;
-import org.opengis.metadata.Metadata;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
+import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
@@ -37,6 +45,8 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.setup.OptionKey;
 
 
@@ -69,15 +79,20 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
-public class LandsatStore extends DataStore {
+public class LandsatStore extends DataStore implements Aggregate {
     /**
      * The reader, or {@code null} if closed.
      */
     private Reader source;
+
+    /**
+     * The root directory where this file is located, or {@code null} if unknown.
+     */
+    final Path directory;
 
     /**
      * The {@link LandsatStoreProvider#LOCATION} parameter value, or {@code null} if none.
@@ -95,6 +110,12 @@ public class LandsatStore extends DataStore {
     private GenericName identifier;
 
     /**
+     * The array of aggregates for each Landsat band group, or {@code null} if not yet created.
+     * This array is created together with {@linkplain #metadata} and is unmodifiable.
+     */
+    private LandsatAggregate[] components;
+
+    /**
      * Creates a new Landsat store from the given file, URL, stream or character reader.
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
@@ -105,13 +126,42 @@ public class LandsatStore extends DataStore {
      */
     public LandsatStore(final LandsatStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        location = connector.getStorageAs(URI.class);
-        source = connector.getStorageAs(Reader.class);
+        Path path = connector.getStorageAs(Path.class);
+        location  = connector.getStorageAs(URI.class);
+        source    = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(source);
+        if (path != null) {
+            if (source != null) {
+                path = path.getParent();        // If the source has been opened, then the path is a file.
+            } else try {
+                final Path file = LandsatStoreProvider.getMetadataFile(path);
+                if (file != null) {
+                    final Charset encoding = connector.getOption(OptionKey.ENCODING);
+                    if (encoding != null) {
+                        source = Files.newBufferedReader(file, encoding);
+                    } else {
+                        source = Files.newBufferedReader(file);
+                    }
+                }
+            } catch (IOException e) {
+                throw new DataStoreException(e);
+            }
+        }
+        directory = path;
         if (source == null) {
             throw new UnsupportedStorageException(super.getLocale(), LandsatStoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
+    }
+
+    /**
+     * Returns the name of the directory that contains this data set.
+     * The directory may not exist, for example if the data are read from a ZIP file.
+     * The returned name can be used in user interfaces or in error messages.
+     */
+    @Override
+    public final String getDisplayName() {
+        return (directory != null) ? directory.getFileName().toString() : super.getDisplayName();
     }
 
     /**
@@ -149,6 +199,47 @@ public class LandsatStore extends DataStore {
     }
 
     /**
+     * Parses the main Landsat text file.
+     * Also creates the array of components, but without loading GeoTIFF data yet.
+     */
+    private void loadMetadata() throws DataStoreException {
+        if (source == null) {
+            throw new DataStoreClosedException(getLocale(), LandsatStoreProvider.NAME, StandardOpenOption.READ);
+        }
+        final String      name    = getDisplayName();
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameSpace   scope   = (name != null) ? factory.createNameSpace(factory.createLocalName(null, name), null) : null;
+        final LandsatResource[] resources;
+        int count = 0;
+        try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
+            source = null;      // Will be closed at the end of this try-finally block.
+            final LandsatReader parser = new LandsatReader(this, getDisplayName(), listeners);
+            parser.read(reader);
+            metadata = parser.getMetadata();
+            /*
+             * Create the array of components. The resource identifier is the band name.
+             * The namespace of each identifier is the name of the data set directory.
+             */
+            resources = new LandsatResource[parser.bands.size()];
+            for (final Map.Entry<LandsatBand,LandsatResource> entry : parser.bands.entrySet()) {
+                final LandsatResource component = entry.getValue();
+                if (component.filename != null) {
+                    component.identifier = factory.createLocalName(scope, entry.getKey().name());
+                    resources[count++] = component;
+                }
+            }
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        } catch (FactoryException e) {
+            throw new DataStoreReferencingException(e);
+        }
+        components = LandsatAggregate.group(listeners, resources, count);
+        for (final LandsatAggregate c : components) {
+            c.identifier = factory.createLocalName(scope, c.group.name());
+        }
+    }
+
+    /**
      * Returns information about the dataset as a whole. The returned metadata object can contain information
      * such as the spatiotemporal extent of the dataset, contact information about the creator or distributor,
      * data quality, usage constraints and more.
@@ -159,21 +250,25 @@ public class LandsatStore extends DataStore {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
-            if (source == null) {
-                throw new DataStoreClosedException(getLocale(), LandsatStoreProvider.NAME, StandardOpenOption.READ);
-            }
-            try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
-                source = null;      // Will be closed at the end of this try-finally block.
-                final LandsatReader parser = new LandsatReader(getDisplayName(), listeners);
-                parser.read(reader);
-                metadata = parser.getMetadata();
-            } catch (IOException e) {
-                throw new DataStoreException(e);
-            } catch (FactoryException e) {
-                throw new DataStoreReferencingException(e);
-            }
+            loadMetadata();
         }
         return metadata;
+    }
+
+    /**
+     * Returns the resources for each group of Landsat bands.
+     *
+     * @return all group of bands that are components of this aggregate. Never {@code null}.
+     * @throws DataStoreException if an error occurred while fetching the components.
+     *
+     * @since 1.1
+     */
+    @Override
+    public synchronized List<Aggregate> components() throws DataStoreException {
+        if (components == null) {
+            loadMetadata();
+        }
+        return UnmodifiableArrayList.wrap(components);
     }
 
     /**
@@ -197,5 +292,19 @@ public class LandsatStore extends DataStore {
     @Override
     public synchronized void close() throws DataStoreException {
         metadata = null;
+        DataStoreException error = null;
+        for (final LandsatResource band : LandsatAggregate.bands(components)) {
+            try {
+                band.closeDataStore();
+            } catch (DataStoreException e) {
+                if (error == null) {
+                    error = e;
+                } else {
+                    error.addSuppressed(e);
+                }
+            }
+        }
+        components = null;
+        if (error != null) throw error;
     }
 }

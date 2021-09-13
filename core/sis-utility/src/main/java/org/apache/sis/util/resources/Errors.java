@@ -20,7 +20,6 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import javax.annotation.Generated;
 import org.opengis.util.InternationalString;
 
 
@@ -36,7 +35,7 @@ import org.opengis.util.InternationalString;
  * as they want.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -51,7 +50,6 @@ public final class Errors extends IndexedResourceBundle {
      * @since   0.3
      * @module
      */
-    @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
     public static final class Keys extends KeyConstants {
         /**
          * The unique instance of key constants handler.
@@ -65,9 +63,19 @@ public final class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * ‘{0}’ is already initialized.
+         */
+        public static final short AlreadyInitialized_1 = 188;
+
+        /**
          * Name “{2}” is ambiguous because it can be understood as either “{0}” or “{1}”.
          */
         public static final short AmbiguousName_3 = 1;
+
+        /**
+         * Computation in background failed.
+         */
+        public static final short BackgroundComputationFailed = 191;
 
         /**
          * This object can iterate only once.
@@ -124,11 +132,6 @@ public final class Errors extends IndexedResourceBundle {
          * Can not open “{0}”.
          */
         public static final short CanNotOpen_1 = 9;
-
-        /**
-         * Can not parse “{1}” as a file in the {0} format.
-         */
-        public static final short CanNotParseFile_2 = 10;
 
         /**
          * Can not parse “{0}”.
@@ -491,7 +494,12 @@ public final class Errors extends IndexedResourceBundle {
         /**
          * Integer overflow during {0} bits arithmetic operation.
          */
-        public static final short IntegerOverflow_1 = 188;
+        public static final short IntegerOverflow_1 = 10;
+
+        /**
+         * Interrupted while waiting result.
+         */
+        public static final short InterruptedWhileWaitingResult = 192;
 
         /**
          * “{0}” is an invalid version identifier.
@@ -543,6 +551,12 @@ public final class Errors extends IndexedResourceBundle {
          * Mismatched matrix sizes: expected {0}×{1} but got {2}×{3}.
          */
         public static final short MismatchedMatrixSize_4 = 83;
+
+        /**
+         * The “{0}” transform has {3} {1,choice,0#source|1#target} dimension{3,choice,1#|2#s}, while
+         * {2} was expected.
+         */
+        public static final short MismatchedTransformDimension_4 = 190;
 
         /**
          * Missing a ‘{1}’ character in “{0}” element.
@@ -684,6 +698,11 @@ public final class Errors extends IndexedResourceBundle {
          * No element for the “{0}” identifier, or the identifier is a forward reference.
          */
         public static final short NotABackwardReference_1 = 108;
+
+        /**
+         * Value of ‘{0}’ shall be a {1,choice,0#divisor|1#multiple} of {2} but the given value is {3}.
+         */
+        public static final short NotADivisorOrMultiple_4 = 193;
 
         /**
          * “{0}” is not a key-value pair.
@@ -881,6 +900,11 @@ public final class Errors extends IndexedResourceBundle {
          * Unexpected value “{1}” in “{0}” element.
          */
         public static final short UnexpectedValueInElement_2 = 144;
+
+        /**
+         * ‘{0}’ has not been initialized.
+         */
+        public static final short Uninitialized_1 = 189;
 
         /**
          * Command “{0}” is not recognized.

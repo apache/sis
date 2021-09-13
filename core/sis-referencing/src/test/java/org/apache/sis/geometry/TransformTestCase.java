@@ -48,7 +48,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * All tests performed by this class are two-dimensional.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @param <G>  the type of geometric objects, either {@link GeneralEnvelope} or {@link java.awt.geom.Rectangle2D}.
  *
@@ -136,16 +136,7 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
     @Test
     @DependsOnMethod("testTransform")
     public final void testTransformOverPole() throws FactoryException, TransformException {
-        final ProjectedCRS sourceCRS = (ProjectedCRS) CRS.fromWKT(
-                "PROJCS[“WGS 84 / Antarctic Polar Stereographic”,\n" +
-                "  GEOGCS[“WGS 84”,\n" +
-                "    DATUM[“World Geodetic System 1984”,\n" +
-                "      SPHEROID[“WGS 84”, 6378137.0, 298.257223563]],\n" +
-                "    PRIMEM[“Greenwich”, 0.0],\n" +
-                "    UNIT[“degree”, 0.017453292519943295]],\n" +
-                "  PROJECTION[“Polar Stereographic (variant B)”],\n" +
-                "  PARAMETER[“standard_parallel_1”, -71.0],\n" +
-                "  UNIT[“m”, 1.0]]");
+        final ProjectedCRS    sourceCRS  = HardCodedConversions.createCRS(HardCodedConversions.POLAR_STEREOGRAPHIC);
         final GeographicCRS   targetCRS  = sourceCRS.getBaseCRS();
         final Conversion      conversion = inverse(sourceCRS.getConversionFromBase());
         final MathTransform2D transform  = (MathTransform2D) conversion.getMathTransform();
@@ -244,9 +235,40 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
     }
 
     /**
+     * Tests conversion from a UTM projection to geographic CRS where the resulting envelope crosses the anti-meridian.
+     * Contrarily to {@link #testTransformOverAntiMeridian()}, the longitude range is outside the [-180 … +180]° range.
+     * This is because the projection has a large central meridian which is added to the result.
+     *
+     * @throws FactoryException if an error occurred while creating the operation.
+     * @throws TransformException if an error occurred while transforming the envelope.
+     *
+     * @since 1.1
+     */
+    @Test
+    @DependsOnMethod("testTransformOverAntiMeridian")
+    public void testProjectionOutsideLongitudeRange() throws FactoryException, TransformException {
+        final ProjectedCRS    sourceCRS  = HardCodedConversions.createCRS(HardCodedConversions.UTM);
+        final GeographicCRS   targetCRS  = sourceCRS.getBaseCRS();
+        final Conversion      conversion = inverse(sourceCRS.getConversionFromBase());
+        final G rectangle = createFromExtremums(sourceCRS,
+                -402748, 7965673,                               // Computed by SIS (not validated by external authority).
+                1312383, 9912935);
+
+        // Longitude span anti-meridian (-214° to 45°).
+        final G expected = createFromExtremums(targetCRS,
+                -213.637, 70.141,
+                 -44.959, 89.147);
+
+        final G actual = transform(conversion, rectangle);
+        assertGeometryEquals(expected, actual, 0.001, 0.001);
+    }
+
+    /**
      * Returns the inverse of the given conversion. This method is not strictly correct
      * since we reuse the properties (name, aliases, etc.) from the given conversion.
      * However those properties are not significant for the purpose of this test.
+     *
+     * @see org.apache.sis.referencing.operation.CoordinateOperationRegistry#inverse(SingleOperation)
      */
     private static Conversion inverse(final Conversion conversion) throws NoninvertibleTransformException {
         return new DefaultConversion(IdentifiedObjects.getProperties(conversion), conversion.getTargetCRS(),

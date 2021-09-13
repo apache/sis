@@ -116,7 +116,7 @@ public class SatelliteTracking extends NormalizedProjection {
         final EnumMap<NormalizedProjection.ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(NormalizedProjection.ParameterRole.class);
         roles.put(NormalizedProjection.ParameterRole.CENTRAL_MERIDIAN, CENTRAL_MERIDIAN);
         roles.put(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS, LATITUDE_OF_ORIGIN);
-        return new Initializer(method, parameters, roles, (byte) 0);
+        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
     }
 
     /**
@@ -223,6 +223,27 @@ public class SatelliteTracking extends NormalizedProjection {
                 throw invalid(STANDARD_PARALLEL_1);
             }
         }
+    }
+
+    /**
+     * Returns the names of additional internal parameters which need to be taken in account when
+     * comparing two {@code SatelliteTracking} projections or formatting them in debug mode.
+     */
+    @Override
+    final String[] getInternalParameterNames() {
+        return new String[] {"i", "P₂∕P₁"};
+    }
+
+    /**
+     * Returns the values of additional internal parameters which need to be taken in account when
+     * comparing two {@code SatelliteTracking} projections or formatting them in debug mode.
+     */
+    @Override
+    final double[] getInternalParameterValues() {
+        return new double[] {
+            (cos_i < PI/4) ? acos(cos_i) : asin(sin_i),
+            p2_on_p1
+        };
     }
 
     /**

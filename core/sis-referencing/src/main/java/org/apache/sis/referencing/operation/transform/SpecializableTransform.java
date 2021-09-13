@@ -24,13 +24,11 @@ import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.referencing.DirectPositionView;
-import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.RTreeNode;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ArgumentChecks;
@@ -158,8 +156,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
         final int targetDim = global.getTargetDimensions();
         for (final Map.Entry<Envelope,MathTransform> entry : specializations.entrySet()) {
             MathTransform tr = entry.getValue();
-            ensureDimensionMatches(0, sourceDim, tr.getSourceDimensions());
-            ensureDimensionMatches(1, targetDim, tr.getTargetDimensions());
+            ArgumentChecks.ensureDimensionsMatch("specializations", sourceDim, targetDim, tr);
             /*
              * If the given MathTransform is another SpecializableTransform, then instead of storing nested
              * SpecializableTransforms we will store directly the specializations that it contains. It will
@@ -189,18 +186,6 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
             }
         }
         domains = (root != null) ? root.finish() : null;
-    }
-
-    /**
-     * Helper method for verifying transform dimension consistency.
-     *
-     * @param  type  0 if verifying source dimension, or 1 if verifying target dimension.
-     */
-    private static void ensureDimensionMatches(final int type, final int expected, final int actual) {
-        if (expected != actual) {
-            throw new MismatchedDimensionException(Resources.format(
-                    Resources.Keys.MismatchedTransformDimension_3, type, expected, actual));
-        }
     }
 
     /**
@@ -256,7 +241,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     private SubArea locate(final DirectPosition pos) {
         /*
          * All nodes should be SubArea instances, except in some circumstances the root node.
-         * That root node may returned by `RTreeNode.locate(…)` if given position is inside
+         * That root node may be returned by `RTreeNode.locate(…)` if given position is inside
          * the union of all bounding boxes, but not in the bounding box of any specific grid.
          * In such case the caller will fallback on `DatumShiftGridGroup.interpolateInCell(…)`
          * which perform a more extensive search for the nearest grid.

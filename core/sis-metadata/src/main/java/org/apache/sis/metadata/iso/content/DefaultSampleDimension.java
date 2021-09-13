@@ -58,7 +58,13 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * be replaced be references to the {@code SampleDimension} interface.
  * </div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Terminology</h2>
+ * <cite>Data values</cite> should be physical values expressed in the unit of measurement
+ * given by {@link #getUnits()}. <cite>Cell values</cite> are values stored in the device,
+ * before conversion to data values by application of {@linkplain #getScaleFactor() scale
+ * factor} and {@linkplain #getOffset() offset}.
+ *
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>
@@ -100,26 +106,31 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
 
     /**
      * Number of values used in a thematic classification resource.
+     * This value should be expressed in the unit of measurement given by {@link #units}.
      */
     private Integer numberOfValues;
 
     /**
      * Minimum value of data values in each dimension included in the resource.
+     * This value should be expressed in the unit of measurement given by {@link #units}.
      */
     private Double minValue;
 
     /**
      * Maximum value of data values in each dimension included in the resource.
+     * This value should be expressed in the unit of measurement given by {@link #units}.
      */
     private Double maxValue;
 
     /**
      * Mean value of data values in each dimension included in the resource.
+     * This value should be expressed in the unit of measurement given by {@link #units}.
      */
     private Double meanValue;
 
     /**
      * Standard deviation of data values in each dimension included in the resource.
+     * This value should be expressed in the unit of measurement given by {@link #units}.
      */
     private Double standardDeviation;
 
@@ -259,6 +270,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
 
     /**
      * Returns the minimum value of data values in each dimension included in the resource.
+     * This value should be expressed in the unit of measurement given by {@link #getUnits()}.
      *
      * @return minimum value of data values in each dimension included in the resource, or {@code null} if unspecified.
      */
@@ -270,6 +282,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
 
     /**
      * Sets the minimum value of data values in each dimension included in the resource.
+     * This value should be expressed in the unit of measurement given by {@link #getUnits()}.
      *
      * @param  newValue  the new new minimum value.
      */
@@ -280,6 +293,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
 
     /**
      * Returns the maximum value of data values in each dimension included in the resource.
+     * This value should be expressed in the unit of measurement given by {@link #getUnits()}.
      *
      * @return maximum value of data values in each dimension included in the resource, or {@code null} if unspecified.
      */
@@ -291,6 +305,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
 
     /**
      * Sets the maximum value of data values in each dimension included in the resource.
+     * This value should be expressed in the unit of measurement given by {@link #getUnits()}.
      *
      * @param  newValue  the new new maximum value.
      */
@@ -301,6 +316,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
 
     /**
      * Returns the mean value of data values in each dimension included in the resource.
+     * This value should be expressed in the unit of measurement given by {@link #getUnits()}.
      *
      * @return the mean value of data values in each dimension included in the resource, or {@code null} if none.
      */
@@ -313,6 +329,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
 
     /**
      * Sets the mean value of data values in each dimension included in the resource.
+     * This value should be expressed in the unit of measurement given by {@link #getUnits()}.
      *
      * @param  newValue  the new mean value of data values in each dimension included in the resource.
      */
@@ -323,6 +340,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
 
     /**
      * Returns the standard deviation of data values in each dimension included in the resource.
+     * This value should be expressed in the unit of measurement given by {@link #getUnits()}.
      *
      * @return standard deviation of data values in each dimension included in the resource, or {@code null} if none.
      */
@@ -335,6 +353,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
 
     /**
      * Sets the standard deviation of data values in each dimension included in the resource.
+     * This value should be expressed in the unit of measurement given by {@link #getUnits()}.
      *
      * @param  newValue  the new standard deviation of data values in each dimension included in the resource.
      */

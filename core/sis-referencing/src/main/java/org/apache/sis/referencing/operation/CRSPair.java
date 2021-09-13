@@ -21,7 +21,7 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.CharSequences;
@@ -33,7 +33,7 @@ import org.apache.sis.util.Classes;
  * Used as key in hash map.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -88,13 +88,8 @@ final class CRSPair {
         if (object == null) {
             return null;
         }
-        Class<? extends IdentifiedObject> type;
-        if (object instanceof AbstractIdentifiedObject) {
-            type = ((AbstractIdentifiedObject) object).getInterface();
-        } else {
-            type = Classes.getLeafInterfaces(object.getClass(), IdentifiedObject.class)[0];
-        }
-        String suffix, label = Classes.getShortName(type);
+        String suffix;
+        String label = Classes.getShortName(ReferencingUtilities.getInterface(IdentifiedObject.class, object));
         if (label.endsWith((suffix = "CRS")) || label.endsWith(suffix = "CS")) {
             Object cs = object;
             if (object instanceof CoordinateReferenceSystem) {
@@ -106,7 +101,7 @@ final class CRSPair {
                 label = sb.append(((CoordinateSystem) cs).getDimension()).append('D').toString();
             }
         }
-        String name = IdentifiedObjects.getName(object, null);
+        String name = IdentifiedObjects.getDisplayName(object, null);
         if (name != null) {
             int i = 30;                                         // Arbitrary length threshold.
             if (name.length() >= i) {

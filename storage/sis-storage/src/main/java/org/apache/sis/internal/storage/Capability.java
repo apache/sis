@@ -35,7 +35,8 @@ import org.apache.sis.util.iso.Types;
  * <p>This is not a committed API since the way to represent data store capabilities is likely to change.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -48,7 +49,12 @@ public enum Capability {
     /**
      * The annotated implementation can write data.
      */
-    WRITE(Vocabulary.Keys.Write);
+    WRITE(Vocabulary.Keys.Write),
+
+    /**
+     * The annotated implementation can create new data.
+     */
+    CREATE(Vocabulary.Keys.Create);
 
     /**
      * The {@link Vocabulary} key to use for fetching a localized name.

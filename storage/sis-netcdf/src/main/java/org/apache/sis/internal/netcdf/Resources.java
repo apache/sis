@@ -19,7 +19,6 @@ package org.apache.sis.internal.netcdf;
 import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import javax.annotation.Generated;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
@@ -45,7 +44,6 @@ public final class Resources extends IndexedResourceBundle {
      * @since   0.8
      * @module
      */
-    @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
     public static final class Keys extends KeyConstants {
         /**
          * The unique instance of key constants handler.
@@ -70,8 +68,8 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotComputeVariablePosition_2 = 6;
 
         /**
-         * Can not create the Coordinate Reference System for grid geometry “{1}” in the “{0}” netCDF
-         * file. The reason is: {2}
+         * Can not create the Coordinate Reference System for “{1}” in the “{0}” netCDF file. The
+         * reason is: {2}
          */
         public static final short CanNotCreateCRS_3 = 11;
 
@@ -79,6 +77,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not create the grid geometry “{1}” in the “{0}” netCDF file. The reason is: {2}
          */
         public static final short CanNotCreateGridGeometry_3 = 12;
+
+        /**
+         * Can not inject component “{0}” in the reference system.
+         */
+        public static final short CanNotInjectComponent_1 = 26;
 
         /**
          * Can not relate dimension “{2}” of variable “{1}” to a coordinate system dimension in netCDF
@@ -118,6 +121,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DimensionNotFound_3 = 1;
 
         /**
+         * Axes “{2}” and “{3}” have the same type “{1}” in netCDF file “{0}”.
+         */
+        public static final short DuplicatedAxisType_4 = 3;
+
+        /**
          * Duplicated axis “{1}” in a grid of netCDF file “{0}”.
          */
         public static final short DuplicatedAxis_2 = 7;
@@ -133,6 +141,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalValueRange_4 = 16;
 
         /**
+         * Attributes “{1}” and “{2}” on variable “{0}” have different lengths: {3} and {4}
+         * respectively.
+         */
+        public static final short MismatchedAttributeLength_5 = 24;
+
+        /**
          * The declared size of variable “{1}” in netCDF file “{0}” is {2,number} bytes greater than
          * expected.
          */
@@ -142,6 +156,11 @@ public final class Resources extends IndexedResourceBundle {
          * Variables “{1}” and “{2}” in netCDF file “{0}” does not have the same type.
          */
         public static final short MismatchedVariableType_3 = 13;
+
+        /**
+         * Missing attribute “{2}” on the “{1}” variable of netCDF file “{0}”.
+         */
+        public static final short MissingVariableAttribute_3 = 23;
 
         /**
          * Variable “{1}” or netCDF file “{0}” has a different size than its coordinate system, but no
@@ -161,6 +180,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnexpectedDimensionForVariable_4 = 2;
 
         /**
+         * Unknown projection parameters in file “{0}”: {1}
+         */
+        public static final short UnknownProjectionParameters_2 = 25;
+
+        /**
          * Variable “{1}” in file “{0}” has {2,number} dimensions but only {3,number} can be associated
          * to a coordinate reference system.
          */
@@ -170,11 +194,6 @@ public final class Resources extends IndexedResourceBundle {
          * NetCDF file “{0}” uses unsupported data type {2} for variable “{1}”.
          */
         public static final short UnsupportedDataType_3 = 5;
-
-        /**
-         * Variable “{1}” is not found in the “{0}” file.
-         */
-        public static final short VariableNotFound_2 = 3;
     }
 
     /**

@@ -68,7 +68,7 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mco/1.0/mco.xsd",
+@XmlSchema(location="https://standards.iso.org/iso/19115/-3/mco/1.0/mco.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MCO,
            xmlns = {
                 @XmlNs(prefix = "mco", namespaceURI = Namespaces.MCO),      // Metadata for Constraints

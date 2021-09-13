@@ -88,7 +88,7 @@ public final class LocationViewer extends JPanel {
                 final GeneralEnvelope ge = new GeneralEnvelope(CommonCRS.defaultGeographic());
                 ge.setRange(0, 170, -175);
                 ge.setRange(1,  40,   42);
-                show("15° of longitude spanning the anti-meridian", coder, ge, null);
+                show("15° of longitude crossing the anti-meridian", coder, ge, null);
                 break;
             }
             /*

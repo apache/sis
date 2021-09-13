@@ -15,18 +15,10 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
 License for the specific language governing permissions and limitations under
 the License.
 -->
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         id="WebApp_ID" version="2.5">
   <display-name>Apache SIS</display-name>
-  <context-param>
-    <param-name>org.apache.sis.services.config.filePath</param-name>
-    <param-value>/path/to/sis-location-config.xml</param-value>
-  </context-param>
-  <servlet>
-    <servlet-name>LocationServlet</servlet-name>
-    <servlet-class>org.apache.sis.services.LocationServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>LocationServlet</servlet-name>
-    <url-pattern>/location</url-pattern>
-  </servlet-mapping>
 </web-app>

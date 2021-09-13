@@ -276,16 +276,6 @@ public class Matrix2 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public void normalizeColumns() {
-        double m;
-        m = Math.hypot(m00, m10); m00 /= m; m10 /= m;
-        m = Math.hypot(m01, m11); m01 /= m; m11 /= m;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Matrix2 clone() {
         return (Matrix2) super.clone();
     }

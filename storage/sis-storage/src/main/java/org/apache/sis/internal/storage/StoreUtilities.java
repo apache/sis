@@ -16,11 +16,14 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.Set;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.stream.Stream;
+import java.util.logging.Logger;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
+import java.nio.charset.Charset;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
@@ -39,10 +42,13 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.WritableFeatureSet;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.metadata.Identifiers;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.logging.Logging;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
@@ -55,11 +61,24 @@ import org.apache.sis.metadata.iso.identification.AbstractIdentification;
  * Some methods may also move in public API if we feel confident enough.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
 public final class StoreUtilities extends Static {
+    /**
+     * Logger for the {@value Modules#STORAGE} module. This is used when no more specific logger is available,
+     * or if the more specific logger is not appropriate (e.g. because the log message come from base class).
+     */
+    public static final Logger LOGGER = Logging.getLogger(Modules.STORAGE);
+
+    /**
+     * Names of encoding where bytes less than 128 can be interpreted as ASCII.
+     *
+     * @see #basedOnASCII(Charset)
+     */
+    private static final Set<String> basedOnASCII = JDK9.setOf("US-ASCII", "ISO-8859-1", "UTF-8");
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -298,6 +317,17 @@ public final class StoreUtilities extends Static {
             }
         }
         return set;
+    }
+
+    /**
+     * Returns {@code true} if a sequence of bytes in the given encoding can be decoded as if they were ASCII,
+     * ignoring values greater than 127. In case of doubt, this method conservatively returns {@code false}.
+     *
+     * @param  encoding  the encoding.
+     * @return whether bytes less than 128 can be interpreted as ASCII.
+     */
+    public static boolean basedOnASCII(final Charset encoding) {
+        return basedOnASCII.contains(encoding.name());
     }
 
     /**

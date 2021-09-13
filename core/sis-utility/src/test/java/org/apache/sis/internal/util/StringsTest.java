@@ -41,13 +41,13 @@ public final strictfp class StringsTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Strings#toUpperCase(String, Characters.Filter)} method.
+     * Tests the {@link Strings#toUpperCase(String, Characters.Filter, boolean)} method.
      */
     @Test
     public void testToUpperCase() {
         final String expected = "WGS84";
-        assertSame  (expected, Strings.toUpperCase(expected, Characters.Filter.LETTERS_AND_DIGITS));
-        assertEquals(expected, Strings.toUpperCase("WGS 84", Characters.Filter.LETTERS_AND_DIGITS));
-        assertEquals(expected, Strings.toUpperCase("wgs 84", Characters.Filter.LETTERS_AND_DIGITS));
+        assertSame  (expected, Strings.toUpperCase(expected, Characters.Filter.LETTERS_AND_DIGITS, true));
+        assertEquals(expected, Strings.toUpperCase("WGS 84", Characters.Filter.LETTERS_AND_DIGITS, true));
+        assertEquals(expected, Strings.toUpperCase("wgs 84", Characters.Filter.LETTERS_AND_DIGITS, true));
     }
 }

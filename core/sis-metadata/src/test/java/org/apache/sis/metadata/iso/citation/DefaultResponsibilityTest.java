@@ -31,7 +31,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -57,7 +57,7 @@ public final strictfp class DefaultResponsibilityTest extends TestCase {
                 "        <gco:CharacterString>An author</gco:CharacterString>\n" +
                 "      </gmd:individualName>\n" +
                 "      <gmd:role>\n" +
-                "        <gmd:CI_RoleCode codeList=\"http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"author\">Author</gmd:CI_RoleCode>\n" +
+                "        <gmd:CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"author\">Author</gmd:CI_RoleCode>\n" +
                 "      </gmd:role>\n" +
                 "    </gmd:CI_ResponsibleParty>\n" +
                 "  </gmd:citedResponsibleParty>\n" +

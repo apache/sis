@@ -78,11 +78,12 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.SignReversalComment;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.ServicesForMetadata;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -101,6 +102,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -120,14 +122,14 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
 
 // Branch-dependent imports
-import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
+import org.apache.sis.internal.referencing.ServicesForMetadata;
 
 
 /**
  * <cite>Data Access Object</cite> (DAO) creating geodetic objects from a JDBC connection to an EPSG database.
- * The EPSG database is freely available at <a href="http://www.epsg.org">http://www.epsg.org</a>.
+ * The EPSG database is freely available at <a href="https://epsg.org/">https://epsg.org/</a>.
  * Current version of this class requires EPSG database version 6.6 or above.
  *
  * <h2>Object identifier (code or name)</h2>
@@ -159,7 +161,7 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  * @author  Matthias Basler
  * @author  Andrea Aime (TOPP)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
@@ -412,7 +414,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *   ├─ Title ……………………………………………………… EPSG Geodetic Parameter Dataset
      *   ├─ Identifier ………………………………………… EPSG
      *   ├─ Online resource (1 of 2)
-     *   │  ├─ Linkage ………………………………………… http://epsg-registry.org/
+     *   │  ├─ Linkage ………………………………………… https://epsg.org/
      *   │  └─ Function ……………………………………… Browse
      *   └─ Online resource (2 of 2)
      *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
@@ -430,7 +432,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
         try {
             /*
              * Get the most recent version number from the history table. We get the date in local timezone
-             * instead then UTC because the date is for information purpose only, and the local timezone is
+             * instead than UTC because the date is for information purpose only, and the local timezone is
              * more likely to be shown nicely (without artificial hours) to the user.
              */
             final String query = translator.apply("SELECT VERSION_NUMBER, VERSION_DATE FROM [Version History]" +
@@ -451,7 +453,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
             }
             /*
              * Add some hard-coded links to EPSG resources, and finally add the JDBC driver name and version number.
-             * The list last OnlineResource looks like:
+             * The last OnlineResource looks like:
              *
              *    Linkage:      jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
              *    Function:     Connection
@@ -465,8 +467,8 @@ addURIs:    for (int i=0; ; i++) {
                 OnLineFunction function;
                 InternationalString description = null;
                 switch (i) {
-                    case 0: url = "http://epsg-registry.org/"; function = OnLineFunction.SEARCH; break;
-                    case 1: url = "http://www.epsg.org/"; function = OnLineFunction.DOWNLOAD; break;
+                    case 0: url = "https://epsg.org/"; function = OnLineFunction.SEARCH; break;
+                    case 1: url = "https://epsg.org/"; function = OnLineFunction.DOWNLOAD; break;
                     case 2: {
                         url = SQLUtilities.getSimplifiedURL(metadata);
                         function = OnLineFunction.valueOf(CONNECTION);
@@ -482,7 +484,9 @@ addURIs:    for (int i=0; ; i++) {
                 try {
                     r.setLinkage(new URI(url));
                 } catch (URISyntaxException exception) {
-                    unexpectedException("getAuthority", exception);
+                    // May happen if there is spaces in the URI.
+                    Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY),
+                                                 EPSGDataAccess.class, "getAuthority", exception);
                 }
                 r.setFunction(function);
                 r.setDescription(description);
@@ -532,6 +536,14 @@ addURIs:    for (int i=0; ; i++) {
 
     /**
      * Returns a map of EPSG authority codes as keys and object names as values.
+     * The cautions documented in {@link #getAuthorityCodes(Class)} apply also to this map.
+     *
+     * @todo We may need to give some public access to this map if callers need descriptions
+     *       for other kinds of object than CRS. Current {@link #getDescriptionText(String)}
+     *       implementation selects CRS if the same code is used by many kinds of objects.
+     *
+     * @see #getAuthorityCodes(Class)
+     * @see #getDescriptionText(String)
      */
     private synchronized Map<String,String> getCodeMap(final Class<?> type) throws SQLException {
         CloseableReference<AuthorityCodes> reference = authorityCodes.get(type);
@@ -544,7 +556,7 @@ addURIs:    for (int i=0; ; i++) {
         Map<String,String> result = Collections.emptyMap();
         for (final TableInfo table : TableInfo.EPSG) {
             /*
-             * We test 'isAssignableFrom' in the two ways for catching the following use cases:
+             * We test `isAssignableFrom` in the two ways for catching the following use cases:
              *
              *  - table.type.isAssignableFrom(type)
              *    is for the case where a table is for CoordinateReferenceSystem while the user type is some subtype
@@ -628,6 +640,8 @@ addURIs:    for (int i=0; ; i++) {
             }
         } catch (SQLException exception) {
             throw new FactoryException(exception.getLocalizedMessage(), exception);
+        } catch (BackingStoreException exception) {       // Cause is SQLException.
+            throw new FactoryException(exception.getLocalizedMessage(), exception.getCause());
         }
         throw noSuchAuthorityCode(IdentifiedObject.class, code);
     }
@@ -741,7 +755,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 } while ((alias = !alias) == true);
             }
             /*
-             * At this point, 'identifier' should be the primary key. It may still be a non-numerical string
+             * At this point, `identifier` should be the primary key. It may still be a non-numerical string
              * if the above code did not found a match in the name column or in the alias table.
              */
             try {
@@ -846,8 +860,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * @throws SQLException if an error occurred while querying the database.
      */
     private static String getOptionalString(final ResultSet result, final int columnIndex) throws SQLException {
-        String value = result.getString(columnIndex);
-        return (value != null) && !(value = value.trim()).isEmpty() && !result.wasNull() ? value : null;
+        final String value = Strings.trimOrNull(result.getString(columnIndex));
+        return (value == null) || result.wasNull() ? null : value;
     }
 
     /**
@@ -907,8 +921,8 @@ codes:  for (int i=0; i<codes.length; i++) {
     private String getString(final String code, final ResultSet result, final int columnIndex, final int columnFault)
             throws SQLException, FactoryDataException
     {
-        String value = result.getString(columnIndex);
-        if (value == null || (value = value.trim()).isEmpty() || result.wasNull()) {
+        final String value = Strings.trimOrNull(result.getString(columnIndex));
+        if (value == null || result.wasNull()) {
             throw new FactoryDataException(nullValue(result, columnFault, code));
         }
         return value;
@@ -928,8 +942,8 @@ codes:  for (int i=0; i<codes.length; i++) {
     private String getString(final Comparable<?> code, final ResultSet result, final int columnIndex)
             throws SQLException, FactoryDataException
     {
-        String value = result.getString(columnIndex);
-        if (value == null || (value = value.trim()).isEmpty() || result.wasNull()) {
+        final String value = Strings.trimOrNull(result.getString(columnIndex));
+        if (value == null || result.wasNull()) {
             throw new FactoryDataException(nullValue(result, columnIndex, code));
         }
         return value;
@@ -1363,8 +1377,8 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final String  type       = getString   (code, result, 7);
                 /*
-                 * Note: Do not invoke 'createProperties' now, even if we have all required information,
-                 *       because the 'properties' map is going to overwritten by calls to 'createDatum', etc.
+                 * Note: Do not invoke `createProperties` now, even if we have all required information,
+                 *       because the `properties` map is going to overwritten by calls to `createDatum`, etc.
                  *
                  * The following switch statement should have a case for all "epsg_crs_kind" values enumerated
                  * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
@@ -1375,8 +1389,8 @@ codes:  for (int i=0; i<codes.length; i++) {
                     /* ----------------------------------------------------------------------
                      *   GEOGRAPHIC CRS
                      *
-                     *   NOTE: 'createProperties' MUST be invoked after any call to an other
-                     *         'createFoo' method. Consequently, do not factor out.
+                     *   NOTE: `createProperties` MUST be invoked after any call to an other
+                     *         `createFoo` method. Consequently, do not factor out.
                      * ---------------------------------------------------------------------- */
                     case "geographic 2d":
                     case "geographic 3d": {
@@ -1407,7 +1421,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      *   PROJECTED CRS
                      *
                      *   NOTE: This method invokes itself indirectly, through createGeographicCRS.
-                     *         Consequently we can not use 'result' anymore after this block.
+                     *         Consequently we can not use `result` anymore after this block.
                      * ---------------------------------------------------------------------- */
                     case "projected": {
                         final String csCode  = getString(code, result,  8);
@@ -1437,7 +1451,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                                  * Apache SIS can not instantiate a ProjectedCRS when the baseCRS uses such units, so we
                                  * set a flag asking to replace the deprecated CS by a supported one. Since that baseCRS
                                  * would not be exactly as defined by EPSG, we must not cache it because we do not want
-                                 * 'owner.createGeographicCRS(geoCode)' to return that modified CRS. Since the same CRS
+                                 * `owner.createGeographicCRS(geoCode)` to return that modified CRS. Since the same CRS
                                  * may be recreated every time a deprecated ProjectedCRS is created, we temporarily
                                  * shutdown the loggings in order to avoid the same warning to be logged many time.
                                  */
@@ -1463,7 +1477,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                             try {
                                 /*
                                  * For a ProjectedCRS, the baseCRS is always geographic. So in theory we would not
-                                 * need the 'instanceof' check. However the EPSG dataset version 8.9 also uses the
+                                 * need the `instanceof` check. However the EPSG dataset version 8.9 also uses the
                                  * "projected" type for CRS that are actually derived CRS. See EPSG:5820 and 5821.
                                  */
                                 final Map<String, Object> properties = createProperties("Coordinate Reference System",
@@ -1511,7 +1525,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      *   COMPOUND CRS
                      *
                      *   NOTE: This method invokes itself recursively.
-                     *         Consequently, we can not use 'result' anymore.
+                     *         Consequently, we can not use `result` anymore.
                      * ---------------------------------------------------------------------- */
                     case "compound": {
                         final String code1 = getString(code, result, 12);
@@ -1525,7 +1539,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                         } finally {
                             endOfRecursivity(CompoundCRS.class, epsg);
                         }
-                        // Note: Do not invoke 'createProperties' sooner.
+                        // Note: Do not invoke `createProperties` sooner.
                         crs  = crsFactory.createCompoundCRS(createProperties("Coordinate Reference System",
                                 name, epsg, area, scope, remarks, deprecated), crs1, crs2);
                         break;
@@ -1771,7 +1785,7 @@ codes:  for (int i=0; i<codes.length; i++) {
     {
         /*
          * We do not provide TOWGS84 information for WGS84 itself or for any other datum on our list of target datum,
-         * in order to avoid infinite recursivity. The 'ensureNonRecursive' call is an extra safety check which should
+         * in order to avoid infinite recursivity. The `ensureNonRecursive` call is an extra safety check which should
          * never fail, unless TARGET_CRS and TARGET_DATUM values do not agree with database content.
          */
         if (code == BursaWolfInfo.TARGET_DATUM) {
@@ -1914,8 +1928,8 @@ codes:  for (int i=0; i<codes.length; i++) {
         {
             while (result.next()) {
                 /*
-                 * One of 'semiMinorAxis' and 'inverseFlattening' values can be NULL in the database.
-                 * Consequently, we don't use 'getString(ResultSet, int)' for those parameters because
+                 * One of `semiMinorAxis` and `inverseFlattening` values can be NULL in the database.
+                 * Consequently, we don't use `getString(ResultSet, int)` for those parameters because
                  * we do not want to thrown an exception if a NULL value is found.
                  */
                 final Integer epsg              = getInteger  (code, result, 1);
@@ -1940,7 +1954,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     }
                 } else {
                     if (!Double.isNaN(semiMinorAxis)) {
-                        // Both 'inverseFlattening' and 'semiMinorAxis' are defined.
+                        // Both `inverseFlattening` and `semiMinorAxis` are defined.
                         // Log a warning and create the ellipsoid using the inverse flattening.
                         final LogRecord record = resources().getLogRecord(Level.WARNING,
                                 Resources.Keys.AmbiguousEllipsoid_1, Constants.EPSG + Constants.DEFAULT_SEPARATOR + code);
@@ -2071,7 +2085,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      * for older database (this error is fixed in EPSG database 8.2).
                      *
                      * Do NOT apply anything similar for the x axis, because xmin > xmax is not error:
-                     * it describes a bounding box spanning the anti-meridian (±180° of longitude).
+                     * it describes a bounding box crossing the anti-meridian (±180° of longitude).
                      */
                     if (ymin > ymax) {
                         final double t = ymin;
@@ -2288,7 +2302,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final String axis = getString(cs, result, 1);
                 if (i < axes.length) {
                     /*
-                     * If 'i' is out of bounds, an exception will be thrown after the loop.
+                     * If `i` is out of bounds, an exception will be thrown after the loop.
                      * We do not want to thrown an ArrayIndexOutOfBoundsException here.
                      */
                     axes[i] = owner.createCoordinateSystemAxis(axis);
@@ -2447,7 +2461,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 if (source == target) {
                     /*
                      * The unit is a base unit. Verify its consistency:
-                     * conversion from 'source' to itself shall be the identity function.
+                     * conversion from `source` to itself shall be the identity function.
                      */
                     final boolean pb = (b != 1);
                     if (pb || c != 1) {
@@ -2891,7 +2905,7 @@ next:               while (r.next()) {
                         fillParameterValues(methodCode, epsg, parameters);
                     }
                     /*
-                     * Creates common properties. The 'version' and 'accuracy' are usually defined
+                     * Creates common properties. The `version` and `accuracy` are usually defined
                      * for transformations only. However, we check them for all kind of operations
                      * (including conversions) and copy the information unconditionally if present.
                      *
@@ -2956,6 +2970,7 @@ next:               while (r.next()) {
                          * to GeoAPI. Actually GeoAPI has a method doing part of the job, but incomplete (e.g. the pure
                          * GeoAPI method can not handle Molodensky transform because it does not give the target datum).
                          */
+                        opProperties = new HashMap<>(opProperties);             // Because this class uses a shared map.
                         final MathTransform mt;
                         final MathTransformFactory mtFactory = owner.mtFactory;
                         if (mtFactory instanceof DefaultMathTransformFactory) {
@@ -3041,7 +3056,7 @@ next:               while (r.next()) {
             boolean searchTransformations = false;
             do {
                 /*
-                 * This 'do' loop is executed twice: the first time for searching defining conversions, and the second
+                 * This `do` loop is executed twice: the first time for searching defining conversions, and the second
                  * time for searching all other kind of operations. Defining conversions are searched first because
                  * they are, by definition, the most accurate operations.
                  */
@@ -3369,7 +3384,7 @@ next:               while (r.next()) {
             if (exception == null) {
                 exception = e;
             } else {
-                e.addSuppressed(exception);     // Keep the connection thrown be Connection as the main one to report.
+                e.addSuppressed(exception);     // Keep the connection thrown by Connection as the main one to report.
             }
         }
         if (exception != null) {

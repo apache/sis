@@ -19,8 +19,6 @@ package org.apache.sis.geometry;
 import java.awt.geom.Rectangle2D;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.apache.sis.referencing.crs.DefaultGeographicCRS;
-import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -29,6 +27,7 @@ import org.junit.Test;
 import static java.lang.Double.NaN;
 import static org.opengis.test.Validators.*;
 import static org.apache.sis.test.ReferencingAssert.*;
+import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
 
 /**
@@ -47,11 +46,6 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
      * The {@code LAST} constant is for stopping the loops.
      */
     private static final int GENERAL=0, IMMUTABLE=1, RECTANGLE=2, SUBENVELOPE=3, LAST=4;
-
-    /**
-     * The coordinate reference system used for the tests.
-     */
-    static final DefaultGeographicCRS WGS84 = HardCodedCRS.WGS84;
 
     /**
      * Creates an envelope of the given type. The type shall be one of the

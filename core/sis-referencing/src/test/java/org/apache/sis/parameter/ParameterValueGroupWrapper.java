@@ -33,7 +33,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @since   0.4
  * @module
  */
-@SuppressWarnings("CloneInNonCloneableClass")
 final strictfp class ParameterValueGroupWrapper implements ParameterValueGroup {
     /**
      * The implementation to hide.
@@ -47,7 +46,7 @@ final strictfp class ParameterValueGroupWrapper implements ParameterValueGroup {
         this.impl = impl;
     }
 
-    @SuppressWarnings("CloneDoesntCallSuperClone")
+    @SuppressWarnings({"CloneInNonCloneableClass", "CloneDoesntCallSuperClone"})
     @Override public ParameterValueGroup         clone()                {return impl.clone();}
     @Override public ParameterDescriptorGroup    getDescriptor()        {return impl.getDescriptor();}
     @Override public List<GeneralParameterValue> values()               {return impl.values();}

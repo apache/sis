@@ -96,9 +96,8 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
             MatrixSIS m = ((ContextualParameters) parameters).getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
             m.setMatrix(denormalization);
         }
-        final int[] size = getGridSize();
-        parameters.parameter(Constants.NUM_ROW).setValue(size[1]);
-        parameters.parameter(Constants.NUM_COL).setValue(size[0]);
+        parameters.parameter(Constants.NUM_ROW).setValue(getGridSize(1));
+        parameters.parameter(Constants.NUM_COL).setValue(getGridSize(0));
         parameters.parameter("grid_x").setValue(new Data(0, denormalization));
         parameters.parameter("grid_y").setValue(new Data(1, denormalization));
     }
@@ -165,18 +164,19 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * @param residuals     the residual data, as translations to apply on the result of affine transform.
      * @param precision     desired precision of inverse transformations in unit of grid cells.
      * @param periods       if grid coordinates in some dimensions are cyclic, their periods in units of target CRS.
+     * @param linearizer    the linearizer that have been applied, or {@code null} if none.
      */
     ResidualGrid(final LinearTransform sourceToGrid, final LinearTransform gridToTarget,
             final int nx, final int ny, final float[] residuals, final double precision,
-            final double[] periods) throws TransformException
+            final double[] periods, final ProjectedTransformTry linearizer)
+            throws TransformException
     {
         super(Units.UNITY, sourceToGrid, new int[] {nx, ny}, true, Units.UNITY);
         this.gridToTarget   = gridToTarget;
         this.offsets        = residuals;
         this.accuracy       = precision;
         this.scanlineStride = nx;
-        double[] periodVector = null;
-        if (periods != null && gridToTarget.isAffine()) {
+        if (periods != null && linearizer == null && gridToTarget.isAffine()) {
             /*
              * We require the transform to be affine because it makes the Jacobian independent of
              * coordinate values. It allows us to replace a period in target CRS units by periods
@@ -197,8 +197,9 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
              * period of 12 months, then `replaceOutsideGridCoordinates(…)` will only shift by 360°
              * AND 12 months together, never 360° only or 12 months only.
              */
+        } else {
+            periodVector = null;
         }
-        this.periodVector = periodVector;
     }
 
     /**
@@ -298,7 +299,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * Geocentric interpolations add the translation to coordinates converted to geocentric coordinates.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.0
+     * @version 1.1
      * @since   1.0
      * @module
      */
@@ -313,7 +314,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
             c2 = denormalization.getElement(dim, 2);
         }
 
-        @SuppressWarnings("CloneInNonCloneableClass")
+        @SuppressWarnings({"CloneInNonCloneableClass", "CloneDoesntCallSuperClone"})
         @Override public Matrix  clone()                            {return this;}
         @Override public boolean isIdentity()                       {return false;}
         @Override public int     getNumCol()                        {return getGridSize(0);}
@@ -323,6 +324,9 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
 
         /** Computes the matrix element in the given row and column. */
         @Override public double  getElement(final int y, final int x) {
+            if ((x | y) < 0 || x >= scanlineStride) {
+                throw new IndexOutOfBoundsException();
+            }
             return c0 * (x + getCellValue(0, x, y)) +                // TODO: use Math.fma with JDK9.
                    c1 * (y + getCellValue(1, x, y)) +
                    c2;

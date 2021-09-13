@@ -16,18 +16,19 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.util.Optional;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.Static;
+import org.apache.sis.feature.Features;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractAttribute;
 import org.apache.sis.feature.AbstractIdentifiedType;
-import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
 
@@ -64,7 +65,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -140,6 +141,22 @@ public final class AttributeConvention extends Static {
     public static final ScopedName CRS_CHARACTERISTIC;
 
     /**
+     * Conventional name for fetching the unit of measurement of a property.
+     * This characteristic is typically an entry in the map returned by a call to the
+     * {@link org.apache.sis.feature.DefaultAttributeType#characteristics()} method
+     * on any attribute of numeric type.
+     *
+     * <p>While it is technically possible to have different units of measurement for the same property
+     * on different feature instances, in most cases the unit is the same for all feature instances.
+     * In such cases, the unit can be specified only once as the
+     * {@linkplain org.apache.sis.feature.DefaultAttributeType#getDefaultValue() default value}.</p>
+     *
+     * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} should be
+     * {@link javax.measure.Unit}.</p>
+     */
+    public static final ScopedName UNIT_CHARACTERISTIC;
+
+    /**
      * Conventional name for fetching the maximal length of string values.
      * The maximal length is stored as the
      * {@linkplain org.apache.sis.feature.DefaultAttributeType#getDefaultValue() default value} of the
@@ -167,6 +184,7 @@ public final class AttributeConvention extends Static {
         GEOMETRY_PROPERTY             = Names.createScopedName(SCOPE, null, "geometry");
         ENVELOPE_PROPERTY             = Names.createScopedName(SCOPE, null, "envelope");
         CRS_CHARACTERISTIC            = Names.createScopedName(SCOPE, null, "crs");
+        UNIT_CHARACTERISTIC           = Names.createScopedName(SCOPE, null, "unit");
         MAXIMAL_LENGTH_CHARACTERISTIC = Names.createScopedName(SCOPE, null, "maximalLength");
         VALID_VALUES_CHARACTERISTIC   = Names.createScopedName(SCOPE, null, "validValues");
     }
@@ -182,6 +200,27 @@ public final class AttributeConvention extends Static {
      * This can be used in calls to {@link AbstractFeature#getPropertyValue(String)}.
      */
     public static final String GEOMETRY = "sis:geometry";
+
+    /**
+     * String representation of the {@link #ENVELOPE_PROPERTY} name.
+     * This can be used in calls to {@link Feature#getPropertyValue(String)}.
+     */
+    public static final String ENVELOPE = "sis:envelope";
+
+    /**
+     * String representation of the {@link #CRS_CHARACTERISTIC} name.
+     */
+    public static final String CRS = "sis:crs";
+
+    /**
+     * String representation of the {@link #UNIT_CHARACTERISTIC} name.
+     */
+    public static final String UNIT = "sis:unit";
+
+    /**
+     * String representation of the {@link #MAXIMAL_LENGTH_CHARACTERISTIC} name.
+     */
+    public static final String MAXIMAL_LENGTH = "sis:maximalLength";
 
     /**
      * Do not allow instantiation of this class.
@@ -244,11 +283,9 @@ public final class AttributeConvention extends Static {
      *
      * @see #GEOMETRY_PROPERTY
      */
-    public static boolean isGeometryAttribute(AbstractIdentifiedType type) {
-        while (type instanceof AbstractOperation) {
-            type = ((AbstractOperation) type).getResult();
-        }
-        return (type instanceof DefaultAttributeType<?>) && Geometries.isKnownType(((DefaultAttributeType<?>) type).getValueClass());
+    public static boolean isGeometryAttribute(final AbstractIdentifiedType type) {
+        final Optional<DefaultAttributeType<?>> at = Features.toAttribute(type);
+        return at.isPresent() && Geometries.isKnownType(at.get().getValueClass());
     }
 
     /**
@@ -260,7 +297,7 @@ public final class AttributeConvention extends Static {
      * @return {@code true} if a characteristic for Coordinate Reference System has been found.
      */
     public static boolean characterizedByCRS(final AbstractIdentifiedType type) {
-        return hasCharacteristic(type, CRS_CHARACTERISTIC.toString(), CoordinateReferenceSystem.class);
+        return hasCharacteristic(type, CRS, CoordinateReferenceSystem.class);
     }
 
     /**
@@ -275,7 +312,7 @@ public final class AttributeConvention extends Static {
      * @see org.apache.sis.feature.builder.AttributeTypeBuilder#setCRS(CoordinateReferenceSystem)
      */
     public static CoordinateReferenceSystem getCRSCharacteristic(final Object attribute) {
-        return (CoordinateReferenceSystem) getCharacteristic(attribute, CRS_CHARACTERISTIC.toString());
+        return (CoordinateReferenceSystem) getCharacteristic(attribute, CRS);
     }
 
     /**
@@ -294,7 +331,7 @@ public final class AttributeConvention extends Static {
      *         to an object which is not a {@link CoordinateReferenceSystem} instance.
      */
     public static CoordinateReferenceSystem getCRSCharacteristic(final DefaultFeatureType feature, final AbstractIdentifiedType attribute) {
-        return (CoordinateReferenceSystem) getCharacteristic(feature, attribute, CRS_CHARACTERISTIC.toString());
+        return (CoordinateReferenceSystem) getCharacteristic(feature, attribute, CRS);
     }
 
     /**
@@ -321,7 +358,7 @@ public final class AttributeConvention extends Static {
      * @see org.apache.sis.feature.builder.AttributeTypeBuilder#setMaximalLength(Integer)
      */
     public static Integer getMaximalLengthCharacteristic(final Object attribute) {
-        return (Integer) getCharacteristic(attribute, MAXIMAL_LENGTH_CHARACTERISTIC.toString());
+        return (Integer) getCharacteristic(attribute, MAXIMAL_LENGTH);
     }
 
     /**
@@ -340,7 +377,7 @@ public final class AttributeConvention extends Static {
      *         to an object which is not a {@link CoordinateReferenceSystem} instance.
      */
     public static Integer getMaximalLengthCharacteristic(final DefaultFeatureType feature, final AbstractIdentifiedType attribute) {
-        return (Integer) getCharacteristic(feature, attribute, MAXIMAL_LENGTH_CHARACTERISTIC.toString());
+        return (Integer) getCharacteristic(feature, attribute, MAXIMAL_LENGTH);
     }
 
     /**
@@ -353,13 +390,11 @@ public final class AttributeConvention extends Static {
      * @return {@code true} if a characteristic of the given name exists and has values assignable to the given class.
      */
     private static boolean hasCharacteristic(AbstractIdentifiedType type, final String name, final Class<?> valueClass) {
-        while (type instanceof AbstractOperation) {
-            type = ((AbstractOperation) type).getResult();
-        }
-        if (type instanceof DefaultAttributeType<?>) {
-            final DefaultAttributeType<?> at = ((DefaultAttributeType<?>) type).characteristics().get(name);
-            if (at != null) {
-                return valueClass.isAssignableFrom(at.getValueClass());
+        final Optional<DefaultAttributeType<?>> at = Features.toAttribute(type);
+        if (at.isPresent()) {
+            final DefaultAttributeType<?> ct = at.get().characteristics().get(name);
+            if (ct != null) {
+                return valueClass.isAssignableFrom(ct.getValueClass());
             }
         }
         return false;
@@ -402,9 +437,9 @@ public final class AttributeConvention extends Static {
      * @return the default value of the named characteristic in the given property, or {@code null} if none.
      */
     private static Object getCharacteristic(final DefaultFeatureType feature, AbstractIdentifiedType property, final String characteristic) {
-        final String referent = FeatureUtilities.linkOf(property);
-        if (referent != null && feature != null) {
-            property = feature.getProperty(referent);
+        final Optional<String> referent = Features.getLinkTarget(property);
+        if (referent.isPresent() && feature != null) {
+            property = feature.getProperty(referent.get());
         }
         if (property instanceof DefaultAttributeType<?>) {
             final DefaultAttributeType<?> type = ((DefaultAttributeType<?>) property).characteristics().get(characteristic);

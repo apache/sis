@@ -38,9 +38,11 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.Capability;
@@ -53,18 +55,20 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
 
 
 /**
- * The provider of {@link Store} instances. This provider is intentionally <strong>not</strong> registered
- * in {@code META-INF/services/org.apache.sis.storage.DataStoreProvider} because is will open any directory,
- * which may conflict with other providers opening only directory with some specific content.
+ * The provider of {@link Store} instances. This provider is intentionally registered with lowest priority
+ * because it will open any directory, which may conflict with other providers opening only directory with
+ * some specific content.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
-@StoreMetadata(formatName   = FolderStoreProvider.NAME,
-               capabilities = {Capability.READ, Capability.WRITE})
+@StoreMetadata(formatName    = FolderStoreProvider.NAME,
+               capabilities  = {Capability.READ, Capability.WRITE},
+               resourceTypes = {Aggregate.class, FeatureSet.class, GridCoverageResource.class},
+               yieldPriority = true)
 public final class FolderStoreProvider extends DataStoreProvider {
     /**
      * A short name or abbreviation for the data format.
@@ -72,7 +76,7 @@ public final class FolderStoreProvider extends DataStoreProvider {
     static final String NAME = "folder";
 
     /**
-     * Description of the parameter for formating conventions of dates and numbers.
+     * Description of the parameter for formatting conventions of dates and numbers.
      */
     private static final ParameterDescriptor<Locale> LOCALE;
 
@@ -116,14 +120,9 @@ public final class FolderStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * The unique instance of this provider.
-     */
-    public static final FolderStoreProvider INSTANCE = new FolderStoreProvider();
-
-    /**
      * Creates a new provider.
      */
-    private FolderStoreProvider() {
+    public FolderStoreProvider() {
     }
 
     /**
@@ -163,7 +162,7 @@ public final class FolderStoreProvider extends DataStoreProvider {
                 return ProbeResult.SUPPORTED;
             }
         } catch (FileSystemNotFoundException e) {
-            Logging.recoverableException(Logging.getLogger(Modules.STORAGE), FolderStoreProvider.class, "probeContent", e);
+            Logging.recoverableException(getLogger(), FolderStoreProvider.class, "probeContent", e);
             // Nothing we can do, may happen often.
         }
         return ProbeResult.UNSUPPORTED_STORAGE;

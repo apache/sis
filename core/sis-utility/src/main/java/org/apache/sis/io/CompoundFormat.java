@@ -30,6 +30,7 @@ import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import javax.measure.Quantity;
 import javax.measure.Unit;
 
 import org.opengis.referencing.IdentifiedObject;
@@ -39,6 +40,7 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.UnitFormat;
+import org.apache.sis.measure.QuantityFormat;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Localized;
@@ -94,7 +96,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * in case of error.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @param <T>  the base type of objects parsed and formatted by this class.
  *
@@ -401,18 +403,33 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
         if (format == null && !formats.containsKey(valueType)) {
             format = createFormat(valueType);
             if (format == null) {
-                Class<?>   type = valueType;
-                Class<?>[] interfaces = null;
-                for (int i=-1;;) {
-                    if (i >= 0 || (type = type.getSuperclass()) == null) {      // Try parent classes first.
-                        if (interfaces == null) {
-                            interfaces = Classes.getAllInterfaces(valueType);   // Try interfaces after we tried all parent classes.
+                /*
+                 * We tried the given class directly. If it didn't worked, try the interfaces before
+                 * to try the parent class. The reason is that we may have for example:
+                 *
+                 *     interface Length extends Quantity;                   // From JSR-363.
+                 *
+                 *     class MyLength extends Number implements Length;
+                 *
+                 * If we were looking for parent classes first, we would get a formatter for Number.
+                 * But instead we want a formatter for Quantity, which is a (Number + Unit) tuple.
+                 * Note that looking for directly declared interfaces first is not sufficient;
+                 * we need to look for parent of Length so we can find Quantity before Number.
+                 */
+                final Class<?>[] interfaces = Classes.getAllInterfaces(valueType);
+                Class<?> type = null;
+                for (int i=0; ; i++) {
+                    if (i < interfaces.length) {
+                        type = interfaces[i];               // Try interfaces first.
+                    } else {
+                        if (i == interfaces.length) {       // Try parent classes after we tried all interfaces.
+                            type = valueType;
                         }
-                        if (++i >= interfaces.length) break;                    // No format found - stop the search with format = null.
-                        type = interfaces[i];
+                        type = type.getSuperclass();
+                        if (type == null) break;            // No format found - stop the search with format = null.
                     }
                     format = formats.get(type);
-                    if (format != null) break;                                  // Intentionally no formats.containsKey(type) check here.
+                    if (format != null) break;              // Intentionally no formats.containsKey(type) check here.
                     format = createFormat(type);
                     if (format != null) {
                         formats.put(type, format);
@@ -420,7 +437,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
                     }
                 }
             }
-            formats.put(valueType, format);                                     // Store result even null.
+            formats.put(valueType, format);                 // Store result even null.
         }
         return format;
     }
@@ -439,6 +456,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *   <tr><td>{@link Date}</td>            <td>{@link DateFormat}</td></tr>
      *   <tr><td>{@link Number}</td>          <td>{@link NumberFormat}</td></tr>
      *   <tr><td>{@link Unit}</td>            <td>{@link UnitFormat}</td></tr>
+     *   <tr><td>{@link Quantity}</td>        <td>{@link QuantityFormat}</td></tr>
      *   <tr><td>{@link Range}</td>           <td>{@link RangeFormat}</td></tr>
      *   <tr><td>{@link Class}</td>           <td>(internal)</td></tr>
      * </table>
@@ -483,6 +501,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             return AngleFormat.getInstance(locale);
         } else if (valueType == Unit.class) {
             return new UnitFormat(locale);
+        } else if (valueType == Quantity.class) {
+            return new QuantityFormat(locale);
         } else if (valueType == Range.class) {
             return new RangeFormat(locale);
         } else if (valueType == DirectPosition.class) {

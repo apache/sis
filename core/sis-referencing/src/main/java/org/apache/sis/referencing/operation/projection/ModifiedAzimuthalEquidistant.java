@@ -17,7 +17,10 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.parameter.Parameters;
@@ -31,15 +34,8 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
 
 /**
  * <cite>Modified Azimuthal Equidistant</cite> projection (EPSG:9832).
- * See the following references for an overview:
- * <ul>
- *   <li><a href="https://en.wikipedia.org/wiki/Azimuthal_equidistant_projection">Azimuthal equidistant projection</a></li>
- *   <li><a href="https://mathworld.wolfram.com/AzimuthalEquidistantProjection.html">Azimuthal Equidistant Projection</a></li>
- * </ul>
- *
- * <h2>Description</h2>
- * An approximation of the oblique form of the <cite>Azimuthal Equidistant</cite> projection.
- * For relatively short distances (e.g. under 800 kilometres) this modification introduces no significant error.
+ * This is an approximation of the oblique form of the <cite>Azimuthal Equidistant</cite> projection.
+ * For distances under 800 kilometres this modification introduces no significant error.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -91,7 +87,7 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, (byte) 0);
+        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
     }
 
     /**
@@ -128,6 +124,27 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(0, ν0, null);
         denormalize.convertBefore(1, ν0, null);
+    }
+
+    /**
+     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
+     * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     *
+     * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
+     * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
+     *
+     * @param  factory  the factory to use for creating the transform.
+     * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
+     */
+    @Override
+    public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+        AzimuthalEquidistant kernel = this;
+        if (eccentricity == 0) {
+            kernel = new AzimuthalEquidistant(this);
+        }
+        return context.completeTransform(factory, kernel);
     }
 
     /**
@@ -200,15 +217,34 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
                                     final double[] dstPts, final int dstOff)
             throws ProjectionException
     {
-        final double x    = srcPts[srcOff  ];
-        final double y    = srcPts[srcOff+1];
-        final double α    = atan2(x, y);                // Actually α′ in EPSG guidance notes.
-        final double sinα = sin(α);
-        final double cosα = cos(α);
-              double negA = Hp * cosα; negA *= negA;    // mA = −A  compared to EPSG guidance note.
+        final double x  = srcPts[srcOff  ];
+        final double y  = srcPts[srcOff+1];
+        final double D2 = x*x + y*y;
+        final double D  = sqrt(D2);                     // D = c′/ν₀, but division by ν₀ is already done here.
+        /*
+         * From ESPG guidance note:
+         *
+         *     α′    =  atan2(x, y)                     // x and y interchanged compared to usual atan2(y, x).
+         *     sinα  =  sin(α′)
+         *     cosα  =  cos(α′)
+         *
+         * But we rewrite in a way that avoid the use of trigonometric functions. We test (D != 0)
+         * exactly (without epsilon) because even a very small value is sufficient for avoiding NaN:
+         * Since D ≥ max(|x|,|y|) we get x/D and y/D close to zero.
+         *
+         * Note: the D ≥ max(|x|,|y|) assumption may not be always true (see NormalizedProjection.fastHypot(…)).
+         * Consequently sin(α) or cos(α) may be slightly greater than 1. However they are multiplied by terms
+         * involving eccentricity, which are smaller than 1. An empirical verification is done with cos(φ₀) = 1
+         * in AzimuthalEquidistantTest.testValuesNearZero().
+         */
+        double sinα = 0;
+        double cosα = 0;
+        if (D != 0) {
+            sinα = x / D;                               // x and y interchanged compared to usual atan2(y, x).
+            cosα = y / D;
+        }
+              double negA = Hp * cosα; negA *= negA;    // negA = −A  compared to EPSG guidance note.
         final double B    = Bp * (1 + negA) * cosα;
-        final double D2   = x*x + y*y;
-        final double D    = sqrt(D2);                   // D = c′/ν₀, but division by ν₀ is already done here.
         final double J    = D + (negA*(1 -   negA)*(D2*D )/6)
                               - (   B*(1 - 3*negA)*(D2*D2)/24);
         final double J2   = J*J;

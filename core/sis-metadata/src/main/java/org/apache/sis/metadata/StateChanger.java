@@ -32,9 +32,6 @@ import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
 /**
  * Invokes {@link ModifiableMetadata#transitionTo(ModifiableMetadata.State)} recursively on metadata elements.
  *
- * As of Apache SIS 1.0, this class is used only for {@link ModifiableMetadata.State#FINAL}.
- * But a future version may use this object for other states too.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
@@ -43,9 +40,9 @@ import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
 final class StateChanger extends MetadataVisitor<Boolean> {
     /**
      * The {@code StateChanger} instance in current use. The clean way would have been to pass
-     * the instance in argument to all {@code apply(State.FINAL)} methods in metadata packages.
-     * But above-cited methods are public, and we do not want to expose {@code StateChanger}
-     * in public API. This thread-local is a workaround for that situation.
+     * the instance in argument to {@link ModifiableMetadata#transitionTo(ModifiableMetadata.State)}.
+     * But above-cited method ix public and we do not want to expose {@code StateChanger} in public API.
+     * This thread-local is a workaround for that situation.
      */
     private static final ThreadLocal<StateChanger> VISITORS = ThreadLocal.withInitial(StateChanger::new);
 
@@ -66,7 +63,13 @@ final class StateChanger extends MetadataVisitor<Boolean> {
     }
 
     /**
-     * Applies a state change on the given metadata object.
+     * Applies a state change on the given metadata object. This is the implementation
+     * {@link ModifiableMetadata#transitionTo(ModifiableMetadata.State)} public method.
+     *
+     * <p>This is conceptually an instance (non-static) method. But the {@code this} value is not known
+     * by the caller, because doing otherwise would force us to give public visibility to classes that we
+     * want to keep package-private. The {@link #VISITORS} thread local variable is used as a workaround
+     * for providing {@code this} instance without making {@code StateChanger} public.</p>
      */
     static void applyTo(final ModifiableMetadata.State target, final ModifiableMetadata metadata) {
         final StateChanger changer = VISITORS.get();
@@ -78,6 +81,8 @@ final class StateChanger extends MetadataVisitor<Boolean> {
 
     /**
      * Returns the thread-local variable that created this {@code StateChanger} instance.
+     * {@link ThreadLocal#remove()} will be invoked after {@link MetadataVisitor} finished
+     * to walk through the given metadata and all its children.
      */
     @Override
     final ThreadLocal<StateChanger> creator() {
@@ -108,7 +113,7 @@ final class StateChanger extends MetadataVisitor<Boolean> {
     }
 
     /**
-     * Recursively change the state of all elements in the given array.
+     * Recursively changes the state of all elements in the given array.
      */
     private void applyToAll(final Object[] array) throws CloneNotSupportedException {
         for (int i=0; i < array.length; i++) {
@@ -144,8 +149,10 @@ final class StateChanger extends MetadataVisitor<Boolean> {
             return object;
         }
         if (object instanceof DefaultRepresentativeFraction) {
-            ((DefaultRepresentativeFraction) object).freeze();
-            return object;
+            if (target.isUnmodifiable()) {
+                ((DefaultRepresentativeFraction) object).freeze();
+                return object;
+            }
         }
         /*
          * CASE 2 - The object is a collection. All elements are replaced by their

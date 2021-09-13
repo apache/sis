@@ -21,6 +21,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.xml.stream.StaxDataStoreProvider;
@@ -34,13 +35,14 @@ import org.apache.sis.util.Version;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
-@StoreMetadata(formatName   = "GPX",
-               fileSuffixes = "xml",
-               capabilities = {Capability.READ, Capability.WRITE})
+@StoreMetadata(formatName    = "GPX",
+               fileSuffixes  = "xml",
+               capabilities  = {Capability.READ, Capability.WRITE},
+               resourceTypes = {FeatureSet.class})
 public final class StoreProvider extends StaxDataStoreProvider {
     /**
      * The "1.0" version.

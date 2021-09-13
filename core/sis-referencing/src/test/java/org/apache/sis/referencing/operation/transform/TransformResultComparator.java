@@ -31,7 +31,7 @@ import static org.apache.sis.test.Assert.*;
  * Compares the results of two {@link MathTransform} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -39,7 +39,7 @@ final strictfp class TransformResultComparator implements MathTransform {
     /**
      * The transform to be used as the reference.
      */
-    private final MathTransform reference;
+    final MathTransform reference;
 
     /**
      * The transform to be compared with the {@link #reference} one.

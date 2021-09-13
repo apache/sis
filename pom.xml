@@ -26,9 +26,10 @@
      Apache SIS build requires Java 11 or higher, but compiled files can be executed on Java 8.
      Setting the SIS_DATA environment variable before build is optional but recommended.
 
-     Build development snapshot:    mvn clean install
-     Include EPSG database:         mvn install -Pnon-free
-     Run more extensive tests:      mvn test -Dorg.apache.sis.test.extensive=true
+     Build development snapshot:        mvn clean install
+     Include EPSG database:             mvn install -Pnon-free
+     Include JavaFX dependency (GPL):   mvn install -Pjavafx
+     Run more extensive tests:          mvn test -Dorg.apache.sis.test.extensive=true
      ============================================================================================= -->
 <project xmlns              = "http://maven.apache.org/POM/4.0.0"
          xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
@@ -38,7 +39,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>21</version>
+    <version>24</version>
   </parent>
 
 
@@ -83,7 +84,7 @@
 
   <ciManagement>
     <system>jenkins</system>
-    <url>https://builds.apache.org/job/sis</url>
+    <url>https://ci-builds.apache.org/job/SIS/</url>
   </ciManagement>
 
   <issueManagement>
@@ -146,9 +147,8 @@
       <name>Chris A. Mattmann</name>
       <id>mattmann</id>
       <email>mattmann@apache.org</email>
-      <url>http://sunset.usc.edu/~mattmann/</url>
       <organization>NASA Jet Propulsion Laboratory</organization>
-      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <organizationUrl>https://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
       <roles>
         <role>PMC emeritus</role>
@@ -182,7 +182,7 @@
       <id>jsorel</id>
       <email>johann.sorel@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>PMC member</role>
@@ -206,7 +206,7 @@
       <id>desruisseaux</id>
       <email>desruisseaux@apache.org</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>PMC member</role>
@@ -218,7 +218,7 @@
       <id>nchung</id>
       <email>nchung@apache.org</email>
       <organization>NASA Jet Propulsion Laboratory</organization>
-      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <organizationUrl>https://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
       <roles>
         <role>PMC member</role>
@@ -235,7 +235,6 @@
       <id>pjaol</id>
       <email>pjaol@apache.org</email>
       <organization>AT&amp;T Interactive</organization>
-      <organizationUrl>http://www.attinteractive.com</organizationUrl>
       <timezone>-8</timezone>
       <roles>
         <role>PMC member</role>
@@ -247,7 +246,7 @@
       <email>pramirez@apache.org</email>
       <url>http://people.apache.org/~pramirez/</url>
       <organization>NASA Jet Propulsion Laboratory</organization>
-      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <organizationUrl>https://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
       <roles>
         <role>PMC member</role>
@@ -265,7 +264,7 @@
       <id>rmarechal</id>
       <email>remi.marechal@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>committer</role>
@@ -283,7 +282,7 @@
       <id>smcclees</id>
       <email>smcclees@apache.org</email>
       <organization>NASA Jet Propulsion Laboratory</organization>
-      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <organizationUrl>https://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
       <roles>
         <role>PMC member</role>
@@ -316,7 +315,7 @@
       <name>Alexis manin</name>
       <email>alexis.manin@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
@@ -325,7 +324,7 @@
     <contributor>
       <name>Antoine Hnawia</name>
       <organization>Institut de Recherche pour le Développement</organization>
-      <organizationUrl>http://www.ird.fr</organizationUrl>
+      <organizationUrl>https://www.ird.fr</organizationUrl>
       <timezone>+11</timezone>
       <roles>
         <role>developer</role>
@@ -335,7 +334,7 @@
       <name>Cédric Briançon</name>
       <email>cedric.briancon@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
@@ -350,7 +349,7 @@
     <contributor>
       <name>Cullen Rombach</name>
       <organization>Image Matters</organization>
-      <organizationUrl>http://www.imagemattersllc.com</organizationUrl>
+      <organizationUrl>https://www.imagemattersllc.com</organizationUrl>
       <timezone>-5</timezone>
       <roles>
         <role>developer</role>
@@ -360,7 +359,7 @@
       <name>Guilhem Legal</name>
       <email>guilhem.legal@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
@@ -376,7 +375,7 @@
       <name>Minh Chinh Vu</name>
       <email>chinhvm.uet.1995@gmail.com</email>
       <organization>VNSC</organization>
-      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <organizationUrl>https://vnsc.org.vn</organizationUrl>
       <timezone>+7</timezone>
       <roles>
         <role>developer</role>
@@ -386,7 +385,7 @@
       <name>Thi Phuong Hao Nguyen</name>
       <email>nguyenthiphuonghao243@gmail.com</email>
       <organization>VNSC</organization>
-      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <organizationUrl>https://vnsc.org.vn</organizationUrl>
       <timezone>+7</timezone>
       <roles>
         <role>developer</role>
@@ -395,7 +394,7 @@
     <contributor>
       <name>Touraïvane</name>
       <organization>Institut de Recherche pour le Développement (IRD)</organization>
-      <organizationUrl>http://www.ird.fr</organizationUrl>
+      <organizationUrl>https://www.ird.fr</organizationUrl>
       <timezone>+11</timezone>
       <roles>
         <role>developer</role>
@@ -410,7 +409,7 @@
          one of those dependencies, then it will use the version
          specified here. Otherwise, those dependencies are ignored.
 
-         See http://search.maven.org/ for latest version numbers.
+         See https://search.maven.org/ for latest version numbers.
        ============================================================== -->
   <dependencyManagement>
     <dependencies>
@@ -439,13 +438,13 @@
       <dependency>
         <groupId>com.esri.geometry</groupId>
         <artifactId>esri-geometry-api</artifactId>
-        <version>2.2.3</version>
+        <version>2.2.4</version>
         <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>org.locationtech.jts</groupId>
         <artifactId>jts-core</artifactId>
-        <version>1.16.1</version>
+        <version>1.18.2</version>
         <optional>true</optional>
       </dependency>
       <dependency>
@@ -457,7 +456,7 @@
       <dependency>
         <groupId>net.sf.geographiclib</groupId>
         <artifactId>GeographicLib-Java</artifactId>
-        <version>1.50</version>
+        <version>1.52</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -481,7 +480,7 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.19</version>
+        <version>1.21</version>
       </dependency>
 
       <!-- Databases -->
@@ -494,13 +493,13 @@
       <dependency>
         <groupId>org.hsqldb</groupId>
         <artifactId>hsqldb</artifactId>
-        <version>2.5.0</version>
+        <version>2.6.0</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
-        <version>42.2.8</version>
+        <version>42.2.23</version>
         <scope>test</scope>
       </dependency>
 
@@ -513,15 +512,13 @@
       </dependency>
       <dependency>
         <groupId>edu.ucar</groupId>
-        <artifactId>cdm</artifactId>
-        <version>${netcdf.version}</version>
-        <scope>provided</scope>
+        <artifactId>cdm-core</artifactId>
+        <version>5.4.2</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-jdk14</artifactId>
-        <version>1.7.22</version>               <!-- Must matches the version used by netCDF. -->
-        <scope>test</scope>                     <!-- Should never be needed at compile time.  -->
+        <version>1.7.28</version>               <!-- Must matches the version used by netCDF. -->
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -551,7 +548,6 @@
          The last properties in this list depend on the Apache SIS branch.
        =================================================================== -->
   <properties>
-    <netcdf.version>4.6.14</netcdf.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
     <website.locale>en</website.locale>
@@ -560,9 +556,10 @@
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
-    <sis.non-free.version>1.0</sis.non-free.version>                 <!-- Used only if "non-free" profile is enabled. -->
+    <sis.non-free.version>1.0</sis.non-free.version>                <!-- Used only if "non-free" profile is activated. -->
+    <javafx.version>17</javafx.version>                             <!-- Used only if "javafx" profile is activated. -->
     <geoapi.version>3.0.1</geoapi.version>
-    <jaxb.version>2.3.2</jaxb.version>
+    <jaxb.version>2.3.3</jaxb.version>
   </properties>
 
   <profiles>
@@ -573,11 +570,23 @@
         <maven.compiler.optimize>true</maven.compiler.optimize>
         <org.apache.sis.test.extensive>true</org.apache.sis.test.extensive>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <!-- Configuration of Javadoc attached to Maven artifacts (not aggregated javadoc). -->
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <nonavbar>true</nonavbar>         <!-- Navigation bar not used when Javadoc is browsed from IDE. -->
+              <doclint>-reference</doclint>     <!-- Cross-modules references are valid only in aggregated javadoc. -->
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
 
     <!-- ===================================================================
-           If the user has not set the SIS_DATA environment variable, set a
-           default value where we can create a minimalist database.
+           If the user has not set the SIS_DATA environment variable,
+           set a default value where we can create a minimalist database.
          =================================================================== -->
     <profile>
       <id>sis-data</id>
@@ -591,7 +600,6 @@
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <trimStackTrace>false</trimStackTrace>
               <environmentVariables>
                 <SIS_DATA>${session.executionRootDirectory}/target</SIS_DATA>
               </environmentVariables>
@@ -614,7 +622,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.0.0-M2</version>
+        <version>3.0.0</version>
         <executions>
           <execution>
             <id>enforce</id>
@@ -629,6 +637,13 @@
               </rules>
             </configuration>
           </execution>
+          <execution>
+            <!-- Metadata (including timestamp) considered more valuable than bit-by-bit reproductive build. -->
+            <id>enforce-output-timestamp-property</id>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 
@@ -636,7 +651,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.2.0</version>
         <executions>
           <execution>
             <id>remove-old-artifacts</id>
@@ -670,14 +685,18 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>3.0.0-M5</version>
         <configuration>
+          <trimStackTrace>false</trimStackTrace>
           <includes>
             <include>**/*TestSuite.java</include>
           </includes>
-          <systemPropertyVariables>
-            <derby.stream.error.file>${project.build.directory}/derby.log</derby.stream.error.file>
-          </systemPropertyVariables>
+          <systemProperties>
+            <property>
+              <name>derby.stream.error.file</name>
+              <value>${project.build.directory}/derby.log</value>
+            </property>
+          </systemProperties>
         </configuration>
       </plugin>
 
@@ -688,7 +707,7 @@
            INDEX.LIST file is incomplete (which seem to happen in practice). -->
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.1.2</version>
+        <version>3.2.0</version>
         <configuration>
           <archive>
             <addMavenDescriptor>false</addMavenDescriptor>
@@ -720,7 +739,7 @@
       <!-- Set "*-source-release.zip" filename prefix to "sis-*" instead of "parent-*" -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.1.1</version>
+        <version>3.3.0</version>
         <executions>
           <execution>
             <id>source-release-assembly</id>
@@ -739,21 +758,15 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.1.0</version>
-        <dependencies>
-          <dependency>
-            <groupId>com.puppycrawl.tools</groupId>
-            <artifactId>checkstyle</artifactId>
-            <version>8.23</version>
-          </dependency>
-        </dependencies>
+        <version>3.1.2</version>
         <executions>
           <execution>
             <goals>
               <goal>check</goal>
             </goals>
             <configuration>
-              <skip>${skipTests}</skip> <!-- When skipping tests, skip also checkstyle verification. -->
+              <skip>${skipTests}</skip>                 <!-- When skipping tests, skip also checkstyle verification.  -->
+              <excludes>**/generated/**/*</excludes>    <!-- Skip generated source code, e.g. classes created by JMH. -->
               <encoding>${project.build.sourceEncoding}</encoding>
               <consoleOutput>true</consoleOutput>
               <checkstyleRules>
@@ -846,7 +859,7 @@
       <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.1.1</version>
+        <version>3.3.1</version>
         <configuration>
           <source>${maven.compiler.source}</source>             <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
@@ -865,12 +878,11 @@
             <link>https://docs.oracle.com/javase/8/docs/api</link>
             <link>http://unitsofmeasurement.github.io/unit-api/site/apidocs</link>
             <link>http://www.geoapi.org/3.0/javadoc</link>
-            <link>http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/javadoc</link>
+            <link>https://docs.unidata.ucar.edu/netcdf-java/current/javadoc</link>
           </links>
 
           <additionalOptions>
             <additionalOption>--add-stylesheet "${maven.multiModuleProjectDirectory}/src/main/javadoc/sis.css"</additionalOption>
-            <additionalOption>--no-module-directories</additionalOption> <!-- https://bugs.openjdk.java.net/browse/JDK-8215291 -->
           </additionalOptions>
 
           <!-- Separates packages on the overview page into the groups specified. -->
@@ -960,11 +972,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>3.0.0-M1</version>
-        </plugin>
-        <plugin>
-          <groupId>org.eclipse.jetty</groupId>
-          <artifactId>jetty-maven-plugin</artifactId>
-          <version>9.4.20.v20190813</version>
         </plugin>
       </plugins>
     </pluginManagement>

@@ -53,7 +53,7 @@
       <id>jsorel</id>
       <email>johann.sorel@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
@@ -64,7 +64,7 @@
       <id>desruisseaux</id>
       <email>desruisseaux@apache.org</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
@@ -76,7 +76,7 @@
       <name>Thi Phuong Hao Nguyen</name>
       <email>nguyenthiphuonghao243@gmail.com</email>
       <organization>VNSC</organization>
-      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <organizationUrl>https://vnsc.org.vn</organizationUrl>
       <timezone>+7</timezone>
       <roles>
         <role>developer</role>
@@ -86,7 +86,7 @@
       <name>Minh Chinh Vu</name>
       <email>chinhvm.uet.1995@gmail.com</email>
       <organization>VNSC</organization>
-      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <organizationUrl>https://vnsc.org.vn</organizationUrl>
       <timezone>+7</timezone>
       <roles>
         <role>developer</role>

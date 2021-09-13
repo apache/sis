@@ -1,0 +1,8 @@
+This directory contains Apache SIS files together with dependencies.
+
+  - Derby database
+  - JAXB API
+  - JAXB implementation  (optional)
+  - UCAR netCDF library  (optional)
+  - ESRI Geometry API    (optional)
+  - Java Topology Suite  (optional)

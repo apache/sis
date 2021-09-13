@@ -21,24 +21,31 @@ import java.io.IOException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.coverage.PointOutsideCoverageException;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
  * Tests {@link GridExtent}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -73,14 +80,15 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests the {@link GridExtent#GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])} constructor.
+     * Tests the {@link GridExtent#GridExtent(AbstractEnvelope,
+     * GridRoundingMode, int[], int[], GridExtent, int[])} constructor.
      */
     @Test
     public void testCreateFromEnvelope() {
         final GeneralEnvelope env = new GeneralEnvelope(HardCodedCRS.IMAGE);
         env.setRange(0, -23.01, 30.107);
         env.setRange(1,  12.97, 18.071);
-        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, null, null, null);
+        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
         assertExtentEquals(extent, 0, -23, 29);
         assertExtentEquals(extent, 1,  13, 17);
         assertEquals(DimensionNameType.COLUMN, extent.getAxisType(0).get());
@@ -88,7 +96,24 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests the rounding performed by the {@link GridExtent#GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])} constructor.
+     * Tests the {@link GridExtent#GridExtent(AbstractEnvelope, GridRoundingMode, int[],
+     * int[], GridExtent, int[])} constructor when an envelope has a span close to zero.
+     */
+    @Test
+    public void testCreateFromThinEnvelope() {
+        final GeneralEnvelope env = new GeneralEnvelope(3);
+        env.setRange(0,  11.22,  11.23);
+        env.setRange(1, -23.02, -23.01);
+        env.setRange(2,  34.91,  34.92);
+        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
+        assertExtentEquals(extent, 0,  11,  11);
+        assertExtentEquals(extent, 1, -24, -24);
+        assertExtentEquals(extent, 2,  34,  34);
+    }
+
+    /**
+     * Tests the rounding performed by the {@link GridExtent#GridExtent(AbstractEnvelope,
+     * GridRoundingMode, int[], int[], GridExtent, int[])} constructor.
      */
     @Test
     public void testRoundings() {
@@ -98,7 +123,7 @@ public final strictfp class GridExtentTest extends TestCase {
         env.setRange(2, 1.49998, 3.50001);      // Round to [1…4), stored as [1…2] (not [1…3]) because the span is close to 2.
         env.setRange(3, 1.49999, 3.50002);      // Round to [1…4), stored as [2…3] because the upper part is closer to integer.
         env.setRange(4, 1.2,     3.8);          // Round to [1…4), stores as [1…3] because the span is not close enough to integer.
-        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, null, null, null);
+        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, GridClippingMode.STRICT, null, null, null, null);
         assertExtentEquals(extent, 0, 1, 2);
         assertExtentEquals(extent, 1, 1, 2);
         assertExtentEquals(extent, 2, 1, 2);
@@ -146,10 +171,23 @@ public final strictfp class GridExtentTest extends TestCase {
     @Test
     public void testExpand() {
         GridExtent extent = create3D();
-        extent = extent.expand(20, -10);
+        assertSame(extent, extent.expand(new long[3]));
+        extent = extent.expand(20, -10);            // One less dimension than `exent` dimension.
         assertExtentEquals(extent, 0,  80, 519);
         assertExtentEquals(extent, 1, 210, 789);
         assertExtentEquals(extent, 2,  40,  49);
+    }
+
+    /**
+     * Tests {@link GridExtent#forChunkSize(int[])}.
+     */
+    @Test
+    public void testForChunkSize() {
+        GridExtent extent = create3D();
+        extent = extent.forChunkSize(300, 200, 15);
+        assertExtentEquals(extent, 0,   0, 599);
+        assertExtentEquals(extent, 1, 200, 799);
+        assertExtentEquals(extent, 2,  30,  59);
     }
 
     /**
@@ -162,6 +200,22 @@ public final strictfp class GridExtentTest extends TestCase {
         assertExtentEquals(extent, 0, 50, 249);
         assertExtentEquals(extent, 1, 50, 199);
         assertExtentEquals(extent, 2, 40,  49);
+    }
+
+    /**
+     * Tests {@link GridExtent#intersect(GridExtent)}.
+     */
+    @Test
+    public void testIntersect() {
+        final GridExtent domain = new GridExtent(
+                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME},
+                new long[] {150, 220, 35}, new long[] {400, 820, 47}, false);
+        GridExtent extent = create3D();
+        extent = extent.intersect(domain);
+        assertExtentEquals(extent, 0, 150, 399);
+        assertExtentEquals(extent, 1, 220, 799);
+        assertExtentEquals(extent, 2, 40,  46);
+        assertSame(extent.intersect(domain), extent);
     }
 
     /**
@@ -205,7 +259,7 @@ public final strictfp class GridExtentTest extends TestCase {
         try {
             extent.slice(slicePoint, new int[] {1, 2});
             fail("Expected PointOutsideCoverageException");
-        } catch (RuntimeException e) {
+        } catch (PointOutsideCoverageException e) {
             final String message = e.getLocalizedMessage();
             assertTrue(message, message.contains("(900, 47)"));     // See above comment.
         }
@@ -229,18 +283,74 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#cornerToCRS(Envelope)}.
+     * Tests {@link GridExtent#cornerToCRS(Envelope, long, int[])}.
      */
     @Test
     public void testCornerToCRS() {
         final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84);
         aoi.setRange(0,  40, 55);
         aoi.setRange(1, -10, 70);
-        final GridExtent extent = new GridExtent(null, new long[] {-20, -25}, new long[] {10, 15}, false);
+        final GridExtent extent = new GridExtent(null,
+                new long[] {-20, -25},
+                new long[] { 10,  15}, false);
+        /*
+         * No axis flip.
+         * Verification:  y  =  2 × −25 + 40  =  −10  (the minimum value declared in envelope).
+         */
         assertMatrixEquals("cornerToCRS", new Matrix3(
                 0.5,  0,   50,
                 0,    2,   40,
-                0,    0,    1), extent.cornerToCRS(aoi), STRICT);
+                0,    0,    1), extent.cornerToCRS(aoi, 0, null), STRICT);
+        /*
+         * Y axis flip.
+         * Verification:  y  =  −2 × −25 + 20  =  70  (the maximum value declared in envelope).
+         */
+        assertMatrixEquals("cornerToCRS", new Matrix3(
+                0.5,  0,   50,
+                0,   -2,   20,
+                0,    0,    1), extent.cornerToCRS(aoi, 2, null), STRICT);
+        /*
+         * Swap axis order. The {1,0} indices apply to grid dimensions, not to CRS dimensions.
+         * Verification:  x  =  0.375 × −25 + 49.375  =  40  (the minimum value declared in envelope).
+         *                y  =  2.667 × −20 + 43.333  ≈ −10  (idem).
+         */
+        assertMatrixEquals("cornerToCRS", new Matrix3(
+                0,                   0.375,   49.375,
+                2.6666666666666667,  0,       43.333333333333333,
+                0,                   0,        1),
+                extent.cornerToCRS(aoi, 0, new int[] {1,0}), 1E-15);
+    }
+
+    /**
+     * Tests {@link GridExtent#toEnvelope(MathTransform)}.
+     *
+     * @throws TransformException if an error occurred while transforming to an envelope.
+     */
+    @Test
+    public void testToEnvelope() throws TransformException {
+        final GridExtent extent = new GridExtent(new DimensionNameType[] {
+            DimensionNameType.ROW,
+            DimensionNameType.TIME,
+            DimensionNameType.COLUMN,
+            DimensionNameType.VERTICAL
+        }, new long[] {100, 5, 200, 40}, new long[] {500, 7, 800, 50}, false);
+        final GeneralEnvelope envelope = extent.toEnvelope(MathTransforms.linear(Matrices.create(5, 5, new double[] {
+            0,  0,  1,  0,  0,
+           -1,  0,  0,  0,  0,
+            0,  0,  0, -1,  0,
+            0,  1,  0,  0,  0,
+            0,  0,  0,  0,  1})));
+
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] {200, -500, -50, 5},
+                new double[] {800, -100, -40, 7}), envelope);
+
+        final CoordinateSystem cs = envelope.getCoordinateReferenceSystem().getCoordinateSystem();
+        assertAxisDirectionsEqual("toEnvelope", cs,
+                AxisDirection.COLUMN_POSITIVE,
+                AxisDirection.ROW_NEGATIVE,
+                AxisDirection.DOWN,
+                AxisDirection.FUTURE);
     }
 
     /**
@@ -257,5 +367,62 @@ public final strictfp class GridExtentTest extends TestCase {
                 "Column: [100 … 499] (400 cells)\n" +
                 "Row:    [200 … 799] (600 cells)\n" +
                 "Time:   [ 40 …  49]  (10 cells)\n", buffer);
+    }
+
+    /**
+     * Verifies that a translation of zero cell results in the same {@link GridExtent} instance.
+     */
+    @Test
+    public void empty_translation_returns_same_extent_instance() {
+        final GridExtent extent = new GridExtent(10, 10);
+        assertSame("Same instance returned in case of no-op", extent, extent.translate());
+        assertSame("Same instance returned in case of no-op", extent, extent.translate(0));
+        assertSame("Same instance returned in case of no-op", extent, extent.translate(0, 0));
+    }
+
+    /**
+     * Verifies that {@link GridExtent#translate(long...)} accepts a vector with less dimensions
+     * than the extent number of dimensions. No translation shall be applied in missing dimensions.
+     */
+    @Test
+    public void translating_only_first_dimensions_leave_others_untouched() {
+        final GridExtent base = new GridExtent(null, new long[] {
+            0, 0, 0,
+            2, 2, 2
+        });
+        final GridExtent translatedByX = base.translate(1);
+        assertArrayEquals("Lower corner", new long[] {1, 0, 0}, translatedByX.getLow() .getCoordinateValues());
+        assertArrayEquals("Upper corner", new long[] {3, 2, 2}, translatedByX.getHigh().getCoordinateValues());
+
+        final GridExtent translatedByY = base.translate(0, -1);
+        assertArrayEquals("Lower corner", new long[] {0, -1, 0}, translatedByY.getLow() .getCoordinateValues());
+        assertArrayEquals("Upper corner", new long[] {2,  1, 2}, translatedByY.getHigh().getCoordinateValues());
+
+        final GridExtent translatedByXAndY = base.translate(-1, 4);
+        assertArrayEquals("Lower corner", new long[] {-1, 4, 0}, translatedByXAndY.getLow() .getCoordinateValues());
+        assertArrayEquals("Upper corner", new long[] { 1, 6, 2}, translatedByXAndY.getHigh().getCoordinateValues());
+
+        // Paranoiac check: ensure that base extent has been left untouched.
+        assertArrayEquals("Base lower corner", new long[] {0, 0, 0}, base.getLow() .getCoordinateValues());
+        assertArrayEquals("Base lower corner", new long[] {2, 2, 2}, base.getHigh().getCoordinateValues());
+    }
+
+    /**
+     * Verifies that {@link GridExtent#translate(long...)} applies a translation on all dimensions
+     * when the given vector is long enough.
+     */
+    @Test
+    public void translating_all_dimensions() {
+        final GridExtent base = new GridExtent(null, new long[] {
+            -1, -1, -2, 10,
+             2,  2,  2, 20
+        });
+        final GridExtent translated = base.translate(-2, 1, 1, 100);
+        assertArrayEquals("Lower corner", new long[] {-3, 0, -1, 110}, translated.getLow() .getCoordinateValues());
+        assertArrayEquals("Upper corner", new long[] { 0, 3,  3, 120}, translated.getHigh().getCoordinateValues());
+
+        // Paranoiac check: ensure that base extent has been left untouched.
+        assertArrayEquals("Base lower corner", new long[] {-1, -1, -2, 10}, base.getLow() .getCoordinateValues());
+        assertArrayEquals("Base lower corner", new long[] { 2,  2,  2, 20}, base.getHigh().getCoordinateValues());
     }
 }

@@ -19,8 +19,6 @@ package org.apache.sis.image;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
-import java.awt.image.WritableRaster;
-import java.awt.image.WritableRenderedImage;
 
 import static org.junit.Assert.*;
 
@@ -28,17 +26,22 @@ import static org.junit.Assert.*;
 /**
  * Tests the linear read-write iterator on signed short integer values.
  *
+ * <p>Historical note: in a previous version, this iteration order was implemented in a separated class
+ * named {@code LinearIterator}. Linear order has been retrofitted in {@link PixelIterator} but we keep
+ * that test class separated as an easy way to execute the same set tests with the two iteration orders
+ * (default and linear).</p>
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  */
-public final strictfp class LinearIteratorTest extends DefaultIteratorTest {
+public final strictfp class LinearIteratorTest extends PixelIteratorTest {
     /**
      * Creates a new test case.
      */
     public LinearIteratorTest() {
-        super(DataBuffer.TYPE_SHORT);
+        super(DataBuffer.TYPE_SHORT, SequenceType.LINEAR);
     }
 
     /**
@@ -89,35 +92,6 @@ public final strictfp class LinearIteratorTest extends DefaultIteratorTest {
     @Override
     SequenceType getIterationOrder(boolean singleTile) {
         return SequenceType.LINEAR;
-    }
-
-    /**
-     * Creates a {@code PixelIterator} for a sub-area of given raster.
-     */
-    @Override
-    void createPixelIterator(WritableRaster raster, Rectangle subArea) {
-        iterator = new LinearIterator(raster, isWritable ? raster : null, subArea, null);
-        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder().get());
-        assertEquals("isWritable", isWritable, iterator.isWritable());
-    }
-
-    /**
-     * Creates a {@code PixelIterator} for a sub-area of given image.
-     */
-    @Override
-    void createPixelIterator(WritableRenderedImage image, Rectangle subArea) {
-        iterator = new LinearIterator(image, isWritable ? image : null, subArea, null);
-        assertEquals("isWritable", isWritable, iterator.isWritable());
-    }
-
-    /**
-     * Creates a {@code PixelIterator} for a window in the given image.
-     * The iterator shall be assigned to the {@link #iterator} field.
-     */
-    @Override
-    void createWindowIterator(WritableRenderedImage image, Dimension window) {
-        iterator = new LinearIterator(image, isWritable ? image : null, null, window);
-        assertEquals("isWritable", isWritable, iterator.isWritable());
     }
 
     /**

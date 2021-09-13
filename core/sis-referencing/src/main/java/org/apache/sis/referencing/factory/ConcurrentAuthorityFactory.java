@@ -84,7 +84,7 @@ import org.apache.sis.util.resources.Messages;
  *
  * <h2>Multi-threading</h2>
  * The cache managed by this class is concurrent. However the Data Access Objects (DAO) are assumed non-concurrent.
- * If two or more threads are accessing this factory in same time, then two or more Data Access Object instances
+ * If two or more threads are accessing this factory at the same time, then two or more Data Access Object instances
  * may be created. The maximal amount of instances to create is specified at {@code ConcurrentAuthorityFactory}
  * construction time. If more Data Access Object instances are needed, some of the threads will block until an
  * instance become available.
@@ -95,7 +95,7 @@ import org.apache.sis.util.resources.Messages;
  * Subclasses should select the interfaces that they choose to implement.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @param <DAO>  the type of factory used as Data Access Object (DAO).
  *
@@ -132,7 +132,9 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     private final Map<Class<?>,Boolean> inherited = new IdentityHashMap<>();
 
     /**
-     * The pool of cached objects.
+     * The pool of cached objects. Keys are (type, code) tuples; the type is stored because the same code
+     * may be used for different kinds of objects. Values are usually instances of {@link IdentifiedObject},
+     * but can also be instances of unrelated types such as {@link Extent}.
      */
     private final Cache<Key,Object> cache;
 
@@ -140,9 +142,22 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * The pool of objects identified by {@link Finder#find(IdentifiedObject)}.
      * Values may be an empty set if an object has been searched but has not been found.
      *
+     * <p>Keys are typically "foreigner" objects (not objects retained in the {@linkplain #cache}),
+     * otherwise we would not need to search for their authority code. Because keys are retained by
+     * weak references, some strong references to the identified objects should be kept outside.
+     * This is the purpose of {@link #findPoolLatestQueries}.</p>
+     *
      * <p>Every access to this pool must be synchronized on {@code findPool}.</p>
      */
     private final Map<IdentifiedObject,FindEntry> findPool = new WeakHashMap<>();
+
+    /**
+     * The most recently used objects stored or accessed in {@link #findPool}, retained by strong references for
+     * preventing too early garbage collection. Instances put there are generally not in the {@linkplain #cache}
+     * because they are "foreigner" objects, possibly created by different authorities. Those strong references
+     * are automatically clearer in a background thread after an arbitrary delay.
+     */
+    private final ReferenceKeeper findPoolLatestQueries = new ReferenceKeeper();
 
     /**
      * Holds the reference to a Data Access Object used by {@link ConcurrentAuthorityFactory}, together with
@@ -256,12 +271,16 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * by strong references. Note that those default values may change in any future SIS versions based
      * on experience gained.
      *
-     * @param dataAccessClass The class of Data Access Object (DAO) created by {@link #newDataAccess()}.
+     * @param  dataAccessClass  the class of Data Access Object (DAO) created by {@link #newDataAccess()}.
      */
     protected ConcurrentAuthorityFactory(Class<DAO> dataAccessClass) {
         this(dataAccessClass, 100, 8);
         /*
-         * NOTE: if the default maximum number of Data Access Objects (currently 8) is augmented,
+         * NOTE 1: the number of strong references (100) seems high compared to the number of CRSs typically used,
+         * but a lot of objects are created when using the EPSG database (datum, prime meridian, parameters, axes,
+         * extents, etc).
+         *
+         * NOTE 2: if the default maximum number of Data Access Objects (currently 8) is augmented,
          * make sure to augment the number of runner threads in the "StressTest" class to a greater amount.
          */
     }
@@ -295,14 +314,20 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             }
         }
         /*
-         * Create a cache allowing key collisions.
-         * Key collision is usually an error. But in this case we allow them in order to enable recursivity.
-         * If during the creation of an object the program asks to this ConcurrentAuthorityFactory for the same
-         * object (using the same key), then the default Cache implementation considers that situation as an
-         * error unless the above property has been set to 'true'.
+         * Create a cache using soft references and allowing key collisions.
+         *
+         * NOTE 1: key collision is usually an error. But in this case we allow them in order to enable recursivity.
+         * If during the creation of an object the program asks to this ConcurrentAuthorityFactory for the same object
+         * (using the same key), then the default Cache implementation considers that situation as an error unless the
+         * above property has been set to `true`.
+         *
+         * NOTE 2: the number of temporary objects created during a `search` operation is high (can be thousands),
+         * and the use of weak references may cause the next search to be almost as costly as the first search if
+         * temporary objects have been already garbage collected. We use soft references instead of weak references
+         * for avoiding that problem, because search operations occur often.
          */
         remainingDAOs = maxConcurrentQueries;
-        cache = new Cache<>(20, maxStrongReferences, false);
+        cache = new Cache<>(20, maxStrongReferences, true);
         cache.setKeyCollisionAllowed(true);
         /*
          * The shutdown hook serves two purposes:
@@ -407,8 +432,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 usage.timestamp = System.nanoTime();
             } catch (Throwable e) {
                 /*
-                 * If any kind of error occurred, restore the 'remainingDAO' field as if no code were executed.
-                 * This code would not have been needed if we were allowed to decrement 'remainingDAO' only as
+                 * If any kind of error occurred, restore the `remainingDAO` field as if no code were executed.
+                 * This code would not have been needed if we were allowed to decrement `remainingDAO` only as
                  * the very last step (when we know that everything else succeed).
                  * But it needed to be decremented inside the synchronized block.
                  */
@@ -455,7 +480,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 if (caller == null) {
                     caller = "create".concat(type.getSimpleName());
                 }
-                final PerformanceLevel level = PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS);
+                final Level level = PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS);
                 final Double duration = time / (double) StandardDateFormat.NANOS_PER_SECOND;
                 final Messages resources = Messages.getResources(null);
                 final LogRecord record;
@@ -548,12 +573,12 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
 
     /**
      * Closes the expired Data Access Objects. This method should be invoked from a background task only.
-     * This method may reschedule the task again for an other execution if it appears that at least one
+     * This method may reschedule the task again for another execution if it appears that at least one
      * Data Access Object was not ready for disposal.
      *
      * @see #close()
      */
-    final void closeExpired() {
+    private void closeExpired() {
         final List<DAO> factories;
         final boolean isEmpty;
         synchronized (availableDAOs) {
@@ -610,7 +635,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
          * all other kind of elements in the cache were dependencies searched as a side effect of the CRS search.
          * Since we have the result of the CRS search, we often do not need anymore the result of dependency search.
          *
-         * Touching 'findPool' also has the desired side-effect of letting WeakHashMap expunges stale entries.
+         * Touching `findPool` also has the desired side-effect of letting WeakHashMap expunges stale entries.
          */
         if (isEmpty) {
             synchronized (findPool) {
@@ -618,6 +643,10 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 while (it.hasNext()) {
                     if (it.next().cleanup()) {
                         it.remove();
+                        /*
+                         * No need to scan `findPoolLatestQueries` for entries to remove because it
+                         * should not contain any entry with `FindEntry.explicit` flags set to `true`.
+                         */
                     }
                 }
             }
@@ -1805,7 +1834,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             if (acquireCount == 0) {
                 final GeodeticAuthorityFactory delegate = ((ConcurrentAuthorityFactory<?>) factory).getDataAccess();
                 /*
-                 * Set 'acquireCount' only after we succeed in fetching the factory, and before any operation on it.
+                 * Set `acquireCount` only after we succeed in fetching the factory, and before any operation on it.
                  * The intent is to get ConcurrentAuthorityFactory.release() invoked if and only if the getDataAccess()
                  * method succeed, no matter what happen after this point.
                  */
@@ -1855,7 +1884,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             synchronized (findPool) {
                 final FindEntry entry = findPool.get(object);
                 if (entry != null) {
-                    // 'finder' may be null if this method is invoked directly by this Finder.
+                    // `finder` may be null if this method is invoked directly by this Finder.
                     return entry.get((finder != null ? finder : this).isIgnoringAxes());
                 }
             }
@@ -1876,7 +1905,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 if (c != null) {
                     entry = c;          // May happen if the same set has been computed in another thread.
                 }
-                // 'finder' should never be null since this method is not invoked directly by this Finder.
+                // `finder` should never be null since this method is not invoked directly by this Finder.
                 result = entry.set(finder.isIgnoringAxes(), result, object == searching);
             }
             return result;
@@ -1892,8 +1921,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             if (candidate == null) {
                 /*
                  * Nothing has been found in the cache. Delegates the search to the Data Access Object.
-                 * Note that the Data Access Object will itself callbacks our 'cache(…)' method, so there
-                 * is no need that we cache the result here.
+                 * Note that the Data Access Object will itself callbacks our `cache(…)` method,
+                 * so there is no need that we cache the result here.
                  */
                 synchronized (this) {
                     try {
@@ -1906,6 +1935,13 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                     }
                 }
             }
+            /*
+             * Keep a strong reference to the given object, potentially overwriting oldest strong reference.
+             * The purpose is only to prevent too early invalidation of weak references in `findPool` cache.
+             * We keep a strong reference only for the top-level object, not for the intermediate searches,
+             * because strong references to intermediate objects already exist in the top-level object.
+             */
+            ((ConcurrentAuthorityFactory<?>) factory).findPoolLatestQueries.markAsUsed(object);
             return candidate;
         }
     }

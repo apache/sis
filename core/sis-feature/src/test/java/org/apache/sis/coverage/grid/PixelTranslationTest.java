@@ -62,19 +62,19 @@ public final strictfp class PixelTranslationTest extends TestCase {
      */
     @Test
     public void testTranslatePixelInCell() throws TransformException {
-        final MathTransform mt = centerToCorner(3);
+        final MathTransform gridToCRS = centerToCorner(3);
         assertMatrixEquals("center → corner", new Matrix4(
                 1, 0, 0, -0.5,
                 0, 1, 0, -0.5,
                 0, 0, 1, -0.5,
-                0, 0, 0,  1), MathTransforms.getMatrix(mt), STRICT);
+                0, 0, 0,  1), MathTransforms.getMatrix(gridToCRS), STRICT);
         /*
          * Just for making clear what we explained in javadoc comment: the real world (0,0,0) coordinates was in the center
          * of cell (0,0,0). After we switched to "cell corner" convention, that center is (½,½,½) in grid coordinates but
          * should still map (0,0,0) in "real world" coordinates.
          */
         final double[] coordinates = new double[] {0.5, 0.5, 0.5};
-        mt.transform(coordinates, 0, coordinates, 0, 1);
+        gridToCRS.transform(coordinates, 0, coordinates, 0, 1);
         assertArrayEquals(new double[3], coordinates, STRICT);
     }
 
@@ -84,18 +84,18 @@ public final strictfp class PixelTranslationTest extends TestCase {
      */
     @Test
     public void testTranslatePixelOrientation() {
-        MathTransform mt = centerToCorner2D();
+        MathTransform gridToCRS = centerToCorner2D();
         assertMatrixEquals("center → corner", new Matrix3(
                 1, 0, -0.5,
                 0, 1, -0.5,
-                0, 0,  1), MathTransforms.getMatrix(mt), STRICT);
+                0, 0,  1), MathTransforms.getMatrix(gridToCRS), STRICT);
 
-        mt = PixelTranslation.translate(MathTransforms.identity(3), PixelOrientation.LOWER_LEFT, PixelOrientation.CENTER, 1, 2);
+        gridToCRS = PixelTranslation.translate(MathTransforms.identity(3), PixelOrientation.LOWER_LEFT, PixelOrientation.CENTER, 1, 2);
         assertMatrixEquals("corner → center", new Matrix4(
                 1, 0, 0,  0.0,
                 0, 1, 0, +0.5,
                 0, 0, 1, -0.5,
-                0, 0, 0,  1), MathTransforms.getMatrix(mt), STRICT);
+                0, 0, 0,  1), MathTransforms.getMatrix(gridToCRS), STRICT);
     }
 
     /**

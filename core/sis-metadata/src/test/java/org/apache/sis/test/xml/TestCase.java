@@ -32,7 +32,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.xml.Schemas;
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
 import org.apache.sis.xml.Namespaces;
@@ -57,7 +57,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.1
  *
  * @see DocumentComparator
  *
@@ -398,8 +398,8 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
         Namespaces.MRI, LegacyNamespaces.GMD, "mri",  "gmd",
         Namespaces.GCO, LegacyNamespaces.GCO,      // "gco"
         Namespaces.GCX, LegacyNamespaces.GMX, "gcx",  "gmx",
-        Schemas.METADATA_ROOT,  Schemas.METADATA_ROOT_LEGACY,           // For code lists
-        Schemas.CODELISTS_PATH, Schemas.CODELISTS_PATH_LEGACY
+        CodeListUID.METADATA_ROOT,  CodeListUID.METADATA_ROOT_LEGACY,           // For code lists.
+        CodeListUID.CODELISTS_PATH, CodeListUID.CODELISTS_PATH_LEGACY
     };
 
     /**

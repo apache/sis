@@ -113,14 +113,15 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
          */
         boolean isScale       = true;                       // ScaleTransform accepts non-square matrix.
         boolean isTranslation = (numRow == numCol);         // TranslationTransform is restricted to square matrix.
+        final int lastColumn  = numCol - 1;
         for (int i=0; i<n; i++) {
-            if (elt[i] != 0) {
-                final int col  = (i % numCol);
-                isScale       &= (i / numCol) == col;
-                isTranslation &= (col == numCol - 1);
-                if (!(isScale | isTranslation)) {
-                    return this;
-                }
+            final double v = elt[i];
+            final int row  = (i / numCol);
+            final int col  = (i % numCol);
+            isScale       &= (col == row)        || (v == 0);
+            isTranslation &= (col == lastColumn) || (v == (col == row ? 1 : 0));
+            if (!(isScale | isTranslation)) {
+                return this;
             }
         }
         if (isTranslation) {

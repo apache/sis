@@ -18,13 +18,17 @@ package org.apache.sis.internal.geoapi.evolution;
 
 import java.lang.reflect.Method;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Modules;
+import org.opengis.geometry.Envelope;
+import org.opengis.geometry.Geometry;
 
 
 /**
  * Temporary methods used until a new major GeoAPI release provides the missing functionalities.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -45,5 +49,20 @@ public final class Interim extends Static {
     public static Class<?> getReturnType(final Method method) {
         final InterimType an = method.getAnnotation(InterimType.class);
         return (an != null) ? an.value() : method.getReturnType();
+    }
+
+    /**
+     * Invokes {@code Geometry.getEnvelope()} if that method exists.
+     *
+     * @param  geometry  the geometry from which to get the envelope.
+     * @return the geometry envelope, or {@code null} if none.
+     */
+    public static Envelope getEnvelope(final Geometry geometry) {
+        try {
+            return (Envelope) geometry.getClass().getMethod("getEnvelope").invoke(geometry);
+        } catch (ReflectiveOperationException | ClassCastException e) {
+            Logging.recoverableException(Logging.getLogger(Modules.METADATA), Interim.class, "getEnvelope", e);
+            return null;
+        }
     }
 }

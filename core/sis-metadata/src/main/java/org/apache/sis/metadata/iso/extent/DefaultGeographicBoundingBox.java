@@ -79,10 +79,10 @@ import static java.lang.Double.doubleToLongBits;
  *
  * If the {@linkplain #getWestBoundLongitude() west bound longitude} is greater than the
  * {@linkplain #getEastBoundLongitude() east bound longitude}, then the box spans the anti-meridian.
- * See {@linkplain org.apache.sis.geometry.GeneralEnvelope} for more information on anti-meridian spanning.
+ * See {@linkplain org.apache.sis.geometry.GeneralEnvelope} for more information about crossing the anti-meridian.
  *
  * <h2>Relationship with Envelope classes</h2>
- * The {@link org.apache.sis.geometry} package provides various {@code Envelope} classes serving a simular purpose.
+ * The {@link org.apache.sis.geometry} package provides various {@code Envelope} classes serving a similar purpose.
  * The main difference is that envelopes can be expressed in any {@linkplain org.apache.sis.referencing.crs.AbstractCRS
  * Coordinate Reference System} (for example using any map projection), may have any number of dimensions, axes may have
  * any {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getDirection() direction} (some maps are south-oriented)
@@ -288,7 +288,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * The value is expressed in longitude in decimal degrees (positive east).
      *
      * <p>Note that the returned value is greater than the {@linkplain #getEastBoundLongitude()
-     * east bound longitude} if this box is spanning over the anti-meridian.</p>
+     * east bound longitude} if this box is crossing the anti-meridian.</p>
      *
      * @return the western-most longitude between -180° and +180° inclusive,
      *         or {@linkplain Double#NaN NaN} if undefined.
@@ -321,7 +321,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * The value is expressed in longitude in decimal degrees (positive east).
      *
      * <p>Note that the returned value is smaller than the {@linkplain #getWestBoundLongitude()
-     * west bound longitude} if this box is spanning over the anti-meridian.</p>
+     * west bound longitude} if this box is crossing the anti-meridian.</p>
      *
      * @return the eastern-most longitude between -180° and +180° inclusive,
      *         or {@linkplain Double#NaN NaN} if undefined.
@@ -416,7 +416,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     /**
      * Verifies that the given bounding box is valid. This method verifies only the latitude values,
      * because we allow the west bound longitude to be greater then east bound longitude (they are
-     * boxes spanning the anti-meridian).
+     * boxes crossing the anti-meridian).
      *
      * <p>This method should be invoked <strong>before</strong> {@link #normalize()}.</p>
      *
@@ -549,7 +549,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     }
 
     /*
-     * IMPLEMENTATION NOTE: For the handling of anti-meridian spanning in union and intersection operations,
+     * IMPLEMENTATION NOTE: For the handling of anti-meridian crossing in union and intersection operations,
      * this class applies a different strategy than GeneralEnvelope. Instead than trying to work directly with
      * the coordinate values without adding or removing offset (which may cause rounding errors), we apply a ±360°
      * shift on longitude values. This simpler strategy is okay here because the range is fixed in the code (not
@@ -562,7 +562,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      *
      * <ul>
      *   <li> 0 : Do nothing - both boxes are normal.</li>
-     *   <li> 3 : Do nothing - both boxes are spanning the anti-meridian.</li>
+     *   <li> 3 : Do nothing - both boxes are crossing the anti-meridian.</li>
      *   <li>-1 : Caller will need to subtract 360° from {@code λmin}.</li>
      *   <li>+1 : Caller will need to add      360° to   {@code λmax}.</li>
      *   <li>-2 : This method has subtracted   360° from {@link #westBoundLongitude}.</li>
@@ -572,13 +572,13 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * @see #normalize()
      */
     private int denormalize(final double λmin, final double λmax) {
-        final boolean isSpanningAntiMeridian = westBoundLongitude > eastBoundLongitude;
-        if ((λmin > λmax) == isSpanningAntiMeridian) {
-            return isSpanningAntiMeridian ? 3 : 0;
+        final boolean isCrossingAntiMeridian = westBoundLongitude > eastBoundLongitude;
+        if ((λmin > λmax) == isCrossingAntiMeridian) {
+            return isCrossingAntiMeridian ? 3 : 0;
         }
         final double left  = westBoundLongitude - λmin;
         final double right = λmax - eastBoundLongitude;
-        if (!isSpanningAntiMeridian) {
+        if (!isCrossingAntiMeridian) {
             /*
              * If we were computing the union between this bounding box and the other box,
              * by how much the width would be increased on the left side and on the right
@@ -597,7 +597,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
              * the longuest part in the opposite direction instead than the shortest one).
              *
              * Note that only one of 'left' and 'right' can be positive, otherwise we would
-             * not be in the case where one box is spanning the anti-meridian while the other
+             * not be in the case where one box is crossing the anti-meridian while the other
              * box does not.
              */
             if (left  >= 0) return +1;

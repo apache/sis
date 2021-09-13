@@ -63,7 +63,8 @@ public final class DelayedExecutor extends DaemonThread {
      * Schedules the given short task for later execution in a daemon thread.
      * The task will be executed after the delay specified by {@link DelayedRunnable#getDelay(TimeUnit)}
      * The task must completes quickly, because we will typically use only one thread for all submitted tasks.
-     * Completion of the task shall not be critical, since the JVM is allowed to shutdown before task completion.
+     * Completion of the task shall not be of critical importance, because the JVM is allowed to shutdown
+     * before task completion.
      *
      * @param  task  the task to schedule for later execution.
      */

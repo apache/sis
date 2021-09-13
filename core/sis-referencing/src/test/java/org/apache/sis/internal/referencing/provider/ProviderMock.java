@@ -59,8 +59,8 @@ abstract strictfp class ProviderMock extends AbstractProvider {
     @Override
     public final MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {
         return new AbstractMathTransform() {
-            @Override public int getSourceDimensions() {return ProviderMock.this.getSourceDimensions();}
-            @Override public int getTargetDimensions() {return ProviderMock.this.getTargetDimensions();}
+            @Override @Deprecated public int getSourceDimensions() {return ProviderMock.this.getSourceDimensions();}
+            @Override @Deprecated public int getTargetDimensions() {return ProviderMock.this.getTargetDimensions();}
             @Override
             public Matrix transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, boolean derivate) {
                 throw new UnsupportedOperationException();

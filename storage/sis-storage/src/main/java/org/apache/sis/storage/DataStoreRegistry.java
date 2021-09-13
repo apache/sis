@@ -43,7 +43,7 @@ import org.apache.sis.util.ArraysExt;
  * on the part of the caller.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -139,17 +139,54 @@ final class DataStoreRegistry {
     }
 
     /**
+     * The kind of providers to test. The provider are divided in 4 categories depending on whether
+     * the file suffix matches the suffix expected by the provider, and whether the provider should
+     * be tested last for giving a chance to specialized providers to open the file.
+     */
+    private enum Category {
+        /** The provider can be tested now and the file suffix matches. */
+        SUFFIX_MATCH(true, false),
+
+        /** The provider could be tested now but the file suffix does not match. */
+        IGNORE_SUFFIX(false, false),
+
+        /** The provider should be tested last, but the file suffix matches. */
+        DEFERRED(true, true),
+
+        /** The provider should be tested last because it is too generic. */
+        DEFERRED_IGNORE_SUFFIX(false, true);
+
+        /** Whether this category checks if suffix matches. */
+        final boolean useSuffix;
+
+        /** Whether this category is for providers to test last. */
+        final boolean yieldPriority;
+
+        /** Creates a new enumeration value. */
+        private Category(final boolean useSuffix, final boolean yieldPriority) {
+            this.useSuffix     = useSuffix;
+            this.yieldPriority = yieldPriority;
+        }
+
+        /** Returns the categories, optionally ignoring file suffix. */
+        static Category[] values(final boolean useSuffix) {
+            return useSuffix ? values() : new Category[] {IGNORE_SUFFIX, DEFERRED_IGNORE_SUFFIX};
+        }
+    }
+
+    /**
      * Implementation of {@link #probeContentType(Object)} and {@link #open(Object)}.
      *
      * @param  storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
      * @param  open     {@code true} for creating a {@link DataStore}, or {@code false} if not needed.
+     * @return the result, or {@code null} if the format is not recognized and {@code open} is {@code false}.
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
      * @throws DataStoreException if an error occurred while opening the storage.
      *
      * @todo Iterate on {@code ServiceLoader.Provider.type()} on JDK9.
      */
     private ProbeProviderPair lookup(final Object storage, final boolean open) throws DataStoreException {
-        StorageConnector connector;
+        StorageConnector connector;                 // Will be reset to `null` if it shall not be closed.
         if (storage instanceof StorageConnector) {
             connector = (StorageConnector) storage;
         } else {
@@ -158,20 +195,23 @@ final class DataStoreRegistry {
         /*
          * If we can get a filename extension from the given storage (file, URL, etc.), then we may perform two iterations
          * on the provider list. The first iteration will use only the providers which declare capability to read files of
-         * that suffix (matchCondition = TRUE). Only if no provider has been able to read that file, we will do a second
-         * iteration on other providers (matchCondition = FALSE). The intent is to avoid DataStoreProvider.probeContent(…)
+         * that suffix (Category.SUFFIX_MATCH). Only if no provider has been able to read that file, we will do a second
+         * iteration on other providers (Category.IGNORE_SUFFIX). The intent is to avoid DataStoreProvider.probeContent(…)
          * invocations loading large dependencies.
          */
-        final String extension = connector.getFileExtension();
-        Boolean matchCondition = (extension != null && !extension.isEmpty()) ? Boolean.TRUE : null;
+        final String      extension  = connector.getFileExtension();
+        final boolean     useSuffix  = !(extension == null || extension.isEmpty());
+        final Category[]  categories = Category.values(useSuffix);
+        ProbeProviderPair selected   = null;
         final List<ProbeProviderPair> needMoreBytes = new LinkedList<>();
-        ProbeProviderPair selected = null;
         try {
-search:     do {
+search:     for (int ci=0; ci < categories.length; ci++) {
+                final Category category = categories[ci];
                 /*
-                 * All usages of 'loader' and its 'providers' iterator must be protected in a synchronized block,
+                 * All usages of `loader` and its `providers` iterator must be protected in a synchronized block,
                  * because ServiceLoader is not thread-safe. We try to keep the synhronization block as small as
-                 * possible for less contention. In particular, the probeContent(connector) method call may be costly.
+                 * possible for less contention. In particular, the `probeContent(connector)` method call may be
+                 * costly.
                  */
                 final Iterator<DataStoreProvider> providers;
                 DataStoreProvider provider;
@@ -180,10 +220,20 @@ search:     do {
                     provider = providers.hasNext() ? providers.next() : null;
                 }
                 while (provider != null) {
-                    boolean accept = true;
-                    if (matchCondition != null) {
-                        final StoreMetadata md = provider.getClass().getAnnotation(StoreMetadata.class);
-                        accept = (md != null && ArraysExt.containsIgnoreCase(md.fileSuffixes(), extension)) == matchCondition;
+                    /*
+                     * Check if the provider should be tested in current iteration.
+                     * The criteria for testing a provider is determined by comparing
+                     * provider metadata with the category tested in current iteration.
+                     */
+                    boolean accept;
+                    final StoreMetadata md = provider.getClass().getAnnotation(StoreMetadata.class);
+                    if (md == null) {
+                        accept = (ci == 0);         // If no metadata, test only in first iteration.
+                    } else {
+                        accept = (md.yieldPriority() == category.yieldPriority);
+                        if (accept & useSuffix) {
+                            accept = ArraysExt.containsIgnoreCase(md.fileSuffixes(), extension) == category.useSuffix;
+                        }
                     }
                     if (accept) {
                         final ProbeResult probe = provider.probeContent(connector);
@@ -219,7 +269,7 @@ search:     do {
                     }
                 }
                 /*
-                 * If any provider did not had enough bytes for answering the 'probeContent(…)' question,
+                 * If any provider did not had enough bytes for answering the `probeContent(…)` question,
                  * get more bytes and try again. We try to prefetch more bytes only if we have no choice
                  * in order to avoid latency on network connection.
                  */
@@ -242,10 +292,9 @@ search:     do {
                 /*
                  * If we filtered providers by the file extension without finding a suitable provider,
                  * try again with all other providers (even if they are for another file extension).
-                 * We do that by changing 'matchCondition' from TRUE to FALSE. In all other cases,
-                 * we stop the search.
+                 * We do that by changing moving to the next `Category`.
                  */
-            } while (matchCondition != null && (matchCondition = !matchCondition) == false);
+            }
             /*
              * If a provider has been found, or if a provider returned UNDETERMINED, use that one
              * for opening a DataStore. Note that if more than one provider returned UNDETERMINED,

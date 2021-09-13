@@ -51,7 +51,7 @@
   </srv:coupledResource>
 
   <srv:couplingType>
-    <srv:SV_CouplingType codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#SV_CouplingType" codeListValue="loose">Loose</srv:SV_CouplingType>
+    <srv:SV_CouplingType codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#SV_CouplingType" codeListValue="loose">Loose</srv:SV_CouplingType>
   </srv:couplingType>
 
   <srv:containsOperations>
@@ -60,7 +60,7 @@
         <gco:CharacterString>Get Map</gco:CharacterString>
       </srv:operationName>
       <srv:DCP>
-        <srv:DCPList codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DCPList" codeListValue="WebServices">Web services</srv:DCPList>
+        <srv:DCPList codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DCPList" codeListValue="WebServices">Web services</srv:DCPList>
       </srv:DCP>
       <srv:parameters>          <!-- This has been renamed <srv:parameter> in ISO 19115:2014. -->
         <srv:SV_Parameter>

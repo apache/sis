@@ -124,7 +124,7 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see GeoKeys
  *
@@ -244,7 +244,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      */
     private void warning(final short key, final Object... args) {
         final LogRecord r = reader.resources().getLogRecord(Level.WARNING, key, args);
-        reader.owner.warning(r);
+        reader.store.warning(r);
     }
 
     /**
@@ -463,7 +463,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 try {
                     expected = Integer.parseInt(id.getCode());
                 } catch (NumberFormatException e) {
-                    reader.owner.warning(null, e);                  // Should not happen.
+                    reader.store.warning(null, e);                  // Should not happen.
                     return;
                 }
                 if (code != expected) {
@@ -720,7 +720,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         if (epsg != null) try {
             return getCSAuthorityFactory().createCartesianCS(epsg.toString());
         } catch (NoSuchAuthorityCodeException e) {
-            reader.owner.warning(null, e);
+            reader.store.warning(null, e);
         }
         return (CartesianCS) CoordinateSystems.replaceLinearUnit(cs, unit);
     }
@@ -738,7 +738,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         if (epsg != null) try {
             return getCSAuthorityFactory().createEllipsoidalCS(epsg.toString());
         } catch (NoSuchAuthorityCodeException e) {
-            reader.owner.warning(null, e);
+            reader.store.warning(null, e);
         }
         return (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(cs, unit);
     }
@@ -995,7 +995,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 final Ellipsoid     ellipsoid = createEllipsoid(names, linearUnit);
                 final PrimeMeridian meridian  = createPrimeMeridian(names, angularUnit);
                 final GeodeticDatum datum     = getDatumFactory().createGeodeticDatum(properties(name), ellipsoid, meridian);
-                name = Strings.toUpperCase(name, Characters.Filter.LETTERS_AND_DIGITS);
+                name = Strings.toUpperCase(name, Characters.Filter.LETTERS_AND_DIGITS, true);
                 lastName = datum.getName();
                 try {
                     final GeodeticDatum predefined = CommonCRS.valueOf(name).datum();
@@ -1204,6 +1204,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         final GeodeticDatum datum = crs.getDatum();
         verifyIdentifier(crs, datum, GeoKeys.GeodeticDatum);
         verify(datum, angularUnit, linearUnit);
+        geoKeys.remove(GeoKeys.GeogCitation);
     }
 
     /**

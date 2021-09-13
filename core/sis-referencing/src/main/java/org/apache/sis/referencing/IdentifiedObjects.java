@@ -20,12 +20,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.LinkedHashSet;
-import java.util.Iterator;
 import java.util.Collection;
+import java.util.Locale;
 
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
@@ -38,6 +39,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.system.Modules;
@@ -49,7 +51,7 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 
-import static org.apache.sis.internal.util.CollectionsExt.iterator;
+import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 
 
 /**
@@ -155,7 +157,7 @@ public final class IdentifiedObjects extends Static {
      *       compares the {@linkplain GenericName#scope() name scope} against the specified citation
      *       using the {@link Citations#identifierMatches(Citation, String)} method.
      *       If a matching is found, then this method returns the
-     *       {@linkplain GenericName#tip() name tip} of that object.</li>
+     *       {@linkplain GenericName#toString() string representation} of that name.</li>
      * </ul>
      *
      * Note that alias may implement both the {@link Identifier} and {@link GenericName}
@@ -165,8 +167,8 @@ public final class IdentifiedObjects extends Static {
      * @param  object     the object to get the name from, or {@code null}.
      * @param  authority  the authority for the name to return, or {@code null} for any authority.
      * @return the object's name (either an {@linkplain Identifier#getCode() identifier code}
-     *         or a {@linkplain GenericName#tip() name tip}), or {@code null} if no name matching the
-     *         specified authority has been found.
+     *         or a {@linkplain GenericName#toString() generic name}),
+     *         or {@code null} if no name matching the specified authority has been found.
      *
      * @see AbstractIdentifiedObject#getName()
      */
@@ -177,20 +179,20 @@ public final class IdentifiedObjects extends Static {
     /**
      * Returns an object name according the given authority. This method is {@code null}-safe:
      * every properties are checked for null values, even the properties that are supposed to
-     * be mandatory (not all implementation defines all mandatory values).
+     * be mandatory (not all implementations define all mandatory values).
      *
      * @param  object     the object to get the name from, or {@code null}.
      * @param  authority  the authority for the name to return, or {@code null} for any authority.
      * @param  addTo      if non-null, the collection where to add all names found.
      * @return the object's name (either an {@linkplain Identifier#getCode() identifier code}
-     *         or a {@linkplain GenericName#tip() name tip}), or {@code null} if no name matching the
-     *         specified authority has been found.
+     *         or a {@linkplain GenericName#toString() generic name}),
+     *         or {@code null} if no name matching the specified authority has been found.
      */
     private static String getName(final IdentifiedObject object, final Citation authority, final Collection<String> addTo) {
         if (object != null) {
             Identifier identifier = object.getName();
-            if (authority == null) {
-                if (identifier != null) {
+            if (identifier != null) {
+                if (authority == null || Citations.identifierMatches(authority, identifier.getAuthority())) {
                     final String name = identifier.getCode();
                     if (name != null) {
                         if (addTo == null) {
@@ -199,64 +201,35 @@ public final class IdentifiedObjects extends Static {
                         addTo.add(name);
                     }
                 }
-                final Iterator<GenericName> it = iterator(object.getAlias());
-                while (it.hasNext()) {
-                    final GenericName alias = it.next();
-                    if (alias != null) {
-                        final String name = (alias instanceof Identifier) ?
-                                ((Identifier) alias).getCode() : alias.toString();
-                        if (name != null) {
-                            if (addTo == null) {
-                                return name;
-                            }
-                            addTo.add(name);
+            }
+            /*
+             * If we do not found a primary name for the specified authority,
+             * or if the user requested all names, search among aliases.
+             */
+            for (final GenericName alias : nonNull(object.getAlias())) {
+                if (alias != null) {
+                    final String name;
+                    if (alias instanceof Identifier) {
+                        identifier = (Identifier) alias;
+                        if (authority != null && !Citations.identifierMatches(authority, identifier.getAuthority())) {
+                            continue;               // Authority does not match. Search another alias.
                         }
+                        name = identifier.getCode();
+                    } else {
+                        if (authority != null) {
+                            final NameSpace ns = alias.scope();  if (ns    == null) continue;
+                            final GenericName scope = ns.name(); if (scope == null) continue;
+                            if (!Citations.identifierMatches(authority, scope.toString())) {
+                                continue;           // Authority does not match. Search another alias.
+                            }
+                        }
+                        name = alias.toString();
                     }
-                }
-            } else {
-                if (identifier != null) {
-                    if (Citations.identifierMatches(authority, identifier.getAuthority())) {
-                        final String name = identifier.getCode();
-                        if (name != null) {
-                            if (addTo == null) {
-                                return name;
-                            }
-                            addTo.add(name);
+                    if (name != null) {
+                        if (addTo == null) {
+                            return name;
                         }
-                    }
-                }
-                final Iterator<GenericName> it = iterator(object.getAlias());
-                while (it.hasNext()) {
-                    final GenericName alias = it.next();
-                    if (alias != null) {
-                        if (alias instanceof Identifier) {
-                            identifier = (Identifier) alias;
-                            if (Citations.identifierMatches(authority, identifier.getAuthority())) {
-                                final String name = identifier.getCode();
-                                if (name != null) {
-                                    if (addTo == null) {
-                                        return name;
-                                    }
-                                    addTo.add(name);
-                                }
-                            }
-                        } else {
-                            final NameSpace ns = alias.scope();
-                            if (ns != null) {
-                                final GenericName scope = ns.name();
-                                if (scope != null) {
-                                    if (Citations.identifierMatches(authority, scope.toString())) {
-                                        final String name = alias.toString();
-                                        if (name != null) {
-                                            if (addTo == null) {
-                                                return name;
-                                            }
-                                            addTo.add(name);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        addTo.add(name);
                     }
                 }
             }
@@ -280,10 +253,8 @@ public final class IdentifiedObjects extends Static {
      */
     public static Identifier getIdentifier(final IdentifiedObject object, final Citation authority) {
         if (object != null) {
-            final Iterator<? extends Identifier> it = iterator(object.getIdentifiers());
-            while (it.hasNext()) {
-                final Identifier identifier = it.next();
-                if (identifier != null) {                           // Paranoiac check.
+            for (final Identifier identifier : nonNull(object.getIdentifiers())) {
+                if (identifier != null) {                       // Paranoiac check.
                     if (authority == null || Citations.identifierMatches(authority, identifier.getAuthority())) {
                         return identifier;
                     }
@@ -316,9 +287,8 @@ public final class IdentifiedObjects extends Static {
      */
     public static String getIdentifierOrName(final IdentifiedObject object) {
         if (object != null) {
-            final Iterator<? extends Identifier> it = iterator(object.getIdentifiers());
-            while (it.hasNext()) {
-                final String code = toString(it.next());
+            for (final Identifier id : nonNull(object.getIdentifiers())) {
+                final String code = toString(id);
                 if (code != null) {                                 // Paranoiac check.
                     return code;
                 }
@@ -342,6 +312,10 @@ public final class IdentifiedObjects extends Static {
      *   <li><code>object.{@linkplain AbstractIdentifiedObject#getIdentifiers() getIdentifiers()}</code> in iteration order</li>
      * </ul>
      *
+     * This method is can be used for fetching a more human-friendly identifier than the numerical values
+     * typically returned by {@link IdentifiedObject#getIdentifiers()}. However the returned value is not
+     * guaranteed to be unique.
+     *
      * @param  object  the identified object, or {@code null}.
      * @return the first name, alias or identifier which is a valid Unicode identifier, or {@code null} if none.
      *
@@ -354,15 +328,13 @@ public final class IdentifiedObjects extends Static {
     public static String getSimpleNameOrIdentifier(final IdentifiedObject object) {
         if (object != null) {
             Identifier identifier = object.getName();
-            if (identifier != null) {                               // Paranoiac check.
+            if (identifier != null) {                                       // Paranoiac check.
                 final String code = identifier.getCode();
                 if (CharSequences.isUnicodeIdentifier(code)) {
                     return code;
                 }
             }
-            final Iterator<GenericName> it = iterator(object.getAlias());
-            while (it.hasNext()) {
-                GenericName alias = it.next();
+            for (GenericName alias : nonNull(object.getAlias())) {
                 if (alias != null && (alias = alias.tip()) != null) {
                     final String code = alias.toString();
                     if (CharSequences.isUnicodeIdentifier(code)) {
@@ -370,11 +342,9 @@ public final class IdentifiedObjects extends Static {
                     }
                 }
             }
-            final Iterator<? extends Identifier> id = iterator(object.getIdentifiers());
-            while (id.hasNext()) {
-                identifier = id.next();
-                if (identifier != null) {                           // Paranoiac check.
-                    final String code = identifier.getCode();
+            for (final Identifier id : nonNull(object.getIdentifiers())) {
+                if (id != null) {                                           // Paranoiac check.
+                    final String code = id.getCode();
                     if (CharSequences.isUnicodeIdentifier(code)) {
                         return code;
                     }
@@ -382,6 +352,53 @@ public final class IdentifiedObjects extends Static {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a name that can be used for display purpose. This method checks the non-blank
+     * {@linkplain AbstractIdentifiedObject#getName() name},
+     * {@linkplain AbstractIdentifiedObject#getAlias() alias} or
+     * {@linkplain AbstractIdentifiedObject#getIdentifiers() identifier}, in that order.
+     * If the primary name seems to be the {@linkplain CharSequences#isAcronymForWords acronym} of an alias,
+     * then the alias is returned. For example if the name is <cite>"WGS 84"</cite> and an alias is
+     * <cite>"World Geodetic System 1984"</cite>, then that later alias is returned.
+     *
+     * <div class="note"><b>Note:</b>
+     * the name should never be missing, but this method nevertheless
+     * fallbacks on identifiers as a safety against incomplete implementations.
+     * If an identifier implements {@link GenericName} (as with {@link NamedIdentifier}),
+     * its {@link GenericName#toInternationalString() toInternationalString()} method will be used.</div>
+     *
+     * @param  object  the identified object, or {@code null}.
+     * @param  locale  the locale for the name to return, or {@code null} for the default.
+     * @return a name for human reading, or {@code null} if none were found.
+     *
+     * @since 1.1
+     */
+    public static String getDisplayName(final IdentifiedObject object, final Locale locale) {
+        if (object == null) {
+            return null;
+        }
+        String name = toString(object.getName(), locale);
+        for (final GenericName c : nonNull(object.getAlias())) {
+            final String alias = toString(c, locale);
+            if (alias != null) {
+                if (name == null || CharSequences.isAcronymForWords(name, alias)) {
+                    return alias;
+                }
+                final String unlocalized = c.toString();
+                if (!alias.equals(unlocalized) && CharSequences.isAcronymForWords(name, unlocalized)) {
+                    return alias;           // Select the localized version instead of `unlocalized`.
+                }
+            }
+        }
+        if (name == null) {
+            for (final Identifier id : nonNull(object.getIdentifiers())) {
+                name = toString(id, locale);
+                if (name != null) break;
+            }
+        }
+        return name;
     }
 
     /**
@@ -479,7 +496,7 @@ public final class IdentifiedObjects extends Static {
                 String c = toURN(candidate.getClass(), getIdentifier(candidate, authority));
                 if (c == null && authority == null) {
                     /*
-                     * If 'authority' was null, then getIdentifier(candidate, authority) returned the identifier
+                     * If `authority` was null, then getIdentifier(candidate, authority) returned the identifier
                      * for the first authority.  But not all authorities can be formatted as a URN. So try other
                      * authorities.
                      */
@@ -649,8 +666,10 @@ public final class IdentifiedObjects extends Static {
             return false;
         }
         if (object instanceof AbstractIdentifiedObject) {
-            // DefaultCoordinateSystemAxis overrides this method.
-            // We really need to delegate to the overridden method.
+            /*
+             * DefaultCoordinateSystemAxis overrides this method.
+             * We really need to delegate to the overridden method.
+             */
             return ((AbstractIdentifiedObject) object).isHeuristicMatchForName(name);
         } else {
             return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name,
@@ -668,8 +687,8 @@ public final class IdentifiedObjects extends Static {
      * from the identifier {@linkplain NamedIdentifier#getCodeSpace() codespace} (which is usually
      * an abbreviation of the identifier {@linkplain NamedIdentifier#getAuthority() authority}).
      * The recognized namespaces are listed in the following table
-     * (note that the list of authorities than can be used in the {@code "urn:ogc:def"} namespace
-     * is specified by the <a href="http://www.opengeospatial.org/ogcna">OGC Naming Authority</a>).
+     * (note that the list of authorities that can be used in the {@code "urn:ogc:def"} namespace
+     * is specified by the <a href="https://www.ogc.org/ogcna">OGC Naming Authority</a>).
      * If this method can not determine a namespace for the given identifier, it returns {@code null}.</p>
      *
      * <table class="sis">
@@ -780,5 +799,48 @@ public final class IdentifiedObjects extends Static {
             return cs + Constants.DEFAULT_SEPARATOR + code;
         }
         return code;
+    }
+
+    /**
+     * Returns a localized name for the given identifier if possible, or the identifier code otherwise.
+     * This method performs paranoiac checks against null or empty values. We do not provides this method
+     * in public API because those aggressive checks may be unexpected. It is okay when we merely want to
+     * provide a label for human reading.
+     *
+     * @param  identifier  the identifier for which to get a localized string representation.
+     * @param  locale      the desired locale, or {@code null} for the default.
+     * @return string representation, or {@code null} if none.
+     */
+    private static String toString(final Identifier identifier, final Locale locale) {
+        if (identifier == null) return null;
+        if (identifier instanceof GenericName) {
+            final String name = toString(((GenericName) identifier).tip(), locale);
+            if (name != null) return name;
+        }
+        return Strings.trimOrNull(identifier.getCode());
+    }
+
+    /**
+     * Returns a string representation of the given name in the given locale.
+     * This method performs paranoiac checks against null or empty values.
+     * We do not provides this method in public API because those aggressive checks may be unexpected.
+     * It is okay when we merely want to provide a label for human reading.
+     *
+     * @param  name    the name for which to get a localized string representation.
+     * @param  locale  the desired locale, or {@code null} for the default.
+     * @return localized string representation, or {@code null} if none.
+     */
+    private static String toString(final GenericName name, final Locale locale) {
+        if (name == null) {
+            return null;
+        }
+        if (locale != null) {
+            final InternationalString i18n = name.toInternationalString();
+            if (i18n != null) {
+                final String s = Strings.trimOrNull(i18n.toString(locale));
+                if (s != null) return s;
+            }
+        }
+        return Strings.trimOrNull(name.toString());
     }
 }

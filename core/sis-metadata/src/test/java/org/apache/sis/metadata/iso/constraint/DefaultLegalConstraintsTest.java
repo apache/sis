@@ -96,7 +96,7 @@ public final strictfp class DefaultLegalConstraintsTest extends TestCase {
         xml  =  "<gmd:MD_LegalConstraints xmlns:gmd=\"" + LegacyNamespaces.GMD + "\">\n" +
                 "  <gmd:useConstraints>\n" +
                 "    <gmd:MD_RestrictionCode"
-                        + " codeList=\"http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode\""
+                        + " codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode\""
                         + " codeListValue=\"license\">License</gmd:MD_RestrictionCode>\n" +
                 "  </gmd:useConstraints>\n" +
                 "</gmd:MD_LegalConstraints>\n";

@@ -19,30 +19,33 @@ package org.apache.sis.internal.netcdf.ucar;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
-import java.util.EnumSet;
 import java.util.Formatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.IOException;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
-import ucar.nc2.VariableIF;
 import ucar.nc2.NetcdfFile;
+import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.dataset.CoordinateSystem;
 import ucar.nc2.util.CancelTask;
 import ucar.nc2.units.DateUnit;
+import ucar.units.UnitException;
 import ucar.nc2.time.Calendar;
 import ucar.nc2.time.CalendarDate;
 import ucar.nc2.time.CalendarDateFormatter;
 import ucar.nc2.ft.FeatureDataset;
 import ucar.nc2.ft.FeatureDatasetPoint;
 import ucar.nc2.ft.FeatureDatasetFactoryManager;
-import ucar.nc2.ft.FeatureCollection;
+import ucar.nc2.ft.DsgFeatureCollection;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.internal.netcdf.Convention;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.Node;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
@@ -55,7 +58,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * Provides netCDF decoding services based on the netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -88,6 +91,9 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
 
     /**
      * The discrete sampling features, or {@code null} if none.
+     * This reference is kept for making possible to close it in {@link #close()}.
+     *
+     * @see #getDiscreteSampling(Object)
      */
     private transient FeatureDataset features;
 
@@ -97,6 +103,13 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @see #getGrids()
      */
     private transient Grid[] geometries;
+
+    /**
+     * Sets to {@code true} for declaring that the operation completed, either successfully or with an error.
+     *
+     * @see #isDone()
+     */
+    private boolean done;
 
     /**
      * Creates a new decoder for the given netCDF file. While this constructor accepts arbitrary
@@ -127,9 +140,13 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             throws IOException
     {
         super(geomlib, listeners);
-        final NetcdfDataset ds = NetcdfDataset.openDataset(filename, false, this);
-        ds.enhance(Collections.singleton(NetcdfDataset.Enhance.CoordSystems));
-        file = ds;
+        final DatasetUrl url = DatasetUrl.findDatasetUrl(filename);
+        /*
+         * It is important to specify only the `CoordSystems` enhancement. In particular the `ConvertUnsigned`
+         * enhancement shall NOT be enabled because it causes the use of integer types twice bigger than needed
+         * (e.g. `int` instead of `short`).
+         */
+        file = NetcdfDatasets.openDataset(url, Collections.singleton(NetcdfDataset.Enhance.CoordSystems), -1, this, null);
         groups = new Group[1];
         initialize();
     }
@@ -238,7 +255,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @return the attribute, or {@code null} if none.
      */
     private Attribute findAttribute(final Group group, final String name) {
-        Attribute value = (group != null) ? group.findAttributeIgnoreCase(name)
+        Attribute value = (group != null) ? group.attributes().findAttributeIgnoreCase(name)
                                           : file.findGlobalAttributeIgnoreCase(name);
         if (value == null) {
             final String mappedName = convention().mapAttributeName(name);
@@ -247,7 +264,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
              * since this is only an optimization for a common case.
              */
             if (mappedName != name) {
-                value = (group != null) ? group.findAttributeIgnoreCase(mappedName)
+                value = (group != null) ? group.attributes().findAttributeIgnoreCase(mappedName)
                                         : file.findGlobalAttributeIgnoreCase(mappedName);
             }
         }
@@ -289,7 +306,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                 if (attribute != null) {
                     final Number value = attribute.getNumericValue();
                     if (value != null) {
-                        return Utils.fixSign(value, attribute.isUnsigned());
+                        return Utils.fixSign(value, attribute.getDataType().isUnsigned());
                     }
                     String asString = Utils.nonEmpty(attribute.getStringValue());
                     if (asString != null) {
@@ -343,7 +360,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
         final DateUnit unit;
         try {
             unit = new DateUnit(symbol);
-        } catch (Exception e) {                 // Declared by the DateUnit constructor.
+        } catch (UnitException e) {
             listeners.warning(e);
             return dates;
         }
@@ -386,7 +403,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @SuppressWarnings({"ReturnOfCollectionOrArrayField", "null"})
     public Variable[] getVariables() {
         if (variables == null) {
-            final List<? extends VariableIF> all = file.getVariables();
+            final List<? extends ucar.nc2.Variable> all = file.getVariables();
             variables = new VariableWrapper[(all != null) ? all.size() : 0];
             for (int i=0; i<variables.length; i++) {
                 variables[i] = new VariableWrapper(this, all.get(i));
@@ -398,8 +415,11 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * Returns the Apache SIS wrapper for the given UCAR variable. The given variable shall be non-null
      * and should be one of the variables wrapped by the instances returned by {@link #getVariables()}.
+     *
+     * @param  variable  the netCDF variable.
+     * @return the SIS variable wrapping the given netCDF variable.
      */
-    final VariableWrapper getWrapperFor(final VariableIF variable) {
+    final VariableWrapper getWrapperFor(final ucar.nc2.Variable variable) {
         for (VariableWrapper c : (VariableWrapper[]) getVariables()) {
             if (c.isWrapperFor(variable)) {
                 return c;
@@ -412,30 +432,36 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * If this decoder can handle the file content as features, returns handlers for them.
      *
-     * @return {@inheritDoc}
+     * @param  lock  the lock to use in {@code synchronized(lock)} statements.
+     * @return a handler for the features, or an empty array if none.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if the library of geometric objects is not available.
      */
     @Override
     @SuppressWarnings("null")
-    public DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException {
+    public DiscreteSampling[] getDiscreteSampling(final Object lock) throws IOException, DataStoreException {
         if (features == null && file instanceof NetcdfDataset) {
             features = FeatureDatasetFactoryManager.wrap(null, (NetcdfDataset) file, this,
                     new Formatter(new LogAdapter(listeners), listeners.getLocale()));
         }
-        List<FeatureCollection> fc = null;
         if (features instanceof FeatureDatasetPoint) {
-            fc = ((FeatureDatasetPoint) features).getPointFeatureCollectionList();
-        }
-        final FeaturesWrapper[] wrappers = new FeaturesWrapper[(fc != null) ? fc.size() : 0];
-        try {
-            for (int i=0; i<wrappers.length; i++) {
-                wrappers[i] = new FeaturesWrapper(fc.get(i), geomlib, listeners);
+            final List<DsgFeatureCollection> fc = ((FeatureDatasetPoint) features).getPointFeatureCollectionList();
+            if (fc != null && !fc.isEmpty()) {
+                final FeaturesWrapper[] wrappers = new FeaturesWrapper[fc.size()];
+                try {
+                    for (int i=0; i<wrappers.length; i++) {
+                        wrappers[i] = new FeaturesWrapper(fc.get(i), geomlib, listeners, lock);
+                    }
+                } catch (IllegalArgumentException e) {
+                    throw new DataStoreException(e.getLocalizedMessage(), e);
+                }
+                return wrappers;
             }
-        } catch (IllegalArgumentException e) {
-            throw new DataStoreException(e.getLocalizedMessage(), e);
         }
-        return wrappers;
+        /*
+         * If the UCAR library did not recognized the features in this file, ask to SIS.
+         */
+        return super.getDiscreteSampling(lock);
     }
 
     /**
@@ -446,41 +472,45 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @throws IOException if an I/O operation was necessary but failed.
      */
     @Override
-    @SuppressWarnings({"ReturnOfCollectionOrArrayField", "null"})
+    @SuppressWarnings({"ReturnOfCollectionOrArrayField"})
     public Grid[] getGrids() throws IOException {
         if (geometries == null) {
-            List<CoordinateSystem> systems = null;
+            List<CoordinateSystem> systems = Collections.emptyList();
             if (file instanceof NetcdfDataset) {
                 final NetcdfDataset ds = (NetcdfDataset) file;
-                final EnumSet<NetcdfDataset.Enhance> mode = EnumSet.copyOf(ds.getEnhanceMode());
-                if (mode.add(NetcdfDataset.Enhance.CoordSystems)) {
-                    /*
-                     * Should not happen with NetcdfDataset opened by the constructor expecting a filename,
-                     * because that constructor already enhanced the dataset. It may happen however if the
-                     * NetcdfDataset was given explicitly by the user. We try to increase the chances to
-                     * get information we need, but it is not guaranteed to work; it may be too late if we
-                     * already started to use the NetcdfDataset before this point.
-                     */
-                    ds.enhance(mode);
-                }
                 systems = ds.getCoordinateSystems();
-                /*
-                 * If the UCAR library does not see any coordinate system in the file, verify if there is
-                 * a custom convention recognizing the axes. CSBuilderFallback uses the mechanism defined
-                 * by Apache SIS for determining variable role.
-                 */
-                if (systems.isEmpty() && convention() != Convention.DEFAULT) {
-                    final CSBuilderFallback builder = new CSBuilderFallback(this);
-                    builder.buildCoordinateSystems(ds);
-                    systems = ds.getCoordinateSystems();
-                }
             }
-            geometries = new Grid[(systems != null) ? systems.size() : 0];
+            geometries = new Grid[systems.size()];
             for (int i=0; i<geometries.length; i++) {
                 geometries[i] = new GridWrapper(systems.get(i));
             }
         }
         return geometries;
+    }
+
+    /**
+     * Returns the dimension of the given name (eventually ignoring case), or {@code null} if none.
+     * This method searches in all dimensions found in the netCDF file, regardless of variables.
+     *
+     * @param  dimName  the name of the dimension to search.
+     * @return dimension of the given name, or {@code null} if none.
+     */
+    @Override
+    protected Dimension findDimension(final String dimName) {
+        final ucar.nc2.Dimension dimension = file.findDimension(dimName);
+        return (dimension != null) ? new DimensionWrapper(dimension) : null;
+    }
+
+    /**
+     * Returns the netCDF variable of the given name, or {@code null} if none.
+     *
+     * @param  name  the name of the variable to search, or {@code null}.
+     * @return the variable of the given name, or {@code null} if none.
+     */
+    @Override
+    protected Variable findVariable(final String name) {
+        final ucar.nc2.Variable v = file.findVariable(name);
+        return (v != null) ? getWrapperFor(v) : null;
     }
 
     /**
@@ -491,12 +521,79 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     protected Node findNode(final String name) {
-        final VariableIF v = file.findVariable(name);
+        final ucar.nc2.Variable v = file.findVariable(name);
         if (v != null) {
             return getWrapperFor(v);
         }
         final Group group = file.findGroup(name);
         return (group != null) ? new GroupWrapper(this, group) : null;
+    }
+
+    /**
+     * Adds netCDF attributes to the given node, including variables and sub-groups attributes.
+     * Groups are shown first, then variables attributes, and finally global attributes.
+     *
+     * @param  root  the node where to add netCDF attributes.
+     */
+    @Override
+    public void addAttributesTo(final TreeTable.Node root) {
+        addAttributesTo(root, file.getRootGroup());
+    }
+
+    /**
+     * Adds all attributes of the given group, then create nodes for sub-groups (if any).
+     * This method invokes itself recursively.
+     *
+     * @param  branch  where to add new nodes for the children of given group.
+     * @param  group   group for which to add sub-group, variables and attributes.
+     */
+    private void addAttributesTo(final TreeTable.Node branch, final Group group) {
+        for (final Group sub : group.getGroups()) {
+            final TreeTable.Node node = branch.newChild();
+            node.setValue(TableColumn.NAME, sub.getShortName());
+            addAttributesTo(node, sub);
+        }
+        for (final ucar.nc2.Variable variable : group.getVariables()) {
+            final TreeTable.Node node = branch.newChild();
+            node.setValue(TableColumn.NAME, variable.getShortName());
+            addAttributesTo(node, variable.attributes());
+        }
+        addAttributesTo(branch, group.attributes());
+    }
+
+    /**
+     * Adds the given attributes to the given node. This is used for building the tree
+     * returned by {@link org.apache.sis.storage.netcdf.NetcdfStore#getNativeMetadata()}.
+     * This tree is for information purpose only.
+     *
+     * @param  branch      where to add new nodes for the given attributes.
+     * @param  attributes  the attributes to add to the specified branch.
+     */
+    private static void addAttributesTo(final TreeTable.Node branch, final Iterable<Attribute> attributes) {
+        if (attributes != null) {
+            for (final Attribute attribute : attributes) {
+                final TreeTable.Node node = branch.newChild();
+                node.setValue(TableColumn.NAME, attribute.getShortName());
+                final int length = attribute.getLength();
+                final Object value;
+                switch (length) {
+                    case 0: continue;
+                    case 1: {
+                        value = attribute.getValue(0);
+                        break;
+                    }
+                    default: {
+                        final Object[] values = new Object[length];
+                        for (int i=0; i<length; i++) {
+                            values[i] = attribute.getValue(i);
+                        }
+                        value = values;
+                        break;
+                    }
+                }
+                node.setValue(TableColumn.VALUE, value);
+            }
+        }
     }
 
     /**
@@ -528,6 +625,26 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @Override
     public void setError(final String message) {
         listeners.warning(message);
+    }
+
+    /**
+     * Invoked by UCAR netCDF library when the operation completed, either successfully or with an error.
+     *
+     * @param  done  the completion status.
+     */
+    @Override
+    public void setDone(final boolean done) {
+        this.done = done;
+    }
+
+    /**
+     * Returns {@code true} if the operation completed, either successfully or with an error.
+     *
+     * @return the completion status.
+     */
+    @Override
+    public boolean isDone() {
+        return done;
     }
 
     /**

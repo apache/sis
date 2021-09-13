@@ -35,7 +35,7 @@
  * Geodetic objects can be instantiated either
  * {@linkplain org.apache.sis.referencing.factory.GeodeticObjectFactory directly by specifying all information to a factory method or constructor}, or
  * {@linkplain org.apache.sis.referencing.factory.GeodeticAuthorityFactory indirectly by specifying the identifier of an entry in a database}.
- * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many geodetic objects,
+ * In particular, the <a href="https://epsg.org/">EPSG</a> database provides definitions for many geodetic objects,
  * and Apache SIS provides convenience shortcuts for some of them in the
  * {@link org.apache.sis.referencing.CommonCRS} enumerations. Other convenience methods are
  * {@link org.apache.sis.referencing.CRS#forCode(String)},
@@ -90,7 +90,7 @@
  *   GeodeticDatum datum = factory.createGeodeticDatum("6326");
  * }
  *
- * The EPSG objects can also be inspected online on the <a href="http://www.epsg-registry.org/">EPSG registry</a> web site.
+ * The EPSG objects can also be inspected online on the <a href="https://epsg.org/">EPSG repository</a> web site.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)

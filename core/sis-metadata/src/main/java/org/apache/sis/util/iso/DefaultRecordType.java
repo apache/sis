@@ -49,12 +49,12 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
 /**
  * An immutable definition of the type of a {@linkplain DefaultRecord record}.
  * A {@code RecordType} is identified by a {@linkplain #getTypeName() type name} and contains an
- * arbitrary amount of {@linkplain #getMembers() members} as (<var>name</var>, <var>type</var>) pairs.
- * A {@code RecordType} may therefore contain another {@code RecordType} as a member.
+ * arbitrary amount of {@linkplain #getMembers() members} (fields) as (<var>name</var>, <var>type</var>) pairs.
+ * A {@code RecordType} may therefore contain another {@code RecordType} as a field.
  *
  * <div class="note"><b>Comparison with Java reflection:</b>
  * {@code RecordType} instances can be though as equivalent to instances of the Java {@link Class} class.
- * The set of members in a {@code RecordType} can be though as equivalent to the set of fields in a class.
+ * The set of fields in a {@code RecordType} can be though as equivalent to the set of fields in a class.
  * </div>
  *
  * <h2>Instantiation</h2>
@@ -67,12 +67,12 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  *     DefaultRecordSchema schema = new DefaultRecordSchema(null, null, "MySchema");
  *     // The same instance can be reused for all records to create in that schema.
  *
- *     Map<CharSequence,Class<?>> members = new LinkedHashMap<>();
- *     members.put("city",        String .class);
- *     members.put("latitude",    Double .class);
- *     members.put("longitude",   Double .class);
- *     members.put("population",  Integer.class);
- *     RecordType record = schema.createRecordType("MyRecordType", members);
+ *     Map<CharSequence,Class<?>> fields = new LinkedHashMap<>();
+ *     fields.put("city",        String .class);
+ *     fields.put("latitude",    Double .class);
+ *     fields.put("longitude",   Double .class);
+ *     fields.put("population",  Integer.class);
+ *     RecordType record = schema.createRecordType("MyRecordType", fields);
  * }
  * </div>
  *
@@ -88,7 +88,7 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  * so users wanting serialization may need to provide their own schema.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see DefaultRecord
  * @see DefaultRecordSchema
@@ -119,21 +119,21 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     private final RecordSchema container;
 
     /**
-     * The type of each members.
+     * The type of each fields.
      *
-     * @see #getMemberTypes()
+     * @see #getFieldTypes()
      */
-    private transient Type[] memberTypes;
+    private transient Type[] fieldTypes;
 
     /**
-     * Creates a new record with the same names and members than the given one.
+     * Creates a new record with the same names and fields than the given one.
      *
      * @param other  the {@code RecordType} to copy.
      */
     public DefaultRecordType(final RecordType other) {
-        typeName    = other.getTypeName();
-        container   = other.getContainer();
-        memberTypes = computeTransientFields(other.getMemberTypes());
+        typeName   = other.getTypeName();
+        container  = other.getContainer();
+        fieldTypes = computeTransientFields(other.getMemberTypes());
     }
 
     /**
@@ -148,19 +148,19 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *
      * @param typeName   the name that identifies this record type.
      * @param container  the schema that contains this record type.
-     * @param members    the name and type of the members to be included in this record type.
+     * @param fields     the name and type of the fields to be included in this record type.
      *
      * @see DefaultRecordSchema#createRecordType(CharSequence, Map)
      */
     public DefaultRecordType(final TypeName typeName, final RecordSchema container,
-            final Map<? extends MemberName, ? extends Type> members)
+            final Map<? extends MemberName, ? extends Type> fields)
     {
         ArgumentChecks.ensureNonNull("typeName",  typeName);
         ArgumentChecks.ensureNonNull("container", container);
-        ArgumentChecks.ensureNonNull("members",   members);
-        this.typeName    = typeName;
-        this.container   = container;
-        this.memberTypes = computeTransientFields(members);
+        ArgumentChecks.ensureNonNull("field",     fields);
+        this.typeName   = typeName;
+        this.container  = container;
+        this.fieldTypes = computeTransientFields(fields);
         /*
          * Ensure that the record namespace is equals to the schema name. For example if the schema
          * name is "MyNameSpace", then the record type name can be "MyNameSpace:MyRecordType".
@@ -173,7 +173,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
         final int size = size();
         for (int i=0; i<size; i++) {
             final MemberName name = getName(i);
-            final Type type = this.memberTypes[i];
+            final Type type = this.fieldTypes[i];
             if (type == null || name.getAttributeType().compareTo(type.getTypeName()) != 0) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalMemberType_2, name, type));
             }
@@ -185,30 +185,30 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     }
 
     /**
-     * Creates a new record from member names specified as character sequence.
+     * Creates a new record from field names specified as character sequence.
      * This constructor builds the {@link MemberName} instance itself.
      *
      * @param typeName     the name that identifies this record type.
      * @param container    the schema that contains this record type.
-     * @param members      the name of the members to be included in this record type.
+     * @param fields       the name of the fields to be included in this record type.
      * @param nameFactory  the factory to use for instantiating {@link MemberName}.
      */
     DefaultRecordType(final TypeName typeName, final RecordSchema container,
-            final Map<? extends CharSequence, ? extends Type> members, final DefaultNameFactory nameFactory)
+            final Map<? extends CharSequence, ? extends Type> fields, final DefaultNameFactory nameFactory)
     {
         this.typeName  = typeName;
         this.container = container;
         final NameSpace namespace = nameFactory.createNameSpace(typeName, null);
-        final Map<MemberName,Type> memberTypes = new LinkedHashMap<>(Containers.hashMapCapacity(members.size()));
-        for (final Map.Entry<? extends CharSequence, ? extends Type> entry : members.entrySet()) {
+        final Map<MemberName,Type> fieldTypes = new LinkedHashMap<>(Containers.hashMapCapacity(fields.size()));
+        for (final Map.Entry<? extends CharSequence, ? extends Type> entry : fields.entrySet()) {
             final Type         type   = entry.getValue();
             final CharSequence name   = entry.getKey();
             final MemberName   member = nameFactory.createMemberName(namespace, name, type.getTypeName());
-            if (memberTypes.put(member, type) != null) {
+            if (fieldTypes.put(member, type) != null) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedElement_1, member));
             }
         }
-        this.memberTypes = computeTransientFields(memberTypes);
+        this.fieldTypes = computeTransientFields(fieldTypes);
     }
 
     /**
@@ -222,25 +222,25 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         final int size = in.readInt();
-        final Map<MemberName,Type> members = new LinkedHashMap<>(Containers.hashMapCapacity(size));
+        final Map<MemberName,Type> fields = new LinkedHashMap<>(Containers.hashMapCapacity(size));
         for (int i=0; i<size; i++) {
             final MemberName member = (MemberName) in.readObject();
             final Type type = (Type) in.readObject();
-            if (members.put(member, type) != null) {
+            if (fields.put(member, type) != null) {
                 throw new InvalidObjectException(Errors.format(Errors.Keys.DuplicatedElement_1, member));
             }
         }
-        memberTypes = computeTransientFields(members);
+        fieldTypes = computeTransientFields(fields);
     }
 
     /**
-     * Invoked on serialization for writing the member names and their type.
+     * Invoked on serialization for writing the field names and their type.
      *
      * @param  out  the output stream where to serialize this object.
      * @throws IOException if an I/O error occurred while writing.
      *
-     * @serialData the number of members as an {@code int}, followed by a
-     *             ({@code MemberName}, {@code Type}) pair for each member.
+     * @serialData the number of fields as an {@code int}, followed by a
+     *             ({@code MemberName}, {@code Type}) pair for each field.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         final int size = size();
@@ -248,12 +248,12 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
         out.writeInt(size);
         for (int i=0; i<size; i++) {
             out.writeObject(getName(i));
-            out.writeObject(memberTypes[i]);
+            out.writeObject(fieldTypes[i]);
         }
     }
 
     /**
-     * Returns a SIS implementation with the name and members of the given arbitrary implementation.
+     * Returns a SIS implementation with the name and fields of the given arbitrary implementation.
      * This method performs the first applicable action in the following choices:
      *
      * <ul>
@@ -262,12 +262,12 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *       then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultRecordType} instance is created using the
      *       {@linkplain #DefaultRecordType(RecordType) copy constructor} and returned.
-     *       Note that this is a shallow copy operation, since the members contained
+     *       Note that this is a shallow copy operation, since the fields contained
      *       in the given object are not recursively copied.</li>
      * </ul>
      *
      * @param  other  the object to get as a SIS implementation, or {@code null} if none.
-     * @return a SIS implementation containing the members of the given object
+     * @return a SIS implementation containing the fields of the given object
      *         (may be the given object itself), or {@code null} if the argument was {@code null}.
      */
     public static DefaultRecordType castOrCopy(final RecordType other) {
@@ -311,8 +311,11 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * Returns the schema that contains this record type.
      *
      * @return the schema that contains this record type.
+     *
+     * @deprecated The {@code RecordSchema} interface has been removed in the 2015 revision of ISO 19103 standard.
      */
     @Override
+    @Deprecated
     public RecordSchema getContainer() {
         return container;
     }
@@ -327,10 +330,30 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * </div>
      *
      * @return the dictionary of (<var>name</var>, <var>type</var>) pairs, or an empty map if none.
+     *
+     * @deprecated Renamed {@link #getFieldTypes()} for consistency with the 2015 revision of ISO 19103 standard.
      */
     @Override
+    @Deprecated
     public Map<MemberName,Type> getMemberTypes() {
-        return ObjectConverters.derivedValues(memberIndices(), MemberName.class, new SurjectiveConverter<Integer,Type>() {
+        return getFieldTypes();
+    }
+
+    /**
+     * Returns the dictionary of all (<var>name</var>, <var>type</var>) pairs in this record type.
+     * The returned map is unmodifiable.
+     *
+     * <div class="note"><b>Comparison with Java reflection:</b>
+     * If we think about this {@code RecordType} as equivalent to a {@code Class} instance, then
+     * this method can be though as the related to the Java {@link Class#getFields()} method.
+     * </div>
+     *
+     * @return the dictionary of (<var>name</var>, <var>type</var>) pairs, or an empty map if none.
+     *
+     * @since 1.1
+     */
+    public Map<MemberName,Type> getFieldTypes() {
+        return ObjectConverters.derivedValues(fieldIndices(), MemberName.class, new SurjectiveConverter<Integer,Type>() {
             @Override public Class<Integer> getSourceClass() {return Integer.class;}
             @Override public Class<Type>    getTargetClass() {return Type.class;}
             @Override public Type apply(final Integer index) {return getType(index);}
@@ -339,24 +362,24 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
 
     /**
      * Returns the set of attribute names defined in this {@code RecordType}'s dictionary.
-     * This method is functionally equivalent to:
+     * This method is functionally equivalent to the following code, but slightly more efficient:
      *
      * {@preformat java
-     *     getMemberTypes().keySet();
+     *     getFieldTypes().keySet();
      * }
      *
-     * @return the set of attribute names, or an empty set if none.
+     * @return the set of field names, or an empty set if none.
      */
     @Override
     public Set<MemberName> getMembers() {
-        return memberIndices().keySet();
+        return fieldIndices().keySet();
     }
 
     /**
      * Returns the type at the given index.
      */
     final Type getType(final int index) {
-        return memberTypes[index];
+        return fieldTypes[index];
     }
 
     /**
@@ -364,7 +387,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * This method is functionally equivalent to (omitting the check for null value):
      *
      * {@preformat java
-     *     getMemberTypes().get(memberName).getTypeName();
+     *     getFieldTypes().get(name).getTypeName();
      * }
      *
      * <div class="note"><b>Comparison with Java reflection:</b>
@@ -372,12 +395,12 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * this method can be though as related to the Java {@link Class#getField(String)} method.
      * </div>
      *
-     * @param  memberName  the attribute name for which to get the associated type name.
+     * @param  fieldName  the attribute name for which to get the associated type name.
      * @return the associated type name, or {@code null} if none.
      */
     @Override
-    public TypeName locate(final MemberName memberName) {
-        final Integer index = indexOf(memberName);
+    public TypeName locate(final MemberName fieldName) {
+        final Integer index = indexOf(fieldName);
         return (index != null) ? getType(index).getTypeName() : null;
     }
 
@@ -415,10 +438,10 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
         }
         if (other != null && other.getClass() == getClass()) {
             final DefaultRecordType that = (DefaultRecordType) other;
-            return Objects.equals(typeName,    that.typeName)    &&
-                   Objects.equals(container,   that.container)   &&
-                   Arrays .equals(memberTypes, that.memberTypes) &&
-                   memberIndices().equals(that.memberIndices());
+            return Objects.equals(typeName,   that.typeName)   &&
+                   Objects.equals(container,  that.container)  &&
+                   Arrays .equals(fieldTypes, that.fieldTypes) &&
+                   fieldIndices().equals(that.fieldIndices());
         }
         return false;
     }
@@ -428,7 +451,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      */
     @Override
     public int hashCode() {
-        return Objects.hashCode(typeName) + 31*(memberIndices().hashCode() + 31*Arrays.hashCode(memberTypes));
+        return Objects.hashCode(typeName) + 31*(fieldIndices().hashCode() + 31*Arrays.hashCode(fieldTypes));
     }
 
 
@@ -457,20 +480,20 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     }
 
     /**
-     * Returns the record type value as a string. Current implementation returns the members with
-     * one member per line, but it may change in any future version for adapting to common practice.
+     * Returns the record type value as a string. Current implementation returns the fields with
+     * one field per line, but it may change in any future version for adapting to common practice.
      */
     @XmlValue
     private String getValue() {
         switch (size()) {
             case 0:  return null;
-            case 1:  return String.valueOf(memberTypes[0]);
+            case 1:  return String.valueOf(fieldTypes[0]);
             default: return toString(null, null);
         }
     }
 
     /**
-     * Sets the record type value as a string. Current implementation expect one member per line.
+     * Sets the record type value as a string. Current implementation expect one field per line.
      * A record can be anything, but usages that we have seen so far write a character sequence
      * of what seems <var>key</var>-<var>description</var> pairs. Examples:
      *
@@ -485,7 +508,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      */
     private void setValue(final String value) {
         if (value != null) {
-            final Map<MemberName,Type> members = new LinkedHashMap<>();
+            final Map<MemberName,Type> fields = new LinkedHashMap<>();
             for (CharSequence element : CharSequences.splitOnEOL(value)) {
                 final int s = ((String) element).indexOf(':');
                 if (s >= 0) {
@@ -493,9 +516,9 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
                     // TODO: the part after ":" is the description. For now, we have no room for storing it.
                 }
                 final MemberName m = Names.createMemberName(null, null, element, String.class);
-                members.put(m, RecordSchemaSIS.INSTANCE.toAttributeType(String.class));
+                fields.put(m, RecordSchemaSIS.INSTANCE.toAttributeType(String.class));
             }
-            memberTypes = computeTransientFields(members);
+            fieldTypes = computeTransientFields(fields);
         }
     }
 }

@@ -35,11 +35,10 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.NoSuchIdentifierException;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -58,7 +57,6 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.operation.DefaultConversion;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
@@ -146,8 +144,8 @@ final class StandardDefinitions {
     {
         final OperationMethod method;
         try {
-            method = DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class)
-                            .getOperationMethod(isUTM ? TransverseMercator.NAME : PolarStereographicA.NAME);
+            method = CoordinateOperations.factoryMT()
+                     .getOperationMethod(isUTM ? TransverseMercator.NAME : PolarStereographicA.NAME);
         } catch (NoSuchIdentifierException e) {
             throw new IllegalStateException(e);                     // Should not happen with SIS implementation.
         }

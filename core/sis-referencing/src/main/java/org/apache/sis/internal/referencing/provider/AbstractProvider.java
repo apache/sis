@@ -239,8 +239,13 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     }
 
     /**
-     * Returns {@code true} if the inverse of this operation method is the same operation method with some parameter
-     * values changed (typically with sign inverted). The default implementation returns {@code false}.
+     * Returns the operation method which is the inverse of this method.
+     * <ul>
+     *   <li>If {@code null}, no inverse method is easily available. This is the default.</li>
+     *   <li>If {@code this}, the inverse of this operation method is the same operation method
+     *       with some parameter values changed (typically with sign inverted).</li>
+     *   <li>If another method, it should take the same parameter values.</li>
+     * </ul>
      *
      * <p>This is a SIS-specific information which may be changed in any future SIS version.
      * Current implementation provides this information in a "all or nothing" way: either all parameter values
@@ -257,12 +262,12 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      *       does not differentiate the map projection methods from <em>inverse</em> map projection methods.</li>
      * </ul>
      *
-     * @return {@code true} if the inverse of this operation method can be described by the same operation method.
+     * @return the inverse of this operation method (possibly {@code this}), or {@code null} if none.
      *
      * @see org.apache.sis.internal.referencing.SignReversalComment
      */
-    public boolean isInvertible() {
-        return false;
+    public AbstractProvider inverse() {
+        return null;
     }
 
     /**

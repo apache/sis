@@ -17,16 +17,20 @@
 package org.apache.sis.referencing.operation;
 
 import java.io.Serializable;
+import java.util.function.Supplier;
 import java.util.function.Predicate;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
@@ -54,7 +58,7 @@ import org.apache.sis.util.ArgumentChecks;
  * late binding implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  *
@@ -217,6 +221,34 @@ public class CoordinateOperationContext implements Serializable {
      * @todo Not yet implemented.
      */
     Predicate<CoordinateOperation> getOperationFilter() {
+        return null;
+    }
+
+    /**
+     * Invoked when some coordinates in the target CRS can not be computed from coordinates in the source CRS.
+     * For example if the source CRS has (<var>x</var>, <var>y</var>) axes and the target CRS has (<var>x</var>,
+     * <var>y</var>, <var>t</var>) axes, then this method is invoked for determining which value to assign to the
+     * <var>t</var> coordinate. In some cases the user can tell that the coordinate should be set to a constant value.
+     *
+     * <p>If this method returns {@code null} (which is the default), then the {@link CoordinateOperationFinder} caller
+     * will throw an {@link org.opengis.referencing.operation.OperationNotFoundException}. Otherwise the returned array
+     * should have a length equals to the number of dimensions in the full (usually compound) target CRS.
+     * Only coordinate values in dimensions without source (the <var>t</var> dimension in above example) will be used.
+     * All other coordinate values will be ignored.
+     *
+     * @return coordinate values to take as constants for the specified target component, or {@code null} if none.
+     * @throws TransformException if the coordinates can not be computed. This exception may occur when the constant
+     *         coordinate values are the results of performing a coordinate operation in advance.
+     *
+     * @todo Non-public API for now, pending more feedback from experience. A public method would be non-static.
+     */
+    static double[] getConstantCoordinates() throws TransformException {
+        final Supplier<double[]> f = CoordinateOperations.CONSTANT_COORDINATES.get();
+        if (f != null) try {
+            return f.get();
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(TransformException.class);
+        }
         return null;
     }
 }

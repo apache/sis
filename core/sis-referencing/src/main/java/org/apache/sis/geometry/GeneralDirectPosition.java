@@ -87,6 +87,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * Constructs a position using the specified coordinate reference system.
      * The number of dimensions is inferred from the coordinate reference system.
+     * All coordinate values are initialized to zero.
      *
      * @param  crs  the coordinate reference system to be given to this position.
      */
@@ -97,6 +98,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
 
     /**
      * Constructs a position with the specified number of dimensions.
+     * All coordinate values are initialized to zero.
      *
      * @param  dimension  number of dimensions.
      * @throws NegativeArraySizeException if {@code dimension} is negative.

@@ -658,7 +658,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
 
     /**
      * Returns a unlocalized string representation of this range. This method complies to the format
-     * described in the <a href="http://en.wikipedia.org/wiki/ISO_31-11">ISO 31-11</a> standard,
+     * described in the <a href="https://en.wikipedia.org/wiki/ISO_31-11">ISO 31-11</a> standard,
      * except that the minimal and maximal values are separated by the "{@code …}" character
      * instead than coma. More specifically, the string representation is defined as below:
      *
@@ -676,7 +676,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * is appended to the above string representation except for empty ranges.
      *
      * @see RangeFormat
-     * @see <a href="http://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
+     * @see <a href="https://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
      */
     @Override
     public String toString() {
@@ -720,7 +720,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     }
 
     /**
-     * Formats this range using the provider formatter. This method is invoked when a
+     * Formats this range using the provided formatter. This method is invoked when a
      * {@code Range} object is formatted using the {@code "%s"} conversion specifier of
      * {@link Formatter}. Users don't need to invoke this method explicitly.
      *

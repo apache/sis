@@ -41,7 +41,7 @@ import org.apache.sis.util.Classes;
  * {@link NullPointerException}.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -97,6 +97,7 @@ final class MemoryDataTransfer implements DataTransfer, ReadableByteChannel {
     @Override public String filename()                  {return reader.filename();}
     @Override public int    dataSizeShift()             {return reader.dataSizeShift();}
     @Override public Object dataArray()                 {return reader.dataArray();}
+    @Override public Buffer dataArrayAsBuffer()         {return reader.dataArrayAsBuffer();}
     @Override public Buffer view()                      {return reader.view();}
     @Override public Buffer createView()                {return reader.createView();}
     @Override public void   createDataArray(int length) {reader.createDataArray(length);}

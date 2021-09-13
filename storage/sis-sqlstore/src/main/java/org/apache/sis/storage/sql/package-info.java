@@ -26,10 +26,23 @@
  * by {@code AttributeType}.
  *
  * <p>The storage of spatial features in SQL databases is described by the
- * <a href="http://www.opengeospatial.org/standards/sfs">OGC Simple feature access - Part 2: SQL option</a>
+ * <a href="https://www.ogc.org/standards/sfs">OGC Simple feature access - Part 2: SQL option</a>
  * international standard, also known as ISO 19125-2. Implementation of geometric types and operations must
  * be provided by the database (sometime through an extension, for example PostGIS on PostgreSQL databases).
  * This Java package uses those provided types and operations.</p>
+ *
+ * <h2>Performance tips</h2>
+ * <p>A subset of features can be obtained by applying filters on the stream returned by
+ * {@link org.apache.sis.storage.FeatureSet#features(boolean)}.
+ * While the filter can be any {@link java.util.function.Predicate},
+ * performances will be much better if they are instances of {@link org.apache.sis.filter.Filter}
+ * because Apache SIS will know how to translate some of them to SQL statements.</p>
+ *
+ * <p>In filter expressions like {@code ST_Intersects(A,B)} where the <var>A</var> and <var>B</var> parameters are
+ * two sub-expressions evaluating to geometry values, if one of those expressions is a literal, then that literal
+ * should be <var>B</var>. The reason is because the SQLMM standard requires us to project <var>B</var> in the
+ * Coordinate Reference System of <var>A</var>. If <var>B</var> is a literal, Apache SIS can do this transformation
+ * only once before to start the filtering process instead of every time that the filter needs to be evaluated.</p>
  *
  * <h2>Limitations</h2>
  * <ul>
@@ -37,12 +50,13 @@
  *       or {@code "gpkg_content"} (from GeoPackage) tables for a default list of feature tables.</li>
  *   <li>Current implementation does not yet map geometric objects (e.g. PostGIS types).</li>
  *   <li>If a parent feature contains association to other features, those other features are created
- *       in same time than the parent feature (no lazy instantiation yet).</li>
+ *       at the same time than the parent feature (no lazy instantiation yet).</li>
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   1.0
  * @module
  */

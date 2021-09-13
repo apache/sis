@@ -107,7 +107,7 @@ public final strictfp class TreeTableViewTest extends TestCase {
     }
 
     /**
-     * Tests formatting a tree containing a remark. We use a geographic bounding box spanning the anti-meridian.
+     * Tests formatting a tree containing a remark. We use a geographic bounding box crossing the anti-meridian.
      * In this test the longitude value and the remarks and separated by "……" characters, but this is because we
      * use the default {@link org.apache.sis.util.collection.TreeTableFormat}. When using {@link MetadataFormat}
      * specialization, the formatting is a little bit different

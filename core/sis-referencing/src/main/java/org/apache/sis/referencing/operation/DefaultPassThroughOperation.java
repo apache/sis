@@ -74,7 +74,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     private SingleOperation operation;
 
     /**
-     * Constructs a single operation from a set of properties.
+     * Constructs a pass-through operation from a set of properties.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractCoordinateOperation#AbstractCoordinateOperation(Map, CoordinateReferenceSystem,
      * CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransform) super-class constructor}.

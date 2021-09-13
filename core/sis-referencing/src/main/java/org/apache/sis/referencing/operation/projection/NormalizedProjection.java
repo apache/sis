@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -60,7 +61,9 @@ import org.apache.sis.util.logging.Logging;
 
 import static java.lang.Math.*;
 
+// Branch-dependent imports
 import org.opengis.referencing.ReferenceIdentifier;
+
 
 /**
  * Base class for conversion services between ellipsoidal and cartographic projections.
@@ -129,7 +132,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @version 1.1
  *
  * @see ContextualParameters
- * @see <a href="http://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
+ * @see <a href="https://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
  *
  * @since 0.6
  * @module
@@ -182,6 +185,12 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * in case someone uses SIS for some planet with higher eccentricity.
      */
     static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS;
+
+    /**
+     * In map projection implementations that can have some variants, the constant for identifying
+     * the most standard form of the projection.
+     */
+    static final byte STANDARD_VARIANT = 0;
 
     /**
      * The internal parameter descriptors. Keys are implementation classes.  Values are parameter descriptor groups
@@ -428,7 +437,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
             final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles)
     {
-        this(new Initializer(method, parameters, roles, (byte) 0));
+        this(new Initializer(method, parameters, roles, STANDARD_VARIANT));
     }
 
     /**
@@ -651,7 +660,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * This method intentionally does <strong>not</strong> force θ to be inside that range in all cases.
      * We avoid explicit wraparounds as much as possible (as opposed to implicit wraparounds performed by
      * trigonometric functions) because they tend to introduce discontinuities. We perform wraparounds only
-     * when necessary for the problem of area spanning the anti-meridian (±180°).
+     * when necessary for the problem of area crossing the anti-meridian (±180°).
      *
      * <div class="note"><b>Example:</b>
      * a CRS for Alaska may have the central meridian at λ₀=−154° of longitude. If the point to project is
@@ -679,6 +688,57 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         }
         return θ;
     }
+
+    /**
+     * Returns {@code sqrt(x² + y²)} for coordinate values on an ellipsoid of semi-major axis length of 1.
+     * This method does not provides the accuracy guarantees offered by {@link Math#hypot(double, double)}.
+     * However for values close to 1, this approximation seems to stay within 1 ULP of {@code Math.hypot(…)}.
+     * We tested with random values in ranges up to [-6 … +6].
+     *
+     * <p>We define this method because {@link Math#hypot(double, double)} has been measured with JMH as 6 times
+     * slower than {@link Math#sqrt(double)} on Java 14.  According posts on internet, the same performance cost
+     * is observed in C/C++ too. Despite its cost, {@code hypot(…)} is generally recommended because computing a
+     * hypotenuse from large magnitudes has accuracy problems. But in the context of {@code NormalizedProjection}
+     * where semi-axis lengths are close to 1, input values should be (x,y) coordinates in the [−1 … +1] range.
+     * The actual range may be greater (e.g. [−5 … +5]), but it still far from ranges requiring protection against
+     * overflow.</p>
+     *
+     * <h4>Caution</h4>
+     * We may not need the full {@code Math.hypot(x,y)} accuracy in the context of map projections on ellipsoids.
+     * However some projection formulas require that {@code fastHypot(x,y) ≥ max(|x|,|y|)}, otherwise normalizations
+     * such as {@code x/hypot(x,y)} could result in values larger than 1, which in turn result in {@link Double#NaN}
+     * when given to {@link Math#asin(double)}. The assumption on x, y and {@code sqrt(x²+y²)} relative magnitude is
+     * broken when x=0 and |y| ≤ 1.4914711209038602E-154 or conversely. This method does not a check for such cases;
+     * it is caller responsibility to add this check is necessary, for example as below:
+     *
+     * {@preformat java
+     *     double D = max(fastHypot(x, y), max(abs(x), abs(y)));
+     * }
+     *
+     * According JMH, above check is 1.65 time slower than {@code fastHypot} without checks.
+     * We define this {@code fastHypot(…)} method for tracing where {@code sqrt(x² + y²)} is used,
+     * so we can verify if it is used in context where the inaccuracy is acceptable.
+     *
+     * <h4>When to use</h4>
+     * We reserve this method to ellipsoidal formulas where approximations are used anyway. Implementations using
+     * exact formulas, such as spherical formulas, should use {@link Math#hypot(double, double)} for its accuracy.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/NUMBERS-143">Investigate Math.hypot for computing the absolute of a complex number</a>
+     * @see <a href="https://scicomp.stackexchange.com/questions/27758/is-there-any-point-to-using-hypot-for-sqrt1c2-0-le-c-le-1-for-real/27766">Is
+     *      there any point to using <code>hypot(1, c)</code> for <code>sqrt(1 + c²)</code>, 0 ≤ c ≤ 1</a>
+     */
+    static double fastHypot(final double x, final double y) {
+        return sqrt(x*x + y*y);
+        // TODO: consider using Math.fma on JDK9.
+        // Check also if we should do the same with plain x*x + y*y in subclasses.
+    }
+
+    /*
+     * TODO: consider adding a sqrt1ms(x) method for sqrt(1 - x*x), which could be implemented as sqrt(fma(x, -x, 1)).
+     * The use of Math.fma(…) in this context would be valuable especially when x is close to 1 (to be verified).
+     * We may also add a method for sqrt(1 - eccentricitySquared*x*x). Maybe `eccentricitySquared` should be made
+     * package private and negative for easier use with fma.
+     */
 
     /**
      * Converts a single coordinate in {@code srcPts} at the given offset and stores the result
@@ -925,18 +985,25 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             final boolean applyOtherFirst)
     {
         final List<MathTransform> steps = MathTransforms.getSteps(other);
-        if (steps.size() == 2) try {
+        if (steps.size() == 2) {
             final int oi = applyOtherFirst ? 0 : 1;
-            if (projection.equals(steps.get(oi).inverse(), ComparisonMode.IGNORE_METADATA)) {
-                final Matrix m = MathTransforms.getMatrix(steps.get(oi ^ 1));
-                if (Matrices.isAffine(m) && m.getNumRow() == DIMENSION+1 && m.getNumCol() == DIMENSION+1) {
-                    return m;
+            final MathTransform inverse = steps.get(oi);
+            if (inverse instanceof Inverse || inverse instanceof NormalizedProjection) try {
+                /*
+                 * In principle the equality check below should be sufficient. But above `instanceof` checks
+                 * are added for avoiding potentially costly calls to `inverse()` in other implementations.
+                 */
+                if (projection.equals(inverse.inverse(), ComparisonMode.IGNORE_METADATA)) {
+                    final Matrix m = MathTransforms.getMatrix(steps.get(oi ^ 1));
+                    if (Matrices.isAffine(m) && m.getNumRow() == DIMENSION+1 && m.getNumCol() == DIMENSION+1) {
+                        return m;
+                    }
                 }
+            } catch (NoninvertibleTransformException e) {
+                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                        (projection instanceof NormalizedProjection) ? NormalizedProjection.class : projection.getClass(),
+                        "tryConcatenate", e);
             }
-        } catch (NoninvertibleTransformException e) {
-            Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
-                    (projection instanceof NormalizedProjection) ? NormalizedProjection.class : projection.getClass(),
-                    "tryConcatenate", e);
         }
         return null;
     }
@@ -1040,22 +1107,29 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                 break;
             }
         }
-        final double[] parameters = getInternalParameterValues();
-        if (parameters != null) {
-            /*
-             * super.equals(…) guarantees that the two objects are of the same class.
-             * So in SIS implementation, this implies that the arrays have the same length.
-             */
-            final double[] others = that.getInternalParameterValues();
-            assert others.length == parameters.length;
-            for (int i=0; i<parameters.length; i++) {
-                if (!Numerics.epsilonEqual(parameters[i], others[i], mode)) {
-                    assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(
-                            getInternalParameterNames()[i], parameters[i], others[i]);
-                    return false;
+        /*
+         * Compares the internal parameter names and values. Many implementations have no parameter other
+         * than the eccentricity (because other parameters can often be stored in normalization matrices),
+         * so the `values` array will often be null. For some implementations offering different variants
+         * of a map projection, the number of internal parameters depends on the variant.
+         */
+        final double[] values = this.getInternalParameterValues();
+        final double[] others = that.getInternalParameterValues();
+        if (values == null) {
+            return others == null;
+        }
+        if (others != null && values.length == others.length) {
+            final String[] names = getInternalParameterNames();
+            if (Arrays.equals(names, that.getInternalParameterNames())) {
+                for (int i=0; i<values.length; i++) {
+                    if (!Numerics.epsilonEqual(values[i], others[i], mode)) {
+                        assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(names[i], values[i], others[i]);
+                        return false;
+                    }
                 }
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }

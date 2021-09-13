@@ -21,13 +21,18 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.regex.Pattern;
+import javax.measure.Unit;
+import javax.measure.format.ParserException;
+import org.apache.sis.measure.Units;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.netcdf.Linearizer;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -65,7 +70,7 @@ import org.apache.sis.referencing.operation.transform.TransferFunction;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://global.jaxa.jp/projects/sat/gcom_w/">SHIZUKU (GCOM-W) on JAXA</a>
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>
@@ -75,9 +80,14 @@ import org.apache.sis.referencing.operation.transform.TransferFunction;
  */
 public final class GCOM_W extends Convention {
     /**
+     * Name of the attribute to read for checking the sentinel value.
+     */
+    static final String SENTINEL_ATTRIBUTE = "PlatformShortName";
+
+    /**
      * Sentinel value to search in the {@code "PlatformShortName"} attribute for determining if GCOM-W conventions apply.
      */
-    private static final Pattern SENTINEL_VALUE = Pattern.compile(".*\\bGCOM-W1\\b.*");
+    static final Pattern SENTINEL_VALUE = Pattern.compile(".*\\bGCOM-W1\\b.*");
 
     /**
      * Mapping from ACDD or CF-Convention attribute names to names of attributes used by GCOM-W.
@@ -102,10 +112,7 @@ public final class GCOM_W extends Convention {
     /**
      * Names of variables to use as axes (first word only).
      */
-    private static final String[] AXES = {
-        "Latitude",
-        "Longitude"
-    };
+    static final String LATITUDE = "Latitude", LONGITUDE = "Longitude";
 
     /**
      * "No data" value to use when not specified in the file.
@@ -131,7 +138,7 @@ public final class GCOM_W extends Convention {
      */
     @Override
     protected boolean isApplicableTo(final Decoder decoder) {
-        final String s = decoder.stringValue("PlatformShortName");
+        final String s = decoder.stringValue(SENTINEL_ATTRIBUTE);
         return (s != null) && SENTINEL_VALUE.matcher(s).matches();
     }
 
@@ -149,6 +156,14 @@ public final class GCOM_W extends Convention {
     }
 
     /**
+     * Returns {@code true} if a variable of the given name is a coordinate axis.
+     */
+    static boolean isCoordinateAxis(final String name) {
+        return CharSequences.startsWith(name, LATITUDE,  true)
+            || CharSequences.startsWith(name, LONGITUDE, true);
+    }
+
+    /**
      * Returns whether the given variable is used as a coordinate system axis, a coverage or something else.
      *
      * @param  variable  the variable for which to get the role, or {@code null}.
@@ -156,14 +171,10 @@ public final class GCOM_W extends Convention {
      */
     @Override
     public VariableRole roleOf(final Variable variable) {
-        VariableRole role = super.roleOf(variable);
+        final VariableRole role = super.roleOf(variable);
         if (role == VariableRole.COVERAGE) {
-            final String name = variable.getName();
-            for (final String c : AXES) {
-                if (name.regionMatches(true, 0, c, 0, c.length())) {
-                    role = VariableRole.AXIS;
-                    break;
-                }
+            if (isCoordinateAxis(variable.getName())) {
+                return VariableRole.AXIS;
             }
         }
         return role;
@@ -176,15 +187,30 @@ public final class GCOM_W extends Convention {
 
 
     /**
-     * Returns an enumeration of two-dimensional non-linear transforms that may be tried in attempts to make
-     * localization grid more linear.
+     * Returns the two-dimensional non-linear transforms to apply for making the localization grid more linear.
+     * This method returns a singleton without specifying the identity transform as an acceptable alternative.
+     * It means that the specified projection (UTM) is considered mandatory for this format.
      *
      * @param  decoder  the netCDF file for which to determine linearizers that may possibly apply.
-     * @return enumeration of two-dimensional non-linear transforms to try.
+     * @return enumeration of two-dimensional non-linear transforms to apply.
+     *
+     * @see #defaultHorizontalCRS(boolean)
      */
     @Override
     public Set<Linearizer> linearizers(final Decoder decoder) {
-        return Collections.singleton(Linearizer.GROUND_TRACK);
+        return Collections.singleton(new Linearizer(CommonCRS.WGS84, Linearizer.Type.UTM));
+    }
+
+    /**
+     * Returns the default prime meridian, ellipsoid, datum or CRS to use if no information is found in the netCDF file.
+     * GCOM documentation said that the datum is WGS 84.
+     *
+     * @param  spherical  ignored, since we assume an ellipsoid in all cases.
+     * @return information about geodetic objects to use if no explicit information is found in the file.
+     */
+    @Override
+    public CommonCRS defaultHorizontalCRS(final boolean spherical) {
+        return CommonCRS.WGS84;
     }
 
 
@@ -203,7 +229,7 @@ public final class GCOM_W extends Convention {
     public Map<Number,Object> nodataValues(final Variable data) {
         final Map<Number, Object> pads = super.nodataValues(data);
         if (pads.isEmpty() && roleOf(data) == VariableRole.COVERAGE) {
-            pads.put(NO_DATA, 3);
+            pads.put(NO_DATA, FILL_VALUE_MASK | MISSING_VALUE_MASK);
             /*
              * Value 3 stands for:
              *   - bit 0 set: NO_DATA is a pad value (can be used as background).
@@ -230,5 +256,24 @@ public final class GCOM_W extends Convention {
             if (Double.isFinite(offset)) tr.setOffset(offset);
         }
         return tr;
+    }
+
+    /**
+     * Returns the unit of measurement to use as a fallback if it can not be determined in a standard way.
+     *
+     * @param  data  the variable for which to get the unit of measurement.
+     * @return the unit of measurement, or {@code null} if none or unknown.
+     * @throws ParserException if the unit symbol can not be parsed.
+     */
+    @Override
+    public Unit<?> getUnitFallback(final Variable data) throws ParserException {
+        final String symbol = data.getAttributeAsString("UNIT");
+        if (symbol == null) {
+            return super.getUnitFallback(data);
+        }
+        if (symbol.equals("C")) {       // Missing "°" before "C".
+            return Units.CELSIUS;
+        }
+        return Units.valueOf(symbol);
     }
 }

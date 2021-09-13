@@ -61,7 +61,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * {@link javax.imageio} is needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -212,7 +212,8 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException if an error occurred while reading (including EOF).
      */
     public final int readBit() throws IOException {
-        return (int) readBits(1);
+        ensureBufferContains(Byte.BYTES);
+        return readBitFromBuffer();
     }
 
     /**
@@ -241,7 +242,7 @@ public class ChannelDataInput extends ChannelData {
             numBits -= Byte.SIZE;
         }
         if (numBits != 0) {
-            value >>>= (-numBits); // Discard the unwanted bits.
+            value >>>= (-numBits);                      // Discard the unwanted bits.
             numBits += Byte.SIZE;
             pushBack();
         }
@@ -614,6 +615,7 @@ public class ChannelDataInput extends ChannelData {
         BytesReader(final byte[] dest)                  {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 0;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return ByteBuffer.wrap(dest);}
         @Override public Buffer view()                  {return buffer;}
         @Override public Buffer createView()            {return buffer;}
         @Override public void   createDataArray(int n)  {dest = new byte[n];}
@@ -635,6 +637,7 @@ public class ChannelDataInput extends ChannelData {
         CharsReader(final char[] dest)                  {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 1;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return CharBuffer.wrap(dest);}
         @Override public Buffer view()                  {return view;}
         @Override public Buffer createView()            {return view = buffer.asCharBuffer();}
         @Override public void   createDataArray(int n)  {dest = new char[n];}
@@ -653,6 +656,7 @@ public class ChannelDataInput extends ChannelData {
         ShortsReader(final short[] dest)                {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 1;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return ShortBuffer.wrap(dest);}
         @Override public Buffer view()                  {return view;}
         @Override public Buffer createView()            {return view = buffer.asShortBuffer();}
         @Override public void   createDataArray(int n)  {dest = new short[n];}
@@ -671,6 +675,7 @@ public class ChannelDataInput extends ChannelData {
         IntsReader(final int[] dest)                    {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 2;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return IntBuffer.wrap(dest);}
         @Override public Buffer view()                  {return view;}
         @Override public Buffer createView()            {return view = buffer.asIntBuffer();}
         @Override public void   createDataArray(int n)  {dest = new int[n];}
@@ -689,6 +694,7 @@ public class ChannelDataInput extends ChannelData {
         LongsReader(final long[] dest)                  {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 3;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return LongBuffer.wrap(dest);}
         @Override public Buffer view()                  {return view;}
         @Override public Buffer createView()            {return view = buffer.asLongBuffer();}
         @Override public void   createDataArray(int n)  {dest = new long[n];}
@@ -707,6 +713,7 @@ public class ChannelDataInput extends ChannelData {
         FloatsReader(final float[] dest)                {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 2;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return FloatBuffer.wrap(dest);}
         @Override public Buffer view()                  {return view;}
         @Override public Buffer createView()            {return view = buffer.asFloatBuffer();}
         @Override public void   createDataArray(int n)  {dest = new float[n];}
@@ -725,6 +732,7 @@ public class ChannelDataInput extends ChannelData {
         DoublesReader(final double[] dest)              {this.dest = dest;}
         @Override public int    dataSizeShift()         {return 3;}
         @Override public Object dataArray()             {return dest;}
+        @Override public Buffer dataArrayAsBuffer()     {return DoubleBuffer.wrap(dest);}
         @Override public Buffer view()                  {return view;}
         @Override public Buffer createView()            {return view = buffer.asDoubleBuffer();}
         @Override public void   createDataArray(int n)  {dest = new double[n];}
@@ -828,8 +836,8 @@ public class ChannelDataInput extends ChannelData {
         int position;
         if (buffer.hasArray() && length <= buffer.capacity()) {
             ensureBufferContains(length);
-            position = buffer.position();           // Must be after 'ensureBufferContains(int)'.
-            buffer.position(position + length);     // Before 'new String' for consistency with the 'else' block in case of UnsupportedEncodingException.
+            position = buffer.position();           // Must be after `ensureBufferContains(int)`.
+            buffer.position(position + length);     // Before `new String` for consistency with the `else` block in case of UnsupportedEncodingException.
             array = buffer.array();
             position += buffer.arrayOffset();
         } else {
@@ -868,7 +876,7 @@ public class ChannelDataInput extends ChannelData {
             buffer.clear().limit(0);
         } else if (p >= 0) {
             /*
-             * Requested position is after the current buffer limits and
+             * Requested position is after the current buffer limit and
              * we can not seek, so we have to read everything before.
              */
             do {

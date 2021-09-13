@@ -49,7 +49,7 @@ abstract class GeoTIFF implements Closeable {
      * The locale to use for parsers or formatter. This is <strong>not</strong> the locale
      * for warnings or other messages emitted to the users.
      */
-    static final Locale LOCALE = Locale.US;
+    private static final Locale LOCALE = Locale.US;
 
     /**
      * The magic number for big-endian TIFF files or little-endian TIFF files.
@@ -64,7 +64,7 @@ abstract class GeoTIFF implements Closeable {
     /**
      * The store which created this reader or writer.
      */
-    final GeoTiffStore owner;
+    final GeoTiffStore store;
 
     /**
      * The object to use for parsing and formatting dates. Created when first needed.
@@ -74,22 +74,22 @@ abstract class GeoTIFF implements Closeable {
     /**
      * For subclass constructors.
      */
-    GeoTIFF(final GeoTiffStore owner) {
-        this.owner = owner;
+    GeoTIFF(final GeoTiffStore store) {
+        this.store = store;
     }
 
     /**
      * Returns the resources to use for formatting error messages.
      */
     final Errors errors() {
-        return Errors.getResources(owner.getLocale());
+        return Errors.getResources(store.getLocale());
     }
 
     /**
      * Returns the GeoTIFF-specific resource for error messages and warnings.
      */
     final Resources resources() {
-        return Resources.forLocale(owner.getLocale());
+        return Resources.forLocale(store.getLocale());
     }
 
     /**

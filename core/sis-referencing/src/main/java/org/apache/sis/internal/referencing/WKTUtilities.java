@@ -58,6 +58,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.Statistics;
 import org.apache.sis.math.Vector;
 
 
@@ -70,7 +71,7 @@ import org.apache.sis.math.Vector;
  * We need to be specific in order to select the right "aspect" of the given object.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -349,6 +350,43 @@ public final class WKTUtilities extends Static {
     }
 
     /**
+     * Suggests an amount of fraction digits to use for formatting numbers in each column of the given matrix.
+     * The number of fraction digits may be negative if we could round the numbers to 10, 100, <i>etc</i>.
+     *
+     * @param  rows  the matrix rows. It is not required that each row has the same length.
+     * @return suggested amount of fraction digits as an array as long as the longest row.
+     *
+     * @see org.apache.sis.referencing.operation.matrix.Matrices#toString(Matrix)
+     */
+    public static int[] suggestFractionDigits(final Vector[] rows) {
+        int length = 0;
+        final int n = rows.length - 1;
+        for (int j=0; j <= n; j++) {
+            final int rl = rows[j].size();
+            if (rl > length) length = rl;
+        }
+        final int[] fractionDigits = new int[length];
+        final Statistics stats = new Statistics(null);
+        for (int i=0; i<length; i++) {
+            boolean isInteger = true;
+            for (final Vector row : rows) {
+                if (row.size() > i) {
+                    final double value = row.doubleValue(i);
+                    stats.accept(value);
+                    if (isInteger && Math.floor(value) != value && !Double.isNaN(value)) {
+                        isInteger = false;
+                    }
+                }
+            }
+            if (!isInteger) {
+                fractionDigits[i] = Numerics.suggestFractionDigits(stats);
+            }
+            stats.reset();
+        }
+        return fractionDigits;
+    }
+
+    /**
      * Suggests an amount of fraction digits to use for formatting numbers in each column of the given sequence
      * of points. The number of fraction digits may be negative if we could round the numbers to 10, <i>etc</i>.
      *
@@ -357,7 +395,7 @@ public final class WKTUtilities extends Static {
      * @return suggested amount of fraction digits as an array as long as the longest row.
      */
     public static int[] suggestFractionDigits(final CoordinateReferenceSystem crs, final Vector[] points) {
-        final int[] fractionDigits = Numerics.suggestFractionDigits(points);
+        final int[] fractionDigits = suggestFractionDigits(points);
         final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(crs);
         if (ellipsoid != null) {
             /*
@@ -394,7 +432,13 @@ public final class WKTUtilities extends Static {
      * Returns the values in the corners and in the center of the given tensor. The values are returned in a
      * <var>n</var>-dimensional array of {@link Number} where <var>n</var> is the length of {@code size}.
      * If some values have been skipped, {@code null} values are inserted in the rows or columns where the
-     * skipping occurs.
+     * skipping occurs. Caller may replace null values by {@code "…"} string at formatting time for example.
+     *
+     * <p>Indices of elements in the returned array are in reverse order than in the {@code size} argument.
+     * For example if {@code size} contains the values for dimensions (x,y,z) in that order, then elements
+     * in the returned array are accessed with {@code cornersAndCenter[z][y][x]} indices in that order.
+     * It is done that way because in the common case where there is only two dimensions,
+     * {@code cornersAndCenter[y]} is a row. This is what WKT formatter expects among others.</p>
      *
      * @param  tensor      function providing values of the tensor. Inputs are indices of the desired value with
      *                     index in each dimension ranging from 0 inclusive to {@code size[dimension]} exclusive.
@@ -406,7 +450,7 @@ public final class WKTUtilities extends Static {
      */
     public static Object[] cornersAndCenter(final Function<int[],Number> tensor, final int[] size, final int cornerSize) {
         /*
-         * The 'source' array will contain indices of values to fetch in the tensor, and the 'target' array will contain
+         * The `source` array will contain indices of values to fetch in the tensor, and the `target` array will contain
          * indices where to store those values in the returned data structure. Other arrays contain threshold indices of
          * points of interest in the target data structure.
          */
@@ -421,11 +465,18 @@ public final class WKTUtilities extends Static {
         }
         final int[] source = new int[shown.length];
         final int[] target = new int[shown.length];
-        final Object[] numbers = (Object[]) Array.newInstance(Number.class, shown);
+        final Object[] numbers;
+        {
+            final int[] reversed = new int[shown.length];
+            for (int i=0; i<reversed.length;) {
+                reversed[i] = shown[shown.length - ++i];
+            }
+            numbers = (Object[]) Array.newInstance(Number.class, reversed);
+        }
         /*
          * The loops below are used for simulating GOTO statements. This is usually a deprecated practice,
          * but in this case we can hardly use normal loops because the number of nested loops is dynamic.
-         * We want something equivalent to the code below where 'n' - the number of nested loops - is not
+         * We want something equivalent to the code below where `n` - the number of nested loops - is not
          * known at compile-time:
          *
          * for (int i0=0; i0<size[0]; i0++) {
@@ -478,10 +529,15 @@ fill:   for (;;) {
         Object walk = numbers;
         Object[] previous = null;
         for (int d=size.length; --d >= 0;) {
+            final int p = empty[d];
             previous = (Object[]) walk;
-            walk = previous[empty[d]];
+            if (p >= previous.length) {
+                return numbers;
+            }
+            walk = previous[p];
             source[d] = size[d] / 2;
         }
+        assert walk == previous[empty[0]];
         if (walk == null) {
             previous[empty[0]] = tensor.apply(source);
         }

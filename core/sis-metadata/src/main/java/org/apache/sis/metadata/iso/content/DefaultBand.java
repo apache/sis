@@ -332,7 +332,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     @Override
     public void setUnits(final Unit<?> newValue) {
-        super.setUnits(newValue.asType(Length.class));
+        super.setUnits(newValue != null ? newValue.asType(Length.class) : null);
     }
 
     /**

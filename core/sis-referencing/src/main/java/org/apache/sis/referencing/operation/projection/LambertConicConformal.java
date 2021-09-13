@@ -48,7 +48,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Lambert_conformal_conic_projection">Lambert Conformal Conic projection on Wikipedia</a></li>
- *   <li><a href="http://mathworld.wolfram.com/LambertConformalConicProjection.html">Lambert Conformal Conic projection on MathWorld</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/LambertConformalConicProjection.html">Lambert Conformal Conic projection on MathWorld</a></li>
  * </ul>
  *
  * <h2>Description</h2>
@@ -95,7 +95,7 @@ public class LambertConicConformal extends ConformalProjection {
         if (identMatch(method, "(?i).*\\bWest\\b.*",     LambertConformalWest    .IDENTIFIER)) return WEST;
         if (identMatch(method, "(?i).*\\b2SP\\b.*",      LambertConformal2SP     .IDENTIFIER)) return SP2;
         if (identMatch(method, "(?i).*\\b1SP\\b.*",      LambertConformal1SP     .IDENTIFIER)) return SP1;
-        return 0; // Unidentified case, to be considered as 2SP.
+        return STANDARD_VARIANT;                         // Unidentified case, to be considered as 2SP.
     }
 
     /**
@@ -202,6 +202,7 @@ public class LambertConicConformal extends ConformalProjection {
                 scaleFactor = LambertConformalMichigan.SCALE_FACTOR;    // Ellipsoid scaling factor (EPSG:1038)
                 // Fallthrough
             }
+            case STANDARD_VARIANT:
             case BELGIUM:
             case SP2: {
                 roles.put(eastingDirection,               LambertConformal2SP.EASTING_AT_FALSE_ORIGIN);
@@ -472,8 +473,8 @@ public class LambertConicConformal extends ConformalProjection {
          * applied before the first non-linear one moved to the inverse of the "denormalize" transform, and the
          * linear operations applied after the last non-linear one moved to the inverse of the "normalize" transform.
          */
-        dstPts[dstOff  ] = atan2(x, y);                 // Really (x,y), not (y,x)
-        dstPts[dstOff+1] = -φ(pow(hypot(x, y), 1/n));   // Equivalent to φ(pow(hypot(x,y), -1/n)) but more accurate for n>0.
+        dstPts[dstOff  ] = atan2(x, y);                     // Really (x,y), not (y,x)
+        dstPts[dstOff+1] = -φ(pow(fastHypot(x, y), 1/n));   // Equivalent to φ(pow(hypot(x,y), -1/n)) but more accurate for n>0.
     }
 
 

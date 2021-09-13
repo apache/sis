@@ -32,7 +32,7 @@ import org.apache.sis.measure.Units;
  * Consequently EPSG codes are not provided.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -217,8 +217,8 @@ public final strictfp class HardCodedAxes {
      * @see #GEODETIC_LONGITUDE
      * @see #SPHERICAL_LATITUDE
      *
-     * @see <a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
-     * @see <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">Spherical coordinate system on MathWorld</a>
+     * @see <a href="https://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
+     * @see <a href="https://mathworld.wolfram.com/SphericalCoordinates.html">Spherical coordinate system on MathWorld</a>
      */
     public static final DefaultCoordinateSystemAxis SPHERICAL_LONGITUDE = create(AxisNames.SPHERICAL_LONGITUDE, "θ",
             AxisDirection.EAST, Units.DEGREE, -180, 180, RangeMeaning.WRAPAROUND);
@@ -430,6 +430,13 @@ public final strictfp class HardCodedAxes {
      */
     public static final DefaultCoordinateSystemAxis TIME = create("Time", "t",
             AxisDirection.FUTURE, Units.DAY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+
+    /**
+     * Axis for time values in a {@linkplain org.apache.sis.referencing.cs.DefaultParametricCS parametric CS}.
+     * The axis is cyclic: after day 365 we restart at day 1.
+     */
+    public static final DefaultCoordinateSystemAxis DAY_OF_YEAR = create("Day of year", "t",
+            AxisDirection.FUTURE, Units.DAY, 1, 366, RangeMeaning.WRAPAROUND);
 
     /**
      * Axis for column indices in a {@linkplain org.apache.sis.coverage.grid.GridCoverage grid coverage}.

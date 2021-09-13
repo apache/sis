@@ -45,6 +45,7 @@ org.apache.sis.internal.referencing.provider.AlbersEqualArea
 org.apache.sis.internal.referencing.provider.TransverseMercator
 org.apache.sis.internal.referencing.provider.TransverseMercatorSouth
 org.apache.sis.internal.referencing.provider.CassiniSoldner
+org.apache.sis.internal.referencing.provider.HyperbolicCassiniSoldner
 org.apache.sis.internal.referencing.provider.PolarStereographicA
 org.apache.sis.internal.referencing.provider.PolarStereographicB
 org.apache.sis.internal.referencing.provider.PolarStereographicC
@@ -68,3 +69,4 @@ org.apache.sis.internal.referencing.provider.NADCON
 org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation
 org.apache.sis.internal.referencing.provider.Interpolation1D
 org.apache.sis.internal.referencing.provider.SatelliteTracking
+org.apache.sis.internal.referencing.provider.Wraparound

@@ -29,7 +29,7 @@
  * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.1
  * @since   0.5
  * @module
  */

@@ -34,7 +34,6 @@ import org.apache.sis.internal.util.Strings;
  * @since   0.4
  * @module
  */
-@SuppressWarnings("CloneInNonCloneableClass")
 final class UninitializedParameter implements GeneralParameterValue, Serializable {     // Intentionally non-Cloneable.
     /**
      * For cross-version serialization compatibility.
@@ -63,9 +62,10 @@ final class UninitializedParameter implements GeneralParameterValue, Serializabl
 
     /**
      * Returns {@code this} since there is no need to clone this object.
+     * This method is required by {@link GeneralParameterValue} interface.
      */
     @Override
-    @SuppressWarnings("CloneDoesntCallSuperClone")
+    @SuppressWarnings({"CloneInNonCloneableClass", "CloneDoesntCallSuperClone"})
     public GeneralParameterValue clone() {
         return this;
     }

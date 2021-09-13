@@ -22,7 +22,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -37,7 +36,7 @@ import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
 
@@ -50,7 +49,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -163,7 +162,7 @@ public final class Shapes2D extends Static {
      * @param  envelope     the rectangle to transform (may be {@code null}).
      * @param  destination  the destination rectangle (may be {@code envelope}).
      *         If {@code null}, a new rectangle will be created and returned.
-     * @return {@code destination}, or a new rectangle if {@code destination} was non-null and {@code envelope} was null.
+     * @return {@code destination}, or a new rectangle if {@code destination} was null and {@code envelope} was non-null.
      * @throws TransformException if a transform failed.
      *
      * @see #transform(CoordinateOperation, Rectangle2D, Rectangle2D)
@@ -201,159 +200,162 @@ public final class Shapes2D extends Static {
         double ymin = Double.POSITIVE_INFINITY;
         double xmax = Double.NEGATIVE_INFINITY;
         double ymax = Double.NEGATIVE_INFINITY;
-        /*
-         * Notation (as if we were applying a map projection, but this is not necessarily the case):
-         *   - (λ,φ) are coordinate values before projection.
-         *   - (x,y) are coordinate values after projection.
-         *   - D[00|01|10|11] are the ∂x/∂λ, ∂x/∂φ, ∂y/∂λ and ∂y/∂φ derivatives respectively.
-         *   - Variables with indice 0 are for the very first point in iteration order.
-         *   - Variables with indice 1 are for the values of the previous iteration.
-         *   - Variables with indice 2 are for the current values in the iteration.
-         *   - P1-P2 form a line segment to be checked for curvature.
-         */
-        double x0=0, y0=0, λ0=0, φ0=0;
-        double x1=0, y1=0, λ1=0, φ1=0;
-        Matrix D0=null, D1=null, D2=null;
-        // x2 and y2 defined inside the loop.
-        boolean isDerivativeSupported = true;
-        final CurveExtremum extremum = new CurveExtremum();
-        for (int i=0; i<=8; i++) {
+        final WraparoundInEnvelope.Controller wc = new WraparoundInEnvelope.Controller(transform);
+        do {
             /*
-             * Iteration order (center must be last):
-             *
-             *   (6)────(5)────(4)
-             *    |             |
-             *   (7)    (8)    (3)
-             *    |             |
-             *   (0)────(1)────(2)
+             * Notation (as if we were applying a map projection, but this is not necessarily the case):
+             *   - (λ,φ) are coordinate values before projection.
+             *   - (x,y) are coordinate values after projection.
+             *   - D[00|01|10|11] are the ∂x/∂λ, ∂x/∂φ, ∂y/∂λ and ∂y/∂φ derivatives respectively.
+             *   - Variables with indice 0 are for the very first point in iteration order.
+             *   - Variables with indice 1 are for the values of the previous iteration.
+             *   - Variables with indice 2 are for the current values in the iteration.
+             *   - P1-P2 form a line segment to be checked for curvature.
              */
-            double λ2, φ2;
-            switch (i) {
-                case 0: case 6: case 7: λ2 = envelope.getMinX();    break;
-                case 1: case 5: case 8: λ2 = envelope.getCenterX(); break;
-                case 2: case 3: case 4: λ2 = envelope.getMaxX();    break;
-                default: throw new AssertionError(i);
-            }
-            switch (i) {
-                case 0: case 1: case 2: φ2 = envelope.getMinY();    break;
-                case 3: case 7: case 8: φ2 = envelope.getCenterY(); break;
-                case 4: case 5: case 6: φ2 = envelope.getMaxY();    break;
-                default: throw new AssertionError(i);
-            }
-            point[0] = λ2;
-            point[1] = φ2;
-            try {
-                D1 = D2;
-                D2 = Envelopes.derivativeAndTransform(transform, point, point, 0, isDerivativeSupported && i != 8);
-            } catch (TransformException e) {
-                if (!isDerivativeSupported) {
-                    throw e;                        // Derivative were already disabled, so something went wrong.
-                }
-                isDerivativeSupported = false; D2 = null;
-                point[0] = λ2;
-                point[1] = φ2;
-                transform.transform(point, 0, point, 0, 1);
-                Envelopes.recoverableException(Shapes2D.class, e);  // Log only if the above call was successful.
-            }
-            double x2 = point[0];
-            double y2 = point[1];
-            if (x2 < xmin) xmin = x2;
-            if (x2 > xmax) xmax = x2;
-            if (y2 < ymin) ymin = y2;
-            if (y2 > ymax) ymax = y2;
-            switch (i) {
-                case 0: {                           // Remember the first point.
-                    λ0=λ2; x0=x2;
-                    φ0=φ2; y0=y2;
-                    D0=D2;
-                    break;
-                }
-                case 8: {                           // Close the iteration with the first point.
-                    λ2=λ0; x2=x0;                   // Discard P2 because it is the rectangle center.
-                    φ2=φ0; y2=y0;
-                    D2=D0;
-                    break;
-                }
-            }
-            /*
-             * At this point, we expanded the rectangle using the projected points. Now try
-             * to use the information provided by derivatives at those points, if available.
-             * For the following block, notation is:
-             *
-             *   - s  are coordinate values in the source space (λ or φ)
-             *   - t  are coordinate values in the target space (x or y)
-             *
-             * They are not necessarily in the same dimension. For example would could have
-             * s=λ while t=y. This is typically the case when inspecting the top or bottom
-             * line segment of the rectangle.
-             *
-             * The same technic is also applied in the transform(MathTransform, Envelope) method.
-             * The general method is more "elegant", at the cost of more storage requirement.
-             */
-            if (D1 != null && D2 != null) {
-                final int srcDim;
-                final double s1, s2;                // Coordinate values in source space (before projection)
+            double x0=0, y0=0, λ0=0, φ0=0;
+            double x1=0, y1=0, λ1=0, φ1=0;
+            Matrix D0=null, D1=null, D2=null;
+            // x2 and y2 defined inside the loop.
+            boolean isDerivativeSupported = true;
+            final CurveExtremum extremum = new CurveExtremum();
+            for (int i=0; i<=8; i++) {
+                /*
+                 * Iteration order (center must be last):
+                 *
+                 *   (6)────(5)────(4)
+                 *    |             |
+                 *   (7)    (8)    (3)
+                 *    |             |
+                 *   (0)────(1)────(2)
+                 */
+                double λ2, φ2;
                 switch (i) {
-                    case 1: case 2: case 5: case 6: {assert φ2==φ1; srcDim=0; s1=λ1; s2=λ2; break;}     // Horizontal segment
-                    case 3: case 4: case 7: case 8: {assert λ2==λ1; srcDim=1; s1=φ1; s2=φ2; break;}     // Vertical segment
+                    case 0: case 6: case 7: λ2 = envelope.getMinX();    break;
+                    case 1: case 5: case 8: λ2 = envelope.getCenterX(); break;
+                    case 2: case 3: case 4: λ2 = envelope.getMaxX();    break;
                     default: throw new AssertionError(i);
                 }
-                final double min, max;
-                if (s1 < s2) {min=s1; max=s2;}
-                else         {min=s2; max=s1;}
-                int tgtDim = 0;
-                do { // Executed exactly twice, for dimensions 0 and 1 in the projected space.
-                    extremum.resolve(s1, (tgtDim == 0) ? x1 : y1, D1.getElement(tgtDim, srcDim),
-                                     s2, (tgtDim == 0) ? x2 : y2, D2.getElement(tgtDim, srcDim));
-                    /*
-                     * At this point we found the extremum of the projected line segment
-                     * using a cubic curve t = A + Bs + Cs² + Ds³ approximation.  Before
-                     * to add those extremum into the projected bounding box, we need to
-                     * ensure that the source coordinate is inside the the original
-                     * (unprojected) bounding box.
-                     */
-                    boolean isP2 = false;
-                    do { // Executed exactly twice, one for each point.
-                        final double se = isP2 ? extremum.ex2 : extremum.ex1;
-                        if (se > min && se < max) {
-                            final double te = isP2 ? extremum.ey2 : extremum.ey1;
-                            if ((tgtDim == 0) ? (te < xmin || te > xmax) : (te < ymin || te > ymax)) {
-                                /*
-                                 * At this point, we have determined that adding the extremum point
-                                 * to the rectangle would have expanded it. However we will not add
-                                 * that point directly, because maybe its position is not quite right
-                                 * (since we used a cubic curve approximation). Instead, we project
-                                 * the point on the rectangle border which is located vis-à-vis the
-                                 * extremum. Our tests show that the correction can be as much as 50
-                                 * metres.
-                                 */
-                                final double oldX = point[0];
-                                final double oldY = point[1];
-                                if (srcDim == 0) {
-                                    point[0] = se;
-                                    point[1] = φ1; // == φ2 since we have an horizontal segment.
-                                } else {
-                                    point[0] = λ1; // == λ2 since we have a vertical segment.
-                                    point[1] = se;
+                switch (i) {
+                    case 0: case 1: case 2: φ2 = envelope.getMinY();    break;
+                    case 3: case 7: case 8: φ2 = envelope.getCenterY(); break;
+                    case 4: case 5: case 6: φ2 = envelope.getMaxY();    break;
+                    default: throw new AssertionError(i);
+                }
+                point[0] = λ2;
+                point[1] = φ2;
+                try {
+                    D1 = D2;
+                    D2 = Envelopes.derivativeAndTransform(wc.transform, point, point, 0, isDerivativeSupported && i != 8);
+                } catch (TransformException e) {
+                    if (!isDerivativeSupported) {
+                        throw e;                        // Derivative were already disabled, so something went wrong.
+                    }
+                    isDerivativeSupported = false; D2 = null;
+                    point[0] = λ2;
+                    point[1] = φ2;
+                    wc.transform.transform(point, 0, point, 0, 1);
+                    Envelopes.recoverableException(Shapes2D.class, e);  // Log only if the above call was successful.
+                }
+                double x2 = point[0];
+                double y2 = point[1];
+                if (x2 < xmin) xmin = x2;
+                if (x2 > xmax) xmax = x2;
+                if (y2 < ymin) ymin = y2;
+                if (y2 > ymax) ymax = y2;
+                switch (i) {
+                    case 0: {                           // Remember the first point.
+                        λ0=λ2; x0=x2;
+                        φ0=φ2; y0=y2;
+                        D0=D2;
+                        break;
+                    }
+                    case 8: {                           // Close the iteration with the first point.
+                        λ2=λ0; x2=x0;                   // Discard P2 because it is the rectangle center.
+                        φ2=φ0; y2=y0;
+                        D2=D0;
+                        break;
+                    }
+                }
+                /*
+                 * At this point, we expanded the rectangle using the projected points. Now try
+                 * to use the information provided by derivatives at those points, if available.
+                 * For the following block, notation is:
+                 *
+                 *   - s  are coordinate values in the source space (λ or φ)
+                 *   - t  are coordinate values in the target space (x or y)
+                 *
+                 * They are not necessarily in the same dimension. For example would could have
+                 * s=λ while t=y. This is typically the case when inspecting the top or bottom
+                 * line segment of the rectangle.
+                 *
+                 * The same technic is also applied in the transform(MathTransform, Envelope) method.
+                 * The general method is more "elegant", at the cost of more storage requirement.
+                 */
+                if (D1 != null && D2 != null) {
+                    final int srcDim;
+                    final double s1, s2;                // Coordinate values in source space (before projection)
+                    switch (i) {
+                        case 1: case 2: case 5: case 6: {assert φ2==φ1; srcDim=0; s1=λ1; s2=λ2; break;}     // Horizontal segment
+                        case 3: case 4: case 7: case 8: {assert λ2==λ1; srcDim=1; s1=φ1; s2=φ2; break;}     // Vertical segment
+                        default: throw new AssertionError(i);
+                    }
+                    final double min, max;
+                    if (s1 < s2) {min=s1; max=s2;}
+                    else         {min=s2; max=s1;}
+                    int tgtDim = 0;
+                    do { // Executed exactly twice, for dimensions 0 and 1 in the projected space.
+                        extremum.resolve(s1, (tgtDim == 0) ? x1 : y1, D1.getElement(tgtDim, srcDim),
+                                         s2, (tgtDim == 0) ? x2 : y2, D2.getElement(tgtDim, srcDim));
+                        /*
+                         * At this point we found the extremum of the projected line segment
+                         * using a cubic curve t = A + Bs + Cs² + Ds³ approximation.  Before
+                         * to add those extremum into the projected bounding box, we need to
+                         * ensure that the source coordinate is inside the the original
+                         * (unprojected) bounding box.
+                         */
+                        boolean isP2 = false;
+                        do { // Executed exactly twice, one for each point.
+                            final double se = isP2 ? extremum.ex2 : extremum.ex1;
+                            if (se > min && se < max) {
+                                final double te = isP2 ? extremum.ey2 : extremum.ey1;
+                                if ((tgtDim == 0) ? (te < xmin || te > xmax) : (te < ymin || te > ymax)) {
+                                    /*
+                                     * At this point, we have determined that adding the extremum point
+                                     * to the rectangle would have expanded it. However we will not add
+                                     * that point directly, because maybe its position is not quite right
+                                     * (since we used a cubic curve approximation). Instead, we project
+                                     * the point on the rectangle border which is located vis-à-vis the
+                                     * extremum. Our tests show that the correction can be as much as 50
+                                     * metres.
+                                     */
+                                    final double oldX = point[0];
+                                    final double oldY = point[1];
+                                    if (srcDim == 0) {
+                                        point[0] = se;
+                                        point[1] = φ1; // == φ2 since we have an horizontal segment.
+                                    } else {
+                                        point[0] = λ1; // == λ2 since we have a vertical segment.
+                                        point[1] = se;
+                                    }
+                                    wc.transform.transform(point, 0, point, 0, 1);
+                                    final double x = point[0];
+                                    final double y = point[1];
+                                    if (x < xmin) xmin = x;
+                                    if (x > xmax) xmax = x;
+                                    if (y < ymin) ymin = y;
+                                    if (y > ymax) ymax = y;
+                                    point[0] = oldX;
+                                    point[1] = oldY;
                                 }
-                                transform.transform(point, 0, point, 0, 1);
-                                final double x = point[0];
-                                final double y = point[1];
-                                if (x < xmin) xmin = x;
-                                if (x > xmax) xmax = x;
-                                if (y < ymin) ymin = y;
-                                if (y > ymax) ymax = y;
-                                point[0] = oldX;
-                                point[1] = oldY;
                             }
-                        }
-                    } while ((isP2 = !isP2) == true);
-                } while (++tgtDim == 1);
+                        } while ((isP2 = !isP2) == true);
+                    } while (++tgtDim == 1);
+                }
+                λ1=λ2; x1=x2;
+                φ1=φ2; y1=y2;
+                D1=D2;
             }
-            λ1=λ2; x1=x2;
-            φ1=φ2; y1=y2;
-            D1=D2;
-        }
+        } while (wc.translate());
         if (destination != null) {
             destination.setRect(xmin, ymin, xmax - xmin, ymax - ymin);
         } else {
@@ -384,7 +386,7 @@ public final class Shapes2D extends Static {
      * @param  envelope     the rectangle to transform (may be {@code null}).
      * @param  destination  the destination rectangle (may be {@code envelope}).
      *         If {@code null}, a new rectangle will be created and returned.
-     * @return {@code destination}, or a new rectangle if {@code destination} was non-null and {@code envelope} was null.
+     * @return {@code destination}, or a new rectangle if {@code destination} was null and {@code envelope} was non-null.
      * @throws TransformException if a transform failed.
      *
      * @see #transform(MathTransform2D, Rectangle2D, Rectangle2D)
@@ -400,12 +402,7 @@ public final class Shapes2D extends Static {
         if (envelope == null) {
             return null;
         }
-        final MathTransform transform = operation.getMathTransform();
-        if (!(transform instanceof MathTransform2D)) {
-            throw new MismatchedDimensionException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
-                    "transform", MathTransform2D.class, MathTransform.class));
-        }
-        MathTransform2D mt = (MathTransform2D) transform;
+        final MathTransform2D mt = MathTransforms.bidimensional(operation.getMathTransform());
         final double[] center = new double[2];
         destination = transform(mt, envelope, destination, center);
         /*
@@ -461,12 +458,14 @@ public final class Shapes2D extends Static {
          * method for comments about the algorithm. The code below is the same algorithm adapted for
          * the 2D case and the related objects (Point2D, Rectangle2D, etc.).
          *
-         * The 'border' variable in the loop below is used in order to compress 2 dimensions
+         * The `border` variable in the loop below is used in order to compress 2 dimensions
          * and 2 extremums in a single loop, in this order: (xmin, xmax, ymin, ymax).
          */
-        TransformException warning = null;
-        Point2D sourcePt = null;
-        Point2D targetPt = null;
+        MathTransform2D    inverse  = null;
+        TransformException warning  = null;
+        Point2D            sourcePt = null;
+        Point2D            targetPt = null;
+        Point2D            revertPt = null;
         int includedBoundsValue = 0;                        // A bitmask for each (dimension, extremum) pairs.
         for (int border=0; border<4; border++) {            // 2 dimensions and 2 extremums compacted in a flag.
             final int dimension = border >>> 1;             // The dimension index being examined.
@@ -478,9 +477,9 @@ public final class Shapes2D extends Static {
             if (!Double.isFinite(extremum)) {
                 continue;
             }
-            if (targetPt == null) {
+            if (inverse == null) {
                 try {
-                    mt = mt.inverse();
+                    inverse = mt.inverse();
                 } catch (NoninvertibleTransformException exception) {
                     Envelopes.recoverableException(Shapes2D.class, exception);
                     return destination;
@@ -493,18 +492,24 @@ public final class Shapes2D extends Static {
                 default: throw new AssertionError(border);
             }
             try {
-                sourcePt = mt.transform(targetPt, sourcePt);
+                sourcePt = inverse.transform(targetPt, sourcePt);
+                if (CoordinateOperations.isWrapAround(axis)) {
+                    revertPt = mt.transform(sourcePt, revertPt);
+                    final double delta = Math.abs((dimension == 0 ? revertPt.getX() : revertPt.getY()) - extremum);
+                    if (!(delta < Envelopes.SPAN_FRACTION_AS_BOUND * (axis.getMaximumValue() - axis.getMinimumValue()))) {
+                        continue;
+                    }
+                }
+                if (envelope.contains(sourcePt)) {
+                    destination.add(targetPt);
+                    includedBoundsValue |= (1 << border);
+                }
             } catch (TransformException exception) {
                 if (warning == null) {
                     warning = exception;
                 } else {
                     warning.addSuppressed(exception);
                 }
-                continue;
-            }
-            if (envelope.contains(sourcePt)) {
-                destination.add(targetPt);
-                includedBoundsValue |= (1 << border);
             }
         }
         /*
@@ -552,24 +557,24 @@ public final class Shapes2D extends Static {
                 final int dimensionToAdd = (border >>> 1) & 1;
                 final CoordinateSystemAxis toAdd = targetCS.getAxis(dimensionToAdd);
                 final CoordinateSystemAxis added = targetCS.getAxis(dimensionToAdd ^ 1);
-                double x = (border & 1) == 0 ? toAdd.getMinimumValue() : toAdd.getMaximumValue();
-                double y = (border & 4) == 0 ? added.getMinimumValue() : added.getMaximumValue();
-                if (dimensionToAdd != 0) {
-                    final double t=x; x=y; y=t;
+                final double x = (border & 1) == 0 ? toAdd.getMinimumValue() : toAdd.getMaximumValue();
+                final double y = (border & 4) == 0 ? added.getMinimumValue() : added.getMaximumValue();
+                if (dimensionToAdd == 0) {
+                    targetPt.setLocation(x, y);
+                } else {
+                    targetPt.setLocation(y, x);
                 }
-                targetPt.setLocation(x, y);
                 try {
-                    sourcePt = mt.transform(targetPt, sourcePt);
+                    sourcePt = inverse.transform(targetPt, sourcePt);
+                    if (envelope.contains(sourcePt)) {
+                        destination.add(targetPt);
+                    }
                 } catch (TransformException exception) {
                     if (warning == null) {
                         warning = exception;
                     } else {
                         warning.addSuppressed(exception);
                     }
-                    continue;
-                }
-                if (envelope.contains(sourcePt)) {
-                    destination.add(targetPt);
                 }
             }
         }
@@ -578,7 +583,7 @@ public final class Shapes2D extends Static {
          * as a result of the coordinate operation. This is usually the longitude axis where the source CRS uses
          * the [-180 … +180]° range and the target CRS uses the [0 … 360]° range, or the converse. In such case we
          * set the rectangle to the full range (we do not use the mechanism documented in Envelope2D) because most
-         * Rectangle2D implementations do not support spanning the anti-meridian. This results in larger rectangle
+         * Rectangle2D implementations do not support crossing the anti-meridian. This results in larger rectangle
          * than what would be possible with GeneralEnvelope or Envelope2D, but we try to limit the situation where
          * this expansion is applied.
          */

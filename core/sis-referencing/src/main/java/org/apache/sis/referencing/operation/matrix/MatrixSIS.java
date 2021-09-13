@@ -55,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see Matrices
  *
@@ -411,10 +411,10 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public abstract void transpose();
 
     /**
-     * Normalizes all columns in-place. Each columns in this matrix is considered as a vector.
-     * For each column (vector), this method computes the magnitude (vector length) as the square
-     * root of the sum of all square values. Then, all values in the column are divided by that
-     * magnitude.
+     * Normalizes all columns in-place and returns their magnitudes as a row vector.
+     * Each columns in this matrix is considered as a vector. For each column (vector),
+     * this method computes the magnitude (vector length) as the square root of the sum of all squared values.
+     * Then, all values in the column are divided by that magnitude.
      *
      * <p>This method is useful when the matrix is a
      * {@linkplain org.opengis.referencing.operation.MathTransform#derivative transform derivative}.
@@ -422,11 +422,13 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * coordinate in the source space is increased by one. Invoking this method turns those vectors
      * into unitary vectors, which is useful for forming the basis of a new coordinate system.</p>
      *
+     * @return the magnitude for each column in a matrix having only one row.
      * @throws UnsupportedOperationException if this matrix is unmodifiable.
      */
-    public void normalizeColumns() {
+    public MatrixSIS normalizeColumns() {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
+        final MatrixSIS magnitudes = new NonSquareMatrix(1, numCol, false, 2);
         final DoubleDouble sum = new DoubleDouble();
         final DoubleDouble dot = new DoubleDouble();
         final DoubleDouble tmp = new DoubleDouble();
@@ -438,13 +440,17 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
                 sum.add(dot);
             }
             sum.sqrt();
-            for (int j=0; j<numRow; j++) {
-                get(j, i, tmp);
-                dot.setFrom(sum);
-                dot.inverseDivide(tmp);
-                set(j, i, dot);
+            if (!sum.isZero()) {
+                for (int j=0; j<numRow; j++) {
+                    get(j, i, tmp);
+                    dot.setFrom(sum);
+                    dot.inverseDivide(tmp);
+                    set(j, i, dot);
+                }
+                magnitudes.setNumber(0, i, sum);
             }
         }
+        return magnitudes;
     }
 
     /**
@@ -454,7 +460,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * <h4>Equivalence between this method and Java2D {@code AffineTransform} methods</h4>
      * If this matrix was an instance of Java2D {@link AffineTransform}, then invoking this method would
-     * be equivalent to invoke the following {@code AffineTransform} methods in the order shown below:
+     * be equivalent to invoking the following {@code AffineTransform} methods in the order shown below:
      *
      * <table class="sis">
      * <caption>Equivalence between this method and AffineTransform methods</caption>
@@ -462,11 +468,11 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *     <th>{@code MatrixSIS} method</th>
      *     <th class="sep">{@code AffineTransform} methods</th>
      *   </tr><tr>
-     *     <td>{@code concatenate(0, scale, offset)}</td>
+     *     <td>{@code convertBefore(0, scale, offset)}</td>
      *     <td class="sep"><code>at.{@linkplain AffineTransform#translate(double, double) translate}(offset, 0);
      *     at.{@linkplain AffineTransform#scale(double, double) scale}(scale, 1);</code></td>
      *   </tr><tr>
-     *     <td class="hsep">{@code concatenate(1, scale, offset)}</td>
+     *     <td class="hsep">{@code convertBefore(1, scale, offset)}</td>
      *     <td class="hsep sep"><code>at.{@linkplain AffineTransform#translate(double, double) translate}(0, offset);
      *     at.{@linkplain AffineTransform#scale(double, double) scale}(1, scale);</code></td>
      *   </tr>
@@ -542,7 +548,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * <h4>Relationship with coordinate operations</h4>
      * In the context of coordinate operations, {@code Matrix.multiply(other)} is equivalent to
      * <code>{@linkplain AffineTransform#concatenate AffineTransform.concatenate}(other)</code>:
-     * first transforms by the supplied transform and then transform the result by the original transform.
+     * first transforms by the {@code other} transform and then transform the result by {@code this} transform.
      *
      * @param  matrix  the matrix to multiply to this matrix.
      * @return the result of {@code this} × {@code matrix}.

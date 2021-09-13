@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  *
- * @see <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">Wikipedia: ANSI escape codes</a>
+ * @see <a href="https://en.wikipedia.org/wiki/ANSI_escape_code">Wikipedia: ANSI escape codes</a>
  * @see org.apache.sis.io.wkt.Colors
  *
  * @since 0.3

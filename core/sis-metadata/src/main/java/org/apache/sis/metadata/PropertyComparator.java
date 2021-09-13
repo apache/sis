@@ -29,10 +29,10 @@ import org.opengis.metadata.citation.ResponsibleParty;
 
 /**
  * The comparator for sorting the properties in a metadata object.
- * Since the comparator uses (among other criterion) the property names, this class
+ * Since the comparator uses (among other criteria) the property names, this class
  * incidentally defines static methods for inferring those names from the methods.
  *
- * <p>This comparator uses the following criterion, in priority order:</p>
+ * <p>This comparator uses the following criteria, in priority order:</p>
  * <ol>
  *   <li>Deprecated properties are last.</li>
  *   <li>If the property order is specified by a {@link XmlType} annotation,

@@ -42,7 +42,7 @@ import static org.apache.sis.internal.referencing.provider.AlbersEqualArea.*;
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Albers_projection">Albers projection on Wikipedia</a></li>
- *   <li><a href="http://mathworld.wolfram.com/AlbersEqual-AreaConicProjection.html">Albers Equal-Area Conic projection on MathWorld</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/AlbersEqual-AreaConicProjection.html">Albers Equal-Area Conic projection on MathWorld</a></li>
  * </ul>
  *
  * <p>The {@code "standard_parallel_2"} parameter is optional and will be given the same value as
@@ -111,7 +111,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         roles.put(ParameterRole.FALSE_EASTING,    EASTING_AT_FALSE_ORIGIN);
         roles.put(ParameterRole.FALSE_NORTHING,   NORTHING_AT_FALSE_ORIGIN);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_FALSE_ORIGIN);
-        return new Initializer(method, parameters, roles, (byte) 0);
+        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
     }
 
     /**

@@ -29,6 +29,7 @@ import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
@@ -43,7 +44,7 @@ import static org.apache.sis.util.CharSequences.*;
  * Utilities methods related to {@link AxisDirection}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -492,10 +493,10 @@ public final class AxisDirections extends Static {
      *   <li>Otherwise if a sequence of {@code cs} axes have similar names than the {@code subCS} axes (as determined
      *       by {@linkplain org.apache.sis.referencing.IdentifiedObjects#isHeuristicMatchForName heuristic match},
      *       that sequence has precedence.</li>
-     *   <li>Otherwise the index of the first sequence if returned, regardless axis names.</li>
+     *   <li>Otherwise the index of the first sequence is returned, regardless axis names.</li>
      * </ol>
      *
-     * Note that colinear axes are normally not allowed, except if the case of {@link org.opengis.referencing.crs.TemporalCRS}
+     * Note that colinear axes are normally not allowed, except in the case of {@link org.opengis.referencing.crs.TemporalCRS}
      * when one time axis is the runtime (the date where a numerical model has been executed) and the other time axis is the
      * forecast time (the date at which a prevision is made).
      *
@@ -538,6 +539,37 @@ next:       for (int i=0; i <= limit; i++) {
             }
         }
         return fallback;
+    }
+
+    /**
+     * Returns the indices in {@code cs} of axes colinear with the {@code subCS} axes.
+     * If many axes have the same direction (should not happen except for temporal axes),
+     * this method gives precedence to a sequence of consecutive indices.
+     *
+     * <p>This method is similar to {@link #indexOfColinear(CoordinateSystem, CoordinateSystem)} except that it
+     * enumerates the indices instead than returning only the first index. If {@code indexOfColinear(…)} can not
+     * find consecutive indices, then this method fallbacks on a sequence of indices regardless their order.</p>
+     *
+     * @param  cs     the coordinate system which contains all axes, or {@code null}.
+     * @param  subCS  the coordinate system to search into {@code cs}.
+     * @return indices in {@code cs} of axes colinear with {@code subCS} axes in the order they appear in {@code subCS},
+     *         or {@code null} if at least one {@code subCS} axis can not be mapped to a {@code cs} axis.
+     *
+     * @since 1.1
+     */
+    public static int[] indicesOfColinear(final CoordinateSystem cs, final CoordinateSystem subCS) {
+        final int dim = subCS.getDimension();
+        final int index = indexOfColinear(cs, subCS);           // More robust than fallback below.
+        if (index >= 0) {
+            return ArraysExt.range(index, index + dim);
+        }
+        final int[] indices = new int[dim];
+        for (int i=0; i<dim; i++) {
+            if ((indices[i] = indexOfColinear(cs, subCS.getAxis(i).getDirection())) < 0) {
+                return null;
+            }
+        }
+        return indices;
     }
 
     /**

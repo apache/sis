@@ -95,6 +95,7 @@ public final strictfp class ProvidersTest extends TestCase {
             TransverseMercator.class,
             TransverseMercatorSouth.class,
             CassiniSoldner.class,
+            HyperbolicCassiniSoldner.class,
             PolarStereographicA.class,
             PolarStereographicB.class,
             PolarStereographicC.class,
@@ -118,7 +119,8 @@ public final strictfp class ProvidersTest extends TestCase {
             NADCON.class,
             FranceGeocentricInterpolation.class,
             MolodenskyInterpolation.class,
-            Interpolation1D.class
+            Interpolation1D.class,
+            Wraparound.class
         };
     }
 

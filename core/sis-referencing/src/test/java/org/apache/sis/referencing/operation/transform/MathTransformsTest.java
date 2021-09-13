@@ -29,6 +29,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -39,10 +40,11 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link MathTransforms}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.5
  * @module
  */
+@DependsOn(org.apache.sis.referencing.operation.matrix.MatricesTest.class)
 public final strictfp class MathTransformsTest extends TestCase {
     /**
      * Creates a dummy transform for testing purpose.
@@ -211,5 +213,35 @@ public final strictfp class MathTransformsTest extends TestCase {
         tr = MathTransforms.translation(4, 7);
         assertInstanceOf("2D", MathTransform2D.class, tr);
         assertFalse("isIdentity", tr.isIdentity());
+    }
+
+    /**
+     * Tests {@link MathTransforms#tangent(MathTransform, DirectPosition)}.
+     *
+     * @throws TransformException should never happen since this test uses a linear transform.
+     */
+    @Test
+    public void testTangent() throws TransformException {
+        /*
+         * The random values in Matrix and DirectPosition below does not matter; we will just verify
+         * that we get the same values in final result. In particular the `tangentPoint` coordinates
+         * are ignored since we use a linear transform for this test.
+         */
+        final Matrix expected = Matrices.create(3, 4, new double[] {
+            -4, 5, 7, 2,
+             3, 4, 2, 9,
+             0, 0, 0, 1,
+        });
+        final DirectPosition tangentPoint = new GeneralDirectPosition(3, 8, 7);
+        MathTransform transform = MathTransforms.linear(expected);
+        assertSame(transform, MathTransforms.tangent(transform, tangentPoint));
+        /*
+         * Above test returned the transform directly because it found that it was already an instance
+         * of `LinearTransform`. For a real test, we need to hide that fact to the `tangent` method.
+         */
+        transform = new MathTransformWrapper(transform);
+        final LinearTransform result = MathTransforms.tangent(transform, tangentPoint);
+        assertNotSame(transform, result);
+        assertMatrixEquals("tangent", expected, result.getMatrix(), STRICT);
     }
 }

@@ -42,8 +42,8 @@ final class ConcatenatedTransformDirect2D extends ConcatenatedTransformDirect im
     /**
      * Constructs a concatenated transform.
      */
-    public ConcatenatedTransformDirect2D(final MathTransform2D transform1,
-                                         final MathTransform2D transform2)
+    ConcatenatedTransformDirect2D(final MathTransform2D transform1,
+                                  final MathTransform2D transform2)
     {
         super(transform1, transform2);
     }

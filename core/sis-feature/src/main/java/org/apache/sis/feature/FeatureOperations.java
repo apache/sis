@@ -154,6 +154,8 @@ public final class FeatureOperations extends Static {
      * @param  identification  the name and other information to be given to the operation.
      * @param  referent        the referenced attribute or feature association.
      * @return an operation which is an alias for the {@code referent} property.
+     *
+     * @see Features#getLinkTarget(PropertyType)
      */
     public static AbstractOperation link(final Map<String,?> identification, final AbstractIdentifiedType referent) {
         ArgumentChecks.ensureNonNull("referent", referent);
@@ -213,20 +215,13 @@ public final class FeatureOperations extends Static {
             throw new IllegalArgumentException(Errors.getResources(identification).getString(
                     Errors.Keys.IllegalCharacter_2, "delimiter", StringJoinOperation.ESCAPE));
         }
-        ArgumentChecks.ensureNonNull("singleAttributes", singleAttributes);
-        switch (singleAttributes.length) {
-            case 0: {
-                throw new IllegalArgumentException(Errors.getResources(identification)
-                        .getString(Errors.Keys.EmptyArgument_1, "singleAttributes"));
-            }
-            case 1: {
-                if ((prefix == null || prefix.isEmpty()) && (suffix == null || suffix.isEmpty())) {
-                    final AbstractIdentifiedType at = singleAttributes[0];
-                    if (!(at instanceof DefaultAssociationRole)) {
-                        return link(identification, at);
-                    }
+        ArgumentChecks.ensureNonEmpty("singleAttributes", singleAttributes);
+        if (singleAttributes.length == 1) {
+            if ((prefix == null || prefix.isEmpty()) && (suffix == null || suffix.isEmpty())) {
+                final AbstractIdentifiedType at = singleAttributes[0];
+                if (!(at instanceof DefaultAssociationRole)) {
+                    return link(identification, at);
                 }
-                break;
             }
         }
         return POOL.unique(new StringJoinOperation(identification, delimiter, prefix, suffix, singleAttributes));

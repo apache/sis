@@ -25,12 +25,13 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-storage} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.storage.CodeTypeTest.class,
+    org.apache.sis.internal.storage.StoreUtilitiesTest.class,
     org.apache.sis.internal.storage.io.IOUtilitiesTest.class,
     org.apache.sis.internal.storage.io.ChannelDataInputTest.class,
     org.apache.sis.internal.storage.io.ChannelDataOutputTest.class,
@@ -40,11 +41,13 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.io.RewindableLineReaderTest.class,
     org.apache.sis.internal.storage.MetadataBuilderTest.class,
     org.apache.sis.internal.storage.AbstractGridResourceTest.class,
+    org.apache.sis.internal.storage.MemoryGridResourceTest.class,
     org.apache.sis.storage.FeatureNamingTest.class,
     org.apache.sis.storage.ProbeResultTest.class,
     org.apache.sis.storage.StorageConnectorTest.class,
     org.apache.sis.storage.event.StoreListenersTest.class,
-    org.apache.sis.internal.storage.query.SimpleQueryTest.class,
+    org.apache.sis.storage.CoverageQueryTest.class,
+    org.apache.sis.storage.FeatureQueryTest.class,
     org.apache.sis.internal.storage.xml.MimeTypeDetectorTest.class,
     org.apache.sis.internal.storage.xml.StoreProviderTest.class,
     org.apache.sis.internal.storage.xml.StoreTest.class,
@@ -53,6 +56,8 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.csv.StoreProviderTest.class,
     org.apache.sis.internal.storage.csv.StoreTest.class,
     org.apache.sis.internal.storage.folder.StoreTest.class,
+    org.apache.sis.internal.storage.JoinFeatureSetTest.class,
+    org.apache.sis.internal.storage.ConcatenatedFeatureSetTest.class,
     org.apache.sis.storage.DataStoresTest.class
 })
 public final strictfp class StorageTestSuite extends TestSuite {

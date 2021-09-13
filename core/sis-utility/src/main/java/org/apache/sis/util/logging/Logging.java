@@ -200,8 +200,8 @@ public final class Logging extends Static {
      *   <li>{@linkplain Logger#log(LogRecord) Log} the modified record.</li>
      * </ul>
      *
-     * @param  classe  the class for which to obtain a logger.
-     * @param  method  the name of the method which is logging a record.
+     * @param  classe  the class to report as the source of the logging message.
+     * @param  method  the method to report as the source of the logging message.
      * @param  record  the record to log.
      */
     public static void log(final Class<?> classe, String method, final LogRecord record) {

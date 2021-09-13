@@ -24,7 +24,8 @@ import org.apache.sis.internal.feature.Resources;
  * does not intersect anymore the {@link GridExtent} of the {@link GridGeometry}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -60,7 +61,7 @@ public class DisjointExtentException extends IllegalGridGeometryException {
     }
 
     /**
-     * Creates an exception with an error message built from the given argument.
+     * Creates an exception with an error message built from the given arguments.
      * Current implementation creates the error message immediately, but we may
      * change to deferred creation later if it is a performance issue.
      *
@@ -72,5 +73,18 @@ public class DisjointExtentException extends IllegalGridGeometryException {
      */
     DisjointExtentException(final Object dim, final long min, final long max, final long lower, final long upper) {
         super(Resources.format(Resources.Keys.GridEnvelopeOutsideCoverage_5, new Object[] {dim, min, max, lower, upper}));
+    }
+
+    /**
+     * Creates an exception with an error message built from the given extents.
+     *
+     * @param source   extent of the source.
+     * @param request  extent of a slice requested by user.
+     * @param dim      index of the dimension having an invalid value.
+     */
+    DisjointExtentException(final GridExtent source, final GridExtent request, final int dim) {
+        this(source.getAxisIdentification(dim, dim),
+                source .getLow(dim), source .getHigh(dim),
+                request.getLow(dim), request.getHigh(dim));
     }
 }

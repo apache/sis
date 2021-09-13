@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf;
 
 import java.awt.image.DataBuffer;
+import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
 
 
@@ -37,7 +38,7 @@ import org.apache.sis.util.Numbers;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -45,77 +46,77 @@ public enum DataType {
     /**
      * The enumeration for unknown data type. This is not a valid netCDF type.
      */
-    UNKNOWN(Numbers.OTHER, false, false, (byte) 0, DataBuffer.TYPE_UNDEFINED),
+    UNKNOWN(Numbers.OTHER, Object.class, false, false, (byte) 0, null),
 
     /**
      * 8 bits signed integer (netCDF type 1).
      * Can be made unsigned by assigning the “_Unsigned” attribute to a netCDF variable.
      */
-    BYTE(Numbers.BYTE, true, false, (byte) 7, DataBuffer.TYPE_BYTE),
+    BYTE(Numbers.BYTE, Byte.class, true, false, (byte) 7, org.apache.sis.image.DataType.BYTE),
 
     /**
      * Character type as unsigned 8 bits (netCDF type 2).
      * Encoding can be specified by assigning the “_Encoding” attribute to a netCDF variable.
      */
-    CHAR(Numbers.BYTE, false, true, (byte) 2, DataBuffer.TYPE_UNDEFINED),        // NOT Numbers.CHARACTER
+    CHAR(Numbers.BYTE, Character.class, false, true, (byte) 2, null),   // NOT Numbers.CHARACTER
 
     /**
      * 16 bits signed integer (netCDF type 3).
      */
-    SHORT(Numbers.SHORT, true, false, (byte) 8, DataBuffer.TYPE_SHORT),
+    SHORT(Numbers.SHORT, Short.class, true, false, (byte) 8, org.apache.sis.image.DataType.SHORT),
 
     /**
      * 32 bits signed integer (netCDF type 4).
      * This is also called "long", but that name is deprecated.
      */
-    INT(Numbers.INTEGER, true, false, (byte) 9, DataBuffer.TYPE_INT),
+    INT(Numbers.INTEGER, Integer.class, true, false, (byte) 9, org.apache.sis.image.DataType.INT),
 
     /**
      * 32 bits floating point number (netCDF type 5)
      * This is also called "real".
      */
-    FLOAT(Numbers.FLOAT, false, false, (byte) 5, DataBuffer.TYPE_FLOAT),
+    FLOAT(Numbers.FLOAT, Float.class, false, false, (byte) 5, org.apache.sis.image.DataType.FLOAT),
 
     /**
      * 64 bits floating point number (netCDF type 6).
      */
-    DOUBLE(Numbers.DOUBLE, false, false, (byte) 6, DataBuffer.TYPE_DOUBLE),
+    DOUBLE(Numbers.DOUBLE, Double.class, false, false, (byte) 6, org.apache.sis.image.DataType.DOUBLE),
 
     /**
      * 8 bits unsigned integer (netCDF type 7).
      * Not available in netCDF classic format.
      */
-    UBYTE(Numbers.BYTE, true, true, (byte) 1, DataBuffer.TYPE_BYTE),
+    UBYTE(Numbers.BYTE, Short.class, true, true, (byte) 1, org.apache.sis.image.DataType.BYTE),
 
     /**
      * 16 bits unsigned integer (netCDF type 8).
      * Not available in netCDF classic format.
      */
-    USHORT(Numbers.SHORT, true, true, (byte) 3, DataBuffer.TYPE_USHORT),
+    USHORT(Numbers.SHORT, Integer.class, true, true, (byte) 3, org.apache.sis.image.DataType.USHORT),
 
     /**
      * 32 bits unsigned integer (netCDF type 9).
      * Not available in netCDF classic format.
      */
-    UINT(Numbers.INTEGER, true, true, (byte) 4, DataBuffer.TYPE_INT),
+    UINT(Numbers.INTEGER, Long.class, true, true, (byte) 4, org.apache.sis.image.DataType.INT),
 
     /**
      * 64 bits signed integer (netCDF type 10).
      * Not available in netCDF classic format.
      */
-    INT64(Numbers.LONG, true, false, (byte) 11, DataBuffer.TYPE_UNDEFINED),
+    INT64(Numbers.LONG, Long.class, true, false, (byte) 11, null),
 
     /**
      * 64 bits unsigned integer (netCDF type 11).
      * Not available in netCDF classic format.
      */
-    UINT64(Numbers.LONG, true, true, (byte) 10, DataBuffer.TYPE_UNDEFINED),
+    UINT64(Numbers.LONG, Number.class, true, true, (byte) 10, null),
 
     /**
      * Character string (netCDF type 12).
      * Not available in netCDF classic format.
      */
-    STRING(Numbers.OTHER, false, false, (byte) 12, DataBuffer.TYPE_UNDEFINED);
+    STRING(Numbers.OTHER, String.class, false, false, (byte) 12, null);
 
     /**
      * Mapping from the netCDF data type to the enumeration used by our {@link Numbers} class.
@@ -141,24 +142,51 @@ public enum DataType {
     private final byte opposite;
 
     /**
-     * The {@link DataBuffer} constant which most closely represents the "raw" internal data of the variable.
-     * This is the value to be returned by {@link java.awt.image.SampleModel#getDataType()} for Java2D rasters
-     * created from a variable data. If the variable data type can not be mapped to a Java2D data type, then
-     * the raster data type is {@link DataBuffer#TYPE_UNDEFINED}.
+     * Wrapper of {@link DataBuffer} constant which most closely represents the "raw" internal data of the variable.
+     * This wraps the value to be returned by {@link java.awt.image.SampleModel#getDataType()} for Java2D rasters
+     * created from a variable data. If the variable data type can not be mapped to a Java2D data type, then the
+     * raster data type is {@code null}.
      */
-    public final int rasterDataType;
+    public final org.apache.sis.image.DataType rasterDataType;
 
     /**
-     * Creates a new enumeration.
+     * The smallest Java wrapper class that can hold the values. Values are always signed. If {@link #isUnsigned}
+     * is {@code true}, then a wider type is used for holding the large unsigned values. For example the 16 bits
+     * signed integer type is used for holding 8 bits unsigned integers.
      */
-    private DataType(final byte number, final boolean isInteger, final boolean isUnsigned,
-            final byte opposite, final int rasterDataType)
+    private final Class<?> classe;
+
+    /**
+     * Creates a new enumeration value.
+     */
+    private DataType(final byte number, final Class<?> classe, final boolean isInteger, final boolean isUnsigned,
+            final byte opposite, final org.apache.sis.image.DataType rasterDataType)
     {
         this.number         = number;
+        this.classe         = classe;
         this.isInteger      = isInteger;
         this.isUnsigned     = isUnsigned;
         this.opposite       = opposite;
         this.rasterDataType = rasterDataType;
+    }
+
+    /**
+     * Returns the Java class to use for storing the values.
+     *
+     * @param  vector  {@code true} for a vector object, or {@code false} for a scalar object.
+     */
+    final Class<?> getClass(final boolean vector) {
+        if (vector) {
+            if (classe == Character.class) {
+                return String.class;
+            } else if (Number.class.isAssignableFrom(classe)) {
+                return Vector.class;
+            } else {
+                return Object.class;
+            }
+        } else {
+            return classe;
+        }
     }
 
     /**

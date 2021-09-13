@@ -18,8 +18,12 @@ package org.apache.sis.internal.feature;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import org.apache.sis.math.Vector;
+import org.opengis.geometry.Envelope;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.WraparoundMethod;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.math.Vector;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -29,10 +33,11 @@ import static org.junit.Assert.*;
 
 
 /**
- * Base class of {@link Java2D}, {@link ESRI} and {@link JTS} implementation tests.
+ * Base class of Java2D, ESRI and JTS implementation tests.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -45,33 +50,57 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
     /**
      * The geometry created by the test. Provided for allowing sub-classes to perform additional verifications.
      */
-    Object geometry;
+    protected Object geometry;
+
+    /**
+     * The wrapper of {@link #geometry}.
+     */
+    private GeometryWrapper<?> wrapper;
 
     /**
      * Creates a new test for the given factory.
+     *
+     * @param  factory  the factory to test.
      */
-    GeometriesTestCase(final Geometries<?> factory) {
+    protected GeometriesTestCase(final Geometries<?> factory) {
         this.factory = factory;
     }
 
     /**
-     * Tests {@link Geometries#createPoint(double, double)} followed by {@link Geometries#tryGetCoordinate(Object)}.
+     * Tests {@link Geometries#implementation(GeometryLibrary)}.
      */
     @Test
-    public void testTryGetCoordinate() {
-        geometry = factory.createPoint(4, 5);
-        assertNotNull("createPoint", geometry);
-        assertArrayEquals("tryGetCoordinate", new double[] {4, 5}, factory.tryGetCoordinate(geometry), STRICT);
+    public void testImplementation() {
+        assertEquals(factory, Geometries.implementation(factory.library));
     }
 
     /**
-     * Tests {@link Geometries#createPolyline(int, Vector...)}.
-     * This method verifies the polylines by a call to {@link Geometries#tryGetEnvelope(Object)}.
+     * Initializes the {@link #wrapper} from current value of {@link #geometry}.
+     */
+    private void createWrapper() {
+        wrapper = factory.castOrWrap(geometry);
+        assertNotNull("castOrWrap", wrapper);
+    }
+
+    /**
+     * Tests {@link Geometries#createPoint(double, double)} followed by {@link GeometryWrapper#getPointCoordinates()}.
+     */
+    @Test
+    public void testGetPointCoordinates() {
+        geometry = factory.createPoint(4, 5);
+        assertNotNull("createPoint", geometry);
+        createWrapper();
+        assertArrayEquals("getPointCoordinates", new double[] {4, 5}, wrapper.getPointCoordinates(), STRICT);
+    }
+
+    /**
+     * Tests {@link Geometries#createPolyline(boolean, int, Vector...)}.
+     * This method verifies the polylines by a call to {@link GeometryWrapper#getEnvelope()}.
      * Subclasses should perform more extensive tests by verifying the {@link #geometry} field.
      */
     @Test
     public void testCreatePolyline() {
-        geometry = factory.createPolyline(2, Vector.create(new double[] {
+        geometry = factory.createPolyline(false, 2, Vector.create(new double[] {
                   4,   5,
                   7,   9,
                   9,   3,
@@ -81,7 +110,8 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
                  -2,  -5,
                  -1,  -6}));
 
-        final GeneralEnvelope env = factory.tryGetEnvelope(geometry);
+        createWrapper();
+        final GeneralEnvelope env = wrapper.getEnvelope();
         assertEquals("xmin", -3, env.getLower(0), STRICT);
         assertEquals("ymin", -6, env.getLower(1), STRICT);
         assertEquals("xmax",  9, env.getUpper(0), STRICT);
@@ -89,12 +119,12 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link Geometries#tryMergePolylines(Object, Iterator)}.
-     * This method verifies the polylines by a call to {@link Geometries#tryGetEnvelope(Object)}.
+     * Tests {@link Geometries#mergePolylines(Iterator)} (or actually tests its strategy).
+     * This method verifies the polylines by a call to {@link GeometryWrapper#getEnvelope()}.
      * Subclasses should perform more extensive tests by verifying the {@link #geometry} field.
      */
     @Test
-    public void testTryMergePolylines() {
+    public void testMergePolylines() {
         final Iterator<Object> c1 = Arrays.asList(
                 factory.createPoint(  4,   5),
                 factory.createPoint(  7,   9),
@@ -110,11 +140,12 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
                 factory.createPoint( 15,  11),
                 factory.createPoint( 13,  10)).iterator();
 
-        final Object g1 = factory.tryMergePolylines(c1.next(), c1);
-        final Object g2 = factory.tryMergePolylines(c2.next(), c2);
-        geometry = factory.tryMergePolylines(g1, Arrays.asList(factory.createPoint(13, 11), g2).iterator());
+        final Object g1 = factory.castOrWrap(c1.next()).mergePolylines(c1);
+        final Object g2 = factory.castOrWrap(c2.next()).mergePolylines(c2);
+        geometry = factory.castOrWrap(g1).mergePolylines(Arrays.asList(factory.createPoint(13, 11), g2).iterator());
 
-        final GeneralEnvelope env = factory.tryGetEnvelope(geometry);
+        createWrapper();
+        final GeneralEnvelope env = wrapper.getEnvelope();
         assertEquals("xmin", -3, env.getLower(0), STRICT);
         assertEquals("ymin", -6, env.getLower(1), STRICT);
         assertEquals("xmax", 15, env.getUpper(0), STRICT);
@@ -122,23 +153,98 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link Geometries#tryFormatWKT(Object, double)}.
+     * Tests {@link GeometryWrapper#formatWKT(double)}.
      */
     @Test
     @DependsOnMethod("testCreatePolyline")
-    public void testTryFormatWKT() {
-        geometry = factory.createPolyline(2, Vector.create(new double[] {4,5, 7,9, 9,3, -1,-6}));
-        final String text = factory.tryFormatWKT(geometry, 0);
+    public void testFormatWKT() {
+        geometry = factory.createPolyline(false, 2, Vector.create(new double[] {4,5, 7,9, 9,3, -1,-6}));
+        createWrapper();
+        final String text = wrapper.formatWKT(0);
         assertNotNull(text);
         assertWktEquals("LINESTRING (4 5, 7 9, 9 3, -1 -6)", text);
+    }
+
+    /**
+     * Tests {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)} without longitude wraparound.
+     */
+    @Test
+    public void testToGeometry2D() {
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
+        envelope.setRange(0, -30,  24);
+        envelope.setRange(1, -60, -51);
+        final double[] expected = {-30, -60, -30, -51, 24, -51, 24, -60, -30, -60};
+        for (WraparoundMethod method : WraparoundMethod.values()) {
+            if (method != WraparoundMethod.NORMALIZE) {
+                assertToGeometryEquals(envelope, method, expected);
+            }
+        }
+    }
+
+    /**
+     * Tests {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)} with longitude wraparound.
+     */
+    @Test
+    public void testToGeometryWraparound() {
+        final GeneralEnvelope e = new GeneralEnvelope(HardCodedCRS.WGS84);
+        e.setRange(0, 165, -170);
+        e.setRange(1,  32,   33);
+        assertToGeometryEquals(e, WraparoundMethod.NONE,              165, 32,  165, 33, -170, 33, -170, 32,  165, 32);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS,        165, 32,  165, 33,  190, 33,  190, 32,  165, 32);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS_LOWER, -195, 32, -195, 33, -170, 33, -170, 32, -195, 32);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS_UPPER,  165, 32,  165, 33,  190, 33,  190, 32,  165, 32);
+        assertToGeometryEquals(e, WraparoundMethod.EXPAND,           -180, 32, -180, 33,  180, 33,  180, 32, -180, 32);
+        assertToGeometryEquals(e, WraparoundMethod.SPLIT,             165, 32,  165, 33,  180, 33,  180, 32,  165, 32,
+                                                                     -180, 32, -180, 33, -170, 33, -170, 32, -180, 32);
+        e.setRange(0, 177, -170);
+        e.setRange(1, -42,    2);
+        assertToGeometryEquals(e, WraparoundMethod.NONE,              177, -42,  177, 2, -170, 2, -170, -42,  177, -42);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS,       -183, -42, -183, 2, -170, 2, -170, -42, -183, -42);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS_UPPER,  177, -42,  177, 2,  190, 2,  190, -42,  177, -42);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS_LOWER, -183, -42, -183, 2, -170, 2, -170, -42, -183, -42);
+        assertToGeometryEquals(e, WraparoundMethod.EXPAND,           -180, -42, -180, 2,  180, 2,  180, -42, -180, -42);
+        assertToGeometryEquals(e, WraparoundMethod.SPLIT,             177, -42,  177, 2,  180, 2,  180, -42,  177, -42,
+                                                                     -180, -42, -180, 2, -170, 2, -170, -42, -180, -42);
+    }
+
+    /**
+     * Tests {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)} from a four-dimensional envelope.
+     * Ensures that the horizontal component is identified, but otherwise <em>no</em> axis swapping is done.
+     */
+    @Test
+    public void testToGeometryFrom4D() {
+        final GeneralEnvelope e = new GeneralEnvelope(HardCodedCRS.GEOID_4D_MIXED_ORDER);
+        e.setRange(0,  -20,   12);      // Height
+        e.setRange(1, 1000, 1007);      // Time
+        e.setRange(2,    2,    3);      // Latitude
+        e.setRange(3,   89,   19);      // Longitude (span anti-meridian).
+        assertToGeometryEquals(e, WraparoundMethod.NONE,       2,   89, 2,  19, 3,  19, 3,   89, 2,   89);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS, 2, -271, 2,  19, 3,  19, 3, -271, 2, -271);
+        assertToGeometryEquals(e, WraparoundMethod.EXPAND,     2, -180, 2, 180, 3, 180, 3, -180, 2, -180);
+        assertToGeometryEquals(e, WraparoundMethod.SPLIT,      2,   89, 2, 180, 3, 180, 3,   89, 2,   89,
+                                                               2, -180, 2,  19, 3,  19, 3, -180, 2, -180);
+    }
+
+    /**
+     * Verifies that call to {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)}
+     * with the given argument values produces a geometry will all expected coordinates.
+     */
+    private void assertToGeometryEquals(final Envelope source, final WraparoundMethod method, final double... expected) {
+        wrapper = factory.toGeometry2D(source, method);
+        geometry = wrapper.implementation();
+        final double[] result = wrapper.getAllCoordinates();
+        assertArrayEquals(expected, result, 1e-9);
     }
 
     /**
      * Verifies that a WKT is equal to the expected one. If the actual WKT is a multi-lines or multi-polygons,
      * then this method may modify the expected WKT accordingly. This adjustment is done for the ESRI case by
      * overriding this method.
+     *
+     * @param  expected  the expected WKT string.
+     * @param  actual    the actual WKT string.
      */
-    void assertWktEquals(String expected, final String actual) {
+    protected void assertWktEquals(String expected, final String actual) {
         assertEquals(expected, actual);
     }
 }

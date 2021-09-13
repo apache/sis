@@ -51,7 +51,7 @@
       <name>Rémi Maréchal</name>
       <email>remi.marechal@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
@@ -62,7 +62,7 @@
       <id>haonguyen</id>
       <email>nguyenthiphuonghao243@gmail.com</email>
       <organization>VNSC</organization>
-      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <organizationUrl>https://vnsc.org.vn</organizationUrl>
       <timezone>+7</timezone>
       <roles>
         <role>developer</role>
@@ -73,7 +73,7 @@
       <id>desruisseaux</id>
       <email>desruisseaux@apache.org</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <organizationUrl>https://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
@@ -85,7 +85,7 @@
       <name>Minh Chinh Vu</name>
       <email>chinhvm.uet.1995@gmail.com</email>
       <organization>VNSC</organization>
-      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <organizationUrl>https://vnsc.org.vn</organizationUrl>
       <timezone>+7</timezone>
       <roles>
         <role>developer</role>
@@ -124,6 +124,13 @@
       <groupId>org.apache.sis.storage</groupId>
       <artifactId>sis-storage</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-storage</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

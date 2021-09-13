@@ -55,7 +55,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      * A subclass of {@code DefaultParameterValue} which store the value converted by {@link Verifier}.
      * This allows {@link DefaultParameterValueTest} methods to verify the conversion result.
      */
-    @SuppressWarnings({"serial", "CloneableClassWithoutClone"})
+    @SuppressWarnings({"serial", "CloneableImplementsClone"})
     private static final strictfp class Watcher<T> extends DefaultParameterValue<T> {
         /** The value converted by {@link Verifier}. */
         T convertedValue;

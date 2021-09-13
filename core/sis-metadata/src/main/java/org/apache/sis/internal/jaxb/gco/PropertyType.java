@@ -30,6 +30,7 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.ReferenceResolver;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
@@ -188,7 +189,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
          * First, check if we can use a xlink:href="#foo" reference to a gml:id="foo".
          * Only if no gml:id was found, check for user-defined xlink or uuidref.
          */
-        @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
+        @SuppressWarnings("OverridableMethodCallInConstructor")
         final Class<BoundType>  type     = getBoundType();
         final Context           context  = Context.current();
         final ReferenceResolver resolver = Context.resolver(context);
@@ -453,7 +454,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @category xlink
      */
     public final void setTitle(String title) {
-        if (title != null && !(title = title.trim()).isEmpty()) {
+        title = Strings.trimOrNull(title);
+        if (title != null) {
             xlink(true).setTitle(new SimpleInternationalString(title));
         }
     }

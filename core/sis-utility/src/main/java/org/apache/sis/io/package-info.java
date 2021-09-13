@@ -17,7 +17,7 @@
 
 /**
  * Extensions to standard Java I/O ({@link java.io.Reader}, {@link java.io.Writer},
- * {@link java.lang.Appendable}).
+ * {@link java.lang.Appendable}) and {@link java.text.Format}.
  * Many classes defined in this package are filters applying on-the-fly formatting while writing
  * text to the output device. For example {@link org.apache.sis.io.LineAppender} can wrap lines
  * to some maximal line length (e.g. 80 characters), and {@link org.apache.sis.io.TableAppender}
@@ -41,7 +41,7 @@
  * Unicode supplementary characters}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.1
  * @since   0.3
  * @module
  */

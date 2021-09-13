@@ -38,7 +38,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link MathTransformParser}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -78,7 +78,7 @@ public final strictfp class MathTransformParserTest extends TestCase {
             assertEquals(DefaultMathTransformFactory.class.getCanonicalName(), parser.getPublicFacade());
         }
         final ParsePosition position = new ParsePosition(0);
-        final MathTransform mt = (MathTransform) parser.parseObject(text, position);
+        final MathTransform mt = (MathTransform) parser.createFromWKT(text, position);
         assertEquals("errorIndex", -1, position.getErrorIndex());
         assertEquals("index", text.length(), position.getIndex());
         return mt;

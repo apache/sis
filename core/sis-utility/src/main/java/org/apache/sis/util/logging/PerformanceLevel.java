@@ -20,15 +20,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.TimeUnit;
 import org.apache.sis.util.Configuration;
-
-import static org.apache.sis.util.ArgumentChecks.ensurePositive;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * Logging levels for measurements of execution time. Different logging levels - {@link #SLOW},
- * {@link #SLOWER} and {@link #SLOWEST} - are provided in order to log only the events taking
- * more than some time duration. For example the console could log only the slowest events,
- * while a file could log all events considered slow.
+ * Logging levels for data processing with execution time measurements.
+ * Those levels are used for events that would normally be logged at {@link Level#FINE},
+ * but with the possibility to use a slightly higher level if execution time was long.
+ * Different logging levels - {@link #SLOW} and {@link #SLOWER} - are provided for logging
+ * only the events taking more time than some thresholds. For example the console could log
+ * only the slowest events, while a file could log all events considered slow.
  *
  * <p>Every levels defined in this class have a {@linkplain #intValue() value} between the
  * {@link Level#FINE} and {@link Level#CONFIG} values. Consequently performance logging are
@@ -49,7 +50,7 @@ import static org.apache.sis.util.ArgumentChecks.ensurePositive;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -59,39 +60,41 @@ public final class PerformanceLevel extends Level {
      */
     private static final long serialVersionUID = -6547125008284983701L;
 
-    /*
-     * IMPLEMENTATION NOTE: The level values used in the constants below are also used
-     * in the 'switch' statements of the 'setMinDuration(...)' method. If those values
-     * are modified, don't forget to update also the switch statements!!
-     */
-
     /**
      * The level for logging all time measurements, regardless of their duration.
      * The {@linkplain #intValue() value} of this level is 600.
+     *
+     * @deprecated Replaced by {@link Level#FINE}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-504">SIS-504</a>
      */
+    @Deprecated
     public static final PerformanceLevel PERFORMANCE = new PerformanceLevel("PERFORMANCE", 600, 0);
 
     /**
      * The level for logging relatively slow events. By default, only events having an execution
-     * time equals or greater than 0.1 second are logged at this level. However this threshold
-     * can be changed by a call to <code>SLOW.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
+     * time equals or greater than 1 second are logged at this level. However this threshold can
+     * be changed by a call to <code>SLOW.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
      */
-    public static final PerformanceLevel SLOW = new PerformanceLevel("SLOW", 610, 100000000L);
+    public static final PerformanceLevel SLOW = new PerformanceLevel("SLOW", 620, 1000_000_000L);
 
     /**
      * The level for logging only events slower than the ones logged at the {@link #SLOW} level.
-     * By default, only events having an execution time equals or greater than 1 second are
+     * By default, only events having an execution time equals or greater than 10 seconds are
      * logged at this level. However this threshold can be changed by a call to
      * <code>SLOWER.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
      */
-    public static final PerformanceLevel SLOWER = new PerformanceLevel("SLOWER", 620, 1000000000L);
+    public static final PerformanceLevel SLOWER = new PerformanceLevel("SLOWER", 630, 10_000_000_000L);
 
     /**
-     * The level for logging only slowest events. By default, only events having an execution
-     * time equals or greater than 5 seconds are logged at this level. However this threshold
-     * can be changed by a call to <code>SLOWEST.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
+     * The level for logging only slowest events.
+     *
+     * @deprecated Removed for simplification.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-504">SIS-504</a>
      */
-    public static final PerformanceLevel SLOWEST = new PerformanceLevel("SLOWEST", 630, 5000000000L);
+    @Deprecated
+    public static final PerformanceLevel SLOWEST = SLOWER;
 
     /**
      * The minimal duration (in nanoseconds) for logging the record.
@@ -112,18 +115,19 @@ public final class PerformanceLevel extends Level {
 
     /**
      * Returns the level to use for logging an event of the given duration.
+     * The method may return {@link Level#FINE}, {@link #SLOW} or {@link #SLOWER}
+     * depending on the duration.
      *
      * @param  duration  the event duration.
      * @param  unit      the unit of the given duration value.
      * @return the level to use for logging an event of the given duration.
      */
-    public static PerformanceLevel forDuration(long duration, final TimeUnit unit) {
+    public static Level forDuration(long duration, final TimeUnit unit) {
         duration = unit.toNanos(duration);
-        if (duration >= SLOWER.minDuration) {
-            return (duration >= SLOWEST.minDuration) ? SLOWEST : SLOWER;
-        } else {
-            return (duration >= SLOW.minDuration) ? SLOW : PERFORMANCE;
+        if (duration < SLOW.minDuration) {
+            return Level.FINE;              // Most common case.
         }
+        return (duration >= SLOWER.minDuration) ? SLOWER : SLOW;
     }
 
     /**
@@ -147,37 +151,27 @@ public final class PerformanceLevel extends Level {
      *       are also set to the given duration.</li>
      * </ul>
      *
-     * <div class="note"><b>Usage note:</b>
-     * The duration of the {@link #PERFORMANCE} level can not be modified: it is always zero.
-     * However invoking this method on the {@code PERFORMANCE} field will ensure that every
-     * {@code SLOW*} levels will have at least the given duration.</div>
-     *
      * @param  duration  the minimal duration.
      * @param  unit      the unit of the given duration value.
-     * @throws IllegalArgumentException if the given duration is negative.
+     * @throws IllegalArgumentException if the given duration is zero or negative.
      */
     @Configuration
     @SuppressWarnings("fallthrough")
     public void setMinDuration(long duration, final TimeUnit unit) throws IllegalArgumentException {
-        ensurePositive("duration", duration);
+        if (this == PERFORMANCE) {
+            SLOW.setMinDuration(duration, unit);
+            return;
+        }
+        ArgumentChecks.ensureStrictlyPositive("duration", duration);
         duration = unit.toNanos(duration);
         final int value = intValue();
         synchronized (PerformanceLevel.class) {
-            // Check the value of slower levels.
-            switch (value) {
-                default:  throw new AssertionError(this);
-                case 600: if (duration > SLOW   .minDuration) SLOW   .minDuration = duration;
-                case 610: if (duration > SLOWER .minDuration) SLOWER .minDuration = duration;
-                case 620: if (duration > SLOWEST.minDuration) SLOWEST.minDuration = duration;
-                case 630: // Do nothing since there is no level slower than 'SLOWEST'.
+            if (value >= SLOWER.intValue() && duration < SLOW.minDuration) {
+                SLOW.minDuration = duration;
             }
-            // Check the value of faster levels.
-            switch (value) {
-                default:  throw new AssertionError(this);
-                case 630: if (duration < SLOWER .minDuration) SLOWER .minDuration = duration;
-                case 620: if (duration < SLOW   .minDuration) SLOW   .minDuration = duration;
-                case 610: minDuration = duration;
-                case 600: // Do nothing, since we don't allow modification of PERFORMANCE level.
+            minDuration = duration;
+            if (value <= SLOW.intValue() && duration > SLOWER.minDuration) {
+                SLOWER.minDuration = duration;
             }
         }
     }

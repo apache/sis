@@ -16,7 +16,9 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
+import java.util.Map;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.io.File;
 import java.io.IOException;
@@ -26,43 +28,47 @@ import ucar.ma2.Section;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
-import ucar.nc2.VariableIF;
-import ucar.nc2.dataset.Enhancements;
+import ucar.nc2.Variable;
+import ucar.nc2.dataset.VariableDS;
 import ucar.nc2.dataset.VariableEnhanced;
+import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dataset.CoordinateAxis2D;
 import ucar.nc2.dataset.CoordinateSystem;
-import ucar.nc2.dataset.EnhanceScaleMissing;
+import ucar.nc2.dataset.EnhanceScaleMissingUnsigned;
 import ucar.nc2.units.SimpleUnit;
 import ucar.nc2.units.DateUnit;
+import ucar.nc2.constants._Coordinate;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Grid;
-import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.netcdf.GridAdjustment;
+import org.apache.sis.internal.util.Strings;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
+import ucar.nc2.constants.AxisType;
 
 
 /**
- * A {@link Variable} backed by the UCAR netCDF library.
+ * A {@link org.apache.sis.internal.netcdf.Variable} backed by the UCAR netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
-final class VariableWrapper extends Variable {
+final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
     /**
      * The netCDF variable. This is typically an instance of {@link VariableEnhanced}.
      */
-    private final VariableIF variable;
+    private final Variable variable;
 
     /**
      * The variable without enhancements. May be the same instance than {@link #variable}
@@ -71,19 +77,12 @@ final class VariableWrapper extends Variable {
      * attributes are hidden by {@link VariableEnhanced}. In order to allow metadata reader
      * to find them, we query attributes in the original variable instead.
      */
-    private final VariableIF raw;
-
-    /**
-     * The values of the whole variable, or {@code null} if not yet read. This vector should be assigned only
-     * for relatively small variables, or for variables that are critical to the use of other variables
-     * (for example the values in coordinate system axes).
-     */
-    private transient Vector values;
+    private final Variable raw;
 
     /**
      * Creates a new variable wrapping the given netCDF interface.
      */
-    VariableWrapper(final Decoder decoder, VariableIF v) {
+    VariableWrapper(final Decoder decoder, Variable v) {
         super(decoder);
         variable = v;
         if (v instanceof VariableEnhanced) {
@@ -93,6 +92,15 @@ final class VariableWrapper extends Variable {
             }
         }
         raw = v;
+        /*
+         * If the UCAR library recognizes this variable as an enumeration, we will use UCAR services.
+         * Only if UCAR did not recognized the enumeration, fallback on Apache SIS implementation.
+         */
+        Map<Integer,String> enumeration = null;
+        if (variable.getDataType().isEnum()) {
+            enumeration = variable.getEnumTypedef().getMap();
+        }
+        setEnumeration(enumeration);        // Use SIS fallback if `enumeration` is null.
     }
 
     /**
@@ -100,11 +108,9 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public String getFilename() {
-        if (variable instanceof ucar.nc2.Variable) {
-            final String name = Utils.nonEmpty(((ucar.nc2.Variable) variable).getDatasetLocation());
-            if (name != null) {
-                return name.substring(Math.max(name.lastIndexOf('/'), name.lastIndexOf(File.separatorChar)) + 1);
-            }
+        final String name = Utils.nonEmpty(variable.getDatasetLocation());
+        if (name != null) {
+            return name.substring(Math.max(name.lastIndexOf('/'), name.lastIndexOf(File.separatorChar)) + 1);
         }
         return super.getFilename();
     }
@@ -142,8 +148,7 @@ final class VariableWrapper extends Variable {
      */
     @Override
     protected String getUnitsString() {
-        String symbol = variable.getUnitsString();
-        return (symbol != null && (symbol = symbol.trim()).isEmpty()) ? null : symbol;
+        return Strings.trimOrNull(variable.getUnitsString());
         // Do not replace "N/A" by null since it is a valid unit symbol.
     }
 
@@ -195,19 +200,20 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public DataType getDataType() {
-        final DataType type;
         switch (variable.getDataType()) {
             case STRING: return DataType.STRING;
             case CHAR:   return DataType.CHAR;
-            case BYTE:   type = DataType.BYTE;   break;
-            case SHORT:  type = DataType.SHORT;  break;
-            case INT:    type = DataType.INT;    break;
-            case LONG:   type = DataType.INT64;  break;
+            case BYTE:   return DataType.BYTE;
+            case UBYTE:  return DataType.UBYTE;
+            case SHORT:  return DataType.SHORT;
+            case USHORT: return DataType.USHORT;
+            case INT:    return DataType.INT;
+            case UINT:   return DataType.UINT;
+            case LONG:   return DataType.INT64;
             case FLOAT:  return DataType.FLOAT;
             case DOUBLE: return DataType.DOUBLE;
             default:     return DataType.UNKNOWN;
         }
-        return type.unsigned(variable.isUnsigned());
     }
 
     /**
@@ -223,7 +229,22 @@ final class VariableWrapper extends Variable {
      */
     @Override
     protected boolean isCoordinateSystemAxis() {
-        return variable.isCoordinateVariable();
+        // `isCoordinateVariable()` is not sufficient in the case of "runtime" axis.
+        return variable.isCoordinateVariable() || (variable instanceof CoordinateAxis);
+    }
+
+    /**
+     * Returns the value of the {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
+     */
+    @Override
+    protected String getAxisType() {
+        if (variable instanceof CoordinateAxis) {
+            final AxisType type = ((CoordinateAxis) variable).getAxisType();
+            if (type != null) {
+                return type.name();
+            }
+        }
+        return getAttributeAsString(_Coordinate.AxisType);
     }
 
     /**
@@ -239,7 +260,7 @@ final class VariableWrapper extends Variable {
      * @see DecoderWrapper#getGrids()
      */
     @Override
-    protected Grid getGrid(final Adjustment adjustment) throws IOException, DataStoreException {
+    protected Grid getGrid(final GridAdjustment adjustment) throws IOException, DataStoreException {
         /*
          * In some netCDF files, more than one grid could be associated to a variable. If the names of the
          * variables to use as coordinate system axes have been specified, use those names for filtering.
@@ -250,13 +271,12 @@ final class VariableWrapper extends Variable {
          * systems identified by UCAR for this variable while super.getGrid(…) inspects all dimensions found in
          * the file. Note that those coordinate systems may have been set by the user.
          */
-        if (variable instanceof Enhancements) {
-            final Grid[] grids = decoder.getGrids();    // Must be first for forcing some UCAR CS constructions.
-            final List<CoordinateSystem> systems = ((Enhancements) variable).getCoordinateSystems();
+        if (variable instanceof VariableDS) {
+            final List<CoordinateSystem> systems = ((VariableDS) variable).getCoordinateSystems();
             if (!systems.isEmpty()) {
                 GridWrapper grid = null;
                 final String[] axisNames = decoder.convention().namesOfAxisVariables(this);
-                for (final Grid candidate : grids) {
+                for (final Grid candidate : decoder.getGrids()) {
                     final GridWrapper ordered = ((GridWrapper) candidate).forVariable(variable, systems, axisNames);
                     if (ordered != null && (grid == null || ordered.getSourceDimensions() > grid.getSourceDimensions())) {
                         grid = ordered;
@@ -277,10 +297,23 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Returns the number of grid dimensions. This is the size of the {@link #getGridDimensions()} list
+     * but cheaper than a call to {@code getGridDimensions().size()}.
+     *
+     * @return number of grid dimensions.
+     */
+    @Override
+    public int getNumDimensions() {
+        return variable.getRank();
+    }
+
+    /**
      * Returns the dimensions of this variable in the order they are declared in the netCDF file.
      * The dimensions are those of the grid, not the dimensions (or axes) of the coordinate system.
      * In ISO 19123 terminology, the dimension lengths give the upper corner of the grid envelope plus one.
      * The lower corner is always (0, 0, …, 0).
+     *
+     * @see #getNumDimensions()
      */
     @Override
     public List<org.apache.sis.internal.netcdf.Dimension> getGridDimensions() {
@@ -294,7 +327,7 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public Collection<String> getAttributeNames() {
-        return toNames(variable.getAttributes());
+        return toNames(variable.attributes());
     }
 
     /**
@@ -303,7 +336,7 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public Class<?> getAttributeType(final String attributeName) {
-        return getAttributeType(raw.findAttributeIgnoreCase(attributeName));
+        return getAttributeType(raw.attributes().findAttributeIgnoreCase(attributeName));
     }
 
     /**
@@ -316,8 +349,11 @@ final class VariableWrapper extends Variable {
             }
             switch (attribute.getDataType()) {
                 case BYTE:   return Byte.class;
+                case UBYTE:
                 case SHORT:  return Short.class;
+                case USHORT:
                 case INT:    return Integer.class;
+                case UINT:
                 case LONG:   return Long.class;
                 case FLOAT:  return Float.class;
                 case DOUBLE: return Double.class;
@@ -337,7 +373,7 @@ final class VariableWrapper extends Variable {
      */
     @Override
     protected Object getAttributeValue(final String attributeName) {
-        return getAttributeValue(raw.findAttributeIgnoreCase(attributeName));
+        return getAttributeValue(raw.attributes().findAttributeIgnoreCase(attributeName));
     }
 
     /**
@@ -353,7 +389,7 @@ final class VariableWrapper extends Variable {
                     if (value instanceof String) {
                         return Utils.nonEmpty((String) value);
                     } else if (value instanceof Number) {
-                        return Utils.fixSign((Number) value, attribute.isUnsigned());
+                        return Utils.fixSign((Number) value, attribute.getDataType().isUnsigned());
                     }
                     break;
                 }
@@ -370,7 +406,9 @@ final class VariableWrapper extends Variable {
                         }
                     } else {
                         final Array array = attribute.getValues();
-                        return createDecimalVector(array.get1DJavaArray(array.getElementType()), attribute.isUnsigned());
+                        return createDecimalVector(array.get1DJavaArray(
+                                ucar.ma2.DataType.getType(array)),
+                                attribute.getDataType().isUnsigned());
                     }
                 }
             }
@@ -379,14 +417,14 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the names of all attributes in the given list.
+     * Returns the names of all attributes in the given container.
      */
-    static List<String> toNames(final List<Attribute> attributes) {
-        final String[] names = new String[attributes.size()];
-        for (int i=0; i<names.length; i++) {
-            names[i] = attributes.get(i).getShortName();
+    static List<String> toNames(final Iterable<Attribute> attributes) {
+        final List<String> names = new ArrayList<>();
+        for (final Attribute at : attributes) {
+            names.add(at.getShortName());
         }
-        return UnmodifiableArrayList.wrap(names);
+        return names;
     }
 
     /**
@@ -397,9 +435,9 @@ final class VariableWrapper extends Variable {
      */
     @Override
     protected NumberRange<?> getRangeFallback() {
-        if (variable instanceof EnhanceScaleMissing) {
-            final EnhanceScaleMissing ev = (EnhanceScaleMissing) variable;
-            if (ev.hasInvalidData()) {
+        if (variable instanceof EnhanceScaleMissingUnsigned) {
+            final EnhanceScaleMissingUnsigned ev = (EnhanceScaleMissingUnsigned) variable;
+            if (ev.hasValidData()) {
                 // Returns a MeasurementRange instance for signaling the caller that this is converted values.
                 return MeasurementRange.create(ev.getValidMin(), true, ev.getValidMax(), true, getUnit());
             }
@@ -408,24 +446,27 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Notifies the parent class that UCAR library may cache the values provided by this variable.
+     * This is an indication that the parent class should not invoke {@link Vector#compress(double)}.
+     * Compressing vectors is useful only if the original array is discarded.
+     * But the UCAR library has its own cache mechanism which may keep references to the original arrays.
+     * Consequently compressing vectors may result in data being duplicated.
+     */
+    @Override
+    protected boolean isExternallyCached() {
+        return true;
+    }
+
+    /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * This method may replace fill/missing values by NaN values and caches the returned vector.
+     *
+     * @see #read()
      */
     @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Vector read() throws IOException {
-        if (values == null) {
-            final Array array = variable.read();                // May be already cached by the UCAR library.
-            values = createDecimalVector(get1DJavaArray(array), variable.isUnsigned());
-            values = SHARED_VECTORS.unique(values);
-            /*
-             * Do not invoke Vector.compress(…). Compressing vectors is useful only if the original array
-             * is discarded. But the UCAR library has its own cache mechanism which may keep references to
-             * the original arrays. Consequently compressing vectors may result in data being duplicated.
-             */
-        }
-        return values;
+    protected Object readFully() throws IOException {
+        return get1DJavaArray(variable.read());             // May be already cached by the UCAR library.
     }
 
     /**
@@ -433,28 +474,66 @@ final class VariableWrapper extends Variable {
      * Array elements are in inverse of netCDF order.
      *
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
-     * @param  subsampling  subsampling along each dimension. 1 means no subsampling.
-     * @return the data as an array of a Java primitive type.
+     * @param  subsampling  subsampling along each dimension, or {@code null} if none.
+     * @return the data as a vector wrapping a Java array.
      */
     @Override
     public Vector read(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
+        final Object array = readArray(area, subsampling);
+        return Vector.create(array, variable.getDataType().isUnsigned());
+    }
+
+    /**
+     * Reads a subsampled sub-area of the variable and returns them as a list of any object.
+     * Elements in the returned list may be {@link Number} or {@link String} instances.
+     *
+     * @param  area         indices of cell values to read along each dimension, in "natural" order.
+     * @param  subsampling  subsampling along each dimension, or {@code null} if none.
+     * @return the data as a list of {@link Number} or {@link String} instances.
+     */
+    @Override
+    public List<?> readAnyType(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
+        final Object array = readArray(area, subsampling);
+        final ucar.ma2.DataType type = variable.getDataType();
+        if (type == ucar.ma2.DataType.CHAR && variable.getRank() >= STRING_DIMENSION) {
+            return createStringList(array, area);
+        }
+        return Vector.create(array, type.isUnsigned());
+    }
+
+    /**
+     * Reads the data from this variable and returns them as an array of a Java primitive type.
+     * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
+     * This method may replace fill/missing values by NaN values and caches the returned vector.
+     *
+     * @param  area         indices of cell values to read along each dimension, in "natural" order.
+     * @param  subsampling  subsampling along each dimension, or {@code null} if none.
+     * @return the data as an array of a Java primitive type.
+     *
+     * @see #read()
+     * @see #read(GridExtent, int[])
+     */
+    private Object readArray(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
         int n = area.getDimension();
         final int[] lower = new int[n];
         final int[] size  = new int[n];
-        final int[] sub   = new int[n--];
+        final int[] sub   = (subsampling != null) ? new int[n] : null;
+        n--;
         for (int i=0; i<=n; i++) {
             final int j = (n - i);
             lower[j] = Math.toIntExact(area.getLow(i));
             size [j] = Math.toIntExact(area.getSize(i));
-            sub  [j] = subsampling[i];
+            if (sub != null) {
+                sub[j] = subsampling[i];
+            }
         }
         final Array array;
         try {
-            array = variable.read(new Section(lower, size, sub));
+            array = variable.read(sub != null ? new Section(lower, size, sub) : new Section(lower, size));
         } catch (InvalidRangeException e) {
             throw new DataStoreException(e);
         }
-        return Vector.create(get1DJavaArray(array), variable.isUnsigned());
+        return get1DJavaArray(array);
     }
 
     /**
@@ -463,9 +542,49 @@ final class VariableWrapper extends Variable {
      * values by {@code NaN} values.
      */
     private Object get1DJavaArray(final Array array) {
-        final Object data = array.get1DJavaArray(array.getElementType());
+        final Object data = array.get1DJavaArray(ucar.ma2.DataType.getType(array));
         replaceNaN(data);
         return data;
+    }
+
+    /**
+     * Creates an array of character strings from a "two-dimensional" array of characters stored in a flat array.
+     * For each element, leading and trailing spaces and control codes are trimmed.
+     * The array does not contain null element but may contain empty strings.
+     *
+     * @param  array     the "two-dimensional" array of characters stored in a flat {@code char[]} array.
+     * @param  count     number of string elements (size of first dimension).
+     * @param  length    number of characters in each element (size of second dimension).
+     * @return array of character strings.
+     */
+    @Override
+    protected String[] createStringArray(final Object array, final int count, final int length) {
+        final char[] chars = (char[]) array;
+        final String[] strings = new String[count];
+        String previous = "";                       // For sharing same `String` instances when same value is repeated.
+        int plo = 0, phi = 0;                       // Index range of bytes used for building the previous string.
+        int lower = 0;
+        for (int i=0; i<count; i++) {
+            String element = "";
+            final int upper = lower + length;
+            for (int j=upper; --j >= lower;) {
+                if (chars[j] > ' ') {
+                    while (chars[lower] <= ' ') lower++;
+                    if (JDK9.equals(chars, lower, ++j, chars, plo, phi)) {
+                        element = previous;
+                    } else {
+                        element  = new String(chars, lower, j - lower);
+                        previous = element;
+                        plo      = lower;
+                        phi      = j;
+                    }
+                    break;
+                }
+            }
+            strings[i] = element;
+            lower = upper;
+        }
+        return strings;
     }
 
     /**
@@ -482,7 +601,7 @@ final class VariableWrapper extends Variable {
      * This method is invoked only for variables that represent a coordinate system axis.
      */
     @Override
-    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, final Vector values)
+    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, final Vector data)
             throws IOException, DataStoreException
     {
         if (variable instanceof CoordinateAxis1D) {
@@ -501,13 +620,13 @@ final class VariableWrapper extends Variable {
                  */
             }
         }
-        return super.trySetTransform(gridToCRS, srcDim, tgtDim, values);
+        return super.trySetTransform(gridToCRS, srcDim, tgtDim, data);
     }
 
     /**
      * Returns {@code true} if this Apache SIS variable is a wrapper for the given UCAR variable.
      */
-    final boolean isWrapperFor(final VariableIF v) {
+    final boolean isWrapperFor(final Variable v) {
         return (variable == v) || (raw == v);
     }
 }

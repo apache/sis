@@ -30,7 +30,6 @@ import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
@@ -57,9 +56,16 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  * and the latitude of origin is the equator. A scale factor of 0.9996 and false easting of 500000 metres is used for
  * all zones and a false northing of 10000000 metres is used for zones in the southern hemisphere.
  *
+ * <h2>Domain of validity</h2>
+ * The difference between longitude values λ and the central meridian λ₀ should be less than 60°.
+ * Differences larger than 90° of longitude cause a {@link ProjectionException} to be thrown.
+ * Differences between 60° and 90° are not rejected by Apache SIS but should be avoided.
+ * See the {@linkplain #transform(double[], int, double[], int, boolean) projection method}
+ * for more information.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see Mercator
  * @see ObliqueMercator
@@ -72,25 +78,6 @@ public class TransverseMercator extends NormalizedProjection {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -627685138188387835L;
-
-    /**
-     * Distance from central meridian, in degrees, at which errors are considered too important.
-     * This threshold is determined by comparisons of computed values against values provided by
-     * <cite>Karney (2009) Test data for the transverse Mercator projection</cite> data file.
-     * On the WGS84 ellipsoid we observed:
-     *
-     * <ul>
-     *   <li>For ∆λ below 60°, errors below 1 centimetre.</li>
-     *   <li>For ∆λ between 60° and 66°, errors up to 0.1 metre.</li>
-     *   <li>For ∆λ between 66° and 70°, errors up to 1 metre.</li>
-     *   <li>For ∆λ between 70° and 72°, errors up to 2 metres.</li>
-     *   <li>For ∆λ between 72° and 74°, errors up to 10 metres.</li>
-     *   <li>For ∆λ between 74° and 76°, errors up to 30 metres.</li>
-     *   <li>For ∆λ between 76° and 78°, errors up to 1 kilometre.</li>
-     *   <li>For ∆λ greater than 85°, results are chaotic.</li>
-     * </ul>
-     */
-    static final double DOMAIN_OF_VALIDITY = 70;
 
     /**
      * {@code false} for using the original formulas as published by EPSG, or {@code true} for using formulas
@@ -127,6 +114,13 @@ public class TransverseMercator extends NormalizedProjection {
      * @see #identityEquals(double, double)
      */
     private static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = true;
+
+    /**
+     * The "South orientated" variant of Transverse Mercator projection.
+     * Currently this is informative only (the south variant is handled
+     * with {@link ParameterRole} instead).
+     */
+    private static final byte SOUTH_VARIANT = 1;
 
     /**
      * Verifies if a trigonometric identity produced the expected value. This method is used in assertions only,
@@ -199,7 +193,7 @@ public class TransverseMercator extends NormalizedProjection {
         roles.put(ParameterRole.SCALE_FACTOR, SCALE_FACTOR);
         roles.put(xOffset, FALSE_EASTING);
         roles.put(yOffset, FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, isSouth ? (byte) 1 : (byte) 0);
+        return new Initializer(method, parameters, roles, isSouth ? SOUTH_VARIANT : STANDARD_VARIANT);
     }
 
     /**
@@ -302,7 +296,7 @@ public class TransverseMercator extends NormalizedProjection {
         /*
          * When rewriting equations using trigonometric identities, some constants appear.
          * For example sin(2θ) = 2⋅sinθ⋅cosθ, so we can factor out the 2 constant into the
-         * corresponding 'c' field.  Note: this factorization can only be performed after
+         * corresponding `c` field.  Note: this factorization can only be performed after
          * the constructor finished to compute other constants.
          */
         if (ALLOW_TRIGONOMETRIC_IDENTITIES) {
@@ -356,8 +350,57 @@ public class TransverseMercator extends NormalizedProjection {
     }
 
     /**
+     * Implementation of {@link #transform(double[], int, double[], int, boolean)} for points outside domain of validity.
+     * Should be invoked only when the longitude is at more than 90° from central meridian, in which case result does not
+     * exist. This method should <strong>not</strong> be invoked for points at Δλ ≤ 90° that we fail to compute, because
+     * in such cases a {@link ProjectionException} should be thrown instead.
+     */
+    private static Matrix outsideDomainOfValidity(final double[] dstPts, final int dstOff, final boolean derivate) {
+        if (dstPts != null) {
+            dstPts[dstOff] = dstPts[dstOff+1] = Double.NaN;
+        }
+        if (derivate) {
+            return new Matrix2(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+        }
+        return null;
+    }
+
+    /**
      * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
+     *
+     * <h4>Accuracy and domain of validity</h4>
+     * Projection errors depend on the difference ∆λ between longitude λ and the central meridian λ₀.
+     * All Universal Transverse Mercator (UTM) projections aim for ∆λ ≤ 3°, but this implementation
+     * can nevertheless handle larger values. Results have been compared with values provided by
+     * <a href="http://doi.org/10.5281/zenodo.32470">Karney, C.F.F. (2009).
+     * Test data for the transverse Mercator projection [Data set]. Zenodo.</a>
+     * On the WGS84 ellipsoid we observed the following errors compared to Karney's data:
+     *
+     * <ul>
+     *   <li>Errors less than 1 centimetre for ∆λ &lt; 60° at all latitudes.</li>
+     *   <li>At latitudes far enough from equator (|φ| ≥ 20°), the domain can be extended up to ∆λ &lt;
+     *       (1 − ℯ)⋅90° (≈ 82.63627282416406551° on WGS84) with errors less than 70 centimetres.</li>
+     * </ul>
+     *
+     * <h5>Case of 82.6…° &lt; ∆λ ≤ 90°</h5>
+     * Karney (2009) uses an “extended” domain of transverse Mercator projection for ∆λ ≥ (1 − ℯ)⋅90°,
+     * but Apache SIS does not support such extension. Consequently ∆λ values between (1 − ℯ)⋅90° and 90°
+     * should be considered invalid but are not rejected by Apache SIS. Note that those invalid values are
+     * consistent with the {@linkplain #inverseTransform(double[], int, double[], int) inverse projection}
+     * (i.e. applying a projection followed by an inverse projection gives approximately the original values).
+     *
+     * <div class="note"><b>Rational:</b>
+     * those coordinates are accepted despite the low accuracy of projection results because they are sometime
+     * needed for expressing bounding boxes. A bounding box may have corners located in invalid projection area
+     * even if all features inside the box have valid coordinates. For "contains" and "intersects" tests between
+     * envelopes, we do not need accurate coordinates; a monotonic behavior of x = f(λ) can be sufficient.</div>
+     *
+     * <h5>Case of ∆λ &gt; 90°</h5>
+     * Longitude values at a distance greater than 90° from the central meridian are rejected.
+     * A {@link ProjectionException} is thrown in that case. This limit exists because the
+     * Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
+     * Consequently <var>x</var> values tend toward infinity for ∆λ close to ±90°
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
@@ -369,7 +412,8 @@ public class TransverseMercator extends NormalizedProjection {
                             final boolean derivate) throws ProjectionException
     {
         final double λ = srcPts[srcOff];
-        if (abs(λ) >= DOMAIN_OF_VALIDITY * (PI/180)) {
+        final double φ = srcPts[srcOff+1];
+        if (abs(λ) > 90 * (PI/180)) {
             /*
              * The Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
              * In Mercator projection, y values tend toward infinity for latitudes close to ±90°.
@@ -383,14 +427,27 @@ public class TransverseMercator extends NormalizedProjection {
              * Since a distance of 90° from central meridian is far outside the Transverse Mercator
              * domain of validity anyway, we do not let the user go further.
              *
-             * In the particular case of ellipsoidal formulas, we put a limit of 81° instead of 90°
-             * because experience shows that results close to equator become chaotic after 85° when
-             * using WGS84 ellipsoid. We do not need to reduce the limit for the spherical formulas,
-             * because the mathematic are simpler and the function still smooth until 90°.
+             * Historical note: in a previous version, we used a limit of 70° instead of 90° because results
+             * became chaotic after 85°. That limit has been removed in later version because this method now
+             * behaves like a monotonic function x = f(λ) for fixed φ values. We need to project coordinates
+             * even in the area where accuracy is bad because projecting those coordinates may happen during
+             * envelope projections. An envelope may have corners located in invalid projection area even if
+             * all features inside the envelope have valid coordinates. For "contains" and "intersects" tests
+             * between envelopes, we do not need accurate coordinates; a monotonic behavior can be sufficient.
+             *
+             * Reminder: difference between returning NaN or throwing an exception is as below:
+             *
+             *    - NaN means "value does not exist".
+             *    - ProjectionException means "values exist but can not be computed".
+             *
+             * So it is okay to return NaN for values located at Δλ > 90°, but we should throw an exception
+             * for values at Δλ ≤ 90° if we can not compute them. Previous version of this method was throwing
+             * an exception. Now that we accept all longitudes up to 90°, we return NaN instead.
              */
-            throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
+            if (Math.abs(IEEEremainder(λ, 2*PI)) > 90 * (PI/180)) {         // More costly check.
+                return outsideDomainOfValidity(dstPts, dstOff, derivate);
+            }
         }
-        final double φ     = srcPts[srcOff+1];
         final double sinλ  = sin(λ);
         final double ℯsinφ = sin(φ) * eccentricity;
         final double Q     = asinh(tan(φ)) - atanh(ℯsinφ) * eccentricity;
@@ -484,16 +541,16 @@ public class TransverseMercator extends NormalizedProjection {
         /*
          * Now compute the derivative, if the user asked for it.
          */
-        final double cosλ          = cos(λ);                                        //-- λ
-        final double cosφ          = cos(φ);                                        //-- φ
-        final double cosh2Q        = coshQ * coshQ;                                 //-- Q
+        final double cosλ          = cos(λ);                                          // λ
+        final double cosφ          = cos(φ);                                          // φ
+        final double cosh2Q        = coshQ * coshQ;                                   // Q
         final double sinhQ         = sinh(Q);
         final double tanhQ         = tanh(Q);
-        final double cosh2Q_sin2λ  = cosh2Q - (sinλ * sinλ);                        //-- Qλ
-        final double sinhη0        = sinh(η0);                                      //-- η0
-        final double sqrt1_thQchη0 = sqrt(1 - (tanhQ * tanhQ) * (coshη0 * coshη0)); //-- Qη0
+        final double cosh2Q_sin2λ  = cosh2Q - (sinλ * sinλ);                          // Qλ
+        final double sinhη0        = sinh(η0);                                        // η0
+        final double sqrt1_thQchη0 = sqrt(1 - (tanhQ * tanhQ) * (coshη0 * coshη0));   // Qη0
 
-        //-- dQ_dλ = 0;
+        // dQ_dλ = 0;
         final double dQ_dφ  = 1 / cosφ - eccentricitySquared * cosφ / (1 - ℯsinφ * ℯsinφ);
 
         final double dη0_dλ =  cosλ * coshQ         / cosh2Q_sin2λ;
@@ -511,28 +568,28 @@ public class TransverseMercator extends NormalizedProjection {
          *    (Proj(λ,φ))    │ ∂ξ(λ,φ)/∂λ, ∂ξ(λ,φ)/∂φ │
          *                   └                        ┘
          */
-        //-- dξ(λ, φ) / dλ
+        // dξ(λ, φ) / dλ
         final double dξ_dλ = dξ0_dλ
                            + 2 * (cf2 * (dξ0_dλ * cos_2ξ0 * cosh_2η0 + dη0_dλ * sinh_2η0 * sin_2ξ0)
                            + 3 *  cf6 * (dξ0_dλ * cos_6ξ0 * cosh_6η0 + dη0_dλ * sinh_6η0 * sin_6ξ0)
                            + 2 * (cf4 * (dξ0_dλ * cos_4ξ0 * cosh_4η0 + dη0_dλ * sinh_4η0 * sin_4ξ0)
                            + 2 *  cf8 * (dξ0_dλ * cos_8ξ0 * cosh_8η0 + dη0_dλ * sinh_8η0 * sin_8ξ0)));
 
-        //-- dξ(λ, φ) / dφ
+        // dξ(λ, φ) / dφ
         final double dξ_dφ = dξ0_dφ
                            + 2 * (cf2 * (dξ0_dφ * cos_2ξ0 * cosh_2η0 + dη0_dφ * sinh_2η0 * sin_2ξ0)
                            + 3 *  cf6 * (dξ0_dφ * cos_6ξ0 * cosh_6η0 + dη0_dφ * sinh_6η0 * sin_6ξ0)
                            + 2 * (cf4 * (dξ0_dφ * cos_4ξ0 * cosh_4η0 + dη0_dφ * sinh_4η0 * sin_4ξ0)
                            + 2 *  cf8 * (dξ0_dφ * cos_8ξ0 * cosh_8η0 + dη0_dφ * sinh_8η0 * sin_8ξ0)));
 
-        //-- dη(λ, φ) / dλ
+        // dη(λ, φ) / dλ
         final double dη_dλ = dη0_dλ
                            + 2 * (cf2 * (dη0_dλ * cosh_2η0 * cos_2ξ0 - dξ0_dλ * sin_2ξ0 * sinh_2η0)
                            + 3 *  cf6 * (dη0_dλ * cosh_6η0 * cos_6ξ0 - dξ0_dλ * sin_6ξ0 * sinh_6η0)
                            + 2 * (cf4 * (dη0_dλ * cosh_4η0 * cos_4ξ0 - dξ0_dλ * sin_4ξ0 * sinh_4η0)
                            + 2 *  cf8 * (dη0_dλ * cosh_8η0 * cos_8ξ0 - dξ0_dλ * sin_8ξ0 * sinh_8η0)));
 
-        //-- dη(λ, φ) / dφ
+        // dη(λ, φ) / dφ
         final double dη_dφ = dη0_dφ
                            + 2 * (cf2 * (dη0_dφ * cosh_2η0 * cos_2ξ0 - dξ0_dφ * sin_2ξ0 * sinh_2η0)
                            + 3 *  cf6 * (dη0_dφ * cosh_6η0 * cos_6ξ0 - dξ0_dφ * sin_6ξ0 * sinh_6η0)
@@ -672,31 +729,17 @@ public class TransverseMercator extends NormalizedProjection {
                                 final boolean derivate) throws ProjectionException
         {
             final double λ = srcPts[srcOff];
-            /*
-             * The Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
-             * In Mercator projection, y values tend toward infinity for latitudes close to ±90° while
-             * in Transverse Mercator, x values tend toward infinity for longitudes close to ±90° from
-             * central meridian (and at equator). After we pass the 90° limit, the Transverse Mercator
-             * results at (90° + Δ) are the same as for (90° - Δ).
-             *
-             * Problem is that 90° is an ordinary longitude value, not even close to the limit of longitude
-             * values range (±180°).  So having f(π/2+Δ, φ) = f(π/2-Δ, φ) results in wrong behavior in some
-             * algorithms like the one used by Envelopes.transform(CoordinateOperation, Envelope).  Since a
-             * distance of 90° from central meridian is outside projection domain of validity anyway, we do
-             * not let the user go further.
-             *
-             * Note that in the case of ellipsoidal formulas (implemented by parent class), we put the
-             * limit to a lower value (DOMAIN_OF_VALIDITY) because experience shows that results close
-             * to equator become chaotic after 85° when using WGS84 ellipsoid. We do not need to reduce
-             * the limit for the spherical formulas, because the mathematic are simpler and the function
-             * still smooth until 90°.
-             */
-            if (abs(λ) > PI/2) {
-                throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
-            }
-            final double φ    = srcPts[srcOff+1];
+            final double φ = srcPts[srcOff + 1];
             final double sinλ = sin(λ);
             final double cosλ = cos(λ);
+            /*
+             * The Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
+             * See comment in the `super.transform(…)` implementation for more information about why we
+             * need to reject ∆λ > 90°. The accuracy comment about high values of ∆λ do not apply here.
+             */
+            if (cosλ < 0) {                     // Implies Math.abs(IEEEremainder(λ, 2*PI)) > PI/2
+                return outsideDomainOfValidity(dstPts, dstOff, derivate);
+            }
             final double sinφ = sin(φ);
             final double cosφ = cos(φ);
             final double tanφ = sinφ / cosφ;
@@ -731,7 +774,7 @@ public class TransverseMercator extends NormalizedProjection {
             final double y = srcPts[srcOff+1];
             final double sinhx = sinh(x);
             final double cosy  = cos(y);
-            // 'copySign' corrects for the fact that we made everything positive using sqrt(…)
+            // `copySign` corrects for the fact that we made everything positive using sqrt(…)
             dstPts[dstOff  ] = atan2(sinhx, cosy);
             dstPts[dstOff+1] = copySign(asin(sqrt((1 - cosy*cosy) / (1 + sinhx*sinhx))), y);
         }

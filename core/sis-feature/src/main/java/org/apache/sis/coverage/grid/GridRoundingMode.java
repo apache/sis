@@ -18,13 +18,13 @@ package org.apache.sis.coverage.grid;
 
 
 /**
- * Specifies rounding behavior of computations of {@link GridExtent} from floating-point values.
+ * Specifies rounding behavior during computations of {@link GridExtent} from floating-point values.
  * The rounding mode controls how real numbers are converted into {@code GridExtent}'s
  * {@linkplain GridExtent#getLow(int) low}, {@linkplain GridExtent#getHigh(int) high} and
  * {@linkplain GridExtent#getSize(int) size} integer values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -59,6 +59,27 @@ public enum GridRoundingMode {
      *   <li>Grid {@linkplain GridExtent#getLow(int) low} are converted to integers with {@link Math#floor(double)}.</li>
      *   <li>Grid {@linkplain GridExtent#getHigh(int) high} are converted to integers with {@link Math#ceil(double)}.</li>
      * </ul>
+     *
+     * In operations receiving grid coverages as inputs and producing grid coverages as outputs,
+     * this rounding mode is convenient for computing the <em>inputs</em> extent because it gives
+     * an extent large enough for providing data in the whole region to be computed.
      */
-    ENCLOSING
+    ENCLOSING,
+
+    /**
+     * Converts grid low and high to values that are fully contained in the envelope.
+     * This mode applies the following steps:
+     *
+     * <ul>
+     *   <li>Grid {@linkplain GridExtent#getLow(int) low} are converted to integers with {@link Math#ceil(double)}.</li>
+     *   <li>Grid {@linkplain GridExtent#getHigh(int) high} are converted to integers with {@link Math#floor(double)}.</li>
+     * </ul>
+     *
+     * In operations receiving grid coverages as inputs and producing grid coverages as outputs,
+     * this rounding mode is convenient for computing the <em>outputs</em> extent because it gives
+     * an extent small enough for allowing inputs to provide data in the whole region.
+     *
+     * @since 1.1
+     */
+    CONTAINED
 }

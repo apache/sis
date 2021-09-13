@@ -126,10 +126,17 @@ public interface Resource {
      *       sample dimension names (or band numbers in simpler cases) of coverages or rasters included in this resource.</li>
      * </ul>
      *
+     * <h4>Metadata edition</h4>
+     * This method often returns an {@linkplain org.apache.sis.metadata.ModifiableMetadata.State#FINAL unmodifiable}
+     * metadata, for making possible to return efficiently a cached instance.
+     * If the caller wants to modify some metadata elements, it may be necessary to perform a
+     * {@linkplain org.apache.sis.metadata.iso.DefaultMetadata#deepCopy(Metadata) deep copy} first.
+     *
      * @return information about this resource. Should not be {@code null}.
      * @throws DataStoreException if an error occurred while reading the metadata.
      *
      * @see DataStore#getMetadata()
+     * @see org.apache.sis.metadata.iso.DefaultMetadata#deepCopy(Metadata)
      */
     Metadata getMetadata() throws DataStoreException;
 

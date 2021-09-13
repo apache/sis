@@ -164,7 +164,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @param  properties  the properties to be given to the identified object.
      * @param  axes        the sequence of axes.
      */
-    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public AbstractCS(final Map<String,?> properties, CoordinateSystemAxis... axes) {
         super(properties);
         ensureNonNull("axes", axes);
@@ -451,7 +451,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @return {@code true} if both objects are equal.
      */
     @Override
-    @SuppressWarnings("fallthrough")
+    @SuppressWarnings({"AssertWithSideEffects", "fallthrough"})
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;                                            // Slight optimization.

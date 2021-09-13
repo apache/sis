@@ -37,7 +37,7 @@ import static org.apache.sis.internal.referencing.provider.Sinusoidal.*;
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Sinusoidal_projection">Sinusoidal projection on Wikipedia</a></li>
- *   <li><a href="http://mathworld.wolfram.com/SinusoidalProjection.html">Sinusoidal projection on MathWorld</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/SinusoidalProjection.html">Sinusoidal projection on MathWorld</a></li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -61,7 +61,7 @@ public class Sinusoidal extends MeridianArcBased {
         roles.put(ParameterRole.CENTRAL_MERIDIAN, CENTRAL_MERIDIAN);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, (byte) 0);
+        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
     }
 
     /**

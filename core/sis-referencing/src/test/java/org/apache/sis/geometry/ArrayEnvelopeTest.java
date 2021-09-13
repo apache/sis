@@ -22,6 +22,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
+import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
 
 /**
@@ -73,7 +74,7 @@ public final strictfp class ArrayEnvelopeTest extends TestCase {
         ArrayEnvelope envelope = new ArrayEnvelope(new double[] {4, -10, 50, 2});
         assertWktEquals("BOX[ 4 -10,\n" +
                         "    50   2]", envelope);
-        envelope.crs = AbstractEnvelopeTest.WGS84;
+        envelope.crs = WGS84;
         assertWktEquals("BOX[ 4.00000000 -10.00000000,\n" +
                         "    50.00000000   2.00000000]", envelope);
 

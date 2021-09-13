@@ -47,7 +47,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * See the following references for an overview:
  * <ul>
  *   <li><a href="https://en.wikipedia.org/wiki/Mercator_projection">Mercator projection on Wikipedia</a></li>
- *   <li><a href="http://mathworld.wolfram.com/MercatorProjection.html">Mercator projection on MathWorld</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/MercatorProjection.html">Mercator projection on MathWorld</a></li>
  * </ul>
  *
  * <h2>Description</h2>
@@ -98,6 +98,7 @@ public class Mercator extends ConformalProjection {
      * <p><b>CONVENTION:</b> <strong>Spherical cases must be odd, all other cases must be even.</strong>
      * This allow us to perform quick checks for all spherical cases using {@code if ((type & SPHERICAL) != 0)}.</p>
      *
+     * @see #variant
      * @see #getVariant(OperationMethod)
      */
     private static final byte SPHERICAL = 1, PSEUDO = 3,            // Must be odd and SPHERICAL must be 1.
@@ -111,17 +112,17 @@ public class Mercator extends ConformalProjection {
         if (identMatch(method, "(?i).*\\bSpherical\\b.*",    MercatorSpherical.IDENTIFIER)) return SPHERICAL;
         if (identMatch(method, "(?i).*\\bPseudo.*",          PseudoMercator   .IDENTIFIER)) return PSEUDO;
         if (identMatch(method, "(?i).*\\bMiller.*",          null))                         return MILLER;
-        return 0;
+        return STANDARD_VARIANT;
     }
 
     /**
      * The type of Mercator projection. Possible values are:
      * <ul>
-     *   <li>0                  if this projection is a Mercator variant A or B.</li>
-     *   <li>{@link #REGIONAL}  if this projection is the "Mercator (variant C)" case.</li>
-     *   <li>{@link #SPHERICAL} if this projection is the "Mercator (Spherical)" case.</li>
-     *   <li>{@link #PSEUDO}    if this projection is the "Pseudo Mercator" case.</li>
-     *   <li>{@link #MILLER}    if this projection is the "Miller Cylindrical" case.</li>
+     *   <li>{@link #STANDARD_VARIANT} if this projection is a Mercator variant A or B.</li>
+     *   <li>{@link #REGIONAL}         if this projection is the "Mercator (variant C)" case.</li>
+     *   <li>{@link #SPHERICAL}        if this projection is the "Mercator (Spherical)" case.</li>
+     *   <li>{@link #PSEUDO}           if this projection is the "Pseudo Mercator" case.</li>
+     *   <li>{@link #MILLER}           if this projection is the "Miller Cylindrical" case.</li>
      * </ul>
      *
      * Other cases may be added in the future.

@@ -108,8 +108,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.8
  *
  * @see org.apache.sis.internal.metadata.NameMeaning
- * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
- * @see <a href="http://www.opengeospatial.org/ogcna">OGC Naming Authority</a>
+ * @see <a href="https://portal.ogc.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
+ * @see <a href="https://www.ogc.org/ogcna">OGC Naming Authority</a>
  *
  * @since 0.4
  * @module
@@ -336,7 +336,7 @@ public final class DefinitionURI {
                         if (codeForGML(null, null, uri, ++upper, result) != null) {
                             return result;
                         }
-                        if (!uri.regionMatches(upper, "//", 0, 2)) {
+                        if (!uri.startsWith("//", upper)) {
                             return null;                                // Prefix is never optional for HTTP.
                         }
                         upper++;
@@ -695,7 +695,7 @@ public final class DefinitionURI {
         if (isGML) {
             final String path = PATHS.get(type);
             if (path != null) {
-                return "http:" + path + authority + ".xml#" + code;
+                return Constants.HTTP + path + authority + ".xml#" + code;
             }
         }
         final StringBuilder buffer = new StringBuilder(40);

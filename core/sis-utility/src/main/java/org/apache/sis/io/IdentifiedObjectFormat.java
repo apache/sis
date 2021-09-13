@@ -36,7 +36,7 @@ import org.apache.sis.internal.util.MetadataServices;
  * @since   0.4
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")   // Because this class does not contain field that need to be cloned.
+@SuppressWarnings("CloneableImplementsClone")   // Because this class does not contain field that need to be cloned.
 final class IdentifiedObjectFormat extends Format {
     /**
      * For cross-version compatibility.

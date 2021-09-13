@@ -22,7 +22,9 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Set;
+import java.util.Optional;
 import java.util.ConcurrentModificationException;
+import java.time.Instant;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -44,6 +46,7 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.internal.referencing.TemporalAccessor;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -51,6 +54,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
+import org.apache.sis.measure.Range;
 import org.apache.sis.math.MathFunctions;
 
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
@@ -92,7 +96,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.metadata.iso.extent.Extents
  * @see CRS
@@ -101,6 +105,18 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  * @module
  */
 public final class Envelopes extends Static {
+    /**
+     * Fraction of the axis span to accept as close enough to an envelope boundary. This is used for coordinates
+     * that are suppose to be on a boundary, for checking if it is really on the boundary side where it should be.
+     * For example on the longitude axis, bounds are -180° and +180° with wraparound meaning and the span is 360°.
+     * A {@code SPAN_FRACTION_AS_BOUND} value of 0.25 means that we accept a margin of 0.25 × 360° = 90° on each
+     * side: longitudes between -180 and -90 are clipped to the -180° bounds, and longitudes between +180 and +90
+     * and clipped to the +180° bounds. We use a large fraction because we use it in contexts where the longitude
+     * is not supposed to be in the envelope interior. We could use a 0.5 value for clipping to the nearest bound,
+     * but a smaller value is used for safety.
+     */
+    static final double SPAN_FRACTION_AS_BOUND = 0.25;
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -180,6 +196,26 @@ public final class Envelopes extends Static {
     }
 
     /**
+     * Computes the intersection of all given envelopes, transforming them to a common CRS if necessary.
+     * If all envelopes use the same CRS ({@link ComparisonMode#IGNORE_METADATA ignoring metadata})
+     * or if the CRS of all envelopes is {@code null}, then the {@linkplain GeneralEnvelope#intersect(Envelope)
+     * intersection is computed} without transforming any envelope. Otherwise all envelopes are transformed to a
+     * {@linkplain CRS#suggestCommonTarget common CRS} before intersection is computed.
+     * The CRS of the returned envelope may different than the CRS of all given envelopes.
+     *
+     * @param  envelopes  the envelopes for which to compute intersection. Null elements are ignored.
+     * @return intersection of given envelopes, or {@code null} if the given array does not contain non-null elements.
+     * @throws TransformException if this method can not determine a common CRS, or if a transformation failed.
+     *
+     * @see GeneralEnvelope#intersect(Envelope)
+     *
+     * @since 1.0
+     */
+    public static GeneralEnvelope intersect(final Envelope... envelopes) throws TransformException {
+        return EnvelopeReducer.INTERSECT.reduce(envelopes);
+    }
+
+    /**
      * Finds a mathematical operation from the CRS of the given source envelope to the CRS of the given target envelope.
      * For non-null georeferenced envelopes, this method is equivalent to the following code with {@code areaOfInterest}
      * computed as the union of the two envelopes:
@@ -230,8 +266,8 @@ public final class Envelopes extends Static {
                     }
                 } catch (TransformException e) {
                     /*
-                     * Note: we may succeed to transform 'source' and fail to transform 'target' to geographic bounding box,
-                     * but the opposite is unlikely because 'source' should not have less dimensions than 'target'.
+                     * Note: we may succeed to transform `source` and fail to transform `target` to geographic bounding box,
+                     * but the opposite is unlikely because `source` should not have less dimensions than `target`.
                      */
                     Logging.recoverableException(Logging.getLogger(Loggers.GEOMETRY), Envelopes.class, "findOperation", e);
                 }
@@ -242,28 +278,8 @@ public final class Envelopes extends Static {
     }
 
     /**
-     * Computes the intersection of all given envelopes, transforming them to a common CRS if necessary.
-     * If all envelopes use the same CRS ({@link ComparisonMode#IGNORE_METADATA ignoring metadata})
-     * or if the CRS of all envelopes is {@code null}, then the {@linkplain GeneralEnvelope#intersect(Envelope)
-     * intersection is computed} without transforming any envelope. Otherwise all envelopes are transformed to a
-     * {@linkplain CRS#suggestCommonTarget common CRS} before intersection is computed.
-     * The CRS of the returned envelope may different than the CRS of all given envelopes.
-     *
-     * @param  envelopes  the envelopes for which to compute intersection. Null elements are ignored.
-     * @return intersection of given envelopes, or {@code null} if the given array does not contain non-null elements.
-     * @throws TransformException if this method can not determine a common CRS, or if a transformation failed.
-     *
-     * @see GeneralEnvelope#intersect(Envelope)
-     *
-     * @since 1.0
-     */
-    public static GeneralEnvelope intersect(final Envelope... envelopes) throws TransformException {
-        return EnvelopeReducer.INTERSECT.reduce(envelopes);
-    }
-
-    /**
-     * Invoked when a recoverable exception occurred. Those exceptions must be minor enough
-     * that they can be silently ignored in most cases.
+     * Invoked when a recoverable exception occurred.
+     * Those exceptions must be minor enough that they can be silently ignored in most cases.
      */
     static void recoverableException(final Class<? extends Static> caller, final TransformException exception) {
         Logging.recoverableException(Logging.getLogger(Loggers.GEOMETRY), caller, "transform", exception);
@@ -379,9 +395,7 @@ public final class Envelopes extends Static {
      *                   May be {@code null} if this information is not needed.
      */
     @SuppressWarnings("null")
-    private static GeneralEnvelope transform(final MathTransform transform,
-                                             final Envelope      envelope,
-                                             final double[]      targetPt)
+    private static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope, double[] targetPt)
             throws TransformException
     {
         if (transform.isIdentity()) {
@@ -417,156 +431,164 @@ public final class Envelopes extends Static {
          * This coordinate will be updated in the `switch` statement inside the `while` loop.
          */
         if (sourceDim >= 20) {          // Maximal value supported by Formulas.pow3(int) is 19.
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1));
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, sourceDim));
         }
-        int             pointIndex            = 0;
-        boolean         isDerivativeSupported = true;
-        GeneralEnvelope transformed           = null;
-        final Matrix[]  derivatives           = new Matrix[Math.toIntExact(MathFunctions.pow(3, sourceDim))];
-        final double[]  coordinates           = new double[derivatives.length * targetDim];
-        final double[]  sourcePt              = new double[sourceDim];
-        for (int i=sourceDim; --i>=0;) {
-            sourcePt[i] = envelope.getMinimum(i);
-        }
+        boolean isDerivativeSupported = true;
+        DirectPosition  temporary     = null;
+        GeneralEnvelope transformed   = null;
+        final Matrix[]  derivatives   = new Matrix[Math.toIntExact(MathFunctions.pow(3, sourceDim))];
+        final double[]  coordinates   = new double[Math.multiplyExact(derivatives.length, targetDim)];
+        final double[]  sourcePt      = new double[sourceDim];
         // A window over a single coordinate in the `coordinates` array.
         final DirectPositionView ordinatesView = new DirectPositionView.Double(coordinates, 0, targetDim);
-        /*
-         * Iterates over every minimal, maximal and median coordinate values (3 points) along each
-         * dimension. The total number of iterations is 3 ^ (number of source dimensions).
-         */
-        transformPoint: while (true) {
+        final WraparoundInEnvelope.Controller wc = new WraparoundInEnvelope.Controller(transform);
+        do {
+            for (int i=sourceDim; --i>=0;) {
+                sourcePt[i] = envelope.getMinimum(i);
+            }
             /*
-             * Compute the derivative (optional operation). If this operation fails, we will
-             * set a flag to 'false' so we don't try again for all remaining points. We try
-             * to compute the derivative and the transformed point in a single operation if
-             * we can. If we can not, we will compute those two information separately.
+             * Iterates over every minimal, maximal and median coordinate values (3 points) along each dimension.
+             * The total number of iterations is 3 ^ (number of source dimensions).
+             */
+nextPoint:  for (int pointIndex = 0;;) {                // Break condition at the end of this block.
+                /*
+                 * Compute the derivative (optional operation). If this operation fails, we will
+                 * set a flag to `false` so we don't try again for all remaining points. We try
+                 * to compute the derivative and the transformed point in a single operation if
+                 * we can. If we can not, we will compute those two information separately.
+                 *
+                 * Note that the very last point to be projected must be the envelope center.
+                 * There is usually no need to calculate the derivative for that last point,
+                 * but we let it does anyway for safety.
+                 */
+                final int offset = pointIndex * targetDim;
+                try {
+                    derivatives[pointIndex] = derivativeAndTransform(wc.transform,
+                            sourcePt, coordinates, offset, isDerivativeSupported);
+                } catch (TransformException e) {
+                    if (!isDerivativeSupported) {
+                        throw e;                    // Derivative were already disabled, so something went wrong.
+                    }
+                    isDerivativeSupported = false;
+                    wc.transform.transform(sourcePt, 0, coordinates, offset, 1);
+                    recoverableException(Envelopes.class, e);       // Log only if the above call was successful.
+                }
+                /*
+                 * The transformed point has been saved for future reuse after the enclosing
+                 * `for(;;)` loop. Now add the transformed point to the destination envelope.
+                 */
+                if (transformed == null) {
+                    transformed = new GeneralEnvelope(targetDim);
+                    for (int i=0; i<targetDim; i++) {
+                        final double value = coordinates[offset + i];
+                        transformed.setRange(i, value, value);
+                    }
+                } else {
+                    ordinatesView.offset = offset;
+                    transformed.add(ordinatesView);
+                }
+                /*
+                 * Get the next point coordinate. The `coordinateIndex` variable is an index in base 3
+                 * having a number of digits equals to the number of source dimensions.  For example a
+                 * 4-D space have indexes ranging from "0000" to "2222" (numbers in base 3). The digits
+                 * are then mapped to minimal (0), maximal (1) or central (2) coordinates. The outer loop
+                 * stops when the counter roll back to "0000". Note that `targetPt` will be set to value
+                 * of the last projected point, which must be the envelope center identified by "2222"
+                 * in the 4-D case.
+                 */
+                int indexBase3 = ++pointIndex;
+                for (int dim = sourceDim; --dim >= 0; indexBase3 /= 3) {
+                    switch (indexBase3 % 3) {
+                        case 0:  sourcePt[dim] = envelope.getMinimum(dim); continue;            // Continue the loop.
+                        case 1:  sourcePt[dim] = envelope.getMaximum(dim); continue nextPoint;
+                        case 2:  sourcePt[dim] = envelope.getMedian (dim); continue nextPoint;
+                        default: throw new AssertionError(indexBase3);                          // Should never happen
+                    }
+                }
+                assert pointIndex == derivatives.length : pointIndex;
+                break;
+            }
+            /*
+             * At this point we finished to build an envelope from all sampled positions. Now iterate
+             * over all points. For each point, iterate over all line segments from that point to a
+             * neighbor median point.  Use the derivate information for approximating the transform
+             * behavior in that area by a cubic curve. We can then find analytically the curve extremum.
              *
-             * Note that the very last point to be projected must be the envelope center.
-             * There is usually no need to calculate the derivative for that last point,
-             * but we let it does anyway for safety.
+             * The same technic is applied in transform(MathTransform, Rectangle2D), except that in
+             * the Rectangle2D case the calculation was bundled right inside the main loop in order
+             * to avoid the need for storage.
              */
-            final int offset = pointIndex * targetDim;
-            try {
-                derivatives[pointIndex] = derivativeAndTransform(transform,
-                        sourcePt, coordinates, offset, isDerivativeSupported);
-            } catch (TransformException e) {
-                if (!isDerivativeSupported) {
-                    throw e;                    // Derivative were already disabled, so something went wrong.
-                }
-                isDerivativeSupported = false;
-                transform.transform(sourcePt, 0, coordinates, offset, 1);
-                recoverableException(Envelopes.class, e);       // Log only if the above call was successful.
-            }
-            /*
-             * The transformed point has been saved for future reuse after the enclosing
-             * 'while' loop. Now add the transformed point to the destination envelope.
-             */
-            if (transformed == null) {
-                transformed = new GeneralEnvelope(targetDim);
-                for (int i=0; i<targetDim; i++) {
-                    final double value = coordinates[offset + i];
-                    transformed.setRange(i, value, value);
-                }
-            } else {
-                ordinatesView.offset = offset;
-                transformed.add(ordinatesView);
-            }
-            /*
-             * Get the next point coordinate. The 'coordinateIndex' variable is an index in base 3
-             * having a number of digits equals to the number of source dimensions.  For example a
-             * 4-D space have indexes ranging from "0000" to "2222" (numbers in base 3). The digits
-             * are then mapped to minimal (0), maximal (1) or central (2) coordinates. The outer loop
-             * stops when the counter roll back to "0000". Note that 'targetPt' must keep the value
-             * of the last projected point, which must be the envelope center identified by "2222"
-             * in the 4-D case.
-             */
-            int indexBase3 = ++pointIndex;
-            for (int dim=sourceDim; --dim>=0; indexBase3 /= 3) {
-                switch (indexBase3 % 3) {
-                    case 0:  sourcePt[dim] = envelope.getMinimum(dim); break;   // Continue the loop.
-                    case 1:  sourcePt[dim] = envelope.getMaximum(dim); continue transformPoint;
-                    case 2:  sourcePt[dim] = envelope.getMedian (dim); continue transformPoint;
-                    default: throw new AssertionError(indexBase3);     // Should never happen
-                }
-            }
-            break;
-        }
-        assert pointIndex == derivatives.length : pointIndex;
-        /*
-         * At this point we finished to build an envelope from all sampled positions. Now iterate
-         * over all points. For each point, iterate over all line segments from that point to a
-         * neighbor median point.  Use the derivate information for approximating the transform
-         * behavior in that area by a cubic curve. We can then find analytically the curve extremum.
-         *
-         * The same technic is applied in transform(MathTransform, Rectangle2D), except that in
-         * the Rectangle2D case the calculation was bundled right inside the main loop in order
-         * to avoid the need for storage.
-         */
-        DirectPosition temporary = null;
-        final DirectPositionView sourceView = new DirectPositionView.Double(sourcePt, 0, sourceDim);
-        final CurveExtremum extremum = new CurveExtremum();
-        for (pointIndex=0; pointIndex < derivatives.length; pointIndex++) {
-            final Matrix D1 = derivatives[pointIndex];
-            if (D1 != null) {
-                int indexBase3 = pointIndex, power3 = 1;
-                for (int i=sourceDim; --i>=0; indexBase3 /= 3, power3 *= 3) {
-                    final int digitBase3 = indexBase3 % 3;
-                    if (digitBase3 != 2) { // Process only if we are not already located on the median along the dimension i.
-                        final int medianIndex = pointIndex + power3 * (2 - digitBase3);
-                        final Matrix D2 = derivatives[medianIndex];
-                        if (D2 != null) {
-                            final double xmin = envelope.getMinimum(i);
-                            final double xmax = envelope.getMaximum(i);
-                            final double x2   = envelope.getMedian (i);
-                            final double x1   = (digitBase3 == 0) ? xmin : xmax;
-                            final int offset1 = targetDim * pointIndex;
-                            final int offset2 = targetDim * medianIndex;
-                            for (int j=0; j<targetDim; j++) {
-                                extremum.resolve(x1, coordinates[offset1 + j], D1.getElement(j,i),
-                                                 x2, coordinates[offset2 + j], D2.getElement(j,i));
-                                boolean isP2 = false;
-                                do { // Executed exactly twice, one for each extremum point.
-                                    final double x = isP2 ? extremum.ex2 : extremum.ex1;
-                                    if (x > xmin && x < xmax) {
-                                        final double y = isP2 ? extremum.ey2 : extremum.ey1;
-                                        if (y < transformed.getMinimum(j) ||
-                                            y > transformed.getMaximum(j))
-                                        {
-                                            /*
-                                             * At this point, we have determined that adding the extremum point
-                                             * would expand the envelope. However we will not add that point
-                                             * directly because its position may not be quite right (since we
-                                             * used a cubic curve approximation). Instead, we project the point
-                                             * on the envelope border which is located vis-à-vis the extremum.
-                                             */
-                                            for (int ib3 = pointIndex, dim = sourceDim; --dim >= 0; ib3 /= 3) {
-                                                final double coordinate;
-                                                if (dim == i) {
-                                                    coordinate = x;                       // Position of the extremum.
-                                                } else switch (ib3 % 3) {
-                                                    case 0:  coordinate = envelope.getMinimum(dim); break;
-                                                    case 1:  coordinate = envelope.getMaximum(dim); break;
-                                                    case 2:  coordinate = envelope.getMedian (dim); break;
-                                                    default: throw new AssertionError(ib3);     // Should never happen.
+            final DirectPositionView sourceView = new DirectPositionView.Double(sourcePt, 0, sourceDim);
+            final CurveExtremum extremum = new CurveExtremum();
+            for (int pointIndex=0; pointIndex < derivatives.length; pointIndex++) {
+                final Matrix D1 = derivatives[pointIndex];
+                if (D1 != null) {
+                    int indexBase3 = pointIndex, power3 = 1;
+                    for (int i = sourceDim; --i >= 0; indexBase3 /= 3, power3 *= 3) {
+                        final int digitBase3 = indexBase3 % 3;
+                        // Process only if we are not already located on the median along the dimension i.
+                        if (digitBase3 != 2) {
+                            final int medianIndex = pointIndex + power3 * (2 - digitBase3);
+                            final Matrix D2 = derivatives[medianIndex];
+                            if (D2 != null) {
+                                final double xmin = envelope.getMinimum(i);
+                                final double xmax = envelope.getMaximum(i);
+                                final double x2   = envelope.getMedian (i);
+                                final double x1   = (digitBase3 == 0) ? xmin : xmax;
+                                final int offset1 = targetDim * pointIndex;
+                                final int offset2 = targetDim * medianIndex;
+                                for (int j=0; j<targetDim; j++) {
+                                    extremum.resolve(x1, coordinates[offset1 + j], D1.getElement(j,i),
+                                                     x2, coordinates[offset2 + j], D2.getElement(j,i));
+                                    boolean isP2 = false;
+                                    do {
+                                        // Executed exactly twice, one for each extremum point.
+                                        final double x = isP2 ? extremum.ex2 : extremum.ex1;
+                                        if (x > xmin && x < xmax) {
+                                            final double y = isP2 ? extremum.ey2 : extremum.ey1;
+                                            if (y < transformed.getMinimum(j) ||
+                                                y > transformed.getMaximum(j))
+                                            {
+                                                /*
+                                                 * At this point, we have determined that adding the extremum point
+                                                 * would expand the envelope. However we will not add that point
+                                                 * directly because its position may not be quite right (since we
+                                                 * used a cubic curve approximation). Instead, we project the point
+                                                 * on the envelope border which is located vis-à-vis the extremum.
+                                                 */
+                                                for (int ib3 = pointIndex, dim = sourceDim; --dim >= 0; ib3 /= 3) {
+                                                    final double coordinate;
+                                                    if (dim == i) {
+                                                        coordinate = x;                       // Position of the extremum.
+                                                    } else switch (ib3 % 3) {
+                                                        case 0:  coordinate = envelope.getMinimum(dim); break;
+                                                        case 1:  coordinate = envelope.getMaximum(dim); break;
+                                                        case 2:  coordinate = envelope.getMedian (dim); break;
+                                                        default: throw new AssertionError(ib3);     // Should never happen.
+                                                    }
+                                                    sourcePt[dim] = coordinate;
                                                 }
-                                                sourcePt[dim] = coordinate;
+                                                temporary = wc.transform.transform(sourceView, temporary);
+                                                transformed.add(temporary);
                                             }
-                                            temporary = transform.transform(sourceView, temporary);
-                                            transformed.add(temporary);
                                         }
-                                    }
-                                } while ((isP2 = !isP2) == true);
+                                    } while ((isP2 = !isP2) == true);
+                                }
                             }
                         }
                     }
+                    derivatives[pointIndex] = null;                 // Let GC do its job earlier.
                 }
-                derivatives[pointIndex] = null;                 // Let GC do its job earlier.
             }
-        }
-        if (targetPt != null) {
-            // Copy the coordinate of the center point.
-            System.arraycopy(coordinates, coordinates.length - targetDim, targetPt, 0, targetDim);
-        }
+            /*
+             * Copy the coordinate of the center point. We take the point of the
+             * first iteration because it is the one before translation is applied.
+             */
+            if (targetPt != null) {
+                System.arraycopy(coordinates, coordinates.length - targetDim, targetPt, 0, targetDim);
+                targetPt = null;
+            }
+        } while (wc.translate());
         return transformed;
     }
 
@@ -627,7 +649,7 @@ public final class Envelopes extends Static {
                 }
             }
         }
-        MathTransform mt = operation.getMathTransform();
+        final MathTransform mt = operation.getMathTransform();
         final double[] centerPt = new double[mt.getTargetDimensions()];
         final GeneralEnvelope transformed = transform(mt, envelope, centerPt);
         /*
@@ -691,7 +713,7 @@ public final class Envelopes extends Static {
         }
         /*
          * Checks for singularity points. For example the south pole is a singularity point in
-         * geographic CRS because is is located at the maximal value allowed by one particular
+         * geographic CRS because it is located at the maximal value allowed by one particular
          * axis, namely latitude. This point is not a singularity in the stereographic projection,
          * because axes extends toward infinity in all directions (mathematically) and because the
          * South pole has nothing special apart being the origin (0,0).
@@ -706,13 +728,14 @@ public final class Envelopes extends Static {
          *             to the source CRS. Note that the longitude is set to the the center of
          *             the envelope longitude range (more on this below).
          *
-         * 2) If the singularity point computed above is inside the source envelope, add that
-         *    point to the target (transformed) envelope.
+         * 2) If the singularity point computed above is inside the source envelope,
+         *    add that point to the target (transformed) envelope.
          *
-         * 3) If step #2 added the point, iterate over all other axes. If an other bounded axis
-         *    is found and that axis is of kind "WRAPAROUND", test for inclusion the same point
-         *    than the point tested at step #1, except for the coordinate of the axis found in
-         *    this step. That coordinate is set to the minimal and maximal values of that axis.
+         * 3) For each singularity point found at step #2, check if there is a wraparound axis
+         *    in a dimension other than the dimension that was set to an axis bounds value.
+         *    If such wraparound axis is found, test for inclusion of the same point than the
+         *    point tested at step #1, except for the coordinate of the wraparound axis which
+         *    is set to the minimal and maximal values (reminder: step #1 used the center value).
          *
          *    Example: If the above steps found that the point (90°S, 30°W) need to be included,
          *             then this step #3 will also test the points (90°S, 180°W) and (90°S, 180°E).
@@ -724,16 +747,18 @@ public final class Envelopes extends Static {
          * may fail to transform the (-180°, 90°) coordinate while the (-180°, 30°) coordinate
          * is a valid point.
          */
-        TransformException warning = null;
-        AbstractEnvelope generalEnvelope = null;
-        DirectPosition sourcePt = null;
-        DirectPosition targetPt = null;
+        MathTransform      inverse   = null;
+        TransformException warning   = null;
+        AbstractEnvelope   sourceBox = null;
+        DirectPosition     sourcePt  = null;
+        DirectPosition     targetPt  = null;
+        DirectPosition     revertPt  = null;
         long includedMinValue = 0;              // A bitmask for each dimension.
         long includedMaxValue = 0;
         long isWrapAroundAxis = 0;
-        long dimensionBitMask = 1;
         final int dimension = targetCS.getDimension();
-poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
+poles:  for (int i=0; i<dimension; i++) {
+            final long dimensionBitMask = 1L << i;
             final CoordinateSystemAxis axis = targetCS.getAxis(i);
             if (axis == null) {                 // Should never be null, but check as a paranoiac safety.
                 continue;
@@ -749,37 +774,52 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
                      */
                     continue;
                 }
-                if (targetPt == null) {
+                if (inverse == null) {
                     try {
-                        mt = mt.inverse();
+                        inverse = mt.inverse();
                     } catch (NoninvertibleTransformException exception) {
                         /*
-                         * If the transform is non invertible, this method can't do anything. This
-                         * is not a fatal error because the envelope has already be transformed by
-                         * the caller. We lost the check for singularity points performed by this
-                         * method, but it make no difference in the common case where the source
-                         * envelope didn't contains any of those points.
+                         * If the transform is non-invertible, this "poles" loop can not do anything.
+                         * This is not a fatal error because the envelope has already be transformed
+                         * by the code before this loop. We lost the check below for singularity points,
+                         * but it makes no difference in the common case where all those points would
+                         * have been outside the source envelope anyway.
                          *
-                         * Note that this exception is normal if target dimension is smaller than
-                         * source dimension, since the math transform can not reconstituate the
-                         * lost dimensions. So we don't log any warning in this case.
+                         * Note that this exception is normal if the number of target dimension is smaller
+                         * than the number of source dimension, because the math transform can not guess
+                         * coordinates in the lost dimensions. So we do not log any warning in this case.
                          */
                         if (dimension >= mt.getSourceDimensions()) {
                             warning = exception;
                         }
                         break poles;
                     }
-                    targetPt = new GeneralDirectPosition(mt.getSourceDimensions());
-                    for (int j=0; j<dimension; j++) {
-                        targetPt.setOrdinate(j, centerPt[j]);
-                    }
-                    // TODO: avoid the hack below if we provide a contains(DirectPosition)
-                    //       method in the GeoAPI org.opengis.geometry.Envelope interface.
-                    generalEnvelope = AbstractEnvelope.castOrCopy(envelope);
+                    targetPt  = new GeneralDirectPosition(centerPt.clone());
+                    sourceBox = AbstractEnvelope.castOrCopy(envelope);
                 }
                 targetPt.setOrdinate(i, extremum);
                 try {
-                    sourcePt = mt.transform(targetPt, sourcePt);
+                    sourcePt = inverse.transform(targetPt, sourcePt);
+                    if (sourceBox.contains(sourcePt)) {
+                        /*
+                         * The point is inside the source envelope and consequently should be added in the
+                         * transformed envelope. However there is a possible confusion: if the axis that we
+                         * tested is a wraparound axis, then (for example) +180° and -180° of longitude may
+                         * be the same point in source CRS, despite being 2 very different points in target
+                         * CRS. We do yet another projection in opposite direction for checking if we really
+                         * have the point that we wanted to test.
+                         */
+                        if (CoordinateOperations.isWrapAround(axis)) {
+                            revertPt = mt.transform(sourcePt, revertPt);
+                            final double delta = Math.abs(revertPt.getOrdinate(i) - extremum);
+                            if (!(delta < SPAN_FRACTION_AS_BOUND * (axis.getMaximumValue() - axis.getMinimumValue()))) {
+                                continue;
+                            }
+                        }
+                        transformed.add(targetPt);
+                        if (testMax) includedMaxValue |= dimensionBitMask;
+                        else         includedMinValue |= dimensionBitMask;
+                    }
                 } catch (TransformException exception) {
                     /*
                      * This exception may be normal. For example if may occur when projecting
@@ -791,23 +831,17 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
                     } else {
                         warning.addSuppressed(exception);
                     }
-                    continue;
-                }
-                if (generalEnvelope.contains(sourcePt)) {
-                    transformed.add(targetPt);
-                    if (testMax) includedMaxValue |= dimensionBitMask;
-                    else         includedMinValue |= dimensionBitMask;
                 }
             } while ((testMax = !testMax) == true);
             /*
              * Keep trace of axes of kind WRAPAROUND, except if the two extremum values of that
              * axis have been included in the envelope  (in which case the next step after this
-             * loop doesn't need to be executed for that axis).
+             * loop does not need to be executed for this axis).
              */
             if ((includedMinValue & includedMaxValue & dimensionBitMask) == 0 && CoordinateOperations.isWrapAround(axis)) {
                 isWrapAroundAxis |= dimensionBitMask;
             }
-            // Restore 'targetPt' to its initial state, which is equals to 'centerPt'.
+            // Restore `targetPt` to its initial state, which is equals to `centerPt`.
             if (targetPt != null) {
                 targetPt.setOrdinate(i, centerPt[i]);
             }
@@ -823,7 +857,7 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
         if (includedBoundsValue != 0) {
             while (isWrapAroundAxis != 0) {
                 final int wrapAroundDimension = Long.numberOfTrailingZeros(isWrapAroundAxis);
-                dimensionBitMask = 1 << wrapAroundDimension;
+                final long dimensionBitMask = 1L << wrapAroundDimension;
                 isWrapAroundAxis &= ~dimensionBitMask;              // Clear now the bit, for the next iteration.
                 final CoordinateSystemAxis wrapAroundAxis = targetCS.getAxis(wrapAroundDimension);
                 final double min = wrapAroundAxis.getMinimumValue();
@@ -851,28 +885,45 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
                          * then skip completely this case and the next one, i.e. skip c={0,1}
                          * or skip c={2,3}.
                          */
-                        double value = max;
-                        if ((c & 1) == 0) {         // 'true' if we are testing "wrapAroundMin".
+                        final double value;
+                        if ((c & 1) == 0) {         // `true` if we are testing "wrapAroundMin".
                             if (((c == 0 ? includedMinValue : includedMaxValue) & bm) == 0) {
                                 c++;                // Skip also the case for "wrapAroundMax".
                                 continue;
                             }
                             targetPt.setOrdinate(axisIndex, (c == 0) ? axis.getMinimumValue() : axis.getMaximumValue());
                             value = min;
+                        } else {
+                            value = max;
                         }
                         targetPt.setOrdinate(wrapAroundDimension, value);
                         try {
-                            sourcePt = mt.transform(targetPt, sourcePt);
+                            sourcePt = inverse.transform(targetPt, sourcePt);
+                            if (sourceBox.contains(sourcePt)) {
+                                /*
+                                 * The `value` limit is typically the 180°E or 180°W longitude value. We could test
+                                 * its validity as below (see similar code in other loop above for explanation):
+                                 *
+                                 *     revertPt = mt.transform(sourcePt, revertPt);
+                                 *     final double delta = Math.abs(revertPt.getOrdinate(wrapAroundDimension) - value);
+                                 *     if (delta < SPAN_FRACTION_AS_BOUND * (max - min)) {
+                                 *         transformed.add(targetPt);
+                                 *     }
+                                 *
+                                 * But we don't because this block is executed when another coordinate is at its bounds,
+                                 * and that other coordinate is usually the latitude at 90°S or 90°N. In such case, all
+                                 * longitude values are the same point on Earth (a pole) and can be anything. Comparing
+                                 * `revertPt` coordinate with `value` is meaningless. In order to keep above check, we
+                                 * would need to determine if `targetPt` is at a pole. But we have fully reliable way.
+                                 */
+                                transformed.add(targetPt);
+                            }
                         } catch (TransformException exception) {
                             if (warning == null) {
                                 warning = exception;
                             } else {
                                 warning.addSuppressed(exception);
                             }
-                            continue;
-                        }
-                        if (generalEnvelope.contains(sourcePt)) {
-                            transformed.add(targetPt);
                         }
                     }
                     targetPt.setOrdinate(axisIndex, centerPt[axisIndex]);
@@ -1020,4 +1071,27 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
         true,  false,
         false, false
     };
+
+    /**
+     * Returns the time range of the first dimension associated to a temporal CRS.
+     * This convenience method converts floating point values to instants using
+     * {@link org.apache.sis.referencing.crs.DefaultTemporalCRS#toInstant(double)}.
+     *
+     * @param  envelope  envelope from which to extract time range, or {@code null} if none.
+     * @return time range in the given envelope.
+     *
+     * @see AbstractEnvelope#getTimeRange()
+     * @see GeneralEnvelope#setTimeRange(Instant, Instant)
+     *
+     * @since 1.1
+     */
+    public static Optional<Range<Instant>> toTimeRange(final Envelope envelope) {
+        if (envelope != null) {
+            final TemporalAccessor t = TemporalAccessor.of(envelope.getCoordinateReferenceSystem(), 0);
+            if (t != null) {
+                return Optional.of(t.getTimeRange(envelope));
+            }
+        }
+        return Optional.empty();
+    }
 }

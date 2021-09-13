@@ -31,7 +31,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Marc le Bihan
- * @version 0.6
+ * @version 1.1
  *
  * @see SparseFeature
  * @see DefaultFeatureType
@@ -174,8 +174,27 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      */
     @Override
     public Object getPropertyValue(final String name) throws IllegalArgumentException {
+        final Object value = getValueOrFallback(name, MISSING);
+        if (value != MISSING) return value;
+        throw new IllegalArgumentException(propertyNotFound(type, getName(), name));
+    }
+
+    /**
+     * Returns the value for the property of the given name if that property exists, or a fallback value otherwise.
+     *
+     * @param  name  the property name.
+     * @param  missingPropertyFallback  the value to return if no attribute or association of the given name exists.
+     * @return the value for the given property, or {@code null} if none.
+     *
+     * @since 1.1
+     */
+    @Override
+    public final Object getValueOrFallback(final String name, final Object missingPropertyFallback) {
         ArgumentChecks.ensureNonNull("name", name);
-        final int index = getIndex(name);
+        final Integer index = indices.get(name);
+        if (index == null) {
+            return missingPropertyFallback;
+        }
         if (index < 0) {
             return getOperationValue(name);
         }
@@ -183,7 +202,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
             final Object element = properties[index];
             if (element != null) {
                 if (!(properties instanceof Property[])) {
-                    return element; // Most common case.
+                    return element;                                         // Most common case.
                 } else if (element instanceof AbstractAttribute<?>) {
                     return getAttributeValue((AbstractAttribute<?>) element);
                 } else if (element instanceof AbstractAssociation) {

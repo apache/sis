@@ -27,12 +27,14 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.time.DateTimeException;
 import java.time.Instant;
+import java.time.LocalTime;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalQuery;
@@ -50,9 +52,9 @@ import org.apache.sis.util.CharSequences;
  * the time is optional. For this class, "Standard" is interpreted as "close to ISO 19162 requirements",
  * which is not necessarily identical to other ISO standards.
  *
- * External users should use nothing else than the parsing and formatting methods.
+ * <p>External users should use nothing else than the parsing and formatting methods.
  * The methods for configuring the {@code DateFormat} instances may or may not work
- * depending on the branch.
+ * depending on the branch.</p>
  *
  * <p>The main usage for this class is Well Known Text (WKT) parsing and formatting.
  * ISO 19162 uses ISO 8601:2004 for the dates. Any precision is allowed: the date could have only the year,
@@ -61,7 +63,7 @@ import org.apache.sis.util.CharSequences;
  * but nevertheless allows to specify a timezone.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -87,6 +89,8 @@ public final class StandardDateFormat extends DateFormat {
      * The thread-safe instance to use for reading and formatting dates.
      * Only the year is mandatory, all other fields are optional at parsing time.
      * However all fields are written, including milliseconds at formatting time.
+     *
+     * @see #parseInstantUTC(CharSequence, int, int)
      */
     public static final DateTimeFormatter FORMAT = new DateTimeFormatterBuilder()
             .parseLenient()                    // For allowing fields with one digit instead of two.
@@ -98,16 +102,18 @@ public final class StandardDateFormat extends DateFormat {
             .optionalStart().appendLiteral(':').appendValue(ChronoField.SECOND_OF_MINUTE, 2)
                                                .appendFraction(ChronoField.MILLI_OF_SECOND, 3, 3, true)
             .optionalEnd().optionalEnd().optionalEnd()    // Move back to the optional block of HOUR_OF_DAY.
-//          .optionalStart().appendOffset("+H:MM:ss", "Z")
-            .optionalStart().appendOffsetId()               // TODO: replace by above line after we migrated to JDK10.
+            .optionalStart().appendZoneOrOffsetId()
             .toFormatter(Locale.ROOT);
 
     /**
      * The kinds of objects to get from calls to {@link #parseBest(CharSequence)}, in preference order.
      * The time is converted to UTC timezone if possible.
      *
-     * Tip: if we want to preserve the timezone instead than converting to UTC, we could try replacing
-     * {@code Instant::from} by {@code ZonedDateTime::from, OffsetDateTime::from}.
+     * <div class="note"><b>Tip:</b>
+     * if we want to preserve the timezone instead than converting to UTC, we could try replacing
+     * {@code Instant::from} by {@code ZonedDateTime::from, OffsetDateTime::from}.</div>
+     *
+     * @see #parseInstantUTC(CharSequence, int, int)
      */
     private static TemporalQuery<?>[] QUERIES = {
         Instant::from, LocalDateTime::from, LocalDate::from
@@ -175,18 +181,18 @@ public final class StandardDateFormat extends DateFormat {
      * @return sub-sequence of {@code text} from {@code lower} to {@code upper}, potentially modified.
      */
     static CharSequence toISO(CharSequence text, int lower, int upper) {
-        boolean isCopied = false;
         lower = CharSequences.skipLeadingWhitespaces (text, lower, upper);
         upper = CharSequences.skipTrailingWhitespaces(text, lower, upper);
+        StringBuilder buffer = null;
         int cp = 0;   // Non-whitespace character from previous iteration.
         for (int i = upper; i > lower;) {
             int c = Character.codePointBefore(text, i);
             int n = Character.charCount(c);
 replace:    if (Character.isWhitespace(c)) {
                 /*
-                 * Found whitespaces from 'i' inclusive (after computation below) to 'end' exclusive.
+                 * Found whitespaces from `i` inclusive (after computation below) to `end` exclusive.
                  * If no concurrent change, i > lower because text.charAt(lower) is not a whitespace.
-                 * Set 'c' to the character before whitespaces. 'cp' is the character after spaces.
+                 * Set `c` to the character before whitespaces. `cp` is the character after spaces.
                  */
                 int end = i;
                 i = CharSequences.skipTrailingWhitespaces(text, lower, i - n);
@@ -196,27 +202,23 @@ replace:    if (Character.isWhitespace(c)) {
                 if (Character.isDigit(cp) && Character.isDigit(c)) {
                     /*
                      * If the character before and after whitespaces are digits, maybe we have
-                     * the separation between date and timezone. Use ':' position as a check.
+                     * the separation between date and timezone. Use `:` position as a check.
                      */
                     isDateTimeSeparator = CharSequences.indexOf(text, ':', lower, upper) > end;
                     if (!isDateTimeSeparator) break replace;               // Skip replacement.
                 }
-                final StringBuilder b;
-                if (isCopied) {
-                    b = (StringBuilder) text;
-                } else {
-                    text = b = new StringBuilder(upper - lower).append(text, lower, upper);
-                    i       -= lower;
-                    end     -= lower;
-                    lower    = 0;
-                    isCopied = true;
+                if (buffer == null) {
+                    text  = buffer = new StringBuilder(upper - lower).append(text, lower, upper);
+                    i    -= lower;
+                    end  -= lower;
+                    lower = 0;
                 }
                 if (isDateTimeSeparator) {
-                    b.replace(i, end, "T");
+                    buffer.replace(i, end, "T");
                 } else {
-                    b.delete(i, end);
+                    buffer.delete(i, end);
                 }
-                upper = b.length();
+                upper = buffer.length();
             }
             i -= n;
             cp = c;
@@ -226,23 +228,27 @@ replace:    if (Character.isWhitespace(c)) {
 
     /**
      * The length of a day in number of milliseconds.
+     * Can be casted to {@code float} with exact precision.
      */
     public static final int MILLISECONDS_PER_DAY = 24*60*60*1000;
 
     /**
      * Number of milliseconds in one second.
+     * Can be casted to {@code float} with exact precision.
      */
     public static final int MILLIS_PER_SECOND = 1000;
 
     /**
      * Number of nanoseconds in one millisecond.
+     * Can be casted to {@code float} with exact precision.
      */
-    public static final int NANOS_PER_MILLISECOND = 1000000;
+    public static final int NANOS_PER_MILLISECOND = 1000_000;
 
     /**
      * Number of nanoseconds in one second.
+     * Can be casted to {@code float} with exact precision.
      */
-    public static final int NANOS_PER_SECOND = 1000000000;
+    public static final int NANOS_PER_SECOND = 1000_000_000;
 
     /**
      * Converts the given legacy {@code Date} object into a {@code java.time} implementation in given timezone.
@@ -305,6 +311,39 @@ replace:    if (Character.isWhitespace(c)) {
             }
         }
         return new Date(millis);
+    }
+
+    /**
+     * Returns {@code true} if objects of the given class have day, month and hour fields.
+     * This method is defined here for having a single class where to concentrate such heuristic rules.
+     * Note that {@link Instant} does not have date fields.
+     *
+     * @param  date  class of object to test (may be {@code null}).
+     * @return whether the given class is {@link LocalDate} or one of the classes with date + time.
+     *         This list may be expanded in future versions.
+     */
+    public static boolean hasDateFields(final Class<?> date) {
+        return date == LocalDate.class
+            || date == LocalDateTime.class
+            || date == OffsetDateTime.class
+            || date == ZonedDateTime.class;
+    }
+
+    /**
+     * Returns {@code true} if objects of the given class have time fields.
+     * This method is defined here for having a single class where to concentrate such heuristic rules.
+     * Note that {@link Instant} does not have hour fields.
+     *
+     * @param  date  class of object to test (may be {@code null}).
+     * @return whether the given class is {@link LocalTime}, {@link OffsetTime} or one of the classes with date + time.
+     *         This list may be expanded in future versions.
+     */
+    public static boolean hasTimeFields(final Class<?> date) {
+        return date == LocalTime.class
+            || date == OffsetTime.class
+            || date == LocalDateTime.class
+            || date == OffsetDateTime.class
+            || date == ZonedDateTime.class;
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.setup;
 
+import java.util.Locale;
 import java.util.Optional;
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -29,6 +30,19 @@ import org.apache.sis.internal.util.MetadataServices;
  * Methods in this class can be used for overriding SIS default values.
  * Those methods can be used in final applications, but should not be used by libraries
  * in order to avoid interfering with user's settings.
+ *
+ * <h2>Other system-wide configuration</h2>
+ * The following properties are defined by the standard Java environment.
+ * Apache SIS does not modify those properties but read them:
+ *
+ * <ul>
+ *   <li>{@link Locale#getDefault()} (sometime using {@link Locale.Category})</li>
+ *   <li>{@link java.nio.charset.Charset#defaultCharset()}</li>
+ *   <li>{@link java.util.TimeZone#getDefault()}</li>
+ *   <li>{@link System#lineSeparator()}</li>
+ *   <li>{@link java.io.File#pathSeparator}</li>
+ *   <li>{@link java.io.File#separator}</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -91,17 +105,25 @@ public final class Configuration {
      * {@preformat java
      *     import org.postgresql.ds.PGSimpleDataSource;
      *
-     *     // Class and method declarations omitted for brevity.
-     *     PGSimpleDataSource ds = new PGSimpleDataSource();
-     *     ds.setServerName("localhost");
-     *     ds.setDatabaseName("SpatialMetadata");
+     *     class MyClass {
+     *         private static DataSource createDataSource() {
+     *             PGSimpleDataSource ds = new PGSimpleDataSource();
+     *             ds.setServerName("localhost");
+     *             ds.setDatabaseName("SpatialMetadata");
+     *             return ds;
+     *         }
      *
-     *     // Registration assuming that a JNDI implementation is available
-     *     Context env = (Context) InitialContext.doLookup("java:comp/env");
-     *     env.bind("jdbc/SpatialMetadata", ds);
+     *         static initialize() {
+     *             if (WANT_TO_CONFIGURE_JNDI) {
+     *                 // Registration assuming that a JNDI implementation is available
+     *                 Context env = (Context) InitialContext.doLookup("java:comp/env");
+     *                 env.bind("jdbc/SpatialMetadata", createDataSource());
+     *             }
      *
-     *     // Registration without JNDI.
-     *     Configuration.current().setDatabase(() -> ds);
+     *             // Fallback if there is no JNDI or no "SpatialMetadata" entry.
+     *             Configuration.current().setDatabase(MyClass::createDataSource);
+     *         }
+     *     }
      * }
      *
      * This method can be invoked only before the first attempt to {@linkplain #getDatabase() get the database}.

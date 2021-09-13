@@ -72,7 +72,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @since 0.5
  * @module
  */
-@SuppressWarnings("CloneInNonCloneableClass")       // Decision left to subclasses - see javadoc
 public abstract class AbstractAttribute<V> extends Field<V> implements Serializable {
     /**
      * For cross-version compatibility.
@@ -490,7 +489,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      *         or one of its {@linkplain #characteristics() characteristics} can not be cloned.
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"CloneInNonCloneableClass", "unchecked"})
     public AbstractAttribute<V> clone() throws CloneNotSupportedException {
         final AbstractAttribute<V> clone = (AbstractAttribute<V>) super.clone();
         final Map<String,AbstractAttribute<?>> c = clone.characteristics;

@@ -53,7 +53,7 @@ import static org.apache.sis.internal.system.Modules.INTERNAL_CLASSNAME_PREFIX;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -313,6 +313,10 @@ public final class Classes extends Static {
      * the returned set will contain {@link java.util.List} (which is implemented directly)
      * together with its parent interfaces {@link Collection} and {@link Iterable}.
      *
+     * <h4>Elements ordering</h4>
+     * All interfaces implemented directly by the given type are first and in the order they are declared
+     * in the {@code implements} or {@code extends} clause. Parent interfaces are next.
+     *
      * @param  <T>   the compile-time type of the {@code Class} argument.
      * @param  type  the class or interface for which to get all implemented interfaces.
      * @return all implemented interfaces (not including the given {@code type} if it was an interface),
@@ -339,11 +343,13 @@ public final class Classes extends Static {
      *       while they can not cast {@code Set<Class<? super T>>} to {@code Set<Class<?>>}.</li>
      * </ul>
      *
+     * See {@link #getInterfaceSet(Class, Set)} javadoc for a note about elements order.
+     *
      * @param  type  the class or interface for which to get all implemented interfaces.
      * @return all implemented interfaces (not including the given {@code type} if it was an interface),
      *         or {@code null} if none. Callers can freely modify the returned set.
      */
-    static Set<Class<?>> getInterfaceSet(Class<?> type) {
+    private static Set<Class<?>> getInterfaceSet(Class<?> type) {
         Set<Class<?>> interfaces = null;
         while (type != null) {
             interfaces = getInterfaceSet(type, interfaces);
@@ -354,6 +360,16 @@ public final class Classes extends Static {
 
     /**
      * Adds to the given set every interfaces implemented by the given class or interface.
+     * This method invokes itself recursively for adding parent interfaces.
+     * The given type is <em>not</em> added to the set.
+     *
+     * <h4>Elements ordering</h4>
+     * All interfaces directly implemented by the given type are added first. Then parent interfaces
+     * are added recursively. The goal is to increase the chances to have the most specific types first.
+     * Example: suppose a class implementing two interfaces: {@code A extends C} and {@code B extends C}.
+     * If the parents of A were added immediately after A, we would get {A, C, B} order.
+     * But if instead we add all directly implemented interfaces before to add parents,
+     * then we get {A, B, C} order, which is better.
      *
      * @param  type   the type for which to add the interfaces in the given set.
      * @param  addTo  the set where to add interfaces, or {@code null} if not yet created.
@@ -362,11 +378,16 @@ public final class Classes extends Static {
      */
     private static Set<Class<?>> getInterfaceSet(final Class<?> type, Set<Class<?>> addTo) {
         final Class<?>[] interfaces = type.getInterfaces();
-        for (final Class<?> candidate : interfaces) {
+        for (int i=0; i<interfaces.length; i++) {
             if (addTo == null) {
                 addTo = new LinkedHashSet<>(hashMapCapacity(interfaces.length));
             }
-            if (addTo.add(candidate)) {
+            if (!addTo.add(interfaces[i])) {
+                interfaces[i] = null;           // Remember that this interface is already present.
+            }
+        }
+        for (final Class<?> candidate : interfaces) {
+            if (candidate != null) {
                 getInterfaceSet(candidate, addTo);
             }
         }
@@ -553,9 +574,9 @@ next:       for (final Class<?> candidate : candidates) {
     }
 
     /**
-     * Returns {@code true} if the two specified objects implements exactly the same set
-     * of interfaces. Only interfaces assignable to {@code baseInterface} are compared.
-     * Declaration order doesn't matter.
+     * Returns {@code true} if the two specified objects implements exactly the same set of interfaces.
+     * Only interfaces assignable to {@code baseInterface} are compared.
+     * Declaration order does not matter.
      *
      * <div class="note"><b>Example:</b>
      * in ISO 19111, different interfaces exist for different coordinate system (CS) geometries
@@ -564,14 +585,14 @@ next:       for (final Class<?> candidate : candidates) {
      *
      * {@preformat java
      *     if (implementSameInterfaces(cs1, cs2, CoordinateSystem.class)) {
-     *         // The two Coordinate System are of the same kind.
+     *         // The two Coordinate Systems are of the same kind.
      *     }
      * }
      * </div>
      *
-     * @param object1  the first object to check for interfaces.
-     * @param object2  the second object to check for interfaces.
-     * @param baseInterface  the parent of all interfaces to check.
+     * @param  object1  the first object to check for interfaces.
+     * @param  object2  the second object to check for interfaces.
+     * @param  baseInterface  the parent of all interfaces to check.
      * @return {@code true} if both objects implement the same set of interfaces,
      *         considering only sub-interfaces of {@code baseInterface}.
      */

@@ -16,8 +16,11 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Collections;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.Units;
+import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -29,7 +32,7 @@ import static org.junit.Assert.*;
  * Tests {@link Formulas}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -105,5 +108,18 @@ public final strictfp class FormulasTest extends TestCase {
         assertEquals("WGS 84", 298.2572235629972, Formulas.getInverseFlattening(6378137, 6356752.314245179), 1E-11);
         assertEquals("International 1924", 297, Formulas.getInverseFlattening(6378388, 6356911.9461279465), 1E-11);
         assertEquals("Clarke 1858", 294.26067636926103, Formulas.getInverseFlattening(20926348, 20855233), 1E-11);
+    }
+
+    /**
+     * Tests {@link Formulas#radiusOfConformalSphere(Ellipsoid, double)}.
+     * This test computes the Radius of Conformal Sphere using the values given by the
+     * IOGP Report 373-07-02 – <cite>Coordinate conversions and transformation including formulas</cite>
+     * for the <cite>Amersfoort / RD New</cite> projection (a Stereographic one).
+     */
+    @Test
+    public void testRadiusOfConformalSphere() {
+        final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createFlattenedSphere(
+                Collections.singletonMap(DefaultEllipsoid.NAME_KEY, "Bessel 1841"), 6377397.155, 299.1528128, Units.METRE);
+        assertEquals(6382644.571, Formulas.radiusOfConformalSphere(ellipsoid, StrictMath.toRadians(52.156160556)), 0.001);
     }
 }

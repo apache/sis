@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import java.util.Locale;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.LogRecord;
@@ -24,11 +23,11 @@ import java.net.URI;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
-import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
@@ -36,9 +35,9 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.IllegalNameException;
@@ -51,9 +50,10 @@ import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.geotiff.SchemaModifier;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.ListOfUnknownSize;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
@@ -65,7 +65,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -90,10 +90,33 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     private final URI location;
 
     /**
+     * Same value than {@link #location} but as a path, or {@code null} if none.
+     * Stored separately because conversion from path to URI back to path is not
+     * looseness (relative paths become absolutes).
+     *
+     * @todo May become an array later if we want to handle TFW and PRJ file here.
+     */
+    final Path path;
+
+    /**
      * The data store identifier created from the filename, or {@code null} if none.
      * Defined as a namespace for use as the scope of children resources (the images).
+     * This is created when first needed.
+     *
+     * <div class="note"><b>Design note:</b> we do not create this field in the constructor because
+     * its creation invokes the user-overrideable {@link #customize(int, GenericName)} method.</div>
+     *
+     * @see #namespace()
      */
-    final NameSpace identifier;
+    private NameSpace namespace;
+
+    /**
+     * Whether {@link #namespace} has been determined.
+     * Note that the resulting namespace may still be null.
+     *
+     * @see #namespace()
+     */
+    private boolean isNamespaceSet;
 
     /**
      * The metadata, or {@code null} if not yet created.
@@ -110,6 +133,17 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     private List<GridCoverageResource> components;
 
     /**
+     * Whether this {@code GeotiffStore} will be hidden. If {@code true}, then some metadata that would
+     * normally be provided in this {@code GeoTiffStore} will be provided by individual components instead.
+     */
+    final boolean hidden;
+
+    /**
+     * The user-specified method for customizing the band definitions. Never {@code null}.
+     */
+    final SchemaModifier customizer;
+
+    /**
      * Creates a new GeoTIFF store from the given file, URL or stream object.
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
@@ -119,30 +153,82 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @throws DataStoreException if an error occurred while opening the GeoTIFF file.
      */
     public GeoTiffStore(final GeoTiffStoreProvider provider, final StorageConnector connector) throws DataStoreException {
-        super(provider, connector);
+        this(null, provider, connector, false);
+    }
+
+    /**
+     * Creates a new GeoTIFF store as a component of a larger data store.
+     *
+     * <div class="note"><b>Example:</b>
+     * A Landsat data set is a collection of files in a directory or ZIP file,
+     * which includes more than 10 GeoTIFF files (one image per band or product for a scene).
+     * {@link org.apache.sis.storage.earthobservation.LandsatStore} is a data store opening the Landsat
+     * metadata file as the main file, then opening each band/product using a GeoTIFF data store.
+     * Those bands/products are components of the Landsat data store.</div>
+     *
+     * If the {@code hidden} parameter is {@code true}, some metadata that would normally be provided
+     * in this {@code GeoTiffStore} will be provided by individual components instead.
+     *
+     * @param  parent     the parent that contains this new GeoTIFF store component, or {@code null} if none.
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @param  hidden     {@code true} if this GeoTIFF store will not be directly accessible from the parent.
+     *                    It is the case if the parent store will expose only some {@linkplain #components()
+     *                    components} instead of the GeoTIFF store itself.
+     * @throws DataStoreException if an error occurred while opening the GeoTIFF file.
+     *
+     * @since 1.1
+     */
+    public GeoTiffStore(final DataStore parent, final DataStoreProvider provider, final StorageConnector connector,
+                        final boolean hidden) throws DataStoreException
+    {
+        super(parent, provider, connector, hidden);
+        this.hidden = hidden;
+
+        final SchemaModifier customizer = connector.getOption(SchemaModifier.OPTION);
+        this.customizer = (customizer != null) ? customizer : SchemaModifier.DEFAULT;
+
         final Charset encoding = connector.getOption(OptionKey.ENCODING);
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
+
         final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
         if (input == null) {
             throw new UnsupportedStorageException(super.getLocale(), Constants.GEOTIFF,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
         location = connector.getStorageAs(URI.class);
+        path = connector.getStorageAs(Path.class);
         connector.closeAllExcept(input);
         try {
             reader = new Reader(this, input);
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
-        if (location != null) {
+    }
+
+    /**
+     * Returns the namespace to use in identifier of components, or {@code null} if none.
+     * This method must be invoked inside a block synchronized on {@code this}.
+     */
+    final NameSpace namespace() throws DataStoreException {
+        if (!isNamespaceSet && reader != null) {
             final NameFactory f = reader.nameFactory;
-            String filename = IOUtilities.filenameWithoutExtension(input.filename);
-            if (Numerics.isUnsignedInteger(filename)) filename += ".tiff";
-            identifier = f.createNameSpace(f.createLocalName(null, filename), null);
-        } else {
-            // Location not convertible to URI. The string representation is probably a class name, which is not useful.
-            identifier = null;
+            GenericName name = null;
+            /*
+             * We test `location != null` because if the location was not convertible to URI,
+             * then the string representation is probably a class name, which is not useful.
+             */
+            if (location != null) {
+                String filename = IOUtilities.filenameWithoutExtension(reader.input.filename);
+                name = f.createLocalName(null, filename);
+            }
+            name = customizer.customize(-1, name);
+            if (name != null) {
+                namespace = f.createNameSpace(name, null);
+            }
+            isNamespaceSet = true;
         }
+        return namespace;
     }
 
     /**
@@ -178,7 +264,25 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
-        return (identifier != null) ? Optional.of(identifier.name()) : Optional.empty();
+        final NameSpace namespace;
+        synchronized (this) {
+            namespace = namespace();
+        }
+        return (namespace != null) ? Optional.of(namespace.name()) : Optional.empty();
+    }
+
+    /**
+     * Sets the {@code metadata/identificationInfo/resourceFormat} node to "GeoTIFF" format.
+     */
+    final void setFormatInfo(final MetadataBuilder builder) {
+        try {
+            builder.setFormat(Constants.GEOTIFF);
+        } catch (MetadataStoreException e) {
+            builder.addFormatName(Constants.GEOTIFF);
+            listeners.warning(e);
+        }
+        builder.addEncoding(encoding, MetadataBuilder.Scope.METADATA);
+        builder.addResourceScope(ScopeCode.valueOf("COVERAGE"), null);
     }
 
     /**
@@ -193,36 +297,31 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
             final Reader reader = reader();
-            final MetadataBuilder builder = reader.metadata;
-            try {
-                builder.setFormat(Constants.GEOTIFF);
-            } catch (MetadataStoreException e) {
-                builder.addFormatName(Constants.GEOTIFF);
-                listeners.warning(e);
-            }
-            builder.addEncoding(encoding, MetadataBuilder.Scope.METADATA);
-            builder.addResourceScope(ScopeCode.valueOf("COVERAGE"), null);
-            final Locale locale = getLocale();
+            final MetadataBuilder builder = new MetadataBuilder();
+            setFormatInfo(builder);
             int n = 0;
             try {
                 ImageFileDirectory dir;
                 while ((dir = reader.getImageFileDirectory(n++)) != null) {
-                    dir.completeMetadata(builder, locale);
+                    builder.addFromComponent(dir.getMetadata());
                 }
             } catch (IOException e) {
                 throw errorIO(e);
-            } catch (FactoryException | ArithmeticException e) {
-                throw new DataStoreContentException(getLocale(), Constants.GEOTIFF, reader.input.filename, null).initCause(e);
+            } catch (ArithmeticException e) {
+                listeners.warning(e);
             }
             /*
              * Add the filename as an identifier only if the input was something convertible to URI (URL, File or Path),
              * otherwise reader.input.filename may not be useful; it may be just the InputStream classname. If the TIFF
-             * file did not specified any ImageDescription tag, then we will had the filename as a title instead than an
+             * file did not specified any ImageDescription tag, then we will add the filename as a title instead than an
              * identifier because the title is mandatory in ISO 19115 metadata.
              */
             getIdentifier().ifPresent((id) -> builder.addTitleOrIdentifier(id.toString(), MetadataBuilder.Scope.ALL));
             builder.setISOStandards(true);
-            metadata = builder.build(true);
+            final DefaultMetadata md = builder.build(false);
+            metadata = customizer.customize(-1, md);
+            if (metadata == null) metadata = md;
+            md.transitionTo(DefaultMetadata.State.FINAL);
         }
         return metadata;
     }

@@ -47,7 +47,7 @@ public final class LambertCylindricalEqualAreaSpherical extends MapProjection {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
                 .addIdentifier(IDENTIFIER)
@@ -55,7 +55,7 @@ public final class LambertCylindricalEqualAreaSpherical extends MapProjection {
                 .createGroupForMapProjection(
                         LambertCylindricalEqualArea.STANDARD_PARALLEL,
                         LambertCylindricalEqualArea.LONGITUDE_OF_ORIGIN,
-                        Mercator2SP.SCALE_FACTOR,           // Not formally a Cylindrical Equal Area parameter.
+                        LambertCylindricalEqualArea.SCALE_FACTOR,   // Not formally a Cylindrical Equal Area parameter.
                         LambertCylindricalEqualArea.FALSE_EASTING,
                         LambertCylindricalEqualArea.FALSE_NORTHING);
     }

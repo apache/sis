@@ -47,7 +47,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -271,7 +271,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
              * We don't cache all elements in order to avoid yet more complex code, and this cover
              * the majority of cases where the collection has only one element anyway.
              *
-             * Note: subIndex is ≧ 0 only if node is an instance of CollectionElement.
+             * Note: subIndex is ≥ 0 only if node is an instance of CollectionElement.
              * A ClassCastException below would be a logical error in this class.
              */
             if (node == null || ((TreeNode.CollectionElement) node).indexInList != subIndex) {
@@ -317,6 +317,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      */
     @Override
     public boolean isEmpty() {
+        if (titleProperty >= 0) return size() == 0;     // COUNT_FIRST is not reliable in this case.
         return accessor.count(metadata, parent.table.valuePolicy, PropertyAccessor.COUNT_FIRST) == 0;
     }
 

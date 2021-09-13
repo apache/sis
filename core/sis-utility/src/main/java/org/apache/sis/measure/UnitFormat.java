@@ -890,7 +890,7 @@ appPow: if (unit == null) {
      *
      * @param  unit        the unit to format.
      * @param  toAppendTo  where to format the unit.
-     * @param  pos         where to store the position of a formatted field.
+     * @param  pos         where to store the position of a formatted field, or {@code null} if none.
      * @return the given {@code toAppendTo} argument, for method calls chaining.
      */
     @Override
@@ -1138,7 +1138,7 @@ appPow: if (unit == null) {
             }
             /*
              * Not an EPSG code. Maybe it is a URI like this example:
-             * http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
+             * http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
              *
              * If we find such 'uom' value, we could replace 'symbols' by that 'uom'. But it would cause a wrong
              * error index to be reported in case of parsing failure. We will rather try to adjust the indices
@@ -1187,7 +1187,7 @@ scan:   for (int n; i < end; i += n) {
                     // else fall through.
                 }
                 /*
-                 * For any character that are is not an operator or parenthesis, either continue the scanning of
+                 * For any character that is not an operator or parenthesis, either continue the scanning of
                  * characters or stop it, depending on whether the character is valid for a unit symbol or not.
                  * In the later case, we consider that we reached the end of a unit symbol.
                  */

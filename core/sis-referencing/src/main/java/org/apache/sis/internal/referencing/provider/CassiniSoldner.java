@@ -37,7 +37,7 @@ import org.apache.sis.parameter.Parameters;
  * @module
  */
 @XmlTransient
-public final class CassiniSoldner extends MapProjection {
+public class CassiniSoldner extends MapProjection {
     /**
      * For cross-version compatibility.
      */
@@ -132,7 +132,7 @@ public final class CassiniSoldner extends MapProjection {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
                 .addIdentifier(              "9806")
@@ -158,12 +158,19 @@ public final class CassiniSoldner extends MapProjection {
     }
 
     /**
+     * Constructs a provider from a set of parameters.
+     */
+    CassiniSoldner(final ParameterDescriptorGroup parameters) {
+        super(parameters);
+    }
+
+    /**
      * {@inheritDoc}
      *
      * @return the map projection created from the given parameter values.
      */
     @Override
-    protected NormalizedProjection createProjection(final Parameters parameters) {
+    protected final NormalizedProjection createProjection(final Parameters parameters) {
         return new org.apache.sis.referencing.operation.projection.CassiniSoldner(this, parameters);
     }
 }

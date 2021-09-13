@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Arrays;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 
@@ -36,7 +35,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
  * an {@link java.awt.geom.AffineTransform} for every 2D affine conversions.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -326,72 +325,61 @@ final class CopyTransform extends AbstractLinearTransform {
     }
 
     /**
-     * Creates the inverse transform of this object.
+     * Invoked by {@link #inverse()} the first time that the inverse transform needs to be computed.
      */
     @Override
-    @SuppressWarnings("DoubleCheckedLocking")                                   // Okay since 'inverse' is volatile.
-    public LinearTransform inverse() throws NoninvertibleTransformException {
-        LinearTransform inv = inverse;
-        if (inv == null) {
-            synchronized (this) {
-                inv = inverse;
-                if (inv == null) {
-                    /*
-                     * Note: no need to perform the following check at this point because MathTransforms.linear(…)
-                     *       should never instantiate this class in the identity case and because we perform an
-                     *       equivalent check later anyway.
-                     *
-                     *       if (isIdentity()) {
-                     *           inverse = this;
-                     *       } else { ... }
-                     */
-                    final int srcDim = this.srcDim;
-                    final int dstDim = indices.length;
-                    final int[] reverse = new int[srcDim];
-                    Arrays.fill(reverse, -1);
-                    for (int i=dstDim; --i>=0;) {
-                        reverse[indices[i]] = i;
+    final LinearTransform createInverse() {
+        /*
+         * Note: no need to perform the following check at this point because MathTransforms.linear(…)
+         *       should never instantiate this class in the identity case and because we perform an
+         *       equivalent check later anyway.
+         *
+         *       if (isIdentity()) {
+         *           inverse = this;
+         *       } else { ... }
+         */
+        final int srcDim = this.srcDim;
+        final int dstDim = indices.length;
+        final int[] reverse = new int[srcDim];
+        Arrays.fill(reverse, -1);
+        for (int i=dstDim; --i>=0;) {
+            reverse[indices[i]] = i;
+        }
+        /*
+         * Check if there is any unassigned dimension. In such case,
+         * delegates to the generic ProjectiveTransform with a matrix
+         * which set the missing values to NaN.
+         */
+        for (int j=srcDim; --j>=0;) {
+            if (reverse[j] < 0) {
+                final MatrixSIS matrix = Matrices.createZero(srcDim + 1, dstDim + 1);
+                for (j=0; j<srcDim; j++) {      // Okay to reuse `j` since the outer loop will not continue.
+                    final int i = reverse[j];
+                    if (i >= 0) {
+                        matrix.setElement(j, i, 1);
+                    } else {
+                        matrix.setElement(j, dstDim, Double.NaN);
                     }
-                    /*
-                     * Check if there is any unassigned dimension. In such case,
-                     * delegates to the generic ProjectiveTransform with a matrix
-                     * which set the missing values to NaN.
-                     */
-                    for (int j=srcDim; --j>=0;) {
-                        if (reverse[j] < 0) {
-                            final MatrixSIS matrix = Matrices.createZero(srcDim + 1, dstDim + 1);
-                            for (j=0; j<srcDim; j++) {      // Okay to reuse 'j' since the outer loop will not continue.
-                                final int i = reverse[j];
-                                if (i >= 0) {
-                                    matrix.setElement(j, i, 1);
-                                } else {
-                                    matrix.setElement(j, dstDim, Double.NaN);
-                                }
-                            }
-                            matrix.setElement(srcDim, dstDim, 1);
-                            inv = MathTransforms.linear(matrix);
-                            if (inv instanceof AbstractLinearTransform) {
-                                ((AbstractLinearTransform) inv).inverse = this;
-                            }
-                            inverse = inv;
-                            return inv;
-                        }
-                    }
-                    /*
-                     * At this point, we know that we can create the inverse transform.
-                     * If this transform is the identity transform or an anti-diagonal matrix except last row
-                     * (e.g. matrix used for swapping axis order), then the old and new arrays would be equal.
-                     */
-                    CopyTransform copyInverse = this;
-                    if (!Arrays.equals(reverse, indices)) {
-                        copyInverse = new CopyTransform(indices.length, reverse);
-                        copyInverse.inverse = this;
-                    }
-                    inverse = inv = copyInverse;
                 }
+                matrix.setElement(srcDim, dstDim, 1);
+                final LinearTransform inv = MathTransforms.linear(matrix);
+                if (inv instanceof AbstractLinearTransform) {
+                    ((AbstractLinearTransform) inv).inverse = this;
+                }
+                return inv;
             }
         }
-        return inv;
+        /*
+         * At this point, we know that we can create the inverse transform.
+         * If this transform is the identity transform or an anti-diagonal matrix except last row
+         * (e.g. matrix used for swapping axis order), then the old and new arrays would be equal.
+         */
+        CopyTransform copyInverse = this;
+        if (!Arrays.equals(reverse, indices)) {
+            copyInverse = new CopyTransform(indices.length, reverse);
+            copyInverse.inverse = this;
+        }
+        return copyInverse;
     }
 
     /**

@@ -105,7 +105,7 @@ public final strictfp class RewindableLineReaderTest extends TestCase {
 
             /**
              * Transfers at most {@value #TRANSFERT_SIZE} bytes. We put a limit in the number of bytes
-             * to be transfered in order to cause {@link BufferedReader} to invalidate the mark sooner
+             * to be transferred in order to cause {@link BufferedReader} to invalidate the mark sooner
              * than waiting that we have filled the buffer.
              */
             @Override public int read(final byte[] buffer, int offset, int length) {

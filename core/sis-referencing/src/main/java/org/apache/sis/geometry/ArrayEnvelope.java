@@ -369,7 +369,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     static String illegalRange(final CoordinateReferenceSystem crs,
             final int dimension, final double lower, final double upper)
     {
-        Object name = IdentifiedObjects.getName(getAxis(crs, dimension), null);
+        Object name = IdentifiedObjects.getDisplayName(getAxis(crs, dimension), null);
         if (name == null) {
             name = dimension;       // Paranoiac fallback (name should never be null).
         }

@@ -47,6 +47,7 @@ import java.sql.PreparedStatement;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
@@ -57,6 +58,7 @@ import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -747,12 +749,12 @@ public class MetadataSource implements AutoCloseable {
              * Builds the SQL statement with the resolved value.
              */
             if (helper.isEmpty()) {
-                helper.append("SELECT ").appendIdentifier(ID_COLUMN).append(" FROM ")
+                helper.append(SQLBuilder.SELECT).appendIdentifier(ID_COLUMN).append(" FROM ")
                         .appendIdentifier(schema, table).append(" WHERE ");
             } else {
                 helper.append(" AND ");
             }
-            helper.appendIdentifier(column).appendCondition(value);
+            helper.appendIdentifier(column).appendCondition(toStorableValue(value));
         }
         /*
          * The SQL statement is ready, with metadata dependency (if any) resolved. We can now execute it.
@@ -775,6 +777,18 @@ public class MetadataSource implements AutoCloseable {
             }
         }
         return identifier;
+    }
+
+    /**
+     * Converts the given object to a value that can be stored in the database.
+     *
+     * @throws FactoryException if an error occurred while using the geodetic database.
+     */
+    static Object toStorableValue(Object value) throws FactoryException {
+        if (value instanceof IdentifiedObject) {
+            value = ReferencingServices.getInstance().getPreferredIdentifier((IdentifiedObject) value);
+        }
+        return value;
     }
 
     /**

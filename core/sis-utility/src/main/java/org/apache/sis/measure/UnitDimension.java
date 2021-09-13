@@ -48,7 +48,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  *
  * <ul>
  *   <li>Voltage noise density measured per √(Hz).</li>
- *   <li><a href="http://en.wikipedia.org/wiki/Specific_detectivity">Specific detectivity</a>
+ *   <li><a href="https://en.wikipedia.org/wiki/Specific_detectivity">Specific detectivity</a>
  *       as T^2.5 / (M⋅L) dimension.</li>
  * </ul>
  *

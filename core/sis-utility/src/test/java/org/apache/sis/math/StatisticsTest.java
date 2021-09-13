@@ -141,7 +141,7 @@ public final strictfp class StatisticsTest extends TestCase {
 
     /**
      * Tests the statistics starting with a number big enough to make the code fails if we were
-     * not using the <a href="http://en.wikipedia.org/wiki/Kahan_summation_algorithm">Kahan
+     * not using the <a href="https://en.wikipedia.org/wiki/Kahan_summation_algorithm">Kahan
      * summation algorithm</a>.
      */
     @Test

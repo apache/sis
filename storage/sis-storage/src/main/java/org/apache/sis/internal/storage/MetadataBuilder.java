@@ -45,14 +45,18 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.identification.Identification;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.spatial.GCP;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.metadata.spatial.GeolocationInformation;
+import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
+import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.constraint.Restriction;
+import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -60,7 +64,10 @@ import org.opengis.metadata.acquisition.Context;
 import org.opengis.metadata.acquisition.OperationType;
 import org.opengis.metadata.identification.Progress;
 import org.opengis.metadata.identification.KeywordType;
+import org.opengis.metadata.identification.Resolution;
 import org.opengis.metadata.identification.TopicCategory;
+import org.opengis.metadata.distribution.Distribution;
+import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.quality.Element;
 import org.opengis.geometry.DirectPosition;
@@ -88,6 +95,7 @@ import org.apache.sis.metadata.iso.spatial.DefaultGCPCollection;
 import org.apache.sis.metadata.iso.spatial.DefaultGCP;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
+import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription;
 import org.apache.sis.metadata.iso.content.DefaultRangeElementDescription;
@@ -95,6 +103,7 @@ import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
+import org.apache.sis.metadata.iso.citation.DefaultSeries;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
@@ -127,8 +136,11 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
@@ -138,8 +150,10 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
 // Branch-dependent imports
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.identification.CharacterSet;
-import org.apache.sis.feature.DefaultFeatureType;
+import org.opengis.metadata.identification.DataIdentification;
+import org.opengis.metadata.acquisition.AcquisitionInformation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
+import org.apache.sis.feature.DefaultFeatureType;
 
 
 /**
@@ -151,7 +165,8 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -266,6 +281,19 @@ public class MetadataBuilder {
             citation = new DefaultCitation();
         }
         return citation;
+    }
+
+    /**
+     * Returns the information about the series, or aggregate dataset, of which the dataset is a part.
+     */
+    private DefaultSeries series() {
+        final DefaultCitation citation = citation();
+        DefaultSeries series = DefaultSeries.castOrCopy(citation.getSeries());
+        if (series == null) {
+            series = new DefaultSeries();
+            citation.setSeries(series);
+        }
+        return series;
     }
 
     /**
@@ -452,7 +480,7 @@ public class MetadataBuilder {
      */
     private DefaultSampleDimension sampleDimension() {
         if (sampleDimension == null) {
-            sampleDimension = new DefaultSampleDimension();
+            sampleDimension = electromagnetic ? new DefaultBand() : new DefaultSampleDimension();
         }
         return sampleDimension;
     }
@@ -528,8 +556,9 @@ public class MetadataBuilder {
     private DefaultFormat format() {
         DefaultFormat df = DefaultFormat.castOrCopy(format);
         if (df == null) {
-            format = df = new DefaultFormat();
+            df = new DefaultFormat();
         }
+        format = df;
         return df;
     }
 
@@ -914,8 +943,9 @@ public class MetadataBuilder {
     /**
      * Adds a resource (data) identifier, a metadata identifier, or both as they are often the same.
      * The identifier is added only if {@code code} is non-null, regardless other argument values.
-     * Empty strings (ignoring spaces) are ignored.
-     * Storages locations are:
+     * Empty strings (ignoring spaces) are considered as null.
+     * The identifier is not added if already presents.
+     * Storage locations are:
      *
      * <ul>
      *   <li><b>Metadata:</b> {@code metadata/metadataIdentifier}</li>
@@ -932,7 +962,8 @@ public class MetadataBuilder {
      */
     public final void addIdentifier(final CharSequence authority, String code, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
-        if (code != null && !(code = code.trim()).isEmpty()) {
+        code = Strings.trimOrNull(code);
+        if (code != null) {
             final Identifier id = sharedIdentifier(authority, code);
             if (scope != Scope.RESOURCE) metadata().setMetadataIdentifier(id);
             if (scope != Scope.METADATA) addIfNotPresent(citation().getIdentifiers(), id);
@@ -1145,7 +1176,10 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds a title or alternate title of the resource.
+     * Adds a title or alternate title of the resource, if not already present.
+     * This operation does nothing if the title is already defined and the given
+     * title is already used as an identifier (this policy is a complement of the
+     * {@link #addTitleOrIdentifier(String, Scope)} behavior).
      * Storage location is:
      *
      * <ul>
@@ -1165,6 +1199,11 @@ public class MetadataBuilder {
             if (current == null) {
                 citation.setTitle(i18n);
             } else if (!equals(current, i18n)) {
+                for (final Identifier id : citation.getIdentifiers()) {
+                    if (CharSequences.equalsFiltered(title, id.getCode(), Characters.Filter.LETTERS_AND_DIGITS, true)) {
+                        return;
+                    }
+                }
                 addIfNotPresent(citation.getAlternateTitles(), i18n);
             }
         }
@@ -1211,6 +1250,59 @@ public class MetadataBuilder {
         if (i18n != null) {
             final DefaultCitation citation = citation();
             citation.setEdition(append(citation.getEdition(), i18n));
+        }
+    }
+
+    /**
+     * Adds the name of the series, or aggregate dataset, of which the dataset is a part.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/citation/series/name}</li>
+     * </ul>
+     *
+     * @param  name  name of the series, or {@code null} for no-operation.
+     */
+    public final void addSeries(final CharSequence name) {
+        final InternationalString i18n = trim(name);
+        if (i18n != null) {
+            final DefaultSeries series = series();
+            series.setName(append(series.getName(), i18n));
+        }
+    }
+
+    /**
+     * Adds details on which pages of the publication the article was published.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/citation/series/page}</li>
+     * </ul>
+     *
+     * @param  page  the page, or {@code null} for no-operation.
+     */
+    public final void addPage(final CharSequence page) {
+        if (page != null) {
+            final DefaultSeries series = series();
+            series.setPage(page.toString());
+        }
+    }
+
+    /**
+     * Adds details on which pages of the publication the article was published.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/citation/series/page}</li>
+     * </ul>
+     *
+     * @param  page   the page number, or 0 or negative for no-operation.
+     * @param  total  the total number of pages, or 0 or negative if unknown.
+     */
+    public final void addPage(final int page, final int total) {
+        if (page > 0) {
+            addPage(Vocabulary.formatInternational(
+                    (total > 0) ? Vocabulary.Keys.Page_2 : Vocabulary.Keys.Page_1, page, total));
         }
     }
 
@@ -1881,7 +1973,9 @@ parse:      for (int i = 0; i < length;) {
      * Note that the {@link FeatureCatalogBuilder} subclasses can also be used for that chaining.
      *
      * @param  type         the feature type to add, or {@code null} for no-operation.
-     * @param  occurrences  number of instances of the given feature type, or a negative value if unknown.
+     * @param  occurrences  number of instances of the given feature type, or a negative value if unknown. Note that if
+     *                      this value is 0, it will be considered "unknown", because ISO-19115 consider it invalid.
+     *                      However, this is a valid case in practice (it represents an empty dataset at the moment).
      * @return the name of the added feature, or {@code null} if none.
      *
      * @see FeatureCatalogBuilder#define(DefaultFeatureType)
@@ -1891,7 +1985,14 @@ parse:      for (int i = 0; i < length;) {
             final GenericName name = type.getName();
             if (name != null) {
                 final DefaultFeatureTypeInfo info = new DefaultFeatureTypeInfo(name);
-                if (occurrences >= 0) {
+                /*
+                 * Note: Exclude 0 as valid instance count.
+                 * Reason: ISO-19115 consider 0 (empty dataset) as an invalid count. However, in practice, it can happen
+                 * to open data sources that contain no record. They're still valid datasets, because as long as their
+                 * structure is valid, there's no point in raising an error (at our level, without any other context
+                 * information) here.
+                 */
+                if (occurrences > 0) {
                     info.setFeatureInstanceCount(shared((int) Math.min(occurrences, Integer.MAX_VALUE)));
                 }
                 addIfNotPresent(featureDescription().getFeatureTypeInfo(), info);
@@ -1922,7 +2023,7 @@ parse:      for (int i = 0; i < length;) {
      * Adds and populates a "spatial representation info" node using the given grid geometry.
      * This method invokes implicitly {@link #newGridRepresentation(GridType)}, unless this
      * method returns {@code false} in which case nothing has been done.
-     * Storage location is:
+     * Storage locations are:
      *
      * <ul>
      *   <li>{@code metadata/spatialRepresentationInfo/transformationDimensionDescription}</li>
@@ -2258,19 +2359,11 @@ parse:      for (int i = 0; i < length;) {
     public final void addNewBand(final SampleDimension band) {
         if (band != null) {
             newSampleDimension();
-            final GenericName g = band.getName();
-            if (g != null) {
-                final MemberName name;
-                if (g instanceof MemberName) {
-                    name = (MemberName) g;
-                } else {
-                    name = Names.createMemberName(null, null, g.tip().toString(), String.class);
-                }
-                setBandIdentifier(name);
-            }
-            band.getSampleRange().ifPresent((range) -> {
-                addMinimumSampleValue(range.getMinDouble(true));
-                addMaximumSampleValue(range.getMaxDouble(true));
+            setBandIdentifier(band.getName());
+            // Really `getMeasurementRange()`, not `getSampleRange()`.
+            band.getMeasurementRange().ifPresent((range) -> {
+                addMinimumSampleValue(range.getMinDouble());
+                addMaximumSampleValue(range.getMaxDouble());
             });
             band.getTransferFunctionFormula().ifPresent((tr) -> {
                 setTransferFunction(tr.getScale(), tr.getOffset());
@@ -2292,22 +2385,32 @@ parse:      for (int i = 0; i < length;) {
      *
      * @param  sequenceIdentifier  the band name or number, or {@code null} for no-operation.
      */
-    public final void setBandIdentifier(final MemberName sequenceIdentifier) {
+    public final void setBandIdentifier(final GenericName sequenceIdentifier) {
         if (sequenceIdentifier != null) {
-            sampleDimension().setSequenceIdentifier(sequenceIdentifier);
+            final MemberName name;
+            if (sequenceIdentifier instanceof MemberName) {
+                name = (MemberName) sequenceIdentifier;
+            } else {
+                name = Names.createMemberName(null, null, sequenceIdentifier.tip().toString(), Integer.class);
+            }
+            sampleDimension().setSequenceIdentifier(name);
         }
     }
 
     /**
      * Sets the number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
      * This is a convenience method for {@link #setBandIdentifier(MemberName)} when the band is specified only
-     * by a number.
+     * by a number. Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/sequenceIdentifier}</li>
+     * </ul>
      *
      * @param  sequenceIdentifier  the band number, or 0 or negative if none.
      */
     public final void setBandIdentifier(final int sequenceIdentifier) {
         if (sequenceIdentifier > 0) {
-            setBandIdentifier(Names.createMemberName(null, null, sequenceIdentifier));
+            sampleDimension().setSequenceIdentifier(Names.createMemberName(null, null, sequenceIdentifier));
         }
     }
 
@@ -2326,7 +2429,8 @@ parse:      for (int i = 0; i < length;) {
      * @param  name       the band name, or {@code null} for no-operation.
      */
     public final void addBandName(final CharSequence authority, String name) {
-        if (name != null && !(name = name.trim()).isEmpty()) {
+        name = Strings.trimOrNull(name);
+        if (name != null) {
             addIfNotPresent(sampleDimension().getNames(), sharedIdentifier(authority, name));
         }
     }
@@ -2378,15 +2482,17 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Adds a minimal value for the current sample dimension. If a minimal value was already defined, then
-     * the new value will be set only if it is smaller than the existing one. {@code NaN} values are ignored.
-     * If a coverage contains more than one band, additional bands can be created by calling
-     * {@link #newSampleDimension()} before to call this method.
+     * Adds a minimal value for the current sample dimension. The value should be in the unit of measurement
+     * specified by {@link #setSampleUnits(Unit)}. If a minimal value was already defined, then the new value
+     * will be set only if it is smaller than the existing one. {@code NaN} values are ignored.
      * Storage location is:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/attributeGroup/attribute/minValue}</li>
      * </ul>
+     *
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
      *
      * @param value  the minimal value to add to the existing range of sample values, or {@code NaN} for no-operation.
      */
@@ -2401,15 +2507,17 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Adds a maximal value for the current sample dimension. If a maximal value was already defined, then
-     * the new value will be set only if it is greater than the existing one. {@code NaN} values are ignored.
-     * If a coverage contains more than one band, additional bands can be created by calling
-     * {@link #newSampleDimension()} before to call this method.
+     * Adds a maximal value for the current sample dimension. The value should be in the unit of measurement
+     * specified by {@link #setSampleUnits(Unit)}. If a maximal value was already defined, then the new value
+     * will be set only if it is greater than the existing one. {@code NaN} values are ignored.
      * Storage location is:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/attributeGroup/attribute/maxValue}</li>
      * </ul>
+     *
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
      *
      * @param value  the maximal value to add to the existing range of sample values, or {@code NaN} for no-operation.
      */
@@ -2424,14 +2532,25 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Returns {@code true} if current band has the minimum or maximum value defined.
+     *
+     * @return whether minimum or maximum value is defined for current band.
+     */
+    public final boolean hasSampleValueRange() {
+        return (sampleDimension != null)
+                && (sampleDimension.getMinValue() != null || sampleDimension.getMaxValue() != null);
+    }
+
+    /**
      * Sets the units of data in the current band.
-     * If a coverage contains more than one band, additional bands can be created by calling
-     * {@link #newSampleDimension()} before to call this method.
      * Storage location is:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/attributeGroup/attribute/unit}</li>
      * </ul>
+     *
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
      *
      * @param  unit  units of measurement of sample values.
      */
@@ -2444,8 +2563,6 @@ parse:      for (int i = 0; i < length;) {
     /**
      * Sets the scale factor and offset which have been applied to the cell value.
      * The transfer function type is declared {@linkplain TransferFunctionType#LINEAR linear}
-     * If a coverage contains more than one band, additional bands can be created by calling
-     * {@link #newSampleDimension()} before to call this method.
      * Storage location is:
      *
      * <ul>
@@ -2453,6 +2570,9 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/contentInfo/attributeGroup/attribute/offset}</li>
      *   <li>{@code metadata/contentInfo/attributeGroup/attribute/transferFunctionType}</li>
      * </ul>
+     *
+     * If a coverage contains more than one band, additional bands can be created by calling
+     * {@link #newSampleDimension()} before to call this method.
      *
      * @param scale   the scale factor which has been applied to the cell value.
      * @param offset  the physical value corresponding to a cell value of zero.
@@ -2499,11 +2619,9 @@ parse:      for (int i = 0; i < length;) {
      *                          or {@code null} for no-operation.
      */
     public final void setProcessingLevelCode(final CharSequence authority, String processingLevel) {
+        processingLevel = Strings.trimOrNull(processingLevel);
         if (processingLevel != null) {
-            processingLevel = processingLevel.trim();
-            if (!processingLevel.isEmpty()) {
-                coverageDescription().setProcessingLevelCode(sharedIdentifier(authority, processingLevel));
-            }
+            coverageDescription().setProcessingLevelCode(sharedIdentifier(authority, processingLevel));
         }
     }
 
@@ -2583,7 +2701,8 @@ parse:      for (int i = 0; i < length;) {
      * @param  identifier  identifier of the platform to add, or {@code null} for no-operation.
      */
     public final void addPlatform(final CharSequence authority, String identifier) {
-        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+        identifier = Strings.trimOrNull(identifier);
+        if (identifier != null) {
             if (platform != null) {
                 final Identifier current = platform.getIdentifier();
                 if (current != null) {
@@ -2610,7 +2729,8 @@ parse:      for (int i = 0; i < length;) {
      * @param  identifier  identifier of the sensor to add, or {@code null} for no-operation.
      */
     public final void addInstrument(final CharSequence authority, String identifier) {
-        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+        identifier = Strings.trimOrNull(identifier);
+        if (identifier != null) {
             final DefaultInstrument instrument = new DefaultInstrument();
             instrument.setIdentifier(sharedIdentifier(authority, identifier));
             addIfNotPresent(platform().getInstruments(), instrument);
@@ -2655,7 +2775,8 @@ parse:      for (int i = 0; i < length;) {
      * @param  identifier  unique identification of the operation, or {@code null} for no-operation.
      */
     public final void addAcquisitionOperation(final CharSequence program, String identifier) {
-        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+        identifier = Strings.trimOrNull(identifier);
+        if (identifier != null) {
             final DefaultOperation r = new DefaultOperation();
             r.setIdentifier(sharedIdentifier(program, identifier));
             addIfNotPresent(acquisition().getOperations(), r);
@@ -2674,7 +2795,8 @@ parse:      for (int i = 0; i < length;) {
      * @param  identifier  unique name or code for the requirement, or {@code null} for no-operation.
      */
     public final void addAcquisitionRequirement(final CharSequence authority, String identifier) {
-        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+        identifier = Strings.trimOrNull(identifier);
+        if (identifier != null) {
             final DefaultRequirement r = new DefaultRequirement();
             r.setIdentifier(sharedIdentifier(authority, identifier));
             addIfNotPresent(acquisition().getAcquisitionRequirements(), r);
@@ -2809,7 +2931,8 @@ parse:      for (int i = 0; i < length;) {
      * @see #addSource(CharSequence, ScopeCode, CharSequence)
      */
     public final void addProcessing(final CharSequence authority, String identifier) {
-        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+        identifier = Strings.trimOrNull(identifier);
+        if (identifier != null) {
             if (processing != null) {
                 final Identifier current = processing.getIdentifier();
                 if (current != null) {
@@ -3009,6 +3132,102 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void setISOStandards(final boolean part2) {
         standardISO = part2 ? (byte) 2 : (byte) 1;
+    }
+
+    /**
+     * Appends information from the metadata of a component.
+     * This is an helper method for building the metadata of an aggregate.
+     * Aggregate metadata should be set before to invoke this method, in particular:
+     *
+     * <ul>
+     *   <li>The aggregated resource {@linkplain #addTitle title}.</li>
+     *   <li>The {@linkplain #addFormatName format} (may not be the same than component format).</li>
+     * </ul>
+     *
+     * This method applies the following heuristic rules (may change in any future version).
+     * Those rules assume that the component metadata was built with {@code MetadataBuilder}
+     * (this assumption determines which metadata elements are inspected).
+     *
+     * <ul>
+     *   <li>Content information is added verbatim. There is usually one instance per component.</li>
+     *   <li>Extents are added as one {@link Extent} per component, but without duplicated values.</li>
+     *   <li>All Coordinate Reference System information are added without duplicated values.</li>
+     *   <li>Some citation information are merged in a single citation.
+     *       The following information are ignored because considered too specific to the component:<ul>
+     *         <li>titles</li>
+     *         <li>identifiers</li>
+     *         <li>series (includes page numbers).</li>
+     *       </ul></li>
+     *   <li>{@linkplain #addCompression Compression} are added (without duplicated value) but not the
+     *       other format information (because the aggregate is assumed to have its own format name).</li>
+     *   <li>Distributor names, but not the other distribution information because the aggregated resource
+     *       may not be distributed in the same way then the components.</li>
+     * </ul>
+     *
+     * @param  component  the component from which to append metadata.
+     */
+    public final void addFromComponent(final Metadata component) {
+        /*
+         * Note: this method contains many loops like below:
+         *
+         *     for (Foo r : info.getFoos()) {
+         *         addIfNotPresent(bla().getFoos(), r);
+         *     }
+         *
+         * We could easily factor out the above pattern in a method, but we don't do that because
+         * it would invoke `bla().getFoos()` before the loop. We want that call to happen only if
+         * the collection contains at least one element. Usually there is only 0 or 1 element.
+         */
+        for (final Identification info : component.getIdentificationInfo()) {
+            final Citation c = info.getCitation();
+            if (c != null) {
+                // Title, identifiers and series are assumed to not apply (see Javadoc).
+                final DefaultCitation citation = citation();
+                for (ResponsibleParty r : c.getCitedResponsibleParties()) {
+                    addIfNotPresent(citation.getCitedResponsibleParties(), r);
+                }
+                citation.getPresentationForms().addAll(c.getPresentationForms());
+            }
+            final DefaultDataIdentification identification = identification();
+            for (Format r : info.getResourceFormats()) {
+                addCompression(r.getFileDecompressionTechnique());
+                // Ignore format name (see Javadoc).
+            }
+            for (Constraints r : info.getResourceConstraints()) {
+                addIfNotPresent(identification.getResourceConstraints(), r);
+            }
+            if (info instanceof DataIdentification) {
+                final DataIdentification di = (DataIdentification) info;
+                for (Extent e : di.getExtents()) {
+                    addIfNotPresent(identification.getExtents(), e);
+                }
+                for (Resolution r : di.getSpatialResolutions()) {
+                    addIfNotPresent(identification.getSpatialResolutions(), r);
+                }
+                identification.getTopicCategories().addAll(di.getTopicCategories());
+                identification.getSpatialRepresentationTypes().addAll(di.getSpatialRepresentationTypes());
+            }
+        }
+        final DefaultMetadata metadata = metadata();
+        for (ContentInformation info : component.getContentInfo()) {
+            addIfNotPresent(metadata.getContentInfo(), info);
+        }
+        for (final ReferenceSystem crs : component.getReferenceSystemInfo()) {
+            addReferenceSystem(crs);
+        }
+        for (SpatialRepresentation info : component.getSpatialRepresentationInfo()) {
+            addIfNotPresent(metadata.getSpatialRepresentationInfo(), info);
+        }
+        for (AcquisitionInformation info : component.getAcquisitionInformation()) {
+            addIfNotPresent(metadata.getAcquisitionInformation(), info);
+        }
+        Distribution di = component.getDistributionInfo();
+        if (di != null) {
+            // See Javadoc about why we copy only the distributors.
+            for (Distributor r : di.getDistributors()) {
+                addIfNotPresent(distribution().getDistributors(), r);
+            }
+        }
     }
 
     /**

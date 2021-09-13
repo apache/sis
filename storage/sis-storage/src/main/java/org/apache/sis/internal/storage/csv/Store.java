@@ -58,7 +58,6 @@ import org.apache.sis.internal.storage.io.RewindableLineReader;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -568,7 +567,7 @@ final class Store extends URIDataStore implements FeatureSet {
                                 type = double[].class;
                             } else {
                                 type = geometries.polylineClass;
-                                characteristics = new DefaultAttributeType[] {MovingFeature.TIME};
+                                characteristics = new DefaultAttributeType[] {MovingFeatureBuilder.TIME_AS_INSTANTS};
                             }
                             minOccurrence = 1;
                             maxOccurrence = 1;

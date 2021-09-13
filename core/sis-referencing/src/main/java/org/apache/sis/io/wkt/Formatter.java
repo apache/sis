@@ -106,7 +106,7 @@ import org.apache.sis.math.Vector;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
@@ -142,6 +142,8 @@ public class Formatter implements Localized {
     /**
      * The locale for the localization of international strings.
      * This is not the same than {@link Symbols#getLocale()}.
+     *
+     * @see #errorLocale
      */
     private final Locale locale;
 
@@ -346,6 +348,13 @@ public class Formatter implements Localized {
     private Warnings warnings;
 
     /**
+     * The locale for error messages (not for formatting).
+     *
+     * @see #locale
+     */
+    private final Locale errorLocale;
+
+    /**
      * Creates a new formatter instance with the default configuration.
      */
     public Formatter() {
@@ -365,9 +374,11 @@ public class Formatter implements Localized {
         ArgumentChecks.ensureNonNull("symbols",     symbols);
         ArgumentChecks.ensureBetween("indentation", WKTFormat.SINGLE_LINE, Byte.MAX_VALUE, indentation);
         this.locale           = Locale.getDefault(Locale.Category.DISPLAY);
+        this.errorLocale      = locale;
         this.convention       = convention;
         this.authority        = convention.getNameAuthority();
         this.symbols          = symbols.immutable();
+        this.transliterator   = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
         this.separatorNewLine = this.symbols.separatorNewLine();
         this.indentation      = (byte) indentation;
         this.numberFormat     = symbols.createNumberFormat();
@@ -383,11 +394,19 @@ public class Formatter implements Localized {
     /**
      * Constructor for private use by {@link WKTFormat} only. This allows to use the number format
      * created by {@link WKTFormat#createFormat(Class)}, which may be overridden by the user.
+     *
+     * @param  locale        the locale for the localization of international strings.
+     * @param  errorLocale   the locale for error messages (not for parsing), or {@code null} for the system default.
+     * @param  symbols       the symbols to use for this formatter.
+     * @param  numberFormat  the object to use for formatting numbers.
+     * @param  dateFormat    the object to use for formatting dates.
+     * @param  unitFormat    the object to use for formatting unit symbols.
      */
-    Formatter(final Locale locale, final Symbols symbols, final NumberFormat numberFormat,
-            final DateFormat dateFormat, final UnitFormat unitFormat)
+    Formatter(final Locale locale, final Locale errorLocale, final Symbols symbols,
+              final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat)
     {
         this.locale           = locale;
+        this.errorLocale      = errorLocale;
         this.convention       = Convention.DEFAULT;
         this.authority        = Convention.DEFAULT.getNameAuthority();
         this.symbols          = symbols;
@@ -507,7 +526,7 @@ public class Formatter implements Localized {
             if (colorApplied == 0) {
                 final String color = colors.getAnsiSequence(type);
                 if (color == null) {
-                    // Do not increment 'colorApplied' for giving a chance to children to apply their colors.
+                    // Do not increment `colorApplied` for giving a chance to children to apply their colors.
                     return;
                 }
                 final boolean isStart = (buffer.length() == elementStart);
@@ -662,12 +681,14 @@ public class Formatter implements Localized {
         final int stackDepth = enclosingElements.size();
         for (int i=stackDepth; --i >= 0;) {
             if (enclosingElements.get(i) == object) {
-                throw new IllegalStateException(Errors.getResources(locale).getString(Errors.Keys.CircularReference));
+                throw new IllegalStateException(Errors.getResources(errorLocale)
+                            .getString(Errors.Keys.CircularReference));
             }
         }
         enclosingElements.add(object);
         if (hasContextualUnit < 0) {                            // Test if leftmost bit is set to 1.
-            throw new IllegalStateException(Errors.getResources(locale).getString(Errors.Keys.TreeDepthExceedsMaximum));
+            throw new IllegalStateException(Errors.getResources(errorLocale)
+                        .getString(Errors.Keys.TreeDepthExceedsMaximum));
         }
         hasContextualUnit <<= 1;
         /*
@@ -1175,7 +1196,7 @@ public class Formatter implements Localized {
     public void append(final long number) {
         appendSeparator();
         /*
-         * The check for 'isComplement' is a hack for ImmutableIdentifier.formatTo(Formatter).
+         * The check for `isComplement` is a hack for ImmutableIdentifier.formatTo(Formatter).
          * We do not have a public API for controlling the integer colors (it may not be desirable).
          */
         setColor(isComplement ? ElementKind.IDENTIFIER : ElementKind.INTEGER);
@@ -1195,12 +1216,12 @@ public class Formatter implements Localized {
         setColor(ElementKind.NUMBER);
         /*
          * Use scientific notation if the number magnitude is too high or too low. The threshold values used here
-         * may be different than the threshold values used in the standard 'StringBuilder.append(double)' method.
+         * may be different than the threshold values used in the standard `StringBuilder.append(double)` method.
          * In particular, we use a higher threshold for large numbers because ellipsoid axis lengths are above the
          * JDK threshold when the axis length is given in feet (about 2.1E+7) while we still want to format them
          * as usual numbers.
          *
-         * Note that we perform this special formatting only if the 'NumberFormat' is not localized
+         * Note that we perform this special formatting only if the `NumberFormat` is not localized
          * (which is the usual case).
          */
         if (symbols.useScientificNotation(Math.abs(number))) {
@@ -1240,7 +1261,7 @@ public class Formatter implements Localized {
             return;
         }
         if (fractionDigits == null || fractionDigits.length == 0) {
-            fractionDigits = Numerics.suggestFractionDigits(rows);
+            fractionDigits = WKTUtilities.suggestFractionDigits(rows);
         }
         numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
         /*
@@ -1270,7 +1291,7 @@ public class Formatter implements Localized {
             marginBeforeRow = "";
         }
         /*
-         * 'formattedNumberMarks' contains, for each number in each row, positions in the 'buffer' where
+         * `formattedNumberMarks` contains, for each number in each row, positions in the `buffer` where
          * the number starts and position where it ends. Those positions are stored as (start,end) pairs.
          * We compute those marks unconditionally for simplicity, but will ignore them if formatting on
          * a single line.
@@ -1508,9 +1529,9 @@ public class Formatter implements Localized {
                     ((InternationalString) value).toString(locale) : value.toString(), null);
         } else if (value.getClass().isArray()) {
             /*
-             * All above cases delegated to another method which invoke 'appendSeparator()'.
+             * All above cases delegated to another method which invoke `appendSeparator()`.
              * Since the following block is writing itself a new element, we need to invoke
-             * 'appendSeparator()' here. This block invokes (indirectly) this 'appendValue'
+             * `appendSeparator()` here. This block invokes (indirectly) this `appendValue`
              * method recursively for some or all elements in the list.
              */
             appendSeparator();
@@ -1520,7 +1541,7 @@ public class Formatter implements Localized {
             for (int i=0; i<length; i++) {
                 if (i == cut) {
                     /*
-                     * Skip elements in the middle if the list is too long. The 'cut' index has been computed
+                     * Skip elements in the middle if the list is too long. The `cut` index has been computed
                      * in such a way that the number of elements to skip should be greater than 1, otherwise
                      * formatting the single missing element would often have been shorter.
                      */
@@ -1688,7 +1709,7 @@ public class Formatter implements Localized {
              * The unit that we replaced was not the expected one. Probably the user has invoked
              * addContextualUnit(…) again without a matching call to restoreContextualUnit(…).
              * Note that this case should never happen in Convention.WKT1_COMMON_UNITS mode,
-             * since 'previous' should never be non-null in that mode (if the user followed
+             * since `previous` should never be non-null in that mode (if the user followed
              * the documented pattern).
              */
             throw new IllegalStateException();
@@ -1730,7 +1751,7 @@ public class Formatter implements Localized {
         return (warnings != null) || (buffer != null && buffer.length() == 0);
         /*
          * Note: we really use a "and" condition (not an other "or") for the buffer test because
-         *       the buffer is reset to 'null' by WKTFormat after a successfull formatting.
+         *       the buffer is reset to `null` by WKTFormat after a successfull formatting.
          */
     }
 
@@ -1739,7 +1760,7 @@ public class Formatter implements Localized {
      */
     private Warnings warnings() {
         if (warnings == null) {
-            warnings = new Warnings(locale, false, Collections.emptyMap());
+            warnings = new Warnings(errorLocale, false, Collections.emptyMap());
         }
         return warnings;
     }
@@ -1823,7 +1844,7 @@ public class Formatter implements Localized {
             if (colors != null) {
                 buffer.append(X364.BACKGROUND_RED.sequence()).append(X364.BOLD.sequence()).append(' ');
             }
-            Vocabulary.getResources(locale).appendLabel(Vocabulary.Keys.Warnings, buffer);
+            Vocabulary.getResources(errorLocale).appendLabel(Vocabulary.Keys.Warnings, buffer);
             if (colors != null) {
                 buffer.append(' ').append(X364.RESET.sequence()).append(X364.FOREGROUND_RED.sequence());
             }
@@ -1831,7 +1852,7 @@ public class Formatter implements Localized {
             final int n = warnings.getNumMessages();
             final Set<String> done = new HashSet<>();
             for (int i=0; i<n; i++) {
-                String message = Exceptions.getLocalizedMessage(warnings.getException(i), locale);
+                String message = Exceptions.getLocalizedMessage(warnings.getException(i), errorLocale);
                 if (message == null) {
                     message = warnings.getMessage(i);
                 }

@@ -31,7 +31,7 @@ import org.opengis.referencing.operation.Transformation;
  * variants are specific to Apache SIS and can be fetched only by a call to {@link #redimension(int, int)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -53,7 +53,10 @@ abstract class GeodeticOperation extends AbstractProvider {
      *
      * <strong>Do not modify this array after construction</strong>, since the same array is shared by many
      * objects and there is no synchronization.
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
+    @Deprecated
     final GeodeticOperation[] redimensioned;
 
     /**
@@ -100,8 +103,11 @@ abstract class GeodeticOperation extends AbstractProvider {
      * @param  sourceDimensions  the desired number of input dimensions.
      * @param  targetDimensions  the desired number of output dimensions.
      * @return the redimensioned operation method, or {@code null} if none.
+     *
+     * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
     @Override
+    @Deprecated
     public final OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         if (redimensioned != null && (sourceDimensions & ~1) == 2 && (targetDimensions & ~1) == 2) {
             final GeodeticOperation m = redimensioned[((sourceDimensions & 1) << 1) | (targetDimensions & 1)];
@@ -127,10 +133,10 @@ abstract class GeodeticOperation extends AbstractProvider {
     /**
      * The inverse of {@code GeodeticOperation} is usually the same operation with parameter signs inverted.
      *
-     * @return {@code true} for most {@code GeodeticOperation} instances.
+     * @return {@code this} for most {@code GeodeticOperation} instances.
      */
     @Override
-    public boolean isInvertible() {
-        return true;
+    public AbstractProvider inverse() {
+        return this;
     }
 }

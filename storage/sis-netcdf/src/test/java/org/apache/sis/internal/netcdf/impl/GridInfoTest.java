@@ -34,12 +34,19 @@ import org.apache.sis.internal.netcdf.TestData;
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
 @DependsOn({VariableInfoTest.class, GridTest.class})
 public final strictfp class GridInfoTest extends GridTest {
+    /**
+     * Creates a new test.
+     */
+    public GridInfoTest() {
+        includeRuntimeDimension = true;
+    }
+
     /**
      * Creates a new decoder for the specified dataset.
      *

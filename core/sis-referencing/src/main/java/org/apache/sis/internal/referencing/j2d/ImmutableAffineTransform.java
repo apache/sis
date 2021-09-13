@@ -31,7 +31,7 @@ import org.apache.sis.internal.referencing.Resources;
  * @since   0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")    // No additional fields compared to parent.
+@SuppressWarnings("CloneableImplementsClone")   // No additional fields compared to parent.
 public class ImmutableAffineTransform extends AffineTransform {
     /**
      * Serial number for inter-operability with different versions.

@@ -47,10 +47,7 @@ import org.apache.sis.util.Workaround;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- *
- * @see <a href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/StandardCoordinateTransforms.html">NetCDF projection parameters</a>
- *
- * @since 0.6
+ * @since   0.6
  * @module
  */
 @XmlTransient
@@ -110,6 +107,8 @@ final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
      * Returns {@code true} if the given parameter names should be considered equals.
      * The algorithm used here shall be basically the same than the one used (indirectly)
      * by {@link DefaultParameterDescriptorGroup#descriptor(String)}.
+     *
+     * @see org.apache.sis.referencing.IdentifiedObjects#isHeuristicMatchForName(IdentifiedObject, String)
      */
     static boolean isHeuristicMatchForName(final String n1, final String n2) {
         return CharSequences.equalsFiltered(n1, n2, Characters.Filter.LETTERS_AND_DIGITS, true);

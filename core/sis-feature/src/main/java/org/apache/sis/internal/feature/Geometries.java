@@ -16,21 +16,25 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.util.Optional;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import org.opengis.util.FactoryException;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.UnsupportedImplementationException;
-import org.apache.sis.util.Classes;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.geometry.WraparoundMethod;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.math.Vector;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -40,335 +44,446 @@ import org.apache.sis.math.Vector;
  * This gives us a single place to review if we want to support different geometry libraries,
  * or if Apache SIS come with its own implementation.
  *
+ * <h2>Serialization</h2>
+ * All fields except {@link #library} should be declared {@code transient}.
+ * Deserialized {@code Geometries} instances shall be replaced by a unique instance,
+ * which is given by {@link #readResolve()}.
+ *
  * @param   <G>  the base class of all geometry objects (except point in some implementations).
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   0.7
  * @module
  */
-public abstract class Geometries<G> {
-    /*
-     * Registers all supported library implementations. Those libraries are optional
-     * (users will typically put at most one on their classpath).
+public abstract class Geometries<G> implements Serializable {
+    /**
+     * For cross-version compatibility.
      */
-    static {
-        register("Java2D");
-        register("JTS");
-        register("ESRI");       // Default implementation if other libraries are also present.
-    }
+    private static final long serialVersionUID = 1856503921463395122L;
 
     /**
-     * The enumeration that identifies the geometry library used.
+     * The {@value} value, used by subclasses for identifying code that assume two- or three-dimensional objects.
+     */
+    public static final int BIDIMENSIONAL = 2, TRIDIMENSIONAL = 3;
+
+    /**
+     * The enumeration value that identifies which geometry library is used.
      */
     public final GeometryLibrary library;
 
     /**
      * The root geometry class.
      */
-    public final Class<G> rootClass;
+    public final transient Class<G> rootClass;
 
     /**
      * The class for points.
+     * This is often a subclass of {@link #rootClass} but not necessarily.
      */
-    public final Class<?> pointClass;
+    public final transient Class<?> pointClass;
 
     /**
      * The class for polylines and polygons.
      */
-    public final Class<? extends G> polylineClass, polygonClass;
-
-    /**
-     * The default geometry implementation to use. Unmodifiable after class initialization.
-     */
-    private static Geometries<?> implementation;
+    public final transient Class<? extends G> polylineClass, polygonClass;
 
     /**
      * The fallback implementation to use if the default one is not available.
+     * This is set by {@link GeometryFactories} and should not change after initialization.
+     * We do not synchronize accesses to this field because we keep it stable after
+     * {@link GeometryFactories} class initialization.
      */
-    private final Geometries<?> fallback;
+    transient Geometries<?> fallback;
+
+    /**
+     * {@code true} if {@link #pointClass} is not a subtype of {@link #rootClass}.
+     * This is true for Java2D and false for JTS and ESRI libraries.
+     */
+    private final transient boolean isPointClassDistinct;
 
     /**
      * Creates a new adapter for the given root geometry class.
-     */
-    Geometries(final GeometryLibrary library, final Class<G> rootClass, final Class<?> pointClass,
-            final Class<? extends G> polylineClass, final Class<? extends G> polygonClass)
-    {
-        this.library       = library;
-        this.rootClass     = rootClass;
-        this.pointClass    = pointClass;
-        this.polylineClass = polylineClass;
-        this.polygonClass  = polygonClass;
-        this.fallback      = implementation;
-    }
-
-    /**
-     * Registers the library implementation of the given name (JTS or ESRI) if present; ignore otherwise.
-     * The given name shall be the simple name of a {@code Geometries} subclass in the same package.
-     * The last registered library will be the default implementation.
-     */
-    private static void register(final String name) {
-        String classname = Geometries.class.getName();
-        classname = classname.substring(0, classname.lastIndexOf('.')+1).concat(name);
-        try {
-            implementation = (Geometries) Class.forName(classname).getDeclaredConstructor().newInstance();
-        } catch (ReflectiveOperationException | LinkageError e) {
-            LogRecord record = Resources.forLocale(null).getLogRecord(Level.CONFIG,
-                    Resources.Keys.OptionalLibraryNotFound_2, name, e.toString());
-            record.setLoggerName(Loggers.GEOMETRY);
-            Logging.log(Geometries.class, "register", record);
-        }
-    }
-
-    /**
-     * Returns an accessor to the default geometry library implementation in use.
      *
-     * @param  library  the required library, or {@code null} for the default.
-     * @return the default geometry implementation.
-     * @throws IllegalArgumentException if the given library is non-null but not available.
+     * @param  library        the enumeration value that identifies which geometry library is used.
+     * @param  rootClass      the root geometry class.
+     * @param  pointClass     the class for points.
+     * @param  polylineClass  the class for polylines.
+     * @param  polygonClass   the class for polygons.
+     */
+    protected Geometries(final GeometryLibrary library, final Class<G> rootClass, final Class<?> pointClass,
+                         final Class<? extends G> polylineClass, final Class<? extends G> polygonClass)
+    {
+        this.library         = library;
+        this.rootClass       = rootClass;
+        this.pointClass      = pointClass;
+        this.polylineClass   = polylineClass;
+        this.polygonClass    = polygonClass;
+        isPointClassDistinct = !rootClass.isAssignableFrom(pointClass);
+    }
+
+    /**
+     * Returns a factory backed by the specified geometry library implementation,
+     * of the default implementation if the specified library is {@code null}.
+     *
+     * @param  library  the desired library, or {@code null} for the default.
+     * @return the specified or the default geometry implementation (never {@code null}).
+     * @throws IllegalArgumentException if a non-null library is specified by that library is not available.
      */
     public static Geometries<?> implementation(final GeometryLibrary library) {
+        Geometries<?> g = GeometryFactories.implementation;
         if (library == null) {
-            return implementation;
+            return g;
         }
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+        while (g != null) {
             if (g.library == library) return g;
+            g = g.fallback;
         }
         throw new IllegalArgumentException(Resources.format(Resources.Keys.UnavailableGeometryLibrary_1, library));
     }
 
     /**
-     * Returns an accessor to the library implementation for a geometry of the given type.
-     * If the given type is not recognized, then this method returns the default library.
+     * Returns a factory backed by the same implementation than the given type.
+     * If the given type is not recognized, then this method returns {@code null}.
      *
-     * @param  type  the type to verify.
-     * @return a geometry implementation compatible with the given type.
+     * @param  type  the type for which to get a geometry factory.
+     * @return a geometry factory compatible with the given type if possible, or {@code null} otherwise.
      */
     public static Geometries<?> implementation(final Class<?> type) {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            if (g.rootClass.isAssignableFrom(type)) return g;
+        for (Geometries<?> g = GeometryFactories.implementation; g != null; g = g.fallback) {
+            if (g.isSupportedType(type)) return g;
         }
-        return implementation;
+        return null;
     }
 
     /**
-     * Returns {@code true} if the given type is one of the types known to Apache SIS.
+     * Returns {@code true} if the given type is one of the geometry types known to Apache SIS.
      *
      * @param  type  the type to verify.
-     * @return {@code true} if the given type is one of the geometry type known to SIS.
+     * @return {@code true} if the given type is one of the geometry types known to SIS.
      */
     public static boolean isKnownType(final Class<?> type) {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            if (g.rootClass.isAssignableFrom(type)) return true;
+        for (Geometries<?> g = GeometryFactories.implementation; g != null; g = g.fallback) {
+            if (g.isSupportedType(type)) return true;
         }
+        return GeometryWrapper.class.isAssignableFrom(type);
+    }
+
+    /**
+     * Returns {@code true} if the given class is a geometry type supported by the underlying library.
+     */
+    private boolean isSupportedType(final Class<?> type) {
+        return rootClass.isAssignableFrom(type) || (isPointClassDistinct && pointClass.isAssignableFrom(type));
+    }
+
+    /**
+     * Returns the geometry class of the given instance.
+     *
+     * @param  type  type of geometry for which the class is desired.
+     * @return implementation class for the geometry of the specified type.
+     */
+    public Class<?> getGeometryClass(final GeometryType type) {
+        switch (type) {
+            default:         return rootClass;
+            case POINT:      return pointClass;
+            case LINESTRING: return polylineClass;
+            case POLYGON:    return polygonClass;
+        }
+    }
+
+    /**
+     * Wraps the given geometry implementation if recognized.
+     * If the given object is already an instance of {@link GeometryWrapper}, then it is returned as-is.
+     * If the given object is not recognized, then this method returns an empty value.
+     *
+     * @param  geometry  the geometry instance to wrap (can be {@code null}).
+     * @return a wrapper for the given geometry implementation, or empty value.
+     *
+     * @see #castOrWrap(Object)
+     */
+    public static Optional<GeometryWrapper<?>> wrap(final Object geometry) {
+        if (geometry != null) {
+            if (geometry instanceof GeometryWrapper<?>) {
+                return Optional.of((GeometryWrapper<?>) geometry);
+            }
+            for (Geometries<?> g = GeometryFactories.implementation; g != null; g = g.fallback) {
+                if (g.isSupportedType(geometry.getClass())) {
+                    return Optional.of(g.castOrWrap(geometry));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Returns a wrapper for the given {@code <G>} or {@code GeometryWrapper<G>} instance.
+     * The given object can be one of the following choices:
+     *
+     * <ul>
+     *   <li>{@code null}, in which case this method returns {@code null}.</li>
+     *   <li>An instance of {@code GeometryWrapper<G>}, in which case the given object is returned unchanged.
+     *       Note that instances of {@code GeometryWrapper<?>} for implementations other than {@code <G>}
+     *       will cause a {@link ClassCastException} to be thrown.</li>
+     *   <li>An instance of {@link #rootClass} or {@link #pointClass}.</li>
+     * </ul>
+     *
+     * This method can be used as an alternative to {@link #wrap(Object)} when the specified
+     * geometry shall be an implementation of the specific {@linkplain #library}.
+     *
+     * @param  geometry  the geometry instance to wrap (can be {@code null}).
+     * @return a wrapper for the given geometry implementation, or {@code null} if the given object was null.
+     * @throws ClassCastException if the the given object is not a wrapper or a geometry object
+     *         of the implementation of the library identified by {@link #library}.
+     *
+     * @see #wrap(Object)
+     */
+    public abstract GeometryWrapper<G> castOrWrap(Object geometry);
+
+    /**
+     * If the given object is an instance of {@link GeometryWrapper}, returns the wrapped geometry implementation.
+     * Otherwise returns the given geometry unchanged.
+     *
+     * @param  geometry  the geometry to unwrap (can be {@code null}).
+     * @return the geometry implementation, or the given geometry as-is.
+     */
+    protected static Object unwrap(final Object geometry) {
+        return (geometry instanceof GeometryWrapper<?>) ? ((GeometryWrapper<?>) geometry).implementation() : geometry;
+    }
+
+    /**
+     * Parses the given Well Known Text (WKT).
+     *
+     * @param  wkt  the WKT to parse. Can not be null.
+     * @return the geometry object for the given WKT (never {@code null}).
+     * @throws Exception if the WKT can not be parsed. The exception sub-class depends on the implementation.
+     *
+     * @see GeometryWrapper#formatWKT(double)
+     */
+    public abstract GeometryWrapper<G> parseWKT(String wkt) throws Exception;
+
+    /**
+     * Reads the given bytes as a Well Known Binary (WKB) encoded geometry.
+     * Whether this method changes the buffer position or not is implementation-dependent.
+     *
+     * @param  data  the binary data in WKB format. Can not be null.
+     * @return decoded geometry (never {@code null}).
+     * @throws Exception if the WKB can not be parsed. The exception sub-class depends on the implementation.
+     */
+    public abstract GeometryWrapper<G> parseWKB(ByteBuffer data) throws Exception;
+
+    /**
+     * Returns whether this library can produce geometry backed by the {@code float} primitive type
+     * instead than the {@code double} primitive type. If single-precision mode is supported, using
+     * that mode may reduce memory usage.
+     *
+     * @return whether the library support single-precision values.
+     */
+    public boolean supportSinglePrecision() {
         return false;
     }
 
     /**
-     * If the given geometry is an implementation of this library, returns its coordinate reference system.
-     * Otherwise returns {@code null}. The default implementation returns {@code null} because only a few
-     * geometry implementations can store CRS information.
-     *
-     * @see #tryTransform(Object, CoordinateOperation, CoordinateReferenceSystem)
-     */
-    CoordinateReferenceSystem tryGetCoordinateReferenceSystem(Object point) throws FactoryException {
-        return null;
-    }
-
-    /**
-     * Gets the Coordinate Reference System (CRS) from the given geometry. If no CRS information is found or
-     * if the geometry implementation can not store this information, then this method returns {@code null}.
-     *
-     * @param  geometry the geometry from which to get the CRS, or {@code null}.
-     * @return the coordinate reference system, or {@code null}.
-     * @throws FactoryException if the CRS is defined by a SRID code and that code can not be used.
-     *
-     * @see #transform(Object, CoordinateReferenceSystem)
-     */
-    public static CoordinateReferenceSystem getCoordinateReferenceSystem(final Object geometry) throws FactoryException {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            CoordinateReferenceSystem crs = g.tryGetCoordinateReferenceSystem(geometry);
-            if (crs != null) return crs;
-        }
-        return null;
-    }
-
-    /**
-     * If the given point is an implementation of this library, returns its coordinate.
-     * Otherwise returns {@code null}.
-     */
-    abstract double[] tryGetCoordinate(Object point);
-
-    /**
-     * If the given object is one of the recognized point implementation, returns its coordinate.
-     * Otherwise returns {@code null}. If non-null, the returned array may have a length of 2 or 3.
-     * If the CRS is geographic, then the (x,y) values should be (longitude, latitude) for compliance
-     * with usage in ESRI and JTS libraries.
-     *
-     * @param  point  the point from which to get the coordinate, or {@code null}.
-     * @return the coordinate of the given point as an array of length 2 or 3,
-     *         or {@code null} if the given object is not a recognized implementation.
-     *
-     * @see #getCoordinateReferenceSystem(Object)
-     * @see #createPoint(double, double)
-     */
-    public static double[] getCoordinate(final Object point) {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            double[] coord = g.tryGetCoordinate(point);
-            if (coord != null) return coord;
-        }
-        return null;
-    }
-
-    /**
-     * If the given geometry is the type supported by this {@code Geometries} instance,
-     * returns its envelope if non-empty. Otherwise returns {@code null}. We currently
-     * do not distinguish the reasons why this method may return null.
-     */
-    abstract GeneralEnvelope tryGetEnvelope(Object geometry);
-
-    /**
-     * If the given object is one of the recognized types and its envelope is non-empty,
-     * returns that envelope as an Apache SIS implementation. Otherwise returns {@code null}.
-     *
-     * @param  geometry  the geometry from which to get the envelope, or {@code null}.
-     * @return the envelope of the given geometry, or {@code null} if the given object
-     *         is not a recognized geometry or its envelope is empty.
-     */
-    public static GeneralEnvelope getEnvelope(final Object geometry) {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            GeneralEnvelope env = g.tryGetEnvelope(geometry);
-            if (env != null) return env;
-        }
-        return null;
-    }
-
-    /**
-     * If the given geometry is the type supported by this {@code Geometries} instance, returns its
-     * centroid or center as a point instance of the same library. Otherwise returns {@code null}.
-     */
-    abstract Object tryGetCentroid(Object geometry);
-
-    /**
-     * If the given object is one of the recognized types, returns its mathematical centroid
-     * (if possible) or center (as a fallback) as a point instance of the same library.
-     * Otherwise returns {@code null}.
-     *
-     * @param  geometry  the geometry from which to get the centroid, or {@code null}.
-     * @return the centroid of the given geometry, or {@code null} if the given object
-     *         is not a recognized geometry.
-     */
-    public static Object getCentroid(final Object geometry) {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            Object center = g.tryGetCentroid(geometry);
-            if (center != null) return center;
-        }
-        return null;
-    }
-
-    /**
-     * If the given geometry is the type supported by this {@code Geometries} instance,
-     * returns a short string representation of the class name. Otherwise returns {@code null}.
-     */
-    abstract String tryGetLabel(Object geometry);
-
-    /**
-     * If the given object is one of the recognized types, returns a short string representation
-     * (typically the class name and the bounds). Otherwise returns {@code null}.
-     *
-     * @param  geometry  the geometry from which to get a string representation, or {@code null}.
-     * @return a short string representation of the given geometry, or {@code null} if the given
-     *         object is not a recognized geometry.
-     */
-    public static String toString(final Object geometry) {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            String s = g.tryGetLabel(geometry);
-            if (s != null) {
-                GeneralEnvelope env = g.tryGetEnvelope(geometry);
-                if (env != null) {
-                    final String bbox = env.toString();
-                    s += bbox.substring(bbox.indexOf('('));
-                }
-                return s;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * If the given object is one of the recognized types, formats that object in Well Known Text (WKT).
-     * Otherwise returns {@code null}. If the geometry contains curves, then the {@code flatness} parameter
-     * specifies the maximum distance that the line segments used in the Well Known Text are allowed to deviate
-     * from any point on the original curve. This parameter is ignored if the geometry does not contain curves.
-     *
-     * @param  geometry  the geometry to format in Well Known Text.
-     * @param  flatness  maximal distance between the approximated WKT and any point on the curve.
-     * @return the Well Known Text for the given geometry, or {@code null} if the given object is unrecognized.
-     */
-    public static String formatWKT(Object geometry, double flatness) {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            String wkt = g.tryFormatWKT(geometry, flatness);
-            if (wkt != null) return wkt;
-        }
-        return null;
-    }
-
-    /**
-     * If the given geometry is the type supported by this {@code Geometries} instance,
-     * returns its WKT representation. Otherwise returns {@code null}.
-     */
-    abstract String tryFormatWKT(Object geometry, double flatness);
-
-    /**
-     * Parses the given WKT.
-     *
-     * @param  wkt  the WKT to parse.
-     * @return the geometry object for the given WKT.
-     * @throws Exception if the WKT can not be parsed. The exception sub-class depends on the implementation.
-     */
-    public abstract Object parseWKT(String wkt) throws Exception;
-
-    /**
-     * Creates a two-dimensional point from the given coordinate. If the CRS is geographic, then the
-     * (x,y) values should be (longitude, latitude) for compliance with usage in ESRI and JTS libraries.
+     * Single-precision variant of {@link #createPoint(double, double)}.
+     * Default implementation delegates to the double-precision variant.
      *
      * @param  x  the first coordinate value.
      * @param  y  the second coordinate value.
      * @return the point for the given coordinate values.
      *
-     * @see #getCoordinate(Object)
+     * @see #supportSinglePrecision()
+     */
+    public Object createPoint(float x, float y) {
+        return createPoint((double) x, (double) y);
+    }
+
+    /**
+     * Creates a two-dimensional point from the given coordinates. If the CRS is geographic, then the
+     * (x,y) values should be (longitude, latitude) for compliance with usage in ESRI and JTS libraries.
+     * The returned object will be an instance of {@link #pointClass}.
+     *
+     * @param  x  the first coordinate value.
+     * @param  y  the second coordinate value.
+     * @return the point for the given coordinate values.
+     *
+     * @see GeometryWrapper#getPointCoordinates()
      */
     public abstract Object createPoint(double x, double y);
 
     /**
-     * Creates a path or polyline from the given coordinate values.
-     * The array of coordinate values will be handled as if all vectors were concatenated in a single vector,
-     * ignoring {@code null} array elements.
+     * Creates a three-dimensional point from the given coordinates. If the CRS is geographic, then the
+     * (x,y) values should be (longitude, latitude) for compliance with usage in ESRI and JTS libraries.
+     * The returned object will be an instance of {@link #pointClass}.
+     *
+     * @param  x  the first coordinate value.
+     * @param  y  the second coordinate value.
+     * @param  z  the third coordinate value.
+     * @return the point for the given coordinate values.
+     *
+     * @see GeometryWrapper#getPointCoordinates()
+     */
+    public abstract Object createPoint(double x, double y, double z);
+
+    /**
+     * Creates a path, polyline or polygon from the given coordinate values.
+     * The array of coordinate values will be handled as if all vectors were
+     * concatenated in a single vector, ignoring {@code null} array elements.
      * Each {@link Double#NaN} coordinate value in the concatenated vector starts a new path.
      * The implementation returned by this method is an instance of {@link #rootClass}.
      *
-     * @param  dimension    the number of dimensions (2 or 3).
+     * <p>If the {@code polygon} argument is {@code true}, then the coordinates should
+     * make a closed line (e.g: a linear ring), otherwise an exception is thrown.
+     *
+     * @param  polygon      whether to return the path as a polygon instead than polyline.
+     * @param  dimension    the number of dimensions ({@value #BIDIMENSIONAL} or {@value #TRIDIMENSIONAL}).
      * @param  coordinates  sequence of (x,y) or (x,y,z) tuples.
      * @return the geometric object for the given points.
      * @throws UnsupportedOperationException if the geometry library can not create the requested path.
+     * @throws IllegalArgumentException if a polygon was requested but the given coordinates do not make
+     *         a closed shape (linear ring).
      */
-    public abstract G createPolyline(int dimension, Vector... coordinates);
+    public abstract G createPolyline(final boolean polygon, int dimension, Vector... coordinates);
 
     /**
-     * Merges a sequence of polyline instances if the first instance is an implementation of this library.
+     * Creates a multi-polygon from an array of geometries (polygons or linear rings).
+     * Callers must ensure that the given objects are instances of geometric classes
+     * of the underlying library.
      *
-     * @param  first      the first instance to merge.
-     * @param  polylines  the second and subsequent instances to merge.
-     * @return the merged polyline, or {@code null} if the first instance is not an implementation of this library.
-     * @throws ClassCastException if an element in the iterator is not an implementation of this library.
+     * If some geometries are actually linear rings, current behavior is not well defined.
+     * Some implementations may convert polylines to polygons but this is not guaranteed.
+     *
+     * @param  geometries  the polygons or linear rings to put in a multi-polygons.
+     * @return the multi-polygon.
+     * @throws ClassCastException if an element in the array is not an implementation of backing library.
+     *
+     * @todo Consider a more general method creating a multi-polygon or multi-line depending on object types,
+     *       or returning a more primitive geometry type if the given array contains only one element.
+     *       We may want to return null if the array is empty (to be decided later).
      */
-    abstract G tryMergePolylines(Object first, Iterator<?> polylines);
+    public abstract GeometryWrapper<G> createMultiPolygon(final Object[] geometries);
+
+    /**
+     * Creates a geometry from components.
+     * The expected {@code components} type depend on the target geometry type:
+     * <ul>
+     *   <li>If {@code type} is a multi-geometry, then the components should be implementation-specific
+     *       {@code Point[]}, {@code Geometry[]}, {@code LineString[]} or {@code Polygon[]},
+     *       depending on the desired target type.</li>
+     *   <li>Otherwise the components should be an array or collection of {@code Point} or {@code Coordinate}
+     *       instances, or some implementation-specific object such as {@code CoordinateSequence}.</li>
+     * </ul>
+     *
+     * @param  type        type of geometry to create.
+     * @param  components  the components. Valid classes depend on the type of geometry to create.
+     * @return geometry built from the given components.
+     * @throws ClassCastException if the given object is not an array or a collection of supported geometry components.
+     */
+    public GeometryWrapper<G> createFromComponents(GeometryType type, Object components) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Creates a polyline made of points describing a rectangle whose start point is the lower left corner.
+     * The sequence of points describes each corner, going in clockwise direction and repeating the starting
+     * point to properly close the ring.
+     *
+     * @param  xd  dimension of first axis.
+     * @param  yd  dimension of second axis.
+     * @return a polyline made of a sequence of 5 points describing the given rectangle.
+     */
+    private GeometryWrapper<G> createGeometry2D(final Envelope envelope, final int xd, final int yd) {
+        final DirectPosition lc = envelope.getLowerCorner();
+        final DirectPosition uc = envelope.getUpperCorner();
+        final double xmin = lc.getOrdinate(xd);
+        final double ymin = lc.getOrdinate(yd);
+        final double xmax = uc.getOrdinate(xd);
+        final double ymax = uc.getOrdinate(yd);
+        return createWrapper(createPolyline(true, BIDIMENSIONAL, Vector.create(new double[] {
+                             xmin, ymin,  xmin, ymax,  xmax, ymax,  xmax, ymin,  xmin, ymin})));
+    }
+
+    /**
+     * Transforms an envelope to a two-dimensional polygon whose start point is lower corner
+     * and other points are the envelope corners in clockwise order. The specified envelope
+     * should be two-dimensional (see for example {@link GeneralEnvelope#horizontal()}) but
+     * the coordinates does not need to be in (longitude, latitude) order; this method will
+     * preserve envelope horizontal axis order. It means that any non-2D axis will be ignored,
+     * and the first horizontal axis in the envelope will be the first axis (x) in the resulting geometry.
+     * To force {@link AxesConvention#RIGHT_HANDED}, should transform the bounding box before calling this method.
+     *
+     * @param  envelope  the envelope to convert.
+     * @param  strategy  how to resolve wrap-around ambiguities on the envelope.
+     * @return the envelope as a polygon, or potentially as two polygons in {@link WraparoundMethod#SPLIT} case.
+     */
+    public GeometryWrapper<G> toGeometry2D(final Envelope envelope, final WraparoundMethod strategy) {
+        int xd = 0, yd = 1;
+        CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
+        final int dimension = envelope.getDimension();
+        if (dimension != BIDIMENSIONAL) {
+            if (dimension < BIDIMENSIONAL) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyEnvelope2D));
+            }
+            final CoordinateReferenceSystem crsND = crs;
+            crs = CRS.getHorizontalComponent(crsND);
+            if (crs == null) {
+                crs = CRS.getComponentAt(crsND, 0, BIDIMENSIONAL);
+            } else if (crs != crsND) {
+                final CoordinateSystem csND = crsND.getCoordinateSystem();
+                final CoordinateSystem cs   = crs  .getCoordinateSystem();
+                xd = AxisDirections.indexOfColinear(csND, cs.getAxis(0).getDirection());
+                yd = AxisDirections.indexOfColinear(csND, cs.getAxis(1).getDirection());
+                if (xd == yd) yd++;    // Paranoiac check (e.g. CS with 2 temporal axes).
+                /*
+                 * `indexOfColinear` returns -1 if the axis has not been found, but it should never
+                 * happen here because we ask for axis directions that are known to exist in the CRS.
+                 */
+            }
+        }
+        final GeometryWrapper<G> result;
+        switch (strategy) {
+            case NORMALIZE: {
+                throw new IllegalArgumentException();
+            }
+            case NONE: {
+                result = createGeometry2D(envelope, xd, yd);
+                break;
+            }
+            default: {
+                final GeneralEnvelope ge = new GeneralEnvelope(envelope);
+                ge.normalize();
+                ge.wraparound(strategy);
+                result = createGeometry2D(ge, xd, yd);
+                break;
+            }
+            case SPLIT: {
+                final Envelope[] parts = AbstractEnvelope.castOrCopy(envelope).toSimpleEnvelopes();
+                if (parts.length == 1) {
+                    result = createGeometry2D(parts[0], xd, yd);
+                    break;
+                }
+                @SuppressWarnings({"unchecked", "rawtypes"})
+                final GeometryWrapper<G>[] polygons = new GeometryWrapper[parts.length];
+                for (int i=0; i<parts.length; i++) {
+                    polygons[i] = createGeometry2D(parts[i], xd, yd);
+                    polygons[i].setCoordinateReferenceSystem(crs);
+                }
+                result = createMultiPolygon(polygons);
+                break;
+            }
+        }
+        result.setCoordinateReferenceSystem(crs);
+        return result;
+    }
 
     /**
      * Merges a sequence of points or polylines into a single polyline instances.
      * Each previous polyline will be a separated path in the new polyline instances.
      * The implementation returned by this method is an instance of {@link #rootClass}.
+     *
+     * <p>Contrarily to other methods in this class, this method does <strong>not</strong> unwrap
+     * the geometries contained in {@link GeometryWrapper}. It is caller responsibility to do so
+     * if needed.</p>
      *
      * @param  paths  the points or polylines to merge in a single polyline object.
      * @return the merged polyline, or {@code null} if the given iterator has no element.
@@ -379,153 +494,48 @@ public abstract class Geometries<G> {
         while (paths.hasNext()) {
             final Object first = paths.next();
             if (first != null) {
-                for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-                    final Object merged = g.tryMergePolylines(first, paths);
-                    if (merged != null) {
-                        return merged;
-                    }
-                }
+                final Optional<GeometryWrapper<?>> w = wrap(first);
+                if (w.isPresent()) return w.get().mergePolylines(paths);
                 /*
-                 * Use the same exception type than `tryMergePolylines(…)` implementations.
-                 * Also the same type than exception occurring elsewhere in the code of the
-                 * caller (GroupAsPolylineOperation).
+                 * Use the same exception type than `mergePolylines(…)` implementations.
+                 * Also the same type than exception occurring elsewhere in the code of
+                 * the caller (GroupAsPolylineOperation).
                  */
-                throw new ClassCastException(unsupportedImplementation(first));
+                throw new ClassCastException(Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(first)));
             }
         }
         return null;
     }
 
     /**
-     * If the given geometry is the type supported by this {@code Geometries} instance, computes
-     * its buffer as a geometry instance of the same library. Otherwise returns {@code null}.
+     * Creates a wrapper for the given geometry instance.
+     * The given object shall be an instance of {@link #rootClass}.
+     *
+     * @param  geometry  the geometry to wrap.
+     * @return wrapper for the given geometry.
+     * @throws ClassCastException if the given geometry is not an instance of valid type.
+     *
+     * @see #castOrWrap(Object)
      */
-    Object tryBuffer(Object geometry, double distance) {
-        if (rootClass.isInstance(geometry)) {
-            throw new UnsupportedImplementationException(unsupported("buffer"));
-        }
-        return null;
-    }
+    protected abstract GeometryWrapper<G> createWrapper(G geometry);
 
     /**
-     * If the given object is one of the recognized types, computes its buffer as a geometry instance
-     * of the same library. Otherwise returns {@code null}.
+     * Invoked at deserialization time for obtaining the unique instance of this {@code Geometries} class.
      *
-     * @param  geometry  the geometry from which to compute a buffer, or {@code null}.
-     * @param  distance  the buffer distance in the CRS of the geometry object.
-     * @return the buffer of the given geometry, or {@code null} if the given object is not recognized.
+     * @return the unique {@code Geometries} instance for this class.
+     * @throws ObjectStreamException if the object state is invalid.
      */
-    public static Object buffer(final Object geometry, final double distance) {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            Object center = g.tryBuffer(geometry, distance);
-            if (center != null) return center;
-        }
-        return null;
-    }
-
-    /**
-     * Tries to transforms the given geometry to the specified Coordinate Reference System (CRS),
-     * or returns {@code null} if this method can not perform this operation on the given object.
-     * Exactly one of {@code operation} and {@code targetCRS} shall be non-null. If operation is
-     * null and geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
-     *
-     * <p>Default implementation throws {@link UnsupportedImplementationException} because current
-     * Apache SIS implementation supports geometry transformations only with JTS geometries.</p>
-     *
-     * @param  geometry   the geometry to transform.
-     * @param  operation  the coordinate operation to apply, or {@code null}.
-     * @param  targetCRS  the target coordinate reference system, or {@code null}.
-     * @return the transformed geometry, or the same geometry if it is already in target CRS.
-     *
-     * @see #tryGetCoordinateReferenceSystem(Object)
-     */
-    Object tryTransform(Object geometry, CoordinateOperation operation, CoordinateReferenceSystem targetCRS)
-            throws FactoryException, TransformException
-    {
-        if (rootClass.isInstance(geometry)) {
-            throw new UnsupportedImplementationException(unsupported("transform"));
-        }
-        return null;
-    }
-
-    /**
-     * Transforms the given geometry using the given coordinate operation.
-     * If the geometry or the operation is null, then the geometry is returned unchanged.
-     * If the geometry uses a different CRS than the source CRS of the given operation,
-     * then a new operation to the target CRS will be used.
-     * If the given object is not a known implementation, then this method returns {@code null}.
-     *
-     * <p>This method is preferred to {@link #transform(Object, CoordinateReferenceSystem)}
-     * when possible because not all geometry libraries store the CRS of their objects.</p>
-     *
-     * @param  geometry   the geometry to transform, or {@code null}.
-     * @param  operation  the coordinate operation to apply, or {@code null}.
-     * @return the transformed geometry (may be the same geometry instance), or {@code null}.
-     * @throws UnsupportedImplementationException if this operation is not supported for the given geometry.
-     * @throws FactoryException if transformation to the target CRS can not be constructed.
-     * @throws TransformException if the given geometry can not be transformed.
-     */
-    public static Object transform(final Object geometry, final CoordinateOperation operation)
-            throws FactoryException, TransformException
-    {
-        /*
-         * Do NOT check MathTransform.isIdentity() below because the source CRS may not match
-         * the geometry CRS. This verification will be done by tryTransform(…) implementation.
-         */
-        if (geometry != null && operation != null) {
-            for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-                final Object result = g.tryTransform(geometry, operation, null);
-                if (result != null) {
-                    return result;
-                }
-            }
-            if (!operation.getMathTransform().isIdentity()) {
-                return null;
-            }
-        }
-        return geometry;
-    }
-
-    /**
-     * Transforms the given geometry to the specified Coordinate Reference System (CRS).
-     * If the given CRS or the given geometry is null, the geometry is returned unchanged.
-     * If the geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
-     * If the given object is not a known implementation, then this method returns {@code null}.
-     *
-     * <p>Consider using {@link #transform(Object, CoordinateOperation)} instead of this method
-     * as much as possible, both for performance reasons and because not all geometry libraries
-     * provide information about the CRS of their geometries.</p>
-     *
-     * @param  geometry   the geometry to transform, or {@code null}.
-     * @param  targetCRS  the target coordinate reference system, or {@code null}.
-     * @return the transformed geometry (may be the same geometry instance), or {@code null}.
-     * @throws UnsupportedImplementationException if this operation is not supported for the given geometry.
-     * @throws FactoryException if transformation to the target CRS can not be constructed.
-     * @throws TransformException if the given geometry has no CRS or can not be transformed.
-     *
-     * @see #getCoordinateReferenceSystem(Object)
-     */
-    public static Object transform(final Object geometry, final CoordinateReferenceSystem targetCRS)
-            throws FactoryException, TransformException
-    {
-        if (geometry != null && targetCRS != null) {
-            for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-                final Object result = g.tryTransform(geometry, null, targetCRS);
-                if (result != null) {
-                    return result;
-                }
-            }
-            return null;
-        }
-        return geometry;
-    }
+    protected abstract Object readResolve() throws ObjectStreamException;
 
     /**
      * Returns an error message for an unsupported operation. This error message is used by non-abstract methods
      * in {@code Geometries} subclasses, after we identified the geometry library implementation to use but that
      * library does not provided the required functionality.
+     *
+     * @param  operation  name of the unsupported operation.
+     * @return error message to put in the exception to be thrown.
      */
-    static String unsupported(final String operation) {
+    protected static String unsupported(final String operation) {
         return Errors.format(Errors.Keys.UnsupportedOperation_1, operation);
     }
 
@@ -533,17 +543,9 @@ public abstract class Geometries<G> {
      * Returns an error message for an unsupported number of dimensions in a geometry object.
      *
      * @param  dimension  number of dimensions (2 or 3) requested for the geometry object.
+     * @return error message to put in the exception to be thrown.
      */
-    static String unsupported(final int dimension) {
+    protected static String unsupported(final int dimension) {
         return Resources.format(Resources.Keys.UnsupportedGeometryObject_1, dimension);
-    }
-
-    /**
-     * Returns an error message for an unsupported geometry object implementation.
-     *
-     * @param  geometry  the unsupported object.
-     */
-    private static String unsupportedImplementation(final Object geometry) {
-        return Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(geometry));
     }
 }

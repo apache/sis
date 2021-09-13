@@ -32,7 +32,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * querying or modifying the stream position. This class does not define any read or write operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.1
  * @since   0.5 (derived from 0.3)
  * @module
  */
@@ -126,6 +126,21 @@ public abstract class ChannelData implements Markable {
     }
 
     /**
+     * Implementation of {@link ChannelDataInput#readBit()} provided here for performance reasons.
+     * It is caller responsibility to ensure that the {@link #buffer} contains at least one byte.
+     */
+    final int readBitFromBuffer() {
+        final int bp = buffer.position();
+        final long position = Math.addExact(bufferOffset, bp);
+        if ((bitPosition >>> BIT_OFFSET_SIZE) != position) {
+            bitPosition = position << BIT_OFFSET_SIZE;
+        }
+        final int bitOffset = (Byte.SIZE - 1) - (int) (bitPosition++ & ((1L << BIT_OFFSET_SIZE) - 1));
+        final byte value = (bitOffset != 0) ? buffer.get(bp) : buffer.get();
+        return (value & (1 << bitOffset)) == 0 ? 0 : 1;
+    }
+
+    /**
      * Returns the current bit offset, as an integer between 0 and 7 inclusive.
      *
      * <p>According {@link javax.imageio.stream.ImageInputStream} contract, the bit offset shall be reset to 0
@@ -135,22 +150,37 @@ public abstract class ChannelData implements Markable {
      * @return the bit offset of the stream.
      */
     public final int getBitOffset() {
-        final long position = bufferOffset + buffer.position();
+        final long position = position();
         if ((bitPosition >>> BIT_OFFSET_SIZE) != position) {
             bitPosition = position << BIT_OFFSET_SIZE;
         }
-        return (int) (bitPosition & ((1 << BIT_OFFSET_SIZE) - 1));
+        return (int) (bitPosition & ((1L << BIT_OFFSET_SIZE) - 1));
     }
 
     /**
      * Sets the bit offset to the given value.
+     * The given value shall be between 0 inclusive to {@value Byte#SIZE} exclusive.
      *
      * @param  bitOffset  the new bit offset of the stream.
+     * @throws IllegalArgumentException if the given offset is out of range.
      */
     public final void setBitOffset(final int bitOffset) {
         ensureBetween("bitOffset", 0, Byte.SIZE - 1, bitOffset);
-        final long position = bufferOffset + buffer.position();
-        bitPosition = (position << BIT_OFFSET_SIZE) | bitOffset;
+        bitPosition = (position() << BIT_OFFSET_SIZE) | bitOffset;
+    }
+
+    /**
+     * Moves the stream position to the next byte boundary.
+     * If the bit offset is zero, this method does nothing.
+     * Otherwise it skips the remaining bits in current byte.
+     */
+    public final void skipRemainingBits() {
+        if (bitPosition != 0) {             // Quick check for common case.
+            if (getBitOffset() != 0) {
+                buffer.get();               // Should never fail, otherwise bit offset should have been invalid.
+            }
+            clearBitOffset();
+        }
     }
 
     /**
@@ -167,7 +197,14 @@ public abstract class ChannelData implements Markable {
      */
     @Override
     public long getStreamPosition() {
-        return bufferOffset + buffer.position();
+        return position();
+    }
+
+    /**
+     * Returns the current byte position of the stream, ignoring overriding by subclasses.
+     */
+    private long position() {
+        return Math.addExact(bufferOffset, buffer.position());
     }
 
     /**
@@ -187,7 +224,7 @@ public abstract class ChannelData implements Markable {
      * @param position the new position of the stream.
      */
     public final void setStreamPosition(final long position) {
-        bufferOffset = position - buffer.position();
+        bufferOffset = Math.subtractExact(position, buffer.position());
         // Clearing the bit offset is needed if we don't want to handle the case of ChannelDataOutput,
         // which use a different stream position calculation when the bit offset is non-zero.
         clearBitOffset();
@@ -278,8 +315,8 @@ public abstract class ChannelData implements Markable {
      * <h4>Departure from Image I/O specification</h4>
      * The {@link javax.imageio.stream.ImageInputStream#reset()} contract specifies that if there is no matching mark,
      * then this method shall do nothing. This method throws {@link InvalidMarkException} instead; silently ignoring
-     * the mismatch is considered too dangerous. However we may revisit this policy in the future if it appears to be
-     * a compatibility problem. Consequently, no code shall rely on {@code InvalidMarkException} to be thrown.
+     * the mismatch is considered too dangerous. This is a departure from {@code ImageInputStream} but is consistent
+     * with {@link java.io.InputStream#reset()} contract.
      *
      * @throws IOException if an I/O error occurs.
      */
@@ -295,10 +332,10 @@ public abstract class ChannelData implements Markable {
     }
 
     /**
-     * Invoked when an operation between the channel and the buffer transfered no byte. Note that this is unrelated
+     * Invoked when an operation between the channel and the buffer transferred no byte. Note that this is unrelated
      * to end-of-file, in which case {@link java.nio.channels.ReadableByteChannel#read(ByteBuffer)} returns -1.
      * A return value of 0 happen for example if the channel is a socket in non-blocking mode and the socket buffer
-     * has not yet transfered new data.
+     * has not yet transferred new data.
      *
      * <p>The current implementation sleeps an arbitrary amount of time before to allow a new try.
      * We do that in order to avoid high CPU consumption when data are expected to take more than
@@ -313,7 +350,7 @@ public abstract class ChannelData implements Markable {
             /*
              * Someone doesn't want to let us sleep. Stop the reading or writing process. We don't try to go back to
              * work, because the waiting time was short and this method is invoked in loops. Consequently if the user
-             * interrupted us, it is probably because he waited for a long time and we still have not transfered any
+             * interrupted us, it is probably because he waited for a long time and we still have not transferred any
              * new data.
              */
             throw new IOException(e);

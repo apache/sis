@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
+import java.time.Instant;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -387,7 +388,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * in EPSG dataset version 8.9, all datum shifts that can be represented by this method use Greenwich as the
      * prime meridian, both in source and target datum.</div>
      *
-     * <h4>Search criterion</h4>
+     * <h4>Search criteria</h4>
      * If the given {@code areaOfInterest} is non-null and contains at least one geographic bounding box, then this
      * method ignores any Bursa-Wolf parameters having a {@linkplain BursaWolfParameters#getDomainOfValidity() domain
      * of validity} that does not intersect the given geographic extent.
@@ -454,27 +455,34 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
              * for preventing that.
              */
             if (bursaWolf != null) {
-                final GeographicBoundingBox bbox = selector.getAreaOfInterest();
-                for (final BursaWolfParameters toPivot : bursaWolf) {
-                    selector.setAreaOfInterest(bbox, toPivot.getDomainOfValidity());
-                    candidate = ((DefaultGeodeticDatum) targetDatum).select(toPivot.getTargetDatum(), selector);
-                    if (candidate != null) {
-                        final Matrix step1 = createTransformation(toPivot,   areaOfInterest);
-                        final Matrix step2 = createTransformation(candidate, areaOfInterest);
-                        /*
-                         * MatrixSIS.multiply(MatrixSIS) is equivalent to AffineTransform.concatenate(…):
-                         * First transform by the supplied transform and then transform the result by the
-                         * original transform.
-                         */
-                        try {
-                            Matrix m = MatrixSIS.castOrCopy(step2).inverse().multiply(step1);
-                            return AnnotatedMatrix.indirect(m, selector.hasIntersection());
-                        } catch (NoninvertibleMatrixException e) {
-                            Logging.unexpectedException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
-                                    DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
+                GeographicBoundingBox bbox = selector.getAreaOfInterest();
+                Instant[]  timeOfInterest  = selector.getTimeOfInterest();
+                boolean useAOI = true;
+                do {    // Executed at most 3 times with `bbox` cleared, then `timeOfInterest` cleared.
+                    for (final BursaWolfParameters toPivot : bursaWolf) {
+                        if (selector.setExtentOfInterest(toPivot.getDomainOfValidity(), bbox, timeOfInterest)) {
+                            candidate = ((DefaultGeodeticDatum) targetDatum).select(toPivot.getTargetDatum(), selector);
+                            if (candidate != null) {
+                                final Matrix step1 = createTransformation(toPivot,   areaOfInterest);
+                                final Matrix step2 = createTransformation(candidate, areaOfInterest);
+                                /*
+                                 * MatrixSIS.multiply(MatrixSIS) is equivalent to AffineTransform.concatenate(…):
+                                 * First transform by the supplied transform and then transform the result by the
+                                 * original transform.
+                                 */
+                                try {
+                                    Matrix m = MatrixSIS.castOrCopy(step2).inverse().multiply(step1);
+                                    return AnnotatedMatrix.indirect(m, useAOI);
+                                } catch (NoninvertibleMatrixException e) {
+                                    Logging.unexpectedException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                                            DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
+                                }
+                            }
                         }
                     }
-                }
+                    useAOI = false;
+                } while (bbox != (bbox = null) || timeOfInterest != (timeOfInterest = null));
+                // Clear `bbox` first, and if it was already cleared `timeOfInterest` is next.
             }
         }
         return null;

@@ -101,8 +101,8 @@ public final class Shutdown extends Thread {
     }
 
     /**
-     * Registers a code to execute at JVM shutdown time. The resources will be disposed at
-     * shutdown time in reverse order (most recently added resources will be disposed first).
+     * Registers a code to execute at JVM shutdown time, or if SIS library is unloaded from a container such as OSGi.
+     * The resources will be disposed at shutdown time in reverse order (most recently added resources disposed first).
      *
      * <p>The same resource shall not be added twice.</p>
      *
@@ -149,6 +149,7 @@ public final class Shutdown extends Thread {
 
     /**
      * Unregisters the supervisor MBean, executes the disposal tasks and shutdowns the {@code sis-utility} threads.
+     * This method may be invoked at JVM shutdown, or if a container like OSGi is unloaded the SIS library.
      *
      * @param  caller  the class invoking this method, to be used only for logging purpose, or {@code null}
      *         if the logging system is not available anymore (i.e. the JVM itself is shutting down).

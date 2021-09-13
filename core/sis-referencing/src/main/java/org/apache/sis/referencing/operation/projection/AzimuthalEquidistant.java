@@ -33,13 +33,36 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  * This projection method has no EPSG code.
  * See the following references for an overview:
  * <ul>
- *   <li><a href="https://en.wikipedia.org/wiki/Azimuthal_equidistant_projection">Azimuthal equidistant projection</a></li>
- *   <li><a href="https://mathworld.wolfram.com/AzimuthalEquidistantProjection.html">Azimuthal Equidistant Projection</a></li>
+ *   <li><a href="https://en.wikipedia.org/wiki/Azimuthal_equidistant_projection">Azimuthal equidistant projection on Wikipedia</a></li>
+ *   <li><a href="https://mathworld.wolfram.com/AzimuthalEquidistantProjection.html">Azimuthal Equidistant Projection on MathWorld</a></li>
  * </ul>
  *
  * Current implementation supports only the spherical case.
- * For ellipsoidal formulas, the {@link ModifiedAzimuthalEquidistant} provides an approximation
+ * For ellipsoidal formulas, the {@link ModifiedAzimuthalEquidistant} class provides an approximation
  * valid under 800 kilometres of the projection centre.
+ *
+ * <div class="note"><b>Note of projection variants:</b>
+ * formulas for this map projection have been published by Snyder (1987) in the following forms:
+ * <ul>
+ *   <li><cite>Azimuthal Equidistant projection for the sphere.</cite>
+ *     This form has no EPSG code. It is implemented in Apache SIS as "Azimuthal Equidistant (Spherical)".</li>
+ *   <li><cite>Polar aspect of ellipsoidal Azimuthal Equidistant.</cite>
+ *     This form has no EPSG code. It is not yet implemented in Apache SIS.</li>
+ *   <li><cite>Oblique and equatorial aspects of ellipsoidal Azimuthal Equidistant:</cite>
+ *     <ul>
+ *       <li><cite>Nearly rigorous sets of formulas.</cite>
+ *         The EPSG name is "Modified Azimuthal Equidistant" (EPSG:9832).
+ *         This projection is implemented by {@link ModifiedAzimuthalEquidistant}.</li>
+ *       <li><cite>Approximate sets of formulas.</cite>
+ *         The EPSG name is "Guam projection" (EPSG:9831).
+ *         This projection is not yet implemented in Apache SIS.</li>
+ *     </ul>
+ *   </li>
+ * </ul>
+ *
+ * This base class is aimed to provide the general case valid for all distances;
+ * the fact that current version uses spherical formulas should be considered as an implementation limitation
+ * that may change in future version. Subclasses are specialization for more restricted areas.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -71,7 +94,7 @@ public class AzimuthalEquidistant extends NormalizedProjection {
         roles.put(ParameterRole.CENTRAL_MERIDIAN,                    LONGITUDE_OF_ORIGIN);
         roles.put(ParameterRole.FALSE_EASTING,                       FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,                      FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, (byte) 0);
+        return new Initializer(method, parameters, roles, STANDARD_VARIANT);
     }
 
     /**
@@ -102,6 +125,37 @@ public class AzimuthalEquidistant extends NormalizedProjection {
     }
 
     /**
+     * Creates a new projection initialized to the same parameters than the given one.
+     */
+    AzimuthalEquidistant(final AzimuthalEquidistant other) {
+        super(other);
+        cosφ0 = other.cosφ0;
+        sinφ0 = other.sinφ0;
+    }
+
+    /**
+     * Returns the names of additional internal parameters which need to be taken in account when
+     * comparing two {@code AzimuthalEquidistant} projections or formatting them in debug mode.
+     *
+     * <p>We could report any of the internal parameters. But since they are all derived from φ₀ and
+     * the {@linkplain #eccentricity eccentricity} and since the eccentricity is already reported by
+     * the super-class, we report only φ₀ as a representative of the internal parameters.</p>
+     */
+    @Override
+    final String[] getInternalParameterNames() {
+        return new String[] {"φ₀"};
+    }
+
+    /**
+     * Returns the values of additional internal parameters which need to be taken in account when
+     * comparing two {@code AzimuthalEquidistant} projections or formatting them in debug mode.
+     */
+    @Override
+    final double[] getInternalParameterValues() {
+        return new double[] {(cosφ0 < PI/4) ? acos(cosφ0) : asin(sinφ0)};
+    }
+
+    /**
      * Converts the specified (λ,φ) coordinate and stores the (<var>x</var>,<var>y</var>) result in {@code dstPts}.
      *
      * @param  srcPts    source point coordinate, as (<var>longitude</var>, <var>latitude</var>) in radians.
@@ -124,7 +178,7 @@ public class AzimuthalEquidistant extends NormalizedProjection {
         final double  sinλ  = sin(λ);
         final double  cosφ  = cos(φ);
         final double  sinφ  = sin(φ);
-        final double  cosc  = sinφ0*sinφ + cosφ0*cosφ*cosλ;
+        final double  cosc  = min(1, max(-1, sinφ0*sinφ + cosφ0*cosφ*cosλ));
         final double  c     = acos(cosc);
         final boolean ind   = abs(c) < ANGULAR_TOLERANCE;
         final double  k     = ind ? 1 : c/sin(c);
@@ -175,28 +229,11 @@ public class AzimuthalEquidistant extends NormalizedProjection {
         final double sinD = sin(D);
         final double cosD = cos(D);
         dstPts[dstOff  ]  = atan2(x*sinD, (cosφ0*cosD*D - sinφ0*sinD*y));
-        dstPts[dstOff+1]  = asin(cosD*sinφ0 + sinD*cosφ0*y/D);
-    }
-
-    /**
-     * Returns the names of additional internal parameters which need to be taken in account when
-     * comparing two {@code AzimuthalEquidistant} projections or formatting them in debug mode.
-     *
-     * <p>We could report any of the internal parameters. But since they are all derived from φ₀ and
-     * the {@linkplain #eccentricity eccentricity} and since the eccentricity is already reported by
-     * the super-class, we report only φ₀ as a representative of the internal parameters.</p>
-     */
-    @Override
-    final String[] getInternalParameterNames() {
-        return new String[] {"φ₀"};
-    }
-
-    /**
-     * Returns the values of additional internal parameters which need to be taken in account when
-     * comparing two {@code ObliqueStereographic} projections or formatting them in debug mode.
-     */
-    @Override
-    final double[] getInternalParameterValues() {
-        return new double[] {(cosφ0 < PI/4) ? acos(cosφ0) : asin(sinφ0)};
+        dstPts[dstOff+1]  = asin(D == 0 ? sinφ0 : sinφ0*cosD + cosφ0*sinD*(y/D));
+        /*
+         * Checking for strict equality (D == 0) is okay because even a very small value
+         * is sufficient for avoiding NaN. We get (y/D) ≤ 1 and sin(D) ≈ D, so the right
+         * term become close to zero.
+         */
     }
 }

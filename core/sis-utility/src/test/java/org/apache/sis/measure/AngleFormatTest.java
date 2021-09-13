@@ -34,7 +34,7 @@ import static org.apache.sis.test.TestUtilities.*;
  * Tests parsing and formatting done by the {@link AngleFormat} class.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -339,6 +339,18 @@ public final strictfp class AngleFormatTest extends TestCase {
         f.setPrecision(10,       true); assertEquals("D°",         f.toPattern());
         f.setPrecision(1./1000, false); assertEquals("D.ddd°",     f.toPattern());
         f.setPrecision(1./1001, false); assertEquals("D.dddd°",    f.toPattern());
+    }
+
+    /**
+     * Tests {@link AngleFormat#getPrecision()}.
+     */
+    @Test
+    public void testGetPrecision() {
+        final AngleFormat f = new AngleFormat(Locale.CANADA);
+        f.applyPattern("D°");         assertEquals(     1,   f.getPrecision(), STRICT);
+        f.applyPattern("D.dd°");      assertEquals(  0.01,   f.getPrecision(),  1E-16);
+        f.applyPattern("D°MM′");      assertEquals(1.0/60,   f.getPrecision(),  1E-16);
+        f.applyPattern("D°MM′SS.s″"); assertEquals(0.1/3600, f.getPrecision(),  1E-16);
     }
 
     /**

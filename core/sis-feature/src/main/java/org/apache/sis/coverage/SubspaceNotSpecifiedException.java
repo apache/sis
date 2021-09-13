@@ -32,7 +32,7 @@ package org.apache.sis.coverage;
  * @since 1.0
  * @module
  */
-public class SubspaceNotSpecifiedException extends RuntimeException {
+public class SubspaceNotSpecifiedException extends CannotEvaluateException {
     /**
      * Serial number for inter-operability with different versions.
      */

@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.Currency;
 import java.util.ConcurrentModificationException;
 import java.util.function.Predicate;
 import java.io.IOException;
@@ -33,26 +32,17 @@ import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.regex.Matcher;
-import org.opengis.util.CodeList;
-import java.nio.charset.Charset;
-import org.opengis.util.Type;
-import org.opengis.util.Record;
-import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
-import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
-import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.internal.util.Acyclic;
-import org.apache.sis.internal.util.MetadataServices;
+import org.apache.sis.internal.util.PropertyFormat;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.TreeFormatCustomization;
 
@@ -106,7 +96,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * than the user object of a parent node <var>A</var>, then the children of the <var>C</var> node will not be formatted.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -350,9 +340,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     }
 
     /**
-     * Returns the locale to use for code lists, international strings and exception messages.
+     * Returns the locale to use for code lists, international strings and localized messages of exceptions.
      */
-    final Locale getDisplayLocale() {
+    private Locale getDisplayLocale() {
         return getLocale(Locale.Category.DISPLAY);
     }
 
@@ -636,7 +626,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * <p>Instances of {@link Writer} are created temporarily before to begin the formatting
      * of a node, and discarded when the formatting is finished.</p>
      */
-    private final class Writer extends LineAppender {
+    private final class Writer extends PropertyFormat {
         /**
          * Combination of {@link #nodeFilter} with other filter that may be specified by the tree table to format.
          * The {@code TreeTable}-specific filter is specified by {@link TreeFormatCustomization}.
@@ -676,12 +666,6 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         private final Set<TreeTable.Node> recursivityGuard;
 
         /**
-         * The format for the column in process of being written. This is a format to use for the column as a whole.
-         * This field is updated for every new column to write. May be {@code null} if the format is unspecified.
-         */
-        private transient Format columnFormat;
-
-        /**
          * Creates a new instance which will write to the given appendable.
          *
          * @param  out               where to format the tree.
@@ -714,158 +698,55 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         }
 
         /**
-         * Localizes the given name in the display locale, or returns "(Unnamed)" if no localized value is found.
+         * Returns the locale to use for formatting property value.
+         * This method is invoked by {@link PropertyFormat} when needed.
          */
-        private String toString(final GenericName name) {
-            final Locale locale = getDisplayLocale();
-            if (name != null) {
-                final InternationalString i18n = name.toInternationalString();
-                if (i18n != null) {
-                    final String localized = i18n.toString(locale);
-                    if (localized != null) {
-                        return localized;
-                    }
-                }
-                final String localized = name.toString();
-                if (localized != null) {
-                    return localized;
-                }
-            }
-            return '(' + Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed) + ')';
+        @Override
+        public Locale getLocale() {
+            return getDisplayLocale();
         }
 
         /**
-         * Appends a textual representation of the given value.
-         *
-         * @param  value      the value to format (may be {@code null}).
-         * @param  recursive  {@code true} if this method is invoking itself for writing collection values.
+         * Invoked by {@link PropertyFormat} for formatting a value which has not been recognized as one of
+         * the types to be handled in a special way. In particular numbers and dates should be handled here.
+         * This method checks for a value-by-value format and should be invoked only in last resort.
+         * If a column-wide format was specified by the {@link #columnFormat} field, then that format should
+         * have been used by {@link #appendValue(Object)} code in order to produce a more uniform formatting.
          */
-        private void formatValue(final Object value, final boolean recursive) throws IOException {
-            final CharSequence text;
-            if (value == null) {
-                text = " ";                                             // String for missing value.
-            } else if (columnFormat != null) {
-                if (columnFormat instanceof CompoundFormat<?>) {
-                    formatValue((CompoundFormat<?>) columnFormat, value);
-                    return;
-                }
-                text = columnFormat.format(value);
-            } else if (value instanceof InternationalString) {
-                text = ((InternationalString) value).toString(getDisplayLocale());
-            } else if (value instanceof CharSequence) {
-                text = value.toString();
-            } else if (value instanceof CodeList<?>) {
-                text = MetadataServices.getInstance().getCodeTitle((CodeList<?>) value, getDisplayLocale());
-            } else if (value instanceof Enum<?>) {
-                text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
-            } else if (value instanceof Type) {
-                text = toString(((Type) value).getTypeName());
-            } else if (value instanceof Locale) {
-                final Locale locale = getDisplayLocale();
-                text = (locale != Locale.ROOT) ? ((Locale) value).getDisplayName(locale) : value.toString();
-            } else if (value instanceof TimeZone) {
-                final Locale locale = getDisplayLocale();
-                text = (locale != Locale.ROOT) ? ((TimeZone) value).getDisplayName(locale) : ((TimeZone) value).getID();
-            } else if (value instanceof Charset) {
-                final Locale locale = getDisplayLocale();
-                text = (locale != Locale.ROOT) ? ((Charset) value).displayName(locale) : ((Charset) value).name();
-            } else if (value instanceof Currency) {
-                final Locale locale = getDisplayLocale();
-                text = (locale != Locale.ROOT) ? ((Currency) value).getDisplayName(locale) : value.toString();
-            } else if (value instanceof Record) {
-                formatCollection(((Record) value).getAttributes().values(), recursive);
-                return;
-            } else if (value instanceof Iterable<?>) {
-                formatCollection((Iterable<?>) value, recursive);
-                return;
-            } else if (value instanceof Object[]) {
-                formatCollection(Arrays.asList((Object[]) value), recursive);
-                return;
-            } else if (value instanceof Map.Entry<?,?>) {
-                final Map.Entry<?,?> entry = (Map.Entry<?,?>) value;
-                final Object k = entry.getKey();
-                final Object v = entry.getValue();
-                if (k == null) {
-                    append(null);
+        @Override
+        protected final String toString(final Object value) {
+            final String text;
+            final Format format = getFormat(value.getClass());
+            if (format instanceof DecimalFormat && Numbers.isFloat(value.getClass())) {
+                final double number = ((Number) value).doubleValue();
+                if (number != (int) number) {   // Cast to 'int' instead of 'long' as a way to limit to about 2E9.
+                    /*
+                     * The default floating point format uses only 3 fraction digits. We adjust that to the number
+                     * of digits required by the number to format. We do that only if no NumberFormat was inferred
+                     * for the whole column (in order to keep column format uniform).  We use enough precision for
+                     * all fraction digits except the last 2, in order to let DecimalFormat round the number.
+                     */
+                    if (adaptableFormat == null) {
+                        adaptableFormat = (DecimalFormat) format.clone();
+                        defaultPattern = adaptableFormat.toPattern();
+                    }
+                    final int nf = DecimalFunctions.fractionDigitsForValue(number);
+                    final boolean preferScientificNotation = (nf > 20 || nf < 7);       // == (value < 1E-4 || value > 1E+9)
+                    if (preferScientificNotation != usingScientificNotation) {
+                        usingScientificNotation = preferScientificNotation;
+                        adaptableFormat.applyPattern(preferScientificNotation ? "0.0############E0" : defaultPattern);
+                    }
+                    if (!preferScientificNotation) {
+                        adaptableFormat.setMaximumFractionDigits(nf - 2);       // All significand fraction digits except last two.
+                    }
+                    text = adaptableFormat.format(value);
                 } else {
-                    formatValue(k, recursive);
+                    text = format.format(value);
                 }
-                if (v != null) {
-                    append(" → ");
-                    formatValue(v, recursive);
-                }
-                return;
             } else {
-                /*
-                 * Check for a value-by-value format only as last resort. If a column-wide format was specified by
-                 * the 'columnFormat' field, that format should have been used by above code in order to produce a
-                 * more uniform formatting.
-                 */
-                final Format format = getFormat(value.getClass());
-                if (format instanceof DecimalFormat && Numbers.isFloat(value.getClass())) {
-                    final double number = ((Number) value).doubleValue();
-                    if (number != (int) number) {   // Cast to 'int' instead of 'long' as a way to limit to about 2E9.
-                        /*
-                         * The default floating point format uses only 3 fraction digits. We adjust that to the number
-                         * of digits required by the number to format. We do that only if no NumberFormat was inferred
-                         * for the whole column (in order to keep column format uniform).  We use enough precision for
-                         * all fraction digits except the last 2, in order to let DecimalFormat round the number.
-                         */
-                        if (adaptableFormat == null) {
-                            adaptableFormat = (DecimalFormat) format.clone();
-                            defaultPattern = adaptableFormat.toPattern();
-                        }
-                        final int nf = DecimalFunctions.fractionDigitsForValue(number);
-                        final boolean preferScientificNotation = (nf > 20 || nf < 7);       // == (value < 1E-4 || value > 1E+9)
-                        if (preferScientificNotation != usingScientificNotation) {
-                            usingScientificNotation = preferScientificNotation;
-                            adaptableFormat.applyPattern(preferScientificNotation ? "0.0############E0" : defaultPattern);
-                        }
-                        if (!preferScientificNotation) {
-                            adaptableFormat.setMaximumFractionDigits(nf - 2);       // All significand fraction digits except last two.
-                        }
-                        text = adaptableFormat.format(value);
-                    } else {
-                        text = format.format(value);
-                    }
-                } else {
-                    text = (format != null) ? format.format(value) : value.toString();
-                }
+                text = (format != null) ? format.format(value) : value.toString();
             }
-            append(text);
-        }
-
-        /**
-         * Writes the values of the given collection. A maximum of 10 values will be written.
-         * If the collection contains other collections, the other collections will <strong>not</strong>
-         * be written recursively.
-         */
-        private void formatCollection(final Iterable<?> values, final boolean recursive) throws IOException {
-            if (values != null) {
-                if (recursive) {
-                    append('…');                                // Do not format collections inside collections.
-                } else {
-                    int count = 0;
-                    for (final Object value : values) {
-                        if (value != null) {
-                            if (count != 0) append(", ");
-                            formatValue(value, true);
-                            if (++count == 10) {                // Arbitrary limit.
-                                append(", …");
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * Work around for the inability to define the variable {@code <V>} locally.
-         */
-        @Workaround(library="JDK", version="1.7")
-        private <V> void formatValue(final CompoundFormat<V> format, final Object value) throws IOException {
-            format.format(format.getValueType().cast(value), this);
+            return text;
         }
 
         /**
@@ -904,7 +785,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                     writeColumnSeparator(i, (TableAppender) out);
                 }
                 columnFormat = formats[i];
-                formatValue(values[i], false);
+                appendValue(values[i]);
                 clear();
             }
             out.append(lineSeparator);

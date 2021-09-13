@@ -51,8 +51,8 @@ abstract class MetadataVisitor<R> {
 
     /**
      * A guard against infinite recursivity in {@link #walk(MetadataStandard, Class, Object, boolean)}.
-     * Keys are visited metadata instances and values are computed value. The value may be null if
-     * the computation is in progress.
+     * Keys are visited metadata instances and values are computed value.
+     * The value may be null if the computation is in progress.
      *
      * <h4>The problem</h4>
      * Cyclic associations can exist in ISO 19115 metadata. For example {@code Instrument} has a reference
@@ -76,6 +76,8 @@ abstract class MetadataVisitor<R> {
     /**
      * Count of nested calls to {@link #walk(MetadataStandard, Class, Object, boolean)} method.
      * When this count reach zero, the visitor should be removed from the thread local variable.
+     *
+     * @see #creator()
      */
     private int nestedCount;
 
@@ -101,6 +103,9 @@ abstract class MetadataVisitor<R> {
      * The thread-local variable that created this {@code MetadataVisitor} instance.
      * This is usually a static final {@code VISITORS} constant defined in the subclass.
      * May be {@code null} if this visitor does not use thread-local instances.
+     *
+     * <p>If this method returns a non-null value, then {@link ThreadLocal#remove()} will be invoked
+     * after {@link MetadataVisitor} finished to walk through a metadata and all its children.</p>
      */
     ThreadLocal<? extends MetadataVisitor<?>> creator() {
         return null;
@@ -133,8 +138,7 @@ abstract class MetadataVisitor<R> {
      * already been visited. The computation result is returned (may be the result of a previous computation).
      *
      * <p>This method is typically invoked recursively while we iterate down the metadata tree.
-     * It creates a map of visited nodes when the iteration begin, and deletes that map when the
-     * iteration ends.</p>
+     * It maintains a map of visited nodes for preventing the same node to be visited twice.</p>
      *
      * @param  standard   the metadata standard implemented by the object to visit.
      * @param  type       the standard interface implemented by the metadata object, or {@code null} if unknown.
@@ -148,9 +152,9 @@ abstract class MetadataVisitor<R> {
         if (!visited.containsKey(metadata)) {               // Reminder: the associated value may be null.
             final PropertyAccessor accessor = standard.getAccessor(new CacheKey(metadata.getClass(), type), mandatory);
             if (accessor != null) {
-                final Filter filter = preVisit(accessor);
-                final boolean preconstructed;
-                final R sentinel;
+                final Filter filter = preVisit(accessor);       // NONE, NON_EMPTY, WRITABLE or WRITABLE_RESULT.
+                final boolean preconstructed;                   // Whether to write in instance provided by `result()`.
+                final R sentinel;                               // Value in the map for telling that visit started.
                 switch (filter) {
                     case NONE:            return null;
                     case WRITABLE_RESULT: preconstructed = true;  sentinel = result(); break;
@@ -160,6 +164,11 @@ abstract class MetadataVisitor<R> {
                     // Should never happen, unless this method is invoked concurrently in another thread.
                     throw new ConcurrentModificationException();
                 }
+                /*
+                 * Name of properties walked from root node to the node being visited by current method invocation.
+                 * The path is provided by `propertyPath` and the number of valid elements is given by `nestedCount`,
+                 * which is 1 during the visit of first element.
+                 */
                 if (nestedCount >= propertyPath.length) {
                     propertyPath = Arrays.copyOf(propertyPath, nestedCount * 2);
                 }
@@ -173,6 +182,10 @@ abstract class MetadataVisitor<R> {
                      */
                     allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
                 }
+                /*
+                 * Actual visiting. The `accessor.walk(this, metadata)` method calls below will callback the abstract
+                 * `visit(type, value)` method declared in this class.
+                 */
                 try {
                     switch (filter) {
                         case NON_EMPTY:       accessor.walkReadable(this, metadata); break;
@@ -186,6 +199,10 @@ abstract class MetadataVisitor<R> {
                     throw new MetadataVisitorException(Arrays.copyOf(propertyPath, nestedCount), accessor.type, e);
                 } finally {
                     if (--nestedCount == 0) {
+                        /*
+                         * We are back to the root metadata (i.e. we finished walking through all children).
+                         * Clear thread local variables, which should restore them to their initial value.
+                         */
                         if (!allowNull) {
                             Semaphores.clear(Semaphores.NULL_COLLECTION);
                         }
@@ -193,6 +210,10 @@ abstract class MetadataVisitor<R> {
                         if (creator != null) creator.remove();
                     }
                 }
+                /*
+                 * Cache the result in case this node is visited again (e.g. if the metadata graph contains
+                 * cycles or if the same child node is referenced from many places).
+                 */
                 final R result = preconstructed ? sentinel : result();
                 if (visited.put(metadata, result) != sentinel) {
                     throw new ConcurrentModificationException();

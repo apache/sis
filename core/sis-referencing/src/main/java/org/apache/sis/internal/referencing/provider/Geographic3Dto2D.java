@@ -83,6 +83,28 @@ public final class Geographic3Dto2D extends GeographicRedimension {
     }
 
     /**
+     * Returns the inverse of this operation.
+     */
+    @Override
+    public AbstractProvider inverse() {
+        return getMethod(Geographic2Dto3D.PARAMETERS);
+    }
+
+    /**
+     * Workaround while waiting for JDK 9. After migration to Jigsaw, {@link #inverse()}
+     * should return directly the unique provider instance.
+     */
+    static AbstractProvider getMethod(final ParameterDescriptorGroup desc) {
+        try {
+            return (AbstractProvider) org.apache.sis.internal.system.DefaultFactories.forBuildin(MathTransformFactory.class,
+                    org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.class)
+                    .getOperationMethod(desc.getName().getCode());
+        } catch (FactoryException e) {
+            throw new org.apache.sis.util.collection.BackingStoreException(e);
+        }
+    }
+
+    /**
      * Returns the transform.
      *
      * <div class="note"><b>Implementation note:</b>

@@ -50,7 +50,7 @@ import static java.lang.Double.doubleToLongBits;
  * <code>differences().{@linkplain #scale(double) scale}(1/Δx)</code>.</p>
  *
  * <p>Statistics are computed on the fly using the
- * <a href="http://en.wikipedia.org/wiki/Kahan_summation_algorithm">Kahan summation algorithm</a>
+ * <a href="https://en.wikipedia.org/wiki/Kahan_summation_algorithm">Kahan summation algorithm</a>
  * for reducing the numerical errors; the sample values are never stored in memory.</p>
  *
  * <p>An instance of {@code Statistics} is initially empty: the {@linkplain #count() count} of
@@ -448,7 +448,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * methods have a uniform distribution, then the returned value should be close to
      * <code>sqrt({@linkplain #span() span}² / 12)</code>. If they have a
      * Gaussian distribution (which is the most common case), then the returned value
-     * is related to the <a href="http://en.wikipedia.org/wiki/Error_function">error
+     * is related to the <a href="https://en.wikipedia.org/wiki/Error_function">error
      * function</a>.
      *
      * <p>As a reminder, the table below gives the probability for a sample value to be

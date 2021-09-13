@@ -26,9 +26,8 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Statistics;
-import org.apache.sis.math.Vector;
-import org.opengis.referencing.operation.Matrix;    // For javadoc
 
 import static java.lang.Math.min;
 import static java.lang.Math.max;
@@ -40,7 +39,7 @@ import static java.lang.Math.ulp;
  * Miscellaneous utilities methods working on floating point numbers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -149,6 +148,13 @@ public final class Numerics extends Static {
     public static final int SIGNIFICAND_SIZE_OF_FLOAT = 23;
 
     /**
+     * Maximal integer value which is convertible to {@code float} type without lost of precision digits.
+     *
+     * @since 1.1
+     */
+    public static final int MAX_INTEGER_CONVERTIBLE_TO_FLOAT = 1 << (SIGNIFICAND_SIZE_OF_FLOAT + 1);
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Numerics() {
@@ -165,7 +171,7 @@ public final class Numerics extends Static {
      * signed value -1 has the same bits pattern than the maximal possible value in unsigned integer representation).</p>
      *
      * @param  bit  the bit to set.
-     * @return a mask with the given bit set, or 0 if the given argument is negative or ≧ {@value Long#SIZE}.
+     * @return a mask with the given bit set, or 0 if the given argument is negative or ≥ {@value Long#SIZE}.
      */
     public static long bitmask(final int bit) {
         return (bit >= 0 && bit < Long.SIZE) ? (1L << bit) : 0;
@@ -219,6 +225,18 @@ public final class Numerics extends Static {
 //      final long high = Math.multiplyHigh(value, multiplier);
 //      return Math.multiplyExact(value * multiplier / divisor, high);
         return Math.multiplyExact(value, multiplier) / divisor;
+    }
+
+    /**
+     * Returns the given value clamped to the range on 32 bits integer.
+     *
+     * @param  value  the value to clamp.
+     * @return the value clamped to the range of 32 bits integer.
+     */
+    public static int clamp(final long value) {
+        if (value < Integer.MIN_VALUE) return Integer.MIN_VALUE;
+        if (value > Integer.MAX_VALUE) return Integer.MAX_VALUE;
+        return (int) value;
     }
 
     /**
@@ -344,27 +362,6 @@ public final class Numerics extends Static {
             builder.append(" by ").append(delta);
         }
         return builder.toString();
-    }
-
-    /**
-     * Returns {@code true} if the following text is non-null, non-empty
-     * and contains only digits from {@code '0'} to {@code '9'} inclusive.
-     *
-     * @param  text  the text to verify, or {@code null}.
-     * @return {@code true} if the given text is an unsigned integer.
-     */
-    public static boolean isUnsignedInteger(final String text) {
-        if (text != null) {
-            final int length = text.length();
-            if (length != 0) {
-                char c;
-                int i = 0;
-                while ((c = text.charAt(i)) >= '0' && c <= '9') {
-                    if (++i >= length) return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -583,46 +580,6 @@ public final class Numerics extends Static {
     }
 
     /**
-     * Suggests an amount of fraction digits to use for formatting numbers in each column of the given matrix.
-     * The number of fraction digits may be negative if we could round the numbers to 10, 100, <i>etc</i>.
-     *
-     * @param  rows  the matrix rows. It is not required that each row has the same length.
-     * @return suggested amount of fraction digits as an array as long as the longest row.
-     *
-     * @see org.apache.sis.referencing.operation.matrix.Matrices#toString(Matrix)
-     *
-     * @todo Move into {@link org.apache.sis.internal.referencing.WKTUtilities}
-     *       if we move WKT parser/formatter to referencing module.
-     */
-    public static int[] suggestFractionDigits(final Vector[] rows) {
-        int length = 0;
-        final int n = rows.length - 1;
-        for (int j=0; j <= n; j++) {
-            final int rl = rows[j].size();
-            if (rl > length) length = rl;
-        }
-        final int[] fractionDigits = new int[length];
-        final Statistics stats = new Statistics(null);
-        for (int i=0; i<length; i++) {
-            boolean isInteger = true;
-            for (final Vector row : rows) {
-                if (row.size() > i) {
-                    final double value = row.doubleValue(i);
-                    stats.accept(value);
-                    if (isInteger && Math.floor(value) != value && !Double.isNaN(value)) {
-                        isInteger = false;
-                    }
-                }
-            }
-            if (!isInteger) {
-                fractionDigits[i] = suggestFractionDigits(stats);
-            }
-            stats.reset();
-        }
-        return fractionDigits;
-    }
-
-    /**
      * Formats the given value with the given format, using scientific notation if needed.
      * This is a workaround for {@link DecimalFormat} not switching automatically to scientific notation for large numbers.
      *
@@ -633,13 +590,19 @@ public final class Numerics extends Static {
      */
     @Workaround(library="JDK", version="10")
     public static String useScientificNotationIfNeeded(final Format format, final Object value, final BiFunction<Format,Object,String> action) {
-        if (value instanceof Number) {
+        if (value instanceof Number && format instanceof DecimalFormat) {
+            final DecimalFormat df = (DecimalFormat) format;
+            final int maxFD = df.getMaximumFractionDigits();
             final double m = abs(((Number) value).doubleValue());
-            if (m > 0 && (m >= 1E+9 || m < 1E-4) && format instanceof DecimalFormat) {
-                final DecimalFormat df = (DecimalFormat) format;
+            if (m > 0 && (m >= 1E+9 || m < MathFunctions.pow10(-Math.min(maxFD, 6)))) {
+                final int minFD = df.getMinimumFractionDigits();
                 final String pattern = df.toPattern();
-                df.applyPattern("0.######E00");
                 try {
+                    df.applyPattern("0.######E00");
+                    if (maxFD > 0) {
+                        df.setMinimumFractionDigits(minFD);
+                        df.setMaximumFractionDigits(maxFD);
+                    }
                     return action.apply(format, value);
                 } finally {
                     df.applyPattern(pattern);

@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -33,7 +35,6 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
@@ -41,10 +42,12 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
+import ucar.nc2.constants.CF;
 
 // Branch-dependent imports
 import org.apache.sis.util.iso.DefaultNameFactory;
@@ -57,11 +60,16 @@ import org.apache.sis.util.iso.DefaultNameFactory;
  * Synchronizations are caller's responsibility.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
 public abstract class Decoder extends ReferencingFactoryContainer implements Closeable {
+    /**
+     * The logger to use for messages other than warnings specific to the file being read.
+     */
+    static final Logger LOGGER = Logging.getLogger(Modules.NETCDF);
+
     /**
      * The format name to use in error message. We use lower-case "n" because it seems to be what the netCDF community uses.
      * By contrast, {@code NetcdfStoreProvider} uses upper-case "N" because it is considered at the beginning of sentences.
@@ -106,7 +114,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * The geodetic datum, created when first needed. The datum are generally not specified in netCDF files.
      * To make that clearer, we will build datum with names like "Unknown datum presumably based on GRS 1980".
      *
-     * @see CRSBuilder#build(Decoder)
+     * @see CRSBuilder#build(Decoder, boolean)
      */
     final Datum[] datumCache;
 
@@ -124,16 +132,18 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
 
     /**
      * Cache of localization grids created for a given pair of (<var>x</var>,<var>y</var>) axes. Localization grids
-     * are expensive to compute and consume a significant amount of memory.  The {@link Grid} instances returned by
-     * {@link #getGrids()} allow to share localization grids only between variables using the exact same list of dimensions.
+     * are expensive to compute and consume a significant amount of memory. The {@link Grid} instances returned by
+     * {@link #getGrids()} share localization grids only between variables using the exact same list of dimensions.
      * This {@code localizationGrids} cache allows to cover other cases.
-     * For example a netCDF file may have a variable with (<var>longitude</var>, <var>latitude</var>) dimensions
-     * and another variable with (<var>longitude</var>, <var>latitude</var>, <var>depth</var>) dimensions,
-     * with both variables using the same localization grid for the (<var>longitude</var>, <var>latitude</var>) part.
+     *
+     * <div class="note"><b>Example:</b>
+     * a netCDF file may have a variable with (<var>longitude</var>, <var>latitude</var>) dimensions and another
+     * variable with (<var>longitude</var>, <var>latitude</var>, <var>depth</var>) dimensions, with both variables
+     * using the same localization grid for the (<var>longitude</var>, <var>latitude</var>) part.</div>
      *
      * @see GridCacheKey#cached(Decoder)
      */
-    final Map<GridCacheKey,MathTransform> localizationGrids;
+    final Map<GridCacheKey,GridCacheValue> localizationGrids;
 
     /**
      * Where to send the warnings.
@@ -171,6 +181,18 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     }
 
     /**
+     * Checks and potentially modifies the content of this dataset for conventions other than CF-conventions.
+     * This method should be invoked after construction for handling the particularities of some datasets
+     * (HYCOM, …).
+     *
+     * @throws IOException if an error occurred while reading the channel.
+     * @throws DataStoreException if an error occurred while interpreting the netCDF file content.
+     */
+    public final void applyOtherConventions() throws IOException, DataStoreException {
+        HYCOM.convert(this, getVariables());
+    }
+
+    /**
      * Returns information about modifications to apply to netCDF conventions in order to handle this netCDF file.
      * Customized conventions are necessary when the variables and attributes in a netCDF file do not follow CF-conventions.
      *
@@ -180,6 +202,15 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
         // Convention are still null if this method is invoked from Convention.isApplicableTo(Decoder).
         return (convention != null) ? convention : Convention.DEFAULT;
     }
+
+    /**
+     * Adds netCDF attributes to the given node, including variables and sub-groups attributes.
+     * Groups are shown first, then variables attributes, and finally global attributes.
+     * Showing global attributes last is consistent with ncML ("netCDF dump") output.
+     *
+     * @param  root  the node where to add netCDF attributes.
+     */
+    public abstract void addAttributesTo(TreeTable.Node root);
 
     /**
      * Returns a filename for formatting error message and for information purpose.
@@ -288,8 +319,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @param  e      the exception, or {@code null} if none.
      */
     final void illegalAttributeValue(final String name, final String value, final NumberFormatException e) {
-        listeners.warning(Resources.forLocale(listeners.getLocale()).getString(
-                Resources.Keys.IllegalAttributeValue_3, getFilename(), name, value), e);
+        listeners.warning(resources().getString(Resources.Keys.IllegalAttributeValue_3, getFilename(), name, value), e);
     }
 
     /**
@@ -357,14 +387,24 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
 
     /**
      * If the file contains features encoded as discrete sampling (for example profiles or trajectories),
-     * returns objects for handling them.
-     * This method may return a direct reference to an internal array - do not modify.
+     * returns objects for handling them. This method does not need to cache the returned array, because
+     * it will be invoked only once by {@link org.apache.sis.storage.netcdf.NetcdfStore#components()}.
      *
+     * @param  lock  the lock to use in {@code synchronized(lock)} statements.
      * @return a handler for the features, or an empty array if none.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException;
+    public DiscreteSampling[] getDiscreteSampling(final Object lock) throws IOException, DataStoreException {
+        final String type = stringValue(CF.FEATURE_TYPE);
+        if (type == null || type.equalsIgnoreCase(FeatureSet.TRAJECTORY)) try {
+            return FeatureSet.create(this, lock);
+        } catch (IllegalArgumentException | ArithmeticException e) {
+            // Illegal argument is not a problem with content, but rather with configuration.
+            throw new DataStoreException(e.getLocalizedMessage(), e);
+        }
+        return new FeatureSet[0];
+    }
 
     /**
      * Returns all grid geometries (related to coordinate systems) found in the netCDF file.
@@ -401,7 +441,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
         if (list.isEmpty()) {
             final List<Exception> warnings = new ArrayList<>();     // For internal usage by Grid.
             for (final Grid grid : getGrids()) {
-                addIfNotPresent(list, grid.getCoordinateReferenceSystem(this, warnings));
+                addIfNotPresent(list, grid.getCoordinateReferenceSystem(this, warnings, null, null));
             }
         }
         return list;
@@ -425,6 +465,25 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     }
 
     /**
+     * Returns the dimension of the given name (eventually ignoring case), or {@code null} if none.
+     * This method searches in all dimensions found in the netCDF file, regardless of variables.
+     *
+     * @param  dimName  the name of the dimension to search.
+     * @return dimension of the given name, or {@code null} if none.
+     */
+    protected abstract Dimension findDimension(String dimName);
+
+    /**
+     * Returns the netCDF variable of the given name, or {@code null} if none.
+     *
+     * @param  name  the name of the variable to search, or {@code null}.
+     * @return the variable of the given name, or {@code null} if none.
+     *
+     * @see #getVariables()
+     */
+    protected abstract Variable findVariable(String name);
+
+    /**
      * Returns the variable or group of the given name. Groups exist in netCDF 4 but not in netCDF 3.
      *
      * @param  name  name of the variable or group to search.
@@ -443,10 +502,23 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      */
     final void performance(final Class<?> caller, final String method, final short resourceKey, long time) {
         time = System.nanoTime() - time;
-        final LogRecord record = Resources.forLocale(listeners.getLocale()).getLogRecord(
-                PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS), resourceKey,
-                getFilename(), time / (double) StandardDateFormat.NANOS_PER_SECOND);
-        record.setLoggerName(Modules.NETCDF);
-        Logging.log(caller, method, record);
+        final Level level = PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS);
+        if (LOGGER.isLoggable(level)) {
+            final LogRecord record = resources().getLogRecord(level, resourceKey,
+                    getFilename(), time / (double) StandardDateFormat.NANOS_PER_SECOND);
+            record.setLoggerName(Modules.NETCDF);
+            record.setSourceClassName(caller.getCanonicalName());
+            record.setSourceMethodName(method);
+            LOGGER.log(record);
+        }
+    }
+
+    /**
+     * Returns the netCDF-specific resource bundle for the locale given by {@link StoreListeners#getLocale()}.
+     *
+     * @return the localized error resource bundle.
+     */
+    final Resources resources() {
+        return Resources.forLocale(listeners.getLocale());
     }
 }

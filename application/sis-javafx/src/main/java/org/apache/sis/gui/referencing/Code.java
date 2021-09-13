@@ -16,74 +16,96 @@
  */
 package org.apache.sis.gui.referencing;
 
-import org.opengis.referencing.AuthorityFactory;
-import org.opengis.referencing.IdentifiedObject;
-import org.opengis.util.FactoryException;
+import javafx.geometry.Pos;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import org.apache.sis.internal.gui.Styles;
 
 
 /**
- * Stores the code of a coordinate reference system (CRS) together with its description.
- * The description will be fetched when first needed and returned by {@link #toString()}.
+ * Stores the code of a coordinate reference system (CRS) together with its name or description.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 final class Code {
     /**
      * The CRS code. Usually defined by EPSG, but other authorities are allowed.
+     * This is the value returned by {@link #toString()}.
      */
     final String code;
 
     /**
-     * The CRS object description for the {@linkplain #code}, fetched when first needed.
+     * The CRS object description for the {@linkplain #code}.
      * In Apache SIS implementation of EPSG factory, this is the CRS name.
      */
-    private String name;
-
-    /**
-     * The authority factory to use for fetching the name. Will be set to {@code null} after
-     * {@linkplain #name} has been made available, in order to allow the garbage collector
-     * to do its work if possible.
-     */
-    private final AuthorityFactory factory;
+    private ReadOnlyStringWrapper name;
 
     /**
      * Creates a code from the specified value.
      */
-    Code(final AuthorityFactory factory, final String code) {
-        this.factory = factory;
-        this.code    = code;
+    Code(final String code) {
+        this.code = code;
     }
 
     /**
-     * Create the Object identified by code.
+     * Returns the property where to store the name or description of this authority code.
      */
-    IdentifiedObject createObject() throws FactoryException{
-        return factory.createObject(code);
-    }
-
-    /**
-     * Returns a description of the object.
-     */
-    public String getDescription() {
-        if (name == null) try {
-            name = factory.getDescriptionText(code).toString();
-        } catch (FactoryException e) {
-            name = e.getLocalizedMessage();
+    final ReadOnlyStringWrapper name() {
+        if (name == null) {
+            name = new ReadOnlyStringWrapper();
         }
         return name;
     }
 
     /**
-     * Returns the name for this code.
-     *
-     * @todo Maybe we should use the widget Locale when invoking InternationalString.toString(...).
+     * Returns {@link #code}. This behavior is required for {@link CRSChooser} since it
+     * will invoke {@link Object#toString()} directly for the column of authority codes.
      */
     @Override
     public String toString() {
-        return code + " - " + getDescription();
+        return code;
+    }
+
+    /*
+     * Do not override equals(Object) and hashCode(). We rely on identity comparisons
+     * when using this object as keys in HashMap.
+     */
+
+    /**
+     * A cell displaying a code value.
+     */
+    static final class Cell extends TableCell<Code,Code> {
+        /**
+         * Creates a new cell for feature property value.
+         *
+         * @param  column  the column where the cell will be shown.
+         */
+        Cell(final TableColumn<Code,Code> column) {
+            // Column not used at this time, but we need it in method signature.
+            setAlignment(Pos.BASELINE_RIGHT);
+            setTextFill(Styles.CODE_TEXT);
+        }
+
+        /**
+         * Invoked when a new value needs to be show.
+         *
+         * @todo I didn't found how to get white text color when the row is selected.
+         *       Current color (blue~gray on blue) is hard to read.
+         */
+        @Override
+        protected void updateItem(final Code value, final boolean empty) {
+            if (value == getItem()) return;
+            super.updateItem(value, empty);
+            String text = null;
+            if (value != null) {
+                text = value.toString();
+            }
+            setText(text);
+        }
     }
 }

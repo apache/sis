@@ -146,8 +146,6 @@ public final strictfp class DefaultPrimeMeridianTest extends TestCase {
      * Tests unmarshalling.
      *
      * @throws JAXBException if an error occurred during unmarshalling.
-     *
-     * @see <a href="http://epsg-registry.org/export.htm?gml=urn:ogc:def:meridian:EPSG::8901">GML export of EPSG:8901</a>
      */
     @Test
     public void testUnmarshall() throws JAXBException {

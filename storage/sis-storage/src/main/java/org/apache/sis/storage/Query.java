@@ -16,51 +16,75 @@
  */
 package org.apache.sis.storage;
 
+import org.opengis.geometry.Envelope;
+
 
 /**
  * Definition of filtering to apply for fetching a resource subset.
- * Filtering can happen in two domains:
+ * Filtering can be applied on {@link FeatureSet} or on {@link GridCoverageResource}.
+ * A query contains at least two parts:
  *
- * <ol>
- *   <li>By filtering the {@code Feature} instances.</li>
- *   <li>By filtering the {@linkplain org.apache.sis.feature.DefaultFeatureType#getProperty properties}
- *       in each feature instance.</li>
- * </ol>
- *
- * Compared to Java functional interfaces, the first domain is equivalent to using
- * <code>{@linkplain java.util.function.Predicate}&lt;Feature&gt;</code>
- * while the second domain is equivalent to using
- * <code>{@linkplain java.util.function.UnaryOperator}&lt;Feature&gt;</code>.
- *
- * <div class="note"><b>Note:</b>
- * it is technically possible to use {@code Query} for performing more generic feature transformations,
- * for example inserting new properties computed from other properties, but such {@code Query} usages
- * should be rare since transformations (or more generic processing) are the topic of another package.
- * Queries are rather descriptive objects used by {@link FeatureSet} to optimize search operations
- * as much as possible on the resource, using for example caches and indexes.</div>
+ * <ul>
+ *   <li><b>Selection</b> for choosing the feature instances to fetch.
+ *     This is equivalent to choosing rows in a database table.</li>
+ *   <li><b>Projection</b> (not to be confused with map projection) for choosing the
+ *     {@linkplain org.apache.sis.feature.DefaultFeatureType#getProperty feature properties} or the
+ *     {@linkplain org.apache.sis.coverage.SampleDimension coverage sample dimensions} to fetch.
+ *     This is equivalent to choosing columns in a database table.</li>
+ * </ul>
  *
  * Compared to the SQL language, {@code Query} contains the information in the {@code SELECT} and
  * {@code WHERE} clauses of a SQL statement. A {@code Query} typically contains filtering capabilities
  * and (sometime) simple attribute transformations. Well known query languages include SQL and CQL.
  *
+ * <h2>Optional values</h2>
+ * All aspects of this query are optional and initialized to "none".
+ * Unless otherwise specified, all methods accept a null argument or can return a null value, which means "none".
+ *
  * @author Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see FeatureSet#subset(Query)
+ * @see GridCoverageResource#subset(Query)
  *
  * @since 0.8
  * @module
  */
 public abstract class Query {
-    /*
-     * Current version does not yet contain any field. But some fields may be added in the future.
-     * For example some methods from org.apache.sis.internal.storage.query.SimpleQuery may move here.
-     * We use an abstract class instead than an interface for that reason.
-     */
-
     /**
      * Creates a new, initially empty, query.
      */
     protected Query() {
     }
+
+    /**
+     * Sets the approximate area of feature instances or pixels to include in the subset.
+     * For feature set, the domain is materialized by a {@link org.apache.sis.filter.Filter}.
+     * For grid coverage resource, the given envelope specifies the coverage domain.
+     *
+     * <p>The given envelope is approximate.
+     * Features may test intersections using only bounding boxes instead of full geometries.
+     * Coverages may expand the envelope to an integer amount of tiles.</p>
+     *
+     * @param  domain  the approximate area of interest, or {@code null} if none.
+     *
+     * @since 1.1
+     */
+    public abstract void setSelection(Envelope domain);
+
+    /**
+     * Sets the properties to retrieve by their names. For features, the arguments are names of
+     * {@linkplain org.apache.sis.feature.DefaultFeatureType#getProperty feature properties}.
+     * For coverages, the arguments are names of
+     * {@linkplain org.apache.sis.coverage.BandedCoverage#getSampleDimensions() sample dimensions}.
+     *
+     * <p><b>Note:</b> in this context, the "projection" word come from relational database terminology.
+     * It is unrelated to <cite>map projection</cite>.</p>
+     *
+     * @param  properties  properties to retrieve, or {@code null} to retrieve all properties.
+     * @throws IllegalArgumentException if a property is duplicated.
+     *
+     * @since 1.1
+     */
+    public abstract void setProjection(String... properties);
 }

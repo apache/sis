@@ -32,11 +32,13 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.operation.transform.MathTransforms;       // For javadoc
 
 
 /**
@@ -70,7 +72,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.parameter.TensorParameters
  *
@@ -323,7 +325,7 @@ public final class Matrices extends Static {
      * Actually this method is used more often for grid envelopes
      * (which have no CRS) than geodetic envelopes.
      *
-     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
+     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
      * Furthermore the matrix created by this method will produce expected results only for source or destination
@@ -372,14 +374,14 @@ public final class Matrices extends Static {
         final MatrixSIS matrix = createZero(dstDim+1, srcDim+1);
         for (int i = Math.min(srcDim, dstDim); --i >= 0;) {
             /*
-             * Note on envelope spanning over the anti-meridian: the GeoAPI javadoc does not mandate the
-             * precise behavior of getSpan(int) in such situation.  In the particular case of Apache SIS
+             * Note on envelope crossing the anti-meridian: the GeoAPI javadoc does not mandate the
+             * precise behavior of getSpan(int) in such situation. In the particular case of Apache SIS
              * implementations, the envelope will compute the span correctly (taking in account the wrap
              * around behavior). For non-SIS implementations, we can not know.
              *
              * For the translation term, we really need the lower corner, NOT envelope.getMinimum(i),
-             * because we need the starting point, which is not the minimal value when spanning over
-             * the anti-meridian.
+             * because we need the starting point, which is not the minimal value when crossing the
+             * anti-meridian.
              */
             final double scale     = dstEnvelope.getSpan(i)   / srcEnvelope.getSpan(i);
             final double translate = dstCorner.getOrdinate(i) - srcCorner.getOrdinate(i)*scale;
@@ -464,7 +466,7 @@ public final class Matrices extends Static {
      * Actually this method is used more often for grid envelopes
      * (which have no CRS) than geodetic envelopes.
      *
-     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
+     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
      * Furthermore the matrix created by this method will produce expected results only for source or destination
@@ -706,6 +708,61 @@ public final class Matrices extends Static {
     }
 
     /**
+     * Creates an affine transform as the given matrix augmented by the given translation vector and a [0 … 0 1] row.
+     * At least one of {@code derivative} and {@code translation} arguments shall be non-null. If {@code derivative}
+     * is non-null, the returned matrix will have one more row and one more column than {@code derivative} with all
+     * {@code derivative} values copied into the new matrix at the same (row, column) indices. If {@code translation}
+     * is non-null, all its coordinate values are copied in the last column of the returned matrix.
+     *
+     * <div class="note"><b>Relationship with {@link MathTransform}</b><br>
+     * When used together with {@link MathTransforms#derivativeAndTransform MathTransforms.derivativeAndTransform(…)},
+     * the {@code derivative} argument is the derivative computed by {@code derivativeAndTransform(…)} and the
+     * {@code translation} vector is the position computed by that method. The result is an approximation of the
+     * transform in the vicinity of the position given to {@code derivativeAndTransform(…)}.</div>
+     *
+     * @param  derivative   the scale, shear and rotation of the affine transform.
+     * @param  translation  the translation vector (the last column) of the affine transform.
+     * @return an affine transform as the given matrix augmented by the given column and a a [0 … 0 1] row.
+     * @throws NullPointerException if {@code derivative} and {@code translation} are both null.
+     * @throws MismatchedMatrixSizeException if {@code derivative} and {@code translation} are both non-null and
+     *         the number of {@code derivative} rows is not equal to the number of {@code translation} dimensions.
+     *
+     * @see MathTransforms#derivativeAndTransform(MathTransform, double[], int, double[], int)
+     * @see MathTransforms#tangent(MathTransform, DirectPosition)
+     *
+     * @since 1.1
+     */
+    public static MatrixSIS createAffine(final Matrix derivative, final DirectPosition translation) {
+        final int numRow, numCol;
+        final MatrixSIS matrix;
+        if (derivative != null) {
+            numRow = derivative.getNumRow();
+            numCol = derivative.getNumCol();
+            if (translation != null) {
+                MatrixSIS.ensureNumRowMatch(translation.getDimension(), numRow, numCol);
+            }
+            matrix = createZero(numRow + 1, numCol + 1);
+            matrix.setElement(numRow, numCol, 1);
+            for (int j=0; j<numRow; j++) {
+                for (int i=0; i<numCol; i++) {
+                    matrix.setElement(j, i, derivative.getElement(j, i));
+                }
+            }
+        } else {
+            // If both arguments are null, report the first one ("derivative") as the one that should be non-null.
+            ArgumentChecks.ensureNonNull("derivative", translation);          // Intentional mismatch (see above).
+            numRow = numCol = translation.getDimension();
+            matrix = createIdentity(numRow + 1);
+        }
+        if (translation != null) {
+            for (int j=0; j<numRow; j++) {
+                matrix.setElement(j, numCol, translation.getOrdinate(j));
+            }
+        }
+        return matrix;
+    }
+
+    /**
      * Returns a matrix with the same content than the given matrix but a different size, assuming an affine transform.
      * This method can be invoked for adding or removing the <strong>last</strong> dimensions of an affine transform.
      * More specifically:
@@ -755,6 +812,89 @@ public final class Matrices extends Static {
         resized.setElements(sources, length, stride, transfer, srcRow, 0,       numRow, 0,       1,       copyCol);    // Last row.
         resized.setElements(sources, length, stride, transfer, srcRow, srcCol,  numRow, numCol,  1,       1);          // Last row.
         return resized;
+    }
+
+    /**
+     * Forces the matrix coefficients of the given matrix to a uniform scale factor, assuming an affine transform.
+     * The uniformization is applied on a row-by-row basis (ignoring the last row and last column), i.e.:
+     *
+     * <ul>
+     *   <li>All coefficients (excluding translation term) in the same row are multiplied by the same factor.</li>
+     *   <li>After rescaling, each row (excluding translation column) have the same
+     *       {@linkplain MathFunctions#magnitude(double...) magnitude}.</li>
+     * </ul>
+     *
+     * The coefficients are multiplied by factors which result in the smallest magnitude if {@code selector} is 0,
+     * the largest magnitude if {@code selector} is 1, or an intermediate value if {@code selector} is any value
+     * between 0 and 1. In the common case where the matrix has no rotation and no shear terms, the magnitude is
+     * directly the scale factors on the matrix diagonal and {@code selector=0} sets all those scales to the smallest
+     * value while {@code selector=1} sets all those scales to the largest value (ignoring sign).
+     *
+     * <p>Translation terms can be compensated for scale changes if the {@code anchor} argument is non-null.
+     * The anchor gives coordinates of the point to keep at fixed position in target coordinates.
+     * For example if the matrix is for transforming coordinates to a screen device
+     * and {@code target} is an {@link Envelope} with device position and size in pixels, then:</p>
+     *
+     * <ul>
+     *   <li>{@code anchor[i] = target.getMinimum(i)} keeps the image on the left border (<var>i</var> = 0)
+     *       or upper border (<var>i</var> = 1).</li>
+     *   <li>{@code anchor[i] = target.getMaximum(i)} translates the image to the right border (<var>i</var> = 0)
+     *       or to the bottom border (<var>i</var> = 1).</li>
+     *   <li>{@code anchor[i] = target.getMedian(i)} translates the image to the device center.</li>
+     *   <li>Any intermediate values are allowed.</li>
+     * </ul>
+     *
+     * @param  matrix    the matrix in which to uniformize scale factors. Will be modified in-place.
+     * @param  selector  a value between 0 for smallest scale magnitude and 1 for largest scale magnitude (inclusive).
+     *                   Values outside [0 … 1] range are authorized, but will result in scale factors outside the
+     *                   range of current scale factors in the given matrix.
+     * @param  anchor    point to keep at fixed position in target coordinates, or {@code null} if none.
+     * @return {@code true} if the given matrix changed as a result of this method call.
+     *
+     * @since 1.1
+     */
+    public static boolean forceUniformScale(final Matrix matrix, final double selector, final double[] anchor) {
+        ArgumentChecks.ensureNonNull("matrix", matrix);
+        ArgumentChecks.ensureFinite("selector", selector);
+        final int srcDim = matrix.getNumCol() - 1;
+        final int tgtDim = matrix.getNumRow() - 1;
+        ArgumentChecks.ensureDimensionMatches("anchor", tgtDim, anchor);
+        final double[] row = new double[srcDim];
+        final double[] mgn = new double[tgtDim];
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for (int j=0; j<tgtDim; j++) {
+            for (int i=0; i<srcDim; i++) {
+                row[i] = matrix.getElement(j, i);
+            }
+            final double m = MathFunctions.magnitude(row);
+            if (m < min) min = m;
+            if (m > max) max = m;
+            mgn[j] = m;
+        }
+        /*
+         * Found the magnitude of each rows together with minimum and maximum magnitude values.
+         * The `scale` value below is the constant magnitude that we want to get on all rows.
+         */
+        boolean changed = false;
+        if (min < max) {
+            final double scale = (1 - selector)*min + selector*max;
+            for (int j=0; j<tgtDim; j++) {
+                final double rescale = scale / mgn[j];
+                for (int i=0; i<srcDim; i++) {
+                    double e = matrix.getElement(j, i);
+                    changed |= (e != (e *= rescale));
+                    matrix.setElement(j, i, e);
+                }
+                if (anchor != null) {
+                    final double p = anchor[j];
+                    double e = matrix.getElement(j, srcDim);
+                    changed |= (e != (e = (e-p)*rescale + p));      // TODO: use Math.fma in JDK9.
+                    matrix.setElement(j, srcDim, e);
+                }
+            }
+        }
+        return changed;
     }
 
     /**
@@ -1001,7 +1141,10 @@ public final class Matrices extends Static {
                     final double v2 = m2.getElement(j, i);
                     double tolerance = epsilon;
                     if (relative) {
-                        tolerance *= Math.max(Math.abs(v1), Math.abs(v2));
+                        final double f = Math.max(Math.abs(v1), Math.abs(v2));
+                        if (f <= Double.MAX_VALUE) {
+                            tolerance *= f;
+                        }
                     }
                     if (!(Math.abs(v1 - v2) <= tolerance)) {
                         if (Numerics.equals(v1, v2)) {

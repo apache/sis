@@ -138,7 +138,7 @@ public final strictfp class MetadataWriterTest extends TestCase {
      *     │   │   ├─Name……………………………………… International Association of Oil & Gas Producers
      *     │   │   └─Contact info
      *     │   │       └─Online resource
-     *     │   │           ├─Linkage………… http://www.epsg.org
+     *     │   │           ├─Linkage………… https://epsg.org/
      *     │   │           └─Function……… Information
      *     │   └─Role………………………………………………… Principal investigator
      *     └─Presentation form………………………… Table digital
@@ -159,7 +159,7 @@ public final strictfp class MetadataWriterTest extends TestCase {
         assertEquals("International Association of Oil & Gas Producers", responsible.getOrganisationName().toString());
 
         OnlineResource resource = responsible.getContactInfo().getOnlineResource();
-        assertEquals("http://www.epsg.org", resource.getLinkage().toString());
+        assertEquals("https://epsg.org/", resource.getLinkage().toString());
         assertEquals(OnLineFunction.INFORMATION, resource.getFunction());
         /*
          * Ask columns that are known to not exist.

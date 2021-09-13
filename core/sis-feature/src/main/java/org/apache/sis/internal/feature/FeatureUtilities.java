@@ -27,8 +27,6 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.feature.AbstractOperation;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.Static;
 
 // Branch-dependent imports
@@ -40,18 +38,11 @@ import org.apache.sis.feature.AbstractIdentifiedType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
 public final class FeatureUtilities extends Static {
-    /**
-     * The parameter descriptor for the "Link" operation, which does not take any parameter.
-     * We use those parameters as a way to identify the link operation without making the
-     * {@code LinkOperation} class public.
-     */
-    public static final ParameterDescriptorGroup LINK_PARAMS = parameters("Link");
-
     /**
      * Do not allow instantiation of this class.
      */
@@ -71,28 +62,6 @@ public final class FeatureUtilities extends Static {
         properties.put(ParameterDescriptorGroup.NAME_KEY, name);
         properties.put(Identifier.AUTHORITY_KEY, Citations.SIS);
         return new DefaultParameterDescriptorGroup(properties, 1, 1);
-    }
-
-    /**
-     * If the given property is a link, returns the name of the referenced property.
-     * Otherwise returns {@code null}.
-     *
-     * @param  property  the property to test, or {@code null} if none.
-     * @return the referenced property name, or {@code null} if none.
-     */
-    static String linkOf(final AbstractIdentifiedType property) {
-        if (property instanceof AbstractOperation) {
-            final AbstractOperation op = (AbstractOperation) property;
-            if (op.getParameters() == LINK_PARAMS) {
-                /*
-                 * The dependencies collection contains exactly one element on Apache SIS implementation.
-                 * However the user could define his own operation with the same parameter descriptor name.
-                 * This is unlikely since it would probably be a bug, but we are paranoiac.
-                 */
-                return CollectionsExt.first(op.getDependencies());
-            }
-        }
-        return null;
     }
 
     /**

@@ -69,7 +69,7 @@ final class CartesianToPolar extends CoordinateSystemTransform implements Serial
      * Output coordinates are in radians.
      */
     private CartesianToPolar() {
-        super("Cartesian to polar", 2);
+        super("Cartesian to polar", "Cartesian to cylindrical", 2);
         context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION)
                .convertAfter(1, DoubleDouble.createRadiansToDegrees(), null);
     }
@@ -144,7 +144,7 @@ final class CartesianToPolar extends CoordinateSystemTransform implements Serial
     }
 
     /*
-     * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
+     * NOTE: we do not bother to override the methods expecting a `float` array because those methods should
      *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
      *       conversion between float and double will be handled by those LinearTransforms.  If nevertheless
      *       this CartesianToPolar is at the beginning or the end of a transformation chain,

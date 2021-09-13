@@ -139,7 +139,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      * @see Validators#validate(MathTransform)
      */
     protected final void validate() {
-        assertNotNull("The 'transform' field shall be assigned a value.", transform);
+        assertNotNull("The `transform` field shall be assigned a value.", transform);
         Validators.validate(transform);
         final int dimension = transform.getSourceDimensions();
         if (transform.getTargetDimensions() == dimension) {

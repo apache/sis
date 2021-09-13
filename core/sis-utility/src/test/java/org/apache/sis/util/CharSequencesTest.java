@@ -33,7 +33,7 @@ import static org.apache.sis.util.CharSequences.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -507,6 +507,10 @@ public final strictfp class CharSequencesTest extends TestCase {
     @Test
     public void testCommonPrefix() {
         assertEquals("testCommon", commonPrefix(new StringBuilder("testCommonPrefix()"), "testCommonSuffix()"));
+        assertEquals("",           commonPrefix(                  "testCommonPrefix()",  "unrelated"));
+        assertEquals("",           commonPrefix(                  "",                    "unrelated"));
+        assertEquals("",           commonPrefix(                  "",                    ""));
+        assertEquals("equal",      commonPrefix(                  "equal",               "equal"));
     }
 
     /**
@@ -515,6 +519,26 @@ public final strictfp class CharSequencesTest extends TestCase {
     @Test
     public void testCommonSuffix() {
         assertEquals("fix()", commonSuffix(new StringBuilder("testCommonPrefix()"), "testCommonSuffix()"));
+        assertEquals("",      commonSuffix(                  "testCommonPrefix()",  "unrelated"));
+        assertEquals("",      commonSuffix(                  "",                    "unrelated"));
+        assertEquals("",      commonSuffix(                  "",                    ""));
+        assertEquals("equal", commonSuffix(                  "equal",               "equal"));
+    }
+
+    /**
+     * Tests the {@link CharSequences#commonWords(CharSequence, CharSequence)} method.
+     */
+    @Test
+    public void testCommonWords() {
+        assertSame  ("baroclinic_eastward_velocity", commonWords("baroclinic_eastward_velocity", null));
+        assertSame  ("baroclinic_velocity",          commonWords("baroclinic_eastward_velocity", "baroclinic_velocity"));
+        assertEquals("baroclinic_velocity",          commonWords("baroclinic_eastward_velocity", "baroclinic_northward_velocity"));
+        assertEquals("baroclinic velocity",          commonWords("baroclinic_eastward_velocity", "baroclinic northward velocity"));
+        assertEquals("baroclinic",                   commonWords("baroclinic_eastward",          "baroclinic_northward"));
+        assertEquals("velocity",                     commonWords("eastward_velocity",            "northward_velocity"));
+        assertEquals("BaroclinicVelocity",           commonWords("BaroclinicEastwardVelocity",   "BaroclinicNorthwardVelocity"));
+        assertEquals("Baroclinic",                   commonWords("BaroclinicEastward",           "BaroclinicNorthward"));
+        assertEquals("Velocity",                     commonWords("EastwardVelocity",             "NorthwardVelocity"));
     }
 
     /**

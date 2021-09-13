@@ -93,10 +93,10 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
         if (object instanceof IdentifiedObject) {
             if (object instanceof ISOMetadata && Containers.isNullOrEmpty(((ISOMetadata) object).identifiers)) {
                 /*
-                 * If the other object is an ISOMetadata instance,  take a look at its 'identifiers' collection
+                 * If the other object is an ISOMetadata instance,  take a look at its `identifiers` collection
                  * before to invoke object.getIdentifiers() in order to avoid unnecessary initialization of its
                  * backing collection. We do this optimization because the vast majority of metadata objects do
-                 * not have 'identifiers' collection.
+                 * not have `identifiers` collection.
                  *
                  * Actually this optimization is a little bit dangerous, since users could override getIdentifiers()
                  * without invoking super.getIdentifiers(), in which case their identifiers will not be copied.
@@ -176,7 +176,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
         }
         /*
          * We do not cache (for now) the IdentifierMap because it is cheap to create, and if we were
-         * caching it we would need anyway to check if 'identifiers' still references the same list.
+         * caching it we would need anyway to check if `identifiers` still references the same list.
          */
         return (super.state() != State.FINAL) ? new ModifiableIdentifierMap(identifiers)
                                               : new IdentifierMapAdapter(identifiers);
@@ -228,7 +228,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
         final boolean changed = super.transitionTo(target);
         if (changed) {
             /*
-             * The 'identifiers' collection will have been replaced by an unmodifiable collection if
+             * The `identifiers` collection will have been replaced by an unmodifiable collection if
              * subclass has an "identifiers" property. If this is not the case, then the collection
              * is unchanged (or null) so we have to make it unmodifiable here.
              */

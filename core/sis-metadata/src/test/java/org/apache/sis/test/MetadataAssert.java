@@ -33,13 +33,12 @@ import org.apache.sis.internal.util.CollectionsExt;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-specific imports
-import org.opengis.feature.type.FeatureType;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription;
 import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
 import org.apache.sis.metadata.iso.lineage.DefaultSource;
-import org.apache.sis.metadata.iso.quality.DefaultScope;
+import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 
 
 /**
@@ -125,7 +124,7 @@ public strictfp class MetadataAssert extends Assert {
         final DefaultScope scope = (DefaultScope) ((DefaultSource) source).getScope();
         assertNotNull("metadata.lineage.source.scope", scope);
         assertEquals("metadata.lineage.source.scope.level", ScopeCode.FEATURE_TYPE, scope.getLevel());
-        final Object[] actual = CollectionsExt.toArray(getSingleton(scope.getLevelDescription()).getFeatures(), FeatureType.class);
+        final Object[] actual = CollectionsExt.toArray(getSingleton(scope.getLevelDescription()).getFeatures(), Object.class);
         for (int i=0; i<actual.length; i++) {
             actual[i] = actual[i].toString();
         }

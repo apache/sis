@@ -38,14 +38,14 @@ final class InvalidFeatureException extends IllegalArgumentException implements 
     private static final long serialVersionUID = 7288810679876346027L;
 
     /**
-     * A description of the negative conformance result.
+     * A description of the illegal feature.
      */
     private final InternationalString message;
 
     /**
      * Creates a new exception with the given explanation message.
      *
-     * @param message  a description of the negative conformance result.
+     * @param message  a description of the illegal feature.
      */
     InvalidFeatureException(final InternationalString message) {
         super(message.toString());
@@ -53,7 +53,7 @@ final class InvalidFeatureException extends IllegalArgumentException implements 
     }
 
     /**
-     * Return the message in various locales.
+     * Returns the message in various locales.
      *
      * @return the exception message.
      */

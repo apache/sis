@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Objects;
 import java.lang.reflect.Array;
+import javax.measure.Unit;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.DefaultAttributeType;
@@ -356,7 +357,6 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #characteristics()
-     * @see AttributeConvention#VALID_VALUES_CHARACTERISTIC
      */
     @SafeVarargs
     public final AttributeTypeBuilder<V> setValidValues(final V... values) {
@@ -386,10 +386,36 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #characteristics()
-     * @see AttributeConvention#MAXIMAL_LENGTH_CHARACTERISTIC
      */
     public AttributeTypeBuilder<V> setMaximalLength(final Integer length) {
         return setCharacteristic(AttributeConvention.MAXIMAL_LENGTH_CHARACTERISTIC, Integer.class, length);
+    }
+
+    /**
+     * Returns the unit of measurement associated to attribute values.
+     * This convenience method returns the value of the characteristic set by {@link #setUnit(Unit)}.
+     *
+     * @return the unit of measurement associated to attribute values, or {@code null}.
+     */
+    public Unit<?> getUnit() {
+        return (Unit<?>) getCharacteristic(AttributeConvention.UNIT_CHARACTERISTIC);
+    }
+
+    /**
+     * Sets the unit of measurement that characterizes the values of this attribute.
+     * While this characteristic can be applied to any kind of attribute, it is meaningful
+     * only with numeric values.
+     *
+     * <p>This is a convenience method for {@link #addCharacteristic(Class)} with a value
+     * of type {@link Unit} and a conventional name.</p>
+     *
+     * @param  unit  unit of measurement associated to attribute values, or {@code null}.
+     * @return {@code this} for allowing method calls chaining.
+     *
+     * @see #characteristics()
+     */
+    public AttributeTypeBuilder<V> setUnit(final Unit<?> unit) {
+        return setCharacteristic(AttributeConvention.UNIT_CHARACTERISTIC, Unit.class, unit);
     }
 
     /**
@@ -414,7 +440,6 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #characteristics()
-     * @see AttributeConvention#CRS_CHARACTERISTIC
      */
     public AttributeTypeBuilder<V> setCRS(final CoordinateReferenceSystem crs) {
         return setCharacteristic(AttributeConvention.CRS_CHARACTERISTIC, CoordinateReferenceSystem.class, crs);

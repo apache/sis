@@ -207,12 +207,15 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
     }
 
     /**
-     * Caches a new element. Subclasses can override this method is they want to substitute the given value
+     * Caches a new element. Subclasses can override this method if they want to substitute the given value
      * by another value.
      *
      * @param  element  the element to add to the cache.
      */
     protected void cache(final E element) {
+        if (cachedElements == null) {
+            createCache();
+        }
         if (numCached >= cachedElements.length) {
             cachedElements = Arrays.copyOf(cachedElements, numCached << 1);
         }

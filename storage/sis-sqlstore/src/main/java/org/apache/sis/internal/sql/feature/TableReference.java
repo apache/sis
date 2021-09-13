@@ -21,11 +21,14 @@ import java.util.function.Consumer;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.apache.sis.storage.sql.SQLStoreProvider;
+import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
+
+import static org.apache.sis.internal.util.Strings.trimOrNull;
 
 
 /**
@@ -33,36 +36,40 @@ import org.apache.sis.util.Debug;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-class TableReference {
+public class TableReference {
     /**
      * The catalog, schema and table name of a table.
-     * The table name is mandatory, but the schema and catalog names may be null.
+     * The table name is mandatory, but the schema and catalog names may be null or empty.
+     * Note that an empty string and null values have different meanings in JDBC metadata:
+     *
+     * <ul>
+     *   <li>An empty string means that the table name has no catalog (or schema).</li>
+     *   <li>A null value means that the catalog (or schema) name should be ignored.</li>
+     * </ul>
+     *
+     * Names are stored here as they were given by JDBC because those names are sometime
+     * compared with other JDBC metadata or used for fetching more table metadata.
      */
     final String catalog, schema, table;
 
     /**
      * Ignored by this class; reserved for caller and subclasses usage.
+     * May be null. If non-null, then it is guaranteed non-empty and without leading or trailing spaces.
      */
     final String freeText;
 
     /**
      * Creates a new tuple with the give names.
      */
-    TableReference(final String catalog, final String schema, final String table, String freeText) {
-        if (freeText != null) {
-            freeText = freeText.trim();
-            if (freeText.isEmpty()) {
-                freeText = null;
-            }
-        }
+    TableReference(final String catalog, final String schema, final String table, final String freeText) {
         this.catalog  = catalog;
         this.schema   = schema;
         this.table    = table;
-        this.freeText = freeText;
+        this.freeText = trimOrNull(freeText);
     }
 
     /**
@@ -77,9 +84,21 @@ class TableReference {
 
     /**
      * Creates a name for the feature type backed by this table.
+     * This method does not cache the value;
+     * caller is expected to invoke only once and store the name.
+     *
+     * @param  analyzer  the object which is analyzing the database schema for inferring feature types.
      */
     final GenericName getName(final Analyzer analyzer) {
-        return analyzer.nameFactory.createLocalName(analyzer.namespace(catalog, schema), table);
+        return analyzer.nameFactory.createLocalName(
+               analyzer.namespace(trimOrNull(catalog), trimOrNull(schema)), table);
+    }
+
+    /**
+     * Appends the catalog, schema and table name to the given builder after the {@code "FROM"} keyword.
+     */
+    final void appendFromClause(final SQLBuilder sql) {
+        sql.append(" FROM ").appendIdentifier(catalog, schema, table);
     }
 
     /**
@@ -147,6 +166,6 @@ class TableReference {
      */
     @Override
     public String toString() {
-        return SQLStoreProvider.createTableName(catalog, schema, table).toString();
+        return SQLStoreProvider.createTableName(trimOrNull(catalog), trimOrNull(schema), table).toString();
     }
 }

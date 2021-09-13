@@ -72,7 +72,7 @@ import static java.lang.Character.*;
  * {@code 0} or {@code false} primitive type calculated as if the input was an empty string.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see StringBuilders
  *
@@ -542,12 +542,13 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * @see #skipTrailingWhitespaces(CharSequence, int, int)
      * @see #trimWhitespaces(CharSequence)
+     * @see String#stripLeading()
      */
     public static int skipLeadingWhitespaces(final CharSequence text, int fromIndex, final int toIndex) {
         while (fromIndex < toIndex) {
-            final int c = Character.codePointAt(text, fromIndex);
-            if (!Character.isWhitespace(c)) break;
-            fromIndex += Character.charCount(c);
+            final int c = codePointAt(text, fromIndex);
+            if (!isWhitespace(c)) break;
+            fromIndex += charCount(c);
         }
         return fromIndex;
     }
@@ -579,12 +580,13 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * @see #skipLeadingWhitespaces(CharSequence, int, int)
      * @see #trimWhitespaces(CharSequence)
+     * @see String#stripTrailing()
      */
     public static int skipTrailingWhitespaces(final CharSequence text, final int fromIndex, int toIndex) {
         while (toIndex > fromIndex) {
-            final int c = Character.codePointBefore(text, toIndex);
-            if (!Character.isWhitespace(c)) break;
-            toIndex -= Character.charCount(c);
+            final int c = codePointBefore(text, toIndex);
+            if (!isWhitespace(c)) break;
+            toIndex -= charCount(c);
         }
         return toIndex;
     }
@@ -630,7 +632,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  text       the text to split, or {@code null}.
      * @param  separator  the delimiting character (typically the coma).
      * @return the array of subsequences computed by splitting the given text around the given
-     *         character, or an empty array if {@code toSplit} was null.
+     *         character, or an empty array if {@code text} was null.
      *
      * @see String#split(String)
      */
@@ -958,6 +960,8 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  text  the text from which to remove leading and trailing whitespaces, or {@code null}.
      * @return a string with leading and trailing whitespaces removed, or {@code null} is the given
      *         text was null.
+     *
+     * @todo To be replaced by {@link String#strip()} in JDK 11.
      */
     public static String trimWhitespaces(String text) {
         if (text != null) {
@@ -980,6 +984,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * @see #skipLeadingWhitespaces(CharSequence, int, int)
      * @see #skipTrailingWhitespaces(CharSequence, int, int)
+     * @see String#strip()
      */
     public static CharSequence trimWhitespaces(CharSequence text) {
         if (text != null) {
@@ -1182,16 +1187,16 @@ searchWordBreak:    while (true) {
         final StringBuilder buffer = new StringBuilder(identifier.length());
         final int length = identifier.length();
         for (int i=0; i<length;) {
-            int c = Character.codePointAt(identifier, i);
+            int c = codePointAt(identifier, i);
             if (i != 0) {
                 if (c == '_') {
                     c = ' ';
                 } else {
-                    c = Character.toLowerCase(c);
+                    c = toLowerCase(c);
                 }
             }
             buffer.appendCodePoint(c);
-            i += Character.charCount(c);
+            i += charCount(c);
         }
         return buffer;
     }
@@ -1354,7 +1359,7 @@ searchWordBreak:    while (true) {
                 } else if (Character.isUpperCase(c)) {
                     // Test for mixed-case (e.g. "northEast").
                     // Note that i is guaranteed to be greater than 0 here.
-                    if (!Character.isUpperCase(Character.codePointBefore(text, i))) {
+                    if (!Character.isUpperCase(codePointBefore(text, i))) {
                         buffer.appendCodePoint(c);
                     }
                 }
@@ -1887,12 +1892,13 @@ cmp:    while (ia < lga) {
     }
 
     /**
-     * Returns the longest sequence of characters which is found at the beginning of the two
-     * given texts. If one of those texts is {@code null}, then the other text is returned.
+     * Returns the longest sequence of characters which is found at the beginning of the two given texts.
+     * If one of those texts is {@code null}, then the other text is returned.
+     * If there is no common prefix, then this method returns an empty string.
      *
      * @param  s1  the first text,  or {@code null}.
      * @param  s2  the second text, or {@code null}.
-     * @return the common prefix of both texts, or {@code null} if both texts are null.
+     * @return the common prefix of both texts (may be empty), or {@code null} if both texts are null.
      */
     public static CharSequence commonPrefix(final CharSequence s1, final CharSequence s2) {
         if (s1 == null) return s2;
@@ -1922,10 +1928,11 @@ cmp:    while (ia < lga) {
     /**
      * Returns the longest sequence of characters which is found at the end of the two given texts.
      * If one of those texts is {@code null}, then the other text is returned.
+     * If there is no common suffix, then this method returns an empty string.
      *
      * @param  s1  the first text,  or {@code null}.
      * @param  s2  the second text, or {@code null}.
-     * @return the common suffix of both texts, or {@code null} if both texts are null.
+     * @return the common suffix of both texts (may be empty), or {@code null} if both texts are null.
      */
     public static CharSequence commonSuffix(final CharSequence s1, final CharSequence s2) {
         if (s1 == null) return s2;
@@ -1950,6 +1957,149 @@ cmp:    while (ia < lga) {
         }
         i--;
         return shortest.subSequence(length - i, shortest.length());
+    }
+
+    /**
+     * Returns the words found at the beginning and end of both texts.
+     * The returned string is the concatenation of the {@linkplain #commonPrefix common prefix}
+     * with the {@linkplain #commonSuffix common suffix}, with prefix and suffix eventually made
+     * shorter for avoiding to cut in the middle of a word.
+     *
+     * <p>The purpose of this method is to create a global identifier from a list of component identifiers.
+     * The later are often eastward and northward components of a vector, in which case this method provides
+     * an identifier for the vector as a whole.</p>
+     *
+     * <div class="note"><b>Example:</b>
+     * given the following inputs:
+     * <ul>
+     *   <li>{@code "baroclinic_eastward_velocity"}</li>
+     *   <li>{@code "baroclinic_northward_velocity"}</li>
+     * </ul>
+     * This method returns {@code "baroclinic_velocity"}. Note that the {@code "ward"} characters
+     * are a common suffix of both texts but nevertheless omitted because they cut a word.</div>
+     *
+     * <p>If one of those texts is {@code null}, then the other text is returned.
+     * If there is no common words, then this method returns an empty string.</p>
+     *
+     * <h4>Possible future evolution</h4>
+     * Current implementation searches only for a common prefix and a common suffix, ignoring any common words
+     * that may appear in the middle of the strings. A character is considered the beginning of a word if it is
+     * {@linkplain Character#isLetterOrDigit(int) a letter or digit} which is not preceded by another letter or
+     * digit (as leading "s" and "c" in "snake_case"), or if it is an {@linkplain Character#isUpperCase(int)
+     * upper case} letter preceded by a {@linkplain Character#isLowerCase(int) lower case} letter or no letter
+     * (as both "C" in "CamelCase").
+     *
+     * @param  s1  the first text,  or {@code null}.
+     * @param  s2  the second text, or {@code null}.
+     * @return the common suffix of both texts (may be empty), or {@code null} if both texts are null.
+     *
+     * @since 1.1
+     */
+    public static CharSequence commonWords(final CharSequence s1, final CharSequence s2) {
+        final int lg1 = length(s1);
+        final int lg2 = length(s2);
+        final int shortestLength  = Math.min(lg1, lg2);   // 0 if s1 or s2 is null, in which case prefix and suffix will have the other value.
+        final CharSequence prefix = commonPrefix(s1, s2); int prefixLength = length(prefix); if (prefixLength >= shortestLength) return prefix;
+        final CharSequence suffix = commonSuffix(s1, s2); int suffixLength = length(suffix); if (suffixLength >= shortestLength) return suffix;
+        final int length = prefixLength + suffixLength;
+        if (length >= lg1) return s1;                     // Check if one of the strings is already equal to prefix + suffix.
+        if (length >= lg2) return s2;
+        /*
+         * At this point `s1` and `s2` contain at least one character between the prefix and the suffix.
+         * If the prefix or the suffix seems to stop in the middle of a word, skip the remaining of that word.
+         * For example if `s1` and `s2` are "eastward_velocity" and "northward_velocity", the common suffix is
+         * "ward_velocity" but we want to retain only "velocity".
+         *
+         * The first condition below (before the loop) checks the character after the common prefix (for example "e"
+         * in "baroclinic_eastward_velocity" if the prefix is "baroclinic_"). The intent is to handle the case where
+         * the word separator is not the same (e.g. "baroclinic_eastward_velocity" and "baroclinic northward velocity",
+         * in which case the '_' or ' ' character would not appear in the prefix).
+         */
+        if (!isWordBoundary(s1, prefixLength, codePointAt(s1, prefixLength)) &&
+            !isWordBoundary(s2, prefixLength, codePointAt(s2, prefixLength)))
+        {
+            while (prefixLength > 0) {
+                final int c = codePointBefore(prefix, prefixLength);
+                final int n = charCount(c);
+                prefixLength -= n;
+                if (isWordBoundary(prefix, prefixLength, c)) {
+                    if (!isLetterOrDigit(c)) prefixLength += n;                     // Keep separator character.
+                    break;
+                }
+            }
+        }
+        /*
+         * Same process than for the prefix above. The condition before the loop checks the character before suffix
+         * for the same reason than above, but using only `isLetterOrDigit` ignoring camel-case. The reason is that
+         * if the character before was a word separator according camel-case convention (i.e. an upper-case letter),
+         * we would need to include it in the common suffix.
+         */
+        int suffixStart  = 0;
+        if (isLetterOrDigit(codePointBefore(s1, lg1 - suffixLength)) &&
+            isLetterOrDigit(codePointBefore(s2, lg2 - suffixLength)))
+        {
+            while (suffixStart < suffixLength) {
+                final int c = codePointAt(suffix, suffixStart);
+                if (isWordBoundary(suffix, suffixStart, c)) break;
+                suffixStart += charCount(c);
+            }
+        }
+        /*
+         * At this point we got the final prefix and suffix to use. If the prefix or suffix is empty,
+         * trim whitespaces or '_' character. For example if the suffix is "_velocity" and no prefix,
+         * return "velocity" without leading "_" character.
+         */
+        if (prefixLength == 0) {
+            while (suffixStart < suffixLength) {
+                final int c = codePointAt(suffix, suffixStart);
+                if (isLetterOrDigit(c)) {
+                    return suffix.subSequence(suffixStart, suffixLength);   // Skip leading ignorable characters in suffix.
+                }
+                suffixStart += charCount(c);
+            }
+            return "";
+        }
+        if (suffixStart >= suffixLength) {
+            while (prefixLength > 0) {
+                final int c = codePointBefore(prefix, prefixLength);
+                if (isLetterOrDigit(c)) {
+                    return prefix.subSequence(0, prefixLength);             // Skip trailing ignorable characters in prefix.
+                }
+                prefixLength -= charCount(c);
+            }
+            return "";
+        }
+        /*
+         * All special cases have been examined. Return the concatenation of (possibly shortened)
+         * common prefix and suffix.
+         */
+        final StringBuilder buffer = new StringBuilder(prefixLength + suffixLength).append(prefix);
+        final int c1 = codePointBefore(prefix, prefixLength);
+        final int c2 = codePointAt(suffix, suffixStart);
+        if (isLetterOrDigit(c1) && isLetterOrDigit(c2)) {
+            if (!Character.isUpperCase(c2) || !isLowerCase(c1)) {
+                buffer.append(' ');             // Keep a separator between two words (except if CamelCase is used).
+            }
+        } else if (c1 == c2) {
+            suffixStart += charCount(c2);       // Avoid repeating '_' in e.g. "baroclinic_<removed>_velocity".
+        }
+        return buffer.append(suffix, suffixStart, suffixLength).toString();
+    }
+
+    /**
+     * Returns {@code true} if the character {@code c} is the beginning of a word or a non-word character.
+     * For example this method returns {@code true} if {@code c} is {@code '_'} in {@code "snake_case"} or
+     * {@code "C"} in {@code "CamelCase"}.
+     *
+     * @param  s  the character sequence from which the {@code c} character has been obtained.
+     * @param  i  the index in {@code s} where the {@code c} character has been obtained.
+     * @param  c  the code point in {@code s} as index {@code i}.
+     * @return whether the given character is the beginning of a word or a non-word character.
+     */
+    private static boolean isWordBoundary(final CharSequence s, final int i, final int c) {
+        if (!isLetterOrDigit(c)) return true;
+        if (!Character.isUpperCase(c)) return false;
+        return (i <= 0 || isLowerCase(codePointBefore(s, i)));
     }
 
     /**
@@ -2080,8 +2230,10 @@ cmp:    while (ia < lga) {
         } else if (src instanceof CharBuffer) {
             ((CharBuffer) src).subSequence(srcOffset, srcOffset + length).get(dst, dstOffset, length);
         } else {
-            // An other candidate could be javax.swing.text.Segment, but it
-            // is probably not worth to introduce a Swing dependency for it.
+            /*
+             * Another candidate could be `javax.swing.text.Segment`, but it
+             * is probably not worth to introduce a Swing dependency for it.
+             */
             while (length != 0) {
                 dst[dstOffset++] = src.charAt(srcOffset++);
                 length--;

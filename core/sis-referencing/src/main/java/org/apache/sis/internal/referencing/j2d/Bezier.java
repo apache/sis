@@ -83,7 +83,7 @@ public abstract class Bezier {
 
     /**
      * Components of α=(∂y/∂x) derivative at starting point <var>t</var>=0.
-     * Initialized and updated in same time than {@link #x0} and {@link #y0}.
+     * Initialized and updated at the same time than {@link #x0} and {@link #y0}.
      */
     private double dx0, dy0;
 

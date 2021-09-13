@@ -84,11 +84,17 @@
       <fileset dir="${project.root}/storage/sis-geotiff/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
+      <fileset dir="${project.root}/storage/sis-sqlstore/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
       <!-- Pending discussion about how to handle resources in the Shapefile module.
       <fileset dir="${project.root}/storage/sis-shapefile/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
       -->
+      <fileset dir="${project.root}/application/sis-javafx/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
 
       <!-- Other resources (properties files, SQL scripts, native libraries). -->
       <fileset dir="${project.root}/core/sis-utility/src/main/resources">
@@ -108,6 +114,11 @@
       <fileset dir="${project.root}/storage/sis-gdal/src/main/resources">
         <include name="**/*.dll"/>
         <include name="**/*.so"/>
+      </fileset>
+      <fileset dir="${project.root}/application/sis-javafx/src/main/resources">
+        <include name="**/*.fxml"/>
+        <include name="**/*.png"/>
+        <include name="**/*.css"/>
       </fileset>
       <fileset dir="${project.root}/application/sis-console/src/main/resources">
         <include name="**/*.properties"/>
@@ -247,7 +258,19 @@
         <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.internal.netcdf.Convention"/>
       </fileset>
     </concat>
+
+
+
+    <!-- ==== Other service providers ============================================================================== -->
+
+    <!-- NetCDF conventions to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/ucar.nc2.dataset.spi.CoordSystemBuilderFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/ucar.nc2.dataset.spi.CoordSystemBuilderFactory"/>
+      </fileset>
+    </concat>
   </target>
+
 
   <!--
     Called after compilation of test classes in order to copy test files.
@@ -276,6 +299,7 @@
       </fileset>
       <fileset dir="${project.root}/storage/sis-sqlstore/src/test/resources">
         <include name="**/*.sql"/>
+        <include name="**/*.csv"/>
       </fileset>
       <fileset dir="${project.root}/storage/sis-earth-observation/src/test/resources">
         <include name="**/*.txt"/>

@@ -24,7 +24,7 @@ import org.opengis.metadata.citation.Citation;
 /**
  * The interface for all SIS objects having identifiers. Identifiers are {@link String} in
  * a namespace identified by a {@link Citation}. The namespace can be some organization like
- * <a href="http://www.epsg.org">EPSG</a> for Coordinate Reference System objects, or a
+ * <a href="https://epsg.org/">EPSG</a> for Coordinate Reference System objects, or a
  * well-known acronym like ISBN for <cite>International Standard Book Number</cite>.
  *
  * <p>When an identified object is marshalled in a ISO 19115-3 compliant XML document, some identifiers

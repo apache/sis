@@ -71,7 +71,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * <h2>Creating new ellipsoid instances</h2>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
- * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many ellipsoids,
+ * In particular, the <a href="https://epsg.org/">EPSG repository</a> provides definitions for many ellipsoids,
  * and Apache SIS provides convenience shortcuts for some of them.
  *
  * <p>Choice 1 in the following list is the easiest but most restrictive way to get an ellipsoid.
@@ -122,13 +122,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -1149451543954764081L;
-
-    /**
-     * Tolerance threshold for comparing floating point numbers.
-     *
-     * @see Numerics#COMPARISON_THRESHOLD
-     */
-    private static final double COMPARISON_THRESHOLD = 1E-10;
 
     /**
      * The equatorial radius. This field should be considered as final.

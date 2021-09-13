@@ -50,7 +50,7 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  * Creates geodetic objects from codes defined by an authority.
  * An <cite>authority</cite> is an organization that maintains definitions of authority codes.
  * An <cite>authority code</cite> is a compact string defined by an authority to reference a particular spatial reference object.
- * A frequently used set of authority codes is the <a href="http://www.epsg.org">EPSG geodetic dataset</a>,
+ * A frequently used set of authority codes is the <a href="https://epsg.org/">EPSG geodetic dataset</a>,
  * a database of coordinate systems and other spatial referencing objects where each object has a code number ID.
  *
  * <div class="note"><b>Example:</b>
@@ -93,7 +93,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   ├─ Title ……………………………………………………… EPSG Geodetic Parameter Dataset
      *   ├─ Identifier ………………………………………… EPSG
      *   ├─ Online resource (1 of 2)
-     *   │  ├─ Linkage ………………………………………… http://epsg-registry.org/
+     *   │  ├─ Linkage ………………………………………… https://epsg.org/
      *   │  └─ Function ……………………………………… Browse
      *   └─ Online resource (2 of 2)
      *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
@@ -1322,7 +1322,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
          * Get the actual type of the object. Returns the GeoAPI type if possible,
          * or fallback on the implementation class otherwise.
          */
-        final Class<?> actual = ReferencingUtilities.getInterface(object);
+        final Class<?> actual = ReferencingUtilities.getInterface(IdentifiedObject.class, object);
         /*
          * Get the authority from the object if possible, in order to avoid a call
          * to the potentially costly (for EPSGDataAccess) getAuthority() method.

@@ -100,7 +100,7 @@ import static java.util.Collections.singletonMap;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -209,7 +209,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  errorLocale   the locale for error messages (not for parsing), or {@code null} for the system default.
      * @param  factories     on input, the factories to use. On output, the factories used. Can be null.
      */
-    GeodeticObjectParser(final Symbols symbols, final Map<String,Element> fragments,
+    GeodeticObjectParser(final Symbols symbols, final Map<String,StoredTree> fragments,
             final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
             final Convention convention, final Transliterator transliterator, final Locale errorLocale,
             final ReferencingFactoryContainer factories)
@@ -230,18 +230,36 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a <cite>Well Know Text</cite> (WKT).
+     * Completes or edits properties of the root {@link IdentifiedObject}. This method is invoked
+     * before a {@code Factory.createFoo(Map, …)} method is invoked for creating the root object.
+     * The {@code properties} map is filled with all information that this parser found in the WKT elements.
+     * Subclasses can override this method for adding additional information if desired.
      *
-     * @param  text      the text to be parsed.
-     * @param  position  the position to start parsing from.
+     * <p>The most typical use case is to add a default {@link Identifier} when the WKT does not contain
+     * an explicit {@code ID[…]} or {@code AUTHORITY[…]} element.</p>
+     *
+     * @param  properties  the properties to be given in a call to a {@code createFoo(Map, …)} method.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#complete(Map)
+     */
+    void completeRoot(Map<String,Object> properties) {
+    }
+
+    /**
+     * Parses a <cite>Well-Know Text</cite> from specified position as a geodetic object.
+     * Caller should invoke {@link #getAndClearWarnings(Object)} in a {@code finally} block
+     * after this method.
+     *
+     * @param  text       the Well-Known Text (WKT) to parse.
+     * @param  position   index of the first character to parse (on input) or after last parsed character (on output).
      * @return the parsed object.
      * @throws ParseException if the string can not be parsed.
      */
     @Override
-    public final Object parseObject(final String text, final ParsePosition position) throws ParseException {
+    final Object createFromWKT(final String text, final ParsePosition position) throws ParseException {
         final Object object;
         try {
-            object = super.parseObject(text, position);
+            object = super.createFromWKT(text, position);
             /*
              * After parsing the object, we may have been unable to set the VerticalCRS of VerticalExtent instances.
              * First, try to set a default VerticalCRS for Mean Sea Level Height in metres. In the majority of cases
@@ -283,7 +301,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @throws ParseException if the element can not be parsed.
      */
     @Override
-    final Object parseObject(final Element element) throws ParseException {
+    final Object buildFromTree(final Element element) throws ParseException {
         Object value = parseCoordinateReferenceSystem(element, false);
         if (value != null) {
             return value;
@@ -374,7 +392,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
 
     /**
      * Parses an <strong>optional</strong> metadata elements and close.
-     * This include elements like {@code "SCOPE"}, {@code "ID"} (WKT 2) or {@code "AUTHORITY"} (WKT 1).
+     * This includes elements like {@code "SCOPE"}, {@code "ID"} (WKT 2) or {@code "AUTHORITY"} (WKT 1).
      * This WKT 1 element has the following pattern:
      *
      * {@preformat wkt
@@ -400,11 +418,11 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         properties.put(IdentifiedObject.NAME_KEY, (name.isEmpty() && fallback != null) ? fallback.getName() : name);
         Element element;
         while ((element = parent.pullElement(OPTIONAL, ID_KEYWORDS)) != null) {
-            final String   codeSpace = element.pullString("codeSpace");
-            final String   code      = element.pullObject("code").toString();       // Accepts Integer as well as String.
-            final Object   version   = element.pullOptional(Object.class);          // Accepts Number as well as String.
-            final Element  citation  = element.pullElement(OPTIONAL, WKTKeywords.Citation);
-            final String   authority;
+            final String  codeSpace = element.pullString("codeSpace");
+            final String  code      = element.pullObject("code").toString();        // Accepts Integer as well as String.
+            final Object  version   = element.pullOptional(Object.class);           // Accepts Number as well as String.
+            final Element citation  = element.pullElement(OPTIONAL, WKTKeywords.Citation);
+            final String  authority;
             if (citation != null) {
                 authority = citation.pullString("authority");
                 citation.close(ignoredElements);
@@ -546,6 +564,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
         }
         parent.close(ignoredElements);
+        if (parent.isRoot) {
+            completeRoot(properties);
+        }
         return properties;
     }
 
@@ -1824,7 +1845,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             final PrimeMeridian meridian = parsePrimeMeridian(OPTIONAL, element, isWKT1, longitudeUnit);
             final GeodeticDatum datum = parseDatum(MANDATORY, element, meridian);
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
-            if (cs instanceof EllipsoidalCS) {  // By far the most frequent case.
+            if (cs instanceof EllipsoidalCS) {                                  // By far the most frequent case.
                 return crsFactory.createGeographicCRS(properties, datum, (EllipsoidalCS) cs);
             }
             if (cs instanceof CartesianCS) {                                    // The second most frequent case.

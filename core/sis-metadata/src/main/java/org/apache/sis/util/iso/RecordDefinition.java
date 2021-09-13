@@ -58,7 +58,7 @@ abstract class RecordDefinition {                                       // Inten
      * is not an instance of {@link DefaultRecordType}. So this adapter is used only if Apache SIS is mixed
      * with other implementations.
      *
-     * <h4>Serialization</h4>
+     * <h2>Serialization</h2>
      * This class is serializable if the {@code RecordType} given to the constructor is also serializable.
      */
     static final class Adapter extends RecordDefinition implements Serializable {
@@ -102,18 +102,18 @@ abstract class RecordDefinition {                                       // Inten
     }
 
     /**
-     * Indices of member names. Created on construction or deserialization,
+     * Indices of field names. Created on construction or deserialization,
      * and shall be considered final and unmodifiable after that point.
      *
-     * @see #memberIndices()
+     * @see #fieldIndices()
      */
-    private transient Map<MemberName,Integer> memberIndices;
+    private transient Map<MemberName,Integer> fieldIndices;
 
     /**
-     * Member names. Created on construction or deserialization, and shall be considered
+     * Field names. Created on construction or deserialization, and shall be considered
      * final and unmodifiable after that point.
      */
-    private transient MemberName[] members;
+    private transient MemberName[] fieldNames;
 
     /**
      * Classes of expected values, or {@code null} if there is no restriction. Created on
@@ -140,17 +140,17 @@ abstract class RecordDefinition {                                       // Inten
     /**
      * Invoked on construction or deserialization for computing the transient fields.
      *
-     * @param  memberTypes  the (<var>name</var>, <var>type</var>) pairs in this record type.
+     * @param  fieldTypes  the (<var>name</var>, <var>type</var>) pairs in this record type.
      * @return the values in the given map. This information is not stored in {@code RecordDefinition}
      *         because not needed by this class, but the {@link DefaultRecordType} subclass will store it.
      */
-    final Type[] computeTransientFields(final Map<? extends MemberName, ? extends Type> memberTypes) {
-        final int size = memberTypes.size();
-        members       = new MemberName[size];
-        memberIndices = new LinkedHashMap<>(Containers.hashMapCapacity(size));
+    final Type[] computeTransientFields(final Map<? extends MemberName, ? extends Type> fieldTypes) {
+        final int size = fieldTypes.size();
+        fieldNames   = new MemberName[size];
+        fieldIndices = new LinkedHashMap<>(Containers.hashMapCapacity(size));
         final Type[] types = new Type[size];
         int i = 0;
-        for (final Map.Entry<? extends MemberName, ? extends Type> entry : memberTypes.entrySet()) {
+        for (final Map.Entry<? extends MemberName, ? extends Type> entry : fieldTypes.entrySet()) {
             final Type type = entry.getValue();
             if (type instanceof SimpleAttributeType) {
                 final Class<?> c = ((SimpleAttributeType) type).getValueClass();
@@ -163,12 +163,12 @@ abstract class RecordDefinition {                                       // Inten
                 }
             }
             final MemberName name = entry.getKey();
-            members[i] = name;
-            memberIndices.put(name, i);
+            fieldNames[i] = name;
+            fieldIndices.put(name, i);
             types[i] = type;
             i++;
         }
-        memberIndices = CollectionsExt.unmodifiableOrCopy(memberIndices);
+        fieldIndices = CollectionsExt.unmodifiableOrCopy(fieldIndices);
         baseValueClass = (baseValueClass != null) ? Numbers.wrapperToPrimitive(baseValueClass) : Object.class;
         return types;
     }
@@ -181,33 +181,33 @@ abstract class RecordDefinition {                                       // Inten
     }
 
     /**
-     * Read-only access to the map of member indices.
+     * Read-only access to the map of field indices.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    final Map<MemberName,Integer> memberIndices() {
-        return memberIndices;
+    final Map<MemberName,Integer> fieldIndices() {
+        return fieldIndices;
     }
 
     /**
      * Returns the number of elements in records.
      */
     final int size() {
-        // 'members' should not be null, but let be safe.
-        return (members != null) ? members.length : 0;
+        // `fieldNames` should not be null, but let be safe.
+        return (fieldNames != null) ? fieldNames.length : 0;
     }
 
     /**
      * Returns the index of the given name, or {@code null} if none.
      */
-    final Integer indexOf(final MemberName memberName) {
-        return memberIndices.get(memberName);
+    final Integer indexOf(final MemberName fieldName) {
+        return fieldIndices.get(fieldName);
     }
 
     /**
-     * Returns the name of the member at the given index.
+     * Returns the name of the field at the given index.
      */
     final MemberName getName(final int index) {
-        return members[index];
+        return fieldNames[index];
     }
 
     /**
@@ -242,7 +242,7 @@ abstract class RecordDefinition {                                       // Inten
         final String margin;
         int width = 0;
         for (int i=0; i<names.length; i++) {
-            width = Math.max(width, (names[i] = members[i].toString()).length());
+            width = Math.max(width, (names[i] = fieldNames[i].toString()).length());
         }
         if (head == null) {
             width  = 0;         // Ignore the width computation, but we still need the names in the array.
@@ -254,7 +254,7 @@ abstract class RecordDefinition {                                       // Inten
         for (int i=0; i<names.length; i++) {
             final String name = names[i];
             buffer.append(margin).append(name);
-            final Object value = (values != null) ? Array.get(values, i) : members[i].getAttributeType();
+            final Object value = (values != null) ? Array.get(values, i) : fieldNames[i].getAttributeType();
             if (value != null) {
                 buffer.append(CharSequences.spaces(width - name.length())).append(" : ").append(value);
             }
