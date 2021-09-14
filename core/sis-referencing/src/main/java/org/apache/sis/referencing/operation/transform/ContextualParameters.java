@@ -745,12 +745,12 @@ public class ContextualParameters extends Parameters implements Serializable {
      */
     private final class WKT extends FormattableObject implements Parameterized {
         /**
-         * {@code true} if this proxy is for the inverse transform instead than the direct one.
+         * {@code true} if this proxy is for the inverse transform instead of the direct one.
          */
         private final boolean inverse;
 
         /**
-         * Creates a new object to be formatted instead than the enclosing transform.
+         * Creates a new object to be formatted instead of the enclosing transform.
          */
         WKT(final boolean inverse) {
             this.inverse = inverse;
@@ -906,10 +906,10 @@ public class ContextualParameters extends Parameters implements Serializable {
          * with the following differences:
          *
          *   - For forward map projections, unit of measurements of translation terms are conceptually
-         *     metres (instead than degrees) multiplied by the scale factors in the 'after' matrix.
+         *     metres (instead of degrees) multiplied by the scale factors in the 'after' matrix.
          *
          *   - For inverse map projections, unit of measurements of translation terms are conceptually
-         *     degrees (instead than metres) multiplied by the scale factors in the 'after' matrix.
+         *     degrees (instead of metres) multiplied by the scale factors in the 'after' matrix.
          *
          *   - And so on for all cases: swap the units of the forward and inverse cases, then multiply
          *     by the scale factor. Note that the multiplication step does not exist in the 'before' case.
@@ -923,7 +923,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * We can replace the elements in the list. The transform referenced by transforms.get(index)
          * is usually a NormalizedProjection, to be replaced by a ContextualParameters instance in order
          * to format real parameter values (semi-major axis, scale factor, etc.)
-         * instead than a semi-major axis length of 1.
+         * instead of a semi-major axis length of 1.
          */
         if (before == null) {
             if (hasBefore) {

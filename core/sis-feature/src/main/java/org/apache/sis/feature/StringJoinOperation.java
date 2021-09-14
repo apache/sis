@@ -87,7 +87,7 @@ final class StringJoinOperation extends AbstractOperation {
     /**
      * A pseudo-converter returning the identifier of a feature. This pseudo-converter is used in place
      * of "real" converters in the {@link StringJoinOperation#converters} array when the property is an
-     * association to a feature instead than an attribute. This pseudo-converters is used as below:
+     * association to a feature instead of an attribute. This pseudo-converters is used as below:
      *
      * <ul>
      *   <li>{@link Result#getValue()} gets this converter by a call to {@code converters[i].inverse()}.
@@ -105,7 +105,7 @@ final class StringJoinOperation extends AbstractOperation {
 
         /**
          * The "real" converter which would have been stored in the {@link StringJoinOperation#converters}
-         * array if the property was an attribute instead than an association. For formatting the feature
+         * array if the property was an attribute instead of an association. For formatting the feature
          * identifier, we need to use the inverse of that converter.
          */
         final ObjectConverter<? super String, ?> converter;
@@ -141,7 +141,7 @@ final class StringJoinOperation extends AbstractOperation {
      * {@link Result#setValue(String)} while {@link Result#getValue()} will use the inverse
      * of those converters.
      *
-     * <p>Note: we store converters from string to value instead than the converse because
+     * <p>Note: we store converters from string to value instead of the converse because
      * the inverse conversion is often a simple call to {@link Object#toString()}, so there
      * is a risk that some of the later converters do not bother to remember their inverse.</p>
      */

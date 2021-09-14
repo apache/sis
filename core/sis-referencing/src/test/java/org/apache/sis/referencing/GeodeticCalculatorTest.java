@@ -460,7 +460,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
                 }
                 /*
                  * Choose randomly whether we will test the direct or inverse geodesic problem.
-                 * We execute only one test for each row instead than executing both tests,
+                 * We execute only one test for each row instead of executing both tests,
                  * for making sure that `GeodeticCalculator` never see the expected values.
                  */
                 KnownProblem  potentialProblem = null;
@@ -473,7 +473,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
                 double linearTolerance, latitudeTolerance, longitudeTolerance, azimuthTolerance;
                 if (isSphere) {
                     /*
-                     * When spherical formulas are used instead than ellipsoidal formulas, an error up to 1% is expected
+                     * When spherical formulas are used instead of ellipsoidal formulas, an error up to 1% is expected
                      * in distance calculations (source: Wikipedia). A yet larger error is observed for azimuth values,
                      * especially near poles and between antipodal points. Following are empirical thresholds.
                      */
@@ -653,7 +653,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
         final double theta    = Math.toRadians(90 - azimuth);   // Azimuth converted to arithmetic angle.
         c.setStartGeographicPoint(60, 20);
         /*
-         * Compute the end point using map projection instead than GeodeticCalculator.
+         * Compute the end point using map projection instead of GeodeticCalculator.
          * This is valid only for distance within 800 km when using ellipsoidal formulas.
          */
         final MathTransform projection = c.createProjectionAroundStart();

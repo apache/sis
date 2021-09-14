@@ -113,7 +113,7 @@ public final class CC_GeneralParameterValue extends PropertyType<CC_GeneralParam
         if (!CC_GeneralOperationParameter.isValid(parameter.getDescriptor())) {
             /*
              * Descriptors are mandatory and SIS classes need them. Provide an error message
-             * here instead than waiting for a NullPointerException in some arbitrary place.
+             * here instead of waiting for a NullPointerException in some arbitrary place.
              */
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, "operationParameter"));
         }

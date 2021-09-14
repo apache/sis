@@ -133,7 +133,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@value     #TOPIC_CATEGORY}<br>
  * </td></tr></table></blockquote>
  *
- * <p><b>References:</b></p>
+ * <h2>References</h2>
  * <ul>
  *   <li><a href="http://wiki.esipfed.org/index.php/Category:Attribute_Conventions_Dataset_Discovery">NetCDF
  *       Attribute Convention for Dataset Discovery</a> wiki</li>

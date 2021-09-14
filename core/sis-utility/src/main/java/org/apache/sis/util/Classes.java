@@ -332,7 +332,7 @@ public final class Classes extends Static {
 
     /**
      * Implementation of {@link #getAllInterfaces(Class)} returning a {@link Set}.
-     * The public API exposes the method returning an array instead than a set for
+     * The public API exposes the method returning an array instead of a set for
      * the following reasons:
      *
      * <ul>

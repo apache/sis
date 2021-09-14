@@ -22,7 +22,7 @@
  * <a href="http://docs.opengeospatial.org/is/09-026r2/09-026r2.html">OGC® Filter Encoding</a> and
  * <a href="https://www.iso.org/standard/60343.html">ISO 13249-3 - SQLMM</a> standards.
  *
- * <h2>Coordinate reference system handling:</h2>
+ * <h2>Coordinate reference system handling</h2>
  * Filters and expressions may contain heterogeneous coordinate reference systems.
  * Apache SIS tries to handle differences in the following way:
  * <ul>

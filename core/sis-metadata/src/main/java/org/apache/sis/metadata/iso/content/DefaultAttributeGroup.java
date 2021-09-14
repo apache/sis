@@ -34,7 +34,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * <div class="preformat">{@code MD_AttributeGroup}
  * {@code   └─contentType……} Content type</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

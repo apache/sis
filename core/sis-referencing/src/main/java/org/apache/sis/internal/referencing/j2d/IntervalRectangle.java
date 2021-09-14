@@ -24,7 +24,7 @@ import org.apache.sis.internal.util.Strings;
 
 
 /**
- * Rectangle defines by intervals instead than by a size.
+ * Rectangle defines by intervals instead of by a size.
  * Instead of ({@code x}, {@code y}, {@code width}, {@code height}) values as do standard Java2D implementations,
  * this class contains ({@link #xmin}, {@link #xmax}, {@link #ymin}, {@link #ymax}) values. This choice provides
  * three benefits:

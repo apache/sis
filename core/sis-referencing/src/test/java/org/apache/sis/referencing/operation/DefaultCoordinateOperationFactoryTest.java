@@ -48,7 +48,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
 /**
  * Tests {@link DefaultCoordinateOperationFactory}, with or without EPSG geodetic dataset.
  *
- * <p><b>Relationship with other tests:</b></p>
+ * <h2>Relationship with other tests</h2>
  * <ul>
  *   <li>{@link CoordinateOperationRegistryTest} requires an EPSG geodetic dataset (otherwise tests are skipped).</li>
  *   <li>{@link CoordinateOperationFinderTest} do not use any EPSG geodetic dataset.</li>

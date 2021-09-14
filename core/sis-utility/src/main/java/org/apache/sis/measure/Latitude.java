@@ -95,7 +95,7 @@ public final class Latitude extends Angle {
      *
      * <p>This is a convenience constructor mostly for testing purpose, since it uses a fixed
      * locale. Developers should consider using {@link AngleFormat} for end-user applications
-     * instead than this constructor.</p>
+     * instead of this constructor.</p>
      *
      * @param  string  a string to be converted to a {@code Latitude}.
      * @throws NumberFormatException if the string does not contain a parsable angle,

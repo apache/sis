@@ -129,7 +129,7 @@ final class StandardDefinitions {
     /**
      * Creates a Universal Transverse Mercator (UTM) or a Universal Polar Stereographic (UPS) projected CRS
      * using the Apache SIS factory implementation. This method restricts the factory to SIS implementation
-     * instead than arbitrary factory in order to met the contract saying that {@link CommonCRS} methods
+     * instead of arbitrary factory in order to met the contract saying that {@link CommonCRS} methods
      * should never fail.
      *
      * @param code       the EPSG code, or 0 if none.

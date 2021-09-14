@@ -86,7 +86,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
     double[] values;
 
     /**
-     * Whether to return {@code null} instead than throwing an exception if given point
+     * Whether to return {@code null} instead of throwing an exception if given point
      * is outside coverage bounds.
      *
      * @see #isNullIfOutside()
@@ -118,7 +118,7 @@ public class GridEvaluator implements GridCoverage.Evaluator {
     }
 
     /**
-     * Returns whether to return {@code null} instead than throwing an exception if a point is outside coverage bounds.
+     * Returns whether to return {@code null} instead of throwing an exception if a point is outside coverage bounds.
      * The default value is {@code false}, which means that the default {@link #apply(DirectPosition)} behavior is to
      * throw {@link PointOutsideCoverageException} for points outside bounds.
      *
@@ -130,12 +130,12 @@ public class GridEvaluator implements GridCoverage.Evaluator {
     }
 
     /**
-     * Sets whether to return {@code null} instead than throwing an exception if a point is outside coverage bounds.
+     * Sets whether to return {@code null} instead of throwing an exception if a point is outside coverage bounds.
      * The default value is {@code false}. Setting this flag to {@code true} may improve performances if the caller
      * expects that many points will be outside coverage bounds, since it reduces the amount of exceptions to be
      * created.
      *
-     * @param  flag  whether {@link #apply(DirectPosition)} should use {@code null} return value instead than
+     * @param  flag  whether {@link #apply(DirectPosition)} should use {@code null} return value instead of
      *               {@link PointOutsideCoverageException} for signaling that a point is outside coverage bounds.
      */
     @Override

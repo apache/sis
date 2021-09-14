@@ -34,7 +34,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
 
 /**
  * Tests the affine transform created by the {@link Equirectangular} class. This map projection is a
- * special case since the transform is implemented by an affine transform instead than a class from
+ * special case since the transform is implemented by an affine transform instead of a class from
  * the {@link org.apache.sis.referencing.operation.projection} package.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -60,7 +60,7 @@ public final strictfp class EquirectangularTest extends MapProjectionTestCase {
     /**
      * Tests the WKT formatting of an Equirectangular projection. While the projection is implemented by
      * an affine transform, the WKT formatter should handle this projection in a special way and shows the
-     * projection parameters instead than the affine transform parameters (except in "show internal" mode).
+     * projection parameters instead of the affine transform parameters (except in "show internal" mode).
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      */

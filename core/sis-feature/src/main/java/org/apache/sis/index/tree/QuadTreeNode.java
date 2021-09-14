@@ -21,7 +21,7 @@ package org.apache.sis.index.tree;
  * A node in a two-dimensional {@link PointTree} which is the parent of other nodes.
  * This class is a specialization of {@link PointTreeNode} for the two-dimensional case.
  * This specialization is provided for reducing the number of objects to create,
- * by storing the 4 quadrants as fields instead than in an array.
+ * by storing the 4 quadrants as fields instead of in an array.
  *
  * @author  Chris Mattmann
  * @author  Martin Desruisseaux (Geomatys)

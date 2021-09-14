@@ -250,7 +250,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             if (factory instanceof DefaultMathTransformFactory) {
                 /*
                  * Apache SIS specific API (not yet defined in GeoAPI, but could be proposed).
-                 * Note that setTarget(…) intentionally uses only the CoordinateSystem instead than the full
+                 * Note that setTarget(…) intentionally uses only the CoordinateSystem instead of the full
                  * CoordinateReferenceSystem because the targetCRS is typically under construction when this
                  * method in invoked, and attempts to use it can cause NullPointerException.
                  */

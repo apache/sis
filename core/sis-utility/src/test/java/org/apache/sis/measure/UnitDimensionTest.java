@@ -173,7 +173,7 @@ public final strictfp class UnitDimensionTest extends TestCase {
 
     /**
      * Verifies that the test for equality between two dimensions produce the expected result.
-     * This method expects {@link Unit} instances instead than {@link Dimension} for convenience,
+     * This method expects {@link Unit} instances instead of {@link Dimension} for convenience,
      * but only the dimensions will be compared.
      *
      * @param message   the message to show in case of failure.

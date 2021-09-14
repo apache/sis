@@ -187,7 +187,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      * <div class="note"><b>Note:</b> this method should always returns {@code false}, since
      * {@code MathTransforms.linear(…)} should have created specialized implementations for identity cases.
      * Nevertheless we perform the full check as a safety, in case someone instantiated this class directly
-     * instead than using a factory method.</div>
+     * instead of using a factory method.</div>
      */
     @Override
     public final boolean isIdentity() {

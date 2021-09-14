@@ -25,11 +25,11 @@ import static java.lang.Character.*;
 /**
  * Static methods working on {@link StringBuilder} instances. Some methods defined in this
  * class duplicate the functionalities provided in the {@link CharSequences} class, but
- * modify directly the content of the provided {@code StringBuilder} instead than creating
+ * modify directly the content of the provided {@code StringBuilder} instead of creating
  * new objects.
  *
  * <h2>Unicode support</h2>
- * Every methods defined in this class work on <cite>code points</cite> instead than characters
+ * Every methods defined in this class work on <cite>code points</cite> instead of characters
  * when appropriate. Consequently those methods should behave correctly with characters outside
  * the <cite>Basic Multilingual Plane</cite> (BMP).
  *
@@ -223,7 +223,7 @@ public final class StringBuilders extends Static {
      * A sequence of a constant character. This implementation does not perform any argument
      * check since it is for {@link StringBuilder#append(CharSequence, int, int)} usage only.
      * The intent is to allow {@code StringBuilder} to append the characters in one operation
-     * instead than looping on {@link StringBuilder#insert(int, char)} (which would require
+     * instead of looping on {@link StringBuilder#insert(int, char)} (which would require
      * memory move on each call).
      */
     private static final class Repeat implements CharSequence {

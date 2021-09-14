@@ -41,7 +41,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * {@code       ├─identifier……} Unique identification of the instrument.
  * {@code       └─type……………………} Name of the type of instrument.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

@@ -24,7 +24,7 @@ import org.apache.sis.util.LenientComparable;
 
 /**
  * Linear converter with a scale factor of 1 and an offset of 0. We define a class for this special case
- * instead than using the more generic {@link LinearConverter} class because we want to avoid performing
+ * instead of using the more generic {@link LinearConverter} class because we want to avoid performing
  * any arithmetic operation in the {@link #convert(double)} method, in order to preserve negative zero:
  *
  * {@preformat java

@@ -149,8 +149,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * is implementation-dependent, but some typical examples are:
      *
      * <ul>
-     *   <li>Format {@link Number} instances using {@code toString()} instead than {@code NumberFormat}.</li>
-     *   <li>Format {@link Date} instances using the ISO pattern instead than the English one.</li>
+     *   <li>Format {@link Number} instances using {@code toString()} instead of {@code NumberFormat}.</li>
+     *   <li>Format {@link Date} instances using the ISO pattern instead of the English one.</li>
      * </ul>
      *
      * @return the locale of this {@code Format}, or {@code Locale.ROOT} for unlocalized format.

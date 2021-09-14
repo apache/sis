@@ -47,7 +47,6 @@
             </source-roots>
             <test-roots>
                 <root id="test.javafx.dir" name="Test JavaFX application"/>
-                <root id="test.webapp.dir" name="Test web application"/>
                 <root id="test.console.dir" name="Test Console"/>
                 <root id="test.portrayal.dir" name="Test Portrayal"/>
                 <root id="test.earth-obs.dir" name="Test Earth observation"/>
@@ -121,7 +120,6 @@
             <word>splitted</word>
             <word>subsampled</word>
             <word>subsampling</word>
-            <word>subsamplings</word>
             <word>timezone</word>
             <word>transitioning</word>
             <word>unary</word>

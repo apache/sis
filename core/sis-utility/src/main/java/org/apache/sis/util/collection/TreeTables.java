@@ -78,7 +78,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  *     TreeTable.Node concatenateSingletons(final TreeTable.Node node) {
  *         // This simple example is restricted to nodes which are known to handle
- *         // their children in a list instead than some other kind of collection.
+ *         // their children in a list instead of some other kind of collection.
  *         final List<TreeTable.Node> children = (List<TreeTable.Node>) node.getChildren();
  *         final int size = children.size();
  *         for (int i=0; i<size; i++) {

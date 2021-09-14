@@ -99,7 +99,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *   <tr><td><code>{@linkplain IdentifiedObject}[]</code></td><td>Accepted only for {@link ContentLevel#NAME_SUMMARY}.</td></tr>
  * </table>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>The current implementation can only format features — parsing is not yet implemented.</li>
  *   <li>{@code ParameterFormat}, like most {@code java.text.Format} subclasses, is not thread-safe.</li>

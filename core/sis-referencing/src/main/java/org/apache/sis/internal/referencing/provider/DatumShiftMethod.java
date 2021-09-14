@@ -52,7 +52,7 @@ public enum DatumShiftMethod {
 
     /**
      * Suggests an operation method for the given accuracy. This method contains accuracy threshold (in metres)
-     * for allowing the use of Molodensky approximation instead than the Geocentric Translation method.
+     * for allowing the use of Molodensky approximation instead of the Geocentric Translation method.
      * The accuracy of datum shifts with Molodensky approximation is about 5 or 10 metres.
      * However for this method, we are not interested in absolute accuracy but rather in the difference
      * between Molodensky and Geocentric Translation methods, which is much lower (less than 1 m).

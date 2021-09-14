@@ -192,9 +192,9 @@ public enum ValueExistencePolicy {
      * Returns {@code true} if {@link TreeNode} shall substitute the given collection by
      * a singleton containing only a null element.
      *
-     * <p><b>Purpose:</b>
+     * <h4>Purpose</h4>
      * When a collection is null or empty, while not excluded according this {@code ValueExistencePolicy},
-     * we need an empty space for making the metadata property visible in {@code TreeNode}.</p>
+     * we need an empty space for making the metadata property visible in {@code TreeNode}.
      */
     abstract boolean substituteByNullElement(Collection<?> values);
 

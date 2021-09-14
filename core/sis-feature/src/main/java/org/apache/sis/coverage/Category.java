@@ -112,7 +112,7 @@ public class Category implements Serializable {
      * <ul>
      *   <li>The minimum and maximum values may be one of the {@linkplain Float#isNaN() NaN} values (see below).</li>
      *   <li>The value type may be different than {@link Double} (typically {@link Integer}).</li>
-     *   <li>The bounds may be exclusive instead than inclusive.</li>
+     *   <li>The bounds may be exclusive instead of inclusive.</li>
      *   <li>The range may be an instance of {@link MeasurementRange} if the {@link #toConverse} is identity
      *       and the units of measurement are known.</li>
      * </ul>
@@ -449,7 +449,7 @@ public class Category implements Serializable {
     public Optional<MathTransform1D> getTransferFunction() {
         /*
          * Note: if this method is invoked on "real values category", then we need to return
-         * the identity transform instead than 'toConverse'. This is done by ConvertedCategory.
+         * the identity transform instead of 'toConverse'. This is done by ConvertedCategory.
          */
         if (converse.isConvertedQualitative()) {
             return Optional.empty();

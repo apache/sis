@@ -44,7 +44,7 @@ import org.apache.sis.util.Static;
 /**
  * Utility methods working on Java2D shapes.
  * The {@code transform(…)} methods in this class work in the same way than the methods of the same signature
- * in {@link Envelopes}, except that they work on {@link Rectangle2D} objects instead than {@code Envelope}.
+ * in {@link Envelopes}, except that they work on {@link Rectangle2D} objects instead of {@code Envelope}.
  * In particular, the same treatment for curvatures and poles is applied.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

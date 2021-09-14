@@ -670,8 +670,8 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Tests the parsing of a projected CRS using angular values in grads instead than degrees
-     * and in lengths in kilometres instead than metres.
+     * Tests the parsing of a projected CRS using angular values in grads instead of degrees
+     * and in lengths in kilometres instead of metres.
      *
      * @throws ParseException if the parsing failed.
      */

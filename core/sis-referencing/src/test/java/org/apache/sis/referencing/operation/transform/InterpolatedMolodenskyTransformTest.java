@@ -30,7 +30,7 @@ import org.junit.Test;
 
 /**
  * Tests {@link InterpolatedMolodenskyTransform}. The accuracy of using the Molodensky approximation
- * instead than the real geocentric translation is verified by the following tests:
+ * instead of the real geocentric translation is verified by the following tests:
  *
  * <ul>
  *   <li>{@link GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()}</li>

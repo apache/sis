@@ -30,7 +30,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Information used to determine geographic location corresponding to image location.
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

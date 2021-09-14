@@ -40,8 +40,9 @@ import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
  * This class can be used for comparing different implementation alternatives,
  * for example with {@code ALLOW_TRIGONOMETRIC_IDENTITIES} flag on or off.
  *
- * <p><b>Usage:</b> modify the provider created in the {@code main} method if needed, and run. Change map projection
- * implementation (for example by changing a {@code ALLOW_TRIGONOMETRIC_IDENTITIES} flag value) and run again.</p>
+ * <h2>Usage</h2>
+ * Modify the provider created in the {@code main} method if needed, and run. Change map projection implementation
+ * (for example by changing a {@code ALLOW_TRIGONOMETRIC_IDENTITIES} flag value) and run again.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

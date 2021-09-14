@@ -673,7 +673,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * <ul>
          *   <li>When comparing the children recursively, comparing the parents would cause infinite recursivity.</li>
          *   <li>For consistency with the {@link #clone()} method, which can not clone the parent.</li>
-         *   <li>For making possible to compare branches instead than only whole trees.</li>
+         *   <li>For making possible to compare branches instead of only whole trees.</li>
          * </ul></div>
          *
          * @param  other  the object to compare with this node.

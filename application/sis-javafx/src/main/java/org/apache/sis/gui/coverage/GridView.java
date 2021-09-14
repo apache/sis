@@ -199,7 +199,7 @@ public class GridView extends Control {
     /**
      * The formatter to use for writing sample values. This is also the property for the localized format pattern.
      * Note that this pattern depends on current locale. It is provided for user interactions (i.e. in a GUI control)
-     * instead than programmatic action.
+     * instead of programmatic action.
      *
      * @see #cellFormatPattern()
      * @see java.text.DecimalFormat#toLocalizedPattern()
@@ -527,7 +527,7 @@ public class GridView extends Control {
      * if an error occurred during {@link RenderedImage#getTile(int, int)} invocation.
      * The returned bounds are zero-based (may not be the bounds in image coordinates).
      *
-     * <div class="note"><b>Note:</b> we use AWT rectangle instead than JavaFX rectangle
+     * <div class="note"><b>Note:</b> we use AWT rectangle instead of JavaFX rectangle
      * because generally we use AWT for everything related to {@link RenderedImage}.</div>
      *
      * @param  tileX  <var>x</var> coordinates of the tile for which to get the bounds.
@@ -615,7 +615,7 @@ public class GridView extends Control {
 
     /**
      * The property for the pattern of values in cells. Note that this pattern depends on current locale.
-     * It is provided for user interactions (i.e. in a GUI control) instead than programmatic action.
+     * It is provided for user interactions (i.e. in a GUI control) instead of programmatic action.
      *
      * @return the <em>localized</em> format pattern property, or an empty value if the {@link NumberFormat}
      *         used for writing cell values is not an instance of {@link java.text.DecimalFormat}.

@@ -48,7 +48,7 @@
  *       but varies with time for taking in account the motion of plate tectonic.</li>
  *   <li>{@link org.apache.sis.referencing.datum.DatumShiftGrid} is used for more accurate transformations
  *       than what {@code BursaWolfParameters} allows, by interpolating the geographic or geocentric translations
- *       in a grid (e.g. NADCON or NTv2) instead than apply the same transformation for every points.</li>
+ *       in a grid (e.g. NADCON or NTv2) instead of apply the same transformation for every points.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

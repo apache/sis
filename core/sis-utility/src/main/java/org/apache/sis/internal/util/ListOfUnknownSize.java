@@ -31,7 +31,7 @@ import java.util.Objects;
  * This class overrides some methods in a way that avoid or reduce calls to {@link #size()}.
  *
  * <p>Despite extending {@link AbstractSequentialList}, this class expects implementations to override
- * the random access method {@link #get(int)} instead than {@link #listIterator(int)}.</p>
+ * the random access method {@link #get(int)} instead of {@link #listIterator(int)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

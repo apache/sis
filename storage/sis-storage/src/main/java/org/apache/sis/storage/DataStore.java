@@ -285,7 +285,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * messages, in which case throwing an exception here would mask the original exception.</p>
      *
      * <p>This method differs from {@link #getIdentifier()} in that it is typically a file name
-     * known at construction time instead than a property read from metadata.
+     * known at construction time instead of a property read from metadata.
      * Default implementation returns the {@link StorageConnector#getStorageName()} value,
      * or {@code null} if this data store has been created by the no-argument constructor.
      * Subclasses should override this method if they can provide a better name.</p>

@@ -63,7 +63,7 @@ public abstract strictfp class DatumShiftTestCase extends TestCase {
 
     /**
      * Finds resource of the given name as a path. If the resource can not be obtained because
-     * the grid file is inside a JAR file, declares the test as ignored instead than failed.
+     * the grid file is inside a JAR file, declares the test as ignored instead of failed.
      *
      * @param  name  name of the resource to get.
      * @return the requested resources.

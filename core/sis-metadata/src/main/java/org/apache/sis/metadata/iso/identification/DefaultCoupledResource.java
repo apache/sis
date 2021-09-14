@@ -40,7 +40,7 @@ import org.apache.sis.xml.Namespaces;
 /**
  * Links a given operation name with a resource identified by an "identifier".
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

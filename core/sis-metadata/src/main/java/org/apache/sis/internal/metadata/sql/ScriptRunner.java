@@ -324,7 +324,7 @@ public class ScriptRunner implements AutoCloseable {
         /*
          * Now build the list of statements to skip, depending of which features are supported by the database.
          * WARNING: do not use capturing group here, because some subclasses (e.g. EPSGInstaller) will use their
-         * own capturing groups. A non-capturing group is declared by "(?:A|B)" instead than a plain "(A|B)".
+         * own capturing groups. A non-capturing group is declared by "(?:A|B)" instead of a plain "(A|B)".
          */
         if (!isEnumTypeSupported) {
             addStatementToSkip("CREATE\\s+(?:TYPE|CAST)\\s+.*");
@@ -407,7 +407,7 @@ public class ScriptRunner implements AutoCloseable {
     }
 
     /**
-     * Returns the word to use instead than the given one.
+     * Returns the word to use instead of the given one.
      * If there is no replacement, then {@code inScript} is returned.
      *
      * @param  inScript  the word in the script which need to be replaced.

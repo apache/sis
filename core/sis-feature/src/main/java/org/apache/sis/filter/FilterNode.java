@@ -25,7 +25,7 @@ import org.opengis.filter.Filter;
 
 /**
  * Base class of some (not all) nodes that are filters. This base class overrides {@link Predicate}
- * methods for building other {@link Filter} objects instead than default Java implementations that
+ * methods for building other {@link Filter} objects instead of default Java implementations that
  * Apache SIS can not recognize.
  *
  * <p><b>Note:</b> this class duplicates the method definition in {@link Optimization.OnFilter}.

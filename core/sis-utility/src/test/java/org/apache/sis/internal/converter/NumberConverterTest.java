@@ -41,7 +41,7 @@ import static org.apache.sis.test.Assert.*;
 public final strictfp class NumberConverterTest extends TestCase {
     /**
      * Creates a {@link NumberConverter} for the given source and target classes.
-     * We have to use the {@link ConverterRegistry} instead than instantiating the
+     * We have to use the {@link ConverterRegistry} instead of instantiating the
      * converters directly because some tests are going to verify that the converter
      * has been properly cached.
      */

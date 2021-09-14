@@ -174,7 +174,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * the {@link ReadWriteLock#writeLock()}.
      *
      * <div class="note"><b>Implementation note:</b>
-     * we manage the locks ourselves instead than using a {@link java.util.concurrent.ConcurrentHashMap}
+     * we manage the locks ourselves instead of using a {@link java.util.concurrent.ConcurrentHashMap}
      * because if a {@link #definitions} value needs to be computed, then we need to block all other
      * threads anyway since {@link #parser} is not thread-safe. Consequently the high concurrency
      * capability provided by {@code ConcurrentHashMap} does not help us in this case.</div>

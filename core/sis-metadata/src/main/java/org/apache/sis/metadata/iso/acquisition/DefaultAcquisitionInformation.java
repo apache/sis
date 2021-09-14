@@ -35,7 +35,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * Designations for the measuring instruments, the platform carrying them, and the mission to
  * which the data contributes.
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

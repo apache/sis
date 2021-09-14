@@ -156,7 +156,7 @@ public abstract class InstallationResources {
      * This may be for example a {@link java.net.URL} referencing the actual resource.
      *
      * <p>The default implementation returns {@code null}. A null value means that the resource is fetched by
-     * {@link #openScript(String, int)} instead than this method. We do not return {@link java.net.URL} to text
+     * {@link #openScript(String, int)} instead of this method. We do not return {@link java.net.URL} to text
      * files in order to ensure that the file is opened with proper character encoding.</p>
      *
      * @param  authority  one of the values returned by {@link #getAuthorities()}.

@@ -74,7 +74,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     /**
      * The action to execute when a reference system is selected. This is not directly the user-specified action, but
      * rather an {@link org.apache.sis.gui.referencing.RecentReferenceSystems.Listener} instance wrapping that action.
-     * This listener is invoked explicitly instead than using {@link SimpleObjectProperty} listeners because we do not
+     * This listener is invoked explicitly instead of using {@link SimpleObjectProperty} listeners because we do not
      * invoke it in all cases.
      */
     private final RecentReferenceSystems.Listener action;

@@ -157,7 +157,7 @@ class BandedSampleConverter extends ComputedImage {
             /*
              * The implicit source resolution if 1 on the assumption that we are converting from
              * integer values. But if the source image specifies a resolution, use the specified
-             * value instead than the implicit 1 value.
+             * value instead of the implicit 1 value.
              */
             if (i < n) {
                 final Number v = (Number) Array.get(sr, i);

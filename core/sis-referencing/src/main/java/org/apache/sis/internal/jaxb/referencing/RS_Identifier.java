@@ -44,7 +44,7 @@ import org.opengis.metadata.Identifier;
  * }
  *
  * <h2>Unmarshalling</h2>
- * Some data producers put a URN instead than a simple code value, as in the example below:
+ * Some data producers put a URN instead of a simple code value, as in the example below:
  *
  * {@preformat xml
  *   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>

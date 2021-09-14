@@ -29,7 +29,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * except for the following:
  *
  * <ul>
- *   <li>The filtered output is sent to an arbitrary {@link Appendable} instead than
+ *   <li>The filtered output is sent to an arbitrary {@link Appendable} instead of
  *       to the {@link java.io.Writer} sub-type.</li>
  *   <li>No synchronization is performed.</li>
  * </ul>

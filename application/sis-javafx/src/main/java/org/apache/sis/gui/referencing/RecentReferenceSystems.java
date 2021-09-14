@@ -741,8 +741,8 @@ public class RecentReferenceSystems {
 
     /**
      * Notifies all {@link MenuSync} that the list of reference systems changed. We send a notification manually
-     * instead than relying on {@code ListChangeListener} in order to process only one event after we have done
-     * a bunch of changes instead than an event after each individual add or remove operation.
+     * instead of relying on {@code ListChangeListener} in order to process only one event after we have done
+     * a bunch of changes instead of an event after each individual add or remove operation.
      */
     private void notifyChanges() {
         for (final WritableValue<ReferenceSystem> value : controlValues) {

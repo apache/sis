@@ -63,7 +63,7 @@ public final class Linearizer {
      * because a linear regression will be applied anyway. However the eccentricity matter.
      *
      * <p>When a non-linear transform exists in spherical or ellipsoidal variants, it may be sufficient to use
-     * the spherical formulas instead than ellipsoidal formulas because the spherical ones are faster and more
+     * the spherical formulas instead of ellipsoidal formulas because the spherical ones are faster and more
      * stable (because the inverse transforms are exact, up to rounding errors). The errors caused by the use
      * of spherical formulas are compensated by the localization grid used after the linearizer.
      * Spherical formulas can be requested by setting this field to {@link CommonCRS#SPHERE}.</p>

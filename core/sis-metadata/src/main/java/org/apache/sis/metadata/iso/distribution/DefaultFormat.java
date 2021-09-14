@@ -69,7 +69,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  *
  * Above list may be expanded in any future SIS version.
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

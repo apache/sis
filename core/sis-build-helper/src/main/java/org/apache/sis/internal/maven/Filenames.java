@@ -24,7 +24,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  * Hard-coded file and directory names used by this package.
  *
  * <p><b>Reminder:</b>
- * If the above constants are modified, please remind to edit the <cite>Distribution file</cite>
+ * if the above constants are modified, please remind to edit the <cite>Distribution file</cite>
  * section in the <code>site/content/build.mdtext</code> file.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -34,7 +34,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  */
 final class Filenames {
     /**
-     * The target directory. This directory name is hard-coded instead than using a property annotated
+     * The target directory. This directory name is hard-coded instead of using a property annotated
      * by {@code @Parameter(defaultValue="${project.build.directory}")} - or alternatively by invoking
      * {@code MavenProject.getModel().getBuild().getDirectory()}, because we need the target directory
      * of the project root rather than the directory of the module being built.

@@ -73,7 +73,7 @@ import org.apache.sis.util.Debug;
  * <h2>Fetching parameter values despite different names, types or units</h2>
  * The common way to get a parameter is to invoke the {@link #parameter(String)} method.
  * This {@code Parameters} class provides alternative ways, using a {@link ParameterDescriptor} argument
- * instead than a {@code String} argument. Those descriptors provide additional information like the various
+ * instead of a {@code String} argument. Those descriptors provide additional information like the various
  * {@linkplain DefaultParameterDescriptor#getAlias() aliases} under which the same parameter may be known.
  * By using this information, {@code Parameters} can choose the most appropriate parameter name or alias
  * (by searching for a common {@linkplain org.apache.sis.referencing.ImmutableIdentifier#getAuthority() authority})
@@ -431,7 +431,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
         ArgumentChecks.ensureNonNull("parameter", parameter);
         /*
          * Search for an identifier matching this group's authority. For example if this ParameterValueGroup
-         * was created from an EPSG database, then we want to use the EPSG names instead than the OGC names.
+         * was created from an EPSG database, then we want to use the EPSG names instead of the OGC names.
          */
         final String name = getName(parameter);
         /*

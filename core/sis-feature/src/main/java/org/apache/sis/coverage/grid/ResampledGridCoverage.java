@@ -546,7 +546,7 @@ final class ResampledGridCoverage extends GridCoverage {
                 if (sourceDimY >= dimension) {
                     /*
                      * `mask` selected less than 2 dimensions. Unconditionally add
-                     * 1 or 2 dimensions choosen among the first unused dimensions.
+                     * 1 or 2 dimensions chosen among the first unused dimensions.
                      */
                     if (sourceDimX >= dimension) sourceDimX = 0;
                     sourceDimY = (sourceDimX != 0) ? 0 : 1;

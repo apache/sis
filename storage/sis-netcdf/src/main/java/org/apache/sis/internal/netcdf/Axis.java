@@ -153,7 +153,7 @@ public final class Axis extends NamedElement {
     /**
      * Values of coordinates on this axis for given grid indices. This variables is often one-dimensional,
      * but can also be two-dimensional. Coordinate values should be read with the {@link #read()} method
-     * in this {@code Axis} class instead than {@link Variable#read()} for trimming trailing NaN values.
+     * in this {@code Axis} class instead of {@link Variable#read()} for trimming trailing NaN values.
      */
     final Variable coordinates;
 
@@ -466,7 +466,7 @@ public final class Axis extends NamedElement {
 
     /**
      * Returns {@code true} if the given axis specifies the same direction and unit of measurement than this axis.
-     * This is used for testing if a predefined axis can be used instead than invoking
+     * This is used for testing if a predefined axis can be used instead of invoking
      * {@link #toISO(CSFactory, int, boolean)}.
      */
     final boolean isSameUnitAndDirection(final CoordinateSystemAxis axis) {
@@ -509,7 +509,7 @@ public final class Axis extends NamedElement {
     }
 
     /**
-     * Returns {@code true} if coordinates in this axis seem to map cell corner instead than cell center.
+     * Returns {@code true} if coordinates in this axis seem to map cell corner instead of cell center.
      * A {@code false} value does not necessarily means that the axis maps cell center; it can be unknown.
      * This method assumes a geographic CRS.
      *

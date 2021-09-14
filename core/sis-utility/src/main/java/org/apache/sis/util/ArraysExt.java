@@ -1266,7 +1266,7 @@ public final class ArraysExt extends Static {
     /**
      * Returns the ordered values in the range from {@code start} inclusive to {@code end} exclusive.
      * This method performs the same work than {@link java.util.stream.IntStream#range(int, int)} but
-     * returning values in an array instead than in a stream. This method is okay for small sequences;
+     * returning values in an array instead of in a stream. This method is okay for small sequences;
      * for large sequences the stream approach should be preferred.
      *
      * <div class="note"><b>Purpose:</b>

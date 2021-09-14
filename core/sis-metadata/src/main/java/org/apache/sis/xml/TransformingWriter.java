@@ -163,7 +163,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     private final Map<String,Namespace> uniqueNamespaces;
 
     /**
-     * {@code true} if events should be sent to {@link #deferred} instead than to {@link #out}.
+     * {@code true} if events should be sent to {@link #deferred} instead of to {@link #out}.
      * This is set to {@code true} when we see a {@link StartElement} having one of the names
      * contained in the {@link #ELEMENTS_TO_REORDER} keys set.
      */

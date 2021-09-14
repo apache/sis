@@ -160,7 +160,7 @@ class CoordinateOperationRegistry {
      * An instance is fetched at construction time from the {@link #registry} if possible.
      *
      * <div class="note"><b>Design note:</b>
-     * using a provider defined by the {@link #registry} instead than {@code MultiAuthoritiesFactory} may cause
+     * using a provider defined by the {@link #registry} instead of {@code MultiAuthoritiesFactory} may cause
      * the finder to perform extensive searches because it does not recognize the authority code of a given CRS.
      * For example if {@link #registry} is for EPSG and a given CRS is "CRS:84", then {@code codeFinder} would
      * not recognize the given CRS and would search for a match in the EPSG database. This is desired because
@@ -689,11 +689,11 @@ class CoordinateOperationRegistry {
     /**
      * Creates the inverse of the given operation, which may be single or compound.
      *
-     * <p><b>Design note:</b>
-     * we do not provide a {@code AbstractCoordinateOperation.inverse()} method. If the user wants an inverse method,
+     * <h4>Design note</h4>
+     * We do not provide a {@code AbstractCoordinateOperation.inverse()} method. If the user wants an inverse method,
      * he should invoke {@code CRS.findOperation(targetCRS, sourceCRS, null)} or something equivalent. This is because
      * a new query of EPSG database may be necessary, and if no explicit definition is found there is too many arbitrary
-     * values to set in a default inverse operation for making that API public.</p>
+     * values to set in a default inverse operation for making that API public.
      *
      * @param  operation  the operation to invert, or {@code null}.
      * @return the inverse of {@code operation}, or {@code null} if none.

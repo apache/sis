@@ -1068,7 +1068,7 @@ class PropertyAccessor {
 
     /**
      * Converts values in the specified array to the given type.
-     * The array content is modified in-place. This method accepts an array instead than
+     * The array content is modified in-place. This method accepts an array instead of
      * a single value because the values to convert may be the content of a collection.
      *
      * @param  elements    the array which contains element to convert.
@@ -1245,8 +1245,9 @@ class PropertyAccessor {
      * Invokes {@link MetadataVisitor#visit(Class, Object)} for all writable properties in the given metadata.
      * This method is not recursive, i.e. it does not traverse the children of the elements in the given metadata.
      *
-     * <p><b>Constraint:</b> in current implementation, if {@code source} and {@code target} are not the same,
-     * then {@code target} is assumed empty. The intent is to skip easily null or empty properties.</p>
+     * <h4>Constraint</h4>
+     * In current implementation, if {@code source} and {@code target} are not the same,
+     * then {@code target} is assumed empty. The intent is to skip easily null or empty properties.
      *
      * @param  visitor   the object on which to invoke {@link MetadataVisitor#visit(Class, Object)}.
      * @param  source    the metadata from which to read properties. May be the same than {@code target}.

@@ -514,7 +514,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 /*
                  * Following is the pixel coordinate after the last pixel in current dimension.
                  * This is not stored; the intent is to get a potential `ArithmeticException`
-                 * now instead than in a call to `next()` during iteration. A negative value
+                 * now instead of in a call to `next()` during iteration. A negative value
                  * would mean that the AOI does not intersect the region requested by user.
                  */
                 final int max = addExact(offsetAOI[i], multiplyExact(tileSize[i], count));

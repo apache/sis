@@ -37,7 +37,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * {@code   │   └─code…………} Alphanumeric value identifying an instance in the namespace.
  * {@code   └─type……………………} Name of the type of instrument.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

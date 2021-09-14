@@ -55,7 +55,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * is {@code C}, then the threshold is <code>Math.ulp(C) * {@value}</code>.  If the sum is
      * lower than that threshold, then the result is assumed to be zero.
      *
-     * <p>Note that if we were using {@code double} arithmetic instead than double-double, then all results smaller
+     * <p>Note that if we were using {@code double} arithmetic instead of double-double, then all results smaller
      * than {@code Math.ulp(max)} would not be significant. Those cases could be caught by a {@code ZERO_THRESHOLD}
      * value of 1.  On the other hand, if all the extra precision of double-double arithmetic was considered valid,
      * then the {@code ZERO_THRESHOLD} value would be approximately 1E-16.   In reality, the extra digits in our
@@ -403,7 +403,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * of {@code double}. The main purpose of this method is to fetch the {@link DoubleDouble#error} terms when
      * such instances are found.
      *
-     * <p><b>Restrictions:</b></p>
+     * <h4>Restrictions</h4>
      * <ul>
      *   <li>This matrix must use extended-precision elements as by {@link #createExtendedPrecision(int, int, boolean)}.</li>
      *   <li>If this method returns {@code false}, then error terms are <strong>not</strong> initialized - they

@@ -65,7 +65,7 @@ public final class GeographicToGeocentric extends GeodeticOperation {
      * This parameter is practically the same than {@link GeocentricAffineBetweenGeographic#DIMENSION} except:
      *
      * <ul>
-     *   <li>The code space is {@code "SIS"} instead than {@code "OGC"} since this parameter is not defined in OGC 01-009.</li>
+     *   <li>The code space is {@code "SIS"} instead of {@code "OGC"} since this parameter is not defined in OGC 01-009.</li>
      *   <li>The default number of dimensions is 3 instead of unspecified.</li>
      * </ul>
      *

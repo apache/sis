@@ -274,7 +274,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      */
     private void real(double sample) {
         /*
-         * Two next lines use !(a >= b) instead than
+         * Two next lines use !(a >= b) instead of
          * (a < b) in order to take NaN in account.
          */
         if (!(minimum <= sample)) minimum = sample;

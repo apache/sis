@@ -255,7 +255,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * typically some programmatic values like enumerations or identifiers.
      * While identifiers often look like English words, {@code Locale.ROOT} is not considered
      * synonymous to {@link Locale#ENGLISH} because the values may differ in the way numbers and
-     * dates are formatted (e.g. using the ISO 8601 standard for dates instead than English conventions).
+     * dates are formatted (e.g. using the ISO 8601 standard for dates instead of English conventions).
      * In order to produce a value close to the common practice, this method handles {@code Locale.ROOT}
      * as below:
      *

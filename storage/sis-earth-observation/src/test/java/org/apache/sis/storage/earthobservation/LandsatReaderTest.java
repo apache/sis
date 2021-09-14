@@ -65,7 +65,7 @@ public class LandsatReaderTest extends TestCase {
     /**
      * Tests {@link LandsatReader#read(BufferedReader)}.
      *
-     * <p><b>NOTE FOR MAINTAINER:</b> if the result of this test changes, consider updating
+     * <p><b>Note for maintainer:</b> if the result of this test changes, consider updating
      * <a href="./doc-files/LandsatMetadata.html">./doc-files/LandsatMetadata.html</a> accordingly.</p>
      *
      * @throws IOException if an error occurred while reading the test file.

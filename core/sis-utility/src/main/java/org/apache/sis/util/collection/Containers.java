@@ -86,7 +86,7 @@ public final class Containers extends Static {
      * <p>The returned list implements the {@link CheckedContainer} interface. The value returned by
      * its {@link CheckedContainer#getElementType()} method is inferred from the array component type.
      * Because arrays in the Java language are covariant (at the contrary of collections),
-     * the list type have to be {@code <? extends E>} instead than {@code <E>}.</p>
+     * the list type have to be {@code <? extends E>} instead of {@code <E>}.</p>
      *
      * @param  <E>    the base type of elements in the list.
      * @param  array  the array to wrap, or {@code null} if none.
@@ -108,7 +108,7 @@ public final class Containers extends Static {
      * <p>The returned list implements the {@link CheckedContainer} interface. The value returned by
      * its {@link CheckedContainer#getElementType()} method is inferred from the array component type.
      * Because arrays in the Java language are covariant (at the contrary of collections),
-     * the list type have to be {@code <? extends E>} instead than {@code <E>}.</p>
+     * the list type have to be {@code <? extends E>} instead of {@code <E>}.</p>
      *
      * @param  <E>    the type of elements in the list.
      * @param  array  the array to wrap (can not be null).

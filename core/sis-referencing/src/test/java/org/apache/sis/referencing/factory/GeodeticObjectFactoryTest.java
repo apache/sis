@@ -151,7 +151,7 @@ public final strictfp class GeodeticObjectFactoryTest extends ObjectFactoryTest 
      * This test creates every objects itself and compares with expected WKT 1 after each step.
      *
      * <p>Note that practical applications may use existing constants declared in the
-     * {@link CommonCRS} class instead than creating everything like this test does.</p>
+     * {@link CommonCRS} class instead of creating everything like this test does.</p>
      *
      * @throws FactoryException if the creation of a geodetic component failed.
      *

@@ -176,7 +176,7 @@ public final class FeatureOperations extends Static {
      * the {@code '\'} escape character will be inserted before that sequence.
      * If the {@code '\'} character appears in a property value, it will be doubled.</p>
      *
-     * <p><b>Restrictions:</b></p>
+     * <h4>Restrictions</h4>
      * <ul>
      *   <li>The single properties can be either attributes or operations that produce attributes;
      *       feature associations are not allowed, unless they have an {@code "sis:identifier"} property.</li>

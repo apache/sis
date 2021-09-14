@@ -425,7 +425,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *
      * The WKT 1 format is similar to the WKT 2 one with two differences:
      * <ul>
-     *   <li>Units are formatted before the axes instead than after the axes.</li>
+     *   <li>Units are formatted before the axes instead of after the axes.</li>
      *   <li>If no unit can be formatted because not all axes use the same unit, then the WKT is
      *       {@linkplain Formatter#setInvalidWKT(IdentifiedObject, Exception) flagged as invalid}.</li>
      * </ul>

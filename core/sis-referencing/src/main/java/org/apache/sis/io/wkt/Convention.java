@@ -90,7 +90,7 @@ public enum Convention {
      *         if that unit is the same than the unit of the {@code ProjectedCRS} axes.</li>
      *     <li>{@code Parameter} and {@code PrimeMeridian} elements omit the {@code AngleUnit} sub-element
      *         if that unit is the same than the unit of the {@code GeodeticCRS} axes.</li>
-     *     <li>Axes unit is declared only once after the axes instead than repeated for each axis
+     *     <li>Axes unit is declared only once after the axes instead of repeated for each axis
      *         if the unit is the same for all axes.</li>
      *     <li>{@code AngleUnit}, {@code LengthUnit}, {@code ScaleUnit}, {@code ParametricUnit}
      *         and {@code TimeUnit} are formatted as plain {@code Unit} elements.</li>
@@ -118,7 +118,7 @@ public enum Convention {
      * WKT 1 and WKT 2 differ in their keywords and syntax, but also in more subtle ways regarding axis names,
      * parameter and code list values. For example in  {@link GeocentricCRS}, WKT 1 uses a legacy set of Cartesian axes
      * which were defined in OGC 01-009. Those axes use the <var>Other</var>, <var>Easting</var> and <var>Northing</var>
-     * {@linkplain org.opengis.referencing.cs.AxisDirection axis directions} instead than the geocentric ones.
+     * {@linkplain org.opengis.referencing.cs.AxisDirection axis directions} instead of the geocentric ones.
      * For more uniform handling of CRS objects in client code, SIS parser replaces some WKT 1 conventions by
      * the ISO ones when possible.
      *
@@ -157,8 +157,8 @@ public enum Convention {
      * <ul>
      *   <li>The angular units of {@code PRIMEM} and {@code PARAMETER} elements are always degrees,
      *       no matter the units of the enclosing {@code GEOGCS} element.</li>
-     *   <li>Unit names use American spelling instead than the international ones
-     *       (e.g. <cite>"meter"</cite> instead than <cite>"metre"</cite>).</li>
+     *   <li>Unit names use American spelling instead of the international ones
+     *       (e.g. <cite>"meter"</cite> instead of <cite>"metre"</cite>).</li>
      * </ul>
      */
     WKT1_COMMON_UNITS(true, true, true),
@@ -229,10 +229,10 @@ public enum Convention {
     final boolean toUpperCase;
 
     /**
-     * {@code true} for a frequently-used convention about units instead than the standard one.
+     * {@code true} for a frequently-used convention about units instead of the standard one.
      * <ul>
      *   <li>If {@code true}, forces {@code PRIMEM} and {@code PARAMETER} angular units to degrees
-     *       instead than inferring the unit from the context. The standard value is {@code false},
+     *       instead of inferring the unit from the context. The standard value is {@code false},
      *       which means that the angular units are inferred from the context as required by the
      *       WKT 1 specification.</li>
      *   <li>If {@code true}, uses US unit names instead of the international names.

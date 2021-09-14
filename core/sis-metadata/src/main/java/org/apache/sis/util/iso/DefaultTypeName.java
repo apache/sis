@@ -113,7 +113,7 @@ import org.apache.sis.util.UnknownNameException;
  *
  * The mapping defined by Apache SIS may change in any future version depending on standardization progress.
  * To protect against such changes, users are encouraged to rely on methods or constructors like
- * {@link DefaultNameFactory#toTypeName(Class)} or {@link #toClass()} instead than parsing the name.
+ * {@link DefaultNameFactory#toTypeName(Class)} or {@link #toClass()} instead of parsing the name.
  *
  *
  * <h2>Immutability and thread safety</h2>
@@ -256,7 +256,7 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
         }
         if (c == null) {
             /*
-             * Invoke super.foo() instead than this.foo() because we do not want to invoke any overridden method.
+             * Invoke super.foo() instead of this.foo() because we do not want to invoke any overridden method.
              * This is for ensuring that two TypeNames constructed with the same name will map to the same class.
              * See 'valueClass' javadoc for more information.
              */

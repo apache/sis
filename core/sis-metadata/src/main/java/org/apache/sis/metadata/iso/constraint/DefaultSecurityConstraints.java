@@ -31,7 +31,7 @@ import org.opengis.metadata.constraint.SecurityConstraints;
  * <div class="preformat">{@code MD_SecurityConstraints}
  * {@code   └─classification…………} Name of the handling restrictions on the resource.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

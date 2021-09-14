@@ -160,7 +160,7 @@ public final class Warnings implements Localized, Serializable {
 
     /**
      * Invoked after construction for setting the identifier name or class name of the root object being
-     * parsed or formatted. Defined as a separated method instead than as an argument for the constructor
+     * parsed or formatted. Defined as a separated method instead of as an argument for the constructor
      * because this information is more easily provided by {@link WKTFormat} rather than by the parser or
      * formatter that created the {@code Warnings} object.
      */

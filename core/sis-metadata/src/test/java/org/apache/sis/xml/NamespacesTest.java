@@ -45,7 +45,7 @@ public final strictfp class NamespacesTest extends TestCase {
     }
 
     /**
-     * Tests {@link Namespaces#guessForType(String)}. This method uses {@code assertSame(…)} instead than
+     * Tests {@link Namespaces#guessForType(String)}. This method uses {@code assertSame(…)} instead of
      * {@code assertEquals(…)} for verifying that {@link TransformingReader} invoked {@link String#intern()}.
      */
     @Test

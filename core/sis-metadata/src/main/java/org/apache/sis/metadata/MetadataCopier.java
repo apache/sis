@@ -147,7 +147,7 @@ public class MetadataCopier extends MetadataVisitor<Object> {
      * @param  type      the interface of the metadata object to copy.
      * @param  metadata  the metadata object to copy, or {@code null}.
      * @return a copy of the given metadata object, or {@code null} if the given argument is {@code null}.
-     * @throws IllegalArgumentException if {@code type} is an implementation class instead than interface.
+     * @throws IllegalArgumentException if {@code type} is an implementation class instead of interface.
      * @throws UnsupportedOperationException if there is no implementation class for a metadata to copy,
      *         or an implementation class does not provide a public default constructor.
      */

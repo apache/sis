@@ -43,7 +43,7 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
  * {@code   └─resultFile……………………………………………………………} Information about the data file containing the result coverage data.
  * {@code       └─fileFormat…………………………………………………} Defines the format of the transfer data file.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

@@ -43,7 +43,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * {@code   ├─status……………………………} Status of the data acquisition.
  * {@code   └─parentOperation……} Heritage of the operation.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

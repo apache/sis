@@ -565,7 +565,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * Computes the hash code value using the public API instead than direct access to the
+     * Computes the hash code value using the public API instead of direct access to the
      * {@link #coordinates} array. This method is invoked from {@link SubEnvelope}.
      */
     final int hashCodeByAPI() {
@@ -586,7 +586,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * Compares the given object for equality using the public API instead than direct access
+     * Compares the given object for equality using the public API instead of direct access
      * to the {@link #coordinates} array. This method is invoked from {@link SubEnvelope}.
      */
     final boolean equalsByAPI(final Object object) {

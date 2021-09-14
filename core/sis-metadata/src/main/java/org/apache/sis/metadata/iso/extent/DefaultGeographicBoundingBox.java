@@ -594,7 +594,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
              *
              * For each of the above case, if we apply the translation in the opposite way,
              * the result would be much wort (for each lower rectangle, imagine translating
-             * the longuest part in the opposite direction instead than the shortest one).
+             * the longuest part in the opposite direction instead of the shortest one).
              *
              * Note that only one of 'left' and 'right' can be positive, otherwise we would
              * not be in the case where one box is crossing the anti-meridian while the other

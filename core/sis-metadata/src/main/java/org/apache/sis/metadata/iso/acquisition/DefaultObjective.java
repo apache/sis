@@ -48,7 +48,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * {@code       ├─sequence……………………} Relative time ordering of the event.
  * {@code       └─time………………………………} Time the event occurred.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

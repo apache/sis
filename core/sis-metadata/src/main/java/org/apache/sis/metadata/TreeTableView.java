@@ -176,7 +176,7 @@ final class TreeTableView implements TreeTable, TreeFormatCustomization, Seriali
             if (node instanceof TreeNode) {
                 /*
                  * Since this method is invoked (indirectly) during iteration over the children, the value may have
-                 * been cached by TreeNodeChildren.Iter.next(). Try to use this value instead than computing it again.
+                 * been cached by TreeNodeChildren.Iter.next(). Try to use this value instead of computing it again.
                  */
                 value = ((TreeNode) node).cachedValue;
             }

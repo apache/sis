@@ -167,7 +167,7 @@ final class FormatTableCell<S,T> extends TableCell<S,T> {
      * before editing the value. Current implementation reacts to digit keys, which is okay for number format.
      * Future version may be extended to more keys if there is a need for that.
      *
-     * <p>Note: for making easier to edit current row instead than insertion row, it is recommended to register
+     * <p>Note: for making easier to edit current row instead of insertion row, it is recommended to register
      * also a listener for the F2 key (same key than Excel and OpenOffice). The {@link #registerTo(TableView)}
      * convenience method does that.</p>
      *
@@ -207,7 +207,7 @@ final class FormatTableCell<S,T> extends TableCell<S,T> {
 
         /**
          * Registers this trigger to the given table. This method registers also a listener on the
-         * F2 key for editing cell on the current row instead than cell in the insertion row.
+         * F2 key for editing cell on the current row instead of cell in the insertion row.
          * It assumes that only one column should get the focus when F2 is pressed,
          * and that column is the one given in constructor to this {@code Trigger}.
          *

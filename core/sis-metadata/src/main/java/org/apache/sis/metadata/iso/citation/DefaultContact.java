@@ -43,7 +43,7 @@ import org.apache.sis.internal.util.CollectionsExt;
 /**
  * Information required to enable contact with the responsible person and/or organization.
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>
@@ -247,8 +247,8 @@ public class DefaultContact extends ISOMetadata implements Contact {
                 }
                 if (ignored != null) {
                     /*
-                     * Log a warning for ignored property using a call to 'ignored.toString()' instead than 'ignored'
-                     * because we want the property to appear as "TelephoneType[FOO]" instead than "FOO".
+                     * Log a warning for ignored property using a call to 'ignored.toString()' instead of 'ignored'
+                     * because we want the property to appear as "TelephoneType[FOO]" instead of "FOO".
                      */
                     Context.warningOccured(Context.current(), DefaultContact.class, "getPhone",
                             Messages.class, Messages.Keys.IgnoredPropertyAssociatedTo_1, ignored.toString());

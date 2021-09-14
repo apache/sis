@@ -45,7 +45,7 @@
  *
  * <h2>Note for SIS developers</h2>
  * All SIS code should fetch their logger through a call to our custom
- * {@link org.apache.sis.util.logging.Logging#getLogger(String)} method instead than
+ * {@link org.apache.sis.util.logging.Logging#getLogger(String)} method instead of
  * the standard {@link java.util.logging.Logger#getLogger(String)} method. This is necessary in
  * order to give SIS a chance to redirect log events to an other logging framework.
  *

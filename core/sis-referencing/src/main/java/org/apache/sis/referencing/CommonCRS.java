@@ -1538,7 +1538,7 @@ public enum CommonCRS {
         /**
          * Time measured as days since January 1st, 4713 BC at 12:00 UTC in proleptic Julian calendar.
          * This epoch is equivalent to November 24, 4714 BC when expressed in the proleptic Gregorian
-         * calendar instead than the Julian one.
+         * calendar instead of the Julian one.
          *
          * <p><b>Note on dates formatting:</b>
          * the legacy date/time formatting classes in the {@link java.text} package uses the proleptic

@@ -46,7 +46,7 @@ import static org.apache.sis.internal.referencing.provider.ObliqueMercatorCenter
  * <ul>
  *   <li>Variant A (EPSG:9812) uses false easting/northing defined at the natural origin of the coordinate system.</li>
  *   <li>Variant B (EPSG:9815) uses false easting/northing defined at the projection center.</li>
- *   <li>ESRI "Two Points" variant defines the central line with two points instead than with an azimuth angle.</li>
+ *   <li>ESRI "Two Points" variant defines the central line with two points instead of with an azimuth angle.</li>
  * </ul>
  *
  * Azimuth values of 0 and ±90 degrees are allowed, but for such cases the {@link Mercator} and
@@ -71,14 +71,14 @@ public class ObliqueMercator extends ConformalProjection {
 
     /**
      * Bitmask for projections having easting/northing values defined at projection center
-     * instead than at coordinate system natural origin.
+     * instead of at coordinate system natural origin.
      * This bit is unset for <cite>Hotine Oblique Mercator (variant A)</cite> (EPSG:9812)
      * and is set for        <cite>Hotine Oblique Mercator (variant B)</cite> (EPSG:9815).
      */
     private static final byte CENTER = 1;
 
     /**
-     * Bitmask for projections having their central line defined by two points instead than an azimuth angle.
+     * Bitmask for projections having their central line defined by two points instead of an azimuth angle.
      * The two points variants are used by ESRI.
      */
     private static final byte TWO_POINTS = 2;

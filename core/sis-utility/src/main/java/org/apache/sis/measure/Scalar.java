@@ -317,7 +317,7 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
         /*
          * We require the Scalar implementation rather than accepting arbitrary Quantity<?> instance
          * for making sure that we obey to Object.equals(Object) contract (e.g. symmetric, transitive,
-         * etc.). But we invoke the getter methods instead than accessing directly the fields because
+         * etc.). But we invoke the getter methods instead of accessing directly the fields because
          * DerivedScalar override them.
          */
         final Scalar<?> that = (Scalar<?>) other;

@@ -133,7 +133,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * then this method will search in the list of organization members. The later structure is used by our netCDF
      * reader.
      *
-     * @param  position {@code true} for returning the position name instead than individual name.
+     * @param  position {@code true} for returning the position name instead of individual name.
      * @return the name or position of the first individual, or {@code null}.
      *
      * @see #getIndividualName()
@@ -158,7 +158,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     /**
      * Returns the name of the first party of the given type, or {@code null} if none.
      *
-     * @param  position {@code true} for returning the position name instead than individual name.
+     * @param  position {@code true} for returning the position name instead of individual name.
      * @return the name or position of the first individual, or {@code null}.
      *
      * @see #getOrganisationName()

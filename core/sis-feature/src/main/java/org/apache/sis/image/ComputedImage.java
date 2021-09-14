@@ -258,7 +258,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     }
 
     /**
-     * Returns a weak reference to this image. Using weak reference instead than strong reference may help to
+     * Returns a weak reference to this image. Using weak reference instead of strong reference may help to
      * reduce memory usage when recomputing the image is cheap. This method should not be public because the
      * returned instance implements public interfaces that caller could invoke.
      */
@@ -738,7 +738,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * This image should not be used anymore after this method call.
      *
      * <p><b>Note:</b> keep in mind that this image may be referenced as a source of other images.
-     * In case of doubt, it may be safer to rely on the garbage collector instead than invoking this method.</p>
+     * In case of doubt, it may be safer to rely on the garbage collector instead of invoking this method.</p>
      */
     @Override
     public void dispose() {

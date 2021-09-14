@@ -47,7 +47,7 @@ import org.opengis.metadata.spatial.GeolocationInformation;
  * {@code   ├─geolocationInformation………………………………………} Information that can be used to geolocate the data.
  * {@code   └─georeferencedParameters……………………………………} Terms which support grid data georeferencing.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

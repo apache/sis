@@ -70,7 +70,7 @@ public final class IdentityConverter<S extends T, T> extends SystemConverter<S,T
 
     /**
      * Returns the properties of this converter.
-     * This method returns a new {@link EnumSet} instead than returning a constant, because
+     * This method returns a new {@link EnumSet} instead of returning a constant, because
      * creating {@code EnumSet} is cheap and the standard JDK implementation has optimizations
      * for bulk operations between {@code EnumSet} instances. Those optimizations are lost (at
      * least on JDK6) is we wrap the {@code EnumSet} in a {@code Collections.unmodifiableSet} view.

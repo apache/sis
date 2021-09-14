@@ -81,13 +81,13 @@ final class FeatureStream extends DeferredStream<Feature> {
 
     /**
      * {@code true} if at least one predicate given to {@link #filter(Predicate)}
-     * is implemented using Java code instead than using SQL statements.
+     * is implemented using Java code instead of using SQL statements.
      */
     private boolean hasPredicates;
 
     /**
      * {@code true} if at least one comparator given to {@link #sorted(Comparator)}
-     * is implemented using Java code instead than using SQL statements.
+     * is implemented using Java code instead of using SQL statements.
      */
     private boolean hasComparator;
 

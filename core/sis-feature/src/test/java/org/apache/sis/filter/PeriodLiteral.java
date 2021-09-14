@@ -18,7 +18,6 @@ package org.apache.sis.filter;
 
 import java.util.Date;
 import java.io.Serializable;
-import org.opengis.util.ScopedName;
 import org.apache.sis.test.TestUtilities;
 
 // Branch-dependent imports
@@ -76,7 +75,6 @@ final strictfp class PeriodLiteral implements Period, Literal<Feature,Period>, S
 
     /** Not needed for the tests. */
     @Override public ReferenceIdentifier getName()                           {throw new UnsupportedOperationException();}
-    @Override public ScopedName       getFunctionName()                      {throw new UnsupportedOperationException();}
     @Override public RelativePosition relativePosition(TemporalPrimitive o)  {throw new UnsupportedOperationException();}
     @Override public Duration         distance(TemporalGeometricPrimitive o) {throw new UnsupportedOperationException();}
     @Override public Duration         length()                               {throw new UnsupportedOperationException();}

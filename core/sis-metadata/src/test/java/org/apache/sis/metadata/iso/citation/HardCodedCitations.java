@@ -31,7 +31,7 @@ import static java.util.Collections.singleton;
 
 /**
  * Hard-coded citation constants used for testing purpose only.
- * We use those hard-coded constants instead than the ones defined in the
+ * We use those hard-coded constants instead of the ones defined in the
  * {@link org.apache.sis.metadata.iso.citation.Citations} class in order
  * to protect the test suite against any change in the definition of the
  * above-cited public constants.

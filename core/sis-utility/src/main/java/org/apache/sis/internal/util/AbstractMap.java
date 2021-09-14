@@ -77,7 +77,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      *   <li>The {@link #next()} method checks if there is more element and moves to the next one in a single step.
      *       This is exactly the same approach than {@link java.sql.ResultSet#next()}.</li>
      *   <li>Entry elements are returned by the {@link #getKey()} and {@link #getValue()} methods
-     *       instead than creating new {@code Map.Element} on each iterator.</li>
+     *       instead of creating new {@code Map.Element} on each iterator.</li>
      * </ul>
      *
      * @param <K> the type of keys maintained by the map.

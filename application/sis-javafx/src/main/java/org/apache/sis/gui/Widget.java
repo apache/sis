@@ -21,7 +21,7 @@ import javafx.scene.layout.Region;
 
 /**
  * Base class of user interfaces provided by Apache SIS.
- * This base class is used for components that encapsulate JavaFX controls instead than extending them.
+ * This base class is used for components that encapsulate JavaFX controls instead of extending them.
  * We use this indirection level for hiding implementation details such as the exact JavaFX classes used
  * for implementing the widget.
  *

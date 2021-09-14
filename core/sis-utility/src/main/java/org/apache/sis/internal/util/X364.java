@@ -282,7 +282,7 @@ search: do {
      *
      * <p>This method does not check if a {@linkplain java.io.Console console} is attached to the
      * running JVM because the caller may want to write to the {@linkplain System#err standard
-     * error stream} instead than the {@linkplain System#out standard output stream}, in which
+     * error stream} instead of the {@linkplain System#out standard output stream}, in which
      * case the console information is not applicable.</p>
      *
      * @return {@code true} if we think that the operating system supports ANSI codes.

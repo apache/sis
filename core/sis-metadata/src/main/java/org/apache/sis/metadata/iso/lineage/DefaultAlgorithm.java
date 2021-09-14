@@ -35,7 +35,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * {@code   │   └─date…………………………} Reference date for the cited resource.
  * {@code   └─description…………………} Information describing the algorithm used to generate the data.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

@@ -39,7 +39,7 @@ import org.apache.sis.test.LoggingWatcher;
  * This is part of <cite>Geospatial Integrity of Geoscience Software</cite> (GIGS) tests implemented in GeoAPI.
  *
  * <div class="note"><b>Note:</b>
- * this test is defined in this package instead than in the {@code sql} sub-package because of the need to access
+ * this test is defined in this package instead of in the {@code sql} sub-package because of the need to access
  * package-private methods in {@link ConcurrentAuthorityFactory}, and for keeping all GIGS tests together.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)

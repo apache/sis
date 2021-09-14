@@ -527,7 +527,7 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Whether errors occurring during computation should be propagated instead than wrapped in a {@link LogRecord}.
+     * Whether errors occurring during computation should be propagated instead of wrapped in a {@link LogRecord}.
      * This method shall be invoked in a method synchronized on {@code this}.
      */
     private boolean failOnException() {
@@ -1008,7 +1008,7 @@ public class ImageProcessor implements Cloneable {
      *
      * Combining above steps may be advantageous when the {@code resample(…)} result is not needed for anything
      * else than visualization. If the same resampling may be needed for computational purposes, then it may be
-     * more advantageous to keep above method calls separated instead than using this {@code visualize(…)} method.
+     * more advantageous to keep above method calls separated instead of using this {@code visualize(…)} method.
      *
      * <p>The resulting image is suitable for visualization purposes, but should not be used for computation purposes.
      * There is no guarantees about the number of bands in returned image or about which formula is used for converting

@@ -157,7 +157,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
             gridToCRS     = sep.separate();
             crsDimensions = sep.getTargetDimensions();
             /*
-             * We redo a separation for `cornerToCRS` instead than applying a translation of the `gridToCRS`
+             * We redo a separation for `cornerToCRS` instead of applying a translation of the `gridToCRS`
              * computed above because we don't know which of `gridToCRS` and `cornerToCRS` has less NaN values.
              * We require however the exact same sequence of target dimensions.
              */

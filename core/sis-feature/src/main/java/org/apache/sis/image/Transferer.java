@@ -205,7 +205,7 @@ abstract class Transferer {
 
     /*
      * TODO: provide an IntegerToDirect class which would use the SampleModel.getSamples(…, int[]) method
-     * instead than SampleModel.getSamples(…, float[]). The reason is that the former method is optimized
+     * instead of SampleModel.getSamples(…, float[]). The reason is that the former method is optimized
      * in Java2D while the later is not. We would not provide that optimisation for double target type
      * because it is less commonly used.
      */

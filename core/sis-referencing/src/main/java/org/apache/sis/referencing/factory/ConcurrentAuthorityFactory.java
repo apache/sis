@@ -167,7 +167,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * <p>If the Data Access Object is currently in use, then {@code DataAccessRef} counts how many recursive
      * invocations of a {@link #factory} {@code createFoo(String)} method is under way in the current thread.
-     * This information is used in order to reuse the same factory instead than creating new instances
+     * This information is used in order to reuse the same factory instead of creating new instances
      * when a {@code GeodeticAuthorityFactory} implementation invokes itself indirectly through the
      * {@link ConcurrentAuthorityFactory}. This assumes that factory implementations are reentrant.</p>
      *
@@ -1954,7 +1954,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         /** Result of the search with or without ignoring axes. */
         private Set<IdentifiedObject> strict, lenient;
 
-        /** Whether the cache is the result of an explicit request instead than a dependency search. */
+        /** Whether the cache is the result of an explicit request instead of a dependency search. */
         private boolean explicitStrict, explicitLenient;
 
         /** Returns the cached instance. */

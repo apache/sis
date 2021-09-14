@@ -362,7 +362,7 @@ public class ResourceExplorer extends WindowManager {
      * <p>The {@link #isDataTabSet} flag should be set before to invoke this method. If {@code true}, then
      * the given resource is the final content and window menus will be updated accordingly by this method.
      * If {@code false}, then the given resource is temporarily null and window menus should be updated by
-     * the caller instead than this method.</p>
+     * the caller instead of this method.</p>
      *
      * @param  resource  the resource to set, or {@code null} if none.
      * @param  fallback  whether to allow the search for a default component to show
@@ -478,7 +478,7 @@ public class ResourceExplorer extends WindowManager {
             /*
              * Want the full coverage in all bands (sample dimensions). This is different than
              * the ImageRequest created by `updateDataTab(…)` which requested only an overview
-             * (i.e. potentially with subsamplings) and only the first band.
+             * (i.e. potentially with subsampling) and only the first band.
              *
              * TODO: check if we can still share the coverage in some situations.
              */

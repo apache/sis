@@ -129,7 +129,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
     /**
      * A set of symbols with values between parentheses, like {@code DATUM("WGS84")}.
      * This instance is identical to {@link #SQUARE_BRACKETS} except that the default
-     * brackets are the curly ones instead than the square ones (but both are still
+     * brackets are the curly ones instead of the square ones (but both are still
      * accepted at parsing time).
      *
      * <p>This format is rare with referencing objects but common with geometry objects.</p>

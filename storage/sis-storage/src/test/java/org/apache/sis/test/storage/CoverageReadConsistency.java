@@ -89,9 +89,9 @@ public strictfp class CoverageReadConsistency extends TestCase {
     private boolean allowOffsets;
 
     /**
-     * Whether to use random subsamplings.
+     * Whether to use random subsampling.
      */
-    private boolean allowSubsamplings;
+    private boolean allowSubsampling;
 
     /**
      * Whether to use random selection of bands.
@@ -141,7 +141,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     /**
      * Creates a new tester with specified configuration.
      * This tester may be used for benchmarking instead of JUnit tests.
-     * Mismatched pixel values will be reported in statistics instead than causing test failure.
+     * Mismatched pixel values will be reported in statistics instead of causing test failure.
      *
      * @param  tested     the resource to test.
      * @param  reference  full coverage read from the {@code resource}, or {@code null} if none.
@@ -192,7 +192,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     @Test
     @DependsOnMethod("testSubRegionAtOrigin")
     public void testSubsamplingAtOrigin() throws DataStoreException {
-        allowSubsamplings = true;
+        allowSubsampling = true;
         readAndCompareRandomRegions("Subsampling at (0,0)");
     }
 
@@ -206,7 +206,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     @DependsOnMethod({"testSubsamplingAtOrigin", "testSubRegionsAnywhere"})
     public void testSubsamplingAnywhere() throws DataStoreException {
         allowOffsets      = true;
-        allowSubsamplings = true;
+        allowSubsampling = true;
         readAndCompareRandomRegions("Subsampling");
     }
 
@@ -246,7 +246,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     public void testAllAnywhere() throws DataStoreException {
         allowOffsets      = true;
         allowBandSubset   = true;
-        allowSubsamplings = true;
+        allowSubsampling = true;
         readAndCompareRandomRegions("All (ms)");
     }
 
@@ -280,7 +280,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
             }
             high[d] = low[d] + rs;
             subsampling[d] = 1;
-            if (allowSubsamplings) {
+            if (allowSubsampling) {
                 subsampling[d] += random.nextInt(StrictMath.max(rs / 16, 1));
             }
         }
@@ -356,7 +356,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
              * If subsampling was enabled, the factors selected by the reader may be different than
              * the subsampling factors that we specified. The following block updates those values.
              */
-            if (allowSubsamplings && full != null) {
+            if (allowSubsampling && full != null) {
                 final GridDerivation change = full.getGridGeometry().derive().subgrid(subset.getGridGeometry());
                 System.arraycopy(change.getSubsampling(),        0, subsampling, 0, dimension);
                 System.arraycopy(change.getSubsamplingOffsets(), 0, subOffsets,  0, dimension);
@@ -370,7 +370,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
             final long[] sliceMax = actualReadExtent.getHigh().getCoordinateValues();
 nextSlice:  for (;;) {
                 System.arraycopy(sliceMin, BIDIMENSIONAL, sliceMax, BIDIMENSIONAL, dimension - BIDIMENSIONAL);
-                final PixelIterator itr = iterator(full,   sliceMin, sliceMax, subsampling, subOffsets, allowSubsamplings);
+                final PixelIterator itr = iterator(full,   sliceMin, sliceMax, subsampling, subOffsets, allowSubsampling);
                 final PixelIterator itc = iterator(subset, sliceMin, sliceMax, subsampling, subOffsets, false);
                 if (itr != null) {
                     assertEquals(itr.getDomain().getSize(), itc.getDomain().getSize());
@@ -467,7 +467,7 @@ nextSlice:  for (;;) {
      * @return pixel iterator over requested area, or {@code null} if unavailable.
      */
     private static PixelIterator iterator(final GridCoverage coverage, long[] sliceMin, long[] sliceMax,
-            final int[] subsampling, final int[] subOffsets, final boolean allowSubsamplings)
+            final int[] subsampling, final int[] subOffsets, final boolean allowSubsampling)
     {
         if (coverage == null) {
             return null;
@@ -483,7 +483,7 @@ nextSlice:  for (;;) {
          * If the given coordinates were in a subsampled space while the coverage is at full resolution,
          * convert the coordinates to full resolution.
          */
-        if (allowSubsamplings) {
+        if (allowSubsampling) {
             sliceMin = sliceMin.clone();
             sliceMax = sliceMax.clone();
             for (int i=0; i<sliceMin.length; i++) {
@@ -500,7 +500,7 @@ nextSlice:  for (;;) {
          * we shift the whole `sliceAOI` (which is equivalent to subtracting `subX|Y` in full resolution coordinates)
          * and set the offset to the complement.
          */
-        if (allowSubsamplings) {
+        if (allowSubsampling) {
             final int subX = subsampling[0];
             final int subY = subsampling[1];
             if (subX > image.getTileWidth() || subY > image.getTileHeight()) {

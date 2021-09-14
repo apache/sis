@@ -323,10 +323,10 @@ public class MetadataBuilder {
     /**
      * Creates the individual or organization information object if it does not already exists, then returns it.
      *
-     * <p><b>Limitation:</b> if the party type is unknown, then this method creates an {@code AbstractParty} instead
-     * than one of the subtypes. This is not valid, but we currently have no way to guess if a party is an individual
-     * or an organization. For now we prefer to let users know that the type is unknown rather than to pick a
-     * potentially wrong type.</p>
+     * <h4>Limitations</h4>
+     * If the party type is unknown, then this method creates an {@code AbstractParty} instead of one of the subtypes.
+     * This is not valid, but we currently have no way to guess if a party is an individual or an organization.
+     * For now we prefer to let users know that the type is unknown rather than to pick a potentially wrong type.
      *
      * @return the individual or organization information (never {@code null}).
      * @see #newParty(MetadataBuilder.PartyType)

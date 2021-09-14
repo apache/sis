@@ -394,7 +394,7 @@ public final class Logging extends Static {
             return false;
         }
         /*
-         * The message is fetched using Exception.getMessage() instead than getLocalizedMessage()
+         * The message is fetched using Exception.getMessage() instead of getLocalizedMessage()
          * because in a client-server architecture, we want the locale on the server-side instead
          * than the locale on the client side. See LocalizedException policy.
          */

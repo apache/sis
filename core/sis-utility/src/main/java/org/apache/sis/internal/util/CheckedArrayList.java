@@ -320,8 +320,9 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     /**
      * Returns a checked sublist.
      *
-     * <p><b>Limitation:</b> current implementation checks only the type.
-     * It does not prevent the insertion of {@code null} values.</p>
+     * <h4>Limitations</h4>
+     * Current implementation checks only the type.
+     * It does not prevent the insertion of {@code null} values.
      *
      * @param  fromIndex  index of the first element.
      * @param  toIndex    index after the last element.

@@ -116,7 +116,7 @@ public final class Factory extends Geometries<Geometry> {
      * Creates a polyline from the given coordinate values.
      * Each {@link Double#NaN} coordinate value starts a new path.
      *
-     * @param  polygon      whether to return the path as a polygon instead than polyline.
+     * @param  polygon      whether to return the path as a polygon instead of polyline.
      * @param  dimension    the number of dimensions ({@value #BIDIMENSIONAL} or {@value #TRIDIMENSIONAL}).
      * @param  coordinates  sequence of (x,y) or (x,y,z) tuples.
      * @throws UnsupportedOperationException if this operation is not implemented for the given number of dimensions.

@@ -102,7 +102,7 @@ scan:   while (offset < length) {
                 /*
                  * For now we accept any path as long as it ends with the "gmxUom.xml" file
                  * because resources may be hosted on different servers, or the path may be
-                 * relative instead than absolute.
+                 * relative instead of absolute.
                  */
                 int i = url.lastIndexOf('/', f-1) + 1;
                 if (regionMatches("gmxUom.xml", url, i, f) || regionMatches("ML_gmxUom.xml", url, i, f)) {

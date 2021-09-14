@@ -736,7 +736,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
      * <p>This method can process only linear transforms (potentially indirectly through a concatenated transform).
      * Actually it would be possible to also process pass-through transform followed by a linear transform, but this
      * case should have been optimized during transform concatenation. If it is not the case, consider improving the
-     * {@link PassThroughTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)} method instead than
+     * {@link PassThroughTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)} method instead of
      * this one.</p>
      *
      * @param  head      the first transform of a transformation chain.

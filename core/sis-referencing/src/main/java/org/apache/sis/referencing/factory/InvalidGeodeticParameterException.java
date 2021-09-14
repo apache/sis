@@ -59,7 +59,7 @@ public class InvalidGeodeticParameterException extends FactoryException {
      * Construct an exception with the specified cause.
      *
      * <p>This constructor is not public because its behavior is slightly different than the default JDK behavior:
-     * the message is set to the throwable message instead than to {@code throwable.toString()}.</p>
+     * the message is set to the throwable message instead of to {@code throwable.toString()}.</p>
      *
      * @param  cause  the cause for this exception, saved for later retrieval by the {@link #getCause()} method.
      */

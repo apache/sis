@@ -28,7 +28,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Location of the responsible individual or organization.
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

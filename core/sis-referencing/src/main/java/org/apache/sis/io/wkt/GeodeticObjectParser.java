@@ -113,7 +113,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
 
     /**
      * During WKT 1 parsing, {@code true} means that {@code PRIMEM} and {@code PARAMETER} angular units
-     * need to be forced to {@code Units.DEGREE} instead than inferred from the context.
+     * need to be forced to {@code Units.DEGREE} instead of inferred from the context.
      * Note that this rule does not apply to {@code AXIS} elements
      *
      * <p>This flag is ignored during WKT 2 parsing.</p>
@@ -443,7 +443,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              *
              * However experience shows that it is often wrong in practice, because peoples often
              * declare EPSG codes but still use WKT names much shorter than the EPSG names
-             * (for example "WGS84" for the datum instead than "World Geodetic System 1984"),
+             * (for example "WGS84" for the datum instead of "World Geodetic System 1984"),
              * so the name in WKT is often not compliant with the name actually defined by the authority.
              */
             final ImmutableIdentifier id = new ImmutableIdentifier(Citations.fromName(authority),
@@ -591,7 +591,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * }
      *
      * Unit was a mandatory element in WKT 1, but became optional in WKT 2 because the unit may be specified
-     * in each {@code AXIS[…]} element instead than for the whole coordinate system.
+     * in each {@code AXIS[…]} element instead of for the whole coordinate system.
      *
      * @param  parent    the parent element.
      * @param  keyword   the unit keyword (e.g. {@code "LengthUnit"} or {@code "AngleUnit"}).
@@ -1619,7 +1619,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
              * defaults to the units specified in the parameter descriptor. But this would make the CRS parser more
              * implementation-dependent, because the parameter descriptors are provided by the MathTransformFactory
-             * instead than inferred from the WKT.
+             * instead of inferred from the WKT.
              */
             fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, unit, null);
             if (fromBase != null) {
@@ -1738,7 +1738,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  *     if the geodetic CRS subtype is geocentric the prime meridian’s <irm longitude>
                  *     value shall be given in degrees."
                  *
-                 * An apparent ambiguity exists for Geocentric CRS using a Spherical CS instead than the more
+                 * An apparent ambiguity exists for Geocentric CRS using a Spherical CS instead of the more
                  * usual Cartesian CS: despite using angular units, we should not use the result of parseUnit
                  * for those CRS. However this ambiguity should not happen in practice because such Spherical
                  * CS have a third axis in metre.  Since the unit is not the same for all axes, csUnit should
@@ -1803,7 +1803,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
              * defaults to the units specified in the parameter descriptor. But this would make the CRS parser more
              * implementation-dependent, because the parameter descriptors are provided by the MathTransformFactory
-             * instead than inferred from the WKT.
+             * instead of inferred from the WKT.
              */
             fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, csUnit, angularUnit);
             if (fromBase != null) {
@@ -1904,7 +1904,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
              * defaults to the units specified in the parameter descriptor. But this would make the CRS parser more
              * implementation-dependent, because the parameter descriptors are provided by the MathTransformFactory
-             * instead than inferred from the WKT.
+             * instead of inferred from the WKT.
              */
             fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, unit, null);
             if (fromBase != null) {
@@ -1985,7 +1985,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
              * defaults to the units specified in the parameter descriptor. But this would make the CRS parser more
              * implementation-dependent, because the parameter descriptors are provided by the MathTransformFactory
-             * instead than inferred from the WKT.
+             * instead of inferred from the WKT.
              */
             fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, unit, null);
             if (fromBase != null) {
@@ -2046,7 +2046,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
              * defaults to the units specified in the parameter descriptor. But this would make the CRS parser more
              * implementation-dependent, because the parameter descriptors are provided by the MathTransformFactory
-             * instead than inferred from the WKT.
+             * instead of inferred from the WKT.
              */
             fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, unit, null);
             if (fromBase != null) {

@@ -111,7 +111,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
         if (!CC_GeneralOperationParameter.isValid(method.getParameters())) {
             /*
              * Parameters are mandatory and SIS classes need them. Provide an error message
-             * here instead than waiting for a NullPointerException in some arbitrary place.
+             * here instead of waiting for a NullPointerException in some arbitrary place.
              */
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, "parameters"));
         }
@@ -170,7 +170,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      * in the GML document.</p>
      *
      * <div class="note"><b>Note:</b>
-     * this code is defined in this {@code CC_OperationMethod} class instead than in the
+     * this code is defined in this {@code CC_OperationMethod} class instead of in the
      * {@link DefaultOperationMethod} class in the hope to reduce the amount of code processed
      * by the JVM in the common case where JAXB (un)marshalling is not needed.</div>
      *
@@ -208,7 +208,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      * cases the values may need to be copied in new parameter instances.
      *
      * <div class="note"><b>Note:</b>
-     * this code is defined in this {@code CC_OperationMethod} class instead than in the
+     * this code is defined in this {@code CC_OperationMethod} class instead of in the
      * {@link DefaultOperationMethod} class in the hope to reduce the amount of code processed
      * by the JVM in the common case where JAXB (un)marshalling is not needed.</div>
      *

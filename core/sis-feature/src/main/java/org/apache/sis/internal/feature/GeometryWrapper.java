@@ -172,7 +172,7 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      *         or {@code null} if they can not be obtained.
      *
      * @todo Replace by a {@code toJava2D()} method returning a {@link java.awt.Shape},
-     *       so we can use the path iterator instead than this array.
+     *       so we can use the path iterator instead of this array.
      */
     @Debug
     public abstract double[] getAllCoordinates();

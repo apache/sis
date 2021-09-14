@@ -37,10 +37,8 @@ import org.opengis.filter.Expression;
 import org.opengis.filter.ValueReference;
 import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;
-import org.opengis.filter.ComparisonOperator;
 import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.BinaryComparisonOperator;
-import org.opengis.filter.SpatialOperator;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.BetweenComparisonOperator;
 
@@ -91,11 +89,10 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
             sql.append(" BETWEEN "); if (write(sql, filter.getLowerBoundary())) return;
             sql.append(" AND ");         write(sql, filter.getUpperBoundary());
         });
-        setNullAndNilHandlers((f,sql) -> {
-            final ComparisonOperator<Feature> filter = (ComparisonOperator<Feature>) f;
+        setNullAndNilHandlers((filter, sql) -> {
             final List<Expression<? super Feature, ?>> expressions = filter.getExpressions();
             if (expressions.size() == 1) {
-                write(sql, filter.getExpressions().get(0));
+                write(sql, expressions.get(0));
                 sql.append(" IS NULL");
             } else {
                 sql.invalidate();
@@ -311,7 +308,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
 
         /**
          * Whether this operator is the unary operator. In that case exactly one operand is expected
-         * and the keyword will be written before the operand instead than between the operands.
+         * and the keyword will be written before the operand instead of between the operands.
          */
         private final boolean unary;
 
@@ -410,8 +407,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
         }
 
         /** Writes the function as an SQL statement. */
-        @Override public void accept(final Filter<Feature> f, final SelectionClause sql) {
-            final SpatialOperator<Feature> filter = (SpatialOperator<Feature>) f;
+        @Override public void accept(final Filter<Feature> filter, final SelectionClause sql) {
             sql.append(name);
             writeParameters(sql, filter.getExpressions(), ", ", false);
         }

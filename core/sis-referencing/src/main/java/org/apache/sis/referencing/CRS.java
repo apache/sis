@@ -293,7 +293,7 @@ public final class CRS extends Static {
      * </ul>
      *
      * Applications which need to parse a large amount of WKT strings should consider to use
-     * the {@link org.apache.sis.io.wkt.WKTFormat} class instead than this method.
+     * the {@link org.apache.sis.io.wkt.WKTFormat} class instead of this method.
      *
      * @param  text  coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @return the parsed Coordinate Reference System.

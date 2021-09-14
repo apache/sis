@@ -46,7 +46,7 @@ import org.apache.sis.util.iso.Types;
  * The natural language description for {@code EPSG:1731} can be <cite>“France – mainland north of 48.15°N”</cite>.
  * </div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>
@@ -85,9 +85,10 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      * Creates an inclusive geographic description initialized to the given identifier.
      * This constructor sets the {@linkplain #getInclusion() inclusion} property to {@code true}.
      *
-     * <p><b>Usage note:</b> if the description is a sentence like “Netherlands offshore”, it may not be suitable
-     * for the {@code code} argument. Callers may consider using the {@linkplain DefaultIdentifier#getDescription()
-     * identifier description} as an alternative and keep the code for a more compact string (often a primary key).</p>
+     * <h4>Usage note</h4>
+     * If the description is a sentence like “Netherlands offshore”, it may not be suitable for the {@code code} argument.
+     * Callers may consider using the {@linkplain DefaultIdentifier#getDescription() identifier description}
+     * as an alternative and keep the code for a more compact string (often a primary key).
      *
      * <div class="note"><b>Example:</b>
      * <code>new DefaultGeographicDescription({@link org.apache.sis.metadata.iso.citation.Citations#EPSG}, "1731")</code>

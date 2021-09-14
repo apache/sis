@@ -69,7 +69,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
      * Delay in nanoseconds before to refresh the list with new content.
      * Data will be transferred from background threads to JavaFX threads every time this delay is elapsed.
      * The delay value is a compromise between fast user experience and giving enough time for doing a few
-     * large data transfers instead than many small data transfers.
+     * large data transfers instead of many small data transfers.
      */
     private static final long REFRESH_DELAY = StandardDateFormat.NANOS_PER_SECOND / 10;
 
