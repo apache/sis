@@ -1296,7 +1296,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * If the array is shorter, missing values default to 1 (i.e. samplings in unspecified dimensions are unchanged).
      * If the array is longer, extraneous values are ignored.
      *
-     * @param  periods  the subsamplings. Length shall be equal to the number of dimension and all values shall be greater than zero.
+     * @param  periods  the subsampling. Length shall be equal to the number of dimension and all values shall be greater than zero.
      * @return the subsampled extent, or {@code this} is subsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
      *

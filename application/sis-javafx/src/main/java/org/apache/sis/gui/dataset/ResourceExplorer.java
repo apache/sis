@@ -478,7 +478,7 @@ public class ResourceExplorer extends WindowManager {
             /*
              * Want the full coverage in all bands (sample dimensions). This is different than
              * the ImageRequest created by `updateDataTab(…)` which requested only an overview
-             * (i.e. potentially with subsamplings) and only the first band.
+             * (i.e. potentially with subsampling) and only the first band.
              *
              * TODO: check if we can still share the coverage in some situations.
              */

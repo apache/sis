@@ -301,8 +301,8 @@ public abstract class AbstractGridResource extends AbstractResource implements G
          *
          * {@preformat java
          *     areaOfInterest = rangeIndices.insertBandDimension(areaOfInterest, bandDimension);
-         *     subsamplings   = rangeIndices.insertSubsampling  (subsamplings,   bandDimension);
-         *     data = myReadMethod(areaOfInterest, subsamplings);
+         *     subsampling    = rangeIndices.insertSubsampling  (subsampling,    bandDimension);
+         *     data = myReadMethod(areaOfInterest, subsampling);
          *     for (int i=0; i<numBands; i++) {
          *         int bandIndexInTheDataWeJustRead = rangeIndices.getSubsampledIndex(i);
          *     }
@@ -339,7 +339,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
          * {@link java.awt.image.PixelInterleavedSampleModel} fashion (except if {@code bandDimension} is
          * after all existing {@code areaOfInterest} dimensions, in which case data become organized in a
          * {@link java.awt.image.BandedSampleModel} fashion). This method converts the specified domain
-         * (decomposed in {@code areaOfInterest} and {@code subsamplings} parameters) into a larger domain
+         * (decomposed in {@code areaOfInterest} and {@code subsampling} parameters) into a larger domain
          * encompassing band dimension as if it was an ordinary space or time dimension. It makes possible
          * to use this domain with {@link org.apache.sis.internal.storage.io.HyperRectangleReader} for example.
          *
@@ -366,20 +366,20 @@ public abstract class AbstractGridResource extends AbstractResource implements G
          *   <li>{@link #getPixelStride()}</li>
          * </ul>
          *
-         * @param  subsamplings   the subsampling to which to add a new dimension for bands.
+         * @param  subsampling    the subsampling to which to add a new dimension for bands.
          * @param  bandDimension  index of the band dimension.
          * @return a new subsampling array with the same values than the given array plus one dimension for bands.
          */
-        public int[] insertSubsampling(int[] subsamplings, final int bandDimension) {
+        public int[] insertSubsampling(int[] subsampling, final int bandDimension) {
             final int[] delta = new int[packed.length - 1];
             for (int i=0; i<delta.length; i++) {
                 delta[i] = getSourceIndex(i+1) - getSourceIndex(i);
             }
             final int[] divisors = MathFunctions.commonDivisors(delta);
             interval = (divisors.length != 0) ? divisors[divisors.length - 1] : 1;
-            subsamplings = ArraysExt.insert(subsamplings, bandDimension, 1);
-            subsamplings[bandDimension] = interval;
-            return subsamplings;
+            subsampling = ArraysExt.insert(subsampling, bandDimension, 1);
+            subsampling[bandDimension] = interval;
+            return subsampling;
         }
 
         /**

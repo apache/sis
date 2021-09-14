@@ -69,7 +69,7 @@ public final class Region {
      *   <li><i>etc.</i></li>
      * </ol>
      *
-     * Values are determined by the {@code subsamplings} argument given at construction time.
+     * Values are determined by the {@code subsampling} argument given at construction time.
      * The length of this array is the hyper-rectangle dimension plus one.
      */
     private final long[] skips;
@@ -94,18 +94,18 @@ public final class Region {
      *   <li>{@code size[i] > 0} for all <var>i</var></li>
      *   <li>{@code regionLower[i] >= 0} for all <var>i</var></li>
      *   <li>{@code regionLower[i] < regionUpper[i] <= size[i]} for all <var>i</var></li>
-     *   <li>{@code subsamplings[i] > 0} for all <var>i</var></li>
+     *   <li>{@code subsampling[i] > 0} for all <var>i</var></li>
      *   <li>The total length of data to read does not exceed {@link Integer#MAX_VALUE}.</li>
      * </ul>
      *
-     * @param  size          the number of elements along each dimension.
-     * @param  regionLower   index of the first value to read or write along each dimension.
-     * @param  regionUpper   index after the last value to read or write along each dimension.
-     * @param  subsamplings  subsampling along each dimension. Shall be greater than zero.
+     * @param  size         the number of elements along each dimension.
+     * @param  regionLower  index of the first value to read or write along each dimension.
+     * @param  regionUpper  index after the last value to read or write along each dimension.
+     * @param  subsampling  subsampling along each dimension. Shall be greater than zero.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE},
      *                             or the total hyper-cube size exceeds {@link Long#MAX_VALUE}.
      */
-    public Region(final long[] size, final long[] regionLower, final long[] regionUpper, final int[] subsamplings) {
+    public Region(final long[] size, final long[] regionLower, final long[] regionUpper, final int[] subsampling) {
         final int dimension = size.length;
         targetSize = new int[dimension];
         skips = new long[dimension + 1];
@@ -113,8 +113,8 @@ public final class Region {
         long stride   = 1;
         long skip     = 0;
         for (int i=0; i<dimension;) {
-            final int  step  = subsamplings[i];
-            final long lower =  regionLower[i];
+            final int  step  = subsampling[i];
+            final long lower = regionLower[i];
             final long count = ceilDiv(regionUpper[i] - lower, step);
             final long upper = lower + ((count-1) * step + 1);
             final long span  = size[i];
