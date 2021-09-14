@@ -83,7 +83,7 @@ final class SelectedData {
 
     /**
      * Specifies that the given menu item should create a window initialized to tabular data
-     * instead than the image.
+     * instead of the image.
      */
     static MenuItem setTabularView(final MenuItem item) {
         item.getProperties().put(COVERAGE_VIEW_KEY, CoverageExplorer.View.TABLE);

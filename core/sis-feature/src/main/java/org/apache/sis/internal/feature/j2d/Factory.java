@@ -149,7 +149,7 @@ public final class Factory extends Geometries<Shape> {
      * The geometry may be backed by {@code float} or {@code double} primitive type,
      * depending on the type used by the given vectors.
      *
-     * @param  polygon      whether to return the path as a polygon instead than polyline.
+     * @param  polygon      whether to return the path as a polygon instead of polyline.
      * @param  dimension    the number of dimensions ({@value #BIDIMENSIONAL} or {@value #TRIDIMENSIONAL}).
      * @param  coordinates  sequence of (x,y) or (x,y,z) tuples.
      * @throws UnsupportedOperationException if this operation is not implemented for the given number of dimensions.

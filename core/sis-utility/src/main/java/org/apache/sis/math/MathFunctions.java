@@ -594,7 +594,7 @@ public final class MathFunctions extends Static {
      * Returns the first floating-point argument with the sign reversed if the second floating-point
      * argument is negative. This method is similar to <code>{@linkplain Math#copySign(double,double)
      * Math.copySign}(value, sign)</code> except that the sign is combined with an <cite>exclusive
-     * or</cite> operation instead than being copied.
+     * or</cite> operation instead of being copied.
      *
      * <p>This method makes no guarantee about whether {@code NaN} values are handled as positive
      * or negative numbers. This is the same policy than {@link Math#copySign(double, double)}.</p>

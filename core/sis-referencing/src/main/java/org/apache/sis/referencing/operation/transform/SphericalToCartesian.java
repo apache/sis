@@ -44,7 +44,7 @@ import static java.lang.Math.*;
  *
  * <div class="note"><b>Relationship with the convention used in physics</b>
  * The ISO 80000-2 convention is (r,Ω,φ) where φ is like the spherical longitude, and Ω is measured from
- * the Z axis (North pole) instead than from the equator plane. The consequence in the formulas is that
+ * the Z axis (North pole) instead of from the equator plane. The consequence in the formulas is that
  * {@code sin(Ω)} needs to be replaced by {@code cos(Ω)} and conversely.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)

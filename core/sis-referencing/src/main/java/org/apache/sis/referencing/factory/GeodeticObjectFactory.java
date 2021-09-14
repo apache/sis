@@ -334,7 +334,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a geocentric coordinate reference system from a {@linkplain CartesianCS Cartesian coordinate system}.
      * Geocentric CRS have their origin at the approximate centre of mass of the earth.
      * An {@linkplain #createGeocentricCRS(Map, GeodeticDatum, SphericalCS) alternate method} allows creation of the
-     * same kind of CRS with spherical coordinate system instead than a Cartesian one.
+     * same kind of CRS with spherical coordinate system instead of a Cartesian one.
      *
      * <div class="note"><b>Dependencies:</b>
      * the components needed by this method can be created by the following methods:
@@ -412,7 +412,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a geocentric coordinate reference system from a {@linkplain SphericalCS spherical coordinate system}.
      * Geocentric CRS have their origin at the approximate centre of mass of the earth.
      * An {@linkplain #createGeocentricCRS(Map, GeodeticDatum, CartesianCS) alternate method} allows creation of the
-     * same kind of CRS with Cartesian coordinate system instead than a spherical one.
+     * same kind of CRS with Cartesian coordinate system instead of a spherical one.
      *
      * <div class="note"><b>Dependencies:</b>
      * the components needed by this method can be created by the following methods:
@@ -1631,7 +1631,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Furthermore this method offers no control on the WKT {@linkplain org.apache.sis.io.wkt.Convention conventions}
      * in use and on the handling of {@linkplain org.apache.sis.io.wkt.Warnings warnings}.
      * Applications which need to parse a large amount of WKT strings should consider to use
-     * the {@link org.apache.sis.io.wkt.WKTFormat} class instead than this method.
+     * the {@link org.apache.sis.io.wkt.WKTFormat} class instead of this method.
      *
      * @param  text  coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @throws FactoryException if the object creation failed.

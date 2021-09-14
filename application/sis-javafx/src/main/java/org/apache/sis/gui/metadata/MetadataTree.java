@@ -56,7 +56,7 @@ import org.apache.sis.util.logging.Logging;
  * </ul>
  *
  * In the particular case of metadata from ISO 19115 standard,
- * the {@link StandardMetadataTree} specialization should be used instead than this base class.
+ * the {@link StandardMetadataTree} specialization should be used instead of this base class.
  *
  * <h2>Limitations</h2>
  * <ul>

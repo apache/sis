@@ -623,7 +623,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
         /**
          * Invoked for transforming, then verifying if more appropriate transform exists for the result.
          * This implementation is similar to the algorithm applied by {@link SpecializableTransform} parent
-         * class, except that {@link SubArea} is verified <em>after</em> transformations instead than before.
+         * class, except that {@link SubArea} is verified <em>after</em> transformations instead of before.
          */
         private void transform(final TransformCall transform, final double[] dstPts,
                 int srcOff, int dstOff, int srcInc, int dstInc, int numPts) throws TransformException

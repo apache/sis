@@ -261,7 +261,7 @@ public final class DecimalFunctions extends Static {
         final long ci = (long) cs;
         long mc = (m * ci) & ((1L << PRECISION) - 1);
         /*
-         * Because we used c/10 instead than c,  the first (leftmost) decimal digit is potentially the last
+         * Because we used c/10 instead of c,  the first (leftmost) decimal digit is potentially the last
          * (rightmost) decimal digit of 'value'. Whether it is really the last 'value' digit or not depends
          * on the magnitude of last decimal digit compared to 1 ULP. The last digit is:
          *

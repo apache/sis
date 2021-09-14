@@ -289,7 +289,7 @@ final class SampleRangeFormat extends RangeFormat {
                 if (name.length() > limit) {
                     name = name.substring(0, limit);
                 }
-                limit += i;                                         // Now an absolute index instead than a length.
+                limit += i;                                         // Now an absolute index instead of a length.
                 buffer.replace(i, i += name.length(), name);
                 while (i < limit) buffer.setCharAt(i++, ' ');
                 /*

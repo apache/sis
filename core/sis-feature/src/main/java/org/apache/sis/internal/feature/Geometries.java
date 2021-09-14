@@ -275,7 +275,7 @@ public abstract class Geometries<G> implements Serializable {
 
     /**
      * Returns whether this library can produce geometry backed by the {@code float} primitive type
-     * instead than the {@code double} primitive type. If single-precision mode is supported, using
+     * instead of the {@code double} primitive type. If single-precision mode is supported, using
      * that mode may reduce memory usage.
      *
      * @return whether the library support single-precision values.
@@ -335,7 +335,7 @@ public abstract class Geometries<G> implements Serializable {
      * <p>If the {@code polygon} argument is {@code true}, then the coordinates should
      * make a closed line (e.g: a linear ring), otherwise an exception is thrown.
      *
-     * @param  polygon      whether to return the path as a polygon instead than polyline.
+     * @param  polygon      whether to return the path as a polygon instead of polyline.
      * @param  dimension    the number of dimensions ({@value #BIDIMENSIONAL} or {@value #TRIDIMENSIONAL}).
      * @param  coordinates  sequence of (x,y) or (x,y,z) tuples.
      * @return the geometric object for the given points.

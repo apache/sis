@@ -145,7 +145,7 @@ public final class Country extends GO_CharacterString {
         if (codeListValue != null) {
             if (!codeListValue.isEmpty() && Context.isFlagSet(context, Context.SUBSTITUTE_COUNTRY)) {
                 /*
-                 * Marshal the locale as a <gco:CharacterString> instead than <Country>,
+                 * Marshal the locale as a <gco:CharacterString> instead of <Country>,
                  * using the user-supplied anchors if any.
                  */
                 final CharSequence string = CharSequenceAdapter.value(context, locale, codeListValue);

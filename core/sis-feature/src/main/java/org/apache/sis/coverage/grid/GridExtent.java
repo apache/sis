@@ -488,7 +488,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             }
             /*
              * If caller requested to clip only the user Area Of Interest (AOI) without constraining the
-             * margin or chunk size, then we need to do clipping now instead than at the end of this loop.
+             * margin or chunk size, then we need to do clipping now instead of at the end of this loop.
              */
             if (enclosing != null && clipping == GridClippingMode.BORDER_EXPANSION) {
                 final int  lo = (modifiedDimensions != null) ? modifiedDimensions[i] : i;

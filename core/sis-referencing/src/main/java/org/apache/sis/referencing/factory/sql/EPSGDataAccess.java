@@ -428,7 +428,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
         try {
             /*
              * Get the most recent version number from the history table. We get the date in local timezone
-             * instead than UTC because the date is for information purpose only, and the local timezone is
+             * instead of UTC because the date is for information purpose only, and the local timezone is
              * more likely to be shown nicely (without artificial hours) to the user.
              */
             final String query = translator.apply("SELECT VERSION_NUMBER, VERSION_DATE FROM [Version History]" +
@@ -648,7 +648,7 @@ addURIs:    for (int i=0; ; i++) {
      * It should just check from the syntax if the code looks like a valid EPSG identifier.
      *
      * <p>When this method returns {@code false}, {@code createFoo(String)} methods
-     * may look for the code in the name column instead than the primary key column.
+     * may look for the code in the name column instead of the primary key column.
      * This allows to accept the <cite>"WGS 84 / World Mercator"</cite> string (for example)
      * in addition to the {@code "3395"} primary key. Both string values should fetch the same object.</p>
      *
@@ -888,7 +888,7 @@ codes:  for (int i=0; i<codes.length; i++) {
 
     /**
      * Gets the value from the specified {@link ResultSet}, or {@code false} if none.
-     * The EPSG database stores boolean values as integers instead than using the SQL type.
+     * The EPSG database stores boolean values as integers instead of using the SQL type.
      *
      * @param  result       the result set to fetch value from.
      * @param  columnIndex  the column index (1-based).
@@ -970,7 +970,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      * Gets the value from the specified {@link ResultSet}.
      * The value is required to be non-null. A null value (i.e. blank) will throw an exception.
      *
-     * <p>We return the value as the {@code Integer} wrapper instead than the {@code int} primitive type
+     * <p>We return the value as the {@code Integer} wrapper instead of the {@code int} primitive type
      * because the caller will often need that value as an object (for use as key in {@link HashMap}, etc.).</p>
      *
      * @param  code         the identifier of the record where the integer was found.
@@ -1657,10 +1657,10 @@ codes:  for (int i=0; i<codes.length; i++) {
                 }
                 if (epoch != null) try {
                     /*
-                     * Parse the date manually because it is declared as a VARCHAR instead than DATE in original
+                     * Parse the date manually because it is declared as a VARCHAR instead of DATE in original
                      * SQL scripts. Apache SIS installer replaces VARCHAR by DATE, but we have no guarantee that
                      * we are reading an EPSG database created by our installer. Furthermore an older version of
-                     * EPSG installer was using SMALLINT instead than DATE, because scripts before EPSG 9.0 were
+                     * EPSG installer was using SMALLINT instead of DATE, because scripts before EPSG 9.0 were
                      * reporting only the epoch year.
                      */
                     final CharSequence[] fields = CharSequences.split(epoch, '-');

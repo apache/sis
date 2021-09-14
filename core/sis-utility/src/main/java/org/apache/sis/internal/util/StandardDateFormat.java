@@ -110,7 +110,7 @@ public final class StandardDateFormat extends DateFormat {
      * The time is converted to UTC timezone if possible.
      *
      * <div class="note"><b>Tip:</b>
-     * if we want to preserve the timezone instead than converting to UTC, we could try replacing
+     * if we want to preserve the timezone instead of converting to UTC, we could try replacing
      * {@code Instant::from} by {@code ZonedDateTime::from, OffsetDateTime::from}.</div>
      *
      * @see #parseInstantUTC(CharSequence, int, int)

@@ -75,7 +75,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      * {@link DefaultFeatureType#indices} map (potentially shared by many feature instances) and shall
      * not be modified.
      *
-     * <p>We use those indices as {@link #properties} keys instead than using directly the property names
+     * <p>We use those indices as {@link #properties} keys instead of using directly the property names
      * in order to resolve aliases.</p>
      */
     private final Map<String, Integer> indices;
@@ -145,7 +145,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     }
 
     /**
-     * Ensures that the {@link #properties} map contains {@link Property} instances instead than
+     * Ensures that the {@link #properties} map contains {@link Property} instances instead of
      * property values. The conversion, if needed, will be performed at most once per feature.
      */
     private void requireMapOfProperties() {

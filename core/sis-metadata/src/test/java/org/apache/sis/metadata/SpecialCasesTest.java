@@ -147,7 +147,7 @@ public final strictfp class SpecialCasesTest extends TestCase {
 
     /**
      * Tests {@link SpecialCases#set(int, Object, Object, int)} in {@code RETURN_PREVIOUS} mode
-     * with {@link Double} values instead than {@link Longitude} or {@link Latitude}.
+     * with {@link Double} values instead of {@link Longitude} or {@link Latitude}.
      */
     @Test
     @DependsOnMethod("testSet")

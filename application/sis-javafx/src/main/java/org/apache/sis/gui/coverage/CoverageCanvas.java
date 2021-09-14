@@ -103,7 +103,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     private static final int OVERFLOW_SAFETY_MARGIN = 10_000_000;
 
     /**
-     * Whether to print debug information. If {@code true}, we use {@link System#out} instead than logging
+     * Whether to print debug information. If {@code true}, we use {@link System#out} instead of logging
      * because the log messages are intercepted and rerouted to the "logging" tab in the explorer widget.
      * This field should always be {@code false} except during debugging.
      *

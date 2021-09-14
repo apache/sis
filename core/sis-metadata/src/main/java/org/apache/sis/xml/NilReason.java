@@ -120,7 +120,7 @@ public final class NilReason implements Serializable {
      * The explanation property is an empty string, and the URI is {@code null}.
      *
      * <h4>Providing an explanation</h4>
-     * Users are encouraged to use the {@link #valueOf(String)} method instead than this constant,
+     * Users are encouraged to use the {@link #valueOf(String)} method instead of this constant,
      * in order to provide a brief explanation. The string representation for {@code valueOf(…)}
      * is <code>"other:<var>explanation</var>"</code> where <var>explanation</var> is a string of
      * two or more characters with no included spaces.

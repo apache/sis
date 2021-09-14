@@ -216,7 +216,7 @@ public class SQLTranslator implements Function<String,String> {
     private String tableNameEnum;
 
     /**
-     * {@code true} if the database uses the {@code BOOLEAN} type instead than {@code SMALLINT}
+     * {@code true} if the database uses the {@code BOOLEAN} type instead of {@code SMALLINT}
      * for the {@code show_crs}, {@code show_operation} and all {@code deprecated} fields.
      *
      * @see #useBoolean()
@@ -391,7 +391,7 @@ public class SQLTranslator implements Function<String,String> {
     }
 
     /**
-     * Returns {@code true} if the database uses the {@code BOOLEAN} type instead than {@code SMALLINT}
+     * Returns {@code true} if the database uses the {@code BOOLEAN} type instead of {@code SMALLINT}
      * for the {@code show_crs}, {@code show_operation} and all {@code deprecated} fields.
      */
     final boolean useBoolean() {

@@ -122,7 +122,7 @@ public abstract class StaxDataStore extends URIDataStore {
      * stream or channel opened for that path.
      *
      * <p>We keep this reference as long as possible in order to use {@link #mark()} and {@link #reset()}
-     * instead than creating new streams for re-reading the data.  If we can not reset the stream but can
+     * instead of creating new streams for re-reading the data.  If we can not reset the stream but can
      * create a new one, then this field will become a reference to the new stream. This change should be
      * done only in last resort, when there is no way to reuse the existing stream. This is because the
      * streams created by {@link ChannelFactory#inputStream(String, StoreListeners)} are not of the same
@@ -216,7 +216,7 @@ public abstract class StaxDataStore extends URIDataStore {
             /*
              * We enter in this block if the storage type is not an input stream, DOM node, etc.
              * It may be a file name, a URL, etc. Those types are not handled by InputType in
-             * order to give us a chance to use the existing InputStream instead than closing
+             * order to give us a chance to use the existing InputStream instead of closing
              * the connection and reopening a new one on the same URL. Another reason is that
              * we will need to remember the stream created from the Path in order to close it.
              *

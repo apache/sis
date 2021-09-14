@@ -166,7 +166,7 @@ public abstract class ChannelFactory {
             } catch (IOException e) {
                 /*
                  * This is normal if the URL uses HTTP or FTP protocol for instance. Log the exception at FINE
-                 * level without stack trace. We will open the channel later using the URL instead than the Path.
+                 * level without stack trace. We will open the channel later using the URL instead of the Path.
                  */
                 recoverableException(e);
             }
@@ -438,7 +438,7 @@ public abstract class ChannelFactory {
         private final File file;
 
         /**
-         * The reason why we are using this fallback instead than a {@link Path}.
+         * The reason why we are using this fallback instead of a {@link Path}.
          * Will be reported at most once, then set to {@code null}.
          */
         private InvalidPathException cause;

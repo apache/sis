@@ -124,7 +124,7 @@ public abstract class AbstractInternationalString implements InternationalString
      * typically some programmatic values like enumerations or identifiers. While identifiers
      * often look like English words, {@code Locale.ROOT} is not considered synonymous to
      * {@link Locale#ENGLISH} because the values may differ in the way numbers and dates are
-     * formatted (e.g. using the ISO 8601 standard for dates instead than English conventions).
+     * formatted (e.g. using the ISO 8601 standard for dates instead of English conventions).
      *
      * <h4>Handling of <code>null</code> argument value</h4>
      * The {@code Locale.ROOT} constant is new in Java 6. Some other libraries designed for Java 5

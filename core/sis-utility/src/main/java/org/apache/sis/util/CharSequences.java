@@ -27,10 +27,10 @@ import static java.lang.Character.*;
 /**
  * Static methods working with {@link CharSequence} instances. Some methods defined in this
  * class duplicate the functionalities already provided in the standard {@link String} class,
- * but works on a generic {@code CharSequence} instance instead than {@code String}.
+ * but works on a generic {@code CharSequence} instance instead of {@code String}.
  *
  * <h2>Unicode support</h2>
- * Every methods defined in this class work on <cite>code points</cite> instead than characters
+ * Every methods defined in this class work on <cite>code points</cite> instead of characters
  * when appropriate. Consequently those methods should behave correctly with characters outside
  * the <cite>Basic Multilingual Plane</cite> (BMP).
  *
@@ -284,7 +284,7 @@ public final class CharSequences extends Static {
     /**
      * Returns the index within the given strings of the first occurrence of the specified part,
      * starting at the specified index. This method is equivalent to the following method call,
-     * except that this method works on arbitrary {@link CharSequence} objects instead than
+     * except that this method works on arbitrary {@link CharSequence} objects instead of
      * {@link String}s only, and that the upper limit can be specified:
      *
      * {@preformat java
@@ -594,7 +594,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
     /**
      * Allocates the array to be returned by the {@code split(…)} methods. If the given {@code text} argument is
      * an instance of {@link String}, {@link StringBuilder} or {@link StringBuffer},  then this method returns a
-     * {@code String[]} array instead than {@code CharSequence[]}. This is possible because the specification of
+     * {@code String[]} array instead of {@code CharSequence[]}. This is possible because the specification of
      * their {@link CharSequence#subSequence(int, int)} method guarantees to return {@code String} instances.
      * Some Apache SIS code will cast the {@code split(…)} return value based on this knowledge.
      *
@@ -623,7 +623,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * <ul>
      *   <li>It accepts generic character sequences.</li>
      *   <li>It accepts {@code null} argument, in which case an empty array is returned.</li>
-     *   <li>The separator is a simple character instead than a regular expression.</li>
+     *   <li>The separator is a simple character instead of a regular expression.</li>
      *   <li>If the {@code separator} argument is {@code '\n'} or {@code '\r'}, then this method
      *       splits around any of {@code "\r"}, {@code "\n"} or {@code "\r\n"} characters sequences.
      *   <li>The leading and trailing spaces of each subsequences are trimmed.</li>
@@ -1696,7 +1696,7 @@ cmp:    while (ia < lga) {
      * Returns {@code true} if the two given texts are equal, ignoring case.
      * This method is similar to {@link String#equalsIgnoreCase(String)}, except
      * it works on arbitrary character sequences and compares <cite>code points</cite>
-     * instead than characters.
+     * instead of characters.
      *
      * @param  s1  the first string to compare, or {@code null}.
      * @param  s2  the second string to compare, or {@code null}.
@@ -1763,7 +1763,7 @@ cmp:    while (ia < lga) {
     /**
      * Returns {@code true} if the given text at the given offset contains the given part,
      * in a case-sensitive comparison. This method is equivalent to the following code,
-     * except that this method works on arbitrary {@link CharSequence} objects instead than
+     * except that this method works on arbitrary {@link CharSequence} objects instead of
      * {@link String}s only:
      *
      * {@preformat java
@@ -1803,7 +1803,7 @@ cmp:    while (ia < lga) {
     /**
      * Returns {@code true} if the given text at the given offset contains the given part,
      * optionally in a case-insensitive way. This method is equivalent to the following code,
-     * except that this method works on arbitrary {@link CharSequence} objects instead than
+     * except that this method works on arbitrary {@link CharSequence} objects instead of
      * {@link String}s only:
      *
      * {@preformat java

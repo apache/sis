@@ -69,7 +69,7 @@ final class Element {
     private static final int NUMERIC = 1, TEMPORAL = 2;
 
     /**
-     * Hard-coded list of elements in which to parse values as dates instead than numbers.
+     * Hard-coded list of elements in which to parse values as dates instead of numbers.
      * We may try to find a more generic approach in a future version.
      */
     private static final String[] TIME_KEYWORDS = {

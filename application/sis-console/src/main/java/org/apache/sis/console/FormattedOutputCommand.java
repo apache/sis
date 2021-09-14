@@ -250,7 +250,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
                 } else {
                     out.flush();
                     marshaller.setProperty(Marshaller.JAXB_ENCODING, encoding.name());
-                    marshaller.marshal(object, System.out);     // Intentionally use OutputStream instead than Writer.
+                    marshaller.marshal(object, System.out);     // Intentionally use OutputStream instead of Writer.
                     System.out.flush();
                 }
                 break;
@@ -292,7 +292,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
     /**
      * Returns {@code true} if {@link #out} is sending its output to the console.
      * If not, then we are probably writing to a file or the user specified his own encoding.
-     * In such case, we will send the XML output to an {@code OutputStream} instead than to a
+     * In such case, we will send the XML output to an {@code OutputStream} instead of to a
      * {@code Writer} and let the marshaller apply the encoding itself.
      */
     private boolean isConsole() {

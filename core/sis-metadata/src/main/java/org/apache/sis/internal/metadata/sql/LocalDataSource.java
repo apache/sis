@@ -121,7 +121,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                  * SIS_DATA directory defined: will search only there (no search in the Derby home directory).
                  * If a "derby.system.home" property is set, we may be able to get a shorter path by making it
                  * relative to Derby home. The intent is to have a nicer URL like "jdbc:derby:SpatialMetadata"
-                 * instead than "jdbc:derby:/a/long/path/to/SIS/Data/Databases/SpatialMetadata".   In addition
+                 * instead of "jdbc:derby:/a/long/path/to/SIS/Data/Databases/SpatialMetadata".   In addition
                  * to making loggings and EPSGDataAccess.getAuthority() output nicer, it also reduces the risk
                  * of encoding issues if the path contains spaces or non-ASCII characters.
                  */

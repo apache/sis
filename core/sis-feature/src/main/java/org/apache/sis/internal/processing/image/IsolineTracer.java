@@ -298,7 +298,7 @@ final class IsolineTracer {
              *     }
              *
              * We tried that approach, but benchmarking on Java 15 suggested a small performance decrease
-             * instead than an improvement. It may be worth to try again in the future, after advancement
+             * instead of an improvement. It may be worth to try again in the future, after advancement
              * in compiler technology.
              */
             switch (isDataAbove) {
@@ -1141,11 +1141,11 @@ final class IsolineTracer {
          * Detects and removes spikes for avoiding convention-dependent results.
          * See {@link Joiner} class-javadoc for a description of the problem.
          *
-         * <p>We perform the analysis in this method instead than in {@link #filterFull(double[], int)} on the
+         * <p>We perform the analysis in this method instead of in {@link #filterFull(double[], int)} on the
          * the assumption that spikes can appear only between two calls to {@code append(…)} (because having a
          * spike require that we move forward then backward on the same coordinates, which happen only with two
          * distinct {@link Polyline} instances). It reduce the amount of coordinates to examine since we can check
-         * only the extremities instead than looking for spikes anywhere in the array.</p>
+         * only the extremities instead of looking for spikes anywhere in the array.</p>
          *
          * @param  coordinates  the coordinates to filter. Values can be modified in-place.
          * @param  lower        index of first coordinate to filter. Always even.
@@ -1155,7 +1155,7 @@ final class IsolineTracer {
         @Override
         protected int filterChunk(final double[] coordinates, final int lower, final int upper) {
             int spike0 = lower;         // Will be index where (x,y) become different than (xo,yo).
-            int spike1 = lower;         // Idem, but searching forward instead than backward.
+            int spike1 = lower;         // Idem, but searching forward instead of backward.
             if (spike1 < upper) {
                 final double xo = coordinates[spike1++];
                 final double yo = coordinates[spike1++];

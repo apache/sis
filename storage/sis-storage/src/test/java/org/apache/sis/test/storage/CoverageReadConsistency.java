@@ -141,7 +141,7 @@ public strictfp class CoverageReadConsistency extends TestCase {
     /**
      * Creates a new tester with specified configuration.
      * This tester may be used for benchmarking instead of JUnit tests.
-     * Mismatched pixel values will be reported in statistics instead than causing test failure.
+     * Mismatched pixel values will be reported in statistics instead of causing test failure.
      *
      * @param  tested     the resource to test.
      * @param  reference  full coverage read from the {@code resource}, or {@code null} if none.

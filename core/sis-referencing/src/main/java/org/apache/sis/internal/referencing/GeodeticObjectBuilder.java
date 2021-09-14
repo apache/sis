@@ -428,7 +428,7 @@ public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> 
     /**
      * Creates a geographic CRS.
      *
-     * @param  normalized  whether axes should be in (longitude, latitude) order instead than (latitude, longitude).
+     * @param  normalized  whether axes should be in (longitude, latitude) order instead of (latitude, longitude).
      * @return the geographic coordinate reference system.
      * @throws FactoryException if an error occurred while building the geographic CRS.
      */
@@ -504,7 +504,7 @@ public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> 
 
     /**
      * Creates a compound CRS, but we special processing for (two-dimensional Geographic + ellipsoidal heights) tuples.
-     * If any such tuple is found, a three-dimensional geographic CRS is created instead than the compound CRS.
+     * If any such tuple is found, a three-dimensional geographic CRS is created instead of the compound CRS.
      *
      * @param  components  ordered array of {@code CoordinateReferenceSystem} objects.
      * @return the coordinate reference system for the given properties.

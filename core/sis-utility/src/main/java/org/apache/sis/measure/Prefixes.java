@@ -36,7 +36,7 @@ import org.apache.sis.math.MathFunctions;
  */
 final class Prefixes {
     /**
-     * The SI “deca” prefix. This is the only SI prefix encoded on two letters instead than one.
+     * The SI “deca” prefix. This is the only SI prefix encoded on two letters instead of one.
      * It can be represented by the CJK compatibility character “㍲”, but use of those characters
      * is generally not recommended outside of Chinese, Japanese or Korean texts.
      */

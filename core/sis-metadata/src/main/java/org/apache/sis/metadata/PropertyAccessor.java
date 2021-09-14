@@ -1068,7 +1068,7 @@ class PropertyAccessor {
 
     /**
      * Converts values in the specified array to the given type.
-     * The array content is modified in-place. This method accepts an array instead than
+     * The array content is modified in-place. This method accepts an array instead of
      * a single value because the values to convert may be the content of a collection.
      *
      * @param  elements    the array which contains element to convert.

@@ -43,7 +43,7 @@ public enum CodeType {
     /**
      * The code is a URL like {@code "http:"} or {@code "file:"},
      * with the exception of HTTP in the "www.opengis.net" domain.
-     * The later case is identified by {@link #HTTP_OGC} instead than this enum.
+     * The later case is identified by {@link #HTTP_OGC} instead of this enum.
      */
     URL(false),
 
@@ -140,7 +140,7 @@ public enum CodeType {
         /*
          * If the the ':' if followed by at least one '/' (ignoring spaces and dots), then it is presumed
          * to be a URL protocol. In the special case where the protocol is "http(s)" and the domain after
-         * the '/' characters is "www.opengis.net", return HTTP_OGC instead than URL.
+         * the '/' characters is "www.opengis.net", return HTTP_OGC instead of URL.
          */
         final CodeType known = FOR_PROTOCOL.get(codeOrPath.substring(start, end).toLowerCase(Locale.US));
         if (known != null) {

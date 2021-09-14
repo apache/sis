@@ -264,7 +264,7 @@ public abstract class DataStoreProvider {
      *             return ProbeResult.INSUFFICIENT_BYTES;
      *         }
      *         if (buffer.getInt(buffer.position()) != MAGIC_NUMBER) {
-     *             // We used ByteBuffer.getInt(int) instead than ByteBuffer.getInt() above
+     *             // We used ByteBuffer.getInt(int) instead of ByteBuffer.getInt() above
      *             // in order to keep the buffer position unchanged after this method call.
      *             return ProbeResult.UNSUPPORTED_STORAGE;
      *         }

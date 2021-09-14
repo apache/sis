@@ -105,7 +105,7 @@ public final class LanguageCode extends GO_CharacterString {
         if (codeListValue != null) {
             if (!codeListValue.isEmpty() && Context.isFlagSet(context, Context.SUBSTITUTE_LANGUAGE)) {
                 /*
-                 * Marshal the locale as a <gco:CharacterString> instead than <LanguageCode>,
+                 * Marshal the locale as a <gco:CharacterString> instead of <LanguageCode>,
                  * using the user-supplied anchors if any.
                  */
                 final CharSequence string = CharSequenceAdapter.value(context, locale, codeListValue);

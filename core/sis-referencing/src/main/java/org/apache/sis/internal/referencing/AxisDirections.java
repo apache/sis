@@ -547,7 +547,7 @@ next:       for (int i=0; i <= limit; i++) {
      * this method gives precedence to a sequence of consecutive indices.
      *
      * <p>This method is similar to {@link #indexOfColinear(CoordinateSystem, CoordinateSystem)} except that it
-     * enumerates the indices instead than returning only the first index. If {@code indexOfColinear(…)} can not
+     * enumerates the indices instead of returning only the first index. If {@code indexOfColinear(…)} can not
      * find consecutive indices, then this method fallbacks on a sequence of indices regardless their order.</p>
      *
      * @param  cs     the coordinate system which contains all axes, or {@code null}.

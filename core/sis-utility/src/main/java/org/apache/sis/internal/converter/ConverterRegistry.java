@@ -496,7 +496,7 @@ public class ConverterRegistry {
                                 converter = null;
                                 break;                  // No relationship between the two types – abort.
                             }
-                            // This type is more specific – take it instead than the previous type.
+                            // This type is more specific – take it instead of the previous type.
                         }
                         converter = c;
                     }

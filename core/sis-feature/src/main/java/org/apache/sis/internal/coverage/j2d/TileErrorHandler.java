@@ -105,7 +105,7 @@ public final class TileErrorHandler {
 
     /**
      * An object executing actions in a way where errors occurring during tile computation
-     * are reported to an error handler instead than causing the whole operation to fail.
+     * are reported to an error handler instead of causing the whole operation to fail.
      *
      * <p>This interface is currently used as a workaround for accessing
      * {@link org.apache.sis.image.PrefetchedImage} without making that class public.</p>

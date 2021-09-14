@@ -529,7 +529,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     /**
      * Tests the {@link PropertyAccessor#set(int, Object, Object, int)} method in
      * {@link PropertyAccessor#APPEND} mode. In this mode, new collections
-     * are added into existing collections instead than replacing them.
+     * are added into existing collections instead of replacing them.
      * The metadata object created by this test after the merge is:
      *
      * {@preformat text

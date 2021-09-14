@@ -33,7 +33,7 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  * Initial iteration is synchronized on the given {@code Iterable} and the result is cached.
  *
  * <h2>Rational</h2>
- * We use this class instead than copying the {@link OperationMethod} instances in a {@link java.util.HashSet}
+ * We use this class instead of copying the {@link OperationMethod} instances in a {@link java.util.HashSet}
  * in order to allow deferred {@code OperationMethod} instantiation, for example in the usual case where the
  * iterable is a {@link java.util.ServiceLoader}: we do not invoke {@link Iterator#next()} before needed.
  *
@@ -184,7 +184,7 @@ final class OperationMethodSet extends SetOfUnknownSize<OperationMethod> {
 
     /**
      * Returns the operation method at the given index. In case of index out of bounds, this method throws a
-     * {@link NoSuchElementException} instead than an {@link IndexOutOfBoundsException} because this method
+     * {@link NoSuchElementException} instead of an {@link IndexOutOfBoundsException} because this method
      * is designed for being invoked by {@link Iterator#next()}.
      */
     final synchronized OperationMethod next(final int index) {

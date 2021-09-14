@@ -75,7 +75,7 @@ public final class Region {
     private final long[] skips;
 
     /**
-     * Additional values to add to {@link #skips}, but in bytes instead than as a number of values.
+     * Additional values to add to {@link #skips}, but in bytes instead of as a number of values.
      * This is the only field in this {@link Region} class to be expressed in byte units.
      * This offset is rarely provided.
      */
@@ -143,7 +143,7 @@ public final class Region {
      * {@link HyperRectangleReader} will still read only the requested 100 values,
      * but will skip 3 more values when moving from plane 1 to plane 2.</div>
      *
-     * This method is the only one in this {@link Region} class to use a count of bytes instead than a count
+     * This method is the only one in this {@link Region} class to use a count of bytes instead of a count
      * of sample values.
      *
      * @param  dimension  dimension for which to increase the stride.

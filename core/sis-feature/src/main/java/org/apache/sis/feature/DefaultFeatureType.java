@@ -138,7 +138,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     /**
      * {@code true} if we determined that this feature type does not have, directly or indirectly,
      * any unresolved name (i.e. a {@link DefaultAssociationRole#valueType} specified only be the
-     * feature type name instead than its actual instance). A value of {@code true} means that all
+     * feature type name instead of its actual instance). A value of {@code true} means that all
      * names have been resolved. However a value of {@code false} only means that we are not sure,
      * and that {@link #resolve(FeatureType, Map)} should check again.
      *

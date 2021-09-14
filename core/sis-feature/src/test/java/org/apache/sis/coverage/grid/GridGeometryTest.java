@@ -68,7 +68,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         final Matrix m;
         try {
             /*
-             * Multiply the matrices instead than concatenating the transforms
+             * Multiply the matrices instead of concatenating the transforms
              * for making sure that we do not get cached transforms.
              */
             m = MatrixSIS.castOrCopy(tr2).inverse().multiply(tr1);
@@ -412,7 +412,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         verifyGridToCRS(grid);
         /*
          * Same extent and envelope, but reordering extend dimensions
-         * instead than `gridToCRS` columns.
+         * instead of `gridToCRS` columns.
          */
         grid = new GridGeometry(extent, aoi, GridOrientation.DISPLAY.canReorderGridAxis(true));
         matrix = MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER));

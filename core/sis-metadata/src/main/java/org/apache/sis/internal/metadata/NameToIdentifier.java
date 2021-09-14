@@ -261,7 +261,7 @@ public final class NameToIdentifier implements Identifier {
                          * Note: a previous version compared also the scoped names. We removed that part,
                          * because experience has shown that this method is used only for the "code" part
                          * of an object name. If we really want to compare scoped name, it would probably
-                         * be better to take a GenericName argument instead than String.
+                         * be better to take a GenericName argument instead of String.
                          */
                     }
                 }

@@ -49,7 +49,7 @@ public abstract class MarshalContext {
      * {@link Locale#ROOT} is interpreted as a request for locale-neutral strings.
      * The meaning of "locale-neutral" is implementation specific - this is usually
      * very close to the English locale, but not necessarily. For examples dates are
-     * formatted according ISO standard instead than the rules of the English locale.
+     * formatted according ISO standard instead of the rules of the English locale.
      *
      * <h4>Handling of {@code null} locale</h4>
      * A {@code null} value means that the locale is unspecified. Callers are encouraged

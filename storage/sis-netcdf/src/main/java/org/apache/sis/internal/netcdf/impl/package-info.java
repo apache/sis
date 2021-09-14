@@ -18,7 +18,7 @@
 /**
  * Implementation of the {@link org.apache.sis.internal.netcdf} API as a standalone library.
  * This is useful only for the netCDF binary format (no NcML, no GRIB, no BUFR).
- * This package works with channels instead than files, which is a little bit easier to use
+ * This package works with channels instead of files, which is a little bit easier to use
  * in some environments.
  *
  * <h2>Reference</h2>

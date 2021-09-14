@@ -460,8 +460,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
     private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable band, final int index) {
         /*
          * Take the minimum and maximum values as determined by Apache SIS through the Convention class.  The UCAR library
-         * is used only as a fallback. We give precedence to the range computed by Apache SIS instead than the range given
-         * by UCAR because we need the range of packed values instead than the range of converted values.
+         * is used only as a fallback. We give precedence to the range computed by Apache SIS instead of the range given
+         * by UCAR because we need the range of packed values instead of the range of converted values.
          */
         NumberRange<?> range;
         if (!createEnumeration(builder, band) && (range = band.getValidRange()) != null) try {

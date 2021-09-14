@@ -299,7 +299,7 @@ public final class WraparoundAdjustment {
                      *   │    false    │    true    │ AOI on right of valid area │ Add negative amount of period │
                      *   └─────────────┴────────────┴────────────────────────────┴───────────────────────────────┘
                      *
-                     * We try to compute multiples of `periods` instead than just adding or subtracting `periods` once in
+                     * We try to compute multiples of `periods` instead of just adding or subtracting `periods` once in
                      * order to support images that cover more than one period, for example images over 720° of longitude.
                      * It may happen for example if an image shows data under the trajectory of a satellite.
                      */

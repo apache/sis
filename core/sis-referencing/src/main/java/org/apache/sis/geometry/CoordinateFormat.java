@@ -383,8 +383,8 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
 
     /**
      * Flags the coordinate values that need to be inverted before to be formatted.
-     * This is needed for example if the axis is oriented toward past instead than future,
-     * or toward west instead than east.
+     * This is needed for example if the axis is oriented toward past instead of future,
+     * or toward west instead of east.
      *
      * @see #negate(int)
      */

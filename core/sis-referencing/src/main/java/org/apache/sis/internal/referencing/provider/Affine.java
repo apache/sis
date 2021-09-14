@@ -256,7 +256,7 @@ public final class Affine extends AbstractProvider {
             }
         } else {
             /*
-             * All other cases. We will use the WKT1 parameter names instead than the EPSG ones.
+             * All other cases. We will use the WKT1 parameter names instead of the EPSG ones.
              */
             final int index = cacheIndex(sourceDimensions, targetDimensions);
             if (index >= 0) {

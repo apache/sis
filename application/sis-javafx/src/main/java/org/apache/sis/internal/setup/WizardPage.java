@@ -65,7 +65,7 @@ enum WizardPage {
 
     /**
      * Page notifying user that a decompression is in progress.
-     * This page is skipped if the user specified an existing directory instead than a ZIP file.
+     * This page is skipped if the user specified an existing directory instead of a ZIP file.
      */
     DECOMPRESS("Decompress",
             "<html><p style=\"padding-top:10px;\">"

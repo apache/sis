@@ -430,7 +430,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 endOfLine--;                                    // Skip trailing '\r' and '\n'.
             }
             /*
-             * Skip leading spaces using Character.isSpaceChar(…) instead than isWhitespace(…)
+             * Skip leading spaces using Character.isSpaceChar(…) instead of isWhitespace(…)
              * because we need to skip non-breaking spaces as well as ordinary space. We don't
              * need to consider line feeds since they were handled by the lines just above.
              */
@@ -549,7 +549,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * Parses the given string using a format appropriate for the type of values in
      * the given column, and stores the value in the given node.
      *
-     * <p>This work is done in a separated method instead than inlined in the
+     * <p>This work is done in a separated method instead of inlined in the
      * {@code parse(…)} method because of the {@code <V>} parametric value.</p>
      *
      * @param  <V>      the type of values in the given column.
@@ -655,7 +655,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         private boolean[] isLast;
 
         /**
-         * Whether to allows multi-lines cells instead than using Pilcrow character.
+         * Whether to allows multi-lines cells instead of using Pilcrow character.
          * This is currently supported only if the number of columns is less than 2.
          */
         private final boolean multiLineCells;

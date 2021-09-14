@@ -34,7 +34,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  */
 final class Filenames {
     /**
-     * The target directory. This directory name is hard-coded instead than using a property annotated
+     * The target directory. This directory name is hard-coded instead of using a property annotated
      * by {@code @Parameter(defaultValue="${project.build.directory}")} - or alternatively by invoking
      * {@code MavenProject.getModel().getBuild().getDirectory()}, because we need the target directory
      * of the project root rather than the directory of the module being built.

@@ -90,7 +90,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
 
     /**
      * Angle value in decimal degrees. We use decimal degrees as the storage unit
-     * instead than radians in order to avoid rounding errors, since there is no
+     * instead of radians in order to avoid rounding errors, since there is no
      * way to represent 30°, 45°, 90°, 180°, <i>etc.</i> in radians without errors.
      */
     private final double θ;
@@ -111,7 +111,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
      *
      * <p>This is a convenience constructor mostly for testing purpose, since it uses a fixed
      * locale. Developers should consider using {@link AngleFormat} for end-user applications
-     * instead than this constructor.</p>
+     * instead of this constructor.</p>
      *
      * @param  text  a string to be converted to an {@code Angle}.
      * @throws NumberFormatException if the string does not contain a parsable angle.
@@ -126,7 +126,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
             }
         } catch (ParseException exception) {
             /*
-             * Use Exception.getMessage() instead than getLocalizedMessage() because the later
+             * Use Exception.getMessage() instead of getLocalizedMessage() because the later
              * is formatted in the AngleFormat locale, which is hard-coded to Locale.ROOT in our
              * 'getAngleFormat()' implementation. The getMessage() method uses the system locale,
              * which is what we actually want.
@@ -294,7 +294,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
      * {@link Format} in order to avoid class loading before necessary.
      *
      * <p>This method must be invoked in a {@code synchronized(Angle.class)} block. We use
-     * synchronization instead than static class initialization because {@code AngleFormat}
+     * synchronization instead of static class initialization because {@code AngleFormat}
      * is not thread-safe, so it needs to be used in a synchronized block anyway. We could
      * avoid synchronization by using {@link ThreadLocal}, but this brings other issues in
      * OSGi context. Given that our Javadoc said that {@link #Angle(String)} and {@link #toString()}

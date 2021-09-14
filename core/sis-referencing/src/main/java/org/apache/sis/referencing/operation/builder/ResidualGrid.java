@@ -292,7 +292,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * View over one target dimension of the localization grid. Used for populating the {@link ParameterDescriptorGroup}
      * that describes the {@code MathTransform}. Those parameters are themselves used for formatting Well Known Text.
      * Current implementation can be used only when the number of grid dimensions is {@value #INTERPOLATED_DIMENSIONS}.
-     * If a grid has more dimensions, then tensors would need to be used instead than matrices.
+     * If a grid has more dimensions, then tensors would need to be used instead of matrices.
      *
      * <p>This implementation can not be moved to the {@link DatumShiftGrid} parent class because this class assumes
      * that the translation vectors are added to the source coordinates. This is not always true; for example France

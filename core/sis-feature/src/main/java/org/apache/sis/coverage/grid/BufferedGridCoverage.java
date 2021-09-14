@@ -43,7 +43,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
 /**
  * Basic access to grid data values backed by a <var>n</var>-dimensional {@link DataBuffer}.
  * Those data can be shown as an untiled {@link RenderedImage}.
- * Images are created when {@link #render(GridExtent)} is invoked instead than at construction time.
+ * Images are created when {@link #render(GridExtent)} is invoked instead of at construction time.
  * This delayed construction makes this class better suited to <var>n</var>-dimensional grids since
  * those grids can not be wrapped into a single {@link RenderedImage}.
  *

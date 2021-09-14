@@ -94,7 +94,7 @@ public class LandsatStoreProvider extends DataStoreProvider {
         /**
          * Returns the path to the metadata file relative to the directory specified by user.
          * This method is invoked if the user gave us the directory containing all Landsat files
-         * instead than the path to the metadata file.
+         * instead of the path to the metadata file.
          */
         @Override
         protected Path getAuxiliaryPath(final StorageConnector connector) throws DataStoreException {

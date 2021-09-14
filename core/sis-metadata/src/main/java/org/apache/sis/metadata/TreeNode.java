@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 /**
  * A node in a {@link TreeTableView} view. The {@code TreeTableView} class is used directly
- * only for the root node, or for nodes containing a fixed value instead than a value fetched from
+ * only for the root node, or for nodes containing a fixed value instead of a value fetched from
  * the metadata object. For all other nodes, the actual node class shall be either {@link Element}
  * or {@link CollectionElement}.
  *
@@ -72,7 +72,7 @@ class TreeNode implements Node {
      * The collection of {@linkplain #children} to return when the node does not allow children
      * (i.e. is a leaf). This constant is also used as a sentinel value by {@link #isLeaf()}.
      *
-     * <p>We choose an empty set instead than an empty list because {@link TreeNodeChildren}
+     * <p>We choose an empty set instead of an empty list because {@link TreeNodeChildren}
      * does not implement the {@link List} interface. So we are better to never give to the user
      * a collection implementing {@code List} in order to signal incorrect casts sooner.</p>
      */
@@ -377,7 +377,7 @@ class TreeNode implements Node {
 
         /**
          * Gets the name of this node. Current implementation derives the name from the
-         * {@link KeyNamePolicy#UML_IDENTIFIER} instead than {@link KeyNamePolicy#JAVABEANS_PROPERTY}
+         * {@link KeyNamePolicy#UML_IDENTIFIER} instead of {@link KeyNamePolicy#JAVABEANS_PROPERTY}
          * in order to get the singular form instead of the plural one, because we will create one
          * node for each element in a collection.
          *

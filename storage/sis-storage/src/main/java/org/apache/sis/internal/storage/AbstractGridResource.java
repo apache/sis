@@ -90,7 +90,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
 
     /**
      * Returns the grid geometry envelope if known.
-     * This implementation fetches the envelope from the grid geometry instead than from metadata.
+     * This implementation fetches the envelope from the grid geometry instead of from metadata.
      * The envelope is absent if the grid geometry does not provide this information.
      *
      * @return the grid geometry envelope.

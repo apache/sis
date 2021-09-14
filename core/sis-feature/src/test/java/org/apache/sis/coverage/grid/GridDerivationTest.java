@@ -449,7 +449,7 @@ public final strictfp class GridDerivationTest extends TestCase {
         final long[] expectedHigh = {401, 419, 6};
         assertExtentEquals(expectedLow, expectedHigh, slice.getExtent());
         /*
-         * Same test, but using a one-dimensional slice point instead than NaN values.
+         * Same test, but using a one-dimensional slice point instead of NaN values.
          * Opportunistically use different units for testing conversions.
          */
         GeneralDirectPosition p = new GeneralDirectPosition(HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm);

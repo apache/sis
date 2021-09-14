@@ -281,7 +281,7 @@ public final class Matrices extends Static {
                     if (useEnvelopes) {
                         /*
                          * See the comment in transform(Envelope, Envelope) for an explanation about why
-                         * we use the lower/upper corners instead than getMinimum()/getMaximum() methods.
+                         * we use the lower/upper corners instead of getMinimum()/getMaximum() methods.
                          */
                         final DoubleDouble scale = new DoubleDouble(same ? +1d : -1d);
                         scale.multiplyGuessError(dstEnvelope.getSpan(dstIndex));

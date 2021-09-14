@@ -150,7 +150,7 @@ abstract class ConformalProjection extends NormalizedProjection {
     /**
      * Creates a new projection initialized to the values of the given one. This constructor may be invoked after
      * we determined that the default implementation can be replaced by another one, for example using spherical
-     * formulas instead than the ellipsoidal ones. This constructor allows to transfer all parameters to the new
+     * formulas instead of the ellipsoidal ones. This constructor allows to transfer all parameters to the new
      * instance without recomputing them.
      */
     ConformalProjection(final ConformalProjection other) {
@@ -224,7 +224,7 @@ abstract class ConformalProjection extends NormalizedProjection {
         /*
          * We should never reach this point for map projections on Earth. But if the ellipsoid is for some
          * other planet having a high eccentricity, then the above series expansion may not be sufficient.
-         * Try to improve by iteratively solving equation (7-9) from Snyder. However instead than using
+         * Try to improve by iteratively solving equation (7-9) from Snyder. However instead of using
          * Snyder (7-11) as the starting point, we take the result of above calculation as the initial φ.
          * Assuming that it is closer to the real φ value, this save us some iteration loops and usually
          * gives us more accurate results (according MercatorMethodComparison tests).

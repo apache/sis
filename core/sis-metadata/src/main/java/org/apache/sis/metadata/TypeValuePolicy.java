@@ -72,7 +72,7 @@ public enum TypeValuePolicy {
     /**
      * The type of the class that declares the method. This is similar to
      * {@link #DECLARING_INTERFACE}, except that the implementation class
-     * from the metadata standard is returned instead than the interface.
+     * from the metadata standard is returned instead of the interface.
      */
     DECLARING_CLASS
 }

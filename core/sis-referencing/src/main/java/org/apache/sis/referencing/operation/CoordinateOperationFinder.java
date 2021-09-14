@@ -610,7 +610,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
              *
              * If both CS are ellipsoidal but with different number of dimensions, then a three-dimensional
              * operation is used and `DefaultMathTransformFactory` will add an ellipsoidal height on-the-fly.
-             * We let the transform factory do this work instead than adding an intermediate "geographic 2D
+             * We let the transform factory do this work instead of adding an intermediate "geographic 2D
              * to 3D" operation here because the transform factory works with normalized CS, which avoid the
              * need the search in which dimension to add the ellipsoidal height (it should always be last,
              * but SIS is tolerant to unusual axis order).
@@ -635,7 +635,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 /*
                  * The name of the `parameters` group determines the `OperationMethod` later in this method.
                  * We can not leave that name to "Affine" if `before` or `after` transforms are not identity.
-                 * Note: we check for identity transforms instead than relaxing to general `LinearTransform`
+                 * Note: we check for identity transforms instead of relaxing to general `LinearTransform`
                  * because otherwise, we would have to update values declared in `parameters`. It is doable
                  * but not done yet.
                  */
@@ -1029,7 +1029,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             remainingSourceDimensions -= delta;
         }
         /*
-         * If there is some target dimensions that are set to constant values instead than computed from the
+         * If there is some target dimensions that are set to constant values instead of computed from the
          * source dimensions, add those constants as the last step. It never occur except is some particular
          * contexts like when computing a transform between two `GridGeometry` instances.
          */
@@ -1079,7 +1079,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
 
     /**
      * Creates a compound CRS, but we special processing for (two-dimensional Geographic + ellipsoidal heights) tuples.
-     * If any such tuple is found, a three-dimensional geographic CRS is created instead than the compound CRS.
+     * If any such tuple is found, a three-dimensional geographic CRS is created instead of the compound CRS.
      *
      * @param  template    the CRS from which to inherit properties.
      * @param  components  ordered array of {@code CoordinateReferenceSystem} objects.

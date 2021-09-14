@@ -216,7 +216,7 @@ final class Verifier {
              * If we found an error, we will usually throw an exception. An exception to this rule is
              * when EPSGDataAccess is creating a deprecated ProjectedCRS in which some parameters are
              * known to be invalid (the CRS was deprecated precisely for that reason). In such cases,
-             * we will log a warning instead than throwing an exception.
+             * we will log a warning instead of throwing an exception.
              */
             if (error != null) {
                 error.convertRange(converter);

@@ -1422,7 +1422,7 @@ public class AngleFormat extends Format implements Localized {
      * Returns the index of the first non-space character in the given string.
      * This method performs the same work than {@code CharSequences.skipLeadingWhitespaces},
      * except that it tests for spaces using the {@link Character#isSpaceChar(int)} method
-     * instead than {@link Character#isWhitespace(int)}. The reason is that we really want
+     * instead of {@link Character#isWhitespace(int)}. The reason is that we really want
      * to skip no-break spaces, since they are often used inside a single entity (e.g. the
      * group separator in numbers formatted using the French locale).  Furthermore we do
      * not want to skip tabulations or line feeds, since they are unlikely to be part of
@@ -1531,7 +1531,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                 /* ------------------------------------------
                  * STRING ANALYSIS FOLLOWING PRESUMED DEGREES
                  * ------------------------------------------
-                 * Found the seconds suffix instead than the degrees suffix. Move 'degrees'
+                 * Found the seconds suffix instead of the degrees suffix. Move 'degrees'
                  * value to 'seconds' and stop parsing, since seconds are the last field.
                  */
                 case SECONDS_FIELD: {
@@ -1585,7 +1585,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                         /* ------------------------------------------
                          * STRING ANALYSIS FOLLOWING PRESUMED MINUTES
                          * ------------------------------------------
-                         * Found the seconds suffix instead than the minutes suffix. Move 'minutes'
+                         * Found the seconds suffix instead of the minutes suffix. Move 'minutes'
                          * value to 'seconds' and stop parsing, since seconds are the last field.
                          */
                         case SECONDS_FIELD: {
@@ -1610,7 +1610,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                         /* ------------------------------------------
                          * STRING ANALYSIS FOLLOWING PRESUMED MINUTES
                          * ------------------------------------------
-                         * Found the degrees suffix instead than the minutes suffix.
+                         * Found the degrees suffix instead of the minutes suffix.
                          * This means that the number we have just read belong to an
                          * other angle. Stop the parsing before that number.
                          */
@@ -1684,7 +1684,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                         /* ------------------------------------------
                          * STRING ANALYSIS FOLLOWING PRESUMED SECONDS
                          * ------------------------------------------
-                         * Found the degrees or minutes suffix instead than the seconds suffix.
+                         * Found the degrees or minutes suffix instead of the seconds suffix.
                          * This means that the number we have just read belong to an other angle.
                          * Stop the parsing before that number.
                          */

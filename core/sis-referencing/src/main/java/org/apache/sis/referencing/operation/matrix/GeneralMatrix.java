@@ -55,7 +55,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * is {@code C}, then the threshold is <code>Math.ulp(C) * {@value}</code>.  If the sum is
      * lower than that threshold, then the result is assumed to be zero.
      *
-     * <p>Note that if we were using {@code double} arithmetic instead than double-double, then all results smaller
+     * <p>Note that if we were using {@code double} arithmetic instead of double-double, then all results smaller
      * than {@code Math.ulp(max)} would not be significant. Those cases could be caught by a {@code ZERO_THRESHOLD}
      * value of 1.  On the other hand, if all the extra precision of double-double arithmetic was considered valid,
      * then the {@code ZERO_THRESHOLD} value would be approximately 1E-16.   In reality, the extra digits in our

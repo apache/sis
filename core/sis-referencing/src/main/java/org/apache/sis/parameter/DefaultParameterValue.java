@@ -542,7 +542,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
 
     /**
      * Converts the given number to the expected type, with a special case for conversion from float to double type.
-     * Widening conversions are aimed to be exact in base 10 instead than base 2. If {@code expectedClass} is not a
+     * Widening conversions are aimed to be exact in base 10 instead of base 2. If {@code expectedClass} is not a
      * {@link Number} subtype, then this method does nothing. If the cast would result in information lost, than
      * this method returns the given value unchanged for allowing a more accurate error message to happen later.
      *
@@ -629,7 +629,7 @@ convert:            if (componentType != null) {
             }
         }
         /*
-         * Code below uses `unit` instead than `getUnit()` despite class Javadoc claim because units are not expected
+         * Code below uses `unit` instead of `getUnit()` despite class Javadoc claim because units are not expected
          * to be involved in this method. We access this field only as a matter of principle, for making sure that no
          * property other than the value is altered by this method call.
          */
@@ -648,7 +648,7 @@ convert:            if (componentType != null) {
     public void setValue(final boolean newValue) throws InvalidParameterValueException {
         setValue(newValue, unit);
         /*
-         * Above code used `unit` instead than `getUnit()` despite class Javadoc claim because units are not expected
+         * Above code used `unit` instead of `getUnit()` despite class Javadoc claim because units are not expected
          * to be involved in this method. We access this field only as a matter of principle, for making sure that no
          * property other than the value is altered by this method call.
          */
@@ -672,7 +672,7 @@ convert:            if (componentType != null) {
         if (c.intValue() == newValue) n = c;
         setValue(n, unit);
         /*
-         * Above code used `unit` instead than `getUnit()` despite class Javadoc claim because units are not expected
+         * Above code used `unit` instead of `getUnit()` despite class Javadoc claim because units are not expected
          * to be involved in this method. We access this field only as a matter of principle, for making sure that no
          * property other than the value is altered by this method call.
          */
@@ -716,7 +716,7 @@ convert:            if (componentType != null) {
         }
         setValue(n, unit);
         /*
-         * Above code used `unit` instead than `getUnit()` despite class Javadoc claim because units are not expected
+         * Above code used `unit` instead of `getUnit()` despite class Javadoc claim because units are not expected
          * to be involved in this method. We access this field only as a matter of principle, for making sure that no
          * property other than the value is altered by this method call.
          */
@@ -857,7 +857,7 @@ convert:            if (componentType != null) {
      *     return equals(other, ComparisonMode.STRICT);
      * }
      *
-     * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead than this method.
+     * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead of this method.
      *
      * @param  object  the object to compare to {@code this}.
      * @return {@code true} if both objects are equal.
@@ -1010,7 +1010,7 @@ convert:            if (componentType != null) {
              * If this parameter value does not use the same unit, we will need to convert it.
              * Otherwise we can write the value as-is.
              *
-             * Note that we take the descriptor unit as a starting point instead than this parameter unit
+             * Note that we take the descriptor unit as a starting point instead of this parameter unit
              * in order to give precedence to the descriptor units in Convention.WKT1_COMMON_UNITS mode.
              */
             Unit<?> contextualUnit;

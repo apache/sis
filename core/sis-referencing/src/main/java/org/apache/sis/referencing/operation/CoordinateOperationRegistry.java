@@ -160,7 +160,7 @@ class CoordinateOperationRegistry {
      * An instance is fetched at construction time from the {@link #registry} if possible.
      *
      * <div class="note"><b>Design note:</b>
-     * using a provider defined by the {@link #registry} instead than {@code MultiAuthoritiesFactory} may cause
+     * using a provider defined by the {@link #registry} instead of {@code MultiAuthoritiesFactory} may cause
      * the finder to perform extensive searches because it does not recognize the authority code of a given CRS.
      * For example if {@link #registry} is for EPSG and a given CRS is "CRS:84", then {@code codeFinder} would
      * not recognize the given CRS and would search for a match in the EPSG database. This is desired because

@@ -736,7 +736,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                         }
                         /*
                          * We enter in this block if some dimensions can be discarded. We want to discard them before the
-                         * PassThroughTransform instead than after. The matrix for that purpose will be computed later.
+                         * PassThroughTransform instead of after. The matrix for that purpose will be computed later.
                          * Before that, the loop below modifies a copy of the 'other' matrix as if those dimensions were
                          * already removed.
                          */

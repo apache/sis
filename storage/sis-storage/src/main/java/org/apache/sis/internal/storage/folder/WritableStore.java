@@ -84,7 +84,7 @@ final class WritableStore extends Store implements WritableAggregate {
         }
         /*
          * If we determined in a previous method invocation that the given provider can not write feature set,
-         * we are better to fail now instead than polluting the directory with files that we can not use.
+         * we are better to fail now instead of polluting the directory with files that we can not use.
          */
         if (isReadOnly) {
             throw new ReadOnlyStorageException(messages().getString(Resources.Keys.StoreIsReadOnly));

@@ -284,7 +284,7 @@ public interface TreeTable {
          * Implementations should not relax those conditions, but are free to make them more restrictive.
          * In particular, many implementations will require that the two nodes are instances of the same class.
          * Some implementations may also perform identity comparisons (with the {@code ==} operator) between values
-         * instead than using {@link Object#equals(Object)}. This flexibility means that even if all above conditions
+         * instead of using {@link Object#equals(Object)}. This flexibility means that even if all above conditions
          * are true, this is not a guarantee that this method will return {@code true}.
          *
          * <p>It is okay to <em>not</em> override this method at all since the identity comparison inherited from
@@ -300,7 +300,7 @@ public interface TreeTable {
          * }
          *
          * Implementation details may vary, for example in the way to compare {@code null} user objects or by invoking
-         * {@link Object#equals(Object)} instead than performing identity comparisons. Note however that since this
+         * {@link Object#equals(Object)} instead of performing identity comparisons. Note however that since this
          * method purpose is to detect cyclic graphs (see above example), user objects should be compared with
          * {@code equals(Object)} only if their implementations are known to be safe against infinite recursivity.
          *

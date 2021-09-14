@@ -104,7 +104,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
         final boolean isOuterJoin;
 
         /**
-         * {@code true} if the "main" side is the right side instead than the left side.
+         * {@code true} if the "main" side is the right side instead of the left side.
          * See {@link JoinFeatureSet.Iterator} for a definition of "main side".
          */
         final boolean swapSides;
@@ -162,7 +162,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
     private final String rightName;
 
     /**
-     * {@code true} if the "main" side is the right side instead than the left side.
+     * {@code true} if the "main" side is the right side instead of the left side.
      * See {@link JoinFeatureSet.Iterator} for a definition of "main side".
      */
     private final boolean swapSides;

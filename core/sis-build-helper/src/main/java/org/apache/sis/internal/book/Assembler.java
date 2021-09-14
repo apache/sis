@@ -250,7 +250,7 @@ public final class Assembler {
 
     /**
      * Copies the body of the given source HTML file in-place of the given target node.
-     * This method is doing the work of {@code <xi:include>} element. We do this work ourself instead than relying on
+     * This method is doing the work of {@code <xi:include>} element. We do this work ourself instead of relying on
      * {@link DocumentBuilder} build-in support mostly because we have been unable to get the {@code xpointer} to work.
      *
      * @param  input      the source XML file.

@@ -147,7 +147,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
 
     /**
      * The α value computed from the starting point and starting azimuth.
-     * We use the sine and cosine instead than the angles because those components are more frequently used than angles.
+     * We use the sine and cosine instead of the angles because those components are more frequently used than angles.
      * Those values can be kept constant when computing many end points and end azimuths at different geodesic distances.
      * The {@link #COEFFICIENTS_FOR_START_POINT} flag specifies whether those fields need to be recomputed.
      */

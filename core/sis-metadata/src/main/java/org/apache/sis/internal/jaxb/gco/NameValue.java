@@ -50,7 +50,7 @@ import org.apache.sis.xml.Namespaces;
  * </ul>
  *
  * {@code NameValue}s are not used for {@code MemberName} and {@code TypeName}.
- * The two later use a quite different XML structure, with an {@code aName} element instead than a XML value.
+ * The two later use a quite different XML structure, with an {@code aName} element instead of a XML value.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5

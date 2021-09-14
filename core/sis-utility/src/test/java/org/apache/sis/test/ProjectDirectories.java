@@ -49,7 +49,7 @@ public final class ProjectDirectories {
      * The constructor used the given class as a sample member for getting this directory.
      *
      * <p>If we are running the tests from another environment than Maven (e.g. from NetBeans project),
-     * then this directory may contain all modules instead than only the module of the class given to
+     * then this directory may contain all modules instead of only the module of the class given to
      * the constructor.</p>
      */
     public final Path classesRootDirectory;

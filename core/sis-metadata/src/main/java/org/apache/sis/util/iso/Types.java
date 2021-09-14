@@ -276,7 +276,7 @@ public final class Types extends Static {
 
     /**
      * Returns the description of the given enumeration or code list value, or {@code null} if none.
-     * For a description of the code list as a whole instead than a particular code,
+     * For a description of the code list as a whole instead of a particular code,
      * see {@link Types#getDescription(Class)}.
      *
      * @param  code  the code for which to get the localized description, or {@code null}.

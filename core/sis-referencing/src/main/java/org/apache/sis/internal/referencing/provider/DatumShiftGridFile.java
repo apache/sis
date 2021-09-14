@@ -85,7 +85,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * if the values use the {@code float} type), in which case the oldest grids will be replaced by soft references.
      *
      * <h4>Memory consumption</h4>
-     * The use of soft references instead than weak references is on the assumption that users typically use
+     * The use of soft references instead of weak references is on the assumption that users typically use
      * the same few Coordinate Reference Systems for their work. Consequently we presume that users will not
      * load a lot of grids and are likely to reuse the already loaded grids.
      */

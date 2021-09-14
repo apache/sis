@@ -220,7 +220,7 @@ public class GridCoverageBuilder {
      *
      * {@code GridCoverageBuilder} provides method only for flipping axes.
      * If more sophisticated operations is desired (for example a rotation),
-     * then {@link #setDomain(GridGeometry)} should be used instead than this method.
+     * then {@link #setDomain(GridGeometry)} should be used instead of this method.
      *
      * <h4>Default implementation</h4>
      * The default implementation creates a new {@link GridGeometry} from the given envelope

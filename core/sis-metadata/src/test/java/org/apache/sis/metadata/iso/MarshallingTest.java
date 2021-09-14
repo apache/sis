@@ -99,7 +99,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
     private final StringWriter output;
 
     /**
-     * {@code true} if marshalling legacy XML instead than latest schema.
+     * {@code true} if marshalling legacy XML instead of latest schema.
      */
     private boolean legacyXML;
 

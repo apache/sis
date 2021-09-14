@@ -345,7 +345,7 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
 
     /**
      * Tests overriding the "sis:envelope" property. This may happen when the user wants to specify
-     * envelope himself instead than relying on the automatically computed value.
+     * envelope himself instead of relying on the automatically computed value.
      */
     @Test
     public void testEnvelopeOverride() {

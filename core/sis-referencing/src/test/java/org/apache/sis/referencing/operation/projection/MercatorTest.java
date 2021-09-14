@@ -68,7 +68,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     /**
      * Tests the WKT formatting of {@link NormalizedProjection}. For the Mercator projection, we expect only
      * the ellipsoid eccentricity. We expect nothing else because all other parameters are used
-     * by the (de)normalization affine transforms instead than the {@link Mercator} class itself.
+     * by the (de)normalization affine transforms instead of the {@link Mercator} class itself.
      *
      * @throws NoninvertibleTransformException if the transform can not be inverted.
      *

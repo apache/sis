@@ -277,7 +277,7 @@ public class ImagePropertyExplorer extends Widget {
     /**
      * A row in the table showing image properties. The inherited {@link String} property is the property name.
      * The property value is fetched from the given image and can be updated for the value of a new image.
-     * Updating an existing {@code PropertyRow} instead than creating a new instance is useful for keeping
+     * Updating an existing {@code PropertyRow} instead of creating a new instance is useful for keeping
      * the selected row unchanged if possible.
      */
     private static final class PropertyRow extends ImmutableObjectProperty<String> {

@@ -235,7 +235,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Other properties listed in the table below are optional.
      * In particular, {@code "authority"}, {@code "code"}, {@code "codespace"} and {@code "version"}
      * are convenience properties for building a name, and are ignored if the {@code "name"} property
-     * is already a {@link Identifier} object instead than a {@link String}.
+     * is already a {@link Identifier} object instead of a {@link String}.
      *
      * <table class="sis">
      *   <caption>Recognized properties (non exhaustive list)</caption>
@@ -765,7 +765,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     return equals(other, ComparisonMode.STRICT);
      * }
      *
-     * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead than this method.
+     * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead of this method.
      *
      * @param  object  the other object (may be {@code null}).
      * @return {@code true} if both objects are equal.
@@ -787,7 +787,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * <h4>Implementation note</h4>
      * This method invokes {@link #computeHashCode()} when first needed, then caches the result.
-     * Subclasses shall override {@link #computeHashCode()} instead than this method.
+     * Subclasses shall override {@link #computeHashCode()} instead of this method.
      *
      * @return the hash code value. This value may change in any future Apache SIS version.
      */
@@ -886,7 +886,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Users don't need to invoke this method explicitly.
      *
      * <p>If the alternate flags is present (as in {@code "%#s"}), then this method
-     * will format the identifier (if present) instead than the object name.</p>
+     * will format the identifier (if present) instead of the object name.</p>
      *
      * @param  formatter  the formatter in which to format this identified object.
      * @param  flags      whether to apply left alignment, use upper-case letters and/or use alternate form.

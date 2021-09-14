@@ -110,7 +110,7 @@ search: if (!add(ordinal)) {
     /**
      * Removes the NaN value which has been reserved for a qualitative category.
      * This method does nothing if {@code converted} is not a NaN value, i.e. if
-     * the category is quantitative instead than qualitative.
+     * the category is quantitative instead of qualitative.
      *
      * @param  c  the presumed qualitative category.
      */

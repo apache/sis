@@ -925,7 +925,7 @@ next:   while (--numPts >= 0) {
          * <ul>
          *   <li>Avoid computation of <var>h</var> value.</li>
          *   <li>Allow use of the more efficient {@link java.awt.geom.AffineTransform} after this transform
-         *       instead than a transform based on a matrix of size 3×4.</li>
+         *       instead of a transform based on a matrix of size 3×4.</li>
          * </ul>
          */
         @Override
@@ -1005,7 +1005,7 @@ next:   while (--numPts >= 0) {
      * <ul>
      *   <li>Avoid computation of <var>h</var> value.</li>
      *   <li>Allow use of the more efficient {@link java.awt.geom.AffineTransform} before this transform
-     *       instead than a transform based on a matrix of size 4×3.</li>
+     *       instead of a transform based on a matrix of size 4×3.</li>
      * </ul>
      *
      * @return the combined math transform, or {@code null} if no optimized combined transform is available.
@@ -1039,7 +1039,7 @@ next:   while (--numPts >= 0) {
 
     /**
      * Creates a transform with the same parameters than this transform,
-     * but expecting two-dimensional inputs instead than three-dimensional.
+     * but expecting two-dimensional inputs instead of three-dimensional.
      */
     final EllipsoidToCentricTransform create2D() {
         final ParameterValue<Double> p = context.getOrCreate(SEMI_MAJOR);

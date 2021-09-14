@@ -958,7 +958,7 @@ public class WKTFormat extends CompoundFormat<Object> {
 
     /**
      * The parser created by {@link #parser(boolean)}, identical to {@link GeodeticObjectParser} except
-     * for the source of logging messages which is the enclosing {@code WKTParser} instead than a factory.
+     * for the source of logging messages which is the enclosing {@code WKTParser} instead of a factory.
      * Also provides a mechanism for adding default identifier to root {@link IdentifiedObject}.
      */
     private final class Parser extends GeodeticObjectParser implements Function<Object,Object> {
@@ -1034,7 +1034,7 @@ public class WKTFormat extends CompoundFormat<Object> {
         }
         /*
          * Since each operation on `buffer` is synchronized, this synchronization block allow the lock
-         * to be obtained only one time instead than many times for each `StringBuffer` method invoked.
+         * to be obtained only one time instead of many times for each `StringBuffer` method invoked.
          * As a bonus, it ensures a consistent result if the given `StringBuffer` is used concurrently.
          */
         synchronized (buffer) {

@@ -457,7 +457,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * <h4>Choosing a collection type</h4>
      * Implementations shall invoke {@link #writeList writeList} or {@link #writeSet writeSet} methods
-     * instead than this method when the collection type is enforced by ISO specification.
+     * instead of this method when the collection type is enforced by ISO specification.
      * When the type is not enforced by the specification, some freedom are allowed at
      * implementer choice. The default implementation invokes {@link #collectionType(Class)}
      * in order to get a hint about whether a {@link List} or a {@link Set} should be used.
@@ -769,7 +769,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * <h4>Choosing a collection type</h4>
      * Implementations shall invoke {@link #nonNullList nonNullList(…)} or {@link #nonNullSet nonNullSet(…)}
-     * instead than this method when the collection type is enforced by ISO specification.
+     * instead of this method when the collection type is enforced by ISO specification.
      * When the type is not enforced by the specification, some freedom are allowed at implementer choice.
      * The default implementation invokes {@link #collectionType(Class)} in order to get a hint about whether
      * a {@link List} or a {@link Set} should be used.
@@ -892,7 +892,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     }
 
     /**
-     * Returns {@code true} if we should use a {@link Set} instead than a {@link List}
+     * Returns {@code true} if we should use a {@link Set} instead of a {@link List}
      * for elements of the given type.
      */
     private <E> boolean useSet(final Class<E> elementType) {

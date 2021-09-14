@@ -1554,7 +1554,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @param  <T>         compile-time value of {@code type} argument.
      * @param  type        type of object to create.
      * @param  references  parsed URI of the components.
-     * @param  isHTTP      whether the user URI is an URL (i.e. {@code "http://something"}) instead than a URN.
+     * @param  isHTTP      whether the user URI is an URL (i.e. {@code "http://something"}) instead of a URN.
      * @return the combined object.
      * @throws FactoryException if an error occurred while creating the combined object.
      */

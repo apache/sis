@@ -243,7 +243,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
 
     /**
      * Returns a resampled coverage using processor with default configuration.
-     * We use processor instead than instantiating {@link ResampledGridCoverage} directly in order
+     * We use processor instead of instantiating {@link ResampledGridCoverage} directly in order
      * to test {@link GridCoverageProcessor#resample(GridCoverage, GridGeometry)} method as well.
      */
     private static GridCoverage resample(final GridCoverage source, final GridGeometry target) throws TransformException {

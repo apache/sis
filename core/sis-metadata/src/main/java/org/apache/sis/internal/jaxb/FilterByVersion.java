@@ -53,7 +53,7 @@ public enum FilterByVersion {
 
     /**
      * {@code accept() == false} if the XML document version being marshalled is this version.
-     * We use exclusion instead than inclusion as an opportunistic way to get {@code true} if
+     * We use exclusion instead of inclusion as an opportunistic way to get {@code true} if
      * no marshalling is in progress. This strategy works only if we have only two versions to
      * support and will need to be changed when we will have more versions.
      */

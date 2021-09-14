@@ -176,7 +176,7 @@ abstract class AnnotatedImage extends ImageAdapter {
     private final boolean parallel;
 
     /**
-     * Whether errors occurring during computation should be propagated instead than wrapped in a {@link LogRecord}.
+     * Whether errors occurring during computation should be propagated instead of wrapped in a {@link LogRecord}.
      */
     private final boolean failOnException;
 

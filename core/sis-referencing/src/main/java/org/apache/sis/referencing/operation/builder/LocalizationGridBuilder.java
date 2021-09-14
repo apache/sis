@@ -418,7 +418,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *   <li>transformed by the inverse of {@linkplain #getSourceToGrid() source to grid} transform.</li>
      * </ol>
      *
-     * @param  fullArea  whether the the envelope shall encompass the full cell surfaces instead than only their centers.
+     * @param  fullArea  whether the the envelope shall encompass the full cell surfaces instead of only their centers.
      * @return the envelope of grid points, from lower corner to upper corner.
      * @throws IllegalStateException if the grid points are not yet known.
      * @throws TransformException if the envelope can not be calculated.

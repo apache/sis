@@ -144,7 +144,7 @@ public final class Geographic3Dto2D extends GeographicRedimension {
      */
     public static final class WKT extends FormattableObject implements Parameterized {
         /**
-         * {@code true} if this placeholder is for the inverse transform instead than the direct one.
+         * {@code true} if this placeholder is for the inverse transform instead of the direct one.
          */
         private final boolean inverse;
 

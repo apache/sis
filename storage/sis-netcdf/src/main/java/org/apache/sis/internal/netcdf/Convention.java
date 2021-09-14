@@ -205,7 +205,7 @@ public class Convention {
     /**
      * Returns whether the given variable is used as a coordinate system axis, a coverage or something else.
      * In particular this method shall return {@link VariableRole#AXIS} if the given variable seems to be a
-     * coordinate system axis instead than the actual data. By netCDF convention, coordinate system axes
+     * coordinate system axis instead of the actual data. By netCDF convention, coordinate system axes
      * have the name of one of the dimensions defined in the netCDF header.
      *
      * <p>The default implementation returns {@link VariableRole#COVERAGE} if the given variable can be used
@@ -653,7 +653,7 @@ public class Convention {
                      * At this point, we determined that the range uses sample values (i.e. values before
                      * conversion to the unit of measurement). Before to return that range, check if the
                      * minimum or maximum value overlaps with a "no data" value. If yes, resolve the
-                     * overlapping by making a range bound exclusive instead than inclusive.
+                     * overlapping by making a range bound exclusive instead of inclusive.
                      */
                     boolean isMinIncluded = true;
                     boolean isMaxIncluded = true;

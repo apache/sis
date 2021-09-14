@@ -106,7 +106,7 @@ public final strictfp class LinearConverterTest extends TestCase {
 
     /**
      * Tests {@link LinearConverter#convert(double)}. This method tests also the pertinence of
-     * representing the conversion factor by a ratio instead than a single {@code double} value.
+     * representing the conversion factor by a ratio instead of a single {@code double} value.
      */
     @Test
     public void testConvertDouble() {

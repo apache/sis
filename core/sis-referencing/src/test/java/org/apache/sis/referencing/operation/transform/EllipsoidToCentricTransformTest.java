@@ -63,7 +63,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
         transform = EllipsoidToCentricTransform.createGeodeticConversion(factory, ellipsoid, is3D);
         /*
          * If the ellipsoid is a sphere, then EllipsoidToCentricTransform.createGeodeticConversion(…) created a
-         * SphericalToCartesian instance instead than an EllipsoidToCentricTransform instance.  Create manually
+         * SphericalToCartesian instance instead of an EllipsoidToCentricTransform instance.  Create manually
          * the EllipsoidToCentricTransform here and wrap the two transform in a comparator for making sure that
          * the two implementations are consistent.
          */

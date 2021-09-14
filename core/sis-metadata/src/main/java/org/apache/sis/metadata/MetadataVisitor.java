@@ -247,7 +247,7 @@ abstract class MetadataVisitor<R> {
         /**
          * Same as {@link #WRITABLE}, but write properties in the object returned by {@link #result()}.
          * This mode implies that {@code result()} is invoked <strong>before</strong> metadata properties
-         * are visited instead than after.
+         * are visited instead of after.
          */
         WRITABLE_RESULT
     }

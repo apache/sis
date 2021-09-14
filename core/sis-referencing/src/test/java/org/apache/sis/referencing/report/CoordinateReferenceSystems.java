@@ -552,7 +552,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
                     row.remark = i18n.toString(getLocale());
                 }
                 /*
-                 * If a replacement exists for a deprecated CRS, use the datum of the replacement instead than
+                 * If a replacement exists for a deprecated CRS, use the datum of the replacement instead of
                  * the datum of the deprecated CRS for determining in which section to put the CRS. The reason
                  * is that some CRS are deprecated because they were associated to the wrong datum, in which
                  * case the deprecated CRS would appear in the wrong section if we do not apply this correction.
@@ -783,7 +783,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         }
         rows.clear();
         /*
-         * Recopy the rows, but section-by-section. We do this sorting here instead than in the Row.compareTo(Row)
+         * Recopy the rows, but section-by-section. We do this sorting here instead of in the Row.compareTo(Row)
          * method in order to preserve the alphabetical order of rows with unknown datum.
          * Algorithm below is inefficient, but this class should be rarely used anyway and only by site maintainer.
          */

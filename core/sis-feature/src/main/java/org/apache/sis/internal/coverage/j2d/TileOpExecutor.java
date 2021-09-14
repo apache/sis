@@ -469,7 +469,7 @@ public class TileOpExecutor {
      * @param  collector  the action to execute on each {@link WritableRaster}, together with supplier and combiner
      *                    of thread-local objects of type <var>A</var>. See above javadoc for more information.
      * @return the final result computed by finisher. This is often {@code null} because the purpose of calling
-     *         {@code executeOnWritable(…)} is more often to update existing tiles instead than to compute a value.
+     *         {@code executeOnWritable(…)} is more often to update existing tiles instead of to compute a value.
      * @throws ImagingOpException if an exception occurred during {@link WritableRenderedImage#getWritableTile(int, int)},
      *         {@link #writeTo(WritableRaster)} or {@link WritableRenderedImage#releaseWritableTile(int, int)} execution,
      *         and the error handler is {@link ErrorHandler#THROW}.

@@ -60,7 +60,7 @@ public final strictfp class CRSCommandTest extends TestCase {
             "  Id[\"EPSG\", 4326,\\E.*\\Q URI[\"urn:ogc:def:crs:EPSG:\\E.*\\Q:4326\"]]]\n\\E";  // Version number of EPSG dataset may vary.
         /*
          * Insert the native line separator in the expected string. We modify the expected string
-         * instead than modifying the `test.outputBuffer` result because we want to verify that the
+         * instead of modifying the `test.outputBuffer` result because we want to verify that the
          * native line separator appears in every output lines.
          */
         WGS84 = CharSequences.replace(WGS84, "\n", System.lineSeparator()).toString();

@@ -42,7 +42,7 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 
 
 /**
- * Base class of reference systems that describe locations using geographic identifiers instead than coordinates.
+ * Base class of reference systems that describe locations using geographic identifiers instead of coordinates.
  *
  * <h2>Immutability and thread safety</h2>
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)

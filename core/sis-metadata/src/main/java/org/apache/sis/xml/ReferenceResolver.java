@@ -32,7 +32,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
 /**
  * Controls the (un)marshaller behavior regarding the {@code xlink} or {@code uuidref} attributes.
  * At marshalling time, this class controls whether the marshaller is allowed to write a reference
- * to an existing instance instead than writing the full object definition.
+ * to an existing instance instead of writing the full object definition.
  * At unmarshalling time, this class replaces (if possible) a reference by the full object definition.
  *
  * <p>Subclasses can override the methods defined in this class in order to search in their own catalog.
@@ -151,7 +151,7 @@ public class ReferenceResolver {
 
     /**
      * Returns {@code true} if the marshaller can use a {@code xlink:href="#id"} reference to the given object
-     * instead than writing the full XML element. This method is invoked by the marshaller when:
+     * instead of writing the full XML element. This method is invoked by the marshaller when:
      *
      * <ul>
      *   <li>The given object has already been marshalled in the same XML document.</li>
@@ -178,7 +178,7 @@ public class ReferenceResolver {
      * @param  object   the object to be marshalled.
      * @param  id       the {@code gml:id} value of the object to be marshalled.
      * @return {@code true} if the marshaller can use the {@code xlink:href="#id"} attribute
-     *         instead than marshalling the given object.
+     *         instead of marshalling the given object.
      *
      * @since 0.7
      */
@@ -188,7 +188,7 @@ public class ReferenceResolver {
 
     /**
      * Returns {@code true} if the marshaller can use a reference to the given object
-     * instead than writing the full XML element. This method is invoked when an object to
+     * instead of writing the full XML element. This method is invoked when an object to
      * be marshalled has a UUID identifier. Because those object may be defined externally,
      * SIS can not know if the object shall be fully marshalled or not.
      * Such information needs to be provided by the application.
@@ -207,7 +207,7 @@ public class ReferenceResolver {
      * @param  object   the object to be marshalled.
      * @param  uuid     the unique identifier of the object to be marshalled.
      * @return {@code true} if the marshaller can use the {@code uuidref} attribute
-     *         instead than marshalling the given object.
+     *         instead of marshalling the given object.
      */
     public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final UUID uuid) {
         return (object instanceof NilObject) || (object instanceof Emptiable && ((Emptiable) object).isEmpty());
@@ -215,7 +215,7 @@ public class ReferenceResolver {
 
     /**
      * Returns {@code true} if the marshaller can use a {@code xlink:href} reference to the given
-     * object instead than writing the full XML element. This method is invoked when an object to be
+     * object instead of writing the full XML element. This method is invoked when an object to be
      * marshalled has a {@link XLink} identifier. Because those object may be defined externally,
      * SIS can not know if the object shall be fully marshalled or not.
      * Such information needs to be provided by the application.
@@ -234,7 +234,7 @@ public class ReferenceResolver {
      * @param  object   the object to be marshalled.
      * @param  link     the reference of the object to be marshalled.
      * @return {@code true} if the marshaller can use the {@code xlink:href} attribute
-     *         instead than marshalling the given object.
+     *         instead of marshalling the given object.
      */
     public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final XLink link) {
         return (object instanceof NilObject) || (object instanceof Emptiable && ((Emptiable) object).isEmpty());

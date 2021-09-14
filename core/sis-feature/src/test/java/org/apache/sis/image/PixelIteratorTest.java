@@ -93,13 +93,13 @@ public strictfp class PixelIteratorTest extends TestCase {
 
     /**
      * Number of pixels along the <var>x</var> axis of each tile in image tiles.
-     * This is zero if the tests are performed on a raster instead than a tiled image.
+     * This is zero if the tests are performed on a raster instead of a tiled image.
      */
     private int tileWidth;
 
     /**
      * Number of pixels along the <var>y</var> axis of each tile in image tiles.
-     * This is zero if the tests are performed on a raster instead than a tiled image.
+     * This is zero if the tests are performed on a raster instead of a tiled image.
      */
     private int tileHeight;
 
@@ -1104,7 +1104,7 @@ public strictfp class PixelIteratorTest extends TestCase {
         int i = getIndexOf(x, y) * numBands;
         /*
          * Iteration verification happens here. Note that contrarily to 'verifyIteration(boolean)' method,
-         * we use a do … while loop instead than a while loop because the call to 'moveTo(x, y)' should be
+         * we use a do … while loop instead of a while loop because the call to 'moveTo(x, y)' should be
          * understood as an implicit 'next()' method call.
          */
         do {

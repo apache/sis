@@ -410,7 +410,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     }
 
     /**
-     * Returns the operations to marshal. We use this private methods instead than annotating
+     * Returns the operations to marshal. We use this private methods instead of annotating
      * {@link #getOperations()} in order to force JAXB to invoke the setter method on unmarshalling.
      */
     @XmlElement(name = "coordOperation", required = true)

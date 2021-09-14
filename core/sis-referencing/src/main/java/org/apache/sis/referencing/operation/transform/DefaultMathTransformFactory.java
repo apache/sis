@@ -131,7 +131,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <p>The main purpose of those dynamic parameters is to support some less commonly used conventions
  * without duplicating the most commonly used conventions. The alternative ways are used in netCDF
- * files for example, which often use spherical models instead than ellipsoidal ones.</p>
+ * files for example, which often use spherical models instead of ellipsoidal ones.</p>
  *
  *
  * <h2><a id="Obligation">Mandatory and optional parameters</a></h2>
@@ -606,7 +606,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * <div class="note"><b>Design note:</b>
          * ellipsoidal coordinate systems and ellipsoids are associated indirectly, through a geodetic CRS.
-         * However this method expects those two components to be given explicitly instead than inferring
+         * However this method expects those two components to be given explicitly instead of inferring
          * them from a {@code CoordinateReferenceSystem} for making clear that {@code MathTransformFactory}
          * does not perform any {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic
          * datum} analysis. For coordinate operations that take datum changes in account (including change
@@ -901,7 +901,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                  * Following is specific to Apache SIS. We use this non-standard API for allowing the
                  * NormalizedProjection class (our base class for all map projection implementations)
                  * to known that the ellipsoid definitive parameter is the inverse flattening factor
-                 * instead than the semi-major axis length. It makes a small difference in the accuracy
+                 * instead of the semi-major axis length. It makes a small difference in the accuracy
                  * of the eccentricity parameter.
                  */
                 if (isIvfDefinitive) try {
@@ -1248,7 +1248,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * If the height is expected as operation input, set the height to 0. Otherwise (the pass through case),
          * set the height to NaN. We do that way because the given `parameterized` transform may be a Molodensky
          * transform or anything else that could use the height in its calculation. If we have to add a height as
-         * a pass through dimension, maybe the parameterized transform is a 2D Molodensky instead than a 3D Molodensky.
+         * a pass through dimension, maybe the parameterized transform is a 2D Molodensky instead of a 3D Molodensky.
          * The result of passing through the height is not the same as if a 3D Molodensky was used in the first place.
          * A NaN value avoid to give a false sense of accuracy.
          */
@@ -1270,7 +1270,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * At this point we finished to create the transform.  But before to return it, verify if the
          * parameterized transform given in argument had some custom parameters. This happen with the
          * Equirectangular projection, which can be simplified as an AffineTransform while we want to
-         * continue to describe it with the "semi_major", "semi_minor", etc. parameters  instead than
+         * continue to describe it with the "semi_major", "semi_minor", etc. parameters  instead of
          * "elt_0_0", "elt_0_1", etc.  The following code just forwards those parameters to the newly
          * created transform; it does not change the operation.
          */

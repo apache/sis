@@ -291,7 +291,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
          * The offset to add to the logarithm.
          *
          * <div class="note"><b>Note:</b> the offset could be handled by a concatenation with {@link LinearTransform1D}.
-         * instead than an explicit field in this class. However the <var>offset</var> + log<sub>base</sub>(<var>x</var>)
+         * instead of an explicit field in this class. However the <var>offset</var> + log<sub>base</sub>(<var>x</var>)
          * formula is extensively used as a <cite>transfer function</cite> in grid coverages. Consequently we keep this
          * explicit field for performance reasons.</div>
          */

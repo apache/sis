@@ -387,7 +387,7 @@ final class RenderingData implements Cloneable {
          * Apply a map projection on the image, then convert the floating point results to integer values
          * that we can use with IndexColorModel.
          *
-         * TODO: if `colors` is null, instead than defaulting to `Colorizer.GRAYSCALE` we should get the colors
+         * TODO: if `colors` is null, instead of defaulting to `Colorizer.GRAYSCALE` we should get the colors
          *       from the current ColorModel. This work should be done in Colorizer by converting the ranges of
          *       sample values in source image to ranges of sample values in destination image, then query
          *       ColorModel.getRGB(Object) for increasing integer values in that range.

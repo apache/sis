@@ -240,7 +240,7 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
              * If hard links are not supported, edit the "other_dependencies.txt" file instead.
              * Note that a hard link may be unsupported because the source and target
              * are on different Windows drives or mount points, in which case we get
-             * a FileSystemException instead than UnsupportedOperationException.
+             * a FileSystemException instead of UnsupportedOperationException.
              */
         }
         /*

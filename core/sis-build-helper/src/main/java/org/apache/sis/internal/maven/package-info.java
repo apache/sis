@@ -22,7 +22,7 @@
  *
  * <ul>
  *   <li>{@link org.apache.sis.internal.maven.JarCollector} collects all JAR files and their dependencies
- *     in a single {@code target/binaries} directory, using hard links instead than copying the files.</li>
+ *     in a single {@code target/binaries} directory, using hard links instead of copying the files.</li>
  *   <li>{@link org.apache.sis.internal.maven.Assembler} builds the Apache SIS distribution file.</li>
  * </ul>
  *

@@ -98,7 +98,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     private final TreeNode.Element[] children;
 
     /**
-     * Index of the property to write in the parent node instead than as a child.
+     * Index of the property to write in the parent node instead of as a child.
      * If a property has the same name than the parent property that contains it,
      * we write its value in that parent property. For example instead of:
      *
@@ -142,7 +142,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
         this.children = new TreeNode.Element[accessor.count()];
         /*
          * Search for something that looks like the main property, to be associated with the parent node
-         * instead than provided as a child. The intent is to have more compact and easy to read trees.
+         * instead of provided as a child. The intent is to have more compact and easy to read trees.
          * That property shall be a singleton for a simple value (not another metadata object).
          */
         if (parent.table.valuePolicy == ValueExistencePolicy.COMPACT) {

@@ -498,7 +498,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
      *     return equals(other, ComparisonMode.STRICT);
      * }
      *
-     * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead than this method.
+     * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead of this method.
      *
      * @param  object  the object to compare to {@code this}.
      * @return {@code true} if both objects are equal.

@@ -150,7 +150,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     /**
      * Creates a descriptor for a latitude parameter in degrees without default value.
      * This method is used for latitude of origin that can not be zero, of for standard parallels
-     * where the default value should be the value of another parameter instead than 0°.
+     * where the default value should be the value of another parameter instead of 0°.
      */
     static ParameterDescriptor<Double> createMandatoryLatitude(final ParameterBuilder builder) {
         return builder.createBounded(Latitude.MIN_VALUE, Latitude.MAX_VALUE, Double.NaN, Units.DEGREE);
@@ -255,7 +255,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * <ul class="verbose">
      *   <li>EPSG provides an equivalent information in the {@code PARAM_SIGN_REVERSAL} column of the
      *       {@code [Coordinate_Operation Parameter Usage]} table, but on a parameter-by-parameter basis
-     *       instead than for the whole operation (which is probably better).</li>
+     *       instead of for the whole operation (which is probably better).</li>
      *
      *   <li>EPSG provides another information in the {@code REVERSE_OP} column of the
      *       {@code [Coordinate_Operation Method]} table, but this is not equivalent to this method because it

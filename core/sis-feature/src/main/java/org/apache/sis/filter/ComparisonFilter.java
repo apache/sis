@@ -269,7 +269,7 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
          *
          * OffsetTime and OffsetDateTime are final classes that do not implement a java.time.chrono interface.
          * Note that OffsetDateTime is convertible into OffsetTime by dropping the date fields, but we do not
-         * (for now) perform comparaisons that would ignore the date fields of an operand.
+         * (for now) perform comparisons that would ignore the date fields of an operand.
          */
         if (left instanceof Temporal || right instanceof Temporal) {        // Use || because an operand may be Date.
             if (left instanceof Instant) {
