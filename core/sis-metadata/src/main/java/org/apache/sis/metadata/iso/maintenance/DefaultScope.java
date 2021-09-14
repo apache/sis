@@ -43,7 +43,7 @@ import org.apache.sis.xml.Namespaces;
  * {@code       ├─features………………………………} Features to which the information applies.
  * {@code       └─other………………………………………} Class of information that does not fall into the other categories.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

@@ -38,8 +38,8 @@ import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
  * This class also implements the {@link #isHeuristicMatchForName(Identifier, Collection, CharSequence, Simplifier)}
  * method since that method involves a mix of names and identifiers.
  *
- * <p><b>Limitation:</b>
- * Current version does not yet work with URN or HTTP syntax.</p>
+ * <h2>Limitations</h2>
+ * Current version does not yet work with URN or HTTP syntax.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

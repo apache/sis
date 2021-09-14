@@ -391,7 +391,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      *
      * <p>The length of {@code lower}, {@code upper} and {@code subsampling} arrays shall be 2.</p>
      *
-     * <h2>Default implementation</h2>
+     * <h4>Default implementation</h4>
      * The default implementation in this base class assumes uncompressed data without band subset.
      * Subsampling on the <var>X</var> axis is not supported if the image has interleaved pixels.
      * Packed pixels (é.g. bilevel images with 8 pixels per byte) are not supported.

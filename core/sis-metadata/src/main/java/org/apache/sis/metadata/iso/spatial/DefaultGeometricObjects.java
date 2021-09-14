@@ -34,7 +34,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * <div class="preformat">{@code MD_GeometricObjects}
  * {@code   └─geometricObjectType……} Name of point and vector spatial objects used to locate zero-, one-, and two-dimensional spatial locations in the dataset.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

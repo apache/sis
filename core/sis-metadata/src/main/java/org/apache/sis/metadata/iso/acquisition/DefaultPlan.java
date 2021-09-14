@@ -39,7 +39,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * {@code       ├─title………………………} Name by which the cited resource is known.
  * {@code       └─date…………………………} Reference date for the cited resource.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

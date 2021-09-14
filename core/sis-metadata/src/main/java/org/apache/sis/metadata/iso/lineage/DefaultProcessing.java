@@ -36,7 +36,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * {@code   └─identifier……} Information to identify the processing package that produced the data.
  * {@code       └─code…………} Alphanumeric value identifying an instance in the namespace.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

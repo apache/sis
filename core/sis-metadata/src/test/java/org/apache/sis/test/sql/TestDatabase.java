@@ -59,7 +59,7 @@ import static org.junit.Assume.assumeTrue;
  * To connect to the in-memory database, use the {@code "jdbc:derby://localhost:1527/dbname"} URL
  * (replace {@code "dbname"} by the actual database name.
  *
- * <p><b>References:</b>
+ * <h2>References</h2>
  * <ul>
  *   <li><a href="http://db.apache.org/derby/docs/10.15/adminguide/radminembeddedserverex.html">Embedded server example</a></li>
  * </ul>

@@ -58,10 +58,10 @@ import static java.lang.Math.*;
  * while suffix 2 denotes values computed using ending point (P₂) and ending azimuth (α₂).
  * All angular values stored in this class are in radians.
  *
- * <p><b>Limitations:</b>
+ * <h2>Limitations</h2>
  * Current implementation is still unable to compute the geodesics in some cases.
  * In particular, calculation may fail for antipodal points.
- * See <a href="https://issues.apache.org/jira/browse/SIS-467">SIS-467</a>.</p>
+ * See <a href="https://issues.apache.org/jira/browse/SIS-467">SIS-467</a>.
  *
  * <p>If the following cases where more than one geodesics exist, current implementation returns an arbitrary one:</p>
  * <ul>

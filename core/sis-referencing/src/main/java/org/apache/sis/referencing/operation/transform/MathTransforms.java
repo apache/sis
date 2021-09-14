@@ -228,9 +228,11 @@ public final class MathTransforms extends Static {
      * Otherwise an approximation for the given position is created using the
      * {@linkplain MathTransform#derivative(DirectPosition) transform derivative} at that position.
      *
-     * <p><b>Invariant:</b> transforming the given {@code position} using the given {@code transform} produces the same result
-     * (ignoring rounding error) than transforming the same {@code position} using the returned transform. This invariant holds
-     * only for that particular position; the transformation of any other positions may produce different results.</p>
+     * <h4>Invariant</h4>
+     * Transforming the given {@code position} using the given {@code transform} produces the same result
+     * (ignoring rounding error) than transforming the same {@code position} using the returned transform.
+     * This invariant holds only for that particular position; the transformation of any other positions
+     * may produce different results.
      *
      * @param  transform  the transform to approximate by an affine transform.
      * @param  position   position in source CRS around which to get the an affine transform approximation.

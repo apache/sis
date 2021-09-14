@@ -520,7 +520,7 @@ public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> 
      * to be created and a {@linkplain #addName(org.opengis.util.GenericName) name has been specified}, that name
      * will be used.
      *
-     * <p><b>Limitations:</b></p>
+     * <h4>Limitations</h4>
      * Current implementation can replace exactly one component of {@link CompoundCRS}.
      * If the given replacement spans more than one component, then this method will fail.
      *

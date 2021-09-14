@@ -57,11 +57,11 @@ public final class OtherLocales extends AbstractSet<PT_Locale> {
     /**
      * Returns a collection for all elements except the first one from the given collection.
      *
-     * <p><b>Null values and XML marshalling:</b>
+     * <h4>Null values and XML marshalling</h4>
      * The {@code locales} argument may be {@code null} at XML marshalling time. In such case, this method returns
      * {@code null} instead than an empty set in order to instruct JAXB to not marshal the {@code otherLocale} element
      * (an empty set would cause JAXB to marshal an empty element). Since the {@code locales} argument given to this
-     * method should never be null except at XML marshalling time, this rule should not be a violation of public API.</p>
+     * method should never be null except at XML marshalling time, this rule should not be a violation of public API.
      *
      * @param  locales  the collection containing the default locale followed by the other ones, or {@code null}.
      * @return a collection containing all {@code languages} elements except the first one, or {@code null}.

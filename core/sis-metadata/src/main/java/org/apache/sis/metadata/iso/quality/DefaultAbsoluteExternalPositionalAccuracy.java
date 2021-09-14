@@ -29,7 +29,7 @@ import org.opengis.metadata.quality.AbsoluteExternalPositionalAccuracy;
  * <div class="preformat">{@code DQ_AbsoluteExternalPositionalAccuracy}
  * {@code   └─result……………} Value obtained from applying a data quality measure.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

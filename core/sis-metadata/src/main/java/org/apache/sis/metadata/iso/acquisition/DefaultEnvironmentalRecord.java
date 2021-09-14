@@ -37,7 +37,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
  * {@code   ├─maxAltitude………………………………………} Maximum altitude during the photo flight.
  * {@code   └─meteorologicalConditions……} Meteorological conditions in the photo flight area, in particular clouds, snow and wind.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

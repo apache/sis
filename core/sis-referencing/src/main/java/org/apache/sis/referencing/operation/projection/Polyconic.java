@@ -45,7 +45,7 @@ import static org.apache.sis.internal.referencing.provider.Polyconic.*;
  *   <li>Free of distortion only along the central meridian.</li>
  * </ul>
  *
- * <p><b>References:</b></p>
+ * <h2>References</h2>
  * <ul>
  *   <li>John P. Snyder (Map Projections - A Working Manual,<br>
  *       U.S. Geological Survey Professional Paper 1395, 1987)</li>

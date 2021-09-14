@@ -63,7 +63,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * {@code       │   └─name…………………………………} Name of the party.
  * {@code       └─role……………………………………………} Function performed by the responsible party.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

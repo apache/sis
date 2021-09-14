@@ -24,7 +24,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  * Hard-coded file and directory names used by this package.
  *
  * <p><b>Reminder:</b>
- * If the above constants are modified, please remind to edit the <cite>Distribution file</cite>
+ * if the above constants are modified, please remind to edit the <cite>Distribution file</cite>
  * section in the <code>site/content/build.mdtext</code> file.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)

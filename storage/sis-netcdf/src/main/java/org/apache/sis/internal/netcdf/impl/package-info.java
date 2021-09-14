@@ -21,7 +21,7 @@
  * This package works with channels instead than files, which is a little bit easier to use
  * in some environments.
  *
- * <p><b>Reference:</b></p>
+ * <h2>Reference</h2>
  * <ul>
  *   <li><a href="https://www.ogc.org/standards/netcdf">NetCDF standards on OGC web site</a></li>
  *   <li><a href="https://portal.ogc.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a></li>

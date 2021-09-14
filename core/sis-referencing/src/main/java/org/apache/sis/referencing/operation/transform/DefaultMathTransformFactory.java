@@ -291,7 +291,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Note that by default, only operation methods that implement the {@link MathTransformProvider} interface can be
      * used by the {@code create(…)} methods in this class.
      *
-     * <p><b>Requirements:</b></p>
+     * <h4>Requirements</h4>
      * <ul>
      *   <li>The given iterable should not contain duplicated elements.</li>
      *   <li>The given iterable shall be stable: all elements returned by the first iteration must also be

@@ -65,7 +65,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  * <h2>Limitations</h2>
  * Current implementation does not yet support removal of elements.
  *
- * <h2>References:</h2>
+ * <h2>References</h2>
  * Insertion algorithm is based on design of QuadTree index in H. Samet,
  * <u>The Design and Analysis of Spatial Data Structures</u>.
  * Massachusetts: Addison Wesley Publishing Company, 1989.

@@ -689,11 +689,11 @@ class CoordinateOperationRegistry {
     /**
      * Creates the inverse of the given operation, which may be single or compound.
      *
-     * <p><b>Design note:</b>
-     * we do not provide a {@code AbstractCoordinateOperation.inverse()} method. If the user wants an inverse method,
+     * <h4>Design note</h4>
+     * We do not provide a {@code AbstractCoordinateOperation.inverse()} method. If the user wants an inverse method,
      * he should invoke {@code CRS.findOperation(targetCRS, sourceCRS, null)} or something equivalent. This is because
      * a new query of EPSG database may be necessary, and if no explicit definition is found there is too many arbitrary
-     * values to set in a default inverse operation for making that API public.</p>
+     * values to set in a default inverse operation for making that API public.
      *
      * @param  operation  the operation to invert, or {@code null}.
      * @return the inverse of {@code operation}, or {@code null} if none.

@@ -403,7 +403,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * of {@code double}. The main purpose of this method is to fetch the {@link DoubleDouble#error} terms when
      * such instances are found.
      *
-     * <p><b>Restrictions:</b></p>
+     * <h4>Restrictions</h4>
      * <ul>
      *   <li>This matrix must use extended-precision elements as by {@link #createExtendedPrecision(int, int, boolean)}.</li>
      *   <li>If this method returns {@code false}, then error terms are <strong>not</strong> initialized - they

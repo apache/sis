@@ -374,7 +374,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * The envelope CRS is ignored, except for identifying dimension names for information purpose.
      * The way floating point values are rounded to integers may be adjusted in any future version.
      *
-     * <p><b>NOTE:</b> this constructor is not public because its contract is a bit approximate.</p>
+     * <p><b>API note:</b> this constructor is not public because its contract is a bit approximate.</p>
      *
      * @param  envelope            the envelope containing cell indices to store in a {@code GridExtent}.
      * @param  rounding            controls behavior of rounding from floating point values to integers.

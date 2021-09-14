@@ -37,7 +37,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * {@code   ├─valueUnit……………………} Value unit for reporting a data quality result.
  * {@code   └─value………………………………} Quantitative value or values, content determined by the evaluation procedure used.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

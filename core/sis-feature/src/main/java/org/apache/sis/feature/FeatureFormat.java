@@ -83,7 +83,7 @@ import org.opengis.feature.Operation;
  *   └────────────┴─────────┴──────────────┴───────────┘
  * }</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>The current implementation can only format features — parsing is not yet implemented.</li>
  *   <li>{@code FeatureFormat}, like most {@code java.text.Format} subclasses, is not thread-safe.</li>

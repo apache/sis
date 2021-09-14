@@ -1245,8 +1245,9 @@ class PropertyAccessor {
      * Invokes {@link MetadataVisitor#visit(Class, Object)} for all writable properties in the given metadata.
      * This method is not recursive, i.e. it does not traverse the children of the elements in the given metadata.
      *
-     * <p><b>Constraint:</b> in current implementation, if {@code source} and {@code target} are not the same,
-     * then {@code target} is assumed empty. The intent is to skip easily null or empty properties.</p>
+     * <h4>Constraint</h4>
+     * In current implementation, if {@code source} and {@code target} are not the same,
+     * then {@code target} is assumed empty. The intent is to skip easily null or empty properties.
      *
      * @param  visitor   the object on which to invoke {@link MetadataVisitor#visit(Class, Object)}.
      * @param  source    the metadata from which to read properties. May be the same than {@code target}.

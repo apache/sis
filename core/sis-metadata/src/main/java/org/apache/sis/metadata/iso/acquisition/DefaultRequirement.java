@@ -53,7 +53,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * {@code   │   └─latestAcceptableDate…………………} Latest date and time collection must be completed.
  * {@code   └─expiryDate………………………………………………………} Date and time after which collection is no longer valid.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

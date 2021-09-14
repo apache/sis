@@ -37,7 +37,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * {@code   ├─date………………} Reference date for the cited resource.
  * {@code   └─dateType……} Event used for reference date.</div>
  *
- * <p><b>Limitations:</b></p>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

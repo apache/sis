@@ -665,7 +665,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * However as a safety, this method also checks that all properties in this feature type is assignable
      * from a property of the same name in the given type.
      *
-     * <h4>Constraints:</h4>
+     * <h4>Constraints</h4>
      * <ul>
      *   <li>If <var>A</var> is assignable from <var>B</var> and <var>B</var> is assignable from <var>C</var>,
      *       then <var>A</var> is assignable from <var>C</var>.</li>

@@ -57,7 +57,7 @@ import static org.apache.sis.internal.maven.Filenames.*;
  *
  * <blockquote><code>mvn package org.apache.sis.core:sis-build-helper:dist</code></blockquote>
  *
- * <p><b>Current limitation:</b>
+ * <h2>Limitation</h2>
  * The current implementation uses some hard-coded paths and filenames.
  * See the <cite>Distribution file</cite> section in
  * <a href="http://sis.apache.org/build.html">Build from source</a> page
